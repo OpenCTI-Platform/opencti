@@ -7,10 +7,12 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Typography from '@material-ui/core/Typography';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
+import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
@@ -25,18 +27,24 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
-    height: 50,
+  },
+  ListItem: {
+    display: 'grid',
+    gridTemplateColumns: '10% 15% 15% 1fr 1fr 15%',
   },
   itemIcon: {
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 20,
-    fontSize: 13,
     float: 'left',
-    whiteSpace: 'nowrap',
+    height: '35px',
+    display: 'flex',
     overflow: 'hidden',
+    fontSize: '13px',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
+    justifyContent: 'left',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -53,6 +61,7 @@ class RemediationEntityLineComponent extends Component {
     const {
       fsd,
       t,
+      fldt,
       classes,
       dataColumns,
       node,
@@ -60,6 +69,8 @@ class RemediationEntityLineComponent extends Component {
       displayRelation,
       entityId,
     } = this.props;
+    const origins = R.pathOr([], ['origins'], node);
+    console.log('remediationEntityLineData', origins);
     let restricted = false;
     let targetEntity = null;
     if (node.from && node.from.id === entityId) {
@@ -73,12 +84,12 @@ class RemediationEntityLineComponent extends Component {
       restricted = true;
     }
     // eslint-disable-next-line no-nested-ternary
-    const link = !restricted
-      ? targetEntity.parent_types.includes('stix-core-relationship')
-        ? `/dashboard/observations/observables/${entityId}/knowledge/relations/${node.id}`
-        : `${resolveLink(targetEntity.entity_type)}/${targetEntity.id
-        }/knowledge/relations/${node.id}`
-      : null;
+    // const link = !restricted
+    //   ? targetEntity.parent_types.includes('stix-core-relationship')
+    //     ? `/dashboard/observations/observables/${entityId}/knowledge/relations/${node.id}`
+    //     : `${resolveLink(targetEntity.entity_type)}/${targetEntity.id
+    //     }/knowledge/relations/${node.id}`
+    //   : null;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -88,75 +99,44 @@ class RemediationEntityLineComponent extends Component {
         to={`/dashboard/risk-assessment/risks/${entityId}/remediation/${node.id}`}
       // disabled={restricted}
       >
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon
-            type={!restricted ? targetEntity.entity_type : 'restricted'}
-          />
-        </ListItemIcon>
         <ListItemText
           primary={
-            <div>
-              {displayRelation && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
-                >
-                  {t(`relationship_${node.relationship_type}`)}
-                </div>
-              )}
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                {/* {!restricted
-                  ? t(
-                    `entity_${
-                      targetEntity.entity_type === 'stix_relation'
-                        || targetEntity.entity_type === 'stix-relation'
-                        ? targetEntity.parent_types[0]
-                        : targetEntity.entity_type
-                    }`,
-                  )
-                  : t('Restricted')} */}
-                {node.response_type && t(node.response_type)}
+            <div className={classes.ListItem}>
+              <div className={classes.bodyItem}>
+                <Typography align="left">
+                  {node.name && t(node.name)}
+                </Typography>
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {/* eslint-disable-next-line no-nested-ternary */}
-                {!restricted
-                  ? targetEntity.entity_type === 'stix_relation'
-                    || targetEntity.entity_type === 'stix-relation'
-                    ? `${targetEntity.from.name} ${String.fromCharCode(
-                      8594,
-                    )} ${defaultValue(targetEntity.to)}`
-                    : defaultValue(targetEntity)
-                  : t('Restricted')}
+              <div className={classes.bodyItem}>
+                <Button variant='outlined' size="small" color='primary'>
+                  {node.response_type && t(node.response_type)}
+                </Button>
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.start_time.width }}
-              >
-                {fsd(node.start_time)}
+              <div className={classes.bodyItem}>
+                <Button variant='outlined' size="small" color='secondary'>
+                  {node.lifecycle && t(node.lifecycle)}
+                </Button>
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.stop_time.width }}
-              >
-                {fsd(node.stop_time)}
+              <div className={classes.bodyItem}>
+                <Typography align="left">
+                  {node.created && fldt(node.created)}
+                </Typography>
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <ItemConfidence confidence={node.confidence} variant="inList" />
+              <div className={classes.bodyItem}>
+                <Typography align="left">
+                  {node.modified && fldt(node.modified)}
+                </Typography>
+              </div>
+              <div className={classes.bodyItem}>
+                <Typography align="left">
+                  {node.description && t(node.description)}
+                </Typography>
               </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          {node.is_inferred ? (
+          {/* {node.is_inferred ? (
             <Tooltip
               title={
                 t('Inferred knowledge based on the rule ')
@@ -164,16 +144,16 @@ class RemediationEntityLineComponent extends Component {
               }
             >
               <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-            </Tooltip>
-          ) : (
-            // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <RemediationPopover
-              stixCoreRelationshipId={node.id}
-              paginationOptions={paginationOptions}
-            // disabled={restricted}
-            />
-            // </Security>
-          )}
+            </Tooltip> */}
+          {/* ) : ( */}
+          {/*  <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
+          <RemediationPopover
+            stixCoreRelationshipId={node.id}
+            paginationOptions={paginationOptions}
+          // disabled={restricted}
+          />
+          {/* </Security> */}
+          {/* )} */}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -186,6 +166,7 @@ RemediationEntityLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  fldt: PropTypes.func,
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
@@ -194,573 +175,28 @@ RemediationEntityLineComponent.propTypes = {
 const RemediationEntityLineFragment = createFragmentContainer(
   RemediationEntityLineComponent,
   {
-    node: graphql`
-      fragment RemediationEntityLine_node on StixCoreRelationship {
+    risk: graphql`
+      fragment RemediationEntityLine_node on Risk {
         id
-        relationship_type
-        confidence
-        start_time
-        stop_time
-        description
-        is_inferred
-        x_opencti_inferences {
-          rule {
+        name
+        created
+        modified
+        remediations{
+          id
+          name            # Title
+          description     # Description
+          created         # Created
+          modified        # Last Modified
+          lifecycle       # Lifecycle
+          response_type   # Response Type
+          origins {
             id
-            name
-          }
-        }
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixObject {
-            created_at
-            updated_at
-          }
-          ... on AttackPattern {
-            name
-            description
-          }
-          ... on AttackPattern {
-            name
-            description
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on StixCoreRelationship {
-            from {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixObject {
-                created_at
-                updated_at
-              }
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on Campaign {
-                name
-                description
-              }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-                description
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-              }
-              ... on ThreatActor {
-                name
-                description
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
-            }
-            to {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixObject {
-                created_at
-                updated_at
-              }
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on Campaign {
-                name
-                description
-              }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-                description
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-              }
-              ... on ThreatActor {
-                name
-                description
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
-            }
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixObject {
-            created_at
-            updated_at
-          }
-          ... on AttackPattern {
-            name
-            description
-          }
-          ... on AttackPattern {
-            name
-            description
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on System {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on Incident {
-            name
-            description
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on StixCoreRelationship {
-            from {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixObject {
-                created_at
-                updated_at
-              }
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on Campaign {
-                name
-                description
-              }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-                description
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-              }
-              ... on ThreatActor {
-                name
-                description
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
-            }
-            to {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixObject {
-                created_at
-                updated_at
-              }
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on AttackPattern {
-                name
-                description
-              }
-              ... on Campaign {
-                name
-                description
-              }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-                description
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-              }
-              ... on ThreatActor {
-                name
-                description
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-              }
-              ... on StixCyberObservable {
-                observable_value
+            origin_actors {
+              actor {
+                ... on OscalPerson {
+                  id
+                  name
+                }
               }
             }
           }

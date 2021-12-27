@@ -204,9 +204,13 @@ class RiskEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, risk,
+      t,
+      classes,
+      riskId,
+      handleClose,
+      risk,
     } = this.props;
-    console.log('RiskEditionPropsData', risk);
+    console.log('RiskEditionPropsData', riskId);
     const initialValues = R.pipe(
       R.assoc('id', risk?.id || ''),
       R.assoc('item_id', risk?.item_id || ''),
@@ -352,13 +356,13 @@ class RiskEditionContainer extends Component {
               >
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
-                  // cyioCoreObjectId={risk?.id}
+                  cyioCoreObjectId={riskId}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk?.id} /> */}
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
-                    cyioCoreObjectOrCyioCoreRelationshipId={risk?.id}
+                    cyioCoreObjectOrCyioCoreRelationshipId={riskId}
                     marginTop='0px'
                   />
                 </Grid>
@@ -416,6 +420,7 @@ RiskEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   risk: PropTypes.object,
+  riskId: PropTypes.string,
   enableReferences: PropTypes.bool,
   theme: PropTypes.object,
   t: PropTypes.func,

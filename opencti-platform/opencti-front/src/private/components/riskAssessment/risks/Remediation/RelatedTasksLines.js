@@ -244,6 +244,7 @@ class RelatedTasksLinesContainer extends Component {
             <RelatedTaskCreation
               display={true}
               contextual={true}
+              remediationId={remediationId}
             // stixCoreObjectOrStixCoreRelationshipId={remediationId}
             // stixCoreObjectOrStixCoreRelationshipReferences={
             //   data.riskResponse.external_references.edges
@@ -389,13 +390,13 @@ class RelatedTasksLinesContainer extends Component {
 
                 </Grid>
                 <Grid container={true}>
-                  <Grid item={true} xs={12}>
+                  <Grid item={true} xs={12} style={{ marginBottom: '10px' }}>
                     <Typography
                       color="textSecondary"
                       gutterBottom={true}
                       style={{ float: 'left', marginTop: 20 }}
                     >
-                      Description
+                      {t('Description')}
                     </Typography>
                     <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                       <Tooltip
@@ -427,12 +428,14 @@ class RelatedTasksLinesContainer extends Component {
                     </div>
                   </Grid>
                   <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
-                    <CyioCoreobjectExternalReferences />
+                    <CyioCoreobjectExternalReferences
+                      cyioCoreObjectId={remediationId}
+                    />
                   </Grid>
                   <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                     <CyioCoreObjectOrCyioCoreRelationshipNotes
-                      cyioCoreObjectId={remediationId}
-                      marginTop='0px'
+                      cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                      marginTop='20px'
                     // data={props}
                     // marginTop={marginTop}
                     />

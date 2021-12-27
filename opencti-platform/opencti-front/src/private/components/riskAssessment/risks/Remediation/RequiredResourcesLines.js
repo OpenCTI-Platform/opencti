@@ -336,12 +336,14 @@ class RequiredResourcesLinesContainer extends Component {
                       </div>
                     </div>
                   </Grid>
-                  <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
-                    <CyioCoreobjectExternalReferences />
-                  </Grid>
-                  <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
-                    <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
+                    <CyioCoreobjectExternalReferences
                       cyioCoreObjectId={remediationId}
+                    />
+                  </Grid>
+                  <Grid style={{ marginTop: '30px' }} xs={12} item={true}>
+                    <CyioCoreObjectOrCyioCoreRelationshipNotes
+                      cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                       marginTop='0px'
                     // data={props}
                     // marginTop={marginTop}

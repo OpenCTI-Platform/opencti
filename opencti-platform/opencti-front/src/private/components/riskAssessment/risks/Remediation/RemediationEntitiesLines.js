@@ -1,15 +1,39 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { interval } from 'rxjs';
-import { pathOr } from 'ramda';
-import { createPaginationContainer, createFragmentContainer } from 'react-relay';
+import * as R from 'ramda';
+import { withStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
+import Typography from '@material-ui/core/Typography';
+import { createFragmentContainer } from 'react-relay';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import graphql from 'babel-plugin-relay/macro';
+import inject18n from '../../../../../components/i18n';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import {
   RemediationEntityLine,
   RemediationEntityLineDummy,
 } from './RemediationEntityLine';
 import { TEN_SECONDS } from '../../../../../utils/Time';
+
+const styles = (theme) => ({
+  paper: {
+    listStyle: 'none',
+    height: '100%',
+    boxShadow: 'none',
+  },
+  ListItem: {
+    width: '97%',
+    display: 'grid',
+    gridTemplateColumns: '10% 15% 15% 1fr 1fr 15%',
+  },
+  bodyItem: {
+    height: 35,
+    float: 'left',
+    whiteSpace: 'nowrap',
+  },
+});
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -31,45 +55,94 @@ class RemediationEntitiesLines extends Component {
       initialLoading,
       dataColumns,
       relay,
+      classes,
+      t,
+      data,
       entityLink,
       paginationOptions,
       displayRelation,
       entityId,
     } = this.props;
-    console.log('remediationEntitiesLinesData', this.props.data);
+    const RemediationEntitiesLogEdges = R.pathOr([], ['risk', 'remediations'], data);
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr(
-          [],
-          ['risk', 'remediations', 'edges'],
-          this.props.data,
-        )}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['risk', 'remediations', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={
-          <RemediationEntityLine
-            displayRelation={displayRelation}
+      // <ListLinesContent
+      //   initialLoading={initialLoading}
+      //   loadMore={relay.loadMore.bind(this)}
+      //   hasMore={relay.hasMore.bind(this)}
+      //   isLoading={relay.isLoading.bind(this)}
+      //   dataList={pathOr(
+      //     [],
+      //     ['risk', 'remediations', 'edges'],
+      //     this.props.data,
+      //   )}
+      //   globalCount={pathOr(
+      //     nbOfRowsToLoad,
+      //     ['risk', 'remediations', 'pageInfo', 'globalCount'],
+      //     this.props.data,
+      //   )}
+      //   LineComponent={
+      //     <RemediationEntityLine
+      //       displayRelation={displayRelation}
+      //       entityId={entityId}
+      //     />
+      //   }
+      //   DummyLineComponent={
+      //     <RemediationEntityLineDummy
+      //       displayRelation={displayRelation}
+      //     />
+      //   }
+      //   dataColumns={dataColumns}
+      //   nbOfRowsToLoad={nbOfRowsToLoad}
+      //   paginationOptions={paginationOptions}
+      //   entityLink={entityLink}
+      //   entityId={entityId}
+      // />
+      <Paper className={classes.paper}>
+        <ListItem style={{ borderBottom: '2px solid white' }}>
+          <ListItemText
+            primary={<div className={classes.ListItem} >
+              <div className={classes.bodyItem}>
+                <Typography align="left" variant="button">
+                  {t('Title')}
+                </Typography>
+              </div>
+              <div className={classes.bodyItem}>
+                <Typography align="left" variant="button">
+                  {t('Response Type')}
+                </Typography>
+              </div>
+              <div className={classes.bodyItem}>
+                <Typography align="left" variant="button">
+                  {t('Lifecycle')}
+                </Typography>
+              </div>
+              <div className={classes.bodyItem}>
+                <Typography align="left" variant="button">
+                  {t('Start Date')}
+                </Typography>
+              </div>
+              <div className={classes.bodyItem}>
+                <Typography align="left" variant="button">
+                  {t('End Date')}
+                </Typography>
+              </div>
+              <div className={classes.bodyItem}>
+                <Typography align="left" variant="button">
+                  {t('Source')}
+                </Typography>
+              </div>
+            </div>}
+          />
+        </ListItem>
+        {(RemediationEntitiesLogEdges.length > 0 ? (RemediationEntitiesLogEdges.map(
+          (remediationEdge, key) => <RemediationEntityLine
+            node={remediationEdge}
+            key={remediationEdge.id}
             entityId={entityId}
-          />
-        }
-        DummyLineComponent={
-          <RemediationEntityLineDummy
-            displayRelation={displayRelation}
-          />
-        }
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-        entityLink={entityLink}
-        entityId={entityId}
-      />
+          />,
+        )) : <>
+          No Record Found </>)}
+      </Paper>
     );
   }
 }
@@ -79,6 +152,7 @@ RemediationEntitiesLines.propTypes = {
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
   entityId: PropTypes.string,
+  t: PropTypes.func,
   data: PropTypes.object,
   relay: PropTypes.object,
   stixCoreRelationships: PropTypes.object,
@@ -87,49 +161,85 @@ RemediationEntitiesLines.propTypes = {
   displayRelation: PropTypes.bool,
 };
 
-export const remediationEntitiesLinesQuery = graphql`
-  query RemediationEntitiesLinesQuery($id: ID!) {
-    # ...RemediationEntitiesLines_data
-    # @arguments(count: $count, id: $id)
-    risk(id: $id) {
+const RemediationEntitiesLinesFragment = createFragmentContainer(
+  RemediationEntitiesLines,
+  {
+    risk: graphql`
+    fragment RemediationEntitiesLines_risk on Risk{
       id
-      #  remediations {
-      #    id
-      #    name
-      #    lifecycle
-      #    response_type
-      #    tasks(first: 1) {
-      #      edges {
-      #        node {
-      #          timing {
-      #            ... on DateRangeTiming {
-      #              start_date
-      #              end_date
-      #            }
-      #          }
-      #        }
-      #      }
-      #    }
-      #    relationships {
-      #      edges {
-      #        node {
-      #          source
-      #        }
-      #      }
-      #    }
-      #    external_references {
-      #      edges {
-      #        node {
-      #          source_name
-      #        }
-      #      }
-      #    }
-      #  }
+      name
+      created
+      modified
+      remediations{
+        id
+        name            # Title
+        description     # Description
+        created         # Created
+        modified        # Last Modified
+        lifecycle       # Lifecycle
+        response_type   # Response Type
+        origins {
+          id
+          origin_actors {
+            actor {
+              ... on OscalPerson {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
     }
-  }
-`;
+    `,
+  },
+);
+// export const remediationEntitiesLinesQuery = graphql`
+//   query RemediationEntitiesLinesQuery($id: ID!) {
+//     # ...RemediationEntitiesLines_data
+//     # @arguments(count: $count, id: $id)
+//     risk(id: $id) {
+//       id
+//       #  remediations {
+//       #    id
+//       #    name
+//       #    lifecycle
+//       #    response_type
+//       #    tasks(first: 1) {
+//       #      edges {
+//       #        node {
+//       #          timing {
+//       #            ... on DateRangeTiming {
+//       #              start_date
+//       #              end_date
+//       #            }
+//       #          }
+//       #        }
+//       #      }
+//       #    }
+//       #    relationships {
+//       #      edges {
+//       #        node {
+//       #          source
+//       #        }
+//       #      }
+//       #    }
+//       #    external_references {
+//       #      edges {
+//       #        node {
+//       #          source_name
+//       #        }
+//       #      }
+//       #    }
+//       #  }
+//     }
+//   }
+// `;
 
-export default RemediationEntitiesLines;
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(RemediationEntitiesLinesFragment);
 // export default createFragmentContainer(
 //   RemediationEntitiesLines,
 //   {

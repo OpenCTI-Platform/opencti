@@ -91,13 +91,13 @@ class RiskAnalysisContainerComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
-                  // cyioCoreObjectId={risk.id}
+                  cyioCoreObjectId={risk.id}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  cyioCoreObjectId={risk.id}
+                  cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
                   marginTop='0px'
                 />
               </Grid>

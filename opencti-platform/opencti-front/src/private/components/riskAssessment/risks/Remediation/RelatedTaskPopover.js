@@ -23,6 +23,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import DatePickerField from '../../../../../components/DatePickerField';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
@@ -327,11 +328,15 @@ class RelatedTaskPopover extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
+                          component={DatePickerField}
                           name="name"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
+                          style={{ height: '38.09px' }}
                           variant='outlined'
                         />
                       </div>
@@ -426,11 +431,15 @@ class RelatedTaskPopover extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
+                          component={DatePickerField}
                           name="name"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
+                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
@@ -462,7 +471,7 @@ class RelatedTaskPopover extends Component {
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12} style={{ marginBottom: '10px' }}>
+                    <Grid item={true} xs={12}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
@@ -487,12 +496,15 @@ class RelatedTaskPopover extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
-                      <CyioCoreObjectExternalReferences />
+                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
+                      <CyioCoreObjectExternalReferences
+                        cyioCoreObjectId={remediationId}
+                      />
                     </Grid>
                     <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
-                        cyioCoreObjectId={remediationId}
+                        cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                        marginTop="0px"
                       // data={props}
                       // marginTop={marginTop}
                       />

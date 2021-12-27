@@ -44,7 +44,7 @@ export const remediationEditionQuery = graphql`
 
 export const remediationEditionDarkLightQuery = graphql`
   query RemediationEditionContainerDarkLightQuery($id: ID!) {
-    risk(id: $id) {
+    riskResponse(id: $id) {
       id
       name
       # ...RemediationEditionOverview_risk
@@ -78,6 +78,7 @@ class RemediationEdition extends Component {
     const {
       classes,
       riskId,
+      remediationId,
       open,
       history,
     } = this.props;
@@ -108,6 +109,7 @@ class RemediationEdition extends Component {
               return (
                 <RemediationEditionContainer
                   risk={props.risk}
+                  remediationId={remediationId}
                   // enableReferences={props.settings.platform_enable_reference?.includes(
                     //   'Risk',
                     // )}
@@ -119,24 +121,6 @@ class RemediationEdition extends Component {
             return <Loader variant="inElement" />;
           }}
         />
-          {/* <QueryRenderer
-            query={remediationEditionQuery}
-            variables={{ id: riskId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <RemediationEditionContainer
-                    risk={props.threatActor}
-                    // enableReferences={props.settings.platform_enable_reference?.includes(
-                    //   'Risk',
-                    // )}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          /> */}
         {/* </Drawer> */}
         </div>
       </div>
@@ -145,6 +129,7 @@ class RemediationEdition extends Component {
 }
 
 RemediationEdition.propTypes = {
+  remediationId: PropTypes.string,
   riskId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,

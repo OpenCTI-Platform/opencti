@@ -28,7 +28,6 @@ const styles = (theme) => ({
     marginRight: theme.spacing(1),
   },
   riskMenuContainer: {
-    float: 'left',
     width: '100%',
     marginBottom: '20px',
     marginLeft: -20,

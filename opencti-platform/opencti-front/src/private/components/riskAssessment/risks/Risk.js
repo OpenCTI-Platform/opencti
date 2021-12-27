@@ -92,7 +92,7 @@ class RiskComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
-                // cyioCoreObjectId={risk.id}
+                cyioCoreObjectId={risk.id}
                 />
               </Grid>
               <Grid item={true} xs={6}>

@@ -3,6 +3,10 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
+import Skeleton from '@material-ui/lab/Skeleton';
+import ListItemText from '@material-ui/core/ListItemText';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
 import Paper from '@material-ui/core/Paper';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR } from 'react-relay';
@@ -10,9 +14,7 @@ import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import ListLines from '../../../../../components/list_lines/ListLines';
-import RemediationEntitiesLines, {
-  remediationEntitiesLinesQuery,
-} from './RemediationEntitiesLines';
+import RemediationEntitiesLines from './RemediationEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import AddRemediation from './AddRemediation';
@@ -25,6 +27,23 @@ const styles = () => ({
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
+  bodyItem: {
+    height: 35,
+    fontSize: 13,
+    paddingLeft: 24,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: 'flex',
+    justifyContent: 'left',
+    alignItems: 'center',
+  },
+  ListItem: {
+    width: '100%',
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr',
+  },
 });
 
 const remediationEntitiesQuery = graphql`
@@ -32,6 +51,28 @@ const remediationEntitiesQuery = graphql`
     risk(id: $id) {
       id
       name
+      created
+      modified
+      remediations{
+        id
+        name            # Title
+        description     # Description
+        created         # Created
+        modified        # Last Modified
+        lifecycle       # Lifecycle
+        response_type   # Response Type
+        origins {
+          id
+          origin_actors {
+            actor {
+              ... on OscalPerson {
+                id
+                name
+              }
+            }
+          }
+        }
+      }
     }
   }
 `;
@@ -62,7 +103,7 @@ class RemediationEntities extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
-    const { entityId } = this.props;
+    const { entityId, classes, t } = this.props;
     const dataColumns = {
       relationship_type: {
         label: 'Title',
@@ -101,35 +142,121 @@ class RemediationEntities extends Component {
       },
     };
     return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        // handleSearch={this.handleSearch.bind(this)}
-        displayImport={true}
-        secondaryAction={true}
-        searchVariant="inDrawer2"
-      >
+      <>
+        {/* // <ListLines
+      //   sortBy={sortBy}
+      //   orderAsc={orderAsc}
+      //   dataColumns={dataColumns}
+      //   handleSort={this.handleSort.bind(this)}
+      //   // handleSearch={this.handleSearch.bind(this)}
+      //   displayImport={true}
+      //   secondaryAction={true}
+      //   searchVariant="inDrawer2"
+      // > */}
         {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
           query={remediationEntitiesQuery}
-          variables={{ id: 'ac5a1fdb-23fd-4e43-9b8d-7a7897ba91a8' }}
+          variables={{ id: entityId }}
           render={({ props }) => {
             console.log('RemediationEntitiesData', props);
-            return (<RemediationEntitiesLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              displayRelation={true}
-              entityId={entityId}
-            />
+            if (props) {
+              return (
+                <RemediationEntitiesLines
+                  data={props}
+                  paginationOptions={paginationOptions}
+                  dataColumns={dataColumns}
+                  initialLoading={props === null}
+                  displayRelation={true}
+                  entityId={entityId}
+                />
+              );
+            }
+            return (
+              <div style={{ height: '100%' }}>
+                <List>
+                  {Array.from(Array(5), (e, i) => (
+                    <ListItem
+                      key={i}
+                      dense={true}
+                      divider={true}
+                      button={false}
+                    >
+                      <ListItemText
+                        primary={
+                          <div className={ classes.ListItem }>
+                            <div
+                              className={classes.bodyItem}
+                            >
+                              <Skeleton
+                                animation="wave"
+                                variant="rect"
+                                width={140}
+                                height="100%"
+                              />
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                            >
+                              <Skeleton
+                                animation="wave"
+                                variant="rect"
+                                width={140}
+                                height="100%"
+                              />
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                            >
+                              <Skeleton
+                                animation="wave"
+                                variant="rect"
+                                width={140}
+                                height="100%"
+                              />
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                            >
+                              <Skeleton
+                                animation="wave"
+                                variant="rect"
+                                width={140}
+                                height='100%'
+                              />
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                            >
+                              <Skeleton
+                                animation="wave"
+                                variant="rect"
+                                width={140}
+                                height='100%'
+                              />
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                            >
+                              <Skeleton
+                                animation="wave"
+                                variant="rect"
+                                width={140}
+                                height='100%'
+                              />
+                            </div>
+                          </div>
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </div>
             );
           }}
         />
-      </ListLines>
+        {/* </ListLines> */}
+      </>
     );
   }
 
@@ -163,6 +290,7 @@ RemediationEntities.propTypes = {
   entityId: PropTypes.string,
   relationship_type: PropTypes.string,
   classes: PropTypes.object,
+  risk: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };

@@ -60,7 +60,7 @@ class RemediationComponent extends Component {
       history,
       location,
     } = this.props;
-    console.log('remediation', remediation);
+    console.log('remediation', riskId);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
@@ -83,7 +83,7 @@ class RemediationComponent extends Component {
               </Grid>
               <Grid item={true} xs={6}>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
-                stixCoreObjectOrStixCoreRelationshipId={remediation.id}
+                cyioCoreObjectOrCyioCoreRelationshipId={remediation.id}
                 marginTop='0px'
               />
               </Grid>
@@ -109,7 +109,8 @@ class RemediationComponent extends Component {
           // <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <RemediationEdition
             open={this.state.openEdit}
-            riskId={remediation.id}
+            riskId={riskId}
+            remediationId={remediation.id}
             history={history}
           />
           // </Security>

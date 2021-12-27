@@ -143,7 +143,7 @@ class RemediationGeneralOverviewComponent extends Component {
                 {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
                 {remediation.name && t(remediation.name)}
               </div>
-              <div style={{ marginBottom: '33px' }}>
+              <div style={{ marginBottom: '12px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -155,7 +155,6 @@ class RemediationGeneralOverviewComponent extends Component {
                 <div className="clearfix" />
                 {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
                 {remediation.id && t(remediation.id)}
-
               </div>
               <div style={{ marginBottom: '26px' }}>
                 <Typography
@@ -211,34 +210,6 @@ class RemediationGeneralOverviewComponent extends Component {
                       {t('Lorem Ipsum')}
                     </Typography>
                     {t('Lorem Ipsum Dolor Ist')}
-                  </div>
-                </div>
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 25 }}
-                >
-                  {t('Decision Maker')}
-                </Typography>
-                <div className="clearfix" />
-                <div style={{ display: 'flex' }}>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    badgeContent={
-                      <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                    }
-                  >
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                  </Badge>
-                  <div style={{ marginLeft: '20px' }}>
-                    <Typography variant="subtitle1">
-                      {t('Lorem Ipsum')}
-                    </Typography>
-                    {t('Lorem Ipsum Dono Ist')}
                   </div>
                 </div>
               </div>

@@ -17,9 +17,12 @@ import CyioNoteCreation from './CyioNoteCreation';
 
 const styles = (theme) => ({
   paper: {
+    height: '100%',
+    minHeight: '100%',
     margin: 0,
+    marginTop: '-5px',
+    position: 'relative',
     padding: '20px 20px 20px 20px',
-    borderRadius: 6,
   },
   heading: {
     display: 'flex',
@@ -110,14 +113,18 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 
   render() {
     const {
-      t, cyioCoreObjectId, marginTop, data,
+      t,
+      cyioCoreObjectId,
+      marginTop,
+      classes,
+      data,
     } = this.props;
     const notes = R.pathOr([], ['itAsset', 'notes', 'edges'], data);
     const paginationOptions = {
       search: this.state.search,
     };
     return (
-      <div style={{ marginTop: marginTop || 40 }}>
+      <div style={{ marginTop: marginTop || 40, height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes')}
         </Typography>
@@ -130,7 +137,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
         />
         {/* </Security> */}
         <div className="clearfix" />
-        <Paper style={{ height: '100px' }} >
+        <Paper elevation={2} className={classes.paper} >
         {notes.map((noteEdge) => {
           const note = noteEdge.node;
           return (

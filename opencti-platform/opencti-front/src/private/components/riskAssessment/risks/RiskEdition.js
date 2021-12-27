@@ -93,11 +93,11 @@ class RiskEdition extends Component {
           query={riskEditionQuery}
           variables={{ id: riskId }}
           render={({ error, props }) => {
-            console.log(`riskEditionQuery Error ${error} OR Props ${JSON.stringify(props)}`);
             if (props) {
               return (
                 <RiskEditionContainer
                   risk={props.risk}
+                  riskId={riskId}
                   // enableReferences={props.settings.platform_enable_reference?.includes(
                     //   'Risk',
                     // )}

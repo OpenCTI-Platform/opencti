@@ -20,6 +20,7 @@ import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import DatePickerField from '../../../../../components/DatePickerField';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
@@ -381,7 +382,7 @@ class RelatedTaskCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="name"
+                          name="task_type"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
@@ -404,12 +405,16 @@ class RelatedTaskCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
-                          name="name"
+                          component={DatePickerField}
+                          name="start_date"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
+                          style={{ height: '38.09px' }}
                         />
                       </div>
                       <div style={{ marginBottom: '10px' }}>
@@ -429,7 +434,7 @@ class RelatedTaskCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="name"
+                          name="tasks"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -456,7 +461,7 @@ class RelatedTaskCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="name"
+                          name="id"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -480,7 +485,7 @@ class RelatedTaskCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="name"
+                          name="dependency"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -503,11 +508,15 @@ class RelatedTaskCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
-                          name="name"
+                          component={DatePickerField}
+                          name="end_date"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
+                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
@@ -530,7 +539,7 @@ class RelatedTaskCreation extends Component {
                           component={SelectField}
                           style={{ height: '38.09px' }}
                           variant='outlined'
-                          name="installed_software"
+                          name="responsible_parties"
                           size='small'
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
@@ -539,7 +548,7 @@ class RelatedTaskCreation extends Component {
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12} style={{ marginBottom: '10px' }}>
+                    <Grid item={true} xs={12}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
@@ -556,7 +565,7 @@ class RelatedTaskCreation extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name="name"
+                        name="description"
                         fullWidth={true}
                         multiline={true}
                         rows="3"
@@ -564,12 +573,15 @@ class RelatedTaskCreation extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
-                      <CyioCoreObjectExternalReferences />
+                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
+                      <CyioCoreObjectExternalReferences
+                        cyioCoreObjectId={remediationId}
+                      />
                     </Grid>
                     <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
-                        cyioCoreObjectId={remediationId}
+                        cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                        marginTop="0px"
                       // data={props}
                       // marginTop={marginTop}
                       />

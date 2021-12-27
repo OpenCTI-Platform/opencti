@@ -211,7 +211,11 @@ class RemediationEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, risk,
+      t,
+      classes,
+      handleClose,
+      remediationId,
+      risk,
     } = this.props;
     console.log('RiskEditionPropsData', risk);
     const initialValues = R.pipe(
@@ -358,7 +362,7 @@ class RemediationEditionContainer extends Component {
                       handleClose={handleClose.bind(this)}
                     /> */}
                     <CyioCoreObjectOrCyioCoreRelationshipNotes
-                      cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
+                      cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                       marginTop='0px'
                     />
                   </Grid>
@@ -371,15 +375,12 @@ class RemediationEditionContainer extends Component {
                 style={{ marginTop: 25 }}
               >
                 <Grid item={true} xs={6}>
-                  {/* <StixCoreObjectExternalReferences
-                      stixCoreObjectId={remediation.id}
-                    /> */}
                   {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
-                  <RequiredResources />
+                  <RequiredResources remediationId={remediationId}/>
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}
-                  <RelatedTasks />
+                  <RelatedTasks remediationId={remediationId}/>
                 </Grid>
               </Grid>
               <Dialog
@@ -434,6 +435,7 @@ class RemediationEditionContainer extends Component {
 RemediationEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
+  remediationId: PropTypes.string,
   risk: PropTypes.object,
   enableReferences: PropTypes.bool,
   theme: PropTypes.object,

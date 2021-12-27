@@ -209,7 +209,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
           />
         {/* </Security> */}
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper className={ classes.paper } elevation={2}>
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0, padding: '12px' }}>
               {/* {externalReferencesEdges.map( */}

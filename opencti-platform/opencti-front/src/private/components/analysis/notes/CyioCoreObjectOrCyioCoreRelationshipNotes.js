@@ -74,11 +74,11 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
                 <Typography
                   variant="h4"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: -20 }}
+                  style={{ marginBottom: '8px' }}
                 >
                   {t('Notes')}
                 </Typography>
-                <Paper style={{ marginTop: 50, height: '100px' }} />
+                <Paper elevation={2} style={{ height: '100%' }} />
               </div>
             );
           }}

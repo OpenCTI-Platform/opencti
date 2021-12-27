@@ -306,7 +306,7 @@ class RequiredResourcePopover extends Component {
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="name"
+                          name="subject_type"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
@@ -333,7 +333,7 @@ class RequiredResourcePopover extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="name"
+                          name="id"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -357,7 +357,7 @@ class RequiredResourcePopover extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="name"
+                          name="asset"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -367,7 +367,7 @@ class RequiredResourcePopover extends Component {
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12} style={{ marginBottom: '15px' }}>
+                    <Grid item={true} xs={12}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
@@ -384,7 +384,7 @@ class RequiredResourcePopover extends Component {
                       <div className="clearfix" />
                       <Field
                         component={TextField}
-                        name="name"
+                        name="description"
                         fullWidth={true}
                         multiline={true}
                         rows="3"
@@ -393,11 +393,13 @@ class RequiredResourcePopover extends Component {
                       />
                     </Grid>
                     <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
-                      <CyioCoreObjectExternalReferences />
+                      <CyioCoreObjectExternalReferences
+                        cyioCoreObjectId={remediationId}
+                      />
                     </Grid>
                     <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
-                        cyioCoreObjectId={remediationId}
+                        cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop='0px'
                       // data={props}
                       // marginTop={marginTop}

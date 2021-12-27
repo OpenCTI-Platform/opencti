@@ -319,15 +319,20 @@ class RiskCreation extends Component {
                   {/* <CyioExternalReferences
                       cyioCoreObjectId={risk.id}
                     /> */}
-                  <CyioCoreObjectAssetCreationExternalReferences />
+                  <CyioCoreObjectAssetCreationExternalReferences
+                    cyioCoreObjectId={riskId}
+                  />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory />
                 </Grid>
+                <Grid item={true} xs={12}>
+                  <CyioCoreObjectOrCyioCoreRelationshipNotes
+                    cyioCoreObjectOrCyioCoreRelationshipId={riskId}
+                    marginTop='20px'
+                  />
+                </Grid>
               </Grid>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes
-                marginTop='0px'
-              />
             </>
           )}
         </Formik>

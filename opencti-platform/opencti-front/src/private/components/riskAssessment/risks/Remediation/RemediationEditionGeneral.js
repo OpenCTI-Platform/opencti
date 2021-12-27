@@ -130,7 +130,7 @@ class RemediationEditionGeneralOverviewComponent extends Component {
           </Grid>
           <Grid container={true} spacing={3}>
             <Grid xs={6} item={true}>
-              <Grid style={{ marginBottom: '23px', marginTop: '2px' }} item={true}>
+              <Grid style={{ marginBottom: '20px', marginTop: '2px' }} item={true}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -286,39 +286,6 @@ class RemediationEditionGeneralOverviewComponent extends Component {
                     component={SelectField}
                     variant='outlined'
                     name="source"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                </div>
-              </Grid>
-              <Grid style={{ marginBottom: '20px' }} item={true}>
-                <Typography variant="h3"
-                color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                  {t('Decision Maker')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip title={t('Decision Maker')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <AddIcon fontSize="small" style={{ margin: '-4px 0 0 0' }} />
-                <div className="clearfix" />
-                <div>
-                  <Field
-                    component={SelectField}
-                    variant='outlined'
-                    name="decision_maker"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                  <Field
-                    component={SelectField}
-                    variant='outlined'
-                    name="decision_maker"
                     size='small'
                     fullWidth={true}
                     style={{ height: '38.09px' }}

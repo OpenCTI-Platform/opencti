@@ -88,12 +88,12 @@ const Remediations = (props) => {
               <Add fontSize="small" />
             </IconButton>
             {/* </Security> */}
-            {/* <RemediationEntities
+            <RemediationEntities
               entityId={remediation.id}
-            /> */}
+            />
           </Grid>
         </>) : (
-        <RemediationCreation history={history}/>
+        <RemediationCreation remediationId={remediation.id} history={history}/>
       )}
       {/* </Grid> */}
     </div>

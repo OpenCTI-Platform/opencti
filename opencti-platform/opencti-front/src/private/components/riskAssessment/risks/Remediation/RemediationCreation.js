@@ -327,7 +327,10 @@ class RemediationCreation extends Component {
                   </Grid>
                   <Grid item={true} xs={6}>
                     {/* <RemediationCreationDetails setFieldValue={setFieldValue} /> */}
-                    <CyioCoreObjectOrCyioCoreRelationshipNotes />
+                    <CyioCoreObjectOrCyioCoreRelationshipNotes
+                      cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                      marginTop="0px"
+                    />
                   </Grid>
                 </Grid>
               </Form>
@@ -342,11 +345,11 @@ class RemediationCreation extends Component {
                       stixCoreObjectId={remediation.id}
                     /> */}
                   {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
-                  <RequiredResources />
+                  <RequiredResources remediationId={remediationId}/>
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}
-                  <RelatedTasks />
+                  <RelatedTasks remediationId={remediationId}/>
                 </Grid>
               </Grid>
             </>

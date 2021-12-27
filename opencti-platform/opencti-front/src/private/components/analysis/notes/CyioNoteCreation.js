@@ -53,9 +53,8 @@ const styles = (theme) => ({
     float: 'left',
   },
   createButtonContextual: {
+    float: 'left',
     marginTop: -15,
-    // bottom: 30,
-    // right: 30,
   },
   buttons: {
     marginTop: 20,
@@ -328,7 +327,6 @@ class CyioNoteCreation extends Component {
       <div style={{ display: display ? 'block' : 'none' }}>
         <IconButton
           aria-label="Add"
-          edge="end"
           onClick={this.handleOpen.bind(this)}
           color="primary"
           className={classes.createButtonContextual}
