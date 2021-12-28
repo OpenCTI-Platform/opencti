@@ -12,11 +12,11 @@ import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import CyioDomainObjectHeader from '../../common/stix_domain_objects/CyioDomainObjectHeader';
-import RemediationEntities from './remediation/RemediationEntities';
+import RemediationEntities from './remediations/RemediationEntities';
 import { QueryRenderer } from '../../../../relay/environment';
 import RiskDeletion from './RiskDeletion';
-import AddRemediation from './remediation/AddRemediation';
-import RemediationCreation from './remediation/RemediationCreation';
+import AddRemediation from './remediations/AddRemediation';
+import RemediationCreation from './remediations/RemediationCreation';
 import TopMenuRisk from '../../nav/TopMenuRisk';
 // import StixCyberObservableLinks, {
 //   riskLinksQuery,

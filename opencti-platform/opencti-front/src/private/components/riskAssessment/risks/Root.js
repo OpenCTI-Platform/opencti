@@ -26,7 +26,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import RiskAnalysisContainer from './RiskAnalysisContainer';
 import RiskTracking from './RiskTracking';
-import RemediationRoot from './remediation/Root';
+import RemediationRoot from './remediations/Root';
 
 const subscription = graphql`
   subscription RootRiskSubscription($id: ID!) {

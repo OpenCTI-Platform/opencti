@@ -4,7 +4,7 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Risks from './Risks';
 import RootRisk from './risks/Root';
-import Remediation from './risks/remediation/Remediation';
+import Remediation from './risks/remediations/Remediation';
 
 class Root extends Component {
   render() {
