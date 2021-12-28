@@ -970,6 +970,7 @@ class Scans extends Component {
                     </CardContent>
                     <CardActions style={{ justifyContent: "right" }}>
                       <Button
+                        disabled={loadingAnalysises}
                         variant="contained"
                         color="primary"
                         startIcon={<CloudUploadIcon />}
