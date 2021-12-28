@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as Yup from 'yup';
@@ -22,6 +23,8 @@ import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { adaptFieldValue } from '../../../../../utils/String';
+import { dateFormat, parse } from '../../../../../utils/Time';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
@@ -82,16 +85,14 @@ const remediationEditionMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editComputingDeviceAsset(id: $id, input: $input) {
-      name
-      asset_type
-      vendor_name
+    editRemediation(id: $id, input: $input) {
+      id
     }
   }
 `;
 
 const riskValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+  // name: Yup.string().required(t('This field is required')),
   // asset_type: Yup.array().required(t('This field is required')),
   // implementation_point: Yup.string().required(t('This field is required')),
   // operational_status: Yup.string().required(t('This field is required')),
@@ -135,36 +136,28 @@ class RemediationEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const finalValues = pipe(
-    //   assoc('createdBy', values.createdBy?.value),
-    //   assoc('objectMarking', pluck('value', values.objectMarking)),
-    //   assoc('objectLabel', pluck('value', values.objectLabel)),
-    // )(values);
-    const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
+    const adaptedValues = R.evolve(
+      {
+        modified: () => parse(values.modified).format(),
+        created: () => parse(values.created).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.assoc('name', values.name),
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1])
+      }))
+    )(adaptedValues);
+    console.log('RemediationEntitiesEdition', finalValues);
+    // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
     CM(environmentDarkLight, {
       mutation: remediationEditionMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
         id: this.props.risk?.id,
-        input: [
-          { key: 'name', value: 'Hello' },
-          { key: 'asset_id', value: values.asset_id },
-          { key: 'asset_tag', value: values.asset_tag },
-          { key: 'description', value: values.description },
-          { key: 'version', value: values.version },
-          { key: 'vendor_name', value: values.vendor_name },
-          { key: 'serial_number', value: values.serial_number },
-          { key: 'release_date', value: values.release_date },
-          { key: 'operational_status', value: values.operational_status },
-        ],
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
@@ -217,63 +210,27 @@ class RemediationEditionContainer extends Component {
       remediationId,
       risk,
     } = this.props;
-    console.log('RiskEditionPropsData', risk);
     const initialValues = R.pipe(
-      R.assoc('id', risk?.id),
-      R.assoc('asset_id', risk?.asset_id),
-      R.assoc('description', risk?.description),
-      R.assoc('name', risk?.name),
-      R.assoc('asset_tag', risk?.asset_tag),
-      R.assoc('asset_type', risk?.asset_type),
-      R.assoc('location', risk?.locations?.map((index) => [index.description]).join('\n')),
-      R.assoc('version', risk?.version),
-      R.assoc('vendor_name', risk?.vendor_name),
-      R.assoc('serial_number', risk?.serial_number),
-      R.assoc('release_date', risk?.release_date),
-      R.assoc('operational_status', risk?.operational_status),
-      R.assoc('installation_id', risk?.installation_id || ''),
-      R.assoc('bios_id', risk?.bios_id || ''),
-      // R.assoc('connected_to_network', risk?.connected_to_network.name || ''),
-      R.assoc('netbios_name', risk?.netbios_name || ''),
-      R.assoc('baseline_configuration_name', risk?.baseline_configuration_name || ''),
-      R.assoc('mac_address', (risk?.mac_address || []).join()),
-      R.assoc('model', risk?.model || ''),
-      R.assoc('hostname', risk?.hostname || ''),
-      R.assoc('default_gateway', risk?.default_gateway || ''),
-      R.assoc('motherboard_id', risk?.motherboard_id || ''),
-      R.assoc('is_scanned', risk?.is_scanned || ''),
-      R.assoc('is_virtual', risk?.is_virtual || ''),
-      R.assoc('is_publicly_accessible', risk?.is_publicly_accessible || ''),
-      R.assoc('uri', risk?.uri || ''),
+      R.assoc('id', risk?.id || ''),
+      R.assoc('description', risk?.description || ''),
+      R.assoc('name', risk?.name || ''),
+      // R.assoc('source', risk?.source || []),
+      R.assoc('modified', dateFormat(risk?.modified)),
+      R.assoc('created', dateFormat(risk?.created)),
+      // R.assoc('lifecycle', risk?.lifecycle || []),
+      R.assoc('responsible_type', risk?.responsible_type || ''),
       R.pick([
         'id',
-        'asset_id',
         'name',
         'description',
-        'asset_tag',
-        'asset_type',
-        'location',
-        'version',
-        'vendor_name',
-        'serial_number',
-        'release_date',
-        'operational_status',
-        'installation_id',
-        'connected_to_network',
-        'bios_id',
-        'netbios_name',
-        'baseline_configuration_name',
-        'mac_address',
-        'model',
-        'hostname',
-        'default_gateway',
-        'motherboard_id',
-        'is_scanned',
-        'is_virtual',
-        'is_publicly_accessible',
-        'uri',
+        // 'source',
+        'modified',
+        'created',
+        // 'lifecycle',
+        // 'response_type',
       ]),
     )(risk);
+    console.log('RiskEditionPropsData', risk);
     // const { editContext } = risk;
     return (
       <div className={classes.container}>
@@ -376,11 +333,11 @@ class RemediationEditionContainer extends Component {
               >
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
-                  <RequiredResources remediationId={remediationId}/>
+                  <RequiredResources remediationId={remediationId} />
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}
-                  <RelatedTasks remediationId={remediationId}/>
+                  <RelatedTasks remediationId={remediationId} />
                 </Grid>
               </Grid>
               <Dialog
@@ -446,14 +403,32 @@ const RemediationEditionFragment = createFragmentContainer(
   RemediationEditionContainer,
   {
     risk: graphql`
-      fragment RemediationEditionContainer_risk on ThreatActor {
+      fragment RemediationEditionContainer_risk on RiskResponse {
         id
+        name              # Title
+        description       # Description
+        created           # Created
+        modified          # Last Modified
+        lifecycle         # Lifecycle
+        response_type     # Response Type
+        origins {
+          id
+          origin_actors {
+            actor_type
+            actor {
+              ... on OscalPerson {
+                id
+                name      # source
+              }
+            }
+          }
+        }
         # ...RiskEditionOverview_risk
         # ...RiskEditionDetails_risk
-        editContext {
-          name
-          focusOn
-        }
+        # editContext {
+        #   name
+        #   focusOn
+        # }
       }
     `,
   },

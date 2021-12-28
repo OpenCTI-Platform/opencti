@@ -35,8 +35,8 @@ const styles = (theme) => ({
 });
 
 export const remediationEditionQuery = graphql`
-  query RemediationEditionContainerQuery($id: String!) {
-    threatActor(id: $id) {
+  query RemediationEditionContainerQuery($id: ID!) {
+    riskResponse(id: $id) {
       ...RemediationEditionContainer_risk
     }
   }
@@ -101,14 +101,14 @@ class RemediationEdition extends Component {
         <div>
         <QR
           environment={environmentDarkLight}
-          query={remediationEditionDarkLightQuery}
+          query={remediationEditionQuery}
           variables={{ id: riskId }}
           render={({ error, props }) => {
-            console.log(`RemediationEditionDarkLightQuery Error ${error} OR Props ${JSON.stringify(props)}`);
+            console.log('RemediationEditionDarkLightQuery', props);
             if (props) {
               return (
                 <RemediationEditionContainer
-                  risk={props.risk}
+                  risk={props.riskResponse}
                   remediationId={remediationId}
                   // enableReferences={props.settings.platform_enable_reference?.includes(
                     //   'Risk',

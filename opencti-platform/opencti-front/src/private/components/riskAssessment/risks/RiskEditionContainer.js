@@ -143,15 +143,13 @@ class RiskEditionContainer extends Component {
       values,
     );
     const finalValues = R.pipe(
-      R.dissoc('item_id'),
-      R.dissoc('weakness'),
-      R.dissoc('labels'),
-      R.dissoc('controls'),
+      R.toPairs,
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
       })),
     )(adaptedValues);
+    console.log('riskEditionFinalValues', finalValues);
     // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
     CM(environmentDarkLight, {
       mutation: riskEditionMutation,
@@ -210,11 +208,11 @@ class RiskEditionContainer extends Component {
       handleClose,
       risk,
     } = this.props;
-    console.log('RiskEditionPropsData', riskId);
+    console.log('RiskEditionPropsData', risk);
     const initialValues = R.pipe(
       R.assoc('id', risk?.id || ''),
       R.assoc('item_id', risk?.item_id || ''),
-      R.assoc('description', risk?.description || 'Hello World'),
+      R.assoc('description', risk?.description || ''),
       R.assoc('weakness', risk?.weakness || ''),
       R.assoc('controls', risk?.controls || ''),
       R.assoc('risk_rating', risk?.risk_rating || ''),
@@ -226,7 +224,7 @@ class RiskEditionContainer extends Component {
       R.assoc('name', risk?.name || ''),
       R.assoc('statement', risk?.statement || ''),
       R.assoc('risk_status', risk?.risk_status || ''),
-      R.assoc('deadline', dateFormat(risk?.release_date)),
+      R.assoc('deadline', dateFormat(risk?.deadline)),
       R.assoc('impacted_component', risk?.impacted_component || ''),
       R.assoc('impacted_assets', risk?.impacted_assets || ''),
       R.assoc('detection_source', risk?.detection_source || ''),

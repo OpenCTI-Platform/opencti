@@ -57,9 +57,11 @@ const styles = (theme) => ({
     justifyContent: 'space-between',
     marginBottom: '13px',
   },
-  // body: {
-  //   marginBottom: '13px',
-  // },
+  headerDummy: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   content: {
     width: '100%',
     padding: '24px',
@@ -178,18 +180,18 @@ class RiskCardComponent extends Component {
                   variant="h3"
                   color="textSecondary"
                   gutterBottom ={true}>
-                    {t('Priority')}
-                  </Typography>
-                  <Typography>
-                    {/* {node.priority && t(node.priority)} */}
-                    {t('Priority')}
-                  </Typography>
+                  {t('Priority')}
+                </Typography>
+                <Typography>
+                  {/* {node.priority && t(node.priority)} */}
+                  {t('Priority')}
+                </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 gutterBottom ={true}>
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom ={true}>
                   {t('Risk')}
                 </Typography>
                 <Typography>
@@ -205,36 +207,36 @@ class RiskCardComponent extends Component {
                   color="textSecondary"
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
-                  >
-                    {t('Component')}
-                  </Typography>
-                  <Typography>
-                    {t('Lorem Ipsum')}
-                    {/* {node.fqdn && truncate(t(node.fqdn), 25)} */}
-                  </Typography>
+                >
+                  {t('Component')}
+                </Typography>
+                <Typography>
+                  {t('Lorem Ipsum')}
+                  {/* {node.fqdn && truncate(t(node.fqdn), 25)} */}
+                </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('Controls')}
                 </Typography>
                 <Typography>
-                    {t('Lorem Ipsum')}
-                    {/* {node.network_id && t(node.network_id)} */}
+                  {t('Lorem Ipsum')}
+                  {/* {node.network_id && t(node.network_id)} */}
                 </Typography>
               </Grid>
             </Grid>
             <Grid container={true}>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('Component')}
                 </Typography>
@@ -245,26 +247,26 @@ class RiskCardComponent extends Component {
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('Controls')}
                 </Typography>
                 <Typography>
-                    {t('Lorem Ipsum')}
-                    {/* {node.network_id && t(node.network_id)} */}
+                  {t('Lorem Ipsum')}
+                  {/* {node.network_id && t(node.network_id)} */}
                 </Typography>
               </Grid>
             </Grid>
             <Grid container={true} >
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('Response')}
                 </Typography>
@@ -275,16 +277,16 @@ class RiskCardComponent extends Component {
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('Lifecycle')}
                 </Typography>
                 <Typography>
-                    {t('Lorem Ipsum')}
-                    {/* {node.network_id && t(node.network_id)} */}
+                  {t('Lorem Ipsum')}
+                  {/* {node.network_id && t(node.network_id)} */}
                 </Typography>
               </Grid>
             </Grid>
@@ -388,39 +390,37 @@ class RiskCardDummyComponent extends Component {
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={
-              <Skeleton
-                animation="wave"
-                variant="circle"
-                width={30}
-                height={30}
-              />
-            }
             title={
-              <Skeleton
-                animation="wave"
-                variant="rect"
-                width="90%"
-                style={{ marginBottom: 10 }}
-              />
+              <div className={classes.headerDummy}>
+                <Skeleton
+                  animation="wave"
+                  variant="circle"
+                  width={30}
+                  height={30}
+                />
+                <div style={{ width: '100%', padding: '0px 20px' }}>
+                  <Skeleton
+                    animation="wave"
+                    variant="rect"
+                    width="100%"
+                    style={{ marginBottom: 10 }}
+                  />
+                  <Skeleton
+                    animation="wave"
+                    variant="rect"
+                    width="100%"
+                    style={{ marginBottom: 10 }}
+                  />
+                </div>
+                <Skeleton
+                  animation="wave"
+                  variant="circle"
+                  width={30}
+                  height={30}
+                />
+              </div>
             }
             titleTypographyProps={{ color: 'inherit' }}
-            subheader={
-              <Skeleton
-                animation="wave"
-                variant="rect"
-                width="90%"
-                style={{ marginBottom: 10 }}
-              />
-            }
-            action={
-              <Skeleton
-                animation="wave"
-                variant="circle"
-                width={30}
-                height={30}
-              />
-            }
           />
           <CardContent classes={{ root: classes.contentDummy }}>
             <Skeleton

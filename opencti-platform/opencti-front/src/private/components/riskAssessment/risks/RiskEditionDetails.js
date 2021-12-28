@@ -39,14 +39,9 @@ const riskMutationFieldPatch = graphql`
   mutation RiskEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
-    $commitMessage: String
   ) {
-    threatActorEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
-        id
-        # ...RiskEditionDetails_risk
-        # ...Risk_risk
-      }
+    editRisk(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -54,12 +49,10 @@ const riskMutationFieldPatch = graphql`
 const riskEditionDetailsFocus = graphql`
   mutation RiskEditionDetailsFocusMutation(
     $id: ID!
-    $input: EditContext!
+    $input: [EditInput]!
   ) {
-    threatActorEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    editRisk(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -81,6 +74,7 @@ class RiskEditionDetailsComponent extends Component {
     const {
       t, classes, risk, context, enableReferences,
     } = this.props;
+    console.log('riskEditionDetails', risk);
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -141,7 +135,7 @@ class RiskEditionDetailsComponent extends Component {
                   <div className="clearfix" />
                   <Field
                     component={TextField}
-                    name="Description"
+                    name="description"
                     fullWidth={true}
                     multiline={true}
                     rows="3"
@@ -742,15 +736,58 @@ const RiskEditionDetails = createFragmentContainer(
     risk: graphql`
       fragment RiskEditionDetails_risk on POAMItem {
         id
-        # name
-        # description
-        # statement
-        # risk_status
-        # deadline
-        # impacted_control_id
-        # false_positive
-        # vendor_dependency
-        # risk_adjusted
+        poam_id                   #Item Id
+        name                      #Weakness
+        description
+        labels
+        related_risks {
+          edges {
+            node {
+              id
+              name
+              description
+              statement
+              risk_status         #Risk Status
+              deadline
+              priority
+              accepted
+              false_positive      #False Positive
+              risk_adjusted       #Operational Required
+              vendor_dependency   #Vendor Dependency
+              characterizations {
+                id
+                origins {
+                  id
+                  origin_actors {
+                    actor_type
+                    actor {
+                      ... on OscalPerson {
+                        id
+                        name      #Detection Source
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        related_observations {
+          edges {
+            node {
+              id
+              name                #Impacted Component
+              subjects {
+                subject {
+                  ... on HardwareComponent {
+                    id
+                    name          #Impacted Asset
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     `,
   },

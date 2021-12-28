@@ -41,8 +41,8 @@ const styles = () => ({
   },
   ListItem: {
     width: '100%',
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr 1fr',
+    display: 'flex',
+    justifyContent: 'space-between',
   },
 });
 
@@ -243,6 +243,16 @@ class RemediationEntities extends Component {
                                 variant="rect"
                                 width={140}
                                 height='100%'
+                              />
+                            </div>
+                            <div
+                              className={classes.bodyItem}
+                            >
+                              <Skeleton
+                                animation="wave"
+                                variant="circle"
+                                width={30}
+                                height={30}
                               />
                             </div>
                           </div>

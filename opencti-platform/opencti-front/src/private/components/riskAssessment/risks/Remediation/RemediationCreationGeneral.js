@@ -27,6 +27,7 @@ import Select from '@material-ui/core/Select';
 import { IconButton } from '@material-ui/core';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
+import DatePickerField from '../../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
 import { commitMutation } from '../../../../../relay/environment';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
@@ -149,7 +150,7 @@ class RemediationCreationOverviewComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  name="title"
+                  name="name"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 // helperText={
@@ -200,15 +201,16 @@ class RemediationCreationOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Field
-                  component={TextField}
+                  component={DatePickerField}
                   variant='outlined'
                   size='small'
                   name="created"
                   fullWidth={true}
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
-                // helperText={
-                //   <SubscriptionFocus fieldName="name" />
-                // }
                 />
               </Grid>
               <Grid style={{ marginBottom: '20px' }} item={true}>
@@ -262,7 +264,7 @@ class RemediationCreationOverviewComponent extends Component {
             <Grid item={true} xs={6}>
               <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography variant="h3"
-                color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
+                  color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
                   {t('Source')}
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
@@ -309,11 +311,15 @@ class RemediationCreationOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Field
-                  component={TextField}
+                  component={DatePickerField}
                   variant='outlined'
                   size='small'
-                  name="last_modified"
+                  name="modified"
                   fullWidth={true}
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
                 />
               </Grid>
@@ -398,25 +404,23 @@ const RemediationCreationOverview = createFragmentContainer(
   RemediationCreationOverviewComponent,
   {
     remediation: graphql`
-      fragment RemediationCreationGeneral_remediation on ThreatActor {
+      fragment RemediationCreationGeneral_remediation on RiskResponse {
         id
-        name
-        threat_actor_types
-        confidence
-        description
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              definition_type
+        name              # Title
+        description       # Description
+        created           # Created
+        modified          # Last Modified
+        lifecycle         # Lifecycle
+        response_type     # Response Type
+        origins {
+          id
+          origin_actors {
+            actor_type
+            actor {
+              ... on OscalPerson {
+                id
+                name      # source
+              }
             }
           }
         }

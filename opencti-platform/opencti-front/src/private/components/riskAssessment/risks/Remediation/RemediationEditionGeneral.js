@@ -32,6 +32,7 @@ import { commitMutation } from '../../../../../relay/environment';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import CreatedByField from '../../../common/form/CreatedByField';
 import ObjectLabelField from '../../../common/form/ObjectLabelField';
+import DatePickerField from '../../../../../components/DatePickerField';
 import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import SelectField from '../../../../../components/SelectField';
@@ -149,7 +150,7 @@ class RemediationEditionGeneralOverviewComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  name="title"
+                  name="name"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 // helperText={
@@ -200,15 +201,16 @@ class RemediationEditionGeneralOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Field
-                  component={TextField}
+                  component={DatePickerField}
                   variant='outlined'
                   size='small'
                   name="created"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
-                // helperText={
-                //   <SubscriptionFocus fieldName="name" />
-                // }
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  style={{ height: '38.09px' }}
                 />
               </Grid>
               <Grid style={{ marginBottom: '20px' }} item={true}>
@@ -262,7 +264,7 @@ class RemediationEditionGeneralOverviewComponent extends Component {
             <Grid item={true} xs={6}>
               <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography variant="h3"
-                color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
+                  color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
                   {t('Source')}
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
@@ -309,10 +311,14 @@ class RemediationEditionGeneralOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Field
-                  component={TextField}
+                  component={DatePickerField}
                   variant='outlined'
                   size='small'
-                  name="last_modified"
+                  name="modified"
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  style={{ height: '38.09px' }}
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 />
@@ -398,25 +404,23 @@ const RemediationEditionGeneralOverview = createFragmentContainer(
   RemediationEditionGeneralOverviewComponent,
   {
     remediation: graphql`
-      fragment RemediationEditionGeneral_remediation on ThreatActor {
+      fragment RemediationEditionGeneral_remediation on RiskResponse {
         id
-        name
-        threat_actor_types
-        confidence
-        description
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              definition_type
+        name              # Title
+        description       # Description
+        created           # Created
+        modified          # Last Modified
+        lifecycle         # Lifecycle
+        response_type     # Response Type
+        origins {
+          id
+          origin_actors {
+            actor_type
+            actor {
+              ... on OscalPerson {
+                id
+                name      # source
+              }
             }
           }
         }

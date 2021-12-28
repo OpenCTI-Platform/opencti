@@ -297,9 +297,9 @@ class RiskLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="circle"
-                  width={30}
-                  height={30}
+                  variant="rect"
+                  width="90%"
+                  height="100%"
                 />
               </div>
               <div
@@ -339,7 +339,12 @@ class RiskLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.lifecycle.width }}
               >
-                <Skeleton animation="wave" variant="circle" width={30} height={30} />
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
               </div>
               <div
                 className={classes.bodyItem}

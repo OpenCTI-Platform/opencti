@@ -45,14 +45,11 @@ const riskMutationFieldPatch = graphql`
   mutation RiskEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
-    $commitMessage: String
   ) {
-    threatActorEdit(id: $id) {
-      fieldPatch(input: $input, commitMessage: $commitMessage) {
+    editRisk(id: $id, input: $input) {
         id
        # ...RiskEditionOverview_risk
        # ...Risk_risk
-      }
     }
   }
 `;
@@ -60,12 +57,10 @@ const riskMutationFieldPatch = graphql`
 export const riskEditionOverviewFocus = graphql`
   mutation RiskEditionOverviewFocusMutation(
     $id: ID!
-    $input: EditContext!
+    $input: [EditInput]!
   ) {
-    threatActorEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    editRisk(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -125,15 +120,14 @@ class RiskEditionOverviewComponent extends Component {
   onSubmit(values, { setSubmitting }) {
     const commitMessage = values.message;
     const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('priority', values.priority),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
         value: adaptFieldValue(n[1]),
       })),
     )(values);
+    console.log('riskEditionOverviewSubmit', inputValues);
     commitMutation({
       mutation: riskMutationFieldPatch,
       variables: {
@@ -226,56 +220,55 @@ class RiskEditionOverviewComponent extends Component {
       context,
       enableReferences,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    const createdBy = R.pathOr(null, ['createdBy', 'name'], risk) === null
-      ? ''
-      : {
-        label: R.pathOr(null, ['createdBy', 'name'], risk),
-        value: R.pathOr(null, ['createdBy', 'id'], risk),
-      };
-    const killChainPhases = R.pipe(
-      R.pathOr([], ['killChainPhases', 'edges']),
-      R.map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-      })),
-    )(risk);
-    const objectMarking = R.pipe(
-      R.pathOr([], ['objectMarking', 'edges']),
-      R.map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(risk);
+    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+    // const createdBy = R.pathOr(null, ['createdBy', 'name'], risk) === null
+    //   ? ''
+    //   : {
+    //     label: R.pathOr(null, ['createdBy', 'name'], risk),
+    //     value: R.pathOr(null, ['createdBy', 'id'], risk),
+    //   };
+    // const killChainPhases = R.pipe(
+    //   R.pathOr([], ['killChainPhases', 'edges']),
+    //   R.map((n) => ({
+    //     label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+    //     value: n.node.id,
+    //   })),
+    // )(risk);
+    // const objectMarking = R.pipe(
+    //   R.pathOr([], ['objectMarking', 'edges']),
+    //   R.map((n) => ({
+    //     label: n.node.definition,
+    //     value: n.node.id,
+    //   })),
+    // )(risk);
 
     const initialValues = R.pipe(
-      R.assoc('id', risk?.id),
-      R.assoc('asset_id', risk?.asset_id),
-      R.assoc('description', risk?.description),
-      R.assoc('name', risk?.name),
-      R.assoc('asset_tag', risk?.asset_tag),
-      R.assoc('asset_type', risk?.asset_type),
-      R.assoc('location', risk?.locations?.map((index) => [index.description]).join('\n')),
-      R.assoc('version', risk?.version),
-      R.assoc('vendor_name', risk?.vendor_name),
-      R.assoc('serial_number', risk?.serial_number),
-      R.assoc('release_date', risk?.release_date),
-      R.assoc('operational_status', risk?.operational_status),
+      R.assoc('id', risk?.id || ''),
+      R.assoc('item_id', risk?.item_id || ''),
+      R.assoc('description', risk?.description || ''),
+      R.assoc('weakness', risk?.weakness || ''),
+      R.assoc('controls', risk?.controls || []),
+      R.assoc('risk_rating', risk?.risk_rating || ''),
+      R.assoc('priority', risk?.priority || 2),
+      R.assoc('impact', risk?.impact || ''),
+      R.assoc('likelihood', risk?.likelihood || ''),
+      R.assoc('responsible_parties', risk?.responsible_parties || []),
+      R.assoc('labels', risk?.labels || []),
       R.pick([
         'id',
-        'asset_id',
-        'name',
+        'item_id',
         'description',
-        'asset_tag',
-        'asset_type',
-        'location',
-        'version',
-        'vendor_name',
-        'serial_number',
-        'release_date',
-        'operational_status',
+        'weakness',
+        'controls',
+        'risk_rating',
+        'priority',
+        'impact',
+        'likelihood',
+        'responsible_parties',
+        'labels',
       ]),
     )(risk);
+    console.log('RiskEditionContainerRisk', risk);
     return (
       <Formik
         enableReinitialize={true}
@@ -375,7 +368,7 @@ class RiskEditionOverviewComponent extends Component {
                   <div className="clearfix" />
                   <Field
                     component={TextField}
-                    name="Description"
+                    name="description"
                     fullWidth={true}
                     multiline={true}
                     rows="4"
@@ -527,7 +520,7 @@ class RiskEditionOverviewComponent extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="ports"
+                        name="controls"
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px', marginBottom: '3px' }}
@@ -536,7 +529,7 @@ class RiskEditionOverviewComponent extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="ports"
+                        name="controls"
                         size='small'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
@@ -770,21 +763,58 @@ const RiskEditionOverview = createFragmentContainer(
     risk: graphql`
       fragment RiskEditionOverview_risk on POAMItem {
         id
-        # description
-        # characterizations {
-        #   edges {
-        #     node {
-        #       ... on RiskCharacterization {
-        #         impact
-        #         likelihood
-        #       }
-        #     }
-        #   }
-        # }
-        # impacted_control_id
-        # deadline
-        # priority
-        # labels
+        poam_id                   #Item Id
+        name                      #Weakness
+        description
+        labels
+        related_risks {
+          edges {
+            node {
+              id
+              name
+              description
+              statement
+              risk_status         #Risk Status
+              deadline
+              priority
+              accepted
+              false_positive      #False Positive
+              risk_adjusted       #Operational Required
+              vendor_dependency   #Vendor Dependency
+              characterizations {
+                id
+                origins {
+                  id
+                  origin_actors {
+                    actor_type
+                    actor {
+                      ... on OscalPerson {
+                        id
+                        name      #Detection Source
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        related_observations {
+          edges {
+            node {
+              id
+              name                #Impacted Component
+              subjects {
+                subject {
+                  ... on HardwareComponent {
+                    id
+                    name          #Impacted
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     `,
   },
