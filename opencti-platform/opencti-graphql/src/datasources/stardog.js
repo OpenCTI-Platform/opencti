@@ -5,7 +5,28 @@ import conf from '../config/conf';
 
 // A bit of hackery because of how Stardog exported the query 
 import pkg from 'stardog';
+import {ApolloError} from "apollo-errors";
 const { query, Connection } = pkg;
+
+export class StardogError extends ApolloError {
+  constructor(response, message, query) {
+    super("StardogError", {
+      message,
+      time_thrown: new Date(), // UTC
+      internalData: { // Is not included when sent to client, internal use only
+        response_status: response.statusText,
+        response_message: response.body,
+        query
+      }
+    })
+  }
+}
+
+const throwFailed = (response, message, query) => {
+  if(response.status > 299){
+    throw new StardogError(response, message, query)
+  }
+}
 
 export default class Stardog extends DataSource {
   constructor(  ) {
@@ -90,29 +111,35 @@ export default class Stardog extends DataSource {
     });
   }
 
-  async create( dbName, sparqlQuery ) {
-    return await query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
+  async create( dbName, sparqlQuery, queryId ) {
+    const response = await query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
     }).catch((err) => {
       console.log(err)
       throw err;
     });
+    throwFailed(response, `Failed to execute insert query '${queryId}'`, sparqlQuery);
+    return response;
   }
 
-  async delete( dbName, sparqlQuery ) {
-    return query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
+  async delete( dbName, sparqlQuery, queryId) {
+    const response = query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
     }).catch((err) => {
       console.log(err)
       throw err;
     });
+    throwFailed(response, `Failed to execute delete query '${queryId}'`, sparqlQuery)
+    return response;
   }
-  async edit( dbName, sparqlQuery ) {
-    return query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
+  async edit( dbName, sparqlQuery, queryId ) {
+    const response = query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
     }).catch((err) => {
       console.log(err)
       throw err;
     });
+    throwFailed(response, `Failed to execute update query '${queryId}'`, sparqlQuery)
+    return response;
   }
 }
