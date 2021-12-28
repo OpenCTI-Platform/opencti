@@ -472,6 +472,7 @@ class Scans extends Component {
       refreshAnalysis();
     }
     const renderDialogSwitch = () => {
+      console.log(this.state.dialogParams)
       switch (this.state.dialogParams.modal) {
         case "New Analysis":
           return (
@@ -508,6 +509,8 @@ class Scans extends Component {
             <Delete
               id={this.state.dialogParams.id}
               client={this.state.dialogParams.client}
+              scanDate={this.state.dialogParams.scanDate}
+              onClose={handleDialogClose}
               action={onDeleteAnalysis}
             />
           );
@@ -878,6 +881,7 @@ class Scans extends Component {
                                   id: analysis.id,
                                   client:
                                     this.state.client_ID,
+                                  scanDate: analysis.scan.submission_date,
                                 })
                               }
                             >
