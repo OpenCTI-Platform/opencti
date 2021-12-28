@@ -194,17 +194,17 @@ export const predicateMap = {
   },
   is_publicly_accessible: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_publicly_accessible>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_publicly_accessible")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_publicly_accessible");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   is_scanned: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_scanned>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_scanned")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_scanned")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   is_virtual: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_virtual>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_virtual")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_virtual")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   last_scanned: {
@@ -484,7 +484,7 @@ function computingDeviceAssetReducer( item ) {
   if ( item.object_type === undefined && item.asset_type !== undefined ) {
     item.object_type = item.asset_type
   } else {
-    item.object_type = 'computing-device';
+    item.object_type = 'compute-device';
   }
   
   return {

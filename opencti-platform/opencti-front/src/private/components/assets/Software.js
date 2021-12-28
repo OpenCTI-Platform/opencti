@@ -173,9 +173,6 @@ class Software extends Component {
       asset_type: {
         label: 'Type',
       },
-      asset_id: {
-        label: 'Asset ID',
-      },
       vendor_name: {
         label: 'Vendor',
       },
@@ -256,17 +253,12 @@ class Software extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '10%',
+        width: '15%',
         isSortable: true,
       },
       asset_type: {
         label: 'Type',
-        width: '5%',
-        isSortable: true,
-      },
-      asset_id: {
-        label: 'Asset ID',
-        width: '10%',
+        width: '8%',
         isSortable: true,
       },
       vendor_name: {
@@ -279,24 +271,19 @@ class Software extends Component {
         width: '10%',
         isSortable: false,
       },
-      patch_level: {
-        label: 'Patch Level',
-        width: '10%',
-        isSortable: false,
-      },
       cpeId: {
         label: 'CPE ID',
-        width: '10%',
+        width: '19%',
         isSortable: false,
       },
       swId: {
         label: 'SWID',
-        width: '10%',
+        width: '15%',
         isSortable: false,
       },
       labels: {
         label: 'Labels',
-        width: '25%',
+        width: '23%',
         isSortable: true,
       },
     };

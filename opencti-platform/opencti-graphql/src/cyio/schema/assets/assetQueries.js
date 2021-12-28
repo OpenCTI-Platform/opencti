@@ -13,13 +13,13 @@ export const insertPortsQuery = (ports) => {
         insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#ComplexDatatype>`);
         insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#Port>`);
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`)
-        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "location" .`); 
-        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime .`); 
-        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . `);
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "port"`); 
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime`); 
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime`);
         if(port.protocols !== undefined) {
             port.protocols.forEach((protocol) => insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#protocols> "${protocol}"`));
         }
-        insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#port_number> ${port.port_number}`)
+        insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#port_number> "${port.port_number}"^^xsd:positiveInteger`)
         const combinedPredicates = insertPredicates.join(" .\n      ");
         graphs.push(`
     GRAPH ${iri} {
@@ -110,6 +110,65 @@ INSERT DATA {
     `
 }
 
+/**
+ * @param mac - the mac string
+ */
+ export const insertMACQuery = (mac) => {
+    const graphs = [], macIris = []
+    const timestamp = new Date().toISOString();
+    if(Array.isArray(mac)) {
+        const macList = [];
+        for (let macAddr of  mac) {
+            macList.push({'mac_address_value': macAddr, 'is_virtual': false});
+        }
+        mac = macList;
+    }
+    mac.forEach((mac) => {
+        const insertPredicates = []
+        const idMaterial = {"value": mac.mac_address_value};
+        const id = generateId(idMaterial, DARKLIGHT_NS);
+        let type, rdfType, iri;
+        type = "mac-addr";
+        iri = `<http://scap.nist.gov/ns/asset-identification#MACAddress-${id}>`;
+
+        macIris.push(iri);
+        insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#MACAddress>`);
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`);
+        insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#mac_address_value> "${mac.mac_address_value}"`)
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "${type}"`);
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime`);
+        insertPredicates.push(`${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime`);
+        graphs.push(`
+    GRAPH ${iri} {
+        ${insertPredicates.join(".\n        ")}
+    }    
+        `)
+    })
+    const query = `
+INSERT DATA {
+    ${graphs.join("\n    ")}
+}
+    `;
+    return {macIris, query};
+}
+
+/**
+ * @param parentIri - the object of the relationship. (THIS ASSUMES GRAPHS)
+ * @param macIri - iri of the existing MAC object
+ */
+export const insertMACRelationship = (parentIri, macIris) => {
+    const predicates = macIris
+        .map((macIri) => `${parentIri} <http://scap.nist.gov/ns/asset-identification#mac_address> ${macIri}`)
+        .join(".\n        ")
+    return `
+INSERT DATA {
+    GRAPH ${parentIri} {
+        ${predicates}
+    }
+}
+    `
+}
+
 export const deletePortQuery = (iri) => {
     return `
     DELETE {
@@ -134,6 +193,23 @@ export const deleteIpQuery = (iri) => {
     } else {
         throw new Error(`Cannot determine IP version from IRI ${iri}`);
     }
+    return `
+    DELETE {
+        GRAPH ${iri} {
+            ${iri} ?p ?o
+        }
+    } WHERE {
+        GRAPH ${iri} {
+            ${iri} a ${rdfType} .
+            ${iri} ?p ?o
+        }
+    }
+    `
+}
+
+export const deleteMacQuery = (iri) => {
+    let rdfType
+    rdfType = "<http://scap.nist.gov/ns/asset-identification#MACAddress>";
     return `
     DELETE {
         GRAPH ${iri} {

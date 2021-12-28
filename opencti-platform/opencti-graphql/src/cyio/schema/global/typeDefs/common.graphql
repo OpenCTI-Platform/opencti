@@ -57,16 +57,25 @@
 
   ############## CyioExternalReferences
   enum CyioExternalReferencesOrdering {
+    "Source Name"
     source_name
+    "URL"
     url
+    "Hash"
     hash
+    "External ID"
     external_id
+    "Created"
     created
+    "Modified"
     modified
   }
   enum CyioExternalReferencesFilter {
+    "URL"
     url
+    "Source Name"
     source_name
+    "External ID"
     external_id
   }
   input CyioExternalReferencesFiltering {
@@ -188,16 +197,24 @@
   }
 
   enum CyioNotesOrdering {
+    "Created"
     created
+    "Modified"
     modified
+    "Labels"
     labels
   }
 
   enum CyioNotesFilter {
+    "Abstract"
     abstract
+    "Authors"
     authors
+    "Created"
     created
+    "Modified"
     modified
+    "Labels"
     labels
   }
 
@@ -270,43 +287,77 @@
   }
 
   enum CyioLocationType {
+    "GeoLocation"
     geo_location
+    "City"
     city
+    "Country"
     country
+    "Region"
     region
+    "Civic Address"
     civic_address
   }
 
   "Defines the set of Region names"
   enum RegionName {
+    "Africa"
     africa
+    "Eastern Africa"
     eastern_africa
+    "Middle Africa"
     middle_africa
-    norther_africa
+    "Nothern Africa"
+    northern_africa
+    "Southern Africa"
     southern_africa
+    "Western Africa"
     western_africa
+    "Americas"
     americas
+    "Caribbean"
     caribbean
+    "Central America"
     central_america
+    "Latin America-Caribbean"
     latin_america_caribbean
-    norther_america
+    "Northern America"
+    northern_america
+    "South Amercia"
     south_america
+    "Asia"
     asia
+    "Central Asia"
     central_asia
+    "Eastern Asia"
     eastern_asia
+    "Southern Asia"
     southern_asia
+    "South Eastern Asia"
     south_eastern_asia
+    "Western Asia"
     western_asia
+    "Europe"
     europe
+    "Eastern Europe"
     eastern_europe
+    "Northern Europe"
     northern_europe
+    "Southern Europe"
     southern_europe
+    "Western Europe"
     western_europe
+    "Oceania"
     oceania
+    "Antarctica"
     antarctica
+    "Australia-New Zealand"
     australia_new_zealand
+    "Melanesia"
     melanesia
+    "Micronesia"
     micronesia
+    "Polynesia"
     polynesia
   }
 
@@ -343,15 +394,22 @@
   }
 
   enum OperationalStatus {
+    "operational"
     operational
+    "under development"
     under_development
+    "under major modification"
     under_major_modification
+    "disposition"
     disposition
+    "other"
     other
   }
 
   enum ImplementationPoint {
+    "internal"
     internal
+    "external"
     external
   }
 
@@ -374,8 +432,11 @@
   }
 
   enum UsageType {
+    "home"
     home
+    "office"
     office
+    "mobile"
     mobile
   }
 
