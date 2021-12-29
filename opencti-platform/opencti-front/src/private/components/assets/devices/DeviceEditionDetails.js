@@ -29,7 +29,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import InstalledAsset from '../../common/form/InstalledAsset';
 import ItemIcon from '../../../../components/ItemIcon';
-import Protocols from '../../common/form/Protocols';
+import PortsField from '../../common/form/PortsField';
 
 const styles = (theme) => ({
   paper: {
@@ -84,9 +84,14 @@ class DeviceEditionDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, device, enableReferences,
+      t,
+      classes,
+      values,
+      isSubmitting,
+      device,
+      setFieldValue,
+      enableReferences,
     } = this.props;
-    console.log('DeviceEditionDetailsData', device);
     return (
       <div>
         <div style={{ height: '100%' }}>
@@ -173,48 +178,18 @@ class DeviceEditionDetailsComponent extends Component {
                   />
                 </div>
                 <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Ports')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '12px 0 0 5px' }}>
-                    <Tooltip title={t('Ports')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                    <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    style={{  width: '50%' }}
-                    type="number"
-                    variant='outlined'
-                    name="port_number"
-                    size='small'
-                    fullWidth={true}
-                  />
-                  <Protocols
-                    component={SelectField}
+                  <PortsField
+                    setFieldValue={setFieldValue}
+                    values={values}
+                    disabled={isSubmitting}
                     style={{ height: '38.09px' }}
                     variant='outlined'
-                    name="protocols"
+                    // onChange={this.handlePortChange.bind(this)}
+                    name="ports"
                     size='small'
                     fullWidth={true}
                     containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                   />
-                  {/* <Field
-                    component={SelectField}
-                    style={{ height: '38.09px' }}
-                    variant='outlined'
-                    name="protocals"
-                    size='small'
-                    fullWidth={true}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  /> */}
                 </div>
                 <div>
                   <Typography
@@ -436,27 +411,27 @@ class DeviceEditionDetailsComponent extends Component {
                   />
                 </div>
                 <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 15 }}
-                >
-                  {t('Location')}
-                </Typography>
-                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
-                  <Tooltip title={t('Location')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={TextField}
-                  name="location"
-                  fullWidth={true}
-                  multiline={true}
-                  rows="3"
-                  variant='outlined'
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 15 }}
+                  >
+                    {t('Location')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
+                    <Tooltip title={t('Location')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    name="location"
+                    fullWidth={true}
+                    multiline={true}
+                    rows="3"
+                    variant='outlined'
                   />
                 </div>
                 <div>

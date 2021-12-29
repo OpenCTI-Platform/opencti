@@ -134,11 +134,6 @@ class DeviceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const ports = R.append({
-        port_number: values.port_number,
-        protocols: values.protocols,
-      }, values);
-    
     const adaptedValues = evolve(
       {
         release_date: () => parse(values.release_date).format(),
@@ -147,15 +142,14 @@ class DeviceCreation extends Component {
     );
     const finalValues = R.pipe(
       R.dissoc('port_number'),
+      R.dissoc('protocols'),
       R.dissoc('installed_operating_system'),
       R.dissoc('installed_hardware'),
       R.dissoc('installed_software'),
       R.dissoc('locations'),
       R.dissoc('connected_to_network'),
-      R.dissoc('protocols'),
       R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
-      R.assoc('ports', values.port_number ? ports : []),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: deviceCreationMutation,
@@ -236,6 +230,7 @@ class DeviceCreation extends Component {
             ipv4_address: [],
             locations: [],
             ipv6_address: [],
+            ports: [],
             protocols: [],
             port_number: '',
             model: '',
@@ -320,7 +315,11 @@ class DeviceCreation extends Component {
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <DeviceCreationDetails setFieldValue={setFieldValue} />
+                    <DeviceCreationDetails
+                      isSubmitting={isSubmitting}
+                      values={values}
+                      setFieldValue={setFieldValue}
+                    />
                   </Grid>
                 </Grid>
               </Form>
