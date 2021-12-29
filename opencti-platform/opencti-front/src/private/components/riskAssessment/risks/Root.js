@@ -129,6 +129,7 @@ class RootRisk extends Component {
                           <RiskAnalysisContainer
                             {...routeProps}
                             risk={props.poamItem}
+                            riskId={riskId}
                           />
                       )}
                     />

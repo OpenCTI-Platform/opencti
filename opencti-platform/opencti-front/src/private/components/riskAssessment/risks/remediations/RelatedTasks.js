@@ -65,7 +65,7 @@ class RelatedTasks extends Component {
               <Typography
                 variant="h4"
                 gutterBottom={true}
-                style={{ float: 'left', marginBottom: 15, marginTop: 40 }}
+                style={{ float: 'left', marginBottom: 15 }}
               >
                 {t('Related Tasks')}
               </Typography>

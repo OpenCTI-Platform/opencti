@@ -65,6 +65,10 @@ const styles = (theme) => ({
     width: 24,
     height: 24,
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
   accordionDetails: {
     display: 'block',
     padding: '8px 20px',
@@ -392,13 +396,15 @@ class RiskTrackingLineContainer extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to remove this external reference?')}
+              {t('Do you want to remove this risk log?')}
             </DialogContentText>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDialog.bind(this)}
               disabled={this.state.removing}
+              variant="outlined"
+              size="small"
             >
               {t('Cancel')}
             </Button>
@@ -406,6 +412,8 @@ class RiskTrackingLineContainer extends Component {
               onClick={this.handleRemoval.bind(this)}
               color="primary"
               disabled={this.state.removing}
+              variant="contained"
+              size="small"
             >
               {t('Delete')}
             </Button>

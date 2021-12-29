@@ -211,7 +211,7 @@ class RemediationPopover extends Component {
               color="primary"
               disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
-              variant="outlined"
+              variant="contained"
               size="small"
             >
               {t('Delete')}

@@ -6,12 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
 import LaunchIcon from '@material-ui/icons/Launch';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import Grid from '@material-ui/core/Grid';
 import Badge from '@material-ui/core/Badge';
 import Avatar from '@material-ui/core/Avatar';
@@ -29,15 +24,20 @@ const styles = (theme) => ({
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: '24px 24px 32px 24px',
+    padding: '0 24px',
     borderRadius: 6,
   },
-  tableItem: {
-    display: 'flex',
-    alignItems: 'center',
-    color: theme.palette.secondary.main,
-    padding: '16.5px 16px',
-    cursor: 'pointer',
+  header: {
+    borderBottom: '1px solid white',
+    padding: '22px 0 13px 0',
+  },
+  headerText: {
+    paddingLeft: '16px',
+    textTransform: 'capitalize',
+  },
+  tableText: {
+    padding: '20px 0 20px 16px',
+    textTransform: 'capitalize',
   },
 });
 
@@ -46,12 +46,13 @@ class RiskAnalysisCharacterizationComponent extends Component {
     const {
       t, fldt, classes, risk,
     } = this.props;
+    console.log('RiskAnalysisCharacterizationContainer', risk);
     return (
       <div style={{ height: '100%' }} className="break">
-         <Typography variant="h4" gutterBottom={true}>
+        <Typography variant="h4" gutterBottom={true}>
           {t('Characterization')}
         </Typography>
-      {/*  <Paper classes={{ root: classes.paper }} elevation={2}>
+        {/*  <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
@@ -106,29 +107,65 @@ class RiskAnalysisCharacterizationComponent extends Component {
             limit={250}
           />
         </Paper> */}
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-            <TableContainer>
-              <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                <TableHead>
-                  <TableRow style={{ borderBottom: '1px solid white' }}>
-                    <TableCell align="left">{t('Name')}</TableCell>
-                    <TableCell align="left">{t('value')}</TableCell>
-                    <TableCell align="left">{t('Detection Source')}</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                    <TableRow
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                      <TableCell align="left">{t('Lorem Ipsum')}</TableCell>
-                      <TableCell align="left">{t('Lorem Ipsum')}</TableCell>
-                      <TableCell className={ classes.tableItem } align="left">
-                        <LaunchIcon style={{ paddingRight: '5.5px' }} fontSize="small"/>{t('Lorem Ipsum')}
-                      </TableCell>
-                    </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
+        <Paper className={classes.paper} elevation={2}>
+          <Grid container={true} className={ classes.header}>
+            <Grid item={true} xs={4}>
+              <Typography
+                variant="h2"
+                gutterBottom={true}
+                className={ classes.headerText }
+              >
+                {t('Name')}
+              </Typography>
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography
+                variant="h2"
+                gutterBottom={true}
+                className={ classes.headerText }
+              >
+                {t('Value')}
+              </Typography>
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography
+                variant="h2"
+                gutterBottom={true}
+                className={ classes.headerText }
+              >
+                {t('Detection Source')}
+              </Typography>
+            </Grid>
+          </Grid>
+          <Grid container={true} style={{ borderBottom: '1px solid grey' }}>
+            <Grid item={true} xs={4}>
+              <Typography
+                variant="h2"
+                gutterBottom={true}
+                className={ classes.tableText }
+              >
+                {t('Lorem Ipsum')}
+              </Typography>
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography
+                variant="h2"
+                gutterBottom={true}
+                className={ classes.tableText }
+              >
+                {t('Lorem Ipsum')}
+              </Typography>
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography
+                variant="h2"
+                gutterBottom={true}
+                className={ classes.tableText }
+              >
+                {t('Lorem Ipsum')}
+              </Typography>
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );
@@ -146,19 +183,96 @@ const RiskAnalysisCharacterization = createFragmentContainer(
   RiskAnalysisCharacterizationComponent,
   {
     risk: graphql`
-      fragment RiskAnalysisCharacterization_risk on ComputingDeviceAsset {
+      fragment RiskAnalysisCharacterization_risk on Risk {
         id
-        asset_id
-        asset_type
-        asset_tag
-        description
-        version
-        vendor_name
-        serial_number
-        release_date
-        # responsible_parties
-        operational_status
-        labels
+        created
+        modified
+        characterizations {
+          ... on VulnerabilityCharacterization {
+            id
+            # risk_state
+            vulnerability_id
+            exploitability
+            severity
+            cvss3_vector_string
+            cvss3_base_score
+            cvss3_temporal_score
+            cvss3_environmental_score
+            cvss2_vector_string
+            cvss2_base_score
+            cvss2_temporal_score
+            cvss2_environmental_score
+            score_rationale
+            origins {
+              id
+              origin_actors {
+                actor_type
+                actor {
+                  ... on OscalPerson {
+                    id
+                    name                  # Detection Source
+                  }
+                }
+              }
+            }
+            facets {
+              id
+              risk_state
+              name                        # Characterization Name
+              value                       # Characterization Value
+            }
+          }
+          ... on RiskCharacterization {
+            id
+            risk_state
+            risk
+            likelihood
+            impact
+            origins {
+              id
+              origin_actors {
+                actor_type
+                actor {
+                  ... on OscalPerson {
+                    id
+                    name                   # Detection Source
+                  }
+                }
+              }
+            }
+            facets {
+              id
+              risk_state
+              name                         # Characterization Name
+              value                        # Characterization Value
+            }
+          }
+        }
+        external_references(first: 5) {
+          edges {
+            node {
+              id
+              created
+              modified
+              external_id                 # external id
+              source_name                 # Title
+              description                 # Description
+              url                         # URL
+              media_type                  # Media Type
+            }
+          }
+        }
+        notes( first: 5) {
+          edges {
+            node {
+              id
+              abstract
+              content
+              authors
+              labels
+            }
+          }
+        }
       }
     `,
   },

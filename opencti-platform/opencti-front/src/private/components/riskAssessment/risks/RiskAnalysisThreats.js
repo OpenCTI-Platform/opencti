@@ -76,7 +76,7 @@ class RiskAnalysisThreatsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Threats')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper className={ classes.paper } elevation={2}>
 
         </Paper>
       </div>

@@ -94,6 +94,10 @@ const styles = (theme) => ({
       backgroundColor: 'rgba(255, 255, 255, .5)',
     },
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
   scrollBg: {
     background: theme.palette.header.background,
     width: '100%',
@@ -459,13 +463,15 @@ class RelatedTasksLinesContainer extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to remove this external reference?')}
+              {t('Do you want to remove this related task?')}
             </DialogContentText>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDialog.bind(this)}
               disabled={this.state.removing}
+              variant="outlined"
+              size="small"
             >
               {t('Cancel')}
             </Button>
@@ -473,6 +479,8 @@ class RelatedTasksLinesContainer extends Component {
               onClick={this.handleRemoval.bind(this)}
               color="primary"
               disabled={this.state.removing}
+              variant="contained"
+              size="small"
             >
               {t('Delete')}
             </Button>
