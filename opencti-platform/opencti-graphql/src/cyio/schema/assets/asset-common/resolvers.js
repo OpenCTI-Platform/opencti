@@ -402,7 +402,7 @@ const assetCommonResolvers = {
     application_software: 'application-software',
     circuit: 'circuit',
     computer_account: 'computer-account',
-    compute_device: 'compute-device',
+    computing_device: 'computing-device',
     data: 'data',
     database: 'database',
     directory_server: 'directory-server',

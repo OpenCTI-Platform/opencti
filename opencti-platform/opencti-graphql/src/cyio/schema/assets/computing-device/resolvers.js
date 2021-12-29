@@ -270,7 +270,6 @@ const computingDeviceResolvers = {
           }
         }
 
-        if (results.length != iriArray.length) console.log(`software mismatch results - results: ${results.length}, IRIs: ${iriArray.length}`)
         return results;
       } else {
         return [];
@@ -393,10 +392,9 @@ const computingDeviceResolvers = {
       let iriArray = parent.mac_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
-        const value_array = [];
         var reducer = getReducer('MAC-ADDR');
+        // the hardwired selectList is because graphQL modeled MAC address as a string array, not object array
         let selectList = ["id", "created", "modified", "mac_address_value", "is_virtual"];
-        // let selectList = context.selectMap.getNode('mac_address');
         for (let addr of iriArray) {
           // check if this is an MAC address object
           if (!addr.includes('MACAddress')) {
@@ -414,14 +412,11 @@ const computingDeviceResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            for (let macAddr of response ) {
-              results.push(reducer(macAddr))      // TODO: revert back when data is returned as objects, not strings
-              // validate its a mac address
-              if (macAddr.mac_address_value.includes(':')) {
-                // disallow duplicates
-                if( value_array.includes(macAddr.mac_address_value)) continue;
-                value_array.push(macAddr.mac_address_value);
-              }
+            for (let item of response ) {
+              let macAddr = reducer(item);
+              // disallow duplicates since we're storing only the value of the mac value
+              if( results.includes(macAddr.mac_address_value)) { continue; }
+              results.push(macAddr.mac_address_value);  // TODO: revert back when data is returned as objects, not strings
             }
           } else {
             // Handle reporting Stardog Error
@@ -434,10 +429,7 @@ const computingDeviceResolvers = {
           }
         }
 
-        // console.log(`value array: ${value_array}`)
-        if (value_array.length != iriArray.length) console.log(`mac_addr mismatch results - results: ${results.length}, IRIs: ${iriArray.length}`)
-        return value_array
-        // return results;      TODO:  revert back when data is returned as objects, not strings
+        return results;
       } else {
         return [];
       }
@@ -476,7 +468,6 @@ const computingDeviceResolvers = {
           }
         }
 
-        if (results.length != iriArray.length) console.log(`ports mismatch results - results: ${results.length}, IRIs: ${iriArray.length}`)
         return results;
       } else {
         return [];
