@@ -36,5 +36,5 @@
     ip_address: [IpAddress!]!
     is_publicly_accessible: Boolean
     is_scanned: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }

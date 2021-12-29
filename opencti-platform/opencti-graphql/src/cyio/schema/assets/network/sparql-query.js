@@ -202,12 +202,12 @@ export const predicateMap = {
   },
   is_publicly_accessible: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_publicly_accessible>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_publicly_accessible")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_publicly_accessible")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   is_scanned: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_scanned>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_scanned")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean`: null, this.predicate, "is_scanned")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   last_scanned: {

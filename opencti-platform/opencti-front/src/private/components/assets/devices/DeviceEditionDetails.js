@@ -411,27 +411,27 @@ class DeviceEditionDetailsComponent extends Component {
                   />
                 </div>
                 <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 15 }}
-                  >
-                    {t('Location')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
-                    <Tooltip title={t('Location')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    name="location"
-                    fullWidth={true}
-                    multiline={true}
-                    rows="3"
-                    variant='outlined'
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 15 }}
+                >
+                  {t('Location')}
+                </Typography>
+                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
+                  <Tooltip title={t('Location')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  name="locations"
+                  fullWidth={true}
+                  multiline={true}
+                  rows="3"
+                  variant='outlined'
                   />
                 </div>
                 <div>

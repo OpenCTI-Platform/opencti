@@ -49,7 +49,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   "Defines identifying information about a network appliance device."
@@ -103,7 +103,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   "Defines identifying information about a network firewall device."
@@ -157,7 +157,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   "Defines identifying information about a network router device."
@@ -211,7 +211,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   "Defines identifying information about a storage array device."
@@ -265,7 +265,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   "Defines identifying information about a network switch device."
@@ -319,7 +319,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   "Defines identifying information about a Voice over IP handset or phone device."
@@ -373,7 +373,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   "Defines identifying information about a VoIP router device."
@@ -427,7 +427,7 @@
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
-    ports: [PortInfo!]!
+    ports: [PortInfo]
   }
 
   union NetworkDeviceKind = NetworkDeviceAsset | ApplianceAsset | FirewallAsset | RouterAsset | StorageArrayAsset | SwitchAsset | VoIPHandsetAsset | VoIPRouterAsset

@@ -101,13 +101,6 @@ class SoftwareLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.asset_id.width }}
-              >
-                {/* Lorem Ipsum Lorem Ipsum */}
-                {node.asset_id && node.asset_id}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.vendor_name.width }}
               >
                 {node.vendor_name && node.vendor_name}
@@ -119,12 +112,6 @@ class SoftwareLineComponent extends Component {
                 {/* {fd(node.created)} */}
                 {/* Lorem Ipsum Lorem Ipsum */}
                 {node.version && node.version}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.patch_level.width }}
-              >
-                {node.patch_level && node.patch_level}
               </div>
               <div
                 className={classes.bodyItem}
@@ -155,46 +142,6 @@ class SoftwareLineComponent extends Component {
             </div>
           }
         />
-        {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ChessKnight />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
-                {node.name}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
-              >
-                {fd(node.created)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
-              >
-                {fd(node.modified)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectLabel.width }}
-              >
-                <StixCoreObjectLabels
-                  variant="inList"
-                  labels={node.objectLabel}
-                  onClick={onLabelClick.bind(this)}
-                />
-              </div>
-            </div>
-          }
-        />
-        <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon> */}
       </ListItem>
     );
   }
@@ -285,17 +232,6 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.asset_id.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.vendor_name.width }}
               >
                 <Skeleton
@@ -308,17 +244,6 @@ class SoftwareDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.version.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.patch_level.width }}
               >
                 <Skeleton
                   animation="wave"
