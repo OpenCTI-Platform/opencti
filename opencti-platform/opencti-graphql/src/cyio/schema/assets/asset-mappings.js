@@ -56,7 +56,6 @@ const objectTypeMapping = {
   "asset": "Asset",
   "circuit": "CircuitAsset",
   "computer-account": "ComputerAccountAsset",
-  "compute-device": "ComputingDeviceAsset",
   "computing-device": "ComputingDeviceAsset",
   "data": "DataAsset",
   "database": "DatabaseAsset",

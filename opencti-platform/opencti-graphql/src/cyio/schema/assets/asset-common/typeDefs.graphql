@@ -52,47 +52,89 @@
   # ENUMERATIONS
   "Defines the types of assets."
   enum AssetType {
+    "Account"
     account
+    "Appliance"
     appliance
+    "Application Software"
     application_software
+    "Circuit"
     circuit
+    "Computer Account"
     computer_account
-    compute_device
+    "Computing Device"
+    computing_device
+    "Data"
     data
+    "Database"
     database
+    "Directory Server"
     directory_server
+    "DNS Server"
     dns_server
+    "Email Server"
     email_server
+    "Embedded Device"
     embedded
+    "Firewall"
     firewall
+    "Guidance"
     guidance
+    "Hypervisor"
     hypervisor
+    "Load Balancer"
     load_balancer
+    "Network"
     network
+    "Network Device"
     network_device
+    "Operating System"
     operating_system
+    "PBX"
     pbx
+    "Physical Device"
     physical_device
+    "Plan"
     plan
+    "Policy"
     policy
+    "Printer"
     printer
+    "Procedure"
     procedure
+    "Router"
     router
+    "Server"
     server
+    "Service Account"
     service_account
+    "Service"
     service
+    "Software"
     software
+    "Standard"
     standard
+    "Storage Array"
     storage_array
+    "Network Switch"
     switch
+    "System"
     system
+    "User Account"
     user_account
+    "Validation"
     validation
+    "VoIP Device"
     voip_device
+    "VoIP Handset"
     voip_handset
+    "VoIP Router"
     voip_router
+    "Web Server"
     web_server
+    "Web Site"
     web_site
+    "Workstation"
     workstation
   }
 
@@ -384,8 +426,8 @@
     # HardwareAsset
     cpe_identifier: String
     installation_id: String
-    installed_hardware: [ComputingDeviceAsset!]!
-    installed_operating_system: OperatingSystemAsset!
+    installed_hardware: [ComputingDeviceAsset]
+    installed_operating_system: OperatingSystemAsset
     model: String
     motherboard_id: String
     baseline_configuration_name: String

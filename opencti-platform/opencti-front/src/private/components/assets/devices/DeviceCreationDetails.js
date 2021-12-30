@@ -29,7 +29,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import InstalledAsset from '../../common/form/InstalledAsset';
-import Protocols from '../../common/form/Protocols';
+import PortsField from '../../common/form/PortsField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -43,6 +43,14 @@ const styles = (theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: '30px 30px 30px 30px',
+  },
+  chip: {
+    color: theme.palette.header.text,
+    height: 25,
+    fontSize: 12,
+    padding: '14px 12px',
+    margin: '0 7px 7px 0',
+    backgroundColor: theme.palette.header.background,
   },
   paper: {
     height: '100%',
@@ -92,6 +100,7 @@ const deviceCreationDetailsFocus = graphql`
 `;
 
 class DeviceCreationDetailsComponent extends Component {
+
   handleChangeFocus(name) {
     commitMutation({
       mutation: deviceCreationDetailsFocus,
@@ -108,8 +117,10 @@ class DeviceCreationDetailsComponent extends Component {
     const {
       t,
       classes,
+      values,
       device,
       context,
+      isSubmitting,
       enableReferences,
       onSubmit,
       setFieldValue,
@@ -205,35 +216,14 @@ class DeviceCreationDetailsComponent extends Component {
                 />
               </div>
               <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Ports')}
-                </Typography>
-                <div style={{ float: 'left', margin: '12px 0 0 5px' }}>
-                  <Tooltip title={t('Ports')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                  <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={TextField}
-                  style={{ width: '50%' }}
-                  type="number"
-                  variant='outlined'
-                  name="port_number"
-                  size='small'
-                  fullWidth={true}
-                />
-                <Protocols
-                  component={SelectField}
+                <PortsField
+                  setFieldValue={setFieldValue}
+                  disabled={isSubmitting}
+                  values={values}
                   style={{ height: '38.09px' }}
                   variant='outlined'
-                  name="protocols"
+                  // onChange={this.handlePortChange.bind(this)}
+                  name="ports"
                   size='small'
                   fullWidth={true}
                   containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
@@ -485,7 +475,7 @@ class DeviceCreationDetailsComponent extends Component {
                 <div className="clearfix" />
                 <Field
                   component={TextField}
-                  name="Description"
+                  name="locations"
                   fullWidth={true}
                   multiline={true}
                   rows="3"

@@ -37,7 +37,7 @@ WHERE {
     case 'MAC-ADDR':
       sparqlQuery = selectPortion +
           bindIRIClause.replace('{iri}', id) + 
-          predicates + '}';
+          predicates + '\n}';
       break;
     case 'PORT-INFO':
       sparqlQuery = portInfo.replace(re, id)
@@ -194,17 +194,17 @@ export const predicateMap = {
   },
   is_publicly_accessible: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_publicly_accessible>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_publicly_accessible")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_publicly_accessible");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   is_scanned: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_scanned>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_scanned")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_scanned")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   is_virtual: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#is_virtual>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_virtual")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "is_virtual")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   last_scanned: {
@@ -362,7 +362,7 @@ export const insertQuery = (propValues) => {
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
       ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}".
-      ${iri} <http://darklight.ai/ns/common#object_type> "compute-device" . 
+      ${iri} <http://darklight.ai/ns/common#object_type> "computing-device" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
       ${insertPredicates}
@@ -482,7 +482,12 @@ function computingDeviceAssetReducer( item ) {
 
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
+    if(item.asset_type == 'compute-device') {
+      item.asset_type = 'computing-device';
+      item.object_type = 'computing-device';
+    } else {
+      item.object_type = item.asset_type;
+    }
   } else {
     item.object_type = 'computing-device';
   }
@@ -539,28 +544,48 @@ function computingDeviceAssetReducer( item ) {
 }
 
 function ipAddressReducer( item ) {
+  if ( item.object_type === undefined || item.object_type == null ) {
+    item.ip_address_value.includes(':') ? item.object_type = 'ipv6-addr' : item.object_type = 'ipv4-addr';
+  }
+
   return {
     id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.created && {created: item.created}),
+    ...(item.modified && {modified: item.modified}),
     ...(item.ip_address_value && {ip_address_value: item.ip_address_value}),
+    // Hints
+    ...(item.iri && {parent_iri: item.iri}),
   }
 }
 
 function macAddressReducer( item ) {
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined || item.object_type == null ) item.object_type = 'mac-addr';
   return {
     id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.created && {created: item.created}),
+    ...(item.modified && {modified: item.modified}),
     ...(item.mac_address_value && {mac_address_value: item.mac_address_value}),
     ...(item.is_virtual !== undefined && {is_virtual: item.is_virtual}),
+    // Hints
+    ...(item.iri && {parent_iri: item.iri}),
   }
 }
 
 function portReducer( item ) {
-  return {
+  // if no object type was returned, compute the type from the IRI
+  if ( item.object_type === undefined || item.object_type == null) item.object_type = 'port';
+    return {
     id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
+    ...(item.created && {created: item.created}),
+    ...(item.modified && {modified: item.modified}),
     ...(item.port_number && {port_number: item.port_number}),
     ...(item.protocols && {protocols: item.protocols}),
+    // Hints
+    ...(item.iri && {parent_iri: item.iri}),
   }
 }
 
