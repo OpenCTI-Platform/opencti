@@ -425,12 +425,12 @@ class RiskLogCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
+                          component={SelectField}
                           name="related_response"
                           fullWidth={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
                         />
                       </div>
                     </Grid>

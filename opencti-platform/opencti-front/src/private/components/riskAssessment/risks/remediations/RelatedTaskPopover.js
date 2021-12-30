@@ -55,8 +55,19 @@ const styles = (theme) => ({
     margin: '0 20px',
     justifyContent: 'center',
   },
+  dialogTitle: {
+    padding: '24px 0 16px 24px',
+  },
   dialogContent: {
-    overflowY: 'hidden',
+    overflowY: 'scroll',
+    height: '550px',
+    padding: '0 24px',
+    marginBottom: '24px',
+  },
+  dialogClosebutton: {
+    float: 'left',
+    marginLeft: '15px',
+    marginBottom: '20px',
   },
   dialogActions: {
     justifyContent: 'flex-start',
@@ -260,7 +271,7 @@ class RelatedTaskPopover extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>{t('Related Task')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Related Task')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -511,13 +522,13 @@ class RelatedTaskPopover extends Component {
                     </Grid>
                   </Grid>
                 </DialogContent>
-                <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>
+                <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
                     onClick={this.handleCloseUpdate.bind(this)}
                     disabled={isSubmitting}
-                    size="small"
+                    classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
                   </Button>
@@ -526,7 +537,7 @@ class RelatedTaskPopover extends Component {
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    size="small"
+                    classes={{ root: classes.buttonPopover }}
                   >
                     {t('Create')}
                   </Button>

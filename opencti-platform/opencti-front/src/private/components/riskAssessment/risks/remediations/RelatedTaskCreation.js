@@ -45,19 +45,31 @@ const styles = (theme) => ({
   },
   dialogRoot: {
     padding: '24px',
+    overflowY: 'hidden',
   },
   popoverDialog: {
     fontSize: '18px',
     lineHeight: '24px',
     color: theme.palette.header.text,
   },
+  dialogTitle: {
+    padding: '24px 0 16px 24px',
+  },
   dialogContent: {
-    overflowY: 'hidden',
+    overflowY: 'scroll',
+    height: '550px',
+    padding: '0 24px',
+    marginBottom: '24px',
   },
   createButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
+  },
+  dialogClosebutton: {
+    float: 'left',
+    marginLeft: '15px',
+    marginBottom: '20px',
   },
   createButtonContextual: {
     // position: 'fixed',
@@ -80,6 +92,9 @@ const styles = (theme) => ({
   dialogActions: {
     justifyContent: 'flex-start',
     padding: '10px 0 20px 22px',
+  },
+  buttonPopover: {
+    textTransform: 'capitalize',
   },
   closeButton: {
     position: 'absolute',
@@ -337,7 +352,7 @@ class RelatedTaskCreation extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>{t('Related Task')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Related Task')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -588,12 +603,13 @@ class RelatedTaskCreation extends Component {
                     </Grid>
                   </Grid>
                 </DialogContent>
-                <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>
+                <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
                     onClick={this.handleCancelClick.bind(this)}
                     disabled={isSubmitting}
+                    classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
                   </Button>
@@ -602,6 +618,7 @@ class RelatedTaskCreation extends Component {
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}
+                    classes={{ root: classes.buttonPopover }}
                   >
                     {t('Create')}
                   </Button>

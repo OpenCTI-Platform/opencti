@@ -54,12 +54,22 @@ const styles = (theme) => ({
     margin: '0 20px',
     justifyContent: 'center',
   },
+  dialogTitle: {
+    padding: '24px 0 16px 24px',
+  },
   dialogContent: {
-    overflowY: 'hidden',
+    overflowY: 'scroll',
+    height: '500px',
+    overflowX: 'hidden',
+    padding: '8px 24px',
   },
   dialogActions: {
     justifyContent: 'flex-start',
     padding: '10px 0 20px 22px',
+  },
+  dialogClosebutton: {
+    float: 'left',
+    padding: '8px 0 24px 24px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -261,7 +271,7 @@ class RequiredResourcePopover extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>{t('Required Resource')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Required Resource')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -392,12 +402,12 @@ class RequiredResourcePopover extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
+                    <Grid style={{ marginTop: '5px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
+                    <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop='0px'
@@ -407,13 +417,13 @@ class RequiredResourcePopover extends Component {
                     </Grid>
                   </Grid>
                 </DialogContent>
-                <DialogActions style={{ float: 'left', marginLeft: '15px' }}>
+                <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
                     disabled={isSubmitting}
-                    size="small"
                     onClick={this.handleCloseUpdate.bind(this)}
+                    classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
                   </Button>
@@ -421,8 +431,8 @@ class RequiredResourcePopover extends Component {
                     variant="contained"
                     color="primary"
                     onClick={submitForm}
-                    size="small"
                     disabled={isSubmitting}
+                    classes={{ root: classes.buttonPopover }}
                   >
                     {t('Update')}
                   </Button>

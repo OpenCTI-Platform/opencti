@@ -158,13 +158,6 @@ class RemediationPopover extends Component {
           <MenuItem
             className={classes.menuItem}
             divider={true}
-            onClick={this.handleOpenUpdate.bind(this)}
-          >
-            {t('Update')}
-          </MenuItem>
-          <MenuItem
-            className={classes.menuItem}
-            divider={true}
           >
             {t('Remove')}
           </MenuItem>

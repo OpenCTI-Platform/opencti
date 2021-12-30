@@ -512,12 +512,13 @@ class RiskTrackingLogEditionComponent extends Component {
                   </div>
                   <div className="clearfix" />
                   <Field
-                    component={TextField}
+                    component={SelectField}
                     variant='outlined'
-                    size='small'
                     name="related_response"
+                    size='small'
                     fullWidth={true}
-                    containerstyle={{ width: '100%' }}
+                    style={{ height: '38.09px', marginBottom: '3px' }}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                   />
                 </Grid>
               </Grid>

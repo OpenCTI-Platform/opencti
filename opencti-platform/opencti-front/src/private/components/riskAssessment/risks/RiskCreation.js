@@ -324,12 +324,9 @@ class RiskCreation extends Component {
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <CyioCoreObjectLatestHistory />
-                </Grid>
-                <Grid item={true} xs={12}>
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
                     cyioCoreObjectOrCyioCoreRelationshipId={riskId}
-                    marginTop='20px'
+                    marginTop='0px'
                   />
                 </Grid>
               </Grid>

@@ -50,8 +50,14 @@ const styles = (theme) => ({
     lineHeight: '24px',
     color: theme.palette.header.text,
   },
+  dialogTitle: {
+    padding: '24px 0 16px 24px',
+  },
   dialogContent: {
-    overflowY: 'hidden',
+    overflowY: 'scroll',
+    height: '500px',
+    overflowX: 'hidden',
+    padding: '8px 24px',
   },
   createButton: {
     position: 'fixed',
@@ -84,6 +90,11 @@ const styles = (theme) => ({
     top: 12,
     left: 5,
     color: 'inherit',
+  },
+  dialogClosebutton: {
+    float: 'left',
+    padding: '8px 0 24px 24px',
+    marginBottom: '10px',
   },
   dialogActions: {
     justifyContent: 'flex-start',
@@ -339,7 +350,7 @@ class RequiredResourceCreation extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>{t('Required Resource')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Required Resource')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -470,12 +481,12 @@ class RequiredResourceCreation extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
+                    <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
+                    <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         // data={props}
@@ -484,7 +495,7 @@ class RequiredResourceCreation extends Component {
                     </Grid>
                   </Grid>
                 </DialogContent>
-                <DialogActions style={{ float: 'left', marginLeft: '15px' }}>
+                <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
