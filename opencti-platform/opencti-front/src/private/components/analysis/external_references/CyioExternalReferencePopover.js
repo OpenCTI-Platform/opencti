@@ -64,15 +64,13 @@ Transition.displayName = 'TransitionSlide';
 
 const cyioExternalReferencePopoverDeletionMutation = graphql`
   mutation CyioExternalReferencePopoverDeletionMutation($id: ID!) {
-    externalReferenceEdit(id: $id) {
-      delete
-    }
+    deleteCyioExternalReference(id: $id)
   }
 `;
 
 const cyioExternalReferenceEditionQuery = graphql`
-  query CyioExternalReferencePopoverEditionQuery($id: String!) {
-    externalReference(id: $id) {
+  query CyioExternalReferencePopoverEditionQuery($id: ID!) {
+    cyioExternalReference(id: $id) {
       ...CyioExternalReferenceEdition_externalReference
     }
   }
@@ -207,7 +205,7 @@ class CyioExternalReferencePopover extends Component {
                 // Done
                 return (
                   <CyioExternalReferenceEdition
-                    externalReference={props.externalReference}
+                    externalReference={props.cyioExternalReference}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );
@@ -215,22 +213,6 @@ class CyioExternalReferencePopover extends Component {
               return <Loader variant="inElement" />;
             }}
           />
-          {/* <QueryRenderer
-            query={cyioExternalReferenceEditionQuery}
-            variables={{ id: externalReferenceId }}
-            render={({ props }) => {
-              if (props) {
-                // Done
-                return (
-                  <CyioExternalReferenceEdition
-                    externalReference={props.externalReference}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          /> */}
         </Dialog>
         <Dialog
           open={this.state.displayDelete}

@@ -93,7 +93,7 @@ const deviceEditionMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  port_number: Yup.number().required(t('This field is required')),
+  port_number: Yup.number().moreThan(0, 'The port number must be greater than 0'),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -122,10 +122,6 @@ class DeviceEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const ports = {
-      "port_number": values.port_number,
-      "protocols": values.protocols || 'TCP',
-    }
     const adaptedValues = R.evolve(
       {
         release_date: () => parse(values.release_date).format(),
@@ -137,7 +133,6 @@ class DeviceEditionContainer extends Component {
       R.dissoc('locations'),
       R.dissoc('protocols'),
       R.dissoc('port_number'),
-      R.assoc('ports', ports),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
@@ -203,14 +198,6 @@ class DeviceEditionContainer extends Component {
       R.pathOr([], ['installed_software']),
       R.map((n) => (n.id)),
     )(device);
-    const port_number = R.pipe(
-      R.pathOr([], ['ports']),
-      R.map((n) => n.port_number),
-    )(device);
-    const protocols = R.pipe(
-      R.pathOr([], ['ports']),
-      R.map((n) => n.protocols),
-    )(device);
     const initialValues = R.pipe(
       R.assoc('id', device?.id || ''),
       R.assoc('asset_id', device?.asset_id || ''),
@@ -235,8 +222,9 @@ class DeviceEditionContainer extends Component {
       R.assoc('baseline_configuration_name', device?.baseline_configuration_name || ''),
       R.assoc('mac_address', (device?.mac_address || []).join()),
       R.assoc('model', device?.model || ''),
-      R.assoc('port_number', port_number || ''),
-      R.assoc('protocols', protocols),
+      R.assoc('ports', device?.ports.length > 0 ? device.ports : []),
+      R.assoc('port_number', ''),
+      R.assoc('protocols', []),
       R.assoc('hostname', device?.hostname || ''),
       R.assoc('default_gateway', device?.default_gateway || ''),
       R.assoc('motherboard_id', device?.motherboard_id || ''),
@@ -263,6 +251,7 @@ class DeviceEditionContainer extends Component {
         'release_date',
         'port_number',
         'protocols',
+        'ports',
         'installed_operating_system',
         'ipv4_address',
         'ipv6_address',
@@ -364,6 +353,9 @@ class DeviceEditionContainer extends Component {
                   </Grid>
                   <Grid item={true} xs={6}>
                     <DeviceEditionDetails
+                      setFieldValue={setFieldValue}
+                      values={values}
+                      isSubmitting={isSubmitting}
                       device={device}
                       // enableReferences={this.props.enableReferences}
                       // context={editContext}

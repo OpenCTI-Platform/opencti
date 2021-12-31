@@ -134,6 +134,7 @@ class Filters extends Component {
       case 'asset_type_or':
         fetchDarklightQuery(itAssetFiltersAssetTypeFieldQuery, {
           type: `${this.props.filterEntityType}AssetTypes`,
+          search: event && event.target.value !== 0 ? event.target.value : '',
         })
           .toPromise()
           .then((data) => {
@@ -173,7 +174,9 @@ class Filters extends Component {
           nameQuery = itAssetFiltersSoftwareFieldsQuery;
           namePath = ['softwareAssetList', 'edges'];
         }
-        fetchDarklightQuery(nameQuery)
+        fetchDarklightQuery(nameQuery, {
+          search: event && event.target.value !== 0 ? event.target.value : '',
+        })
           .toPromise()
           .then((data) => {
             const nameEntities = R.pipe(
@@ -196,7 +199,9 @@ class Filters extends Component {
           });
         break;
       case 'vendor_name_or':
-        fetchDarklightQuery(itAssetFiltersSoftwareFieldsQuery)
+        fetchDarklightQuery(itAssetFiltersSoftwareFieldsQuery, {
+          search: event && event.target.value !== 0 ? event.target.value : '',
+        })
           .toPromise()
           .then((data) => {
             const vendorEntities = R.pipe(
@@ -235,16 +240,18 @@ class Filters extends Component {
           cyioLabelsQuery = itAssetFiltersSoftwareFieldsQuery;
           cyioLabelsPath = ['softwareAssetList', 'edges'];
         }
-        fetchDarklightQuery(cyioLabelsQuery)
+        fetchDarklightQuery(cyioLabelsQuery, {
+          search: event && event.target.value !== 0 ? event.target.value : '',
+        })
           .toPromise()
           .then((data) => {
             const cyioLabelEntities = R.pipe(
               R.pathOr([], cyioLabelsPath),
               R.map((n) => ({
-                label: t(n.node.labels[0]),
-                value: n.node.labels[0],
+                label: n.node?.labels && t(R.pluck(0, n.node).labels),
+                value: R.pluck(0, n.node)?.labels,
                 type: 'Label',
-                color: n.node.labels[0],
+                color: R.pluck(0, n.node)?.labels,
               })),
             )(data);
             this.setState({
