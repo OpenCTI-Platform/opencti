@@ -34,6 +34,7 @@ import {
 import AssetType from '../form/AssetType';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
+import OperationalStatusField from '../form/OperationalStatusField';
 import MarkDownField from '../../../../components/MarkDownField';
 import inject18n from '../../../../components/i18n';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -414,14 +415,15 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Field
-                  component={TextField}
+                <OperationalStatusField
+                  component={SelectField}
                   variant='outlined'
                   name="operational_status"
                   size='small'
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%' }}
+                  helperText={t('Select Operational Status')}
                 />
               </div>
             </Grid>

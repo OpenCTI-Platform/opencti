@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -151,11 +153,11 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
     CM(environmentDarkLight, {
       mutation: cyioExternalReferenceMutationRelationDelete,
       variables: {
-        id: externalReferenceEdge.node.id,
+        toId: externalReferenceEdge.node.id,
         fromId: this.props.cyioCoreObjectId,
-        relationship_type: 'external-reference',
+        fieldName: 'external_reference',
       },
-      onCompleted: () => {
+      onCompleted: (resp) => {
         this.setState({ removing: false });
         this.handleCloseDialog();
       },
@@ -200,13 +202,13 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 28 }} />}
         > */}
-          <CyioAddExternalReferences
-            cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
-            cyioCoreObjectOrCyioCoreRelationshipReferences={
-              data?.itAsset?.external_references?.edges
-              // data.externalReference
-            }
-          />
+        <CyioAddExternalReferences
+          cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
+          cyioCoreObjectOrCyioCoreRelationshipReferences={
+            data?.itAsset?.external_references?.edges
+            // data.externalReference
+          }
+        />
         {/* </Security> */}
         <div className="clearfix" />
         <Paper className={ classes.paper } elevation={2}>
@@ -250,15 +252,15 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                           {/* </ListItem> */}
                         </Accordion>
                         <div style={{ marginTop: '12px' }}>
-                          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                            <CyioExternalReferencePopover
-                              externalReferenceId={externalReference.id}
-                              handleRemove={this.handleOpenDialog.bind(
-                                this,
-                                externalReferenceEdge,
-                              )}
-                            />
-                          </Security>
+                          {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
+                          <CyioExternalReferencePopover
+                            externalReferenceId={externalReference.id}
+                            handleRemove={this.handleOpenDialog.bind(
+                              this,
+                              externalReferenceEdge,
+                            )}
+                          />
+                          {/* </Security> */}
                         </div>
                       </div>
                       <Divider variant="middle" light={true} />
@@ -318,7 +320,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
               color="primary"
               disabled={this.state.removing}
             >
-              {t('Delete')}
+              {t('Remove')}
             </Button>
           </DialogActions>
         </Dialog>

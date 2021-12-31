@@ -38,6 +38,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../form/ConfidenceField';
 import AssetType from '../form/AssetType';
+import OperationalStatusField from '../form/OperationalStatusField';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 
@@ -426,7 +427,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                     gutterBottom={true}
                     style={{ float: 'left', marginTop: 20 }}
                   >
-                    {t('Operation State')}
+                    {t('Operational State')}
                   </Typography>
                   <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                     <Tooltip title={t('Operation State')}>
@@ -434,15 +435,16 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="operational_status"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
+                  <OperationalStatusField
+                      component={SelectField}
+                      variant='outlined'
+                      name="operational_status"
+                      size='small'
+                      fullWidth={true}
+                      style={{ height: '38.09px' }}
+                      containerstyle={{ width: '100%' }}
+                      helperText={t('Select Operational Status')}
+                    />
                 </div>
               </Grid>
             </Grid>

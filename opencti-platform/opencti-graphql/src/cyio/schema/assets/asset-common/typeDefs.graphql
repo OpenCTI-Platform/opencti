@@ -62,8 +62,8 @@
     circuit
     "Computer Account"
     computer_account
-    "Compute Device"
-    compute_device
+    "Computing Device"
+    computing_device
     "Data"
     data
     "Database"
