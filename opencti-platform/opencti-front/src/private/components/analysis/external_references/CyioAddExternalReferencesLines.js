@@ -133,8 +133,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
     } = this.props;
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
       (n) => n.node.id,
-      cyioCoreObjectOrCyioCoreRelationshipReferences,
-    );
+      cyioCoreObjectOrCyioCoreRelationshipReferences || []);
     return (
       <div>
         <List className={classes.list}>

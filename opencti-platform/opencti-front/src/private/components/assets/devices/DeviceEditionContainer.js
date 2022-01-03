@@ -345,6 +345,7 @@ class DeviceEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={device}
+                      assetType="Device"
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}

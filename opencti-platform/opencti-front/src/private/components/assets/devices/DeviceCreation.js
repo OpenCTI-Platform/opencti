@@ -311,6 +311,7 @@ class DeviceCreation extends Component {
                     {/* <DeviceCreationOverview setFieldValue={setFieldValue} values={values} /> */}
                     <CyioDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
+                      assetType="Device"
                       values={values}
                     />
                   </Grid>
