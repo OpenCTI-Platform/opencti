@@ -2,12 +2,61 @@
 /* refactor */
 import React, { Component } from 'react';
 import { Field } from 'formik';
+import * as R from 'ramda';
 import MenuItem from '@material-ui/core/MenuItem';
+import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
+import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+
+const assetTypeQuery = graphql`
+ query AssetTypeQuery(
+   $type: String!
+ ) {
+  __type(name: $type) {
+    name
+    description
+    enumValues {
+      name
+      description
+    }
+  }
+}
+`;
 
 class AssetType extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      assetTypes: {},
+    }
+  }
+  componentDidMount() {
+    // console.log('AssetTypeChange', this.props.assetType);
+    fetchDarklightQuery(assetTypeQuery, {
+      type: `${this.props.assetType}AssetTypes`,
+    })
+      .toPromise()
+      .then((data) => {
+        const assetTypeEntities = R.pipe(
+          R.pathOr([], ['__type', 'enumValues']),
+          R.map((n) => ({
+            label: n.description,
+            value: n.name,
+            type: n.name,
+          })),
+        )(data);
+        console.log('sdasfdsfasAssetType', assetTypeEntities);
+        this.setState({
+          assetTypes: {
+            ...this.state.entities,
+            assetTypeEntities
+          },
+        });
+      })
+  }
+
   render() {
     const {
       t,
@@ -23,11 +72,18 @@ class AssetType extends Component {
       disabled,
       helperText,
     } = this.props;
+    const assetTypes = R.pathOr(
+      [],
+      ['assetTypeEntities'],
+      this.state.assetTypes,
+    );
+    console.log('AssetTypesData', assetTypes);
     return (
       <Field
         component={SelectField}
         name={name}
         label={label}
+        displayEmpty
         fullWidth={true}
         containerstyle={containerstyle}
         variant={variant}
@@ -36,51 +92,12 @@ class AssetType extends Component {
         style={style}
         helperText={helperText}
       >
-        <MenuItem key="physical_device" value="physical_device">
-          <ItemIcon variant='inline' type='physical_device' />&nbsp;{t(' Physical Device')}
-        </MenuItem>
-        <MenuItem key="appliance" value="appliance">
-          <ItemIcon variant='inline' type='appliance' />&nbsp;{t('Appliance')}
-        </MenuItem>
-        <MenuItem key="storage_array" value="storage_array">
-          <ItemIcon variant='inline' type='storage_array' />&nbsp;{t('Storage Array')}
-        </MenuItem>
-        <MenuItem key="firewall" value="firewall">
-          <ItemIcon variant='inline' type='firewall' />&nbsp;{t('Firewall')}
-        </MenuItem>
-        <MenuItem key="network" value="network">
-          <ItemIcon variant='inline' type='network' />&nbsp;&nbsp;{t('Network')}
-        </MenuItem>
-        <MenuItem key="network_device" value="network_device">
-          <ItemIcon variant='inline' type='network_device' />&nbsp;{t('Network Device')}
-        </MenuItem>
-        <MenuItem key="router" value="router">
-          <ItemIcon variant='inline' type='router' />&nbsp;{t('Router')}
-        </MenuItem>
-        <MenuItem key="server" value="server">
-          <ItemIcon variant='inline' type='server' />&nbsp;{t('Server')}
-        </MenuItem>
-        <MenuItem key="software" value="software">
-          <ItemIcon variant='inline' type='software' />&nbsp;&nbsp;{t('Software')}
-        </MenuItem>
-        <MenuItem key="workstation" value="workstation">
-          <ItemIcon variant='inline' type='workstation' />&nbsp;{t('Workstation')}
-        </MenuItem>
-        <MenuItem key="voip_handset" value="voip_handset">
-          <ItemIcon variant='inline' type='voip_handset' />&nbsp;{t('VoIP Handset')}
-        </MenuItem>
-        <MenuItem key="pbx" value="pbx">
-          <ItemIcon variant='inline' type='pbx' />&nbsp;{t('PBX')}
-        </MenuItem>
-        <MenuItem key="compute_device" value="compute_device">
-          <ItemIcon variant='inline' type='compute_device' />&nbsp;{t('Compute Device')}
-        </MenuItem>
-        <MenuItem key="voip_router" value="voip_router">
-          <ItemIcon variant='inline' type='voip_router' />&nbsp;{t('VoIP Router')}
-        </MenuItem>
-        <MenuItem key="switch" value="switch">
-          <ItemIcon variant='inline' type='switch' />&nbsp;{t('Switch')}
-        </MenuItem>
+        {assetTypes.map((assetType, key) => (
+          assetType.label
+          && <MenuItem key={key} value={assetType.value}>
+            <ItemIcon variant="inline" type={assetType.value} /> {t(assetType.label)}
+          </MenuItem>
+        ))}
       </Field>
     );
   }
