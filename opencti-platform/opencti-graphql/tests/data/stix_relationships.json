@@ -121,6 +121,9 @@
         "observed-data": [
             "consists-of"
         ],
+        "<All STIX Cyber-observable Objects>": [
+            "consists-of"
+        ],
         "malware": [
             "controls",
             "delivers",
@@ -167,6 +170,9 @@
         ]
     },
     "malware": {
+        "software": [
+            "operating-system"
+        ],
         "threat-actor": [
             "authored-by"
         ],
@@ -222,6 +228,13 @@
             "uses"
         ]
     },
+    "malware-analysis": {
+        "software": [
+            "host-vm",
+            "operating-system",
+            "installed-software"
+        ]
+    },
     "threat-actor": {
         "identity": [
             "attributed-to",
@@ -271,6 +284,14 @@
             "targets"
         ]
     },
+    "directory": {
+        "directory": [
+            "contains"
+        ],
+        "file": [
+            "contains"
+        ]
+    },
     "domain-name": {
         "domain-name": [
             "resolves-to"
@@ -280,6 +301,26 @@
         ],
         "ipv6-addr": [
             "resolves-to"
+        ]
+    },
+    "email-message": {
+        "email-addr": [
+            "from",
+            "sender",
+            "to",
+            "cc",
+            "bcc"
+        ],
+        "artifact": [
+            "raw-email"
+        ]
+    },
+    "file": {
+        "directory": [
+            "parent-directory"
+        ],
+        "artifact": [
+            "content"
         ]
     },
     "ipv4-addr": {
@@ -296,6 +337,52 @@
         ],
         "autonomous-system": [
             "belongs-to"
+        ]
+    },
+    "network-traffic": {
+        "domain-name": [
+            "src",
+            "dst"
+        ],
+        "ipv4-addr": [
+            "src",
+            "dst"
+        ],
+        "ipv6-addr": [
+            "src",
+            "dst"
+        ],
+        "mac-addr": [
+            "src",
+            "dst"
+        ],
+        "artifact": [
+            "src-payload",
+            "dst-payload"
+        ],
+        "network-traffic": [
+            "encapsulates",
+            "encapsulated-by"
+        ]
+    },
+    "process": {
+        "network-traffic": [
+            "opened-connection"
+        ],
+        "user-account": [
+            "creator-user"
+        ],
+        "file": [
+            "image"
+        ],
+        "process": [
+            "parent",
+            "child"
+        ]
+    },
+    "windows-registry-key": {
+        "user-account": [
+            "creator-user"
         ]
     }
 }
