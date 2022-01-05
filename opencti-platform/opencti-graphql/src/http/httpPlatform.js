@@ -133,7 +133,10 @@ const createApp = async (apolloServer) => {
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {
     try {
       const auth = await authenticateUserFromRequest(req, res);
-      if (!auth) res.sendStatus(403);
+      if (!auth) {
+        res.sendStatus(403);
+        return;
+      }
       const { file } = req.params;
       const stream = await downloadFile(file);
       res.attachment(file);
@@ -148,7 +151,10 @@ const createApp = async (apolloServer) => {
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res, next) => {
     try {
       const auth = await authenticateUserFromRequest(req, res);
-      if (!auth) res.sendStatus(403);
+      if (!auth) {
+        res.sendStatus(403);
+        return;
+      }
       const { file } = req.params;
       const data = await loadFile(auth, file);
       res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
@@ -169,7 +175,10 @@ const createApp = async (apolloServer) => {
   app.get(`${basePath}/storage/html/:file(*)`, async (req, res, next) => {
     try {
       const auth = await authenticateUserFromRequest(req, res);
-      if (!auth) res.sendStatus(403);
+      if (!auth) {
+        res.sendStatus(403);
+        return;
+      }
       const { file } = req.params;
       const data = await loadFile(auth, file);
       if (data.metaData.mimetype === 'text/markdown') {
