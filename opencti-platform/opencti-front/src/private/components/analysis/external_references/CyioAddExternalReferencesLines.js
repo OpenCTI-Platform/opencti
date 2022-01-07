@@ -1,6 +1,8 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, createFragmentContainer } from 'react-relay';
 import {
   map, filter, head, compose,
 } from 'ramda';
@@ -32,74 +34,26 @@ const styles = (theme) => ({
 
 export const cyioExternalReferenceLinesMutationRelationAdd = graphql`
   mutation CyioAddExternalReferencesLinesRelationAddMutation(
-    $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
   ) {
-    externalReferenceEdit(id: $id) {
-      relationAdd(input: $input) {
-        id
-        to {
-          ... on ExternalReference {
-            id
-            source_name
-            description
-            url
-            hash
-            external_id
-            jobs(first: 100) {
-              id
-              timestamp
-              connector {
-                id
-                name
-              }
-              messages {
-                timestamp
-                message
-              }
-              errors {
-                timestamp
-                message
-              }
-              status
-            }
-            connectors(onlyAlive: false) {
-              id
-              connector_type
-              name
-              active
-              updated_at
-            }
-            importFiles(first: 1000) {
-              edges {
-                node {
-                  id
-                  lastModified
-                  ...FileLine_file
-                  metaData {
-                    mimetype
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    addReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
   }
 `;
 
 export const cyioExternalReferenceMutationRelationDelete = graphql`
   mutation CyioAddExternalReferencesLinesRelationDeleteMutation(
-    $id: ID!
-    $fromId: String!
-    $relationship_type: String!
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
   ) {
-    externalReferenceEdit(id: $id) {
-      relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
-        id
-      }
-    }
+    removeReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
+    # # externalReferenceEdit(id: $id) {
+    #   relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
+    #     id
+    #   }
+    # }
   }
 `;
 
@@ -135,38 +89,35 @@ class CyioAddExternalReferencesLinesContainer extends Component {
       commitMutation({
         mutation: cyioExternalReferenceMutationRelationDelete,
         variables: {
-          id: existingExternalReference.node.id,
+          toId: existingExternalReference.node.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          relationship_type: 'external-reference',
+          fieldName: 'external_reference',
         },
         updater: (store) => {
           const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
           const conn = ConnectionHandler.getConnection(
             entity,
-            'Pagination_externalReferences',
+            'Pagination_cyioExternalReferenceList',
           );
           ConnectionHandler.deleteNode(conn, externalReference.id);
         },
       });
     } else if (!alreadyAdded) {
-      const input = {
-        fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-        relationship_type: 'external-reference',
-      };
       commitMutation({
-        mutation: this.cyioExternalReferenceLinesMutationRelationAdd,
+        mutation: cyioExternalReferenceLinesMutationRelationAdd,
         variables: {
-          id: externalReference.id,
-          input,
+          toId: externalReference.id,
+          fromId: cyioCoreObjectOrCyioCoreRelationshipId,
+          fieldName: 'external_reference',
         },
         updater: (store) => {
-          const payload = store
-            .getRootField('externalReferenceEdit')
-            .getLinkedRecord('relationAdd', { input });
-          const relationId = payload.getValue('id');
-          const node = payload.getLinkedRecord('to');
+          const payload = store;
+          // .getRootField('externalReferenceEdit')
+          // .getLinkedRecord('relationAdd', { input });
+          const relationId = payload.getValue('toId');
+          // const node = payload.getLinkedRecord('to');
           const relation = store.get(relationId);
-          payload.setLinkedRecord(node, 'node');
+          // payload.setLinkedRecord(node, 'node');
           payload.setLinkedRecord(relation, 'relation');
           sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
         },
@@ -182,12 +133,11 @@ class CyioAddExternalReferencesLinesContainer extends Component {
     } = this.props;
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
       (n) => n.node.id,
-      cyioCoreObjectOrCyioCoreRelationshipReferences,
-    );
+      cyioCoreObjectOrCyioCoreRelationshipReferences || []);
     return (
       <div>
         <List className={classes.list}>
-          {data.externalReferences.edges.map((externalReferenceNode) => {
+          {data.cyioExternalReferenceList.edges.map((externalReferenceNode) => {
             const externalReference = externalReferenceNode.node;
             const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
               externalReference.id,
@@ -228,13 +178,6 @@ class CyioAddExternalReferencesLinesContainer extends Component {
             );
           })}
         </List>
-        {/* <CyioExternalReferenceCreation
-          display={open}
-          contextual={true}
-          inputValue={search}
-          paginationOptions={paginationOptions}
-          onCreate={this.toggleExternalReference.bind(this)}
-        /> */}
       </div>
     );
   }
@@ -255,77 +198,50 @@ CyioAddExternalReferencesLinesContainer.propTypes = {
 
 export const cyioAddExternalReferencesLinesQuery = graphql`
   query CyioAddExternalReferencesLinesQuery(
-    $search: String
     $count: Int!
-    $cursor: ID
   ) {
     ...CyioAddExternalReferencesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(count: $count)
   }
 `;
 
-const CyioAddExternalReferencesLines = createPaginationContainer(
+const CyioAddExternalReferencesLines = createFragmentContainer(
   CyioAddExternalReferencesLinesContainer,
   {
     data: graphql`
       fragment CyioAddExternalReferencesLines_data on Query
       @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
+        count: { type: "Int", defaultValue: 4 }
       ) {
-        externalReferences(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_externalReferences") {
+        cyioExternalReferenceList(limit: $count) {
           edges {
+            cursor
             node {
               id
+              created
+              modified
               source_name
               description
               url
+              hashes {
+                algorithm
+                value
+              }
               external_id
-              connectors(onlyAlive: false) {
-                id
-                connector_type
-                name
-                active
-                updated_at
-              }
-              importFiles(first: 1000) {
-                edges {
-                  node {
-                    id
-                    lastModified
-                    ...FileLine_file
-                    metaData {
-                      mimetype
-                    }
-                  }
-                }
-              }
+              reference_purpose
+              media_type
             }
+          }
+          pageInfo {
+            globalCount
+            startCursor
+            endCursor
+            hasNextPage
+            hasPreviousPage
           }
         }
       }
     `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.externalReferences;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count, cursor }) {
-      return {
-        count,
-        cursor,
-      };
-    },
-    query: cyioAddExternalReferencesLinesQuery,
   },
 );
 

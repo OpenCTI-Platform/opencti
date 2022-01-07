@@ -38,6 +38,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../form/ConfidenceField';
 import AssetType from '../form/AssetType';
+import OperationalStatusField from '../form/OperationalStatusField';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 
@@ -90,6 +91,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
       values,
       onSubmit,
       setFieldValue,
+      assetType,
       enableReferences,
     } = this.props;
     return (
@@ -98,354 +100,356 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
           {t('Basic Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-            <Grid container={true} spacing={3}>
-                <Grid item={true} xs={12}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left' }}
-                  >
-                    {t('Name')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                    <Tooltip title={t('Installed Operating System')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    size='small'
-                    name="name"
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                    // onFocus={this.handleChangeFocus.bind(this)}
-                    // onSubmit={this.handleSubmitField.bind(this)}
-                  />
-                </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Name')}
+              </Typography>
+              <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                <Tooltip title={t('Installed Operating System')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <Field
+                component={TextField}
+                variant='outlined'
+                size='small'
+                name="name"
+                fullWidth={true}
+                containerstyle={{ width: '100%' }}
+              // onFocus={this.handleChangeFocus.bind(this)}
+              // onSubmit={this.handleSubmitField.bind(this)}
+              />
             </Grid>
-            <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left' }}
-                    >
-                      {t('ID')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                      <Tooltip title={t('Installed Operating System')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      size='small'
-                      disabled={true}
-                      name="id"
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                    // helperText={
-                    //   <SubscriptionFocus fieldName="name" />
-                    // }
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 17 }}
-                    >
-                      {t('Asset ID')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                      <Tooltip title={t('Installed Software')} >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      size='small'
-                      name="asset_id"
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                    />
-                  </div>
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left' }}
-                    >
-                      {t('Asset Type')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                      <Tooltip title={t('Asset Type')}>
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <AssetType
-                      component={SelectField}
-                      variant='outlined'
-                      name="asset_type"
-                      size='small'
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                      helperText={t('Select Asset Type')}
-                    />
-                  </div>
-                  <div>
-                    <Typography
-                      variant="h3"
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Asset Tag')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip title={t('Asset Tag')}>
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <Field
-                      component={TextField}
-                      variant='outlined'
-                      size='small'
-                      name="asset_tag"
-                      fullWidth={true}
-                      containerstyle={{ width: '100%' }}
-                    />
-                  </div>
-                </Grid>
-            </Grid>
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 17 }}
-                  >
-                    {t('Description')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                    <Tooltip title={t('Description')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                 <div className="clearfix" />
-                  <Field
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                  <Tooltip title={t('Installed Operating System')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <Field
                   component={TextField}
-                  name="Description"
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
+                  disabled={true}
                   variant='outlined'
-                  />
-              </Grid>
-              <Grid item={true} xs={6}>
-                <div style={{ marginTop: '6px' }}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 15 }}
-                  >
-                    {t('Version')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
-                    <Tooltip title={t('Version')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    size='small'
-                    name="version"
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  />
+                  size='small'
+                  name="id"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                // helperText={
+                //   <SubscriptionFocus fieldName="name" />
+                // }
+                />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 17 }}
+                >
+                  {t('Asset ID')}
+                </Typography>
+                <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
+                  <Tooltip title={t('Installed Software')} >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
                 </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 16 }}
-                  >
-                    {t('Serial Number')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '18px 0 0 5px' }}>
-                    <Tooltip title={t('Serial Number')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    size='small'
-                    name="serial_number"
-                    fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 16 }}
-                  >
-                    {t('Responsible Parties')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
-                    <Tooltip title={t('Responsible Parties')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={SelectField}
-                    variant='outlined'
-                    disabled={true}
-                    name="responsible_parties"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                  <Field
-                    component={SelectField}
-                    variant='outlined'
-                    disabled={true}
-                    name="responsible_parties"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Label')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Label')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <ObjectLabelField
-                    variant='outlined'
-                    name="labels"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                </div>
-              </Grid>
-              <Grid item={true} xs={6}>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Vendor Name')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Vendor Name')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="vendor_name"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Release Date')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Release Date')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={DatePickerField}
-                    variant='outlined'
-                    name="release_date"
-                    size='small'
-                    invalidDateMessage={t(
-                      'The value must be a date (YYYY-MM-DD)',
-                    )}
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('Operation State')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('Operation State')}>
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <div className="clearfix" />
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="operational_status"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '100%' }}
-                  />
-                </div>
-              </Grid>
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="asset_id"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </div>
             </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Asset Type')}
+                </Typography>
+                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
+                  <Tooltip title={t('Asset Type')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <AssetType
+                  component={SelectField}
+                  variant='outlined'
+                  name="asset_type"
+                  assetType={assetType}
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '100%' }}
+                  helperText={t('Select Asset Type')}
+                />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Asset Tag')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Asset Tag')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="asset_tag"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </div>
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 17 }}
+              >
+                {t('Description')}
+              </Typography>
+              <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
+                <Tooltip title={t('Description')} >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <Field
+                component={TextField}
+                name="description"
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                variant='outlined'
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div style={{ marginTop: '6px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 15 }}
+                >
+                  {t('Version')}
+                </Typography>
+                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
+                  <Tooltip title={t('Version')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="version"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 16 }}
+                >
+                  {t('Serial Number')}
+                </Typography>
+                <div style={{ float: 'left', margin: '18px 0 0 5px' }}>
+                  <Tooltip title={t('Serial Number')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  size='small'
+                  name="serial_number"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 16 }}
+                >
+                  {t('Responsible Parties')}
+                </Typography>
+                <div style={{ float: 'left', margin: '17px 0 0 5px' }}>
+                  <Tooltip title={t('Responsible Parties')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={SelectField}
+                  variant='outlined'
+                  disabled={true}
+                  name="responsible_parties"
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                />
+                <Field
+                  component={SelectField}
+                  variant='outlined'
+                  disabled={true}
+                  name="responsible_parties"
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Label')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Label')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <ObjectLabelField
+                  variant='outlined'
+                  name="labels"
+                  style={{ marginTop: 20, width: '100%' }}
+                  setFieldValue={setFieldValue}
+                  values={values.objectLabel}
+                />
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Vendor Name')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Vendor Name')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={TextField}
+                  variant='outlined'
+                  name="vendor_name"
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '100%' }}
+                />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Release Date')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Release Date')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={DatePickerField}
+                  variant='outlined'
+                  name="release_date"
+                  size='small'
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '100%' }}
+                />
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Operational State')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Operation State')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <OperationalStatusField
+                  component={SelectField}
+                  variant='outlined'
+                  name="operational_status"
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '100%' }}
+                  helperText={t('Select Operational Status')}
+                />
+              </div>
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );
@@ -456,6 +460,7 @@ CyioDomainObjectAssetCreationOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  assetType: PropTypes.string,
   enableReferences: PropTypes.bool,
   context: PropTypes.array,
   handleClose: PropTypes.func,

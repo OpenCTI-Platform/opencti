@@ -35,7 +35,7 @@ const assetCommonResolvers = {
         throw e
       }
 
-      if (response === undefined) return;
+      if (response === undefined) return [];
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -98,7 +98,7 @@ const assetCommonResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return;
+          return[];
         }
       }
     },
@@ -113,11 +113,11 @@ const assetCommonResolvers = {
         throw e
       }
 
-      if (response === undefined) return;
+      if (response === undefined) return null;
 
       if (Array.isArray(response) && response.length > 0) {
         const first = response[0];
-        if (first === undefined) return;
+        if (first === undefined) return null;
         return (reducer(first));
       } else {
         // Handle reporting Stardog Error
@@ -127,12 +127,13 @@ const assetCommonResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return;
+          return null;
         }
       }
     },
     itAssetList: async ( _, args, context, info  ) => { 
-      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', context.selectMap.getNode("node") );
+      const selectList = context.selectMap.getNode("node")
+      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', selectList );
       var reducer = getReducer('IT-ASSET');
       let response;
       try {
@@ -149,7 +150,7 @@ const assetCommonResolvers = {
         throw e
       }
 
-      if (response === undefined) return;
+      if (response === undefined) return [];
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -212,12 +213,13 @@ const assetCommonResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return;
+          return [];
         }
       }
     },
     itAsset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', context.selectMap.getNode('itAsset'),args.id);
+      const selectList = context.selectMap.getNode("itAsset")
+      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', selectList,args.id);
       var reducer = getReducer('IT-ASSET');
       let response;
       try {
@@ -230,7 +232,7 @@ const assetCommonResolvers = {
       if (response === undefined ) return null;
       if (Array.isArray(response) && response.length > 0) {
         const first = response[0];
-        if (first === undefined) return;
+        if (first === undefined) return null;
         return (reducer(first));
       } else {
         // Handle reporting Stardog Error
@@ -240,7 +242,7 @@ const assetCommonResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return;
+          return null;
         }
       }
     },
@@ -255,7 +257,7 @@ const assetCommonResolvers = {
         throw e
       }
 
-      if (response === undefined) return;
+      if (response === undefined) return[];
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ASSET-LOCATION");
@@ -318,7 +320,7 @@ const assetCommonResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return;
+          return [];
         }
       }
     },
@@ -333,7 +335,7 @@ const assetCommonResolvers = {
         throw e
       }
 
-      if (response === undefined) return;
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const reducer = getReducer("ASSET-LOCATION");
         return reducer(response[0]);  
@@ -345,7 +347,7 @@ const assetCommonResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return;
+          return null;
         }
       }
     }
@@ -402,7 +404,7 @@ const assetCommonResolvers = {
     application_software: 'application-software',
     circuit: 'circuit',
     computer_account: 'computer-account',
-    compute_device: 'compute-device',
+    computing_device: 'computing-device',
     data: 'data',
     database: 'database',
     directory_server: 'directory-server',

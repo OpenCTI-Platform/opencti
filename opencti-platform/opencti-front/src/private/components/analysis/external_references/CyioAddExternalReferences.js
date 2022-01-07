@@ -111,7 +111,7 @@ class CyioAddExternalReferences extends Component {
     this.state = {
       open: false,
       search: '',
-      expanded: true,
+      expanded: false,
     };
   }
 
@@ -137,36 +137,33 @@ class CyioAddExternalReferences extends Component {
       commitMutation({
         mutation: cyioExternalReferenceMutationRelationDelete,
         variables: {
-          id: existingExternalReference.node.id,
-          fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          relationship_type: 'external-reference',
+          toId: externalReferenceEdge.node.id,
+          fromId: this.props.cyioCoreObjectId,
+          fieldName: 'external_reference',
         },
         updater: (store) => {
           const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
           const conn = ConnectionHandler.getConnection(
             entity,
-            'Pagination_externalReferences',
+            'Pagination_cyioExternalReferenceList',
           );
           ConnectionHandler.deleteNode(conn, externalReference.id);
         },
       });
     } else if (!alreadyAdded) {
-      const input = {
-        fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-        relationship_type: 'external-reference',
-      };
       commitMutation({
         mutation: cyioExternalReferenceLinesMutationRelationAdd,
         variables: {
-          id: externalReference.id,
-          input,
+          toId: externalReference.id,
+          fromId: cyioCoreObjectOrCyioCoreRelationshipId,
+          fieldName: 'external_reference',
         },
         updater: (store) => {
           const payload = store
-            .getRootField('externalReferenceEdit')
-            .getLinkedRecord('relationAdd', { input });
-          const relationId = payload.getValue('id');
-          const node = payload.getLinkedRecord('to');
+          // .getRootField('externalReferenceEdit')
+          // .getLinkedRecord('relationAdd', { input });
+          const relationId = payload.getValue('toId');
+          // const node = payload.getLinkedRecord('to');
           const relation = store.get(relationId);
           payload.setLinkedRecord(node, 'node');
           payload.setLinkedRecord(relation, 'relation');
@@ -184,12 +181,9 @@ class CyioAddExternalReferences extends Component {
     this.setState({ open: false, search: '' });
   }
 
-  handleSearch(keyword) {
-    this.setState({ search: keyword });
-  }
-
-  handleClick() {
-    this.setState({ expanded: !this.state.expanded });
+  handleSearch(event) {
+    const keyword = event.target.value;
+    this.setState({ search: keyword, expanded: keyword ? true : false });
   }
 
   render() {
@@ -212,27 +206,30 @@ class CyioAddExternalReferences extends Component {
         >
           <Add fontSize="small" />
         </IconButton>
-      <div classes={{ root: classes.dialogRoot }}>
-      <Dialog
-        maxWidth='md'
-        open={this.state.open}
-        onClose={this.handleClose.bind(this)}
-        timeout="auto"
-        unmountOnExit
-        PaperProps={{
-          style: {
-            backgroundColor: 'transparent',
-            boxShadow: 'none',
-            borderRadius: '0px',
-            overflowY: 'hidden',
-          },
-        }}
-      >
-          <div className={ classes.dialogMain }>
-            <DialogTitle style={{ padding: 10 }}>{t('Add External References')}</DialogTitle>
-            {/* <CardHeader title="Add External Refrences"/> */}
+        <div classes={{ root: classes.dialogRoot }}>
+          <Dialog
+            maxWidth='md'
+            open={this.state.open}
+            onClose={this.handleClose.bind(this)}
+            timeout="auto"
+            unmountOnExit
+            PaperProps={{
+              style: {
+                backgroundColor: 'transparent',
+                boxShadow: 'none',
+                borderRadius: '0px',
+                overflowY: 'hidden',
+              },
+            }}
+          >
+            <div className={classes.dialogMain}>
+              <DialogTitle style={{ padding: 10 }}>{t('Add External References')}</DialogTitle>
+              {/* <CardHeader title="Add External Refrences"/> */}
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <TextField style={{ width: 495 }} InputProps={{
+                <TextField
+                style={{ width: 495 }}
+                onChange={this.handleSearch.bind(this)}
+                InputProps={{
                   endAdornment: (
                     <InputAdornment position="end" >
                       <CyioExternalReferenceCreation
@@ -251,18 +248,18 @@ class CyioAddExternalReferences extends Component {
                 </div>
                 <Divider light={true} />
               </CardActions>
-          </div>
-          <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
-            <div className={ classes.collapse }>
+            </div>
+            <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
+              <div className={classes.collapse}>
                 <QR
                   environment={QueryRendererDarkLight}
                   query={cyioAddExternalReferencesLinesQuery}
                   variables={{
                     search: this.state.search,
-                    count: 20,
+                    count: 4,
                   }}
                   render={({ props }) => {
-                    if (false) {
+                    if (props) {
                       return (
                         <CyioAddExternalReferencesLines
                           cyioCoreObjectOrCyioCoreRelationshipId={
