@@ -112,9 +112,7 @@ const deviceCreationMutation = graphql`
 
 const deviceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  port_number: Yup.number().required(t('This field is required')),
-  portocols: Yup.string(),
-  asset_type: Yup.string().required(t('This field is required')),
+  port_number: Yup.number().moreThan(0, 'The port number must be greater than 0'),
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -136,10 +134,6 @@ class DeviceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const ports = {
-      "port_number": values.port_number,
-      "protocols": values.protocols || 'TCP',
-    }
     const adaptedValues = evolve(
       {
         release_date: () => parse(values.release_date).format(),
@@ -148,15 +142,14 @@ class DeviceCreation extends Component {
     );
     const finalValues = R.pipe(
       R.dissoc('port_number'),
+      R.dissoc('protocols'),
       R.dissoc('installed_operating_system'),
       R.dissoc('installed_hardware'),
       R.dissoc('installed_software'),
       R.dissoc('locations'),
       R.dissoc('connected_to_network'),
-      R.dissoc('protocols'),
       R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
-      R.assoc('ports', ports),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: deviceCreationMutation,
@@ -170,6 +163,7 @@ class DeviceCreation extends Component {
         this.handleClose();
         this.props.history.push('/dashboard/assets/devices');
       },
+      onError: (err => (console.log('DeviceCreation Erro', err))),
     });
     // commitMutation({
     //   mutation: deviceCreationMutation,
@@ -236,7 +230,8 @@ class DeviceCreation extends Component {
             ipv4_address: [],
             locations: [],
             ipv6_address: [],
-            protocols: '',
+            ports: [],
+            protocols: [],
             port_number: '',
             model: '',
             uri: null,
@@ -316,11 +311,16 @@ class DeviceCreation extends Component {
                     {/* <DeviceCreationOverview setFieldValue={setFieldValue} values={values} /> */}
                     <CyioDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
+                      assetType="Device"
                       values={values}
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <DeviceCreationDetails setFieldValue={setFieldValue} />
+                    <DeviceCreationDetails
+                      isSubmitting={isSubmitting}
+                      values={values}
+                      setFieldValue={setFieldValue}
+                    />
                   </Grid>
                 </Grid>
               </Form>
