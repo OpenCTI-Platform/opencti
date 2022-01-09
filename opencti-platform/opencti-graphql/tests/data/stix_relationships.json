@@ -121,7 +121,7 @@
         "observed-data": [
             "consists-of"
         ],
-        "<All STIX Cyber-observable Objects>": [
+        "<all_SCOs>": [
             "consists-of"
         ],
         "malware": [
@@ -173,6 +173,14 @@
         "software": [
             "operating-system"
         ],
+        "file": [
+            "sample",
+            "downloads",
+            "drops"
+        ],
+        "artifact": [
+            "sample"
+        ],
         "threat-actor": [
             "authored-by"
         ],
@@ -209,10 +217,6 @@
             "drops",
             "uses"
         ],
-        "file": [
-            "downloads",
-            "drops"
-        ],
         "vulnerability": [
             "exploits",
             "targets"
@@ -233,6 +237,18 @@
             "host-vm",
             "operating-system",
             "installed-software"
+        ],
+        "<all_SCOs>": [
+            "analysis-sco"
+        ],
+        "file": [
+            "sample"
+        ],
+        "network-traffic": [
+            "sample"
+        ],
+        "artifact": [
+            "sample"
         ]
     },
     "threat-actor": {
@@ -318,6 +334,9 @@
     "file": {
         "directory": [
             "parent-directory"
+        ],
+        "<all_SCOs>": [
+            "contains"
         ],
         "artifact": [
             "content"
