@@ -54,64 +54,66 @@ export default class Stardog extends DataSource {
     this.cache = config.cache || new InMemoryLRUCache()
   }
 
-  async queryById( dbName, sparqlQuery, singularizeSchema ) {
-    return await query.execute( this.conn, dbName, sparqlQuery, 'application/sparql-results+json', 
-    ).then (function (response) {
-      console.log(response);
-      const sparqlResponse = response.body;
-      const converter = new TreeConverter({
-        // The string to split variable names by. 
-        delimiter: '-',
-        // If terms should be converted to their raw value instead of being represented as RDFJS terms
-        materializeRdfJsTerms: true,
-      });
+  /**
+   *
+   * @param options object with parameters for query
+   * @returns {Promise<*>}
+   */
+  async queryById( {dbName, sparqlQuery, queryId = "'not-specified'", singularizeSchema} ) {
+    const response = await query.execute( this.conn, dbName, sparqlQuery, 'application/sparql-results+json')
+        .catch ((err) => {
+          console.log(err);
+          throw err
+        });
 
-      //return SPARQL error response if not successful
-      if (response.status !== 200 ) {
-        return response
-      }
+    throwFailed(response, `Failed to execute query ${queryId}`, sparqlQuery)
 
-      if(sparqlResponse == null) return null;
-      // convert the SPARQL results to JavaScript dictionary
-      var results = converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema );
-      return results;
-    })
-    .catch (function (error) {
-      console.log(error);
+    const sparqlResponse = response.body;
+    const converter = new TreeConverter({
+      // The string to split variable names by.
+      delimiter: '-',
+      // If terms should be converted to their raw value instead of being represented as RDFJS terms
+      materializeRdfJsTerms: true,
     });
-  }
 
-  async queryAll( dbName, sparqlQuery, singularizeSchema, limitValue, offsetValue, ) {
+    //return SPARQL error response if not successful
+    if (response.status !== 200 ) {
+      return response
+    }
+
+    if(sparqlResponse == null) return null;
+    // convert the SPARQL results to JavaScript dictionary
+    var results = converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema );
+    return results;
+
+  }
+  //singularizeSchema, limitValue, offsetValue
+  async queryAll({dbName, sparqlQuery, queryId = "'not-specified'", limitValue, offsetValue, singularizeSchema} ) {
     let params = { reasoning: false };
     if (limitValue !== undefined) params['limit'] =  limitValue
     if (offsetValue !== undefined) params['offset'] = offsetValue
 
-    return await query.execute( this.conn, dbName, sparqlQuery, 'application/sparql-results+json', params, 
-    ).then (function (response) {
-      console.log(response);
-      const sparqlResponse = response.body;
-      const converter = new TreeConverter({
-        // The string to split variable names by. 
-        delimiter: '-',
-        // If terms should be converted to their raw value instead of being represented as RDFJS terms
-        materializeRdfJsTerms: true,
+    const response = await query.execute( this.conn, dbName, sparqlQuery, 'application/sparql-results+json', params)
+      .catch ((err) => {
+        console.log(err);
+        throw err;
       });
 
-      //return SPARQL error response if not successful
-      if (response.status !== 200 ) {
-        return response
-      }
+    throwFailed(response, `Failed to execute query ${queryId}`, sparqlQuery)
 
-      // convert the SPARQL results to JavaScript dictionary
-      var results = converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema );
-      return results;
-    })
-    .catch (function (error) {
-      console.log(error);
+    const sparqlResponse = response.body;
+    const converter = new TreeConverter({
+      // The string to split variable names by.
+      delimiter: '-',
+      // If terms should be converted to their raw value instead of being represented as RDFJS terms
+      materializeRdfJsTerms: true,
     });
+
+    // convert the SPARQL results to JavaScript dictionary
+    return converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema );
   }
 
-  async create( dbName, sparqlQuery, queryId ) {
+  async create( {dbName, sparqlQuery, queryId} ) {
     const response = await query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
     }).catch((err) => {
@@ -122,7 +124,7 @@ export default class Stardog extends DataSource {
     return response;
   }
 
-  async delete( dbName, sparqlQuery, queryId) {
+  async delete( {dbName, sparqlQuery, queryId}) {
     const response = query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
     }).catch((err) => {
@@ -132,7 +134,7 @@ export default class Stardog extends DataSource {
     throwFailed(response, `Failed to execute delete query '${queryId}'`, sparqlQuery)
     return response;
   }
-  async edit( dbName, sparqlQuery, queryId ) {
+  async edit( {dbName, sparqlQuery, queryId }) {
     const response = query.execute( this.conn, dbName, sparqlQuery, 'text/turtle', {
       reasoning: false,
     }).catch((err) => {

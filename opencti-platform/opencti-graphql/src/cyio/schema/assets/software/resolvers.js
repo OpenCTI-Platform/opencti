@@ -11,18 +11,21 @@ import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../ass
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, context, info ) => {
+      const { filter} = args;
       const selectionList = context.selectMap.getNode("node");
       const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList);
       const reducer = getReducer('SOFTWARE');
       let response;
       try {
-        response = await context.dataSources.Stardog.queryAll( 
-          context.dbName, 
-          sparqlQuery,
-          singularizeSchema,
-          // args.first,       // limit
-          // args.offset,      // offset
-          args.filter,      // filter
+        response = await context.dataSources.Stardog.queryAll({
+              dbName: context.dbName,
+              query: sparqlQuery,
+              queryId: "Select All Software Assets",
+              singularizeSchema,
+              // args.first,       // limit
+              // args.offset,      // offset
+              filter,      // filter
+            }
         );
       } catch(e) {
         console.log(e)
@@ -99,8 +102,9 @@ const softwareResolvers = {
       const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, args.id);
       const reducer = getReducer('SOFTWARE');
       let response;
+      const options = {dbName: context.dbName, queryId: "Select Software Asset", sparqlQuery, singularizeSchema}
       try {
-        response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema, )
+        response = await context.dataSources.Stardog.queryById( options )
       } catch(e) {
         console.log(e)
         throw e
@@ -127,19 +131,17 @@ const softwareResolvers = {
     createSoftwareAsset: async ( _, {input}, context,  ) => {
       const dbName = context.dbName;
       const {iri, id, query} = insertQuery(input);
-      let response = await context.dataSources.Stardog.create(dbName, query);
-      if(response.status && response.status > 299) throw new Error(response.body.message);
+      await context.dataSources.Stardog.create({dbName, queryId: "Insert Software Asset",query});
       const connectQuery = addToInventoryQuery(iri);
-      response = await context.dataSources.Stardog.create(dbName, connectQuery);
-      if(response.status && response.status > 299) throw new Error(response.body.message);
+      await context.dataSources.Stardog.create({dbName, queryId: "Insert to Inventory", query: connectQuery});
       return {...input, id};
     },
     deleteSoftwareAsset: async ( _, {id}, context,  ) => {
       const dbName = context.dbName;
       const relationshipQuery = removeFromInventoryQuery(id);
-      await context.dataSources.Stardog.delete(dbName, relationshipQuery);
+      await context.dataSources.Stardog.delete({dbName, query:relationshipQuery, queryId: "Remove from Inventory"});
       const query = deleteQuery(id);
-      await context.dataSources.Stardog.delete(dbName, query);
+      await context.dataSources.Stardog.delete({dbName, query, queryId: "Delete Software Asset"});
       return id;
     },
     editSoftwareAsset: async ( _, {id, input}, context,  ) => {
@@ -149,9 +151,9 @@ const softwareResolvers = {
         "http://scap.nist.gov/ns/asset-identification#Software",
         input,
         predicateMap
-    );
-    await context.dataSources.Stardog.edit(dbName, query);
-    return {id};
+      );
+      await context.dataSources.Stardog.edit({dbName, query, queryId: "Update Software Asset"});
+      return {id};
     },
   },
   // Map enum GraphQL values to data model required values
