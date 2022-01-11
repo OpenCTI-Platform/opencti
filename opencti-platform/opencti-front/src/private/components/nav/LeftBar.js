@@ -110,7 +110,7 @@ const LeftBar = ({
           first_name: me.name,
           last_name: me.lastname,
         });
-
+        localStorage.setItem("currentOrg", res.data.clients.find(obj => { return obj.client_id === currentClient_id}).name)
         setCurrentOrg(res.data.clients.find(obj => { return obj.client_id === currentClient_id}).name);
 
       }).catch((error) => {
