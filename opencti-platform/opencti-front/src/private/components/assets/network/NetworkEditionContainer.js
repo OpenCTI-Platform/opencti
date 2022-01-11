@@ -326,6 +326,7 @@ class NetworkEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={network}
+                      assetType="Network"
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}

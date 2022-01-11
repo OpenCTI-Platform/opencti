@@ -704,7 +704,7 @@ class Scans extends Component {
                            <List>
                              <ListItem>Report Name: {scan.report_name} </ListItem>
                              <ListItem>Policy Name: {scan.policy_name} </ListItem>
-                             <ListItem>Scan Date: {scan.upload_date}</ListItem>
+                             <ListItem>Scan Date: {scan.report_date}</ListItem>
                              <ListItem>Uploaded: {scan.upload_date}</ListItem>
                              <ListItem>Total Vulnerabilities: {scan.total_cve}</ListItem>
                              <ListItem>Unique Vulnerabilities: {scan.unique_cve}</ListItem>

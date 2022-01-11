@@ -2,8 +2,11 @@ import graphql from 'babel-plugin-relay/macro';
 
 // eslint-disable-next-line import/prefer-default-export
 export const itAssetFiltersDeviceFieldsQuery = graphql`
-  query ItAssetFiltersDeviceFieldsQuery {
-    computingDeviceAssetList {
+  query ItAssetFiltersDeviceFieldsQuery(
+    $search: String
+    # $first: Int
+  ) {
+    computingDeviceAssetList(search: $search) {
       edges {
         node {
           id
@@ -17,8 +20,11 @@ export const itAssetFiltersDeviceFieldsQuery = graphql`
 
 // eslint-disable-next-line import/prefer-default-export
 export const itAssetFiltersNetworkFieldsQuery = graphql`
-  query ItAssetFiltersNetworkFieldsQuery {
-    networkAssetList {
+  query ItAssetFiltersNetworkFieldsQuery(
+    $search: String
+    # $first: Int
+  ) {
+    networkAssetList(search: $search) {
       edges {
         node {
           id
@@ -32,8 +38,11 @@ export const itAssetFiltersNetworkFieldsQuery = graphql`
 
 // eslint-disable-next-line import/prefer-default-export
 export const itAssetFiltersSoftwareFieldsQuery = graphql`
-  query ItAssetFiltersSoftwareFieldsQuery {
-    softwareAssetList {
+  query ItAssetFiltersSoftwareFieldsQuery(
+    $search: String
+    # $first: Int
+  ) {
+    softwareAssetList(search: $search) {
       edges {
         node {
           id

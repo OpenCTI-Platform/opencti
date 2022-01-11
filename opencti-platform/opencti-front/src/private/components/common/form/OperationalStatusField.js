@@ -4,54 +4,44 @@ import React, { Component } from 'react';
 import { Field } from 'formik';
 import * as R from 'ramda';
 import MenuItem from '@material-ui/core/MenuItem';
-import graphql from 'babel-plugin-relay/macro';
+import graphql from 'babel-plugin-relay/macro'
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import ItemIcon from '../../../../components/ItemIcon';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
-const assetTypeQuery = graphql`
- query AssetTypeQuery(
-   $type: String!
- ) {
-  __type(name: $type) {
-    name
-    description
-    enumValues {
-      name
+const OperationalStatusFieldQuery = graphql`
+ query OperationalStatusFieldQuery{
+  __type(name: "OperationalStatus" ) {
+    name enumValues {
       description
+      name
     }
   }
 }
 `;
 
-class AssetType extends Component {
+class OperationalStatusField extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      assetTypes: {},
+      operationalStatusList: [],
     }
   }
   componentDidMount() {
-    // console.log('AssetTypeChange', this.props.assetType);
-    fetchDarklightQuery(assetTypeQuery, {
-      type: `${this.props.assetType}AssetTypes`,
-    })
+    fetchDarklightQuery(OperationalStatusFieldQuery)
       .toPromise()
       .then((data) => {
-        const assetTypeEntities = R.pipe(
+        const operationalStatusEntities = R.pipe(
           R.pathOr([], ['__type', 'enumValues']),
           R.map((n) => ({
             label: n.description,
             value: n.name,
-            type: n.name,
           })),
         )(data);
-        console.log('sdasfdsfasAssetType', assetTypeEntities);
         this.setState({
-          assetTypes: {
+          operationalStatusList: {
             ...this.state.entities,
-            assetTypeEntities
+            operationalStatusEntities
           },
         });
       })
@@ -72,18 +62,16 @@ class AssetType extends Component {
       disabled,
       helperText,
     } = this.props;
-    const assetTypes = R.pathOr(
+    const operationalStatusList = R.pathOr(
       [],
-      ['assetTypeEntities'],
-      this.state.assetTypes,
+      ['operationalStatusEntities'],
+      this.state.operationalStatusList,
     );
-    console.log('AssetTypesData', assetTypes);
     return (
       <Field
         component={SelectField}
         name={name}
         label={label}
-        displayEmpty
         fullWidth={true}
         containerstyle={containerstyle}
         variant={variant}
@@ -92,10 +80,10 @@ class AssetType extends Component {
         style={style}
         helperText={helperText}
       >
-        {assetTypes.map((assetType, key) => (
-          assetType.label
-          && <MenuItem key={key} value={assetType.value}>
-            <ItemIcon variant="inline" type={assetType.value} /> {t(assetType.label)}
+        {operationalStatusList.map((operationalStatus, key) => (
+          operationalStatus.label
+          && <MenuItem key={key} value={operationalStatus.value}>
+            {t(operationalStatus.label)}
           </MenuItem>
         ))}
       </Field>
@@ -103,4 +91,4 @@ class AssetType extends Component {
   }
 }
 
-export default inject18n(AssetType);
+export default inject18n(OperationalStatusField);

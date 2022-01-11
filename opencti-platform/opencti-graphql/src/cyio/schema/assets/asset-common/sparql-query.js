@@ -1,4 +1,58 @@
 import {byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, OASIS_NS} from "../../utils.js";
+import { objectTypeMapping } from '../asset-mappings.js';
+
+export const predicateMap = {
+  id: {
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+  },
+  created: {
+    predicate: "<http://darklight.ai/ns/common#created>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "created");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  modified: {
+    predicate: "<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "modified");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  labels: {
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  asset_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
+    binding: function (iri, value) { return  parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  description: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  locations: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#locations>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "locations");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  external_references: {
+    predicate: "<http://darklight.ai/ns/common#external_references>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "external_references");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  notes: {
+    predicate: "<http://darklight.ai/ns/common#notes>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "notes");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  }
+}
 
 
 const selectClause = `
@@ -16,7 +70,8 @@ WHERE {
 `;
 
 const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
-const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{assetType}> .`;
+const typeConstraint = `?iri a <http://scap.nist.gov/ns/asset-identification#{assetType}> .\n`;
+const objectType = `\nOPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type . } \n`;
 
 const predicateBody = `
   ?iri <http://darklight.ai/ns/common#id> ?id .
@@ -89,8 +144,14 @@ const inventoryConstraint = `
 export function getSelectSparqlQuery( type, select, id, filter, ) {
   var filterStr = ''
   var byId = '';
-  let sparqlQuery;
-  // const { selectionClause, predicates } = buildSelectVariables(predicateMap, select)
+  var sparqlQuery;
+  let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
+  selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ?object_type ${selectionClause}`;
+  const selectPortion = `
+${selectionClause}
+FROM <tag:stardog:api:context:named>
+WHERE {
+  `;
 
   switch( type ) {
     case 'ASSET':
@@ -107,15 +168,9 @@ export function getSelectSparqlQuery( type, select, id, filter, ) {
       break;
     case 'IT-ASSET':
       if (id !== undefined) {
-        byId = byIdClause(id);
+        byId = byIdClause(id) + '\n';
       }
-
-      sparqlQuery = selectClause + 
-          typeConstraint.replace('{assetType}', 'ItAsset') + 
-          byId + 
-          predicateBody + 
-          inventoryConstraint + 
-          filterStr + '}';
+      sparqlQuery = selectPortion + typeConstraint.replace('{assetType}', 'ItAsset') + byId + predicates + objectType + inventoryConstraint + filterStr + '}';
       break;
     default:
       throw new Error(`Unsupported query type ' ${type}'`)
@@ -220,7 +275,7 @@ function itAssetReducer( item ) {
     if (item.asset_type !== undefined ) {
       item.object_type = item.asset_type
     } else {
-      item.object_type = 'it-asset';
+      item.object_type = detectAssetType( item );
     }
   }
 
@@ -463,4 +518,12 @@ export const deleteLocationQuery = (id) => {
     }
   }
   `
+}
+
+function detectAssetType( item ) {
+  let className = item.iri.substring(item.iri.lastIndexOf('#') + 1, (item.iri.length - item.id.length) - 1);
+  for ( let [key, value] of Object.entries(objectTypeMapping) ) {
+    if (value == className + 'Asset') return key;
+  }
+  return undefined
 }
