@@ -1,0 +1,742 @@
+{
+    "attack-pattern": {
+        "malware": [
+            "delivers",
+            "uses"
+        ],
+        "identity": [
+            "targets"
+        ],
+        "location": [
+            "targets"
+        ],
+        "vulnerability": [
+            "targets"
+        ],
+        "tool": [
+            "uses"
+        ]
+    },
+    "campaign": {
+        "intrusion-set": [
+            "attributed-to"
+        ],
+        "threat-actor": [
+            "attributed-to"
+        ],
+        "infrastructure": [
+            "compromises",
+            "uses"
+        ],
+        "location": [
+            "originates-from",
+            "targets"
+        ],
+        "identity": [
+            "targets"
+        ],
+        "vulnerability": [
+            "targets"
+        ],
+        "attack-pattern": [
+            "uses"
+        ],
+        "malware": [
+            "uses"
+        ],
+        "tool": [
+            "uses"
+        ]
+    },
+    "course-of-action": {
+        "indicator": [
+            "investigates",
+            "mitigates"
+        ],
+        "attack-pattern": [
+            "mitigates"
+        ],
+        "malware": [
+            "mitigates",
+            "remediates"
+        ],
+        "tool": [
+            "mitigates"
+        ],
+        "vulnerability": [
+            "mitigates",
+            "remediates"
+        ]
+    },
+    "identity": {
+        "location": [
+            "located-at"
+        ]
+    },
+    "indicator": {
+        "attack-pattern": [
+            "indicates"
+        ],
+        "campaign": [
+            "indicates"
+        ],
+        "infrastructure": [
+            "indicates"
+        ],
+        "intrusion-set": [
+            "indicates"
+        ],
+        "malware": [
+            "indicates"
+        ],
+        "threat-actor": [
+            "indicates"
+        ],
+        "tool": [
+            "indicates"
+        ],
+        "observed-data": [
+            "based-on"
+        ]
+    },
+    "infrastructure": {
+        "infrastructure": [
+            "communicates-with",
+            "consists-of",
+            "controls",
+            "uses"
+        ],
+        "ipv4-addr": [
+            "communicates-with",
+            "consists-of"
+        ],
+        "ipv6-addr": [
+            "communicates-with",
+            "consists-of"
+        ],
+        "domain-name": [
+            "communicates-with",
+            "consists-of"
+        ],
+        "url": [
+            "communicates-with",
+            "consists-of"
+        ],
+        "observed-data": [
+            "consists-of"
+        ],
+        "artifact": [
+            "consists-of"
+        ],
+        "autonomous-system": [
+            "consists-of"
+        ],
+        "directory": [
+            "consists-of"
+        ],
+        "email-addr": [
+            "consists-of"
+        ],
+        "email-message": [
+            "consists-of"
+        ],
+        "email-mime-part-type": [
+            "consists-of"
+        ],
+        "file": [
+            "consists-of"
+        ],
+        "windows-pebinary-ext": [
+            "consists-of"
+        ],
+        "windows-pe-optional-header-type": [
+            "consists-of"
+        ],
+        "windows-pe-section-type": [
+            "consists-of"
+        ],
+        "mac-addr": [
+            "consists-of"
+        ],
+        "mutex": [
+            "consists-of"
+        ],
+        "network-traffic": [
+            "consists-of"
+        ],
+        "http-request-ext": [
+            "consists-of"
+        ],
+        "icmp-ext": [
+            "consists-of"
+        ],
+        "socket-ext": [
+            "consists-of"
+        ],
+        "tcp-ext": [
+            "consists-of"
+        ],
+        "process": [
+            "consists-of"
+        ],
+        "windows-process-ext": [
+            "consists-of"
+        ],
+        "windows-service-ext": [
+            "consists-of"
+        ],
+        "user-account": [
+            "consists-of"
+        ],
+        "unix-account-ext": [
+            "consists-of"
+        ],
+        "windows-registry-key": [
+            "consists-of"
+        ],
+        "windows-registry-value-type": [
+            "consists-of"
+        ],
+        "x509-certificate": [
+            "consists-of"
+        ],
+        "x509-v3-extensions-type": [
+            "consists-of"
+        ],
+        "x-opencti-cryptographic-key": [
+            "consists-of"
+        ],
+        "x-opencti-cryptocurrency-wallet": [
+            "consists-of"
+        ],
+        "x-opencti-hostname": [
+            "consists-of"
+        ],
+        "x-opencti-text": [
+            "consists-of"
+        ],
+        "x-opencti-user-agent": [
+            "consists-of"
+        ],
+        "malware": [
+            "controls",
+            "delivers",
+            "hosts"
+        ],
+        "vulnerability": [
+            "has"
+        ],
+        "tool": [
+            "hosts"
+        ],
+        "location": [
+            "located-at"
+        ]
+    },
+    "intrusion-set": {
+        "threat-actor": [
+            "attributed-to"
+        ],
+        "infrastructure": [
+            "compromises",
+            "hosts",
+            "owns",
+            "uses"
+        ],
+        "location": [
+            "originates-from",
+            "targets"
+        ],
+        "identity": [
+            "targets"
+        ],
+        "vulnerability": [
+            "targets"
+        ],
+        "attack-pattern": [
+            "uses"
+        ],
+        "malware": [
+            "uses"
+        ],
+        "tool": [
+            "uses"
+        ]
+    },
+    "malware": {
+        "software": [
+            "operating-system"
+        ],
+        "file": [
+            "sample",
+            "downloads",
+            "drops"
+        ],
+        "artifact": [
+            "sample"
+        ],
+        "threat-actor": [
+            "authored-by"
+        ],
+        "intrusion-set": [
+            "authored-by"
+        ],
+        "infrastructure": [
+            "beacons-to",
+            "exfiltrates-to",
+            "targets",
+            "uses"
+        ],
+        "ipv4-addr": [
+            "communicates-with"
+        ],
+        "ipv6-addr": [
+            "communicates-with"
+        ],
+        "domain-name": [
+            "communicates-with"
+        ],
+        "url": [
+            "communicates-with"
+        ],
+        "malware": [
+            "controls",
+            "downloads",
+            "drops",
+            "uses",
+            "variant-of"
+        ],
+        "tool": [
+            "downloads",
+            "drops",
+            "uses"
+        ],
+        "vulnerability": [
+            "exploits",
+            "targets"
+        ],
+        "location": [
+            "originates-from",
+            "targets"
+        ],
+        "identity": [
+            "targets"
+        ],
+        "attack-pattern": [
+            "uses"
+        ]
+    },
+    "malware-analysis": {
+        "software": [
+            "host-vm",
+            "operating-system",
+            "installed-software"
+        ],
+        "artifact": [
+            "analysis-sco",
+            "sample"
+        ],
+        "autonomous-system": [
+            "analysis-sco"
+        ],
+        "directory": [
+            "analysis-sco"
+        ],
+        "domain-name": [
+            "analysis-sco"
+        ],
+        "email-addr": [
+            "analysis-sco"
+        ],
+        "email-message": [
+            "analysis-sco"
+        ],
+        "email-mime-part-type": [
+            "analysis-sco"
+        ],
+        "file": [
+            "analysis-sco",
+            "sample"
+        ],
+        "windows-pebinary-ext": [
+            "analysis-sco"
+        ],
+        "windows-pe-optional-header-type": [
+            "analysis-sco"
+        ],
+        "windows-pe-section-type": [
+            "analysis-sco"
+        ],
+        "ipv4-addr": [
+            "analysis-sco"
+        ],
+        "ipv6-addr": [
+            "analysis-sco"
+        ],
+        "mac-addr": [
+            "analysis-sco"
+        ],
+        "mutex": [
+            "analysis-sco"
+        ],
+        "network-traffic": [
+            "analysis-sco",
+            "sample"
+        ],
+        "http-request-ext": [
+            "analysis-sco"
+        ],
+        "icmp-ext": [
+            "analysis-sco"
+        ],
+        "socket-ext": [
+            "analysis-sco"
+        ],
+        "tcp-ext": [
+            "analysis-sco"
+        ],
+        "process": [
+            "analysis-sco"
+        ],
+        "windows-process-ext": [
+            "analysis-sco"
+        ],
+        "windows-service-ext": [
+            "analysis-sco"
+        ],
+        "url": [
+            "analysis-sco"
+        ],
+        "user-account": [
+            "analysis-sco"
+        ],
+        "unix-account-ext": [
+            "analysis-sco"
+        ],
+        "windows-registry-key": [
+            "analysis-sco"
+        ],
+        "windows-registry-value-type": [
+            "analysis-sco"
+        ],
+        "x509-certificate": [
+            "analysis-sco"
+        ],
+        "x509-v3-extensions-type": [
+            "analysis-sco"
+        ],
+        "x-opencti-cryptographic-key": [
+            "analysis-sco"
+        ],
+        "x-opencti-cryptocurrency-wallet": [
+            "analysis-sco"
+        ],
+        "x-opencti-hostname": [
+            "analysis-sco"
+        ],
+        "x-opencti-text": [
+            "analysis-sco"
+        ],
+        "x-opencti-user-agent": [
+            "analysis-sco"
+        ]
+    },
+    "threat-actor": {
+        "identity": [
+            "attributed-to",
+            "impersonates",
+            "targets"
+        ],
+        "infrastructure": [
+            "compromises",
+            "hosts",
+            "owns",
+            "uses"
+        ],
+        "location": [
+            "located-at",
+            "targets"
+        ],
+        "vulnerability": [
+            "targets"
+        ],
+        "attack-pattern": [
+            "uses"
+        ],
+        "malware": [
+            "uses"
+        ],
+        "tool": [
+            "uses"
+        ]
+    },
+    "tool": {
+        "malware": [
+            "delivers",
+            "drops"
+        ],
+        "vulnerability": [
+            "has",
+            "targets"
+        ],
+        "identity": [
+            "targets"
+        ],
+        "infrastructure": [
+            "targets",
+            "uses"
+        ],
+        "location": [
+            "targets"
+        ]
+    },
+    "directory": {
+        "directory": [
+            "contains"
+        ],
+        "file": [
+            "contains"
+        ]
+    },
+    "domain-name": {
+        "domain-name": [
+            "resolves-to"
+        ],
+        "ipv4-addr": [
+            "resolves-to"
+        ],
+        "ipv6-addr": [
+            "resolves-to"
+        ]
+    },
+    "email-addr": {
+        "user-account": [
+            "belongs-to"
+        ]
+    },
+    "email-message": {
+        "email-addr": [
+            "from",
+            "sender",
+            "to",
+            "cc",
+            "bcc"
+        ],
+        "email-mime-part-type": [
+            "body-multipart"
+        ],
+        "artifact": [
+            "raw-email"
+        ]
+    },
+    "email-mime-part-type": {
+        "artifact": [
+            "body-raw"
+        ],
+        "file": [
+            "body-raw"
+        ]
+    },
+    "file": {
+        "directory": [
+            "parent-directory",
+            "contains"
+        ],
+        "artifact": [
+            "contains",
+            "content"
+        ],
+        "autonomous-system": [
+            "contains"
+        ],
+        "domain-name": [
+            "contains"
+        ],
+        "email-addr": [
+            "contains"
+        ],
+        "email-message": [
+            "contains"
+        ],
+        "email-mime-part-type": [
+            "contains"
+        ],
+        "file": [
+            "contains"
+        ],
+        "windows-pebinary-ext": [
+            "contains"
+        ],
+        "windows-pe-optional-header-type": [
+            "contains"
+        ],
+        "windows-pe-section-type": [
+            "contains"
+        ],
+        "ipv4-addr": [
+            "contains"
+        ],
+        "ipv6-addr": [
+            "contains"
+        ],
+        "mac-addr": [
+            "contains"
+        ],
+        "mutex": [
+            "contains"
+        ],
+        "network-traffic": [
+            "contains"
+        ],
+        "http-request-ext": [
+            "contains"
+        ],
+        "icmp-ext": [
+            "contains"
+        ],
+        "socket-ext": [
+            "contains"
+        ],
+        "tcp-ext": [
+            "contains"
+        ],
+        "process": [
+            "contains"
+        ],
+        "windows-process-ext": [
+            "contains"
+        ],
+        "windows-service-ext": [
+            "contains"
+        ],
+        "url": [
+            "contains"
+        ],
+        "user-account": [
+            "contains"
+        ],
+        "unix-account-ext": [
+            "contains"
+        ],
+        "windows-registry-key": [
+            "contains"
+        ],
+        "windows-registry-value-type": [
+            "contains"
+        ],
+        "x509-certificate": [
+            "contains"
+        ],
+        "x509-v3-extensions-type": [
+            "contains"
+        ],
+        "x-opencti-cryptographic-key": [
+            "contains"
+        ],
+        "x-opencti-cryptocurrency-wallet": [
+            "contains"
+        ],
+        "x-opencti-hostname": [
+            "contains"
+        ],
+        "x-opencti-text": [
+            "contains"
+        ],
+        "x-opencti-user-agent": [
+            "contains"
+        ]
+    },
+    "archive-ext": {
+        "file": [
+            "contains"
+        ],
+        "directory": [
+            "contains"
+        ]
+    },
+    "ntfs-ext": {
+        "alternate-data-stream-type": [
+            "alternate-data-streams"
+        ]
+    },
+    "windows-pebinary-ext": {
+        "windows-pe-section-type": [
+            "sections"
+        ]
+    },
+    "ipv4-addr": {
+        "autonomous-system": [
+            "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
+        ]
+    },
+    "ipv6-addr": {
+        "autonomous-system": [
+            "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
+        ]
+    },
+    "network-traffic": {
+        "domain-name": [
+            "src",
+            "dst"
+        ],
+        "ipv4-addr": [
+            "src",
+            "dst"
+        ],
+        "ipv6-addr": [
+            "src",
+            "dst"
+        ],
+        "mac-addr": [
+            "src",
+            "dst"
+        ],
+        "artifact": [
+            "src-payload",
+            "dst-payload"
+        ],
+        "network-traffic": [
+            "encapsulates",
+            "encapsulated-by"
+        ]
+    },
+    "http-request-ext": {
+        "artifact": [
+            "message-body-data"
+        ]
+    },
+    "process": {
+        "network-traffic": [
+            "opened-connection"
+        ],
+        "user-account": [
+            "creator-user"
+        ],
+        "file": [
+            "image"
+        ],
+        "process": [
+            "parent",
+            "child"
+        ]
+    },
+    "windows-service-ext": {
+        "file": [
+            "service-dll"
+        ]
+    },
+    "windows-registry-key": {
+        "windows-registry-value-type": [
+            "values"
+        ],
+        "user-account": [
+            "creator-user"
+        ]
+    }
+}

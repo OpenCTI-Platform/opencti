@@ -319,6 +319,11 @@
             "resolves-to"
         ]
     },
+    "email-addr": {
+        "user-account": [
+            "belongs-to"
+        ]
+    },
     "email-message": {
         "email-addr": [
             "from",
@@ -327,8 +332,19 @@
             "cc",
             "bcc"
         ],
+        "email-mime-part-type": [
+            "body-multipart"
+        ],
         "artifact": [
             "raw-email"
+        ]
+    },
+    "email-mime-part-type": {
+        "artifact": [
+            "body-raw"
+        ],
+        "file": [
+            "body-raw"
         ]
     },
     "file": {
@@ -342,20 +358,38 @@
             "content"
         ]
     },
-    "ipv4-addr": {
-        "mac-addr": [
-            "resolves-to"
+    "archive-ext": {
+        "file": [
+            "contains"
         ],
+        "directory": [
+            "contains"
+        ]
+    },
+    "ntfs-ext": {
+        "alternate-data-stream-type": [
+            "alternate-data-streams"
+        ]
+    },
+    "windows-pebinary-ext": {
+        "windows-pe-section-type": [
+            "sections"
+        ]
+    },
+    "ipv4-addr": {
         "autonomous-system": [
             "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
         ]
     },
     "ipv6-addr": {
-        "mac-addr": [
-            "resolves-to"
-        ],
         "autonomous-system": [
             "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
         ]
     },
     "network-traffic": {
@@ -384,6 +418,11 @@
             "encapsulated-by"
         ]
     },
+    "http-request-ext": {
+        "artifact": [
+            "message-body-data"
+        ]
+    },
     "process": {
         "network-traffic": [
             "opened-connection"
@@ -399,7 +438,15 @@
             "child"
         ]
     },
+    "windows-service-ext": {
+        "file": [
+            "service-dll"
+        ]
+    },
     "windows-registry-key": {
+        "windows-registry-value-type": [
+            "values"
+        ],
         "user-account": [
             "creator-user"
         ]
