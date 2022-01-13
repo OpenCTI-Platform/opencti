@@ -78,7 +78,7 @@ class WeaknessAccordionCards extends Component {
               <TableHead>
                 <TableRow>
                   <TableCell>Rank</TableCell>
-                  <TableCell>Products</TableCell>
+                  <TableCell>Weaknesses</TableCell>
                   <TableCell align="right">Count</TableCell>
                 </TableRow>
               </TableHead>
