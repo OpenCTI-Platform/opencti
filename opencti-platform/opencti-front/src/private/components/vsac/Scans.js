@@ -380,7 +380,7 @@ class Scans extends Component {
     const onNewAnalysis = (id, client, params) => {
       createNewScanAnalysis(id, client, params)
         .then((response) => {
-          
+          handleDialogClose();
           console.log(response)
         })
         .catch((error) => {
@@ -479,6 +479,7 @@ class Scans extends Component {
             <NewAnalysis
               scans={this.state.scans}
               client={this.state.dialogParams.client}
+              onClose={handleDialogClose}
               action={onNewAnalysis}
             />
           );
@@ -658,6 +659,9 @@ class Scans extends Component {
                                   onClick={() =>
                                     handleDialogOpen({
                                       modal: "New Analysis",
+                                      id: scan.id,
+                                      client:
+                                        this.state.client_ID,
                                     })
                                   }
                                 >
