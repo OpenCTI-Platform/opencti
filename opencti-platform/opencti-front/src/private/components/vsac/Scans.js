@@ -472,12 +472,14 @@ class Scans extends Component {
       refreshAnalysis();
     }
     const renderDialogSwitch = () => {
+      console.log(this.state.dialogParams)
       switch (this.state.dialogParams.modal) {
         case "New Analysis":
           return (
             <NewAnalysis
               scans={this.state.scans}
               client={this.state.dialogParams.client}
+              onClose={handleDialogClose}
               action={onNewAnalysis}
             />
           );
@@ -508,6 +510,8 @@ class Scans extends Component {
             <Delete
               id={this.state.dialogParams.id}
               client={this.state.dialogParams.client}
+              scanDate={this.state.dialogParams.scanDate}
+              onClose={handleDialogClose}
               action={onDeleteAnalysis}
             />
           );
@@ -878,6 +882,7 @@ class Scans extends Component {
                                   id: analysis.id,
                                   client:
                                     this.state.client_ID,
+                                  scanDate: analysis.scan.submission_date,
                                 })
                               }
                             >
@@ -970,6 +975,7 @@ class Scans extends Component {
                     </CardContent>
                     <CardActions style={{ justifyContent: "right" }}>
                       <Button
+                        disabled={loadingAnalysises}
                         variant="contained"
                         color="primary"
                         startIcon={<CloudUploadIcon />}

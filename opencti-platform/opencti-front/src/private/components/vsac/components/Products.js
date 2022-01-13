@@ -69,7 +69,7 @@ class Products extends Component {
     return (
       <Grid item={true} xs={12}>
         <Typography variant="h4" gutterBottom={true}>
-          These hosts are susceptible to attack...
+        ...With products...
         </Typography>
         <Paper elevation={2} style={{ marginBottom: 20, minHeight: "300px" }}>
           <TableContainer style={{ maxHeight: 325 }}>
