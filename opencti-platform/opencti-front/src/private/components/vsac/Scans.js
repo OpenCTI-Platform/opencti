@@ -479,6 +479,7 @@ class Scans extends Component {
             <NewAnalysis
               scans={this.state.scans}
               client={this.state.dialogParams.client}
+              onClose={handleDialogClose}
               action={onNewAnalysis}
             />
           );

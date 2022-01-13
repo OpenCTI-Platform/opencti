@@ -188,6 +188,10 @@ class NewAnalysis extends Component {
 			this.props.action(this.state.id, this.state.client, params )
 		}
 
+		const handleClose = () => {
+			this.props.onClose();
+		};
+
 		return (
 			<Paper
 				elevation={2}
@@ -280,6 +284,7 @@ class NewAnalysis extends Component {
 						<Button
 							size="small"
 							color="secondary"
+							onClick={handleClose}
 						>
 							Cancel
 						</Button>
