@@ -201,23 +201,9 @@ class ExploreResults extends Component {
           this.setState({ filteredResultsData: response.data });
 
           if (params.host_ip) {
-            const currentResult = response.data.find(
-              ({ host_ip }) => host_ip === params.host_ip
-            );
-          }
-          /*
-          if(filteredResultsData.length == 1){
-            this.setState({ currentResult: filteredResultsData });
-          } else {
+            const currentResult = response.data.find((element) => {return element.host_ip === params.host_ip})
             this.setState({ currentResult: currentResult });
           }
-         
-
-         const detailParams = {
-            host_ip: currentResult.host_ip,
-            cpe_id: currentResult.software,
-            solution: currentResult.solution,
-          }; */
 
           const detailParams = {
             ...(params.host_ip && { host_ip: params.host_ip }),
