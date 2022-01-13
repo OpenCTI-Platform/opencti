@@ -8,6 +8,7 @@ const stixRelationships = {
   frontend: require('../../data/stix_relationships-frontend.json'),
 };
 
+// List of SCOs
 const scoList = [
   'artifact',
   'autonomous-system',
@@ -16,7 +17,7 @@ const scoList = [
   'email-addr',
   'email-message',
   'email-mime-part-type',
-  'stixfile', // file original name
+  'stixfile',
   'windows-pebinary-ext',
   'windows-pe-optional-header-type',
   'windows-pe-section-type',
@@ -46,12 +47,13 @@ const scoList = [
   'x-opencti-user-agent',
 ];
 
+// Translation dictionary for the translation of STIX object names into
+// the DB schema names for OpenCTI
 const openctiStixMapping = {
   identity: {
     frontend: ['individual', 'organization', 'sector'], // 'system'],
     backend: ['individual', 'organization', 'sector'], // 'system'],
   },
-
   location: {
     frontend: ['region', 'country', 'city', 'position'],
     backend: ['region', 'country', 'city', 'position'],
@@ -70,12 +72,7 @@ const openctiStixMapping = {
   },
 };
 
-// relationships which aren't implemented on purpose
-const openctiRelationshipException = {
-  'threat-actor_sector': ['attributed-to', 'impersonates'],
-};
-
-// SOs which aren't yet implemented in OpenCTI
+// SCOs which aren't yet implemented in OpenCTI
 const openctiSCOException = [
   'malware-analysis',
   'archive-ext',
@@ -96,12 +93,22 @@ const openctiSCOException = [
   'unix-account-ext',
 ];
 
+// entire relations which are not implement in openCTI
+const openctiRelationException = ['incident_incident'];
+
+// relationships which aren't implemented on purpose
+const openctiRelationshipException = {
+  'threat-actor_sector': ['attributed-to', 'impersonates'],
+};
+
+// SCO relationships to avoid clashes with SDO relationships
+// Remove this once this approach is deprecated
 const openctiRelationshipMapping = {
   'belongs-to': 'obs_belongs-to',
   content: 'obs_content',
 };
 
-// frontend relationships
+// frontend relationships (hardcoded since there is no test suite for the frontend)
 const frontendSDORelationships = {
   'Attack-Pattern_City': ['targets'],
   'Attack-Pattern_Country': ['targets'],
@@ -296,7 +303,6 @@ const frontendSDORelationships = {
   'Threat-Actor_Threat-Actor': ['part-of'],
   'Threat-Actor_Tool': ['uses'],
   'Threat-Actor_Vulnerability': ['targets'],
-  'Tool_Attack-Pattern': ['uses'],
   Tool_City: ['targets'],
   Tool_Country: ['targets'],
   Tool_Individual: ['targets'],
@@ -309,7 +315,7 @@ const frontendSDORelationships = {
   Tool_Vulnerability: ['has', 'targets'],
 };
 
-// frontend relationships
+// frontend relationships (hardcoded since there is no test suite for the frontend)
 const frontendSCORelationships = {
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
@@ -393,6 +399,7 @@ describe('Test that all STIX relationships are correctly implemented', () => {
   Object.entries(openctiDefinitions).forEach(([location, implementationDictionary]) => {
     Object.entries(stixRelationships[location]).forEach(([sourceObject, targetAndRelationships]) => {
       Object.entries(targetAndRelationships).forEach(([targetObject, stixRelationship]) => {
+        // Translate the STIX Objects to OpenCTI object names
         let sources = [sourceObject];
         if (sourceObject in openctiStixMapping) {
           sources = openctiStixMapping[sourceObject][location];
@@ -409,6 +416,10 @@ describe('Test that all STIX relationships are correctly implemented', () => {
               .filter((v) => !openctiSCOException.includes(v))
               .forEach((target) => {
                 const relationshipName = `${source}_${target}`;
+                // Skip if relationship is excluded
+                if (openctiRelationException.includes(relationshipName)) {
+                  return;
+                }
 
                 it(`[${location}] Verifying that the relation edge '${relationshipName}' is implemented in OpenCTI`, () => {
                   expect(Object.keys(implementationDictionary)).toContain(relationshipName);
@@ -422,12 +433,14 @@ describe('Test that all STIX relationships are correctly implemented', () => {
                   );
                 }
 
+                // Translate certain SCO relationships
                 if (scoList.includes(source) && scoList.includes(target)) {
                   ctiRelationships = ctiRelationships.map((n) =>
                     n in openctiRelationshipMapping ? openctiRelationshipMapping[n] : n
                   );
                 }
-                it(`[${location}] Verifying that the relationship '${relationshipName}' contains all STIX relationships (${ctiRelationships})`, () => {
+
+                it(`[${location}] Verifying that the relationship '${relationshipName}' contains all STIX relationships (${stixRelationship})`, () => {
                   expect(implementationDictionary[relationshipName].sort()).toEqual(ctiRelationships.sort());
                 });
                 processedRelationships[location] = [...processedRelationships[location], relationshipName];
@@ -435,9 +448,11 @@ describe('Test that all STIX relationships are correctly implemented', () => {
           });
       });
     });
-    // const difference = Object.keys(openctiDefinitions.backend).filter(x => !processedRelationships.backend.includes(x));
-    // it(`[${location}] Verifying that no unchecked relationships are implemented in OpenCTI`, () => {
-    //   expect(difference).toEqual([]);
-    // });
+    const difference = Object.keys(openctiDefinitions.backend).filter(
+      (x) => !processedRelationships.backend.includes(x)
+    );
+    it(`[${location}] Verifying that no unchecked relationships are implemented in OpenCTI`, () => {
+      expect(difference).toEqual([]);
+    });
   });
 });

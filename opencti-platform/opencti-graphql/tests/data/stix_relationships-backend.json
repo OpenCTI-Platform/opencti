@@ -1,5 +1,30 @@
 {
+    "ipv4-addr": {
+        "location": [
+            "located-at"
+        ],
+        "autonomous-system": [
+            "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
+        ]
+    },
+    "ipv6-addr": {
+        "location": [
+            "located-at"
+        ],
+        "autonomous-system": [
+            "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
+        ]
+    },
     "attack-pattern": {
+        "attack-pattern": [
+            "subtechnique-of"
+        ],
         "malware": [
             "delivers",
             "uses"
@@ -18,6 +43,9 @@
         ]
     },
     "campaign": {
+        "system": [
+            "targets"
+        ],
         "intrusion-set": [
             "attributed-to"
         ],
@@ -48,32 +76,47 @@
             "uses"
         ]
     },
-    "course-of-action": {
-        "indicator": [
-            "investigates",
-            "mitigates"
+    "individual": {
+        "individual": [
+            "part-of"
         ],
-        "attack-pattern": [
-            "mitigates"
-        ],
-        "malware": [
-            "mitigates",
-            "remediates"
-        ],
-        "tool": [
-            "mitigates"
-        ],
-        "vulnerability": [
-            "mitigates",
-            "remediates"
+        "organization": [
+            "part-of"
         ]
     },
-    "identity": {
-        "location": [
+    "organization": {
+        "organization": [
+            "part-of"
+        ],
+        "sector": [
+            "part-of"
+        ]
+    },
+    "sector": {
+        "sector": [
+            "part-of"
+        ]
+    },
+    "system": {
+        "organization": [
+            "belongs-to"
+        ],
+        "region": [
             "located-at"
         ]
     },
+    "incident": {
+        "campaign": [
+            "attributed-to"
+        ]
+    },
     "indicator": {
+        "indicator": [
+            "derived-from"
+        ],
+        "vulnerability": [
+            "indicates"
+        ],
         "attack-pattern": [
             "indicates"
         ],
@@ -99,47 +142,10 @@
             "based-on"
         ]
     },
-    "infrastructure": {
-        "infrastructure": [
-            "communicates-with",
-            "consists-of",
-            "controls",
-            "uses"
-        ],
-        "ipv4-addr": [
-            "communicates-with"
-        ],
-        "ipv6-addr": [
-            "communicates-with"
-        ],
-        "domain-name": [
-            "communicates-with"
-        ],
-        "url": [
-            "communicates-with"
-        ],
-        "observed-data": [
-            "consists-of"
-        ],
-        "<all_SCOs>": [
-            "consists-of"
-        ],
-        "malware": [
-            "controls",
-            "delivers",
-            "hosts"
-        ],
-        "vulnerability": [
-            "has"
-        ],
-        "tool": [
-            "hosts"
-        ],
-        "location": [
-            "located-at"
-        ]
-    },
     "intrusion-set": {
+        "system": [
+            "targets"
+        ],
         "threat-actor": [
             "attributed-to"
         ],
@@ -169,7 +175,33 @@
             "uses"
         ]
     },
+    "city": {
+        "country": [
+            "located-at"
+        ],
+        "region": [
+            "located-at"
+        ]
+    },
+    "country": {
+        "region": [
+            "located-at"
+        ]
+    },
+    "position": {
+        "city": [
+            "located-at"
+        ]
+    },
+    "region": {
+        "region": [
+            "located-at"
+        ]
+    },
     "malware": {
+        "system": [
+            "targets"
+        ],
         "software": [
             "operating-system"
         ],
@@ -232,26 +264,10 @@
             "uses"
         ]
     },
-    "malware-analysis": {
-        "software": [
-            "host-vm",
-            "operating-system",
-            "installed-software"
-        ],
-        "<all_SCOs>": [
-            "analysis-sco"
-        ],
-        "file": [
-            "sample"
-        ],
-        "network-traffic": [
-            "sample"
-        ],
-        "artifact": [
-            "sample"
-        ]
-    },
     "threat-actor": {
+        "threat-actor": [
+            "part-of"
+        ],
         "identity": [
             "attributed-to",
             "impersonates",
@@ -278,6 +294,90 @@
         ],
         "tool": [
             "uses"
+        ]
+    },
+    "course-of-action": {
+        "indicator": [
+            "investigates",
+            "mitigates"
+        ],
+        "attack-pattern": [
+            "mitigates"
+        ],
+        "malware": [
+            "mitigates",
+            "remediates"
+        ],
+        "tool": [
+            "mitigates"
+        ],
+        "vulnerability": [
+            "mitigates",
+            "remediates"
+        ]
+    },
+    "identity": {
+        "location": [
+            "located-at"
+        ]
+    },
+    "infrastructure": {
+        "infrastructure": [
+            "communicates-with",
+            "consists-of",
+            "controls",
+            "uses"
+        ],
+        "ipv4-addr": [
+            "communicates-with"
+        ],
+        "ipv6-addr": [
+            "communicates-with"
+        ],
+        "domain-name": [
+            "communicates-with"
+        ],
+        "url": [
+            "communicates-with"
+        ],
+        "observed-data": [
+            "consists-of"
+        ],
+        "<all_SCOs>": [
+            "consists-of"
+        ],
+        "malware": [
+            "controls",
+            "delivers",
+            "hosts"
+        ],
+        "vulnerability": [
+            "has"
+        ],
+        "tool": [
+            "hosts"
+        ],
+        "location": [
+            "located-at"
+        ]
+    },
+    "malware-analysis": {
+        "software": [
+            "host-vm",
+            "operating-system",
+            "installed-software"
+        ],
+        "<all_SCOs>": [
+            "analysis-sco"
+        ],
+        "file": [
+            "sample"
+        ],
+        "network-traffic": [
+            "sample"
+        ],
+        "artifact": [
+            "sample"
         ]
     },
     "tool": {
@@ -374,22 +474,6 @@
     "windows-pebinary-ext": {
         "windows-pe-section-type": [
             "sections"
-        ]
-    },
-    "ipv4-addr": {
-        "autonomous-system": [
-            "belongs-to"
-        ],
-        "mac-addr": [
-            "resolves-to"
-        ]
-    },
-    "ipv6-addr": {
-        "autonomous-system": [
-            "belongs-to"
-        ],
-        "mac-addr": [
-            "resolves-to"
         ]
     },
     "network-traffic": {
