@@ -219,11 +219,6 @@ const UserPreferencesModal = (props) => {
                 D
               </Avatar>
             }
-            action={
-              <IconButton aria-label="settings">
-                <MoreVertIcon />
-              </IconButton>
-            }
             title={me.name}
             subheader={me.user_email}
           />
