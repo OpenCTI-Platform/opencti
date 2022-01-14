@@ -1498,6 +1498,7 @@ class OpenCTIStix2:
             "Vulnerability": self.opencti.vulnerability.list,
             "Incident": self.opencti.incident.list,
             "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.list,
+            "stix-sighting-relationship": self.opencti.stix_sighting_relationship.list,
         }
         do_list = lister.get(
             entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
