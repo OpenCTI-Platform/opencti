@@ -762,6 +762,7 @@ class Scans extends Component {
         <Grid container={true} spacing={3}>
           {!loadingAnalysises ? (
             this.state.analysises.map((analysis, i) => {
+              console.log(analysis)
               return (
                 <Grid item={true} xs={4}>
                   <Paper
@@ -881,7 +882,7 @@ class Scans extends Component {
                                   id: analysis.id,
                                   client:
                                     this.state.client_ID,
-                                  scanDate: analysis.scan.submission_date,
+                                  date: analysis.scan.completed_date,
                                 })
                               }
                             >

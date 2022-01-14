@@ -128,7 +128,7 @@ class Delete extends Component {
           <CardHeader title="LocalHost:3000" />
           <CardContent>
             Are you sure you wish to delete the analysis from{' '}
-            {moment(this.props.scanDate).fromNow()}?
+            {moment(this.props.date).fromNow()}?
           </CardContent>
           <CardActions style={{ justifyContent: 'right' }}>
             <Button
