@@ -69,6 +69,7 @@ import {
   Scatter,
   XAxis,
   YAxis,
+  ZAxis,
   CartesianGrid,
   ReferenceLine,
   Tooltip,
@@ -227,7 +228,7 @@ class Scans extends Component {
     };
   }
 
-  
+
 
   sortScansByReportDate(unSorted) {
     const scans = unSorted
@@ -239,7 +240,7 @@ class Scans extends Component {
   }
 
   componentDidMount() {
-
+    
     this.setState({client_ID: localStorage.getItem('client_id')},function() {
 
       fetchAllScans(this.state.client_ID)
@@ -261,22 +262,22 @@ class Scans extends Component {
           let scatterPlotData = [];
 
           analysises.forEach(analysis =>{
-           getAnalysisSummary(analysis.id,this.state.client_ID)
-            .then((response) => {
-              let scatterPlot = [];
+            getAnalysisSummary(analysis.id,this.state.client_ID)
+              .then((response) => {
+                let scatterPlot = [];
 
-              response.data.forEach((item) => {
-                scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
-              });
+                response.data.forEach((item) => {
+                  scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                });
 
-               scatterPlotData.push(scatterPlot)
+                scatterPlotData.push(scatterPlot)
 
-            this.setState({scatterPlotData: scatterPlotData});
+                this.setState({scatterPlotData: scatterPlotData});
 
-            })
-            .catch((error) => {
-              console.log(error);
-            })
+              })
+              .catch((error) => {
+                console.log(error);
+              })
           })
           this.setState({ analysises: analysises });
           this.setState({ loadingAnalysises: false });
@@ -284,7 +285,7 @@ class Scans extends Component {
         .catch((error) => {
           console.log(error);
         });
-      });
+    });
   }
 
   render() {
@@ -366,7 +367,7 @@ class Scans extends Component {
     const handleLinkClink = (path, data) => {
       this.props.history.push({
         pathname: path,
-          state: data 
+        state: data
       });
     }
 
@@ -380,7 +381,6 @@ class Scans extends Component {
     const onNewAnalysis = (id, client, params) => {
       createNewScanAnalysis(id, client, params)
         .then((response) => {
-          handleDialogClose();
           console.log(response)
         })
         .catch((error) => {
@@ -443,23 +443,23 @@ class Scans extends Component {
           let scatterPlotData = [];
 
           analysises.forEach(analysis =>{
-         getAnalysisSummary(analysis.id,this.state.client_ID)
-          .then((response) => {
-            
-            let scatterPlot = [];
-            response.data.forEach((item) => {
-                scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
-            });
+            getAnalysisSummary(analysis.id,this.state.client_ID)
+              .then((response) => {
 
-             scatterPlotData.push(scatterPlot)
+                let scatterPlot = [];
+                response.data.forEach((item) => {
+                  scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                });
 
-          this.setState({scatterPlotData: scatterPlotData});
+                scatterPlotData.push(scatterPlot)
 
+                this.setState({scatterPlotData: scatterPlotData});
+
+              })
+              .catch((error) => {
+                console.log(error);
+              })
           })
-          .catch((error) => {
-            console.log(error);
-          })
-        })
           this.setState({ analysises: analysises });
           this.setState({ loadingAnalysises: false });
         })
@@ -516,11 +516,11 @@ class Scans extends Component {
             />
           );
         case "Vulnerability Scan":
-          return <VulnerabilityScan 
-                  client_ID={this.state.client_ID} 
-                  rerenderParentCallback={rerenderParentCallback}
-                  onClose={handleDialogClose}
-                  />;
+          return <VulnerabilityScan
+            client_ID={this.state.client_ID}
+            rerenderParentCallback={rerenderParentCallback}
+            onClose={handleDialogClose}
+          />;
         default:
           return "foo";
       }
@@ -531,9 +531,9 @@ class Scans extends Component {
 
         return (
 
-          <div 
-          className="custom-tooltip" 
-          style={{backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10, border: 1, padding: 10}}>
+          <div
+            className="custom-tooltip"
+            style={{backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10, border: 1, padding: 10}}>
             <p className="label" style={{paddingBottom: 5}}>{payload[0].payload.cwe_name}</p>
             <p className="weakness" style={{paddingBottom: 5}}>{`Weakness Score: ${payload[0].payload.score}`}</p>
             <p className="host" style={{paddingBottom: 5}}>{`Hosts with Weakness: ${payload[0].payload.host_count_total} (${payload[0].payload.x}%)`}</p>
@@ -636,7 +636,7 @@ class Scans extends Component {
                   {!loadingScans ? (
                     renderScans.map((scan, i) => {
                       return (
-                        <ListItem 
+                        <ListItem
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                           onMouseLeave={(e) => handlePopoverClose()}
@@ -650,43 +650,40 @@ class Scans extends Component {
                               <MoreVertIcon />
                             </IconButton>
                             <Menu
-                                id={"vulnerability-simple-menu-" + scan.id}
-                                anchorEl={this.state.vulnerabilityAnchorEl}
-                                open={this.state.vulnerabilityAnchorEl}
-                                onClose={handleClose}
+                              id={"vulnerability-simple-menu-" + scan.id}
+                              anchorEl={this.state.vulnerabilityAnchorEl}
+                              open={this.state.vulnerabilityAnchorEl}
+                              onClose={handleClose}
+                            >
+                              <MenuItem
+                                onClick={() =>
+                                  handleDialogOpen({
+                                    modal: "New Analysis",
+                                  })
+                                }
                               >
-                                <MenuItem
-                                  onClick={() =>
-                                    handleDialogOpen({
-                                      modal: "New Analysis",
-                                      id: scan.id,
-                                      client:
-                                        this.state.client_ID,
-                                    })
-                                  }
-                                >
-                                  <ListItemIcon>
-                                    <AddIcon fontSize="small" />
-                                  </ListItemIcon>
-                                  New Analysis
-                                </MenuItem>
-                                <MenuItem
-                                  onClick={() =>
-                                    handleDialogOpen({ modal: "Rename" })
-                                  }
-                                >
-                                  <ListItemIcon>
-                                    <EditOutlinedIcon fontSize="small" />
-                                  </ListItemIcon>
-                                  Rename
-                                </MenuItem>
-                                <MenuItem>
-                                  <ListItemIcon>
-                                    <DeleteIcon fontSize="small" />
-                                  </ListItemIcon>
-                                  Delete
-                                </MenuItem>
-                              </Menu>
+                                <ListItemIcon>
+                                  <AddIcon fontSize="small" />
+                                </ListItemIcon>
+                                New Analysis
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() =>
+                                  handleDialogOpen({ modal: "Rename" })
+                                }
+                              >
+                                <ListItemIcon>
+                                  <EditOutlinedIcon fontSize="small" />
+                                </ListItemIcon>
+                                Rename
+                              </MenuItem>
+                              <MenuItem>
+                                <ListItemIcon>
+                                  <DeleteIcon fontSize="small" />
+                                </ListItemIcon>
+                                Delete
+                              </MenuItem>
+                            </Menu>
                           </ListItemSecondaryAction>
                           <Popover
                             id="mouse-over-popover"
@@ -708,33 +705,33 @@ class Scans extends Component {
                             onClose={handlePopoverClose}
                             disableRestoreFocus
                           >
-                           <List>
-                             <ListItem>Report Name: {scan.report_name} </ListItem>
-                             <ListItem>Policy Name: {scan.policy_name} </ListItem>
-                             <ListItem>Scan Date: {scan.report_date}</ListItem>
-                             <ListItem>Uploaded: {scan.upload_date}</ListItem>
-                             <ListItem>Total Vulnerabilities: {scan.total_cve}</ListItem>
-                             <ListItem>Unique Vulnerabilities: {scan.unique_cve}</ListItem>
-                             <ListItem>Total Records: {scan.record_count_total}</ListItem>
-                             <ListItem>...with vulnerabilities: 
+                            <List>
+                              <ListItem>Report Name: {scan.report_name} </ListItem>
+                              <ListItem>Policy Name: {scan.policy_name} </ListItem>
+                              <ListItem>Scan Date: {scan.report_date}</ListItem>
+                              <ListItem>Uploaded: {scan.upload_date}</ListItem>
+                              <ListItem>Total Vulnerabilities: {scan.total_cve}</ListItem>
+                              <ListItem>Unique Vulnerabilities: {scan.unique_cve}</ListItem>
+                              <ListItem>Total Records: {scan.record_count_total}</ListItem>
+                              <ListItem>...with vulnerabilities:
                                 {scan.vulnerability_count}
                                 {scan.record_count_total > 0 &&
                                   ` (${percentage(
                                     scan.vulnerability_count,
                                     scan.record_count_total
                                   )}%)`}
-                             </ListItem>
-                             <ListItem>Total Hosts: {scan.host_count_total}</ListItem>
-                             <ListItem>...with vulnerabilities: 
-                               {scan.host_count}
+                              </ListItem>
+                              <ListItem>Total Hosts: {scan.host_count_total}</ListItem>
+                              <ListItem>...with vulnerabilities:
+                                {scan.host_count}
                                 {scan.host_count_total > 0 &&
                                   ` (${percentage(scan.host_count, scan.host_count_total)}%)`}
-                             </ListItem>
-                             <ListItem>Cyio Analysis {scan.analysis_count}</ListItem>
-                           </List>
+                              </ListItem>
+                              <ListItem>Cyio Analysis {scan.analysis_count}</ListItem>
+                            </List>
                           </Popover>
                         </ListItem>
-                        
+
                       );
                     })
                   ) : (
@@ -792,14 +789,14 @@ class Scans extends Component {
                             }
                           >
                             <MenuItem
-                              onClick={() => 
+                              onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/exploreresults',
-                                { analysis: analysis,
-                                  client:
-                                    this.state.client_ID,
-                                  scan: getCurrentScan(analysis.scan.id, scans)
-                                })}
-                              
+                                  { analysis: analysis,
+                                    client:
+                                      this.state.client_ID,
+                                    scan: getCurrentScan(analysis.scan.id, scans)
+                                  })}
+
                             >
                               <ListItemIcon>
                                 <ExploreIcon fontSize="small" />
@@ -807,10 +804,10 @@ class Scans extends Component {
                               Explore Results
                             </MenuItem>
                             <MenuItem
-                              onClick={() => 
+                              onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/viewcharts',
-                                { analysises: this.state.analysises,
-                                })} 
+                                  { analysises: this.state.analysises,
+                                  })}
                             >
                               <ListItemIcon>
                                 <ShowChartIcon fontSize="small" />
@@ -818,11 +815,11 @@ class Scans extends Component {
                               View Charts
                             </MenuItem>
                             <MenuItem
-                              onClick={() => 
+                              onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/compare',
-                                { analysises: this.state.analysises,
-                                  scatterPlotData: this.state.scatterPlotData
-                                })}
+                                  { analysises: this.state.analysises,
+                                    scatterPlotData: this.state.scatterPlotData
+                                  })}
                             >
                               <ListItemIcon>
                                 <CompareIcon fontSize="small" />
@@ -916,9 +913,12 @@ class Scans extends Component {
                             <XAxis
                               type="number"
                               dataKey="x"
-                              label="% of Hosts with Weakness"
+                              label= {{
+                                value: "% of Hosts with Weakness",
+                                fill: 'white',
+                              }}
                               domain={[-200, 200]}
-                              tick={{ fill: '#ffffff' }}
+                              tick={false}
                             />
                             <YAxis
                               type="number"
@@ -926,23 +926,24 @@ class Scans extends Component {
                               label={{
                                 value: 'Weakness Score',
                                 angle: -90,
-                                position: 'insideLeft',
-                                textAnchor: 'middle',
+                                fill: 'white',
                               }}
                               domain={[-200, 200]}
-                              tick={{ fill: '#ffffff' }}
+                              tick={false}
                             />
-                            <ReferenceLine x={50} stroke="white" />
-                            <ReferenceLine y={50} stroke="white" />
+                            <ZAxis range={[250]} />
+                            <ReferenceLine x={0} stroke="white" />
+                            <ReferenceLine y={0} stroke="white" />
                             <Tooltip
-                              content={<CustomTooltip />} 
+                              content={<CustomTooltip />}
+                              cursor={false}
                             />
                             { scatterPlotData && (
-                            <Scatter
-                              name={analysis.scan.scan_name}
-                              data={this.state.scatterPlotData[i]}
-                              fill={`#${Math.floor(Math.random() * 16777215).toString(16)}`}
-                            />
+                              <Scatter
+                                name={analysis.scan.scan_name}
+                                data={this.state.scatterPlotData[i]}
+                                fill="#49B8FC"
+                              />
                             )}
                           </ScatterChart>
                         </ResponsiveContainer>
@@ -982,12 +983,12 @@ class Scans extends Component {
                         variant="contained"
                         color="primary"
                         startIcon={<CloudUploadIcon />}
-                        onClick={() => 
+                        onClick={() =>
                           handleLinkClink('/dashboard/vsac/scans/exploreresults',
-                          { analysis: analysis,
-                            client: this.state.client_ID,
-                            scan: getCurrentScan(analysis.scan.id, scans)
-                          })}
+                            { analysis: analysis,
+                              client: this.state.client_ID,
+                              scan: getCurrentScan(analysis.scan.id, scans)
+                            })}
                       >
                         Explore Results
                       </Button>
