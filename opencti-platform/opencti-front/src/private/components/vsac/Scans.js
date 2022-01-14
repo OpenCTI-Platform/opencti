@@ -511,7 +511,7 @@ class Scans extends Component {
             <Delete
               id={this.state.dialogParams.id}
               client={this.state.dialogParams.client}
-              scanDate={this.state.dialogParams.scanDate}
+              date={this.state.dialogParams.date}
               onClose={handleDialogClose}
               action={onDeleteAnalysis}
             />
@@ -767,6 +767,7 @@ class Scans extends Component {
         <Grid container={true} spacing={3}>
           {!loadingAnalysises ? (
             this.state.analysises.map((analysis, i) => {
+              console.log(analysis)
               return (
                 <Grid item={true} xs={4}>
                   <Paper
@@ -886,7 +887,7 @@ class Scans extends Component {
                                   id: analysis.id,
                                   client:
                                     this.state.client_ID,
-                                  scanDate: analysis.scan.submission_date,
+                                  date: analysis.completed_date,
                                 })
                               }
                             >
