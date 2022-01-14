@@ -511,7 +511,7 @@ class Scans extends Component {
             <Delete
               id={this.state.dialogParams.id}
               client={this.state.dialogParams.client}
-              scanDate={this.state.dialogParams.scanDate}
+              date={this.state.dialogParams.date}
               onClose={handleDialogClose}
               action={onDeleteAnalysis}
             />
@@ -887,7 +887,7 @@ class Scans extends Component {
                                   id: analysis.id,
                                   client:
                                     this.state.client_ID,
-                                  date: analysis.scan.completed_date,
+                                  date: analysis.completed_date,
                                 })
                               }
                             >
