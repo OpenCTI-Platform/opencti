@@ -1,30 +1,5 @@
 {
-    "ipv4-addr": {
-        "location": [
-            "located-at"
-        ],
-        "autonomous-system": [
-            "belongs-to"
-        ],
-        "mac-addr": [
-            "resolves-to"
-        ]
-    },
-    "ipv6-addr": {
-        "location": [
-            "located-at"
-        ],
-        "autonomous-system": [
-            "belongs-to"
-        ],
-        "mac-addr": [
-            "resolves-to"
-        ]
-    },
     "attack-pattern": {
-        "attack-pattern": [
-            "subtechnique-of"
-        ],
         "malware": [
             "delivers",
             "uses"
@@ -40,12 +15,12 @@
         ],
         "tool": [
             "uses"
+        ],
+        "attack-pattern": [
+            "subtechnique-of"
         ]
     },
     "campaign": {
-        "system": [
-            "targets"
-        ],
         "intrusion-set": [
             "attributed-to"
         ],
@@ -74,49 +49,37 @@
         ],
         "tool": [
             "uses"
-        ]
-    },
-    "individual": {
-        "individual": [
-            "part-of"
         ],
-        "organization": [
-            "part-of"
+        "system": [
+            "targets"
         ]
     },
-    "organization": {
-        "organization": [
-            "part-of"
+    "course-of-action": {
+        "indicator": [
+            "investigates",
+            "mitigates"
         ],
-        "sector": [
-            "part-of"
-        ]
-    },
-    "sector": {
-        "sector": [
-            "part-of"
-        ]
-    },
-    "system": {
-        "organization": [
-            "belongs-to"
+        "attack-pattern": [
+            "mitigates"
         ],
-        "region": [
+        "malware": [
+            "mitigates",
+            "remediates"
+        ],
+        "tool": [
+            "mitigates"
+        ],
+        "vulnerability": [
+            "mitigates",
+            "remediates"
+        ]
+    },
+    "identity": {
+        "location": [
             "located-at"
         ]
     },
-    "incident": {
-        "campaign": [
-            "attributed-to"
-        ]
-    },
     "indicator": {
-        "indicator": [
-            "derived-from"
-        ],
-        "vulnerability": [
-            "indicates"
-        ],
         "attack-pattern": [
             "indicates"
         ],
@@ -140,12 +103,58 @@
         ],
         "observed-data": [
             "based-on"
+        ],
+        "indicator": [
+            "derived-from"
+        ],
+        "vulnerability": [
+            "indicates"
+        ],
+        "<all_SCOs>": [
+            "based-on"
+        ]
+    },
+    "infrastructure": {
+        "infrastructure": [
+            "communicates-with",
+            "consists-of",
+            "controls",
+            "uses"
+        ],
+        "ipv4-addr": [
+            "communicates-with"
+        ],
+        "ipv6-addr": [
+            "communicates-with"
+        ],
+        "domain-name": [
+            "communicates-with"
+        ],
+        "url": [
+            "communicates-with"
+        ],
+        "observed-data": [
+            "consists-of"
+        ],
+        "<all_SCOs>": [
+            "consists-of"
+        ],
+        "malware": [
+            "controls",
+            "delivers",
+            "hosts"
+        ],
+        "vulnerability": [
+            "has"
+        ],
+        "tool": [
+            "hosts"
+        ],
+        "location": [
+            "located-at"
         ]
     },
     "intrusion-set": {
-        "system": [
-            "targets"
-        ],
         "threat-actor": [
             "attributed-to"
         ],
@@ -173,35 +182,12 @@
         ],
         "tool": [
             "uses"
-        ]
-    },
-    "city": {
-        "country": [
-            "located-at"
         ],
-        "region": [
-            "located-at"
-        ]
-    },
-    "country": {
-        "region": [
-            "located-at"
-        ]
-    },
-    "position": {
-        "city": [
-            "located-at"
-        ]
-    },
-    "region": {
-        "region": [
-            "located-at"
+        "system": [
+            "targets"
         ]
     },
     "malware": {
-        "system": [
-            "targets"
-        ],
         "software": [
             "operating-system"
         ],
@@ -262,12 +248,31 @@
         ],
         "attack-pattern": [
             "uses"
+        ],
+        "system": [
+            "targets"
+        ]
+    },
+    "malware-analysis": {
+        "software": [
+            "host-vm",
+            "operating-system",
+            "installed-software"
+        ],
+        "<all_SCOs>": [
+            "analysis-sco"
+        ],
+        "file": [
+            "sample"
+        ],
+        "network-traffic": [
+            "sample"
+        ],
+        "artifact": [
+            "sample"
         ]
     },
     "threat-actor": {
-        "threat-actor": [
-            "part-of"
-        ],
         "identity": [
             "attributed-to",
             "impersonates",
@@ -294,90 +299,9 @@
         ],
         "tool": [
             "uses"
-        ]
-    },
-    "course-of-action": {
-        "indicator": [
-            "investigates",
-            "mitigates"
         ],
-        "attack-pattern": [
-            "mitigates"
-        ],
-        "malware": [
-            "mitigates",
-            "remediates"
-        ],
-        "tool": [
-            "mitigates"
-        ],
-        "vulnerability": [
-            "mitigates",
-            "remediates"
-        ]
-    },
-    "identity": {
-        "location": [
-            "located-at"
-        ]
-    },
-    "infrastructure": {
-        "infrastructure": [
-            "communicates-with",
-            "consists-of",
-            "controls",
-            "uses"
-        ],
-        "ipv4-addr": [
-            "communicates-with"
-        ],
-        "ipv6-addr": [
-            "communicates-with"
-        ],
-        "domain-name": [
-            "communicates-with"
-        ],
-        "url": [
-            "communicates-with"
-        ],
-        "observed-data": [
-            "consists-of"
-        ],
-        "<all_SCOs>": [
-            "consists-of"
-        ],
-        "malware": [
-            "controls",
-            "delivers",
-            "hosts"
-        ],
-        "vulnerability": [
-            "has"
-        ],
-        "tool": [
-            "hosts"
-        ],
-        "location": [
-            "located-at"
-        ]
-    },
-    "malware-analysis": {
-        "software": [
-            "host-vm",
-            "operating-system",
-            "installed-software"
-        ],
-        "<all_SCOs>": [
-            "analysis-sco"
-        ],
-        "file": [
-            "sample"
-        ],
-        "network-traffic": [
-            "sample"
-        ],
-        "artifact": [
-            "sample"
+        "threat-actor": [
+            "part-of"
         ]
     },
     "tool": {
@@ -476,6 +400,28 @@
             "sections"
         ]
     },
+    "ipv4-addr": {
+        "autonomous-system": [
+            "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
+        ],
+        "location": [
+            "located-at"
+        ]
+    },
+    "ipv6-addr": {
+        "autonomous-system": [
+            "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
+        ],
+        "location": [
+            "located-at"
+        ]
+    },
     "network-traffic": {
         "domain-name": [
             "src",
@@ -533,6 +479,63 @@
         ],
         "user-account": [
             "creator-user"
+        ]
+    },
+    "individual": {
+        "individual": [
+            "part-of"
+        ],
+        "organization": [
+            "part-of"
+        ]
+    },
+    "organization": {
+        "organization": [
+            "part-of"
+        ],
+        "sector": [
+            "part-of"
+        ]
+    },
+    "sector": {
+        "sector": [
+            "part-of"
+        ]
+    },
+    "system": {
+        "organization": [
+            "belongs-to"
+        ],
+        "region": [
+            "located-at"
+        ]
+    },
+    "incident": {
+        "campaign": [
+            "attributed-to"
+        ]
+    },
+    "city": {
+        "country": [
+            "located-at"
+        ],
+        "region": [
+            "located-at"
+        ]
+    },
+    "country": {
+        "region": [
+            "located-at"
+        ]
+    },
+    "position": {
+        "city": [
+            "located-at"
+        ]
+    },
+    "region": {
+        "region": [
+            "located-at"
         ]
     }
 }

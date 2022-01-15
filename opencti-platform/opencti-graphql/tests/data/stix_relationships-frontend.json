@@ -1,30 +1,5 @@
 {
-    "ipv4-addr": {
-        "location": [
-            "located-at"
-        ],
-        "autonomous-system": [
-            "belongs-to"
-        ],
-        "mac-addr": [
-            "resolves-to"
-        ]
-    },
-    "ipv6-addr": {
-        "location": [
-            "located-at"
-        ],
-        "autonomous-system": [
-            "belongs-to"
-        ],
-        "mac-addr": [
-            "resolves-to"
-        ]
-    },
     "attack-pattern": {
-        "attack-pattern": [
-            "subtechnique-of"
-        ],
         "malware": [
             "delivers",
             "uses"
@@ -40,12 +15,12 @@
         ],
         "tool": [
             "uses"
+        ],
+        "attack-pattern": [
+            "subtechnique-of"
         ]
     },
     "campaign": {
-        "system": [
-            "targets"
-        ],
         "intrusion-set": [
             "attributed-to"
         ],
@@ -74,226 +49,9 @@
         ],
         "tool": [
             "uses"
-        ]
-    },
-    "individual": {
-        "individual": [
-            "part-of"
         ],
-        "organization": [
-            "part-of"
-        ]
-    },
-    "organization": {
-        "organization": [
-            "part-of"
-        ],
-        "sector": [
-            "part-of"
-        ]
-    },
-    "sector": {
-        "sector": [
-            "part-of"
-        ]
-    },
-    "system": {
-        "organization": [
-            "belongs-to"
-        ],
-        "region": [
-            "located-at"
-        ]
-    },
-    "incident": {
-        "campaign": [
-            "attributed-to"
-        ]
-    },
-    "indicator": {
-        "indicator": [
-            "derived-from"
-        ],
-        "vulnerability": [
-            "indicates"
-        ],
-        "attack-pattern": [
-            "indicates"
-        ],
-        "campaign": [
-            "indicates"
-        ],
-        "infrastructure": [
-            "indicates"
-        ],
-        "intrusion-set": [
-            "indicates"
-        ],
-        "malware": [
-            "indicates"
-        ],
-        "threat-actor": [
-            "indicates"
-        ],
-        "tool": [
-            "indicates"
-        ],
-        "observed-data": [
-            "based-on"
-        ]
-    },
-    "intrusion-set": {
         "system": [
             "targets"
-        ],
-        "threat-actor": [
-            "attributed-to"
-        ],
-        "infrastructure": [
-            "compromises",
-            "hosts",
-            "owns",
-            "uses"
-        ],
-        "location": [
-            "originates-from",
-            "targets"
-        ],
-        "identity": [
-            "targets"
-        ],
-        "vulnerability": [
-            "targets"
-        ],
-        "attack-pattern": [
-            "uses"
-        ],
-        "malware": [
-            "uses"
-        ],
-        "tool": [
-            "uses"
-        ]
-    },
-    "city": {
-        "country": [
-            "located-at"
-        ],
-        "region": [
-            "located-at"
-        ]
-    },
-    "country": {
-        "region": [
-            "located-at"
-        ]
-    },
-    "position": {
-        "city": [
-            "located-at"
-        ]
-    },
-    "region": {
-        "region": [
-            "located-at"
-        ]
-    },
-    "malware": {
-        "system": [
-            "targets"
-        ],
-        "software": [
-            "operating-system"
-        ],
-        "file": [
-            "sample",
-            "downloads",
-            "drops"
-        ],
-        "artifact": [
-            "sample"
-        ],
-        "threat-actor": [
-            "authored-by"
-        ],
-        "intrusion-set": [
-            "authored-by"
-        ],
-        "infrastructure": [
-            "beacons-to",
-            "exfiltrates-to",
-            "targets",
-            "uses"
-        ],
-        "ipv4-addr": [
-            "communicates-with"
-        ],
-        "ipv6-addr": [
-            "communicates-with"
-        ],
-        "domain-name": [
-            "communicates-with"
-        ],
-        "url": [
-            "communicates-with"
-        ],
-        "malware": [
-            "controls",
-            "downloads",
-            "drops",
-            "uses",
-            "variant-of"
-        ],
-        "tool": [
-            "downloads",
-            "drops",
-            "uses"
-        ],
-        "vulnerability": [
-            "exploits",
-            "targets"
-        ],
-        "location": [
-            "originates-from",
-            "targets"
-        ],
-        "identity": [
-            "targets"
-        ],
-        "attack-pattern": [
-            "uses"
-        ]
-    },
-    "threat-actor": {
-        "threat-actor": [
-            "part-of"
-        ],
-        "identity": [
-            "attributed-to",
-            "impersonates",
-            "targets"
-        ],
-        "infrastructure": [
-            "compromises",
-            "hosts",
-            "owns",
-            "uses"
-        ],
-        "location": [
-            "located-at",
-            "targets"
-        ],
-        "vulnerability": [
-            "targets"
-        ],
-        "attack-pattern": [
-            "uses"
-        ],
-        "malware": [
-            "uses"
-        ],
-        "tool": [
-            "uses"
         ]
     },
     "course-of-action": {
@@ -319,6 +77,143 @@
     "identity": {
         "location": [
             "located-at"
+        ]
+    },
+    "indicator": {
+        "attack-pattern": [
+            "indicates"
+        ],
+        "campaign": [
+            "indicates"
+        ],
+        "infrastructure": [
+            "indicates"
+        ],
+        "intrusion-set": [
+            "indicates"
+        ],
+        "malware": [
+            "indicates"
+        ],
+        "threat-actor": [
+            "indicates"
+        ],
+        "tool": [
+            "indicates"
+        ],
+        "observed-data": [
+            "based-on"
+        ],
+        "indicator": [
+            "derived-from"
+        ],
+        "vulnerability": [
+            "indicates"
+        ],
+        "artifact": [
+            "based-on"
+        ],
+        "autonomous-system": [
+            "based-on"
+        ],
+        "directory": [
+            "based-on"
+        ],
+        "domain-name": [
+            "based-on"
+        ],
+        "email-addr": [
+            "based-on"
+        ],
+        "email-message": [
+            "based-on"
+        ],
+        "email-mime-part-type": [
+            "based-on"
+        ],
+        "file": [
+            "based-on"
+        ],
+        "windows-pebinary-ext": [
+            "based-on"
+        ],
+        "windows-pe-optional-header-type": [
+            "based-on"
+        ],
+        "windows-pe-section-type": [
+            "based-on"
+        ],
+        "ipv4-addr": [
+            "based-on"
+        ],
+        "ipv6-addr": [
+            "based-on"
+        ],
+        "mac-addr": [
+            "based-on"
+        ],
+        "mutex": [
+            "based-on"
+        ],
+        "network-traffic": [
+            "based-on"
+        ],
+        "http-request-ext": [
+            "based-on"
+        ],
+        "icmp-ext": [
+            "based-on"
+        ],
+        "socket-ext": [
+            "based-on"
+        ],
+        "tcp-ext": [
+            "based-on"
+        ],
+        "process": [
+            "based-on"
+        ],
+        "windows-process-ext": [
+            "based-on"
+        ],
+        "windows-service-ext": [
+            "based-on"
+        ],
+        "url": [
+            "based-on"
+        ],
+        "user-account": [
+            "based-on"
+        ],
+        "unix-account-ext": [
+            "based-on"
+        ],
+        "windows-registry-key": [
+            "based-on"
+        ],
+        "windows-registry-value-type": [
+            "based-on"
+        ],
+        "x509-certificate": [
+            "based-on"
+        ],
+        "x509-v3-extensions-type": [
+            "based-on"
+        ],
+        "x-opencti-cryptographic-key": [
+            "based-on"
+        ],
+        "x-opencti-cryptocurrency-wallet": [
+            "based-on"
+        ],
+        "x-opencti-hostname": [
+            "based-on"
+        ],
+        "x-opencti-text": [
+            "based-on"
+        ],
+        "x-opencti-user-agent": [
+            "based-on"
         ]
     },
     "infrastructure": {
@@ -455,6 +350,105 @@
             "located-at"
         ]
     },
+    "intrusion-set": {
+        "threat-actor": [
+            "attributed-to"
+        ],
+        "infrastructure": [
+            "compromises",
+            "hosts",
+            "owns",
+            "uses"
+        ],
+        "location": [
+            "originates-from",
+            "targets"
+        ],
+        "identity": [
+            "targets"
+        ],
+        "vulnerability": [
+            "targets"
+        ],
+        "attack-pattern": [
+            "uses"
+        ],
+        "malware": [
+            "uses"
+        ],
+        "tool": [
+            "uses"
+        ],
+        "system": [
+            "targets"
+        ]
+    },
+    "malware": {
+        "software": [
+            "operating-system"
+        ],
+        "file": [
+            "sample",
+            "downloads",
+            "drops"
+        ],
+        "artifact": [
+            "sample"
+        ],
+        "threat-actor": [
+            "authored-by"
+        ],
+        "intrusion-set": [
+            "authored-by"
+        ],
+        "infrastructure": [
+            "beacons-to",
+            "exfiltrates-to",
+            "targets",
+            "uses"
+        ],
+        "ipv4-addr": [
+            "communicates-with"
+        ],
+        "ipv6-addr": [
+            "communicates-with"
+        ],
+        "domain-name": [
+            "communicates-with"
+        ],
+        "url": [
+            "communicates-with"
+        ],
+        "malware": [
+            "controls",
+            "downloads",
+            "drops",
+            "uses",
+            "variant-of"
+        ],
+        "tool": [
+            "downloads",
+            "drops",
+            "uses"
+        ],
+        "vulnerability": [
+            "exploits",
+            "targets"
+        ],
+        "location": [
+            "originates-from",
+            "targets"
+        ],
+        "identity": [
+            "targets"
+        ],
+        "attack-pattern": [
+            "uses"
+        ],
+        "system": [
+            "targets"
+        ]
+    },
     "malware-analysis": {
         "software": [
             "host-vm",
@@ -568,6 +562,38 @@
         ],
         "x-opencti-user-agent": [
             "analysis-sco"
+        ]
+    },
+    "threat-actor": {
+        "identity": [
+            "attributed-to",
+            "impersonates",
+            "targets"
+        ],
+        "infrastructure": [
+            "compromises",
+            "hosts",
+            "owns",
+            "uses"
+        ],
+        "location": [
+            "located-at",
+            "targets"
+        ],
+        "vulnerability": [
+            "targets"
+        ],
+        "attack-pattern": [
+            "uses"
+        ],
+        "malware": [
+            "uses"
+        ],
+        "tool": [
+            "uses"
+        ],
+        "threat-actor": [
+            "part-of"
         ]
     },
     "tool": {
@@ -764,6 +790,28 @@
             "sections"
         ]
     },
+    "ipv4-addr": {
+        "autonomous-system": [
+            "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
+        ],
+        "location": [
+            "located-at"
+        ]
+    },
+    "ipv6-addr": {
+        "autonomous-system": [
+            "belongs-to"
+        ],
+        "mac-addr": [
+            "resolves-to"
+        ],
+        "location": [
+            "located-at"
+        ]
+    },
     "network-traffic": {
         "domain-name": [
             "src",
@@ -821,6 +869,63 @@
         ],
         "user-account": [
             "creator-user"
+        ]
+    },
+    "individual": {
+        "individual": [
+            "part-of"
+        ],
+        "organization": [
+            "part-of"
+        ]
+    },
+    "organization": {
+        "organization": [
+            "part-of"
+        ],
+        "sector": [
+            "part-of"
+        ]
+    },
+    "sector": {
+        "sector": [
+            "part-of"
+        ]
+    },
+    "system": {
+        "organization": [
+            "belongs-to"
+        ],
+        "region": [
+            "located-at"
+        ]
+    },
+    "incident": {
+        "campaign": [
+            "attributed-to"
+        ]
+    },
+    "city": {
+        "country": [
+            "located-at"
+        ],
+        "region": [
+            "located-at"
+        ]
+    },
+    "country": {
+        "region": [
+            "located-at"
+        ]
+    },
+    "position": {
+        "city": [
+            "located-at"
+        ]
+    },
+    "region": {
+        "region": [
+            "located-at"
         ]
     }
 }
