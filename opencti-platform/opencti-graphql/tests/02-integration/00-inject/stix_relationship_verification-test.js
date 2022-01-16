@@ -374,6 +374,7 @@ const frontendSCORelationships = {
   'StixFile_X-OpenCTI-User-Agent': ['contains'],
   'Windows-Registry-Key_User-Account': ['creator-user'],
   'Windows-Registry-Key_Windows-Registry-Value-Type': ['values'],
+  'x509-Certificate_x509-v3-Extensions-Type': ['x509-v3-extensions'],
 };
 
 describe('Test that all STIX relationships are correctly implemented', () => {
