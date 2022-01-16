@@ -396,6 +396,9 @@
         ]
     },
     "windows-pebinary-ext": {
+        "windows-pe-optional-header-type": [
+            "optional-header"
+        ],
         "windows-pe-section-type": [
             "sections"
         ]
@@ -479,6 +482,11 @@
         ],
         "user-account": [
             "creator-user"
+        ]
+    },
+    "x509-certificate": {
+        "x509-v3-extensions-type": [
+            "x509-v3-extensions"
         ]
     },
     "individual": {
