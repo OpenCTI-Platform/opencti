@@ -28,7 +28,7 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import CardContent from "@material-ui/core/CardContent";
 import { DescriptionOutlined } from "@material-ui/icons";
-import { makeStyles } from "@material-ui/core/styles";
+import { withStyles } from "@material-ui/core/styles";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -41,6 +41,14 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import BugReportIcon from "@material-ui/icons/BugReport";
+
+const styles = (theme) => ({
+  selectedTableRow: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: '#ffb500',
+    },
+  },
+});
 
 class WeaknessAccordionCards extends Component {
   constructor(props) {
@@ -57,6 +65,7 @@ class WeaknessAccordionCards extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const { weakness, selectedRow } = this.state;
 
     const handleClick = (cwe_id, name) => {
@@ -93,6 +102,7 @@ class WeaknessAccordionCards extends Component {
                         selected={rowName === selectedRow}
                         onClick={() => handleClick(item.cwe_id, rowName)}
                         hover
+                        classes={{ root: classes.selectedTableRow }}
                       >
                         <TableCell component="th" scope="row">
                           {item.rank}
@@ -111,4 +121,4 @@ class WeaknessAccordionCards extends Component {
   }
 }
 
-export default WeaknessAccordionCards;
+export default withStyles(styles)(WeaknessAccordionCards);
