@@ -628,16 +628,19 @@ class ViewCharts extends Component {
                       dataKey="category"
                       type="category"
                       allowDuplicatedCategory={false}
+                      tick={{ fill: 'white' }}
                     />
-                    <YAxis dataKey="value" />
+                    <YAxis dataKey="value" tick={{ fill: 'white' }}/>
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ bottom: 0 }} />
                     {trendingChatData.map((s) => (
                       <Line
                         dataKey="value"
                         data={s.data}
                         name={s.name}
                         key={s.name}
+                        dot={{ r: 8 }}
+                        activeDot={{ r: 8 }}
                       />
                     ))}
                   </LineChart>
