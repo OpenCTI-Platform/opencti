@@ -44,7 +44,7 @@ import Typography from '@material-ui/core/Typography';
 import Tooltip from '@material-ui/core/Tooltip';
 import CardContent from '@material-ui/core/CardContent';
 import { DescriptionOutlined } from '@material-ui/icons';
-import { makeStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import { fetchAllScans } from '../../../services/scan.service';
 import {
   fetchAllAnalysis,
@@ -80,6 +80,14 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import CircularProgress from '@material-ui/core/CircularProgress';
+
+const styles = (theme) => ({
+  selectedTableRow: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: 'rgba(3, 45, 105)',
+    },
+  },
+});
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -173,6 +181,7 @@ class ExploreResults extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const {
       analysis,
       hosts,
@@ -428,6 +437,7 @@ class ExploreResults extends Component {
                                   handleFilterResults(result.host_ip, rowName)
                                 }
                                 hover
+                                classes={{ root: classes.selectedTableRow }}
                               >
                                 <TableCell component="th" scope="row">
                                   {result.score}
@@ -611,4 +621,4 @@ class ExploreResults extends Component {
   }
 }
 
-export default R.compose(inject18n, withRouter)(ExploreResults);
+export default R.compose(inject18n, withRouter, withStyles(styles))(ExploreResults);
