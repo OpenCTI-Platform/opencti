@@ -306,6 +306,7 @@ class Scans extends Component {
       dialogParams,
       popoverAnchorEl,
       openedPopoverId,
+      openAnalysisMenu,
     } = this.state;
 
     const openPopover = Boolean(popoverAnchorEl);
@@ -334,12 +335,12 @@ class Scans extends Component {
       this.setState({ sortByAnchorEl: null });
     };
 
-    const handleAnalysisClick = (event) => {
-      this.setState({ analysisAnchorEl: event.currentTarget });
+    const handleAnalysisClick = (event, analysis_id) => {
+      this.setState({ analysisAnchorEl: event.currentTarget, openAnalysisMenu: analysis_id });
     };
 
     const handleAnalysisClose = () => {
-      this.setState({ analysisByAnchorEl: false });
+      this.setState({ analysisByAnchorEl: null,  openAnalysisMenu: null});
     };
 
     const sortByReportDate = () => {
@@ -359,9 +360,12 @@ class Scans extends Component {
       this.setState({ dialogParams: dialogParams });
       this.setState({ vulnerabilityAnchorEl: null });
       this.setState({ analysisAnchorEl: null });
+      this.setState({ analysisByAnchorEl: null,  openAnalysisMenu: null});
+
     };
     const handleDialogClose = () => {
       this.setState({ openDialog: false });
+       this.setState({ openAnalysisMenu: null});
     };
 
     const handleLinkClink = (path, data) => {
@@ -781,16 +785,16 @@ class Scans extends Component {
                         <div>
                           <IconButton
                             aria-label="settings"
-                            onClick={handleAnalysisClick}
+                            onClick={(e) => handleAnalysisClick(e, analysis.id)}
                           >
                             <MoreVertIcon />
                           </IconButton>
                           <Menu
                             id="simple-menu"
                             anchorEl={this.state.analysisAnchorEl}
-                            open={this.state.analysisAnchorEl}
+                            open={openAnalysisMenu === analysis.id}
                             onClose={() =>
-                              this.setState({ analysisAnchorEl: null })
+                              this.setState({ analysisAnchorEl: null, openAnalysisMenu: null })
                             }
                           >
                             <MenuItem
