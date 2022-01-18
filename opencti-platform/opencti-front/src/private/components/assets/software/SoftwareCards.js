@@ -13,7 +13,7 @@ import StixDomainObjectBookmarks, {
   stixDomainObjectBookmarksQuery,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 
-const nbOfCardsToLoad = 50;
+const nbOfCardsToLoad = 5000;
 
 class SoftwareCards extends Component {
   constructor(props) {

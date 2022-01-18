@@ -13,7 +13,7 @@ import StixDomainObjectBookmarks, {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 import { QueryRenderer } from '../../../../relay/environment';
 
-const nbOfCardsToLoad = 50;
+const nbOfCardsToLoad = 5000;
 
 class DevicesCards extends Component {
   constructor(props) {
