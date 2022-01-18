@@ -144,8 +144,8 @@ const createApolloServer = (app) => {
   });
   server.applyMiddleware({
     app,
-      cors: true,
-      bodyParserConfig: {
+    cors: true,
+    bodyParserConfig: {
       limit: requestSizeLimit,
     },
     onHealthCheck,
