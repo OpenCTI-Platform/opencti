@@ -441,7 +441,20 @@ class Scans extends Component {
     };
 
     const refreshAnalysis = () => {
+      this.setState({ loadingScans: true });
       this.setState({ loadingAnalysises: true });
+      fetchAllScans(this.state.client_ID)
+        .then((response) => {
+          const scans = response.data;
+
+          this.setState({ scans: scans });
+          this.setState({ scansReportDate: this.sortScansByReportDate(scans) });
+          this.setState({ renderScans: scans });
+          this.setState({ loadingScans: false });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
       fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
           let analysises = response.data;
