@@ -84,7 +84,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 const styles = (theme) => ({
   selectedTableRow: {
     '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: '#ffb500',
+      backgroundColor: 'rgba(3, 45, 105)',
     },
   },
 });

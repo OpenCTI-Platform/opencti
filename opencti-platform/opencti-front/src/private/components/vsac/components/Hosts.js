@@ -45,7 +45,7 @@ import TableRow from "@material-ui/core/TableRow";
 const styles = (theme) => ({
   selectedTableRow: {
     '&.Mui-selected, &.Mui-selected:hover': {
-      backgroundColor: '#ffb500',
+      backgroundColor: 'rgba(3, 45, 105)',
     },
   },
 });
