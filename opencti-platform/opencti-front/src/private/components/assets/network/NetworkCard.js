@@ -119,6 +119,7 @@ class NetworkCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
+          style= {{ background:  (selectAll || node.id in (selectedElements || {})) && '#075AD3'}}
           to={`/dashboard/assets/network/${node.id}`}
         >
           {/* <CardHeader
