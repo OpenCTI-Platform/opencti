@@ -382,16 +382,16 @@ class GenerateReport extends Component {
 											"Line chart showing historical trends of vulnerabilities and other metadata from your previous analyses."
 										}
 									/>
-									<ListItemText>
-										<ListItemSecondaryAction>
-											<Button
-												color="primary"
-												onClick={handleDialogOpen}
-											>
-												Choose Previous Analyses
-											</Button>
-										</ListItemSecondaryAction>
-									</ListItemText>
+								</ListItem>
+								<ListItem>
+									<ListItemSecondaryAction>
+										<Button
+											color="primary"
+											onClick={handleDialogOpen}
+										>
+											Choose Previous Analyses
+										</Button>
+									</ListItemSecondaryAction>
 								</ListItem>
 							</List>
 							<Dialog

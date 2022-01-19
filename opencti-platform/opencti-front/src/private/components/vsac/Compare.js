@@ -1,41 +1,26 @@
-/* eslint-disable */
 /* refactor */
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardActions from '@material-ui/core/CardActions';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
-import CardContent from '@material-ui/core/CardContent';
 import moment from 'moment';
 import {
   ScatterChart,
   Scatter,
   XAxis,
   YAxis,
-  CartesianGrid,
   ReferenceLine,
   ResponsiveContainer,
 } from 'recharts';
 import Chip from '@material-ui/core/Chip';
-import { getAnalysisSummary } from '../../../services/analysis.service';
 
 const Compare = (props) => {
-  const [getAnalysises, setAnalysis] = useState(
-    props.location.state.analysises,
-  );
-  const [getClientID, setClientId] = useState(
-    localStorage.getItem('client_id'),
-  );
-  const [getScatterPlotData, setScatterPlotData] = useState(props.location.state.scatterPlotData);
+  const [getAnalysises] = useState(props.location.state.analysises);
+  const [getScatterPlotData] = useState(props.location.state.scatterPlotData);
 
   const scatter = [];
 

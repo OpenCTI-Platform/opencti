@@ -3,7 +3,6 @@ import { mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
 import {
-  GraphQLDateTime,
   EmailAddressTypeDefinition,
   EmailAddressResolver,
   IPv4Definition,
@@ -29,8 +28,7 @@ import {
   VoidTypeDefinition,
   VoidResolver,
 } from 'graphql-scalars';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import {DateTimeScalar} from "./scalars";
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -107,7 +105,7 @@ const {authDirectiveTransformer } = authDirectiveV2();
 const createSchema = () => {
 
   const globalResolvers = {
-    DateTime: GraphQLDateTime,
+    DateTime: DateTimeScalar,
     EmailAddress: EmailAddressResolver,
     IPv4: IPv4Resolver,
     IPv6: IPv6Resolver,

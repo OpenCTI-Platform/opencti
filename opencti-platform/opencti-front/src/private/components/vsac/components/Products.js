@@ -28,7 +28,7 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import CardContent from "@material-ui/core/CardContent";
 import { DescriptionOutlined } from "@material-ui/icons";
-import { makeStyles } from "@material-ui/core/styles";
+import { withStyles } from "@material-ui/core/styles";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -40,6 +40,14 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+
+const styles = (theme) => ({
+  selectedTableRow: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: 'rgba(3, 45, 105)',
+    },
+  },
+});
 
 class Products extends Component {
   constructor(props) {
@@ -56,6 +64,7 @@ class Products extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const { software, selectedRow } = this.state;
 
     const handleClick = (cpe_id, name) => {
@@ -69,7 +78,7 @@ class Products extends Component {
     return (
       <Grid item={true} xs={12}>
         <Typography variant="h4" gutterBottom={true}>
-          These hosts are susceptible to attack...
+        ...With products...
         </Typography>
         <Paper elevation={2} style={{ marginBottom: 20, minHeight: "300px" }}>
           <TableContainer style={{ maxHeight: 325 }}>
@@ -91,6 +100,7 @@ class Products extends Component {
                         selected={rowName === selectedRow}
                         onClick={() => handleClick(item.cpe_id, rowName)}
                         hover
+                        classes={{ root: classes.selectedTableRow }}
                       >
                         <TableCell component="th" scope="row">
                           {item.rank}
@@ -109,4 +119,4 @@ class Products extends Component {
   }
 }
 
-export default Products;
+export default withStyles(styles)(Products);
