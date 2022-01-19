@@ -225,41 +225,68 @@ const computingDeviceResolvers = {
       }
       return { id };
     },
-    deleteComputingDeviceAsset: async (_, { id }, context, input) => {
-      const dbName = context.dbName;
+    deleteComputingDeviceAsset: async (_, { id }, {dbName, dataSources}, input) => {
       const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', id);
       const reducer = getReducer('COMPUTING-DEVICE');
-      const response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Computing Device",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const asset = (reducer(response[0]));
       for (const portIri of asset.ports_iri) {
         const portQuery = deletePortQuery(portIri);
-        await context.dataSources.Stardog.delete(dbName, portQuery);
+        await dataSources.Stardog.delete({
+          dbName,
+          sparqlQuery: portQuery,
+          queryId: "Delete Port from Computing Device Asset"
+        });
       }
       for (const ipId of asset.ip_addr_iri) {
         const ipQuery = deleteIpQuery(ipId);
-        await context.dataSources.Stardog.delete(dbName, ipQuery);
+        await dataSources.Stardog.delete({
+          dbName,
+          sparqlQuery: ipQuery,
+          queryId: "Delete IP from Computing Asset"
+        });
       }
       for (const macId of asset.mac_addr_iri) {
         const macQuery = deleteMacQuery(macId);
-        await context.dataSources.Stardog.delete(dbName, macQuery);
+        await dataSources.Stardog.delete({
+          dbName,
+          sparqlQuery: macQuery,
+          queryId: "Delete MAC from Computing Device Asset"
+        });
       }
 
       const relationshipQuery = removeFromInventoryQuery(id);
-      await context.dataSources.Stardog.delete(dbName, relationshipQuery)
+      await dataSources.Stardog.delete({
+        dbName,
+        sparqlQuery: relationshipQuery,
+        queryId: "Delete Computing Device Asset from Inventory"
+      })
       const query = deleteQuery(id)
-      await context.dataSources.Stardog.delete(dbName, query)
+      await dataSources.Stardog.delete({
+        dbName,
+        sparqlQuery: query,
+        queryId: "Delete Computing Device Asset"
+      })
       return { id };
     },
-    editComputingDeviceAsset: async (_, { id, input }, context) => {
-      const dbName = context.dbName;
+    editComputingDeviceAsset: async (_, { id, input }, {dbName, dataSources}) => {
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}`,
         "http://scap.nist.gov/ns/asset-identification#ComputingDevice",
         input,
         predicateMap
       )
-      await context.dataSources.Stardog.edit(dbName, query);
+      await dataSources.Stardog.edit({
+        dbName,
+        sparqlQuery: query,
+        queryId: "Update Computing Device Asset"
+      });
       return { id };
     },
   },
@@ -267,12 +294,12 @@ const computingDeviceResolvers = {
 
   // field-level query
   ComputingDeviceAsset: {
-    installed_software: async (parent, args, context,) => {
+    installed_software: async (parent, args, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.installed_sw_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         var reducer = getSoftwareReducer('SOFTWARE-IRI');
-        let selectList = context.selectMap.getNode('installed_software');
+        let selectList = selectMap.getNode('installed_software');
         for (let iri of iriArray) {
           // check if this is an Software object
           if (iri === undefined || !iri.includes('Software')) {
@@ -281,13 +308,12 @@ const computingDeviceResolvers = {
 
           // query for the Software based on its IRI
           var sparqlQuery = getSoftwareQuery('SOFTWARE-IRI', selectList, iri);
-          let response;
-          try {
-            response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
+          const response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select Installed Software for Computing Device Asset",
+            singularizeSchema
+          })
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
             results.push(reducer(response[0]))
@@ -308,7 +334,7 @@ const computingDeviceResolvers = {
         return [];
       }
     },
-    installed_operating_system: async (parent, args, context,) => {
+    installed_operating_system: async (parent, args, {dbName, dataSources, selectMap}) => {
       var iri = parent.installed_os_iri
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
@@ -319,11 +345,16 @@ const computingDeviceResolvers = {
         iri = parent.installed_os_iri;
       }
 
-      var sparqlQuery = getSoftwareQuery('OS-IRI', context.selectMap.getNode('installed_operating_system'), iri);
+      var sparqlQuery = getSoftwareQuery('OS-IRI', selectMap.getNode('installed_operating_system'), iri);
       var reducer = getSoftwareReducer('OS-IRI');
       let response;
       try {
-        response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Installed Operating System for Computing Device Asset",
+          singularizeSchema
+        })
       } catch (e) {
         console.log(e)
         throw e
@@ -341,12 +372,12 @@ const computingDeviceResolvers = {
         }
       }
     },
-    ipv4_address: async (parent, args, context,) => {
+    ipv4_address: async (parent, args, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
         var reducer = getReducer('IPV4-ADDR');
-        let selectList = context.selectMap.getNode('ipv4_address');
+        let selectList = selectMap.getNode('ipv4_address');
         for (let iri of iriArray) {
           // check if this is an IPv4 object
           if (!iri.includes('IpV4Address')) {
@@ -355,13 +386,12 @@ const computingDeviceResolvers = {
 
           // query for the IP address based on its IRI
           var sparqlQuery = getSelectSparqlQuery('IPV4-ADDR', selectList, iri);
-          let response;
-          try {
-            response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
+          const response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select IPv4 for Computing Device Asset",
+            singularizeSchema
+          })
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
             results.push(reducer(response[0]))
@@ -381,12 +411,12 @@ const computingDeviceResolvers = {
         return [];
       }
     },
-    ipv6_address: async (parent, args, context,) => {
+    ipv6_address: async (parent, args, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
         var reducer = getReducer('IPV6-ADDR');
-        let selectList = context.selectMap.getNode('ipv6_address');
+        let selectList = selectMap.getNode('ipv6_address');
         for (let iri of iriArray) {
           // check if this is an IPv6 object
           if (!iri.includes('IpV6Address')) {
@@ -395,13 +425,12 @@ const computingDeviceResolvers = {
 
           // query for the IP address based on its IRI
           var sparqlQuery = getSelectSparqlQuery('IPV6-ADDR', selectList, iri);
-          let response;
-          try {
-            response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
+          const response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select IPv6 for Computing Device Asset",
+            singularizeSchema
+          })
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
             results.push(reducer(response[0]))
@@ -421,7 +450,7 @@ const computingDeviceResolvers = {
         return [];
       }
     },
-    mac_address: async (parent, args, context,) => {
+    mac_address: async (parent, args, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.mac_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -436,13 +465,12 @@ const computingDeviceResolvers = {
 
           // query for the MAC address based on its IRI
           var sparqlQuery = getSelectSparqlQuery('MAC-ADDR', selectList, addr);
-          let response;
-          try {
-            response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
+          const response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select MAC for Computing Device Asset",
+            singularizeSchema
+          })
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
             for (let item of response ) {
@@ -467,12 +495,12 @@ const computingDeviceResolvers = {
         return [];
       }
     },
-    ports: async (parent, args, context,) => {
+    ports: async (parent, args, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.ports_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
         var reducer = getReducer('PORT-INFO');
-        let selectList = context.selectMap.getNode('ports');
+        let selectList = selectMap.getNode('ports');
         for (let iri of iriArray) {
           // check if this is an Port object
           if (!iri.includes('Port')) {
@@ -481,13 +509,12 @@ const computingDeviceResolvers = {
 
           // query for the IP address based on its IRI
           var sparqlQuery = getSelectSparqlQuery('PORT-INFO', selectList, iri);
-          let response;
-          try {
-            response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
+          const response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select Ports for Computing Device Asset",
+            singularizeSchema
+          });
           if (Array.isArray(response) && response.length > 0) {
             results.push(reducer(response[0]))
           } else {
@@ -506,7 +533,7 @@ const computingDeviceResolvers = {
         return [];
       }
     },
-    connected_to_network: async (parent, args, context,) => {
+    connected_to_network: async (parent, args, {dbName, dataSources, selectMap}) => {
       let iri = parent.conn_network_iri;
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
@@ -517,16 +544,15 @@ const computingDeviceResolvers = {
         iri = parent.conn_network_iri;
       }
 
-      let selectList = context.selectMap.getNode('connected_to_network');
+      let selectList = selectMap.getNode('connected_to_network');
       var sparqlQuery = getNetworkQuery('CONN-NET-IRI', selectList, iri);
       var reducer = getNetworkReducer('NETWORK');
-      let response;
-      try {
-        response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
-      } catch (e) {
-        console.log(e)
-        throw e
-      }
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Network for Computing Device Asset",
+        singularizeSchema
+      });
       if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         return reducer(response[0])
