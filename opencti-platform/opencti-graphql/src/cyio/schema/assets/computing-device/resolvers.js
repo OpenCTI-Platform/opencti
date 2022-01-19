@@ -25,21 +25,22 @@ import { UserInputError } from "apollo-server-express";
 
 const computingDeviceResolvers = {
   Query: {
-    computingDeviceAssetList: async (_, args, context, info) => {
-      const selectList = context.selectMap.getNode("node")
+    computingDeviceAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
+      const selectList = selectMap.getNode("node")
       const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', selectList);
       const reducer = getReducer('COMPUTING-DEVICE');
       let response;
       try {
-        response = await context.dataSources.Stardog.queryAll(
-          context.dbName,
+        response = await dataSources.Stardog.queryAll({
+          dbName,
           sparqlQuery,
-          singularizeSchema,
-          // args.first,       // limit
-          // args.offset,      // offset
-          args.filter       // filter
-        )
-      } catch {
+          queryId: "Select Computing Device Asset List",
+          singularizeSchema
+        });
+        // args.first,       // limit
+        // args.offset,      // offset
+        //args.filter       // filter
+      } catch(e){
         console.log(e)
         throw e
       }
@@ -100,17 +101,20 @@ const computingDeviceResolvers = {
             error_details: (response.body.message ? response.body.message : response.body),
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
-        } else {
-          return;
         }
       }
     },
-    computingDeviceAsset: async (_, args, context, info) => {
-      var sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', context.selectMap.getNode('computingDeviceAsset'), args.id);
+    computingDeviceAsset: async (_, args, {dbName, dataSources, selectMap}) => {
+      var sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE',selectMap.getNode('computingDeviceAsset'), args.id);
       var reducer = getReducer('COMPUTING-DEVICE');
       let response;
       try {
-        response = await context.dataSources.Stardog.queryById(context.dbName, sparqlQuery, singularizeSchema)
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Computing Device Asset",
+          singularizeSchema
+        })
       } catch (e) {
         console.log(e)
         throw e
@@ -132,8 +136,7 @@ const computingDeviceResolvers = {
     },
   },
   Mutation: {
-    createComputingDeviceAsset: async (_, { input }, context) => {
-      const dbName = context.dbName;
+    createComputingDeviceAsset: async (_, { input }, {dbName, dataSources}) => {
       let ports, ipv4, ipv6, mac;
       if (input.ports !== undefined) {
         ports = input.ports
@@ -152,43 +155,73 @@ const computingDeviceResolvers = {
         delete input.mac_address;
       }
       const { iri, id, query } = insertQuery(input);
-      let response = await context.dataSources.Stardog.create(dbName, query);
-      if(response.status && response.status > 299) throw new Error(response.body.message);
+      await dataSources.Stardog.create({
+        dbName,
+        sparqlQuery: query,
+        queryId: "Create Computing Device Asset"
+      });
       const connectQuery = addToInventoryQuery(iri);
-      response = await context.dataSources.Stardog.create(dbName, connectQuery);
-      if(response.status && response.status > 299) throw new Error(response.body.message);
+      await dataSources.Stardog.create({
+        dbName,
+        sparqlQuery: connectQuery,
+        queryId: "Add Computing Device Asset to Inventory"
+      });
 
       if (ports !== undefined && ports !== null) {
         const { iris: portIris, query: portsQuery } = insertPortsQuery(ports);
-        response = await context.dataSources.Stardog.create(dbName, portsQuery);
-        if(response.status && response.status > 299) throw new Error(response.body.message);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: portsQuery,
+          queryId: "Create Computing Device Asset Ports"
+        });
         const relationshipQuery = insertPortRelationships(iri, portIris);
-        response = await context.dataSources.Stardog.create(dbName, relationshipQuery);
-        if(response.status && response.status > 299) throw new Error(response.body.message);
+        await dataSources.Stardog.create({
+          dbName,
+          queryId: "Add Ports to Computing Device Asset",
+          sparqlQuery: relationshipQuery
+        });
       }
       if (ipv4 !== undefined && ipv4 !== null) {
         const { ipIris, query } = insertIPQuery(ipv4, 4);
-        response = await context.dataSources.Stardog.create(dbName, query);
-        if(response.status && response.status > 299) throw new Error(response.body.message);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Creat Computing Device Asset IPv4"
+        });
         const relationshipQuery = insertIPRelationship(iri, ipIris);
-        response = await context.dataSources.Stardog.create(dbName, relationshipQuery);
-        if(response.status && response.status > 299) throw new Error(response.body.message);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: relationshipQuery,
+          queryId: "Add IPv4 to Computing Device Asset"
+        });
       }
       if (ipv6 !== undefined && ipv6!== null) {
         const { ipIris, query } = insertIPQuery(ipv6, 6);
-        response = await context.dataSources.Stardog.create(dbName, query);
-        if(response.status && response.status > 299) throw new Error(response.body.message);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Create Computing Device Asset IPv6"
+        });
         const relationshipQuery = insertIPRelationship(iri, ipIris);
-        response = await context.dataSources.Stardog.create(dbName, relationshipQuery);
-        if(response.status && response.status > 299) throw new Error(response.body.message);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: relationshipQuery,
+          queryId: "Add IPv6 to Computing Device Asset"
+        });
       }
       if (mac !== undefined && mac!== null) {
         const { macIris, query } = insertMACQuery(mac);
-        response = await context.dataSources.Stardog.create(dbName, query);
-        if(response.status && response.status > 299) throw new Error(response.body.message);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Create Computing Device Asset MAC"
+        });
         const relationshipQuery = insertMACRelationship(iri, macIris);
-        response = await context.dataSources.Stardog.create(dbName, relationshipQuery);
-        if(response.status && response.status > 299) throw new Error(response.body.message);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: relationshipQuery,
+          queryId: "Add MAC to Computing Device Asset"
+        });
       }
       return { id };
     },
