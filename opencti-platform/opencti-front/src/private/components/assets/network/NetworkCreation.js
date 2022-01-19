@@ -149,7 +149,7 @@ class NetworkCreation extends Component {
     }
     const adaptedValues = R.evolve(
         {
-          release_date: () => parse(values.release_date).format(),
+          release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
         },
         values,
       );
@@ -225,7 +225,7 @@ class NetworkCreation extends Component {
             version: '',
             serial_number: '',
             vendor_name: '',
-            release_date: dayStartDate(),
+            release_date: null,
             operational_status: 'other',
             implementation_point: 'internal',
             network_id: '12345',
