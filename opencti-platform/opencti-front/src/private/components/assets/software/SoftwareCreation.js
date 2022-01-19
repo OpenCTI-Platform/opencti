@@ -133,7 +133,7 @@ class SoftwareCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        release_date: () => parse(values.release_date).format(),
+        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
       },
       values,
     );
@@ -213,7 +213,7 @@ class SoftwareCreation extends Component {
             serial_number: '',
             asset_tag: '',
             vendor_name: '',
-            release_date: dayStartDate(),
+            release_date: null,
             software_identifier: '',
             license_key: '',
             installation_id: '',
