@@ -29,7 +29,7 @@ import Typography from "@material-ui/core/Typography";
 import Tooltip from "@material-ui/core/Tooltip";
 import CardContent from "@material-ui/core/CardContent";
 import { DescriptionOutlined } from "@material-ui/icons";
-import { makeStyles } from "@material-ui/core/styles";
+import { withStyles } from "@material-ui/core/styles";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -41,6 +41,14 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+
+const styles = (theme) => ({
+  selectedTableRow: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: 'rgba(3, 45, 105)',
+    },
+  },
+});
 
 class Hosts extends Component {
   constructor(props) {
@@ -57,6 +65,7 @@ class Hosts extends Component {
   }
 
   render() {
+    const { classes } = this.props;
     const { hosts, selectedRow } = this.state;
 
     const handleClick = (host_ip, name) => {
@@ -95,6 +104,7 @@ class Hosts extends Component {
                           selected={rowName === selectedRow}
                           onClick={() => handleClick(host.host_ip, rowName)}
                           hover
+                          classes={{ root: classes.selectedTableRow }}
                         >
                           <TableCell component="th" scope="row">
                             {host.rank}
@@ -118,4 +128,4 @@ class Hosts extends Component {
   }
 }
 
-export default Hosts;
+export default withStyles(styles)(Hosts);
