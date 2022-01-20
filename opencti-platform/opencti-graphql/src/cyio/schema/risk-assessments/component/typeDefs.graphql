@@ -99,9 +99,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -141,7 +141,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -197,7 +197,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -269,9 +269,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -311,7 +311,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -373,7 +373,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -456,9 +456,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -498,7 +498,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -558,7 +558,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -645,9 +645,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -687,7 +687,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -746,7 +746,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -827,9 +827,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -869,7 +869,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -935,7 +935,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -1024,9 +1024,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -1066,7 +1066,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -1123,7 +1123,7 @@
     "Indicates the version of the component."
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
-    release_date: DateTime
+    release_date: Timestamp
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"

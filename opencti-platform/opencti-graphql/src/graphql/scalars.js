@@ -72,31 +72,31 @@ const parseDateTime = (dateTime) => {
 };
 
 export const DateTimeScalar = new GraphQLScalarType({
-    name: "DateTime",
+    name: "Timestamp",
     description: `DarkLight implementation of the DateTime GraphQL Scalar provided by graphql-scalars library without changing data value to Date object.`,
     serialize(value){
         if (value instanceof Date) {
             if (validateJSDate(value)) {
                 return value;
             }
-            throw new TypeError('DateTime cannot represent an invalid Date instance');
+            throw new TypeError('Timestamp cannot represent an invalid Date instance');
         }
         else if (typeof value === 'string') {
             if (validateDateTime(value)) {
                 return value;
             }
-            throw new TypeError(`DateTime cannot represent an invalid date-time-string ${value}.`);
+            throw new TypeError(`Timestamp cannot represent an invalid date-time-string ${value}.`);
         }
         else if (typeof value === 'number') {
             try {
                 return new Date(value).toISOString();
             }
             catch (e) {
-                throw new TypeError('DateTime cannot represent an invalid Unix timestamp ' + value);
+                throw new TypeError('Timestamp cannot represent an invalid Unix timestamp ' + value);
             }
         }
         else {
-            throw new TypeError('DateTime cannot be serialized from a non string, ' +
+            throw new TypeError('Timestamp cannot be serialized from a non string, ' +
                 'non numeric or non Date type ' +
                 JSON.stringify(value));
         }
@@ -106,24 +106,24 @@ export const DateTimeScalar = new GraphQLScalarType({
             if (validateJSDate(value)) {
                 return value.toISOString();
             }
-            throw new TypeError('DateTime cannot represent an invalid Date instance');
+            throw new TypeError('Timestamp cannot represent an invalid Date instance');
         }
         if (typeof value === 'string') {
             if (validateDateTime(value)) {
                 return value;
             }
-            throw new TypeError(`DateTime cannot represent an invalid date-time-string ${value}.`);
+            throw new TypeError(`Timestamp cannot represent an invalid date-time-string ${value}.`);
         }
-        throw new TypeError(`DateTime cannot represent non string or Date type ${JSON.stringify(value)}`);
+        throw new TypeError(`Timestamp cannot represent non string or Date type ${JSON.stringify(value)}`);
     },
     parseLiteral(ast){
         if (ast.kind !== Kind.STRING) {
-            throw new TypeError(`DateTime cannot represent non string or Date type ${'value' in ast && ast.value}`);
+            throw new TypeError(`Timestamp cannot represent non string or Date type ${'value' in ast && ast.value}`);
         }
         const { value } = ast;
         if (validateDateTime(value)) {
             return value;
         }
-        throw new TypeError(`DateTime cannot represent an invalid date-time-string ${String(value)}.`);
+        throw new TypeError(`Timestamp cannot represent an invalid date-time-string ${String(value)}.`);
     }
 })
