@@ -126,6 +126,7 @@ class ViewCharts extends Component {
       tabValue: 0,
       anchorEl: false,
       clientId: localStorage.getItem('client_id'),
+      analysis_id: this.props.location.state.analysis_id,
       analysises: this.props.location.state.analysises,
       analysisesIDs: this.getAnalysisesID(this.props.location.state.analysises),
       severityChartData: null,
@@ -133,7 +134,7 @@ class ViewCharts extends Component {
       topVulnerableHost: null,
       topVulnerableProducts: null,
       trendingChatData: null,
-      isDisabled: false,
+      isDisabled: true,
       checked: [],
     };
   }
@@ -149,10 +150,14 @@ class ViewCharts extends Component {
   };
 
   componentDidMount() {
+    this.setState({isDisabled: true});
     const ids = this.state.analysisesIDs.map((i) => i).join();
+    console.log(this.state.analysisesIDs.findIndex( (el) => el === this.state.analysis_id ))
+
     getSeverityPieChartData(this.state.clientId, ids)
       .then((response) => {
         this.setState({ severityChartData: response.data });
+        this.setState({isDisabled: false});
       })
       .catch((error) => {
         console.log(error);

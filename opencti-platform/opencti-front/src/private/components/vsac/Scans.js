@@ -828,7 +828,9 @@ class Scans extends Component {
                             <MenuItem
                               onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/viewcharts',
-                                  { analysises: this.state.analysises,
+                                  { 
+                                    analysis_id: analysis.id,
+                                    analysises: this.state.analysises,
                                   })}
                             >
                               <ListItemIcon>
