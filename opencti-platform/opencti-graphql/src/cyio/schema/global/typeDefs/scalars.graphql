@@ -14,6 +14,7 @@
   scalar PositiveInt        # graphql-scalars
   scalar Port               # graphql-scalars
   scalar PostalCode         # graphql-scalars
+  scalar Timestamp          # opencti-platform/opencti-graphql/src/graphql/scalars.js
   scalar URL                # graphql-scalars
   scalar UUID               # graphql-scalars
   scalar Void               # graphql-scalars
