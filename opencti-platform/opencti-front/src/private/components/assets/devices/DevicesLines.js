@@ -103,7 +103,7 @@ export default createPaginationContainer(
       ) {
         computingDeviceAssetList(
           search: $search
-          first: $count
+          limit: $count
           # after: $cursor
           # offset: $count
           orderedBy: $orderedBy

@@ -105,7 +105,7 @@ export default createPaginationContainer(
       ) {
         networkAssetList(
           search: $search
-          first: $count
+          limit: $count
           # after: $cursor
           orderedBy: $orderedBy
           orderMode: $orderMode
