@@ -99,7 +99,8 @@ const relatedTaskPopoverDeletionMutation = graphql`
 const relatedTaskEditionQuery = graphql`
   query RelatedTaskPopoverEditionQuery($id: String!) {
     externalReference(id: $id) {
-      ...CyioExternalReferenceEdition_externalReference
+      id
+      # ...CyioExternalReferenceEdition_externalReference
     }
   }
 `;

@@ -98,50 +98,22 @@ class RemediationCreationOverviewComponent extends Component {
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
-          {t('General')}
+          {t('Basic Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Grid container={true} spacing={3} style={{ marginBottom: '12px' }}>
-            <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Name')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                <Tooltip title={t('Name')}>
-                  <Information fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              <Field
-                component={TextField}
-                variant='outlined'
-                size='small'
-                name="name"
-                fullWidth={true}
-                containerstyle={{ width: '100%' }}
-              // onFocus={this.handleChangeFocus.bind(this)}
-              // onSubmit={this.handleSubmitField.bind(this)}
-              />
-            </Grid>
-          </Grid>
           <Grid container={true} spacing={3}>
             <Grid xs={6} item={true}>
-              <Grid style={{ marginBottom: '20px', marginTop: '2px' }} item={true}>
+              <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('Title')}
+                  {t('Name')}
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip title={t('Title')}>
+                  <Tooltip title={t('Name')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -153,11 +125,40 @@ class RemediationCreationOverviewComponent extends Component {
                   name="name"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
-                // helperText={
-                //   <SubscriptionFocus fieldName="name" />
-                // }
+                // onFocus={this.handleChangeFocus.bind(this)}
+                // onSubmit={this.handleSubmitField.bind(this)}
                 />
               </Grid>
+              <Grid style={{ marginBottom: '20px' }} item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Created')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip title={t('Created')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={DatePickerField}
+                  variant='outlined'
+                  size='small'
+                  name="created"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  style={{ height: '38.09px' }}
+                />
+              </Grid>
+            </Grid>
+            <Grid item={true} xs={6}>
               <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography
                   variant="h3"
@@ -192,116 +193,6 @@ class RemediationCreationOverviewComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('Created')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip title={t('Created')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={DatePickerField}
-                  variant='outlined'
-                  size='small'
-                  name="created"
-                  fullWidth={true}
-                  invalidDateMessage={t(
-                    'The value must be a date (YYYY-MM-DD)',
-                  )}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%' }}
-                />
-              </Grid>
-              <Grid style={{ marginBottom: '20px' }} item={true}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Response Type')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip title={t('Response Type')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={SelectField}
-                  variant='outlined'
-                  name="response_type"
-                  size='small'
-                  fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                >
-                  <MenuItem key="avoid" value="avoid">
-                    {t('Avoid')}
-                  </MenuItem>
-                  <MenuItem key="mitigate" value="mitigate">
-                    {t('Mitigate')}
-                  </MenuItem>
-                  <MenuItem key="transfer" value="transfer">
-                    {t('Transfer')}
-                  </MenuItem>
-                  <MenuItem key="accept" value="accept">
-                    {t('Accept')}
-                  </MenuItem>
-                  <MenuItem key="share" value="share">
-                    {t('Share')}
-                  </MenuItem>
-                  <MenuItem key="contingency" value="contingency">
-                    {t('Contingency')}
-                  </MenuItem>
-                  <MenuItem key="none" value="none">
-                    {t('None')}
-                  </MenuItem>
-                </Field>
-              </Grid>
-            </Grid>
-            <Grid item={true} xs={6}>
-              <Grid style={{ marginBottom: '20px' }} item={true}>
-                <Typography variant="h3"
-                  color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                  {t('Source')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip title={t('Source')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <AddIcon fontSize="small" style={{ margin: '-4px 0 0 0' }} />
-                <div className="clearfix" />
-                <div>
-                  <Field
-                    component={SelectField}
-                    variant='outlined'
-                    name="source"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                  <Field
-                    component={SelectField}
-                    variant='outlined'
-                    name="source"
-                    size='small'
-                    fullWidth={true}
-                    style={{ height: '38.09px' }}
-                    containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                  />
-                </div>
-              </Grid>
-              <Grid style={{ marginBottom: '20px' }} item={true}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
                   {t('Last Modified')}
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
@@ -315,48 +206,13 @@ class RemediationCreationOverviewComponent extends Component {
                   variant='outlined'
                   size='small'
                   name="modified"
-                  fullWidth={true}
                   invalidDateMessage={t(
                     'The value must be a date (YYYY-MM-DD)',
                   )}
                   style={{ height: '38.09px' }}
+                  fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 />
-              </Grid>
-              <Grid style={{ marginBottom: '20px' }} item={true}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Lifecycle')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip title={t('Lifecycle')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={SelectField}
-                  variant='outlined'
-                  name="lifecycle"
-                  size='small'
-                  fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                >
-                  <MenuItem key="recommendation" value="recommendation">
-                    {t('Recommendation')}
-                  </MenuItem>
-                  <MenuItem key="planned" value="planned">
-                    {t('Planned')}
-                  </MenuItem>
-                  <MenuItem key="completed" value="completed">
-                    {t('Completed')}
-                  </MenuItem>
-                </Field>
               </Grid>
             </Grid>
           </Grid>

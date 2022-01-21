@@ -94,7 +94,6 @@ const styles = (theme) => ({
   dialogClosebutton: {
     float: 'left',
     padding: '8px 0 24px 24px',
-    marginBottom: '10px',
   },
   dialogActions: {
     justifyContent: 'flex-start',
@@ -350,7 +349,7 @@ class RequiredResourceCreation extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Required Resource')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Require Resource')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -385,17 +384,17 @@ class RequiredResourceCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Subject Type')}
+                          {t('Resource Type')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('Resource Type')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="subject_type"
+                          name="resource_type"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
@@ -436,20 +435,20 @@ class RequiredResourceCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Asset')}
+                          {t('Resource')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('Resource')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
-                          name="asset"
+                          component={SelectField}
+                          name="resource"
                           fullWidth={true}
-                          size="small"
                           variant='outlined'
+                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
                       </div>

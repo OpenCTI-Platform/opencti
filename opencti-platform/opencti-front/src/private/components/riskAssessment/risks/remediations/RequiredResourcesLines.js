@@ -279,7 +279,7 @@ class RequiredResourcesLinesContainer extends Component {
                     </Grid>
                     <Grid style={{ display: 'flex', alignItems: 'center' }}>
                       <div style={{ marginLeft: '10px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('Subject Type')}</Typography>
+                        <Typography align="left" color="textSecondary" variant="h3">{t('Resource Type')}</Typography>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <GroupIcon fontSize='large' color="disabled" />
                           <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
@@ -301,7 +301,7 @@ class RequiredResourcesLinesContainer extends Component {
                     </Grid>
                     <Grid style={{ display: 'flex', alignItems: 'center' }}>
                       <div style={{ marginLeft: '10px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('Asset')}</Typography>
+                        <Typography align="left" color="textSecondary" variant="h3">{t('Resource')}</Typography>
                         <Typography align="left" variant="subtitle1">{t('Lorem Ipsum')}</Typography>
                       </div>
                     </Grid>
@@ -335,7 +335,7 @@ class RequiredResourcesLinesContainer extends Component {
   {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
                           </div>
                         ))} */}
-                          {t('Description')}
+                          {t('Hello World')}
                         </div>
                       </div>
                     </div>

@@ -409,7 +409,6 @@ class RiskCardDummyComponent extends Component {
                     animation="wave"
                     variant="rect"
                     width="100%"
-                    style={{ marginBottom: 10 }}
                   />
                 </div>
                 <Skeleton

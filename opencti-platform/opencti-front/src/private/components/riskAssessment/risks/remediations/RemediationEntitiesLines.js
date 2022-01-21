@@ -26,7 +26,7 @@ const styles = (theme) => ({
   ListItem: {
     width: '97%',
     display: 'grid',
-    gridTemplateColumns: '10% 15% 15% 1fr 1fr 15%',
+    gridTemplateColumns: '19.7% 15% 15.5% 15% 1fr 1fr',
   },
   bodyItem: {
     height: 35,
@@ -103,7 +103,12 @@ class RemediationEntitiesLines extends Component {
             primary={<div className={classes.ListItem} >
               <div className={classes.bodyItem}>
                 <Typography align="left" variant="button">
-                  {t('Title')}
+                  {t('Source')}
+                </Typography>
+              </div>
+              <div className={classes.bodyItem}>
+                <Typography align="left" variant="button">
+                  {t('Name')}
                 </Typography>
               </div>
               <div className={classes.bodyItem}>
@@ -124,11 +129,6 @@ class RemediationEntitiesLines extends Component {
               <div className={classes.bodyItem}>
                 <Typography align="left" variant="button">
                   {t('End Date')}
-                </Typography>
-              </div>
-              <div className={classes.bodyItem}>
-                <Typography align="left" variant="button">
-                  {t('Source')}
                 </Typography>
               </div>
             </div>}

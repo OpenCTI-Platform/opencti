@@ -23,6 +23,7 @@ import StixCoreObjectLatestHistory from '../../../common/stix_core_objects/StixC
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import RequiredResources from './RequiredResources';
 import RelatedTasks from './RelatedTasks';
+import RemediationGeneralDetails from './RemediationGeneralDetails';
 
 const styles = () => ({
   container: {
@@ -82,10 +83,7 @@ class RemediationComponent extends Component {
                 <RemediationGeneralOverview remediation={remediation} />
               </Grid>
               <Grid item={true} xs={6}>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes
-                cyioCoreObjectOrCyioCoreRelationshipId={remediation.id}
-                marginTop='0px'
-              />
+                <RemediationGeneralDetails remediation={remediation} />
               </Grid>
             </Grid>
             <Grid
@@ -95,10 +93,28 @@ class RemediationComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <RequiredResources remediationId={remediation.id}/>
+                <RequiredResources remediationId={remediation.id} />
               </Grid>
               <Grid item={true} xs={6}>
-                <RelatedTasks remediationId={remediation.id}/>
+                <RelatedTasks remediationId={remediation.id} />
+              </Grid>
+            </Grid>
+            <Grid
+              container={true}
+              spacing={3}
+              classes={{ container: classes.gridContainer }}
+              style={{ marginTop: 50 }}
+            >
+              <Grid item={true} xs={6}>
+                <CyioCoreObjectExternalReferences
+                  cyioCoreObjectId={remediation.id}
+                />
+              </Grid>
+              <Grid item={true} xs={6}>
+                <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  cyioCoreObjectOrCyioCoreRelationshipId={remediation.id}
+                  marginTop='0px'
+                />
               </Grid>
             </Grid>
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -133,6 +149,7 @@ const Remediation = createFragmentContainer(RemediationComponent, {
       id
       name
       ...RemediationGeneralOverview_remediation
+      ...RemediationGeneralDetails_remediation
     }
   `,
 });
