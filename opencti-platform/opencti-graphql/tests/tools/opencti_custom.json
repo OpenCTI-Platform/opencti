@@ -1,0 +1,105 @@
+{
+  "ipv4-addr": {
+    "location": [
+      "located-at"
+    ]
+  } ,
+  "ipv6-addr": {
+    "location": [
+      "located-at"
+    ]
+  } ,
+  "attack-pattern": {
+    "attack-pattern": [
+      "subtechnique-of"
+    ]
+  },
+  "individual": {
+    "individual": [
+      "part-of"
+    ] ,
+    "organization": [
+      "part-of"
+    ]
+  } ,
+  "organization": {
+    "organization": [
+      "part-of"
+    ] ,
+    "sector": [
+      "part-of"
+    ]
+  } ,
+  "sector": {
+    "sector": [
+      "part-of"
+    ]
+  } ,
+  "system": {
+    "organization": [
+      "belongs-to"
+    ] ,
+    "region": [
+      "located-at"
+    ]
+  } ,
+  "incident": {
+    "campaign": [
+      "attributed-to"
+    ]
+  } ,
+  "indicator": {
+    "indicator": [
+      "derived-from"
+    ] ,
+    "vulnerability": [
+      "indicates"
+    ],
+    "<all_SCOs>": [
+      "based-on"
+    ]
+  },
+  "city": {
+    "country": [
+      "located-at"
+    ] ,
+    "region": [
+      "located-at"
+    ]
+  } ,
+  "country": {
+    "region": [
+      "located-at"
+    ]
+  } ,
+  "position": {
+    "city": [
+      "located-at"
+    ]
+  } ,
+  "region": {
+    "region": [
+      "located-at"
+    ]
+  } ,
+  "threat-actor": {
+    "threat-actor": [
+      "part-of"
+    ]
+  },
+  "campaign": {
+    "system": [
+      "targets"
+    ]
+  },
+  "malware": {
+    "system": [
+      "targets"
+    ]
+  },
+  "intrusion-set": {
+    "system": [
+      "targets"
+    ]
+  }
+}
