@@ -18,8 +18,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -72,8 +72,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -126,8 +126,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -180,8 +180,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -234,8 +234,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -288,8 +288,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -342,8 +342,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -396,8 +396,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!

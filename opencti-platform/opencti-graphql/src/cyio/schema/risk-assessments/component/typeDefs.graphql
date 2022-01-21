@@ -2,7 +2,7 @@
   extend type Query {
     component(id: ID!): Component
     componentList( 
-        first: Int
+        limit: Int
         offset: Int
         orderedBy: ComponentsOrdering
         orderMode: OrderingMode
@@ -12,7 +12,7 @@
       ): ComponentConnection
     hardwareComponent(id: ID!): HardwareComponent
     hardwareComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: HardwareComponentsOrdering
       orderMode: OrderingMode
@@ -22,7 +22,7 @@
     ): HardwareComponentConnection
     networkComponent(id: ID!): NetworkComponent
     networkComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: NetworkComponentsOrdering
       orderMode: OrderingMode
@@ -32,7 +32,7 @@
     ): NetworkComponentConnection
     serviceComponent(id: ID!): ServiceComponent
     serviceComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: ServiceComponentsOrdering
       orderMode: OrderingMode
@@ -42,7 +42,7 @@
     ): ServiceComponentConnection
     softwareComponent(id: ID!): SoftwareComponent
     softwareComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: SoftwareComponentsOrdering
       orderMode: OrderingMode
@@ -52,7 +52,7 @@
     ): SoftwareComponentConnection
     systemComponent(id: ID!): SystemComponent
     systemComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: SystemComponentsOrdering
       orderMode: OrderingMode
@@ -106,12 +106,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes( limit: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -276,12 +276,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes( limit: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -463,12 +463,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes( limit: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -652,12 +652,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes( limit: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -834,12 +834,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes( limit: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1031,12 +1031,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes( limit: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode

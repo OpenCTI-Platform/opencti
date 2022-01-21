@@ -1,7 +1,7 @@
   extend type Query {
     asset(id: ID!): Asset
     assetList(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: AssetsOrdering
       orderMode: OrderingMode
@@ -11,7 +11,7 @@
     ): AssetConnection
     assetLocation(id: ID!): AssetLocation
     assetLocationList(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: AssetLocationsOrdering
       orderMode: OrderingMode
@@ -21,7 +21,7 @@
     ): AssetLocationConnection 
     itAsset(id: ID!): ItAsset
     itAssetList(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: ItAssetsOrdering
       orderMode: OrderingMode
@@ -31,7 +31,7 @@
     ): ItAssetConnection
     hardware(id: ID!): HardwareAsset
     hardwareList(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: HardwareAssetsOrdering
       orderMode: OrderingMode
@@ -192,8 +192,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # AssetLocation
     name: String!
     description: String
@@ -273,8 +273,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
   }
 
   # Pagination Types
@@ -329,8 +329,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -411,8 +411,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!

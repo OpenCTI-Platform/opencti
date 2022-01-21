@@ -2,7 +2,7 @@
   extend type Query {
     cyioNote(id: ID!): CyioNote
     cyioNoteList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: CyioNotesOrdering
       orderMode: OrderingMode
@@ -44,8 +44,8 @@
   "Defines the identifying information about a Core object"
   interface CoreObject {
     labels: [String]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
   }
 
   "Reference input to add a reference between two different objects"
@@ -250,8 +250,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # CyioLocation
     name: String!
     description: String
@@ -279,8 +279,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references( limit: Int ): CyioExternalReferenceConnection
+    notes( limit: Int ): CyioNoteConnection
     # CyioIdentity
     name: String!
     description: String
