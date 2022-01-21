@@ -3,6 +3,7 @@ import { mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
 import {
+  GraphQLDateTime,
   EmailAddressTypeDefinition,
   EmailAddressResolver,
   IPv4Definition,
@@ -105,7 +106,8 @@ const {authDirectiveTransformer } = authDirectiveV2();
 const createSchema = () => {
 
   const globalResolvers = {
-    DateTime: DateTimeScalar,
+    DateTime: GraphQLDateTime,
+    Timestamp: DateTimeScalar,
     EmailAddress: EmailAddressResolver,
     IPv4: IPv4Resolver,
     IPv6: IPv6Resolver,

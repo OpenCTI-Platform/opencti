@@ -17,19 +17,20 @@ import { UserInputError } from "apollo-server-express";
 
 const assetCommonResolvers = {
   Query: {
-    assetList: async ( _, args, context, info  ) => { 
-      var sparqlQuery = getSelectSparqlQuery('ASSET', context.selectMap.getNode("node") );
+    assetList: async ( _, args, { dbName, dataSources, selectMap }) => {
+      var sparqlQuery = getSelectSparqlQuery('ASSET', selectMap.getNode("node") );
       var reducer = getReducer('ASSET');
       let response;
       try {
-        response = await context.dataSources.Stardog.queryAll( 
-          context.dbName, 
+        response = await dataSources.Stardog.queryAll({
+          dbName,
           sparqlQuery,
-          singularizeSchema,
+          queryId: "Select Asset List",
+          singularizeSchema
+        });
           // args.first,       // limit
           // args.offset,      // offset
-          args.filter       // filter
-        )
+          // args.filter       // filter
       } catch (e) {
         console.log(e)
         throw e
@@ -102,12 +103,17 @@ const assetCommonResolvers = {
         }
       }
     },
-    asset: async ( _, args, context, info ) => {
-      var sparqlQuery = getSelectSparqlQuery('ASSET', context.selectMap.getNode('asset'),args.id);
+    asset: async ( _, args, {dbName, dataSources, selectMap}) => {
+      var sparqlQuery = getSelectSparqlQuery('ASSET', selectMap.getNode('asset'),args.id);
       var reducer = getReducer('ASSET');
       let response;
       try {
-        response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Asset",
+          singularizeSchema
+        })
       } catch (e) {
         console.log(e)
         throw e
@@ -131,20 +137,21 @@ const assetCommonResolvers = {
         }
       }
     },
-    itAssetList: async ( _, args, context, info  ) => { 
-      const selectList = context.selectMap.getNode("node")
+    itAssetList: async ( _, args, {dbName, dataSources, selectMap} ) => {
+      const selectList = selectMap.getNode("node");
       var sparqlQuery = getSelectSparqlQuery('IT-ASSET', selectList );
       var reducer = getReducer('IT-ASSET');
       let response;
       try {
-        response = await context.dataSources.Stardog.queryAll( 
-          context.dbName, 
+        response = await dataSources.Stardog.queryAll({
+          dbName,
           sparqlQuery,
-          singularizeSchema,
+          queryId: "Select IT Asset List",
+          singularizeSchema
+        });
           // args.first,       // limit
           // args.offset,      // offset
-          args.filter       // filter
-        )
+          // args.filter       // filter
       } catch (e) {
         console.log(e)
         throw e
@@ -217,13 +224,18 @@ const assetCommonResolvers = {
         }
       }
     },
-    itAsset: async ( _, args, context, info ) => {
-      const selectList = context.selectMap.getNode("itAsset")
+    itAsset: async ( _, args, {dbName, dataSources, selectMap}) => {
+      const selectList = selectMap.getNode("itAsset")
       var sparqlQuery = getSelectSparqlQuery('IT-ASSET', selectList,args.id);
       var reducer = getReducer('IT-ASSET');
       let response;
       try {
-        response = await context.dataSources.Stardog.queryById( context.dbName, sparqlQuery, singularizeSchema )
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select IT Asset",
+          singularizeSchema
+        })
       } catch (e) {
         console.log(e)
         throw e
@@ -246,12 +258,17 @@ const assetCommonResolvers = {
         }
       }
     },
-    assetLocationList: async (_, args, context) => {
-      const { dbName } = context;
-      const query = selectAllLocations(context.selectMap.getNode("node"));
+    assetLocationList: async (_, args, { dbName, dataSources, selectMap }) => {
+      const sparqlQuery = selectAllLocations(selectMap.getNode("node"));
       let response;
       try {
-        response = await context.dataSources.Stardog.queryAll(dbName, query, singularizeSchema, args.filter);
+        response = await dataSources.Stardog.queryAll({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Asset Location List",
+          singularizeSchema
+        });
+        // args.filter
       } catch (e) {
         console.log(e)
         throw e
@@ -324,12 +341,16 @@ const assetCommonResolvers = {
         }
       }
     },
-    assetLocation: async (_, {id}, context) => {
-      const { dbName } = context;
-      const query = selectLocationQuery(id, context.selectMap.getNode("assetLocation"));
+    assetLocation: async (_, {id}, { dbName, dataSources, selectMap }) => {
+      const sparqlQuery = selectLocationQuery(id, selectMap.getNode("assetLocation"));
       let response;
       try {
-        response = await context.dataSources.Stardog.queryById(dbName, query, singularizeSchema);
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Asset Location",
+          singularizeSchema
+        });
       } catch (e) {
         console.log(e)
         throw e
@@ -353,46 +374,79 @@ const assetCommonResolvers = {
     }
   },
   Mutation: {
-    deleteAsset: async (_, {id}, context) => {
-      const dbName = context.dbName;
+    deleteAsset: async (_, {id}, {dbName, dataSources}) => {
       const dq = deleteAssetQuery(id);
-      await context.dataSources.Stardog.delete(dbName, dq);
+      await dataSources.Stardog.delete(
+      {dbName,
+        sparqlQuery: dq,
+        queryId: "Delete Asset"
+      });
       const ra = removeAssetFromInventoryQuery(id);
-      await context.dataSources.Stardog.delete(dbName, ra);
+      await dataSources.Stardog.delete({
+        dbName,
+        sparqlQuery: ra,
+        queryId: "Delete Asset from Inventory"
+      });
     },
-    deleteAssets: async (_, { ids }, context) => {
-      const dbName = context.dbName;
+    deleteAssets: async (_, { ids }, {dbName, dataSources}) => {
       const dq = deleteMultipleAssetsQuery(ids);
-      await context.dataSources.Stardog.delete(dbName, dq);
+      await dataSources.Stardog.delete({
+        dbName,
+        sparqlQuery: dq,
+        queryId: "Delete Assets"
+      });
       const ra = removeMultipleAssetsFromInventoryQuery(ids);
-      await context.dataSources.Stardog.delete(dbName, ra);
+      await dataSources.Stardog.delete({
+        dbName,
+        sparqlQuery: ra,
+        queryId: "Delete Assets from Inventory"
+      });
     },
-    createAssetLocation: async (_, {input}, context) => {
-      const { dbName } = context;
+    createAssetLocation: async (_, {input}, {dbName, selectMap, dataSources}) => {
       const {id, query} = insertLocationQuery(input);
-      await context.dataSources.Stardog.create(dbName, query);
-      const select = selectLocationQuery(id, context.selectMap.getNode("createAssetLocation"));
-      const result = await context.dataSources.Stardog.queryById(dbName, select, singularizeSchema);
+      await dataSources.Stardog.create({
+        dbName,
+        sparqlQuery: query,
+        queryId: "Create Asset Location"
+      });
+      const select = selectLocationQuery(id, selectMap.getNode("createAssetLocation"));
+      const result = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery: select,
+        queryId: "Select Asset Location",
+        singularizeSchema
+      });
       const reducer = getReducer("ASSET-LOCATION");
       return reducer(result[0]);
     },
-    deleteAssetLocation: async (_, {id}, context) => {
-      const { dbName } = context;
+    deleteAssetLocation: async (_, {id}, {dbName, dataSources}) => {
       const query = deleteLocationQuery(id);
-      await context.dataSources.Stardog.delete(dbName, query);
+      await dataSources.Stardog.delete({
+        dbName,
+        sparqlQuery: query,
+        queryId: "Delete Asset Location"
+      });
       return id;
     },
-    editAssetLocation: async (_, {id, input}, context) => {
-      const { dbName } = context;
+    editAssetLocation: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
       const query = updateQuery(
           `http://darklight.ai/ns/common#CivicLocation-${id}`,
           "http://darklight.ai/ns/common#CivicLocation",
           input,
           locationPredicateMap
       )
-      await context.dataSources.Stardog.edit(dbName, query);
-      const select = selectLocationQuery(id, context.selectMap.getNode("editAssetLocation"));
-      const result = await context.dataSources.Stardog.queryById(dbName, select, singularizeSchema);
+      await dataSources.Stardog.edit({
+        dbName,
+        sparqlQuery: query,
+        queryId: "Update Asset Location"
+      });
+      const select = selectLocationQuery(id, selectMap.getNode("editAssetLocation"));
+      const result = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery: select,
+        queryId: "Select Asset Location",
+        singularizeSchema
+      });
       const reducer = getReducer("ASSET-LOCATION");
       return reducer(result[0]);
     }

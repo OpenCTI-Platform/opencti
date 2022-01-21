@@ -133,9 +133,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -250,9 +250,9 @@
     "Uniquely identifies this object."
     id: ID!
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -296,16 +296,16 @@
   "Defines identifying information about an Event Timing that occurs within a date range."
   type DateRangeTiming {
     "Identifies the specified date that the task must occur on or after."
-    start_date: DateTime!
+    start_date: Timestamp!
     "identifies the specific date that the task must occur on or before."
-    end_date: DateTime!
+    end_date: Timestamp!
   }
 
   input DateRangeTimingAddInput {
     "Identifies the specified date that the task must occur on or after."
-    start_date: DateTime
+    start_date: Timestamp
     "identifies the specific date that the task must occur on or before."
-    end_date: DateTime
+    end_date: Timestamp
   }
 
 ## Evidence
@@ -406,9 +406,9 @@
     "Uniquely identifies this object."
     id: ID!
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -438,9 +438,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -466,9 +466,9 @@
     "Identifies a human-readable description of of what was done regarding the risk."
     description: String!
     "Identifies the start date and time of the event."
-    event_start: DateTime
+    event_start: Timestamp
     "Identifies the end date and time of the event. If the event is a point in time, the start and end will be the same date and time."
-    event_end: DateTime
+    event_end: Timestamp
     "Used to indicate who created a log entry in what role."
     logged_by: [PartyOrComponent]
     "Identifies a change in risk status made resulting from the task described by this risk log entry. This allows the risk's status history to be captured as a sequence of risk log entries."
@@ -489,9 +489,9 @@
     "Identifies a human-readable description of of what was done regarding the risk."
     description: String!
     "Identifies the start date and time of the event."
-    event_start: DateTime
+    event_start: Timestamp
     "Identifies the end date and time of the event. If the event is a point in time, the start and end will be the same date and time."
-    event_end: DateTime
+    event_end: Timestamp
     "Used to indicate the person created a log entry in what role."
     logged_by_person: [OscalPersonAddInput]
     "Used to indicate the organization created a log entry in what role."
@@ -547,9 +547,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -591,9 +591,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -627,9 +627,9 @@
     "Identifies relevant evidence collected as part of this observation."
     relevant_evidence: [Evidence]
     "Identifies a Date/time stamp identifying when the finding information was collected."
-    collected: DateTime
+    collected: Timestamp
     "Identifies Date/time identifying when the finding information is out-of-date and no longer valid. Typically used with continuous assessment scenarios."
-    expires: DateTime
+    expires: Timestamp
   }
 
   # Pagination Types
@@ -677,11 +677,11 @@
   "Defines identifying information about an Event Timing that occur on a specific date."
   type OnDateTiming {
     "Identifies the date that the task must occur on."
-    on_date: DateTime
+    on_date: Timestamp
   }
 
   input OnDateTimingAddInput {
-    on_date: DateTime
+    on_date: Timestamp
   }
 
 ## Origin
@@ -745,9 +745,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -850,9 +850,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -935,9 +935,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -973,7 +973,7 @@
     "Identifies one or more existing mitigating factors that may affect the overall determination of the risk, with an optional link to an implementation statement in the SSP."
     mitigating_factors: [MitigatingFactor]
     "Identifies the date/time by which the risk must be resolved."
-    deadline: DateTime
+    deadline: Timestamp
     "Identifies either recommended or an actual plan for addressing the risk."
     remediations: [RiskResponse]
     "log of all risk-related tasks taken."
@@ -1006,7 +1006,7 @@
     "Identifies the status of the associated risk."
     risk_status: RiskStatus!
     "Identifies the date/time by which the risk must be resolved."
-    deadline: DateTime
+    deadline: Timestamp
     "Identifies that the risk has been confirmed to be a false positive."
     false_positive: RiskAssertionState
     "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
@@ -1064,9 +1064,9 @@
     "Uniquely identifies this object."
     id: ID!
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
@@ -1136,9 +1136,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -1281,9 +1281,9 @@
     "Uniquely identifies this object."
     id: ID!
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies a reference to tool that performed the detection."
