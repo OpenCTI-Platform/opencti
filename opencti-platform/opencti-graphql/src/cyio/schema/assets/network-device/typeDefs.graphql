@@ -10,8 +10,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime
-    modified: DateTime
+    created: Timestamp
+    modified: Timestamp
     labels: [String]
     # Asset
     asset_id: String
@@ -26,7 +26,7 @@
     serial_number: String
     vendor_name: String
     version: String
-    release_date: DateTime
+    release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]
@@ -64,8 +64,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime
-    modified: DateTime
+    created: Timestamp
+    modified: Timestamp
     labels: [String]
     # Asset
     asset_id: String
@@ -80,7 +80,7 @@
     serial_number: String
     vendor_name: String
     version: String
-    release_date: DateTime
+    release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]
@@ -118,8 +118,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime
-    modified: DateTime
+    created: Timestamp
+    modified: Timestamp
     labels: [String]
     # Asset
     asset_id: String
@@ -134,7 +134,7 @@
     serial_number: String
     vendor_name: String
     version: String
-    release_date: DateTime
+    release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]
@@ -172,8 +172,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime
-    modified: DateTime
+    created: Timestamp
+    modified: Timestamp
     labels: [String]
     # Asset
     asset_id: String
@@ -188,7 +188,7 @@
     serial_number: String
     vendor_name: String
     version: String
-    release_date: DateTime
+    release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]
@@ -226,8 +226,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime
-    modified: DateTime
+    created: Timestamp
+    modified: Timestamp
     labels: [String]
     # Asset
     asset_id: String
@@ -242,7 +242,7 @@
     serial_number: String
     vendor_name: String
     version: String
-    release_date: DateTime
+    release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]
@@ -280,8 +280,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime
-    modified: DateTime
+    created: Timestamp
+    modified: Timestamp
     labels: [String]
     # Asset
     asset_id: String
@@ -296,7 +296,7 @@
     serial_number: String
     vendor_name: String
     version: String
-    release_date: DateTime
+    release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]
@@ -334,8 +334,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime
-    modified: DateTime
+    created: Timestamp
+    modified: Timestamp
     labels: [String]
     # Asset
     asset_id: String
@@ -350,7 +350,7 @@
     serial_number: String
     vendor_name: String
     version: String
-    release_date: DateTime
+    release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]
@@ -388,8 +388,8 @@
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
-    created: DateTime
-    modified: DateTime
+    created: Timestamp
+    modified: Timestamp
     labels: [String]
     # Asset
     asset_id: String
@@ -404,7 +404,7 @@
     serial_number: String
     vendor_name: String
     version: String
-    release_date: DateTime
+    release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
     # responsible_parties: [ResponsibleParty]

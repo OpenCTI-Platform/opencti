@@ -199,9 +199,9 @@
     parent_types: [String]!
     # LifecycleObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     # CoreObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
@@ -224,9 +224,9 @@
     "Identifies the name given to the document."
     name: String!
     "Identifies the date and time the document was published."
-    published: DateTime
+    published: Timestamp
     "Identifies the date and time the document as last modified."
-    last_modified: DateTime
+    last_modified: Timestamp
     "Identifies the current version of the document."
     version: String!
     "Identifies the OSCAL model version the document was authored against."
@@ -260,9 +260,9 @@
     parent_types: [String]!
     # LifecycleObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     # OscalObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
@@ -295,9 +295,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -389,9 +389,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -503,9 +503,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -592,9 +592,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -710,9 +710,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -730,9 +730,9 @@
     "Identifies the target of the relationship"
     target: ID
     "Indicates the time and date when the relationship was first established"
-    valid_from: DateTime
+    valid_from: Timestamp
     "Indicates the time and date when the relationship was terminated."
-    valid_until: DateTime
+    valid_until: Timestamp
     "Identifies the level of confidence in the assertion."
     confidence: PositiveInt
   }
@@ -750,9 +750,9 @@
     "Identifies the target of the relationship"
     target: ID
     "Indicates the time and date when the relationship was first established"
-    valid_from: DateTime
+    valid_from: Timestamp
     "Indicates the time and date when the relationship was terminated."
-    valid_until: DateTime
+    valid_until: Timestamp
     "Identifies the level of confidence in the assertion."
     confidence: PositiveInt
   }
@@ -806,9 +806,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -832,7 +832,7 @@
     "Identifies the version number of a published document."
     version: String
     "Identifies the publication date of a published document."
-    published: DateTime
+    published: Timestamp
     "Identifies the name given to the party."
     name: String!
     "Identifies a brief description of the Party."
@@ -856,7 +856,7 @@
     "Identifies the version number of a published document."
     version: String
     "Identifies the publication date of a published document."
-    published: DateTime
+    published: Timestamp
     "Identifies the name given to the party."
     name: String!
     "Identifies a brief description of the Party."
@@ -918,9 +918,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -999,9 +999,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -1087,9 +1087,9 @@
     parent_types: [String]!
     # CoreObject
     "Indicates the date and time at which the object was originally created."
-    created: DateTime
+    created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
-    modified: DateTime
+    modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [String]
     # OscalObject
@@ -1182,9 +1182,9 @@
     "Identifies the name given to the document."
     name: String!
     "Identifies the date and time the document was published."
-    published: DateTime
+    published: Timestamp
     "Identifies the date and time the document as last modified."
-    last_modified: DateTime
+    last_modified: Timestamp
     "Identifies the current version of the document."
     version: String
     "Identifies the OSCAL model version the document was authored against."
@@ -1209,9 +1209,9 @@
     "Identifies the name given to the document."
     name: String!
     "Identifies the date and time the document was published."
-    published: DateTime
+    published: Timestamp
     "Identifies the date and time the document as last modified."
-    last_modified: DateTime
+    last_modified: Timestamp
     "Identifies the current version of the document."
     version: String
     "Identifies the OSCAL model version the document was authored against."
