@@ -17,7 +17,7 @@ const softwareResolvers = {
       const reducer = getReducer('SOFTWARE');
       const response = await dataSources.Stardog.queryAll({
               dbName,
-              query: sparqlQuery,
+              sparqlQuery,
               queryId: "Select Software Assets",
               singularizeSchema
               // args.first,       // limit
