@@ -680,45 +680,6 @@
       "confidence": 20
     },
     {
-      "id": "relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b",
-      "type": "relationship",
-      "spec_version": "2.1",
-      "relationship_type": "indicates",
-      "source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",
-      "target_ref": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
-      "created": "2020-03-02T14:06:06.256Z",
-      "modified": "2020-03-02T14:06:06.256Z",
-      "start_time": "2020-01-29T23:00:00.000Z",
-      "stop_time": "2020-01-29T23:00:00.000Z",
-      "confidence": 30
-    },
-    {
-      "id": "relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9",
-      "type": "relationship",
-      "spec_version": "2.1",
-      "relationship_type": "indicates",
-      "source_ref": "indicator--51640662-9c78-4402-932f-1d4531624723",
-      "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
-      "created": "2020-03-01T14:05:28.926Z",
-      "modified": "2020-03-01T14:05:28.926Z",
-      "start_time": "2020-02-29T23:00:00.000Z",
-      "stop_time": "2020-02-29T23:00:00.000Z",
-      "confidence": 20
-    },
-    {
-      "id": "relationship--eedcea8f-a464-4977-955c-5113aa3c0896",
-      "type": "relationship",
-      "spec_version": "2.1",
-      "relationship_type": "indicates",
-      "source_ref": "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079",
-      "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
-      "created": "2020-03-01T14:05:40.487Z",
-      "modified": "2020-03-01T14:05:40.487Z",
-      "start_time": "2020-02-29T23:00:00.000Z",
-      "stop_time": "2020-02-29T23:00:00.000Z",
-      "confidence": 30
-    },
-    {
       "id": "relationship--2326c8b3-ef45-4978-98d0-0059728275c4",
       "type": "relationship",
       "spec_version": "2.1",
