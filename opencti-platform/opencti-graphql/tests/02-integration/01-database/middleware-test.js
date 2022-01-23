@@ -245,7 +245,7 @@ describe('Relations listing', () => {
   it('should list relations', async () => {
     const stixCoreRelationships = await listRelations(ADMIN_USER, 'stix-core-relationship');
     expect(stixCoreRelationships).not.toBeNull();
-    expect(stixCoreRelationships.edges.length).toEqual(21);
+    expect(stixCoreRelationships.edges.length).toEqual(18);
     const stixMetaRelationships = await listRelations(ADMIN_USER, 'stix-meta-relationship');
     expect(stixMetaRelationships).not.toBeNull();
     expect(stixMetaRelationships.edges.length).toEqual(110);
@@ -355,7 +355,7 @@ describe('Relations listing', () => {
     const args = { relationFilter };
     const stixRelations = await listRelations(ADMIN_USER, 'stix-core-relationship', args);
     // TODO Ask Julien
-    expect(stixRelations.edges.length).toEqual(11);
+    expect(stixRelations.edges.length).toEqual(9);
     const relation = await elLoadById(ADMIN_USER, 'relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c');
     const argsWithRelationId = {
       relationFilter: R.assoc('relationId', relation.internal_id, relationFilter),
@@ -394,7 +394,7 @@ describe('Relations listing', () => {
   it('should list relations with confidence', async () => {
     const options = { confidences: [20] };
     const stixRelations = await listRelations(ADMIN_USER, 'indicates', options);
-    expect(stixRelations.edges.length).toEqual(2);
+    expect(stixRelations.edges.length).toEqual(1);
   });
   it.skip('should list relations with filters', async () => {
     let filters = [{ key: 'connections', nested: [{ key: 'name', values: ['malicious'], operator: 'wildcard' }] }];
@@ -419,7 +419,7 @@ describe('Relations listing', () => {
   it('should list sightings with id option', async () => {
     // Just id specified,
     // "name": "Paradise Ransomware"
-    const relationship = await elLoadById(ADMIN_USER, 'relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
+    const relationship = await elLoadById(ADMIN_USER, 'relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c');
     const options = { fromId: relationship.internal_id };
     const thing = await internalLoadById(ADMIN_USER, relationship.internal_id);
     const stixSightings = await listRelations(ADMIN_USER, 'stix-sighting-relationship', options);
