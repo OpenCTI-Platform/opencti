@@ -248,7 +248,7 @@ describe('Relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(18);
     const stixMetaRelationships = await listRelations(ADMIN_USER, 'stix-meta-relationship');
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(110);
+    expect(stixMetaRelationships.edges.length).toEqual(108);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(ADMIN_USER, 'uses', {
