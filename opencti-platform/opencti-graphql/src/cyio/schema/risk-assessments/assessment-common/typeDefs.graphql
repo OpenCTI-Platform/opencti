@@ -1202,13 +1202,15 @@
   }
 
   enum RiskResponsesOrdering {
-    risk_state
+    response_type
+    lifecycle
     name
     source_system
   }
 
   enum RiskResponseFilter {
-    risk_state
+    response_type
+    lifecycle
     name
     source_system
   }
