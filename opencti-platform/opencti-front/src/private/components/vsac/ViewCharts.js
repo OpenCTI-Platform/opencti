@@ -152,7 +152,6 @@ class ViewCharts extends Component {
   componentDidMount() {
     this.setState({isDisabled: true});
     const ids = this.state.analysisesIDs.map((i) => i).join();
-    console.log(this.state.analysisesIDs.findIndex( (el) => el === this.state.analysis_id ))
 
     getSeverityPieChartData(this.state.clientId, ids)
       .then((response) => {
@@ -402,7 +401,6 @@ class ViewCharts extends Component {
                             value,
                             index,
                           }) => {
-                            console.log('handling label?');
                             const RADIAN = Math.PI / 180;
                             // eslint-disable-next-line
                             const radius =

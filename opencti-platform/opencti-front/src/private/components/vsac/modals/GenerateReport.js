@@ -184,8 +184,6 @@ class GenerateReport extends Component {
 
 		const handleFormChange = (prop, event) => {
 			this.setState({ [prop]: event.target.value });
-
-			console.log(this.state);
 		};
 		const handleCheckChange = (prop, event) => {
 			this.setState({ [prop]: event.target.checked });
@@ -206,7 +204,6 @@ class GenerateReport extends Component {
 		}
 
 		const getTrendableAnalysis = (id, client) => {
-			console.log(1)
 			fetchTrendableAnalyses(id, client)
 				.then((response) => {
 					this.setState({ analysisToTrend: response.data });
