@@ -35,7 +35,7 @@ describe('Raw streams tests', () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       // Check the number of events
-      expect(events.length).toBe(425);
+      expect(events.length).toBe(419);
       // 01 - CHECK CREATE EVENTS
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
       expect(createEvents.length).toBe(293);
@@ -180,7 +180,7 @@ describe('Raw streams tests', () => {
         ])
       );
       const byTypes = R.groupBy((e) => e.type, deletions);
-      expect(byTypes.relationship.length).toBe(7); // Due to merge and sub deletions
+      expect(byTypes.relationship.length).toBe(6); // Due to merge and sub deletions
       expect(byTypes['threat-actor'].length).toBe(6); // Merge of threat actors in test
       expect(byTypes.file.length).toBe(2); // Merge of files in test
     },
