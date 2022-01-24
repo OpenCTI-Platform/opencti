@@ -256,6 +256,8 @@
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( limit: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( limit: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -412,6 +414,8 @@
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( limit: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( limit: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -1069,6 +1073,8 @@
     modified: Timestamp
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( limit: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( limit: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -1286,6 +1292,8 @@
     modified: Timestamp
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( limit: Int ): CyioExternalReferenceConnection
+    "Identifies one or more references to additional commentary on the Model."
+    notes( limit: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
