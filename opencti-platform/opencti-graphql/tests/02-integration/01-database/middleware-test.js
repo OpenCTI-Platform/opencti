@@ -1020,13 +1020,10 @@ describe('Upsert and merge entities', () => {
 });
 
 describe('Elements impacts deletions', () => {
-  // Intrusion Set    =>    uses      =>   Malware
-  //      ^                  ^                ^
-  //      |                  |                |
-  //    Label  Label <-- indicates         Label
-  //                         ^
-  //                         |
-  //                     Indicator
+  // Intrusion Set  = uses =>  Malware <- Label
+  //      ^             ^
+  //      |             |
+  //    Label         Label
   it('should all elements correctly deleted', async () => {
     // Create entities
     const label = await addLabel(ADMIN_USER, { value: 'MY LABEL' });
@@ -1036,23 +1033,11 @@ describe('Elements impacts deletions', () => {
       ENTITY_TYPE_INTRUSION_SET
     );
     const malware = await createEntity(ADMIN_USER, { name: 'MY MAL', description: 'MY MAL' }, ENTITY_TYPE_MALWARE);
-    const indicator = await createEntity(
-      ADMIN_USER,
-      { name: 'MY INDIC', pattern: 'pattern', pattern_type: 'pattern-type' },
-      ENTITY_TYPE_INDICATOR
-    );
     // Create basic relations
-    // eslint-disable-next-line camelcase
-    const intrusionSet_uses_Malware = await createRelation(ADMIN_USER, {
+    const intrusionSetRelUsesMalware = await createRelation(ADMIN_USER, {
       fromId: intrusionSet.internal_id,
       toId: malware.internal_id,
       relationship_type: 'uses',
-    });
-    // eslint-disable-next-line camelcase
-    const indicator_indicated_uses = await createRelation(ADMIN_USER, {
-      fromId: indicator.internal_id,
-      toId: intrusionSet_uses_Malware.internal_id,
-      relationship_type: 'indicates',
     });
     // Create labels relations
     const intrusionSetLabel = await createRelation(ADMIN_USER, {
@@ -1060,8 +1045,8 @@ describe('Elements impacts deletions', () => {
       toId: label.internal_id,
       relationship_type: 'object-label',
     });
-    const relIndicatesLabel = await createRelation(ADMIN_USER, {
-      fromId: indicator_indicated_uses.internal_id,
+    const relUsesLabel = await createRelation(ADMIN_USER, {
+      fromId: intrusionSetRelUsesMalware.internal_id,
       toId: label.internal_id,
       relationship_type: 'object-label',
     });
@@ -1073,21 +1058,19 @@ describe('Elements impacts deletions', () => {
     // Delete the intrusion set, check all relation what need to be deleted
     const toBeDeleted = [
       intrusionSet.internal_id,
-      intrusionSet_uses_Malware.internal_id,
-      indicator_indicated_uses.internal_id,
+      intrusionSetRelUsesMalware.internal_id,
       intrusionSetLabel.internal_id,
-      relIndicatesLabel.internal_id,
+      relUsesLabel.internal_id,
     ];
     await deleteElementById(ADMIN_USER, intrusionSet.internal_id, ENTITY_TYPE_INTRUSION_SET);
     const isExist = await isOneOfThisIdsExists(toBeDeleted);
     expect(isExist).toBeFalsy();
     const resolvedMalware = await loadById(ADMIN_USER, malware.internal_id, ENTITY_TYPE_MALWARE);
     expect(resolvedMalware).not.toBeUndefined();
-    const resolvedRelationLabel = await loadById(ADMIN_USER, malwareLabel.internal_id, RELATION_OBJECT_LABEL);
-    expect(resolvedRelationLabel).not.toBeUndefined();
+    const resolvedMalwareLabel = await loadById(ADMIN_USER, malwareLabel.internal_id, RELATION_OBJECT_LABEL);
+    expect(resolvedMalwareLabel).not.toBeUndefined();
     // Clear remaining stuff
     await deleteElementById(ADMIN_USER, resolvedMalware.internal_id, ENTITY_TYPE_MALWARE);
-    await deleteElementById(ADMIN_USER, indicator.internal_id, ENTITY_TYPE_INDICATOR);
     await deleteElementById(ADMIN_USER, label.internal_id, ENTITY_TYPE_LABEL);
   });
 });
