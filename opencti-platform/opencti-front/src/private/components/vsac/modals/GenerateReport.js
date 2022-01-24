@@ -146,7 +146,6 @@ class GenerateReport extends Component {
 			includeTrendingComparison: true,
 			includeVulnerabilitiesByServerity: true,
 			topN: 5,
-			analysisToTrend: [],
 			analysis_id: this.props.id,
 			client: this.props.client,
 			open: false,
@@ -384,8 +383,7 @@ class GenerateReport extends Component {
 									<ListItemSecondaryAction>
 										<Button
 											color="primary"
-											onClick={handleDialogOpen}
-										>
+											onClick={handleDialogOpen}>
 											Choose Previous Analyses
 										</Button>
 									</ListItemSecondaryAction>
@@ -402,13 +400,7 @@ class GenerateReport extends Component {
 								<List >
 									{analysisToTrend.length ? (
 										analysisToTrend.map((scan) => {
-											let checked = null;
-											if(checkedAnalysesToTrend.includes(scan.analysis_id)){
-												 checked = true;
-											} else {
-												 checked = false;
-											}
-
+											const checked = checkedAnalysesToTrend.includes(scan.analysis_id)
 											return (
 												<ListItem dense button>
 													<ListItemIcon>
@@ -424,13 +416,7 @@ class GenerateReport extends Component {
 															value={
 																scan.analysis_id
 															}
-															onChange={(
-																event
-															): void => {
-																handleAnalysesToTrend(
-																	event
-																);
-															}}
+															onChange={handleAnalysesToTrend}
 														/>
 													</ListItemIcon>
 													<ListItemText

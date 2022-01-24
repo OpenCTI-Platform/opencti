@@ -513,11 +513,11 @@ class ExploreResults extends Component {
                       </AccordionSummary>
                       <AccordionDetails>
                         {weaknessDetails?.description ? (
-                          <CircularProgress />
-                        ) : (
                           <Typography>
                             {weaknessDetails?.description}
                           </Typography>
+                        ) : (
+                          <CircularProgress />
                         )}
                       </AccordionDetails>
                     </Accordion>
