@@ -93,7 +93,7 @@ describe('Database provision', () => {
     const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
     expect(relMap.get('Object')).toEqual(189);
     expect(relMap.get('Indicates')).toEqual(56);
-    expect(relMap.get('Uses')).toEqual(27);
+    expect(relMap.get('Uses')).toEqual(28);
     // Report content
     const initReport = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
     const initStixReport = buildStixData(initReport);
