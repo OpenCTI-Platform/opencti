@@ -177,6 +177,8 @@
     # DarkLight extension to optimize ability to check to see if a specific risk has been accepted
     "Indicates the risk has been excepted"
     accepted_risk: Boolean
+    "Indicate the number of occurrences of the risk based on observations associated with the risk"
+    occurrences: Int
   }
 
   input POAMItemAddInput {
@@ -212,19 +214,40 @@
   }
 
   enum POAMItemsOrdering {
-    name
-    created
-    modified
-    labels
-    accepted_risk
+    "POAM ID"
+    poam_id
+    "Created"
+    created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Modified"
+    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Risk Level"
+    risk_level
+    "Risk Status"
+    risk_status
+    "Risk Response"
+    risk_response
+    "Risk Lifecycle Phase"
+    lifecycle
+    "Risk Migitation Deadline"
+    deadline       # Deadline (key: deadline, values: ["2021-11-10"], operator: "gt|lt")
+    "Occurrences"
+    occurrences
   }
 
   enum POAMItemsFilter {
-    name
-    created
-    modified
-    labels
-    accepted_risk
+    created         # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Modified"
+    modified        # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Risk Level"
+    risk_level      # Risk Level (key:risk_level, values: ["value1","value2"], operator: eq)
+    "Risk Status" 
+    risk_status     # Risk Status (key:risk_status, values: ["value1","value2"], operator: eq)
+    "Risk Response"
+    risk_response   # Risk Response (key:response_type, values: ["value1","value2"], operator: eq)
+    "Risk Lifecycle Phase"
+    lifecycle       # Risk Lifecycle (key:lifecycle, values: ["value1","value2"], operator: eq)
+    "Risk Migitation Deadline"
+    deadline        # Deadline (key: deadline, values: ["2021-11-10"], operator: "gt|lt")
   }
 
 ## POAM Local Definition

@@ -33,7 +33,7 @@
     editCyioExternalReference(id: ID!, input: [EditInput]!, commitMessage: String): CyioExternalReference
   }
 
-  "Identifies the identifying information about a lifecycle object"
+  "Defines the identifying information about a lifecycle object"
   interface LifecycleObject {
     "Identities the date and time at which the object was originally created."
     created: Timestamp
