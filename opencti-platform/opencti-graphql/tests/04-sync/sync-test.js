@@ -206,7 +206,7 @@ describe('Database provision', () => {
       expect(files.length).toEqual(1);
       const uploadedFile = R.head(files).node;
       expect(uploadedFile.name).toEqual('DATA-TEST-STIX2_v2.json');
-      expect(uploadedFile.size).toEqual(37750);
+      expect(uploadedFile.size).toEqual(36154);
     },
     FIFTEEN_MINUTES
   );
@@ -290,7 +290,7 @@ describe('Database provision', () => {
       expect(files.length).toEqual(1);
       const uploadedFile = R.head(files).node;
       expect(uploadedFile.name).toEqual('DATA-TEST-STIX2_v2.json');
-      expect(uploadedFile.size).toEqual(37750);
+      expect(uploadedFile.size).toEqual(36154);
     },
     FIFTEEN_MINUTES
   );
