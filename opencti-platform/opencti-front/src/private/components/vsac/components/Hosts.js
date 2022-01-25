@@ -74,7 +74,6 @@ class Hosts extends Component {
       };
 
       this.props.action(params, name);
-      console.log(name);
     };
 
     return (

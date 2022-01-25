@@ -386,7 +386,6 @@ class Scans extends Component {
       createNewScanAnalysis(id, client, params)
         .then((response) => {
           handleDialogClose();
-          console.log(response)
         })
         .catch((error) => {
           console.log(error);
@@ -412,7 +411,6 @@ class Scans extends Component {
     const onDeleteAnalysis = (id, client) => {
       deleteAnalysis(id, client)
         .then((response) => {
-          console.log(response);
           handleDialogClose();
           refreshAnalysis();
         })
@@ -490,7 +488,6 @@ class Scans extends Component {
       refreshAnalysis();
     }
     const renderDialogSwitch = () => {
-      console.log(this.state.dialogParams)
       switch (this.state.dialogParams.modal) {
         case "New Analysis":
           return (
@@ -784,7 +781,6 @@ class Scans extends Component {
         <Grid container={true} spacing={3}>
           {!loadingAnalysises ? (
             this.state.analysises.map((analysis, i) => {
-              console.log(analysis)
               return (
                 <Grid item={true} xs={4}>
                   <Paper

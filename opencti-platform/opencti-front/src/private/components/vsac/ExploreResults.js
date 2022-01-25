@@ -125,7 +125,6 @@ function a11yProps(index) {
 class ExploreResults extends Component {
   constructor(props) {
     super(props);
-    console.log(this.props.location.state);
 
     this.state = {
       client: this.props.location.state.client,
@@ -148,7 +147,6 @@ class ExploreResults extends Component {
     getAnalysisHosts(this.state.analysis.id, this.state.client)
       .then((response) => {
         this.setState({ hosts: response.data });
-        console.log(response.data);
       })
       .catch((error) => {
         console.log(error);
@@ -157,7 +155,6 @@ class ExploreResults extends Component {
     getAnalysisSoftware(this.state.analysis.id, this.state.client)
       .then((response) => {
         this.setState({ software: response.data });
-        console.log(response);
       })
       .catch((error) => {
         console.log(error);
@@ -236,7 +233,6 @@ class ExploreResults extends Component {
     const handleFilterResultsDetails = (id, client, params) => {
       getAnalysisFilteredResultsDetails(id, client, params)
         .then((response) => {
-          console.log(response);
           this.setState({ filteredResultsDataDetails: response.data });
         })
         .catch((error) => {
@@ -268,7 +264,6 @@ class ExploreResults extends Component {
       getAnalysisHosts(this.state.analysis.id, this.state.client, params)
         .then((response) => {
           this.setState({ hosts: response.data });
-          console.log(response.data);
         })
         .catch((error) => {
           console.log(error);
@@ -277,7 +272,6 @@ class ExploreResults extends Component {
       getAnalysisSoftware(this.state.analysis.id, this.state.client, params)
         .then((response) => {
           this.setState({ software: response.data });
-          console.log(response);
         })
         .catch((error) => {
           console.log(error);
@@ -519,11 +513,11 @@ class ExploreResults extends Component {
                       </AccordionSummary>
                       <AccordionDetails>
                         {weaknessDetails?.description ? (
-                          <CircularProgress />
-                        ) : (
                           <Typography>
                             {weaknessDetails?.description}
                           </Typography>
+                        ) : (
+                          <CircularProgress />
                         )}
                       </AccordionDetails>
                     </Accordion>
