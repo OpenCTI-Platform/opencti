@@ -1,7 +1,7 @@
   extend type Query {
     documentaryAsset(id: ID!): DocumentaryAsset
     documentaryAssetList(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: DocumentaryAssetsOrdering
       orderMode: OrderingMode
@@ -33,8 +33,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( limit: Int ): CyioExternalReferenceConnection
-    notes( limit: Int ): CyioNoteConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # DocumentaryAsset
     release_date: Timestamp
   }
@@ -86,8 +86,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( limit: Int ): CyioExternalReferenceConnection
-    notes( limit: Int ): CyioNoteConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -112,8 +112,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( limit: Int ): CyioExternalReferenceConnection
-    notes( limit: Int ): CyioNoteConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -138,8 +138,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( limit: Int ): CyioExternalReferenceConnection
-    notes( limit: Int ): CyioNoteConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -164,8 +164,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( limit: Int ): CyioExternalReferenceConnection
-    notes( limit: Int ): CyioNoteConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -190,8 +190,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( limit: Int ): CyioExternalReferenceConnection
-    notes( limit: Int ): CyioNoteConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -216,8 +216,8 @@
     created: Timestamp
     modified: Timestamp
     labels: [String]
-    external_references( limit: Int ): CyioExternalReferenceConnection
-    notes( limit: Int ): CyioNoteConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String

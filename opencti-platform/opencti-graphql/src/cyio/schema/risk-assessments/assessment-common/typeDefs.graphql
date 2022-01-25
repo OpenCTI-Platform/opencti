@@ -9,7 +9,7 @@
     # Log Entry
     logEntry(id: ID!): LogEntry
     logEntryList( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: LogEntriesOrdering
       orderMode: OrderingMode
@@ -20,7 +20,7 @@
     # Observation
     observation(id: ID!): Observation
     observationList( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: ObservationsOrdering
       orderMode: OrderingMode
@@ -33,7 +33,7 @@
     # Remediation Task
     remediationTask(id: ID!): RemediationTask
     remediationTaskList( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: RemediationTasksOrdering
       orderMode: OrderingMode
@@ -44,7 +44,7 @@
     # Required Asset
     requiredAsset(id: ID!): RequiredAsset
     requiredAssetList( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: RequiredAssetsOrdering
       orderMode: OrderingMode
@@ -55,7 +55,7 @@
     # Risk 
     risk(id: ID!): Risk
     riskList( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: RisksOrdering
       orderMode: OrderingMode
@@ -66,7 +66,7 @@
     # Risk Response
     riskResponse(id: ID!): RiskResponse
     riskResponseList( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: RiskResponsesOrdering
       orderMode: OrderingMode
@@ -140,12 +140,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -177,7 +177,7 @@
     "For a party, this can optionally be used to specify the role the actor was performing."
     role: OscalRole
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
   }
 
   # Pagination Types
@@ -216,9 +216,9 @@
     "Identifies a human-readable description of the collection of subjects being included in this assessment."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Indicates to include all subjects."
     include_all: Boolean!
     "Identifies a set of assessment subjects to include"
@@ -234,13 +234,13 @@
     "Identifies a references to an activity defined in the list of activities."
     activity: Activity
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies the person or organization responsible for performing a specific role related to the task."
     responsible_roles: [OscalResponsibleParty]
     "Identifies an include/exclude pair starts with processing the include, then removing matching entries in the exclude."
     subject: [AssessmentSubject]
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Characterization
@@ -255,9 +255,9 @@
     modified: Timestamp
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -319,9 +319,9 @@
     "Identifies a human-readable description of the evidence."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Facet
@@ -339,9 +339,9 @@
     "Indicates the value of the facet."
     value: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
   input FacetAddInput {
@@ -388,7 +388,7 @@
     "Identifies a human-readable description of the assessor's conclusions regarding the degree to which an objective is satisfied."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies whether the objective is satisfied or not within a given system."
     objective_status_state: ObjectiveStatusState!
     "Identifies the reason the objective was given it's status."
@@ -398,7 +398,7 @@
     "Indicates the degree to which the given control was implemented."
     implementation_status: ImplementationStatus
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Generic Characterization
@@ -413,9 +413,9 @@
     modified: Timestamp
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -449,12 +449,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -558,12 +558,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -602,12 +602,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -697,7 +697,7 @@
     "Identifies one or more actors that produces an observation, a finding, or a risk. One or more actor type can be used to specify a person that is using a tool."
     origin_actors: [Actor!]!
     "Identifies one or more task for which the containing object is a consequence of."
-    related_tasks(limit: Int): RemediationTaskConnection
+    related_tasks(first: Int): RemediationTaskConnection
   }
 
   input OriginAddInput {
@@ -756,12 +756,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -779,9 +779,9 @@
     "Identifies the timing under which the task is intended to occur."
     timing: EventTiming
     "Identifies that the task is dependent on another task."
-    task_dependencies(limit: Int): RemediationTaskConnection
+    task_dependencies(first: Int): RemediationTaskConnection
     # ""
-    # tasks(limit: Int): RemediationTaskConnector
+    # tasks(first: Int): RemediationTaskConnector
     "Identifies an individual activity to be performed as part of a task."
     associated_activities: [AssociatedActivity]
     "Identifies a reference to one or more subjects that the task is performed against: component, inventory item, party, users"
@@ -861,12 +861,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -946,12 +946,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -981,9 +981,9 @@
     "Identifies either recommended or an actual plan for addressing the risk."
     remediations: [RiskResponse]
     "log of all risk-related tasks taken."
-    risk_log(limit: Int): LogEntryConnection
+    risk_log(first: Int): LogEntryConnection
     "Relates the finding to a set of referenced observations that were used to determine the risk.  This would be the Component in which the risk exists and the InventoryItem(s) in which theComponent is installed"
-    related_observations(limit: Int): ObservationConnection
+    related_observations(first: Int): ObservationConnection
     "Identifies that the risk has been confirmed to be a false positive."
     false_positive: RiskAssertionState
     "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
@@ -1072,9 +1072,9 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -1149,12 +1149,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1174,9 +1174,9 @@
     "Identifies one or more sources of individuals and/or tools that generated this recommended or planned response."
     origins: [Origin]
     "Identifies an asset required to achieve remediation."
-    required_assets(limit: Int): RequiredAssetConnection
+    required_assets(first: Int): RequiredAssetConnection
     "Identifies one or more scheduled events or milestones, which may be associated with a series of assessment actions."
-    tasks(limit: Int): RemediationTaskConnection
+    tasks(first: Int): RemediationTaskConnection
   }
 
   input RiskResponseAddInput {
@@ -1240,9 +1240,9 @@
     "Identifies the name for the referenced subject."
     name: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
   input SubjectAddInput {
@@ -1293,9 +1293,9 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."

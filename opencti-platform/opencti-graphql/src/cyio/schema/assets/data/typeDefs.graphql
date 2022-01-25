@@ -1,7 +1,7 @@
   extend type Query {
     data(id: ID!): DataAsset
     dataList(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: DatumOrdering
       orderMode: OrderingMode
@@ -33,8 +33,8 @@
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( limit: Int ): CyioExternalReferenceConnection
-    notes( limit: Int ): CyioNoteConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Data
   }
 

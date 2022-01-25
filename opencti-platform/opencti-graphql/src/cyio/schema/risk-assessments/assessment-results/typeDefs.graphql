@@ -18,12 +18,12 @@
     labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( limit: Int ): CyioExternalReferenceConnection
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes( limit: Int ): CyioNoteConnection
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -43,7 +43,7 @@
     # "Identifies a reference to the implementation statement in the SSP to which this finding is related."
     # implementation_statement: ImplementationStatement
     "Relates the finding to a set of referenced observations that were used to determine the finding."
-    related_observations(limit: Int): ObservationConnection
+    related_observations(first: Int): ObservationConnection
     "Relates the finding to a set of referenced risks that were used to determine the finding."
-    related_risks(limit: Int): RiskConnection
+    related_risks(first: Int): RiskConnection
   }
