@@ -1,5 +1,6 @@
 version: 2.1
-
+orbs: 
+  slack: circleci/slack@4.5.1
 jobs:
   build_frontend:
     working_directory: ~/opencti

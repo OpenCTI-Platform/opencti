@@ -64,6 +64,8 @@ All you need to install the OpenCTI platform can be found in the [official docum
   <a href="https://www.gatewatcher.com" alt="Gatewatcher"><img src="https://www.luatix.org/wp-content/uploads/2021/03/gatewatcher.png" width="80" /></a>
   <a href="https://www.deepwatch.com" alt="deepwatch"><img src="https://www.luatix.org/wp-content/uploads/2021/10/deepwatch.png" width="80" /></a>
   <a href="https://www.aisi.fr" alt="AISI"><img src="https://www.luatix.org/wp-content/uploads/2021/10/aisi.png" width="80" /></a>
+  <a href="https://www.hermes.com" alt="Hermès"><img src="https://www.luatix.org/wp-content/uploads/2022/01/hermes.png" width="80" /></a>
+  <a href="https://www.aon.com" alt="Aon"><img src="https://www.luatix.org/wp-content/uploads/2022/01/aon.png" width="80" /></a>
 </p>
 
 ### Advisory board

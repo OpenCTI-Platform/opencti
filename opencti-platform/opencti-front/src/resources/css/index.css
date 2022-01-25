@@ -8,24 +8,8 @@
   outline: 0;
 }
 
-@keyframes autofill {
-  100% {
-    background: transparent;
-    color: inherit;
-  }
-}
-
-@keyframes loading {
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@-webkit-keyframes autofill {
-  100% {
-    background: transparent;
-    color: inherit;
-  }
+input:-webkit-autofill {
+  transition-delay: 9999s;
 }
 
 a,
