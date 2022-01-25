@@ -19,7 +19,17 @@
       filters: [CyioExternalReferencesFiltering]
       filterMode: FilterMode
     ): CyioExternalReferenceConnection
-  }
+    cyioLabel(id: ID!): CyioLabel
+    cyioLabels(
+      limit: Int
+      offset: Int
+      orderBy: CyioLabelsOrdering
+      orderMode: OrderingMode
+      filters: [CyioLabelsFiltering]
+      filterMode: FilterMode
+      search: String
+    ): CyioLabelConnection
+}
 
   # declares the mutation entry-points for this type
   extend type Mutation {
@@ -31,6 +41,9 @@
     createCyioExternalReference(input: CyioExternalReferenceAddInput): CyioExternalReference
     deleteCyioExternalReference(id: ID!): String!
     editCyioExternalReference(id: ID!, input: [EditInput]!, commitMessage: String): CyioExternalReference
+    createCyioLabel(input: CyioLabelAddInput): CyioLabel
+    deleteCyioLabel(id: ID!): String!
+    editCyioLabel(id: ID!, input: [EditInput]!, commitMessage: String): CyioLabel
   }
 
   "Defines the identifying information about a lifecycle object"
@@ -167,6 +180,67 @@
     SHA3_384
     "The SHA3-512 algorithm as defined by NIST FIPS 202."
     SHA3_512
+  }
+
+############## Labels
+  type CyioLabel implements BasicObject & LifecycleObject {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # Lifecycle Object
+    "Identities the date and time at which the object was originally created."
+    created: Timestamp
+    "Identifies the date and time at which the object was last modified."
+    modified: Timestamp
+    # Cyio Label
+    "Identifies the text value of the label."
+    value: String!
+    "Identifies the color to be applied to the label."
+    color: String
+    "Identifies a human-readable description of the meaning of the label"
+    description: String
+  }
+
+  input CyioLabelAddInput {
+    value: String!
+    color: String
+    description: String
+  }
+
+  enum CyioLabelsOrdering {
+    "Value"
+    value
+    "Color"
+    color
+    "Created"
+    created
+    "Modified"
+    modified
+  }
+
+  enum CyioLabelsFilter {
+    "Value"
+    value
+  }
+  input CyioLabelsFiltering {
+    key: LabelsFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+  }
+  type LabelConnection {
+    pageInfo: PageInfo!
+    edges: [CyioLabelEdge]
+  }
+  type CyioLabelEdge {
+    cursor: String!
+    node: CyioLabel!
   }
 
   type CyioNote implements BasicObject {
