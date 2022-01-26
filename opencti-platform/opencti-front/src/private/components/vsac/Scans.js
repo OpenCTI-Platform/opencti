@@ -492,7 +492,7 @@ class Scans extends Component {
         case "New Analysis":
           return (
             <NewAnalysis
-              scans={this.state.scans}
+              id={this.state.dialogParams.id}
               client={this.state.dialogParams.client}
               onClose={handleDialogClose}
               action={onNewAnalysis}
@@ -543,9 +543,7 @@ class Scans extends Component {
 
     const CustomTooltip = ({ active, payload, label }) => {
       if (active && payload && payload.length) {
-
         return (
-
           <div
             className="custom-tooltip"
             style={{backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10, border: 1, padding: 10}}>
@@ -555,11 +553,8 @@ class Scans extends Component {
           </div>
         );
       }
-
       return null;
     };
-
-
 
     return (
       <div>
