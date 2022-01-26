@@ -108,37 +108,41 @@ class ExploreResults extends Component {
   }
 
   componentDidMount() {
+    this.resetAllData()
+  }
+
+  resetAllData() {
     getAnalysisHosts(this.state.analysis.id, this.state.client)
-      .then((response) => {
-        this.setState({ hosts: response.data });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        .then((response) => {
+          this.setState({ hosts: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
     getAnalysisSoftware(this.state.analysis.id, this.state.client)
-      .then((response) => {
-        this.setState({ software: response.data });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        .then((response) => {
+          this.setState({ software: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
     getAnalysisWeaknesses(this.state.analysis.id, this.state.client)
-      .then((response) => {
-        this.setState({ weakness: response.data });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        .then((response) => {
+          this.setState({ weakness: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
     getAnalysisVulnerabilities(this.state.analysis.id, this.state.client)
-      .then((response) => {
-        this.setState({ vulnerabilities: response.data });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        .then((response) => {
+          this.setState({ vulnerabilities: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
   }
 
   render() {
@@ -281,16 +285,15 @@ class ExploreResults extends Component {
       };
 
     const handleReset = () => {
-
       this.setState({weaknessDetails: null});
       this.setState({weaknessAccordion: false});
       this.setState({selectedRow: null});
       this.setState({currentResult: null});
-      this.setState({filteredResultData: null});
+      this.setState({filteredResultsData: null});
       this.setState({filteredResultsDataDetails: null});
       this.setState({vulnerabilitiesDetails: null});
       this.setState({vulnerabilitiesAccordion: false});
-      handleFilterResults({}, null)
+      this.resetAllData()
     }
 
     return (
@@ -342,7 +345,7 @@ class ExploreResults extends Component {
                   disabled={selectedRow == null}
                   onClick={handleReset}
               >
-                Reset
+                Reset Filters
               </Button>
             </div>
           </Grid>
