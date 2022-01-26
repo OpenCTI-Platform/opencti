@@ -97,7 +97,8 @@ const requiredResourcePopoverDeletionMutation = graphql`
 const cyioRequiredResourceEditionQuery = graphql`
   query RequiredResourcePopoverEditionQuery($id: String!) {
     externalReference(id: $id) {
-      ...CyioExternalReferenceEdition_externalReference
+      id
+      # ...CyioExternalReferenceEdition_externalReference
     }
   }
 `;
