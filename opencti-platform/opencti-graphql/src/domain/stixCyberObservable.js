@@ -80,62 +80,66 @@ export const batchIndicators = (user, stixCyberObservableIds) => {
 };
 
 const createIndicatorFromObservable = async (user, input, observable) => {
-  let entityType = observable.entity_type;
-  let key = entityType;
-  const indicatorName = observableValue(observable);
-  let value = indicatorName;
-  if (isStixCyberObservableHashedObservable(entityType)) {
-    if (observable.hashes) {
-      key = '';
-      value = '';
-      if (observable.hashes['SHA-256']) {
-        key = `${entityType}_sha256`;
-        value = observable.hashes['SHA-256'];
+  try {
+    let entityType = observable.entity_type;
+    let key = entityType;
+    const indicatorName = observableValue(observable);
+    let value = indicatorName;
+    if (isStixCyberObservableHashedObservable(entityType)) {
+      if (observable.hashes) {
+        key = '';
+        value = '';
+        if (observable.hashes['SHA-256']) {
+          key = `${entityType}_sha256`;
+          value = observable.hashes['SHA-256'];
+        }
+        if (observable.hashes['SHA-1']) {
+          key = key.length > 0 ? `${key}__${entityType}_sha1` : `${entityType}_sha1`;
+          value = value.length > 0 ? `${value}__${observable.hashes['SHA-1']}` : observable.hashes['SHA-1'];
+        }
+        if (observable.hashes.MD5) {
+          key = key.length > 0 ? `${key}__${entityType}_md5` : `${entityType}_md5`;
+          value = value.length > 0 ? `${value}__${observable.hashes.MD5}` : observable.hashes.MD5;
+        }
+      } else if (observable.name) {
+        key = `${entityType}_name`;
       }
-      if (observable.hashes['SHA-1']) {
-        key = key.length > 0 ? `${key}__${entityType}_sha1` : `${entityType}_sha1`;
-        value = value.length > 0 ? `${value}__${observable.hashes['SHA-1']}` : observable.hashes['SHA-1'];
-      }
-      if (observable.hashes.MD5) {
-        key = key.length > 0 ? `${key}__${entityType}_md5` : `${entityType}_md5`;
-        value = value.length > 0 ? `${value}__${observable.hashes.MD5}` : observable.hashes.MD5;
-      }
-    } else if (observable.name) {
-      key = `${entityType}_name`;
+    } else if (observable.pid) {
+      key = `${entityType}_pid`;
+    } else if (observable.subject) {
+      key = `${entityType}_subject`;
+    } else if (observable.body) {
+      key = `${entityType}_body`;
     }
-  } else if (observable.pid) {
-    key = `${entityType}_pid`;
-  } else if (observable.subject) {
-    key = `${entityType}_subject`;
-  } else if (observable.body) {
-    key = `${entityType}_body`;
-  }
-  if (key.includes('StixFile')) {
-    key = key.replaceAll('StixFile', 'File');
-  }
-  if (key.includes('Artifact')) {
-    key = key.replaceAll('Artifact', 'File');
-    entityType = 'StixFile';
-  }
-  const pattern = await createStixPattern(key, value);
-  if (pattern) {
-    const indicatorToCreate = {
-      pattern_type: 'stix',
-      pattern,
-      x_opencti_main_observable_type: entityType,
-      name: indicatorName,
-      description: observable.x_opencti_description
-        ? observable.x_opencti_description
-        : `Simple indicator of observable {${indicatorName}}`,
-      basedOn: [observable.id],
-      x_opencti_score: observable.x_opencti_score,
-      createdBy: input.createdBy,
-      objectMarking: input.objectMarking,
-      objectLabel: input.objectLabel,
-      externalReferences: input.externalReferences,
-      update: true,
-    };
-    await addIndicator(user, indicatorToCreate);
+    if (key.includes('StixFile')) {
+      key = key.replaceAll('StixFile', 'File');
+    }
+    if (key.includes('Artifact')) {
+      key = key.replaceAll('Artifact', 'File');
+      entityType = 'StixFile';
+    }
+    const pattern = await createStixPattern(key, value);
+    if (pattern) {
+      const indicatorToCreate = {
+        pattern_type: 'stix',
+        pattern,
+        x_opencti_main_observable_type: entityType,
+        name: indicatorName,
+        description: observable.x_opencti_description
+          ? observable.x_opencti_description
+          : `Simple indicator of observable {${indicatorName}}`,
+        basedOn: [observable.id],
+        x_opencti_score: observable.x_opencti_score,
+        createdBy: input.createdBy,
+        objectMarking: input.objectMarking,
+        objectLabel: input.objectLabel,
+        externalReferences: input.externalReferences,
+        update: true,
+      };
+      await addIndicator(user, indicatorToCreate);
+    }
+  } catch (err) {
+    logApp.info(`[OPENCTI] Cannot create indicator`, { error: err });
   }
 };
 

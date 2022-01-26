@@ -314,7 +314,7 @@ jobs:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
-      resource_class: xlarge
+      resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -348,7 +348,7 @@ jobs:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
-      resource_class: xlarge
+      resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -381,7 +381,7 @@ jobs:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
-      resource_class: xlarge
+      resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -415,7 +415,7 @@ jobs:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
-      resource_class: xlarge
+      resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
