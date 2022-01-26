@@ -40,15 +40,9 @@ export const createNewScanAnalysis = async (id, clientID, formParams) => {
     "content-type": "application/vnd.dl.vsa.analysis.submission+json;version=1",
     "X-Cyio-Client": clientID,
   };
-  const params = {
-    scan_id: formParams.scan_id,
-    vulnerability_range: formParams.vulnerabilityRange,
-    weakness_range: formParams.weaknessRange,
-    vignette: formParams.vignette,
-  };
 
   try {
-    const newScan = analysisAxios.post(`vsa/analysis`, params, { headers });
+    const newScan = analysisAxios.post(`vsa/analysis`, formParams, { headers });
     return await newScan;
   } catch (error) {
     throw error;
