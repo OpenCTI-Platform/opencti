@@ -27,7 +27,7 @@ const Compare = (props) => {
   return (
     <Grid container={true} spacing={3}>
       <Grid item={true} xs={4}>
-        <Paper elevation={2} style={{ height: '98%', marginBottom: 20 }}>
+        <Paper elevation={2} style={{ height: '920px', marginBottom: 20, overflowY: 'scroll' }}>
           <List>
             { getAnalysises.map((analysis, i) => {
               const hex = Math.floor(Math.random() * 16777215).toString(16);
