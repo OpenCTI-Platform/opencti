@@ -495,7 +495,7 @@ class Scans extends Component {
           return (
             <NewAnalysis
               id={this.state.dialogParams.id} // Scan ID
-              isScan={true}
+              isScan={this.state.dialogParams.isScan}
               client={this.state.dialogParams.client}
               onClose={handleDialogClose}
               action={onNewAnalysis}
@@ -673,6 +673,7 @@ class Scans extends Component {
                                   handleDialogOpen({
                                     modal: "New Analysis",
                                     id: scan.id,
+                                    isScan: true,
                                     client: this.state.client_ID,
                                   })
                                 }
@@ -891,6 +892,7 @@ class Scans extends Component {
                                 handleDialogOpen({
                                   modal: "New Analysis",
                                   id: analysis.id,
+                                  isScan: false,
                                   client:
                                     this.state.client_ID,
                                 })
@@ -924,7 +926,7 @@ class Scans extends Component {
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
                     <CardContent>
-                      {scatterPlotData && (
+                      {(scatterPlotData && scatterPlotData[i]) && (
                         <ResponsiveContainer width="100%" aspect={1}>
                           <ScatterChart
                             width={200}
