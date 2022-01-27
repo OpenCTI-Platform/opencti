@@ -494,7 +494,8 @@ class Scans extends Component {
         case "New Analysis":
           return (
             <NewAnalysis
-              id={this.state.dialogParams.id}
+              id={this.state.dialogParams.id} // Scan ID
+              isScan={true}
               client={this.state.dialogParams.client}
               onClose={handleDialogClose}
               action={onNewAnalysis}
@@ -672,8 +673,7 @@ class Scans extends Component {
                                   handleDialogOpen({
                                     modal: "New Analysis",
                                     id: scan.id,
-                                    client:
-                                      this.state.client_ID,
+                                    client: this.state.client_ID,
                                   })
                                 }
                               >
