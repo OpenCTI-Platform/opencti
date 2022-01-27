@@ -214,7 +214,7 @@ class Scans extends Component {
       selectedElements: null,
       selectAll: false,
       loadingScans: true,
-      loadingAnalysises: true,
+      loadingAnalyses: true,
       dialogParams: null,
       vulnerabilityAnchorEl: null,
       sortByAnchorEl: null,
@@ -225,10 +225,9 @@ class Scans extends Component {
       openDialog: false,
       loadDialog: null,
       openedPopoverId: null,
+      pendingAnalysis: null
     };
   }
-
-
 
   sortScansByReportDate(unSorted) {
     const scans = unSorted
@@ -240,9 +239,7 @@ class Scans extends Component {
   }
 
   componentDidMount() {
-    
     this.setState({client_ID: localStorage.getItem('client_id')},function() {
-
       fetchAllScans(this.state.client_ID)
         .then((response) => {
           const scans = response.data;
@@ -258,10 +255,10 @@ class Scans extends Component {
 
       fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
-          let analysises = response.data;
+          let analyses = response.data;
           let scatterPlotData = [];
 
-          analysises.forEach(analysis =>{
+          analyses.forEach(analysis =>{
             getAnalysisSummary(analysis.id,this.state.client_ID)
               .then((response) => {
                 let scatterPlot = [];
@@ -269,18 +266,15 @@ class Scans extends Component {
                 response.data.forEach((item) => {
                   scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
                 });
-
                 scatterPlotData.push(scatterPlot)
-
                 this.setState({scatterPlotData: scatterPlotData});
-
               })
               .catch((error) => {
                 console.log(error);
               })
           })
-          this.setState({ analysises: analysises });
-          this.setState({ loadingAnalysises: false });
+          this.setState({ analyses: analyses });
+          this.setState({ loadingAnalyses: false });
         })
         .catch((error) => {
           console.log(error);
@@ -297,8 +291,8 @@ class Scans extends Component {
       renderScans,
       scansReportDate,
       sortByLabel,
-      loadingAnalysises,
-      analysises,
+      loadingAnalyses,
+      analyses,
       scatterPlotData,
       modalStyle,
       openDialog,
@@ -307,6 +301,7 @@ class Scans extends Component {
       popoverAnchorEl,
       openedPopoverId,
       openAnalysisMenu,
+      pendingAnalysis
     } = this.state;
 
     const openPopover = Boolean(popoverAnchorEl);
@@ -361,11 +356,11 @@ class Scans extends Component {
       this.setState({ vulnerabilityAnchorEl: null });
       this.setState({ analysisAnchorEl: null });
       this.setState({ analysisByAnchorEl: null,  openAnalysisMenu: null});
-
     };
+
     const handleDialogClose = () => {
       this.setState({ openDialog: false });
-       this.setState({ openAnalysisMenu: null});
+      this.setState({ openAnalysisMenu: null});
     };
 
     const handleLinkClink = (path, data) => {
@@ -383,9 +378,15 @@ class Scans extends Component {
     }
 
     const onNewAnalysis = (id, client, params) => {
+      const scanName = scans.filter((s) => s.id === params.scan_id)[0].scan_name
+      this.setState({pendingAnalysis: scanName})
       createNewScanAnalysis(id, client, params)
         .then((response) => {
           handleDialogClose();
+          setTimeout(() => {
+            refreshAnalysis();
+            this.setState({pendingAnalysis: null})
+          }, 10000);
         })
         .catch((error) => {
           console.log(error);
@@ -440,7 +441,7 @@ class Scans extends Component {
 
     const refreshAnalysis = () => {
       this.setState({ loadingScans: true });
-      this.setState({ loadingAnalysises: true });
+      this.setState({ loadingAnalyses: true });
       fetchAllScans(this.state.client_ID)
         .then((response) => {
           const scans = response.data;
@@ -455,10 +456,10 @@ class Scans extends Component {
         });
       fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
-          let analysises = response.data;
+          let analyses = response.data;
           let scatterPlotData = [];
 
-          analysises.forEach(analysis =>{
+          analyses.forEach(analysis =>{
             getAnalysisSummary(analysis.id,this.state.client_ID)
               .then((response) => {
 
@@ -476,8 +477,8 @@ class Scans extends Component {
                 console.log(error);
               })
           })
-          this.setState({ analysises: analysises });
-          this.setState({ loadingAnalysises: false });
+          this.setState({ analyses: analyses });
+          this.setState({ loadingAnalyses: false });
         })
         .catch((error) => {
           console.log(error);
@@ -487,6 +488,7 @@ class Scans extends Component {
     const rerenderParentCallback =() => {
       refreshAnalysis();
     }
+    
     const renderDialogSwitch = () => {
       switch (this.state.dialogParams.modal) {
         case "New Analysis":
@@ -769,13 +771,22 @@ class Scans extends Component {
             </Paper>
           </Grid>
         </Grid>
+        {
+          pendingAnalysis && (
+            <Chip
+              size="small"
+              style={{height: '17px', fontSize: '0.9em', marginBottom: '10px', textAlign: 'center'}}
+              label={`Pending Analysis: ${pendingAnalysis}`}
+            />
+          )
+        }
         <Typography variant="h4" gutterBottom={true}>
           Analyses
-          { loadingAnalysises ? <LinearProgress /> : null }
+          { loadingAnalyses ? <LinearProgress /> : null }
         </Typography>
         <Grid container={true} spacing={3}>
-          {!loadingAnalysises ? (
-            this.state.analysises.map((analysis, i) => {
+          {!loadingAnalyses ? (
+            this.state.analyses.map((analysis, i) => {
               return (
                 <Grid item={true} xs={4}>
                   <Paper
@@ -809,7 +820,6 @@ class Scans extends Component {
                                       this.state.client_ID,
                                     scan: getCurrentScan(analysis.scan.id, scans)
                                   })}
-
                             >
                               <ListItemIcon>
                                 <ExploreIcon fontSize="small" />
@@ -819,10 +829,11 @@ class Scans extends Component {
                             <MenuItem
                               onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/viewcharts',
-                                  { 
+                                  {
                                     analysis_id: analysis.id,
-                                    analysises: this.state.analysises,
-                                  })}
+                                    analyses: this.state.analyses,
+                                  })
+                              }
                             >
                               <ListItemIcon>
                                 <ShowChartIcon fontSize="small" />
@@ -832,7 +843,7 @@ class Scans extends Component {
                             <MenuItem
                               onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/compare',
-                                  { analysises: this.state.analysises,
+                                  { analyses: this.state.analyses,
                                     scatterPlotData: this.state.scatterPlotData
                                   })}
                             >
@@ -994,7 +1005,7 @@ class Scans extends Component {
                     </CardContent>
                     <CardActions style={{ justifyContent: "right" }}>
                       <Button
-                        disabled={loadingAnalysises}
+                        disabled={loadingAnalyses}
                         variant="contained"
                         color="primary"
                         startIcon={<CloudUploadIcon />}
