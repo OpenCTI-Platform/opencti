@@ -104,7 +104,7 @@ const Compare = (props) => {
                   fill: 'white',
                 }}
                 domain={[-200, 200]}
-                tick={{ fill: '#ffffff' }}
+                tick={false}
               />
               <YAxis
                 type="number"
@@ -116,7 +116,7 @@ const Compare = (props) => {
                   textAnchor: 'middle',
                 }}
                 domain={[-200, 200]}
-                tick={{ fill: '#ffffff' }}
+                tick={false}
               />
               <ReferenceLine x={0} stroke="white" />
               <ReferenceLine y={0} stroke="white" />
