@@ -99,7 +99,10 @@ const Compare = (props) => {
               <XAxis
                 type="number"
                 dataKey="x"
-                label="% of Hosts with Weakness"
+                label={{
+                  value: '% of Hosts with Weakness',
+                  fill: 'white',
+                }}
                 domain={[-200, 200]}
                 tick={{ fill: '#ffffff' }}
               />
@@ -109,7 +112,7 @@ const Compare = (props) => {
                 label={{
                   value: 'Weakness Score',
                   angle: -90,
-                  position: 'insideLeft',
+                  fill: 'white',
                   textAnchor: 'middle',
                 }}
                 domain={[-200, 200]}
