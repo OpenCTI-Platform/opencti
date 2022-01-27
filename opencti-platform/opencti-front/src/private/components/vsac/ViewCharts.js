@@ -152,7 +152,6 @@ class ViewCharts extends Component {
   componentDidMount() {
     this.setState({isDisabled: true});
     const ids = this.state.analysisesIDs.map((i) => i).join();
-    console.log(this.state.analysisesIDs.findIndex( (el) => el === this.state.analysis_id ))
 
     getSeverityPieChartData(this.state.clientId, ids)
       .then((response) => {
@@ -402,7 +401,6 @@ class ViewCharts extends Component {
                             value,
                             index,
                           }) => {
-                            console.log('handling label?');
                             const RADIAN = Math.PI / 180;
                             // eslint-disable-next-line
                             const radius =
@@ -483,7 +481,7 @@ class ViewCharts extends Component {
                             domain={[1999, 2021]}
                           />
                           <YAxis type="number" />
-                          <Tooltip />
+                          <Tooltip cursor={false}/>
                           <Legend />
                           <Bar
                             stackId="a"
@@ -540,7 +538,7 @@ class ViewCharts extends Component {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" domain={[0, 'auto']} />
                           <YAxis type="category" dataKey="host" />
-                          <Tooltip />
+                          <Tooltip cursor={false}/>
                           <Legend />
                           <Bar
                             stackId="a"
@@ -592,7 +590,7 @@ class ViewCharts extends Component {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" domain={[0, 'auto']} />
                           <YAxis type="category" dataKey="product" />
-                          <Tooltip />
+                          <Tooltip cursor={false}/>
                           <Legend />
                           <Bar
                             stackId="a"
