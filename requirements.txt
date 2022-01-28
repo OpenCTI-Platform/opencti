@@ -1,4 +1,4 @@
-requests~=2.26.0
+requests>=2.25
 PyYAML~=6.0
 setuptools~=60.1.0
 datefinder~=0.7
