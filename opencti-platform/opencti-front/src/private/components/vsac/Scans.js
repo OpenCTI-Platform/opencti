@@ -9,6 +9,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from "../../../utils/ListParameters";
+import { truncate } from "../../../utils/String";
 import percentage from "../../../utils/percentage";
 import ListLines from "../../../components/list_lines/ListLines";
 import inject18n from "../../../components/i18n";
@@ -909,7 +910,7 @@ class Scans extends Component {
                           </Menu>
                         </div>
                       }
-                      title={analysis.scan.scan_name}
+                      title={truncate(t(analysis.scan.scan_name),30)}
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
                     <CardContent>
