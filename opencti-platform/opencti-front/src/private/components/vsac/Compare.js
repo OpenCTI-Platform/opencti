@@ -15,6 +15,7 @@ import {
   YAxis,
   ReferenceLine,
   ResponsiveContainer,
+  Tooltip,
 } from 'recharts';
 import Chip from '@material-ui/core/Chip';
 
@@ -23,6 +24,27 @@ const Compare = (props) => {
   const [getScatterPlotData] = useState(props.location.state.scatterPlotData);
 
   const scatter = [];
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div
+          className="custom-tooltip"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            fontSize: 12,
+            borderRadius: 10,
+            border: 1,
+            padding: 10,
+          }}>
+          <p className="label" style={{ paddingBottom: 5 }}>{payload[0].payload.cwe_name}</p>
+          <p className="weakness" style={{ paddingBottom: 5 }}>{`Weakness Score: ${payload[0].payload.score}`}</p>
+          <p className="host" style={{ paddingBottom: 5 }}>{`Hosts with Weakness: ${payload[0].payload.host_count_total} (${payload[0].payload.x}%)`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <Grid container={true} spacing={3}>
@@ -120,6 +142,10 @@ const Compare = (props) => {
               />
               <ReferenceLine x={0} stroke="white" />
               <ReferenceLine y={0} stroke="white" />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={false}
+              />
               {scatter.map((plot, i) => (
                  <Scatter key={i} name={plot.name} data={plot.data} fill={plot.fill} />
               ))}
