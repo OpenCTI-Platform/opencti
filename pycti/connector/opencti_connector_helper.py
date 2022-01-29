@@ -638,10 +638,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         event_version = kwargs.get("event_version", None)
         bypass_split = kwargs.get("bypass_split", False)
         bypass_validation = kwargs.get("bypass_validation", False)
-        file_name = kwargs.get("file_name", work_id + ".json")
         entity_id = kwargs.get("entity_id", None)
+        file_name = kwargs.get("file_name", None)
 
-        if self.connect_validate_before_import and not bypass_validation:
+        if not file_name and work_id:
+            file_name = f"{work_id}.json"
+
+        if self.connect_validate_before_import and not bypass_validation and file_name:
             self.api.upload_pending_file(
                 file_name=file_name,
                 data=bundle,
@@ -649,17 +652,22 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 entity_id=entity_id,
             )
             return []
+
         if entities_types is None:
             entities_types = []
+
         if bypass_split:
             bundles = [bundle]
         else:
             stix2_splitter = OpenCTIStix2Splitter()
             bundles = stix2_splitter.split_bundle(bundle, True, event_version)
+
         if len(bundles) == 0:
             raise ValueError("Nothing to import")
-        if work_id is not None:
+
+        if work_id:
             self.api.work.add_expectations(work_id, len(bundles))
+
         pika_credentials = pika.PlainCredentials(
             self.config["connection"]["user"], self.config["connection"]["pass"]
         )
