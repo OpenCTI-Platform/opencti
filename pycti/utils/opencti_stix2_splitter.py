@@ -52,8 +52,9 @@ class OpenCTIStix2Splitter:
                 raise Exception("File data is not a valid JSON")
         else:
             bundle_data = bundle
-            if "objects" not in bundle_data:
-                raise Exception("File data is not a valid bundle")
+
+        if "objects" not in bundle_data:
+            raise Exception("File data is not a valid bundle")
 
         raw_data = {}
         # Build flat list of elements
