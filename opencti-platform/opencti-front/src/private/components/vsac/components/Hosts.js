@@ -73,7 +73,7 @@ class Hosts extends Component {
         host_ip: host_ip,
       };
 
-      this.props.action(params, name);
+      this.props.action(params, name, 'host');
     };
 
     return (

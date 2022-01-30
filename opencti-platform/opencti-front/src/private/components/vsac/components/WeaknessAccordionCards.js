@@ -73,7 +73,7 @@ class WeaknessAccordionCards extends Component {
         cwe_id: cwe_id,
       };
 
-      this.props.action(params, name);
+      this.props.action(params, name, 'weakness');
     };
 
     return (

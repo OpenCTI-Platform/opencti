@@ -90,7 +90,12 @@ const styles = (theme) => ({
 });
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+  const { 
+    children,
+    value,
+    index,
+    ...other 
+  } = props;
 
   return (
     <div
@@ -132,6 +137,7 @@ class ExploreResults extends Component {
       scan: this.props.location.state.scan,
       hosts: null,
       software: null,
+      filteredResultsParams: {},
       filteredResultsData: null,
       currentResult: null,
       tabValue: 0,
@@ -140,6 +146,10 @@ class ExploreResults extends Component {
       vulnerabilitiesAccordion: false,
       vulnerabilitiesDetails: null,
       selectedRow: null,
+      host_ip: null,
+      cpe_id: null,
+      cve_id: null,
+      cwe_id: null,
     };
   }
 
@@ -185,6 +195,7 @@ class ExploreResults extends Component {
       software,
       weakness,
       vulnerabilities,
+      filteredResultsParams,
       filteredResultsData,
       filteredResultsDataDetails,
       currentResult,
@@ -194,20 +205,57 @@ class ExploreResults extends Component {
       vulnerabilitiesAccordion,
       vulnerabilitiesDetails,
       selectedRow,
+      host_ip,
+      cpe_id,
+      cve_id,
+      cwe_id,
     } = this.state;
 
-    const handleFilterResults = (params, name) => {
+    const handleFilterResults = (params, name, type) => {
       this.setState({ filteredResultsData: 'loading' });
-      getAnalysisFilteredResults(
-        this.state.analysis.id,
-        this.state.client,
-        params
-      )
+
+      if (params.host_ip) {
+        this.setState(
+          { host_ip: params.host_ip },
+          handleGetAnalysisFilteredResults(params, type)
+        );
+      }
+      if (params.cpe) {
+        this.setState(
+          { cpe_id: params.cpe },
+          handleGetAnalysisFilteredResults(params, type)
+        );
+      }
+      if (params.cwe_id) {
+        this.setState(
+          { cwe_id: params.cwe_id },
+          handleGetAnalysisFilteredResults(params, type)
+        );
+      }
+      if (params.cve_id) {
+        this.setState(
+          { cve_id: params.cve_id },
+          handleGetAnalysisFilteredResults(params, type)
+        );
+      }
+
+      this.setState({ selectedRow: name });
+    };
+
+    const handleGetAnalysisFilteredResults = (params, type) => {
+      getAnalysisFilteredResults(this.state.analysis.id, this.state.client, {
+        host_ip: params.host_ip || host_ip,
+        cpe: params.cpe || cpe_id,
+        cwe_id: params.cwe_id || cwe_id,
+        cve_id: params.cve_id || cve_id,
+      })
         .then((response) => {
           this.setState({ filteredResultsData: response.data });
 
           if (params.host_ip) {
-            const currentResult = response.data.find((element) => {return element.host_ip === params.host_ip})
+            const currentResult = response.data.find((element) => {
+              return element.host_ip === params.host_ip;
+            });
             this.setState({ currentResult: currentResult });
           }
 
@@ -221,13 +269,90 @@ class ExploreResults extends Component {
           handleFilterResultsDetails(
             this.state.analysis.id,
             this.state.client,
-            detailParams
+            detailParams,
           );
         })
         .catch((error) => {
           console.log(error);
         });
-      this.setState({ selectedRow: name });
+
+      switch (type) {
+        case 'host':
+          getAnalysisSoftware(this.state.analysis.id, this.state.client, params)
+            .then((response) => {
+              this.setState({ software: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
+          getAnalysisWeaknesses(
+            this.state.analysis.id,
+            this.state.client,
+            params,
+          )
+            .then((response) => {
+              this.setState({ weakness: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
+          getAnalysisVulnerabilities(
+            this.state.analysis.id,
+            this.state.client,
+            params,
+          )
+            .then((response) => {
+              this.setState({ vulnerabilities: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+          break;
+
+        case 'software':
+          getAnalysisWeaknesses(
+            this.state.analysis.id,
+            this.state.client,
+            params,
+          )
+            .then((response) => {
+              this.setState({ weakness: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
+          getAnalysisVulnerabilities(
+            this.state.analysis.id,
+            this.state.client,
+            params,
+          )
+            .then((response) => {
+              this.setState({ vulnerabilities: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
+          break;
+
+        case 'weakness':
+          getAnalysisVulnerabilities(
+            this.state.analysis.id,
+            this.state.client,
+            params,
+          )
+            .then((response) => {
+              this.setState({ vulnerabilities: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+          break;
+        default:
+      }
     };
 
     const handleFilterResultsDetails = (id, client, params) => {
@@ -250,7 +375,7 @@ class ExploreResults extends Component {
       getAnalysisFilteredResultsWeakness(
         this.state.analysis.id,
         this.state.client,
-        params
+        params,
       )
         .then((response) => {
           this.setState({ weaknessDetails: response.data });
@@ -288,7 +413,7 @@ class ExploreResults extends Component {
       getAnalysisVulnerabilities(
         this.state.analysis.id,
         this.state.client,
-        params
+        params,
       )
         .then((response) => {
           this.setState({ vulnerabilities: response.data });
@@ -300,22 +425,21 @@ class ExploreResults extends Component {
       handleFilterResults(params, name);
     };
 
-    const handleVulnerabilitiesAccordion =
-      (panel, params) => (event, isExpanded) => {
-        this.setState({ vulnerabilitiesAccordion: isExpanded ? panel : false });
-        this.setState({ vulnerabilitiesDetails: '' });
-        getAnalysisFilteredResultsVulnerability(
-          this.state.analysis.id,
-          this.state.client,
-          params
-        )
-          .then((response) => {
-            this.setState({ vulnerabilitiesDetails: response.data });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      };
+    const handleVulnerabilitiesAccordion = (panel, params) => (event, isExpanded) => {
+      this.setState({ vulnerabilitiesAccordion: isExpanded ? panel : false });
+      this.setState({ vulnerabilitiesDetails: '' });
+      getAnalysisFilteredResultsVulnerability(
+        this.state.analysis.id,
+        this.state.client,
+        params,
+      )
+        .then((response) => {
+          this.setState({ vulnerabilitiesDetails: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
 
     return (
       <div>
@@ -380,14 +504,14 @@ class ExploreResults extends Component {
             {weakness && (
               <WeaknessAccordionCards
                 weakness={weakness}
-                action={handleWeaknessClick}
+                action={handleFilterResults}
                 selectedRow={selectedRow}
               />
             )}
             {vulnerabilities && (
               <VulnerabilityAccordionCards
                 vulnerabilities={vulnerabilities}
-                action={handleWeaknessClick}
+                action={handleFilterResults}
                 selectedRow={selectedRow}
               />
             )}
@@ -427,9 +551,7 @@ class ExploreResults extends Component {
                               <TableRow
                                 key={rowName}
                                 selected={rowName === selectedRow}
-                                onClick={() =>
-                                  handleFilterResults(result.host_ip, rowName)
-                                }
+                                onClick={() => handleFilterResults(result.host_ip, rowName) }
                                 hover
                                 classes={{ root: classes.selectedTableRow }}
                               >
@@ -474,29 +596,30 @@ class ExploreResults extends Component {
                     Problems
                   </Typography>
                   {filteredResultsDataDetails?.details.map((i, j) => (
-                    <p>{ReactHtmlParser(i)}</p>
+                    <p key={j}>{ReactHtmlParser(i)}</p>
                   ))}
                   {filteredResultsDataDetails?.plugins.map((i, j) => (
-                    <p>{ReactHtmlParser(i)}</p>
+                    <p key={j}>{ReactHtmlParser(i)}</p>
                   ))}
                   <Typography variant="h4" gutterBottom={true}>
                     Exploitable?
                   </Typography>
                   {filteredResultsDataDetails?.exploit_frameworks.map(
                     (i, j) => (
-                      <p>{ReactHtmlParser(i)}</p>
-                    )
+                      <p key={j}>{ReactHtmlParser(i)}</p>
+                    ),
                   )}
                   <Typography variant="h4" gutterBottom={true}>
                     Details
                   </Typography>
                   {filteredResultsDataDetails?.problems.map((i, j) => (
-                    <p>{ReactHtmlParser(i)}</p>
+                    <p key={j}>{ReactHtmlParser(i)}</p>
                   ))}
                 </TabPanel>
                 <TabPanel value={tabValue} index={1}>
                   {weakness?.map((i, j) => (
                     <Accordion
+                      key={j}
                       expanded={weaknessAccordion === 'panel-' + j}
                       onChange={handleWeaknessAccordion('panel-' + j, {
                         cwe_id: i.cwe_id,
@@ -526,6 +649,7 @@ class ExploreResults extends Component {
                 <TabPanel value={tabValue} index={2}>
                   {vulnerabilities?.map((i, j) => (
                     <Accordion
+                      key={j}
                       expanded={vulnerabilitiesAccordion === 'panel-' + j}
                       onChange={handleVulnerabilitiesAccordion('panel-' + j, {
                         cve_id: i.cve_id,
@@ -615,4 +739,8 @@ class ExploreResults extends Component {
   }
 }
 
-export default R.compose(inject18n, withRouter, withStyles(styles))(ExploreResults);
+export default R.compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(ExploreResults);
