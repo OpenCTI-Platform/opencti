@@ -808,7 +808,6 @@ class Scans extends Component {
                     <CardHeader
                       style={{ padding: 16 }}
                       action={
-                        (scatterPlotData && scatterPlotData[analysis.id]) && (
                         <div>
                           <IconButton
                             aria-label="settings"
@@ -816,6 +815,7 @@ class Scans extends Component {
                           >
                             <MoreVertIcon />
                           </IconButton>
+                              {(scatterPlotData && scatterPlotData[analysis.id]) ? (
                               <Menu
                                   id="simple-menu"
                                   anchorEl={analysisAnchorEl}
@@ -929,7 +929,34 @@ class Scans extends Component {
                                   Delete Analysis
                                 </MenuItem>
                               </Menu>
-                        </div> )
+                              ) : (
+                                <Menu
+                                  id="simple-menu"
+                                  anchorEl={analysisAnchorEl}
+                                  open={openAnalysisMenu === analysis.id}
+                                  onClose={() =>
+                                    this.setState({analysisAnchorEl: null, openAnalysisMenu: null})
+                                  }
+                                >
+                                  <MenuItem
+                                    onClick={() =>
+                                      handleDialogOpen({
+                                        modal: "Delete Data",
+                                        id: analysis.id,
+                                        client: client_ID,
+                                        date: analysis.completed_date,
+                                      })
+                                    }
+                                  >
+                                    <ListItemIcon>
+                                      <DeleteIcon fontSize="small"/>
+                                    </ListItemIcon>
+                                    Delete Analysis
+                                  </MenuItem>
+                                </Menu>
+                                )
+                            }
+                        </div>
                         }
                       title={truncate(t(analysis.scan.scan_name),30)}
                       subheader={moment(analysis.completed_date).fromNow()}
