@@ -205,7 +205,6 @@ class ExploreResults extends Component {
           handleGetAnalysisFilteredResults(params, type)
         );
       }
-
       this.setState({ selectedRow: name });
     };
 
