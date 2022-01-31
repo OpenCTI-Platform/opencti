@@ -239,9 +239,8 @@ class Scans extends Component {
     return scans;
   }
 
-  componentDidMount() {
-    this.setState({client_ID: localStorage.getItem('client_id')},function() {
-      fetchAllScans(this.state.client_ID)
+  doFetchAllScans(clientId){
+    fetchAllScans(clientId)
         .then((response) => {
           const scans = response.data;
 
@@ -253,30 +252,32 @@ class Scans extends Component {
         .catch((error) => {
           console.log(error);
         });
+  }
 
-      fetchAllAnalysis(this.state.client_ID)
+  doFetchAllAnalysis(clientId){
+    fetchAllAnalysis(clientId)
         .then((response) => {
           let analyses = response.data;
           let scatterPlotData = {};
 
           analyses.forEach(analysis =>{
-            getAnalysisSummary(analysis.id,this.state.client_ID)
-              .then((response) => {
-                let scatterPlot = [];
+            getAnalysisSummary(analysis.id, clientId)
+                .then((response) => {
+                  let scatterPlot = [];
 
-                response.data.forEach((item) => {
-                  if(item.cwe_name){
-                    scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
-                  }
-                });
+                  response.data.forEach((item) => {
+                    if(item.cwe_name){
+                      scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                    }
+                  });
 
-                scatterPlotData[analysis.id] = scatterPlot.length > 0 ? scatterPlot : null
+                  scatterPlotData[analysis.id] = scatterPlot.length > 0 ? scatterPlot : null
 
-                this.setState({scatterPlotData: scatterPlotData});
-              })
-              .catch((error) => {
-                console.log(error);
-              })
+                  this.setState({scatterPlotData: scatterPlotData});
+                })
+                .catch((error) => {
+                  console.log(error);
+                })
           })
           this.setState({ analyses: analyses });
           this.setState({ loadingAnalyses: false });
@@ -284,7 +285,22 @@ class Scans extends Component {
         .catch((error) => {
           console.log(error);
         });
+  }
+
+  componentDidMount() {
+    this.setState({client_ID: localStorage.getItem('client_id')},function() {
+      this.doFetchAllScans(this.state.client_ID)
+      this.doFetchAllAnalysis(this.state.client_ID)
+      const intervalId = setInterval(() => {
+        this.doFetchAllScans(this.state.client_ID)
+        this.doFetchAllAnalysis(this.state.client_ID)
+      }, 30000)
+      this.setState({refreshIntervalId: intervalId})
     });
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.refreshIntervalId)
   }
 
   render() {
