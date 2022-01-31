@@ -1,20 +1,14 @@
 /* eslint-disable */
 import React, { Component } from "react";
 import Paper from "@material-ui/core/Paper";
-import Grid from "@material-ui/core/Grid";
 import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
-import InputLabel from "@material-ui/core/InputLabel";
 import TextField from "@material-ui/core/TextField";
 import MenuItem from "@material-ui/core/MenuItem";
-import FormLabel from "@material-ui/core/FormLabel";
-import FormControl from "@material-ui/core/FormControl";
 import FormGroup from "@material-ui/core/FormGroup";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import FormHelperText from "@material-ui/core/FormHelperText";
 import Switch from "@material-ui/core/Switch";
 import Select from "@material-ui/core/Select";
 import List from "@material-ui/core/List";
@@ -146,7 +140,6 @@ class GenerateReport extends Component {
 			includeTrendingComparison: true,
 			includeVulnerabilitiesByServerity: true,
 			topN: 5,
-			analysisToTrend: [],
 			analysis_id: this.props.id,
 			client: this.props.client,
 			open: false,
@@ -184,8 +177,6 @@ class GenerateReport extends Component {
 
 		const handleFormChange = (prop, event) => {
 			this.setState({ [prop]: event.target.value });
-
-			console.log(this.state);
 		};
 		const handleCheckChange = (prop, event) => {
 			this.setState({ [prop]: event.target.checked });
@@ -194,7 +185,6 @@ class GenerateReport extends Component {
 		const handleDialogOpen = () => {
 			this.setState({ open: true });
 			getTrendableAnalysis(analysis_id, client)
-
 		};
 
 		const handleClose = () => {
@@ -206,7 +196,6 @@ class GenerateReport extends Component {
 		}
 
 		const getTrendableAnalysis = (id, client) => {
-			console.log(1)
 			fetchTrendableAnalyses(id, client)
 				.then((response) => {
 					this.setState({ analysisToTrend: response.data });
@@ -218,11 +207,8 @@ class GenerateReport extends Component {
 
 		const handleAnalysesToTrend = (event) => {
 			event.preventDefault();
-
 			if (event.target.checked) {
-
 				this.state.checkedAnalysesToTrend.push(event.target.value)
-
 				this.setState({checkedAnalysesToTrend: checkedAnalysesToTrend })
 			} else {
 				const array = checkedAnalysesToTrend;
@@ -232,7 +218,6 @@ class GenerateReport extends Component {
 		};
 
 		const handleSubmit = (event) => {
-			
 			const params = {
 		      title: report_title,
 		      include_title: includeTitle,
@@ -255,384 +240,368 @@ class GenerateReport extends Component {
 
 		return (
 			<Paper
-				
 				elevation={2}
 				style={{ width: 680 }}
 			>
 				<Card>
 					<CardHeader title="Create Vulnerability Assessment Report" />
-					{ success ?
-					<CardContent>
-						<p>An e-mail will be sent to your address with a download link when the report is ready.</p>
-					</CardContent>
-					:
-					<CardContent>
-						<p>
-							This feature will generate a report in Markdown (a
-							lightweight text markup language) that can be
-							further edited and then transformed into the output
-							of your choice (Word, PDF, etc.). For more about
-							Markdown and useful conversion tools, see{" "}
-							<a
-								href="https://www.markdownguide.org"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								https://www.markdownguide.org
-							</a>
-						</p>
-						<FormGroup row={true}>
-							<TextField
-								style={{ width: "100%" }}
-								label="Report Title"
-								defaultValue={`${report_title} Assessment Report`}
-								value={report_title}
-								onChange={(event) =>
-									handleFormChange("report_title", event)
-								}
-							/>
-						</FormGroup>
-						<FormGroup row={true}>
-							<List >
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											name="includeTitle"
-											checked={includeTitle}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeTitle",
-													event
-												)
-											}
-										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={"Include Title in Report"}
-										secondary={
-											"The report title from this form will be printed as a heading at the top of the report document."
-										}
-									/>
-								</ListItem>
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											name="includeTOC"
-											checked={includeTOC}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeTOC",
-													event
-												)
-											}
-										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={"Include Table of Contents"}
-										secondary={
-											"A Table of Contents with section headings."
-										}
-									/>
-								</ListItem>
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											name="includeBenchmarkComparison"
-											checked={includeBenchmarkComparison}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeBenchmarkComparison",
-													event
-												)
-											}
-										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={"Include Industry Benchmarks"}
-										secondary={
-											"CWE Top 25 Weaknesses Comparison."
-										}
-									/>
-								</ListItem>
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											checked={includeBenchmarkComparison}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeBenchmarkComparison",
-													event
-												)
-											}
-										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={
-											"Include Trending Comparison Chart"
-										}
-										secondary={
-											"Line chart showing historical trends of vulnerabilities and other metadata from your previous analyses."
-										}
-									/>
-								</ListItem>
-								<ListItem>
-									<ListItemSecondaryAction>
-										<Button
-											color="primary"
-											onClick={handleDialogOpen}
-										>
-											Choose Previous Analyses
-										</Button>
-									</ListItemSecondaryAction>
-								</ListItem>
-							</List>
-							<Dialog
-								onClose={handleClose}
-								aria-labelledby="simple-dialog-title"
-								open={open}
-							>
-								<DialogTitle id="simple-dialog-title">
-									Choose Previous Analyses
-								</DialogTitle>
+					{ success ? (
+						<CardContent>
+							<p>An e-mail will be sent to your address with a download link when the report is ready.</p>
+						</CardContent>
+					) : (
+						<CardContent>
+							<p>
+								This feature will generate a report in Markdown (a
+								lightweight text markup language) that can be
+								further edited and then transformed into the output
+								of your choice (Word, PDF, etc.). For more about
+								Markdown and useful conversion tools, see{" "}
+								<a
+									href="https://www.markdownguide.org"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									https://www.markdownguide.org
+								</a>
+							</p>
+							<FormGroup row={true}>
+								<TextField
+									style={{ width: "100%" }}
+									label="Report Title"
+									defaultValue={`${report_title} Assessment Report`}
+									value={report_title}
+									onChange={(event) =>
+										handleFormChange("report_title", event)
+									}
+								/>
+							</FormGroup>
+							<FormGroup row={true}>
 								<List >
-									{analysisToTrend.length ? (
-										analysisToTrend.map((scan) => {
-											let checked = null;
-											if(checkedAnalysesToTrend.includes(scan.analysis_id)){
-												 checked = true;
-											} else {
-												 checked = false;
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												name="includeTitle"
+												checked={includeTitle}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeTitle",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={"Include Title in Report"}
+											secondary={
+												"The report title from this form will be printed as a heading at the top of the report document."
 											}
-
-											return (
-												<ListItem dense button>
-													<ListItemIcon>
-														<Checkbox
-															checked={checked}
-															edge="start"
-															tabIndex={-1}
-															disableRipple
-															inputProps={{
-																"aria-label":
-																	scan.scan_name,
-															}}
-															value={
-																scan.analysis_id
-															}
-															onChange={(
-																event
-															): void => {
-																handleAnalysesToTrend(
-																	event
-																);
-															}}
-														/>
-													</ListItemIcon>
-													<ListItemText
-														primary={scan.scan_name}
-													/>
-												</ListItem>
-											);
-										})
-									) : (
-										<div
-											style={{
-												alignItems: "center",
-												display: "flex",
-												justifyContent: "center",
-											}}
-										>
-											<CircularProgress />
-										</div>
-									)}
+										/>
+									</ListItem>
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												name="includeTOC"
+												checked={includeTOC}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeTOC",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={"Include Table of Contents"}
+											secondary={
+												"A Table of Contents with section headings."
+											}
+										/>
+									</ListItem>
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												name="includeBenchmarkComparison"
+												checked={includeBenchmarkComparison}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeBenchmarkComparison",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={"Include Industry Benchmarks"}
+											secondary={
+												"CWE Top 25 Weaknesses Comparison."
+											}
+										/>
+									</ListItem>
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												checked={includeTrendingComparison}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeTrendingComparison",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={
+												"Include Trending Comparison Chart"
+											}
+											secondary={
+												"Line chart showing historical trends of vulnerabilities and other metadata from your previous analyses."
+											}
+										/>
+									</ListItem>
+									<ListItem>
+										<ListItemSecondaryAction>
+											<Button
+												color="primary"
+												onClick={handleDialogOpen}>
+												Choose Previous Analyses
+											</Button>
+										</ListItemSecondaryAction>
+									</ListItem>
 								</List>
-								<DialogActions>
-									<Button
-										onClick={handleClose}
-										color="primary"
-									>
-										Close
-									</Button>
-								</DialogActions>
-							</Dialog>
-						</FormGroup>
-						<FormGroup row={true}>
-							<List >
-								<ListItem dense button>
-									<ListItemIcon>
-										<Select
-											labelId="demo-simple-select-label"
-											id="demo-simple-select"
-											value={topN}
-											onChange={(event) =>
-												handleFormChange("topN", event)
-											}
+								<Dialog
+									onClose={handleClose}
+									aria-labelledby="simple-dialog-title"
+									open={open}
+								>
+									<DialogTitle id="simple-dialog-title">
+										Choose Previous Analyses
+									</DialogTitle>
+									<List >
+										{analysisToTrend.length ? (
+											analysisToTrend.map((scan) => {
+												const checked = checkedAnalysesToTrend.includes(scan.analysis_id)
+												return (
+													<ListItem dense button>
+														<ListItemIcon>
+															<Checkbox
+																checked={checked}
+																edge="start"
+																tabIndex={-1}
+																disableRipple
+																inputProps={{
+																	"aria-label":
+																		scan.scan_name,
+																}}
+																value={
+																	scan.analysis_id
+																}
+																onChange={handleAnalysesToTrend}
+															/>
+														</ListItemIcon>
+														<ListItemText
+															primary={scan.scan_name}
+														/>
+													</ListItem>
+												);
+											})
+										) : (
+											<div
+												style={{
+													alignItems: "center",
+													display: "flex",
+													justifyContent: "center",
+												}}
+											>
+												<CircularProgress />
+											</div>
+										)}
+									</List>
+									<DialogActions>
+										<Button
+											onClick={handleClose}
+											color="primary"
 										>
-											<MenuItem value={5}>5</MenuItem>
-											<MenuItem value={10}>10</MenuItem>
-											<MenuItem value={15}>15</MenuItem>
-											<MenuItem value={20}>20</MenuItem>
-											<MenuItem value={25}>25</MenuItem>
-										</Select>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={
-											"Number to use for the “Top N” tables"
-										}
-									/>
-								</ListItem>
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											name="checkedB"
-											checked={includeMostVulnerableHosts}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeMostVulnerableHosts",
-													event
-												)
+											Close
+										</Button>
+									</DialogActions>
+								</Dialog>
+							</FormGroup>
+							<FormGroup row={true}>
+								<List >
+									<ListItem dense button>
+										<ListItemIcon>
+											<Select
+												labelId="demo-simple-select-label"
+												id="demo-simple-select"
+												value={topN}
+												onChange={(event) =>
+													handleFormChange("topN", event)
+												}
+											>
+												<MenuItem value={5}>5</MenuItem>
+												<MenuItem value={10}>10</MenuItem>
+												<MenuItem value={15}>15</MenuItem>
+												<MenuItem value={20}>20</MenuItem>
+												<MenuItem value={25}>25</MenuItem>
+											</Select>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={
+												"Number to use for the “Top N” tables"
 											}
 										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={"Top Vulnerable Hosts"}
-										secondary={
-											"A table listing the hosts with the highest-scoring vulnerabilities."
-										}
-									/>
-								</ListItem>
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											name="checkedB"
-											checked={
-												includeMostVulnerableProducts
-											}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeMostVulnerableProducts",
-													event
-												)
+									</ListItem>
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												name="checkedB"
+												checked={includeMostVulnerableHosts}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeMostVulnerableHosts",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={"Top Vulnerable Hosts"}
+											secondary={
+												"A table listing the hosts with the highest-scoring vulnerabilities."
 											}
 										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={"Top Vulnerable Products"}
-										secondary={
-											"A table listing the software and hardware products with the highest-scoring vulnerabilities."
-										}
-									/>
-								</ListItem>
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											name="checkedB"
-											checked={
-												includeVulnerabilitiesByServerity
-											}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeVulnerabilitiesByServerity",
-													event
-												)
-											}
-										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={
-											"Top Vulnerabilities by Severity"
-										}
-										secondary={
-											"A table listing the highest-scoring vulnerabilities in each severity category (e.g. severe, high, etc.)"
-										}
-									/>
-								</ListItem>
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											name="checkedB"
-											checked={includeCharts}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeCharts",
-													event
-												)
+									</ListItem>
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												name="checkedB"
+												checked={
+													includeMostVulnerableProducts
+												}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeMostVulnerableProducts",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={"Top Vulnerable Products"}
+											secondary={
+												"A table listing the software and hardware products with the highest-scoring vulnerabilities."
 											}
 										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={"Include Graphical Charts"}
-										secondary={
-											"SVG versions of charts to visualize the findings."
-										}
-									/>
-								</ListItem>
-							</List>
-						</FormGroup>
-						<FormGroup row={true}>
-							<List >
-								<ListItem dense button>
-									<ListItemIcon>
-										<Switch
-											color="primary"
-											name="checkedB"
-											checked={includeAppendices}
-											onChange={(event) =>
-												handleCheckChange(
-													"includeAppendices",
-													event
-												)
+									</ListItem>
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												name="checkedB"
+												checked={
+													includeVulnerabilitiesByServerity
+												}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeVulnerabilitiesByServerity",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={
+												"Top Vulnerabilities by Severity"
+											}
+											secondary={
+												"A table listing the highest-scoring vulnerabilities in each severity category (e.g. severe, high, etc.)"
 											}
 										/>
-									</ListItemIcon>
-									<ListItemText
-										style={{ width: "100%" }}
-										primary={
-											"Include Detailed Appendix Tables"
-										}
-										secondary={
-											"The full listing of vulnerabilities per host and their solutions."
-										}
-									/>
-								</ListItem>
-							</List>
-						</FormGroup>
-					</CardContent>
-					
-					}
+									</ListItem>
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												name="checkedB"
+												checked={includeCharts}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeCharts",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={"Include Graphical Charts"}
+											secondary={
+												"SVG versions of charts to visualize the findings."
+											}
+										/>
+									</ListItem>
+								</List>
+							</FormGroup>
+							<FormGroup row={true}>
+								<List >
+									<ListItem dense button>
+										<ListItemIcon>
+											<Switch
+												color="primary"
+												name="checkedB"
+												checked={includeAppendices}
+												onChange={(event) =>
+													handleCheckChange(
+														"includeAppendices",
+														event
+													)
+												}
+											/>
+										</ListItemIcon>
+										<ListItemText
+											style={{ width: "100%" }}
+											primary={
+												"Include Detailed Appendix Tables"
+											}
+											secondary={
+												"The full listing of vulnerabilities per host and their solutions."
+											}
+										/>
+									</ListItem>
+								</List>
+							</FormGroup>
+						</CardContent>
+					)}
 					<CardActions style={{ justifyContent: "right" }}>
-						{ success ?
-						<Button size="small" color="primary" onClick={handleGenerateReportClose}>
-							Close
-						</Button>
-						:
-						<div>
-						<Button size="small" color="secondary" onClick={handleGenerateReportClose}>
-							Cancel
-						</Button>
-						<Button size="small" color="primary" onClick={handleSubmit}>
-							Submit
-						</Button>
-						</div>
-						
-						}	
+						{ success ? (
+							<Button size="small" color="primary" onClick={handleGenerateReportClose}>
+								Close
+							</Button>
+						) : (
+							<div>
+								<Button size="small" color="secondary" onClick={handleGenerateReportClose}>
+									Cancel
+								</Button>
+								<Button size="small" color="primary" onClick={handleSubmit}>
+									Submit
+								</Button>
+							</div>
+						)}
 					</CardActions>
 				</Card>
 			</Paper>

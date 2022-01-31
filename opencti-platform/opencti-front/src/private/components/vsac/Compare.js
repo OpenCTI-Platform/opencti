@@ -27,7 +27,7 @@ const Compare = (props) => {
   return (
     <Grid container={true} spacing={3}>
       <Grid item={true} xs={4}>
-        <Paper elevation={2} style={{ height: 350, marginBottom: 20 }}>
+        <Paper elevation={2} style={{ height: '920px', marginBottom: 20, overflowY: 'scroll' }}>
           <List>
             { getAnalysises.map((analysis, i) => {
               const hex = Math.floor(Math.random() * 16777215).toString(16);
@@ -99,9 +99,12 @@ const Compare = (props) => {
               <XAxis
                 type="number"
                 dataKey="x"
-                label="% of Hosts with Weakness"
+                label={{
+                  value: '% of Hosts with Weakness',
+                  fill: 'white',
+                }}
                 domain={[-200, 200]}
-                tick={{ fill: '#ffffff' }}
+                tick={false}
               />
               <YAxis
                 type="number"
@@ -109,11 +112,11 @@ const Compare = (props) => {
                 label={{
                   value: 'Weakness Score',
                   angle: -90,
-                  position: 'insideLeft',
+                  fill: 'white',
                   textAnchor: 'middle',
                 }}
                 domain={[-200, 200]}
-                tick={{ fill: '#ffffff' }}
+                tick={false}
               />
               <ReferenceLine x={0} stroke="white" />
               <ReferenceLine y={0} stroke="white" />

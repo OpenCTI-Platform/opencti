@@ -386,7 +386,6 @@ class Scans extends Component {
       createNewScanAnalysis(id, client, params)
         .then((response) => {
           handleDialogClose();
-          console.log(response)
         })
         .catch((error) => {
           console.log(error);
@@ -412,7 +411,6 @@ class Scans extends Component {
     const onDeleteAnalysis = (id, client) => {
       deleteAnalysis(id, client)
         .then((response) => {
-          console.log(response);
           handleDialogClose();
           refreshAnalysis();
         })
@@ -490,12 +488,11 @@ class Scans extends Component {
       refreshAnalysis();
     }
     const renderDialogSwitch = () => {
-      console.log(this.state.dialogParams)
       switch (this.state.dialogParams.modal) {
         case "New Analysis":
           return (
             <NewAnalysis
-              scans={this.state.scans}
+              id={this.state.dialogParams.id}
               client={this.state.dialogParams.client}
               onClose={handleDialogClose}
               action={onNewAnalysis}
@@ -546,9 +543,7 @@ class Scans extends Component {
 
     const CustomTooltip = ({ active, payload, label }) => {
       if (active && payload && payload.length) {
-
         return (
-
           <div
             className="custom-tooltip"
             style={{backgroundColor: 'rgba(255, 255, 255, 0.1)', fontSize: 12, borderRadius: 10, border: 1, padding: 10}}>
@@ -558,11 +553,8 @@ class Scans extends Component {
           </div>
         );
       }
-
       return null;
     };
-
-
 
     return (
       <div>
@@ -784,7 +776,6 @@ class Scans extends Component {
         <Grid container={true} spacing={3}>
           {!loadingAnalysises ? (
             this.state.analysises.map((analysis, i) => {
-              console.log(analysis)
               return (
                 <Grid item={true} xs={4}>
                   <Paper
@@ -828,7 +819,9 @@ class Scans extends Component {
                             <MenuItem
                               onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/viewcharts',
-                                  { analysises: this.state.analysises,
+                                  { 
+                                    analysis_id: analysis.id,
+                                    analysises: this.state.analysises,
                                   })}
                             >
                               <ListItemIcon>
