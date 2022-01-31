@@ -151,11 +151,11 @@ class ViewCharts extends Component {
 
   componentDidMount() {
     this.setState({isDisabled: true});
-    const ids = this.state.analysisesIDs.map((i) => i).join();
 
-    getSeverityPieChartData(this.state.clientId, ids)
+    getSeverityPieChartData(this.state.clientId,  this.props.location.state.analysis_id)
       .then((response) => {
         this.setState({ severityChartData: response.data });
+        this.state.checked.push(this.props.location.state.index);
         this.setState({isDisabled: false});
       })
       .catch((error) => {
@@ -257,19 +257,103 @@ class ViewCharts extends Component {
       }
     };
 
-    const handleClick = (event) => {
-      this.setState({ anchorEl: event.currentTarget });
+    const handleClick = () => {
+      this.setState({ anchorEl: true });
     };
 
     const handleClose = () => {
       this.setState({ anchorEl: null });
     };
 
-    const handleToggle = (value) => () => {
+    const handleToggle = (value, id) => () => {
+
       const currentIndex = checked.indexOf(value);
+      const analysis_id = id;
 
       if (currentIndex === -1) {
+                
+        switch (tabValue) {
+          case 0:
+            this.setState({isDisabled: false});
+            getSeverityPieChartData(this.state.clientId, analysis_id)
+              .then((response) => {
+                const data = response.data;
+                this.setState({ severityChartData: [ ...this.state.severityChartData, ...data ] })
+                this.setState({ isDisabled: false });
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+
+          break;
+          case 1:
+            this.setState({isDisabled: false});
+            if (vulnerabilityByYearChartData == null) {
+              getCVESeverityChartData(this.state.clientId, ids)
+                .then((response) => {
+                  this.setState({ vulnerabilityByYearChartData: response.data });
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            }
+
+            break;
+          case 2:
+            this.setState({isDisabled: false});
+            if (topVulnerableHost == null) {
+              getTopVulnerableHostsChartData(this.state.clientId, ids)
+                .then((response) => {
+                  this.setState({ topVulnerableHost: response.data });
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            }
+
+            break;
+          case 3:
+            this.setState({isDisabled: false});
+            if (topVulnerableProducts == null) {
+              getTopVulnerableProductsChartData(this.state.clientId, ids)
+                .then((response) => {
+                  this.setState({ topVulnerableProducts: response.data });
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            }
+            break;
+          case 4:
+            this.setState({isDisabled: true});
+            if (trendingChatData == null) {
+              getTrendingChartData(this.state.clientId, ids)
+                .then((response) => {
+                  const trendingData = response.data.map((item) => {
+                    return {
+                      name: item.id,
+                      data: item.data.map((item) => {
+                        return {
+                          category: item.x,
+                          value: parseInt(item.y),
+                        };
+                      }),
+                    };
+                  });
+                  this.setState({ trendingChatData: trendingData });
+                })
+                .catch((error) => {
+                  console.log(error);
+                });
+            }
+
+          break;
+      }
+
+
         checked.push(value);
+
+
       } else {
         checked.splice(currentIndex, 1);
       }
@@ -301,7 +385,7 @@ class ViewCharts extends Component {
                   <MenuItem onClick={handleClose}>
                     <ListItem key={i}>
                       <ListItemText
-                        id={analysis.scan.id}
+                        id={analysis.id}
                         primary={analysis.scan.scan_name}
                         secondary={
                           <React.Fragment>
@@ -335,7 +419,7 @@ class ViewCharts extends Component {
                       <ListItemSecondaryAction>
                         <Checkbox
                           edge="end"
-                          onChange={handleToggle(i)}
+                          onChange={handleToggle(i, analysis.id)}
                           checked={checked.indexOf(i) !== -1}
                         />
                       </ListItemSecondaryAction>
@@ -358,14 +442,18 @@ class ViewCharts extends Component {
             value={tabValue}
             index={0}
           >
-            {checked.sort().map((i) => {
-              const array = severityChartData[i].data.map((item) => {
-                return {
-                  name: item.label,
-                  value: parseInt(item.value),
-                };
-              });
+            { severityChartData &&
 
+              checked.sort().map((i) => {
+               
+                  const array = severityChartData[i]?.data?.map((item) => {
+                    return {
+                      name: item.label,
+                      value: parseInt(item.value),
+                    };
+                  });
+
+               
               return (
                 <Grid item={true}>
                   <Typography variant="h4" gutterBottom={true}>
@@ -383,6 +471,7 @@ class ViewCharts extends Component {
                   >
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart width={600} height={600}>
+                      {array &&
                         <Pie
                           data={array}
                           nameKey="name"
@@ -431,8 +520,9 @@ class ViewCharts extends Component {
                               fill={COLORS[entry.name]}
                             />
                           ))}
+                          <Tooltip />
                         </Pie>
-                        <Tooltip />
+                      }
                       </PieChart>
                     </ResponsiveContainer>
                   </Paper>

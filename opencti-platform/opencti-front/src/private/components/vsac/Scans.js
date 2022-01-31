@@ -820,6 +820,7 @@ class Scans extends Component {
                               onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/viewcharts',
                                   { 
+                                    index: i,
                                     analysis_id: analysis.id,
                                     analysises: this.state.analysises,
                                   })}
