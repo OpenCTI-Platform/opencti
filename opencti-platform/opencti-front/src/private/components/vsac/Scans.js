@@ -257,7 +257,7 @@ class Scans extends Component {
       fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
           let analyses = response.data;
-          let scatterPlotData = [];
+          let scatterPlotData = {};
 
           analyses.forEach(analysis =>{
             getAnalysisSummary(analysis.id,this.state.client_ID)
@@ -265,9 +265,13 @@ class Scans extends Component {
                 let scatterPlot = [];
 
                 response.data.forEach((item) => {
-                  scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                  if(item.cwe_name){
+                    scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                  }
                 });
-                scatterPlotData.push(scatterPlot)
+
+                scatterPlotData[analysis.id] = scatterPlot.length > 0 ? scatterPlot : null
+
                 this.setState({scatterPlotData: scatterPlotData});
               })
               .catch((error) => {
@@ -295,11 +299,15 @@ class Scans extends Component {
       loadingAnalyses,
       analyses,
       scatterPlotData,
+      client_ID,
       modalStyle,
       openDialog,
       loadDialog,
       dialogParams,
       popoverAnchorEl,
+      analysisAnchorEl,
+      vulnerabilityAnchorEl,
+      sortByAnchorEl,
       openedPopoverId,
       openAnalysisMenu,
       pendingAnalysis
@@ -443,7 +451,7 @@ class Scans extends Component {
     const refreshAnalysis = () => {
       this.setState({ loadingScans: true });
       this.setState({ loadingAnalyses: true });
-      fetchAllScans(this.state.client_ID)
+      fetchAllScans(client_ID)
         .then((response) => {
           const scans = response.data;
 
@@ -455,24 +463,25 @@ class Scans extends Component {
         .catch((error) => {
           console.log(error);
         });
-      fetchAllAnalysis(this.state.client_ID)
+      fetchAllAnalysis(client_ID)
         .then((response) => {
           let analyses = response.data;
-          let scatterPlotData = [];
+          let scatterPlotData = {};
 
           analyses.forEach(analysis =>{
-            getAnalysisSummary(analysis.id,this.state.client_ID)
+            getAnalysisSummary(analysis.id, client_ID)
               .then((response) => {
 
                 let scatterPlot = [];
                 response.data.forEach((item) => {
-                  scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                  if(item.cwe_name){
+                    scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                  }
                 });
 
-                scatterPlotData.push(scatterPlot)
+                scatterPlotData[analysis.id] = scatterPlot.length > 0 ? scatterPlot : null
 
                 this.setState({scatterPlotData: scatterPlotData});
-
               })
               .catch((error) => {
                 console.log(error);
@@ -491,13 +500,13 @@ class Scans extends Component {
     }
     
     const renderDialogSwitch = () => {
-      switch (this.state.dialogParams.modal) {
+      switch (dialogParams.modal) {
         case "New Analysis":
           return (
             <NewAnalysis
-              id={this.state.dialogParams.id} // Scan ID
-              isScan={this.state.dialogParams.isScan}
-              client={this.state.dialogParams.client}
+              id={dialogParams.id} // Scan ID
+              isScan={dialogParams.isScan}
+              client={dialogParams.client}
               onClose={handleDialogClose}
               action={onNewAnalysis}
             />
@@ -505,10 +514,10 @@ class Scans extends Component {
         case "Generate Report":
           return (
             <GenerateReport
-              id={this.state.dialogParams.id}
-              client={this.state.dialogParams.client}
-              scanName={this.state.dialogParams.scanName}
-              success={this.state.dialogParams.success}
+              id={dialogParams.id}
+              client={dialogParams.client}
+              scanName={dialogParams.scanName}
+              success={dialogParams.success}
               onClose={handleDialogClose}
               action={onGenerateReport}
             />
@@ -516,10 +525,10 @@ class Scans extends Component {
         case "Export Data":
           return (
             <ExportCSV
-              id={this.state.dialogParams.id}
-              client={this.state.dialogParams.client}
-              isLoading={this.state.dialogParams.isLoading}
-              success={this.state.dialogParams.success}
+              id={dialogParams.id}
+              client={dialogParams.client}
+              isLoading={dialogParams.isLoading}
+              success={dialogParams.success}
               onClose={handleDialogClose}
               action={onExportAnalysis}
             />
@@ -527,16 +536,16 @@ class Scans extends Component {
         case "Delete Data":
           return (
             <Delete
-              id={this.state.dialogParams.id}
-              client={this.state.dialogParams.client}
-              date={this.state.dialogParams.date}
+              id={dialogParams.id}
+              client={dialogParams.client}
+              date={dialogParams.date}
               onClose={handleDialogClose}
               action={onDeleteAnalysis}
             />
           );
         case "Vulnerability Scan":
           return <VulnerabilityScan
-            client_ID={this.state.client_ID}
+            client_ID={client_ID}
             rerenderParentCallback={rerenderParentCallback}
             onClose={handleDialogClose}
           />;
@@ -625,9 +634,9 @@ class Scans extends Component {
                       </Button>
                       <Menu
                         id="simple-menu"
-                        anchorEl={this.state.sortByAnchorEl}
+                        anchorEl={sortByAnchorEl}
                         keepMounted
-                        open={this.state.sortByAnchorEl}
+                        open={sortByAnchorEl}
                         onClose={() => this.setState({ sortByAnchorEl: null })}
                       >
                         <MenuItem onClick={() => sortByReportDate()}>
@@ -665,8 +674,8 @@ class Scans extends Component {
                             </IconButton>
                             <Menu
                               id={"vulnerability-simple-menu-" + scan.id}
-                              anchorEl={this.state.vulnerabilityAnchorEl}
-                              open={this.state.vulnerabilityAnchorEl}
+                              anchorEl={vulnerabilityAnchorEl}
+                              open={vulnerabilityAnchorEl}
                               onClose={handleClose}
                             >
                               <MenuItem
@@ -675,7 +684,7 @@ class Scans extends Component {
                                     modal: "New Analysis",
                                     id: scan.id,
                                     isScan: true,
-                                    client: this.state.client_ID,
+                                    client: client_ID,
                                   })
                                 }
                               >
@@ -788,7 +797,7 @@ class Scans extends Component {
         </Typography>
         <Grid container={true} spacing={3}>
           {!loadingAnalyses ? (
-            this.state.analyses.map((analysis, i) => {
+            analyses.map((analysis, i) => {
               return (
                 <Grid item={true} xs={4}>
                   <Paper
@@ -808,7 +817,7 @@ class Scans extends Component {
                           </IconButton>
                           <Menu
                             id="simple-menu"
-                            anchorEl={this.state.analysisAnchorEl}
+                            anchorEl={analysisAnchorEl}
                             open={openAnalysisMenu === analysis.id}
                             onClose={() =>
                               this.setState({ analysisAnchorEl: null, openAnalysisMenu: null })
@@ -818,8 +827,7 @@ class Scans extends Component {
                               onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/exploreresults',
                                   { analysis: analysis,
-                                    client:
-                                      this.state.client_ID,
+                                    client: client_ID,
                                     scan: getCurrentScan(analysis.scan.id, scans)
                                   })}
                             >
@@ -833,7 +841,7 @@ class Scans extends Component {
                                 handleLinkClink('/dashboard/vsac/scans/viewcharts',
                                   {
                                     analysis_id: analysis.id,
-                                    analyses: this.state.analyses,
+                                    analyses,
                                   })
                               }
                             >
@@ -845,9 +853,11 @@ class Scans extends Component {
                             <MenuItem
                               onClick={() =>
                                 handleLinkClink('/dashboard/vsac/scans/compare',
-                                  { analyses: this.state.analyses,
-                                    scatterPlotData: this.state.scatterPlotData
-                                  })}
+                                  {
+                                      analyses,
+                                      scatterPlotData: scatterPlotData
+                                    }
+                                  )}
                             >
                               <ListItemIcon>
                                 <CompareIcon fontSize="small" />
@@ -859,8 +869,7 @@ class Scans extends Component {
                                 handleDialogOpen({
                                   modal: "Generate Report",
                                   id: analysis.id,
-                                  client:
-                                    this.state.client_ID,
+                                  client: state.client_ID,
                                   scanName: analysis.scan.scan_name,
                                   success: false,
                                 })
@@ -876,8 +885,7 @@ class Scans extends Component {
                                 handleDialogOpen({
                                   modal: "Export Data",
                                   id: analysis.id,
-                                  client:
-                                    this.state.client_ID,
+                                  client: client_ID,
                                   isLoading: false,
                                   success: false,
                                 })
@@ -894,8 +902,7 @@ class Scans extends Component {
                                   modal: "New Analysis",
                                   id: analysis.id,
                                   isScan: false,
-                                  client:
-                                    this.state.client_ID,
+                                  client: client_ID,
                                 })
                               }
                             >
@@ -909,8 +916,7 @@ class Scans extends Component {
                                 handleDialogOpen({
                                   modal: "Delete Data",
                                   id: analysis.id,
-                                  client:
-                                    this.state.client_ID,
+                                  client: client_ID,
                                   date: analysis.completed_date,
                                 })
                               }
@@ -927,7 +933,7 @@ class Scans extends Component {
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
                     <CardContent>
-                      {(scatterPlotData && scatterPlotData[i]) && (
+                      {(scatterPlotData && scatterPlotData[analysis.id]) && (
                         <ResponsiveContainer width="100%" aspect={1}>
                           <ScatterChart
                             width={200}
@@ -967,13 +973,11 @@ class Scans extends Component {
                               content={<CustomTooltip />}
                               cursor={false}
                             />
-                            { scatterPlotData && (
-                              <Scatter
-                                name={analysis.scan.scan_name}
-                                data={this.state.scatterPlotData[i]}
-                                fill="#49B8FC"
-                              />
-                            )}
+                            <Scatter
+                              name={analysis.scan.scan_name}
+                              data={scatterPlotData[analysis.id]}
+                              fill="#49B8FC"
+                            />
                           </ScatterChart>
                         </ResponsiveContainer>
                       )}
@@ -1014,8 +1018,8 @@ class Scans extends Component {
                         startIcon={<CloudUploadIcon />}
                         onClick={() =>
                           handleLinkClink('/dashboard/vsac/scans/exploreresults',
-                            { analysis: analysis,
-                              client: this.state.client_ID,
+                            { analysis,
+                              client: client_ID,
                               scan: getCurrentScan(analysis.scan.id, scans)
                             })}
                       >
@@ -1042,7 +1046,7 @@ class Scans extends Component {
             onClose={() => handleDialogClose()}
             maxWidth="md"
           >
-            <div>{this.state.dialogParams && renderDialogSwitch()}</div>
+            <div>{dialogParams && renderDialogSwitch()}</div>
           </Dialog>
         </Grid>
       </div>
