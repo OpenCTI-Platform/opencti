@@ -1,21 +1,14 @@
 /* eslint-disable */
-import React, { Component, useEffect } from "react";
+import React, { Component } from "react";
 import * as PropTypes from "prop-types";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import * as R from "ramda";
-import { QueryRenderer } from "../../../relay/environment";
 import {
   buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
 } from "../../../utils/ListParameters";
 import { truncate } from "../../../utils/String";
 import percentage from "../../../utils/percentage";
-import ListLines from "../../../components/list_lines/ListLines";
 import inject18n from "../../../components/i18n";
-import ToolBar from "../data/ToolBar";
-import { isUniqFilter } from "../common/lists/Filters";
-import Security, { KNOWLEDGE_KNUPDATE } from "../../../utils/Security";
 import NewAnalysis from "./modals/NewAnalysis";
 import Delete from "./modals/Delete";
 import ExportCSV from "./modals/ExportCSV";
@@ -36,7 +29,6 @@ import ScannerIcon from "@material-ui/icons/Scanner";
 import PublishIcon from "@material-ui/icons/Publish";
 import Popover from '@material-ui/core/Popover';
 import Button from "@material-ui/core/Button";
-import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -49,9 +41,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Typography from "@material-ui/core/Typography";
 import CardContent from "@material-ui/core/CardContent";
-import { DescriptionOutlined } from "@material-ui/icons";
-import { makeStyles } from "@material-ui/core/styles";
-import { fetchAllScans, deleteScan } from "../../../services/scan.service";
+import { fetchAllScans } from "../../../services/scan.service";
 import {
   fetchAllAnalysis,
   getAnalysisSummary,
@@ -71,7 +61,6 @@ import {
   XAxis,
   YAxis,
   ZAxis,
-  CartesianGrid,
   ReferenceLine,
   Tooltip,
   ResponsiveContainer,
