@@ -645,11 +645,19 @@ class Scans extends Component {
                 <List style={{ maxHeight: "100%", overflow: "auto" }}>
                   {!loadingScans ? (
                     renderScans.map((scan, i) => {
+
+                      let NoResults = false;
+
+                      if(scan.vulnerability_count == 0){
+                        NoResults = true
+                      }
+
                       return (
                         <ListItem
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                           onMouseLeave={(e) => handlePopoverClose()}
+                          className={NoResults ? "NoResults" : ""}
                         >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
