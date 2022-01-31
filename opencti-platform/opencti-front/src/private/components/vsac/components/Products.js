@@ -39,7 +39,7 @@ class Products extends Component {
 
     const handleClick = (cpe_id, name) => {
       const params = {
-        cpe: cpe_id,
+        cpe_id: cpe_id,
       };
 
       this.props.action(params, name, 'software');

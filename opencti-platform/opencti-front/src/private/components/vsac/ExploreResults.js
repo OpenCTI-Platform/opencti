@@ -187,9 +187,9 @@ class ExploreResults extends Component {
           handleGetAnalysisFilteredResults(params, type)
         );
       }
-      if (params.cpe) {
+      if (params.cpe_id) {
         this.setState(
-          { cpe_id: params.cpe },
+          { cpe_id: params.cpe_id },
           handleGetAnalysisFilteredResults(params, type)
         );
       }
@@ -212,7 +212,7 @@ class ExploreResults extends Component {
     const handleGetAnalysisFilteredResults = (params, type) => {
       getAnalysisFilteredResults(this.state.analysis.id, this.state.client, {
         host_ip: params.host_ip || host_ip,
-        cpe: params.cpe || cpe_id,
+        cpe_id: params.cpe_id || cpe_id,
         cwe_id: params.cwe_id || cwe_id,
         cve_id: params.cve_id || cve_id,
       })
