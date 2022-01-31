@@ -213,7 +213,6 @@ class NewAnalysis extends Component {
 				&& selectedWeakCount != null
 				&& selectedVignette  != null
 				&& selectedVulnRange != null;
-			console.log(valid)
 			return valid
 		}
 
