@@ -14,7 +14,7 @@ import FormGroup from '@material-ui/core/FormGroup';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import Typography from '@material-ui/core/Typography';
-import { fetchVignettes } from "../../../../services/scan.service";
+import {fetchScan, fetchVignettes} from "../../../../services/scan.service";
 import {
   defaultVulnerabilityRange,
   defaultWeaknessCount,
@@ -133,6 +133,7 @@ class NewAnalysis extends Component {
 		this.state = {
 			id: props.id,
 			client: props.client,
+			isScan: props.isScan || false,
 			scan: null,
 			vignettes: null,
 			selectedVignette: null,
@@ -149,13 +150,23 @@ class NewAnalysis extends Component {
 			}).catch((error) => {
 				console.log(error);
 			});
-		fetchAnalysis(this.state.id, this.state.client)
-			.then((response) => {
-				const analysis = response.data;
-				this.setState({scan: analysis.scan})
-			}).catch((error) => {
-				console.log(error)
-			})
+		if(this.state.isScan){
+			fetchScan(this.state.id, this.state.client)
+				.then((response) => {
+					const scan = response.data;
+					this.setState({scan});
+				}).catch((error) => {
+					console.log(error)
+				})
+		} else {
+			fetchAnalysis(this.state.id, this.state.client)
+				.then((response) => {
+					const analysis = response.data;
+					this.setState({scan: analysis.scan})
+				}).catch((error) => {
+					console.log(error)
+				})
+		}
   	}
 
 	render() {
