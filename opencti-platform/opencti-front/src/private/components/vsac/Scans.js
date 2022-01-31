@@ -808,6 +808,7 @@ class Scans extends Component {
                     <CardHeader
                       style={{ padding: 16 }}
                       action={
+                        (scatterPlotData && scatterPlotData[analysis.id]) && (
                         <div>
                           <IconButton
                             aria-label="settings"
@@ -815,120 +816,121 @@ class Scans extends Component {
                           >
                             <MoreVertIcon />
                           </IconButton>
-                          <Menu
-                            id="simple-menu"
-                            anchorEl={analysisAnchorEl}
-                            open={openAnalysisMenu === analysis.id}
-                            onClose={() =>
-                              this.setState({ analysisAnchorEl: null, openAnalysisMenu: null })
-                            }
-                          >
-                            <MenuItem
-                              onClick={() =>
-                                handleLinkClink('/dashboard/vsac/scans/exploreresults',
-                                  { analysis: analysis,
-                                    client: client_ID,
-                                    scan: getCurrentScan(analysis.scan.id, scans)
-                                  })}
-                            >
-                              <ListItemIcon>
-                                <ExploreIcon fontSize="small" />
-                              </ListItemIcon>
-                              Explore Results
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleLinkClink('/dashboard/vsac/scans/viewcharts',
-                                  {
-                                    analysis_id: analysis.id,
-                                    analyses,
-                                  })
-                              }
-                            >
-                              <ListItemIcon>
-                                <ShowChartIcon fontSize="small" />
-                              </ListItemIcon>
-                              View Charts
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleLinkClink('/dashboard/vsac/scans/compare',
-                                  {
-                                      analyses,
-                                      scatterPlotData: scatterPlotData
+                              <Menu
+                                  id="simple-menu"
+                                  anchorEl={analysisAnchorEl}
+                                  open={openAnalysisMenu === analysis.id}
+                                  onClose={() =>
+                                      this.setState({analysisAnchorEl: null, openAnalysisMenu: null})
+                                  }
+                              >
+                                <MenuItem
+                                    onClick={() =>
+                                        handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                                            {
+                                              analysis: analysis,
+                                              client: client_ID,
+                                              scan: getCurrentScan(analysis.scan.id, scans)
+                                            })}
+                                >
+                                  <ListItemIcon>
+                                    <ExploreIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Explore Results
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleLinkClink('/dashboard/vsac/scans/viewcharts',
+                                            {
+                                              analysis_id: analysis.id,
+                                              analyses,
+                                            })
                                     }
-                                  )}
-                            >
-                              <ListItemIcon>
-                                <CompareIcon fontSize="small" />
-                              </ListItemIcon>
-                              Compare
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleDialogOpen({
-                                  modal: "Generate Report",
-                                  id: analysis.id,
-                                  client: state.client_ID,
-                                  scanName: analysis.scan.scan_name,
-                                  success: false,
-                                })
-                              }
-                            >
-                              <ListItemIcon>
-                                <DescriptionIcon fontSize="small" />
-                              </ListItemIcon>
-                              Generate Report
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleDialogOpen({
-                                  modal: "Export Data",
-                                  id: analysis.id,
-                                  client: client_ID,
-                                  isLoading: false,
-                                  success: false,
-                                })
-                              }
-                            >
-                              <ListItemIcon>
-                                <ImportExportIcon fontSize="small" />
-                              </ListItemIcon>
-                              Export Data (CVS)
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleDialogOpen({
-                                  modal: "New Analysis",
-                                  id: analysis.id,
-                                  isScan: false,
-                                  client: client_ID,
-                                })
-                              }
-                            >
-                              <ListItemIcon>
-                                <AddIcon fontSize="small" />
-                              </ListItemIcon>
-                              New Analysis
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleDialogOpen({
-                                  modal: "Delete Data",
-                                  id: analysis.id,
-                                  client: client_ID,
-                                  date: analysis.completed_date,
-                                })
-                              }
-                            >
-                              <ListItemIcon>
-                                <DeleteIcon fontSize="small" />
-                              </ListItemIcon>
-                              Delete Analysis
-                            </MenuItem>
-                          </Menu>
-                        </div>
-                      }
+                                >
+                                  <ListItemIcon>
+                                    <ShowChartIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  View Charts
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleLinkClink('/dashboard/vsac/scans/compare',
+                                            {
+                                              analyses,
+                                              scatterPlotData: scatterPlotData
+                                            }
+                                        )}
+                                >
+                                  <ListItemIcon>
+                                    <CompareIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Compare
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleDialogOpen({
+                                          modal: "Generate Report",
+                                          id: analysis.id,
+                                          client: state.client_ID,
+                                          scanName: analysis.scan.scan_name,
+                                          success: false,
+                                        })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <DescriptionIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Generate Report
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleDialogOpen({
+                                          modal: "Export Data",
+                                          id: analysis.id,
+                                          client: client_ID,
+                                          isLoading: false,
+                                          success: false,
+                                        })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <ImportExportIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Export Data (CVS)
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleDialogOpen({
+                                          modal: "New Analysis",
+                                          id: analysis.id,
+                                          isScan: false,
+                                          client: client_ID,
+                                        })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <AddIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  New Analysis
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleDialogOpen({
+                                          modal: "Delete Data",
+                                          id: analysis.id,
+                                          client: client_ID,
+                                          date: analysis.completed_date,
+                                        })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <DeleteIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Delete Analysis
+                                </MenuItem>
+                              </Menu>
+                        </div> )
+                        }
                       title={truncate(t(analysis.scan.scan_name),30)}
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
@@ -1010,22 +1012,25 @@ class Scans extends Component {
                         />
                       )}
                     </CardContent>
-                    <CardActions style={{ justifyContent: "right" }}>
-                      <Button
-                        disabled={loadingAnalyses}
-                        variant="contained"
-                        color="primary"
-                        startIcon={<CloudUploadIcon />}
-                        onClick={() =>
-                          handleLinkClink('/dashboard/vsac/scans/exploreresults',
-                            { analysis,
-                              client: client_ID,
-                              scan: getCurrentScan(analysis.scan.id, scans)
-                            })}
-                      >
-                        Explore Results
-                      </Button>
-                    </CardActions>
+                    { (scatterPlotData && scatterPlotData[analysis.id]) && (
+                      <CardActions style={{justifyContent: "right"}}>
+                        <Button
+                            disabled={loadingAnalyses}
+                            variant="contained"
+                            color="primary"
+                            startIcon={<CloudUploadIcon/>}
+                            onClick={() =>
+                                handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                                    {
+                                      analysis,
+                                      client: client_ID,
+                                      scan: getCurrentScan(analysis.scan.id, scans)
+                                    })}
+                        >
+                          Explore Results
+                        </Button>
+                      </CardActions>
+                    )}
                   </Paper>
                 </Grid>
               );
