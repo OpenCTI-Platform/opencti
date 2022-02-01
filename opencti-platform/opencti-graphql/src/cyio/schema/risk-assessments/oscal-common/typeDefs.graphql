@@ -420,7 +420,7 @@
     "Identifies a short common name, abbreviation, or acronym for the party."
     short_name: String
     "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids( first: Int ): CyioExternalReferenceConnection
+    external_ids: [CyioExternalReference]
     "Identifies a postal addresses for the location."
     address: CivicAddress
     "Identifies one or more email addresses for the location."
@@ -534,7 +534,7 @@
     "Identifies a short common name, abbreviation, or acronym for the party."
     short_name: String
     "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids( first: Int ): CyioExternalReferenceConnection
+    external_ids: [CyioExternalReference]
     "Identifies a postal addresses for the location."
     address: CivicAddress
     "Identifies one or more email addresses for the location."
@@ -623,7 +623,7 @@
     "Identifies a short common name, abbreviation, or acronym for the party."
     short_name: String
     "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids( first: Int ): CyioExternalReferenceConnection
+    external_ids: [CyioExternalReference]
     "Identifies a postal addresses for the location."
     address: CivicAddress
     "Identifies one or more email addresses for the location."
@@ -842,7 +842,7 @@
     "Identifies a citation consisting of end note text and optional structured bibliographic data."
     citations: [Citation]
     "identifies one or more references to an external resource with an optional hash for verification and change detection."
-    rlinks(first: Int): CyioExternalReferenceConnection
+    rlinks: [CyioExternalReference]
     "Identifies the base64 encoded content."
     base64: Base64Content
   }
