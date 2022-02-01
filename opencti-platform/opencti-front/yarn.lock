@@ -3957,16 +3957,16 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 17.0.13
-  resolution: "@types/node@npm:17.0.13"
-  checksum: 8b87c850c1604c65e3474bd03d122914464b7970caed20f65f4a7706ab429353b896a3916be4d2581164eccda9e3dd95c338fbccf686ff85a824c40d15e8f3fa
+  version: 17.0.14
+  resolution: "@types/node@npm:17.0.14"
+  checksum: cc059ce29686bad5890685f45741826a1a7d1d27382464f6d5fa00b72ba239f6f5b8245a7fa5a56c23ce928030dc76b165a4ab0b86dc078f05b44597d8fe1a46
   languageName: node
   linkType: hard
 
 "@types/node@npm:^14.0.10":
-  version: 14.18.9
-  resolution: "@types/node@npm:14.18.9"
-  checksum: a85dae901b5c3b318747e66f2228c0f0778bcd73430a01d7c42814c04ba1070f2817b865d0c5f0c1813b89afeebb34d19cf2662252bae9dc0c18d3ad23fc98c3
+  version: 14.18.10
+  resolution: "@types/node@npm:14.18.10"
+  checksum: e722eec37be85dd7dddc4cfd26c501c66f1f2a7e0f603f57ff925348e65a5db603b06363fa27489cbecff44f0ae59812f22509923c4c45ffa5958604cc002401
   languageName: node
   linkType: hard
 
@@ -9051,9 +9051,9 @@ __metadata:
   linkType: hard
 
 "electron-to-chromium@npm:^1.3.564, electron-to-chromium@npm:^1.4.17":
-  version: 1.4.58
-  resolution: "electron-to-chromium@npm:1.4.58"
-  checksum: de8c28806a8679794e13d6de4939f3dfe3fa4b630d92ecfa4385522db4aeaffe55cc3aef711dbc8e0f6b95b62eecdae2809a6218e3431a7d1f6f40d0cefad505
+  version: 1.4.59
+  resolution: "electron-to-chromium@npm:1.4.59"
+  checksum: f058ae0197f2eda65698956467935a3b79470a9264e95a4a549cdfce85c8ad9fc07152ec409e9c51c1ad699558ff50c1b3785966272df0e4e0edd1e51d758768
   languageName: node
   linkType: hard
 
@@ -16649,7 +16649,7 @@ fsevents@^1.2.7:
     relay-devtools: 1.4.0
     relay-runtime: 11.0.2
     remark-gfm: 3.0.1
-    remark-parse: 10.0.0
+    remark-parse: 10.0.1
     rich-markdown-editor: 11.21.3
     rxjs: 7.5.2
     styled-components: 5.3.3
@@ -19088,10 +19088,10 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-error-overlay@npm:^6.0.9":
-  version: 6.0.10
-  resolution: "react-error-overlay@npm:6.0.10"
-  checksum: e7384f086a0162eecac8e081fe3c79b32f4ac8690c56bde35ab6b6380d10e6c8375bbb689a450902b6615261fcf6c95ea016fc0b200934667089ca83536bc4a7
+"react-error-overlay@npm:6.0.9":
+  version: 6.0.9
+  resolution: "react-error-overlay@npm:6.0.9"
+  checksum: 695853bc885e798008a00c10d8d94e5ac91626e8130802fea37345f9c037f41b80104345db2ee87f225feb4a4ef71b0df572b17c378a6d397b6815f6d4a84293
   languageName: node
   linkType: hard
 
@@ -20097,14 +20097,14 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"remark-parse@npm:10.0.0":
-  version: 10.0.0
-  resolution: "remark-parse@npm:10.0.0"
+"remark-parse@npm:10.0.1, remark-parse@npm:^10.0.0":
+  version: 10.0.1
+  resolution: "remark-parse@npm:10.0.1"
   dependencies:
     "@types/mdast": ^3.0.0
     mdast-util-from-markdown: ^1.0.0
     unified: ^10.0.0
-  checksum: cebd0d8f95b7b0b827277773ddafd05d295a450a2a712f085ccedad2572678712785869b7a0dea53c215f124c22dad5b5247c29d461729933565ed7b5f262e6d
+  checksum: 505088e564ab53ff054433368adbb7b551f69240c7d9768975529837a86f1d0f085e72d6211929c5c42db315273df4afc94f3d3a8662ffdb69468534c6643d29
   languageName: node
   linkType: hard
 
@@ -20129,17 +20129,6 @@ fsevents@^1.2.7:
     vfile-location: ^3.0.0
     xtend: ^4.0.1
   checksum: 2dfea250e7606ddfc9e223b9f41e0b115c5c701be4bd35181beaadd46ee59816bc00aadc6085a420f8df00b991ada73b590ea7fd34ace14557de4a0a41805be5
-  languageName: node
-  linkType: hard
-
-"remark-parse@npm:^10.0.0":
-  version: 10.0.1
-  resolution: "remark-parse@npm:10.0.1"
-  dependencies:
-    "@types/mdast": ^3.0.0
-    mdast-util-from-markdown: ^1.0.0
-    unified: ^10.0.0
-  checksum: 505088e564ab53ff054433368adbb7b551f69240c7d9768975529837a86f1d0f085e72d6211929c5c42db315273df4afc94f3d3a8662ffdb69468534c6643d29
   languageName: node
   linkType: hard
 

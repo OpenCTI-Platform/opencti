@@ -53,7 +53,7 @@
     "recharts": "2.1.8",
     "relay-runtime": "11.0.2",
     "remark-gfm": "3.0.1",
-    "remark-parse": "10.0.0",
+    "remark-parse": "10.0.1",
     "rich-markdown-editor": "11.21.3",
     "rxjs": "7.5.2",
     "styled-components": "5.3.3",
@@ -122,6 +122,7 @@
   ],
   "resolutions": {
     "bezier-js": "4.0.3",
+    "react-error-overlay": "6.0.9",
     "trim-newlines": "4.0.2",
     "webpack": "4.44.2"
   },
