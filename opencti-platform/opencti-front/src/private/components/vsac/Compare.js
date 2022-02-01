@@ -15,26 +15,48 @@ import {
   YAxis,
   ReferenceLine,
   ResponsiveContainer,
+  Tooltip,
 } from 'recharts';
 import Chip from '@material-ui/core/Chip';
 
 const Compare = (props) => {
-  const [getAnalysises] = useState(props.location.state.analysises);
+  const [getAnalyses] = useState(props.location.state.analyses);
   const [getScatterPlotData] = useState(props.location.state.scatterPlotData);
 
   const scatter = [];
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div
+          className="custom-tooltip"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            fontSize: 12,
+            borderRadius: 10,
+            border: 1,
+            padding: 10,
+          }}>
+          <p className="label" style={{ paddingBottom: 5 }}>{payload[0].payload.cwe_name}</p>
+          <p className="weakness" style={{ paddingBottom: 5 }}>{`Weakness Score: ${payload[0].payload.score}`}</p>
+          <p className="host" style={{ paddingBottom: 5 }}>{`Hosts with Weakness: ${payload[0].payload.host_count_total} (${payload[0].payload.x}%)`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <Grid container={true} spacing={3}>
       <Grid item={true} xs={4}>
         <Paper elevation={2} style={{ height: '920px', marginBottom: 20, overflowY: 'scroll' }}>
           <List>
-            { getAnalysises.map((analysis, i) => {
+            { getAnalyses.map((analysis, i) => {
               const hex = Math.floor(Math.random() * 16777215).toString(16);
               const fillColor = `#${hex}`;
               scatter.push({
                 name: analysis.scan.scan_name,
-                data: getScatterPlotData[i],
+                data: getScatterPlotData[analysis.id],
                 fill: fillColor,
               });
 
@@ -120,6 +142,10 @@ const Compare = (props) => {
               />
               <ReferenceLine x={0} stroke="white" />
               <ReferenceLine y={0} stroke="white" />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={false}
+              />
               {scatter.map((plot, i) => (
                  <Scatter key={i} name={plot.name} data={plot.data} fill={plot.fill} />
               ))}
