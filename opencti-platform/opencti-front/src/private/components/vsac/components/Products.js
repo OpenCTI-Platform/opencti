@@ -67,7 +67,7 @@ class Products extends Component {
                     return (
                       <TableRow
                         key={rowName}
-                        selected={rowName === selectedRow}
+                        selected={rowName === selectedRow.cpe_id}
                         onClick={() => handleClick(item.cpe_id, rowName)}
                         hover
                         classes={{ root: classes.selectedTableRow }}

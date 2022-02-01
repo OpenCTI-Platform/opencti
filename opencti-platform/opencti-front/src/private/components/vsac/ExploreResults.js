@@ -108,7 +108,7 @@ class ExploreResults extends Component {
       weaknessDetails: null,
       vulnerabilitiesAccordion: false,
       vulnerabilitiesDetails: null,
-      selectedRow: null,
+      selectedRow: {},
       host_ip: null,
       cpe_id: null,
       cve_id: null,
@@ -186,26 +186,33 @@ class ExploreResults extends Component {
           { host_ip: params.host_ip },
           handleGetAnalysisFilteredResults(params, type)
         );
+
+        this.setState({ selectedRow: {...this.state.selectedRow, host_ip: name}});
       }
       if (params.cpe_id) {
         this.setState(
           { cpe_id: params.cpe_id },
           handleGetAnalysisFilteredResults(params, type)
         );
+
+        this.setState({ selectedRow: {...this.state.selectedRow, cpe_id: name}});
       }
       if (params.cwe_id) {
         this.setState(
           { cwe_id: params.cwe_id },
           handleGetAnalysisFilteredResults(params, type)
         );
+
+        this.setState({ selectedRow: {...this.state.selectedRow, cwe_id: name}});
       }
       if (params.cve_id) {
         this.setState(
           { cve_id: params.cve_id },
           handleGetAnalysisFilteredResults(params, type)
         );
+        this.setState({ selectedRow: {...this.state.selectedRow, cve_id: name}});
       }
-      this.setState({ selectedRow: name });
+     
     };
 
     const handleGetAnalysisFilteredResults = (params, type) => {
@@ -410,7 +417,7 @@ class ExploreResults extends Component {
     const handleReset = () => {
       this.setState({weaknessDetails: null});
       this.setState({weaknessAccordion: false});
-      this.setState({selectedRow: null});
+      this.setState({selectedRow: {}});
       this.setState({currentResult: null});
       this.setState({filteredResultsData: null});
       this.setState({filteredResultsDataDetails: null});

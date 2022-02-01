@@ -38,6 +38,8 @@ class Hosts extends Component {
     const { classes } = this.props;
     const { hosts, selectedRow } = this.state;
 
+    console.log(selectedRow)
+
     const handleClick = (host_ip, name) => {
       const params = {
         host_ip: host_ip,
@@ -70,7 +72,7 @@ class Hosts extends Component {
                       return (
                         <TableRow
                           key={rowName}
-                          selected={rowName === selectedRow}
+                          selected={rowName === selectedRow.host_ip}
                           onClick={() => handleClick(host.host_ip, rowName)}
                           hover
                           classes={{ root: classes.selectedTableRow }}
