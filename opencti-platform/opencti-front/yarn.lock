@@ -10280,12 +10280,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"extract-files@npm:12.0.0":
-  version: 12.0.0
-  resolution: "extract-files@npm:12.0.0"
-  dependencies:
-    is-plain-obj: ^4.0.0
-  checksum: fb46b5ba7bfa731832d034953ccae5cb470d1fd2dc0cccdc1d807abb3cba71ab60964400d32f024ad963a758f48e95204530ccb76d72771167974909da8b7025
+"extract-files@npm:11.0.0":
+  version: 11.0.0
+  resolution: "extract-files@npm:11.0.0"
+  checksum: 39ebd92772e9a1e30d1e3112fb7db85d353c8243640635668b615ac1d605ceb79fbb13d17829dd308993ef37bb189ad99817f79ab164ae95c9bb3df9f440bd16
   languageName: node
   linkType: hard
 
@@ -16608,7 +16606,7 @@ fsevents@^1.2.7:
     eslint-plugin-import: 2.25.4
     eslint-plugin-prettier: 4.0.0
     eslint-plugin-react: 7.28.0
-    extract-files: 12.0.0
+    extract-files: 11.0.0
     formik: 2.2.9
     formik-material-ui: 3.0.1
     formik-material-ui-pickers: 0.0.12
@@ -22665,10 +22663,10 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"trim-newlines@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "trim-newlines@npm:1.0.0"
-  checksum: ed96eea318581c6f894c0a98d0c4f16dcce11a41794ce140a79db55f1cab709cd9117578ee5e49a9b52f41e9cd93eaf3efa6c4bddbc77afbf91128b396fadbc1
+"trim-newlines@npm:4.0.2":
+  version: 4.0.2
+  resolution: "trim-newlines@npm:4.0.2"
+  checksum: 1eef206eb77361856dff0b827e5811baf64574bb21e81b7ad643fe321c5c19b0a452dd83e9afc31206993fcff9bb90a379925d7b5915f887de1ca7da5b57933a
   languageName: node
   linkType: hard
 

@@ -15,7 +15,7 @@
     "babel-plugin-relay": "11.0.2",
     "dagre": "0.8.5",
     "eslint-config-react-app": "7.0.0",
-    "extract-files": "12.0.0",
+    "extract-files": "11.0.0",
     "formik": "2.2.9",
     "formik-material-ui": "3.0.1",
     "formik-material-ui-pickers": "0.0.12",
@@ -121,8 +121,9 @@
     "not op_mini all"
   ],
   "resolutions": {
-    "webpack": "4.44.2",
-    "bezier-js": "4.0.3"
+    "bezier-js": "4.0.3",
+    "trim-newlines": "4.0.2",
+    "webpack": "4.44.2"
   },
   "packageManager": "yarn@3.0.2"
 }
