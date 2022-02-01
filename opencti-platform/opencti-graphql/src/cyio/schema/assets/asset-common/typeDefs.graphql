@@ -191,7 +191,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
     # AssetLocation
@@ -205,7 +205,7 @@
   }
   
   input AssetLocationAddInput {
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # AssetLocation
     name: String!
     description: String
@@ -267,7 +267,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!
@@ -323,7 +323,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!
@@ -405,7 +405,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!

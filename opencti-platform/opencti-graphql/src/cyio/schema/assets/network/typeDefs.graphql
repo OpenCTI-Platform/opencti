@@ -33,7 +33,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!
@@ -62,7 +62,7 @@
 
   # Mutation Types
   input NetworkAssetAddInput {
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!

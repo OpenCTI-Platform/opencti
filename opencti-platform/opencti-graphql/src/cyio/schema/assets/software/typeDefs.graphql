@@ -40,7 +40,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!
@@ -84,7 +84,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!
@@ -130,7 +130,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!
@@ -162,7 +162,7 @@
 
   # Mutation Types
   input SoftwareAssetAddInput {
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!
@@ -190,7 +190,7 @@
   }
 
   input OperatingSystemAssetAddInput {
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!
@@ -220,7 +220,7 @@
   }
 
   input ApplicationSoftwareAssetAddInput {
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Asset
     asset_id: String
     name: String!

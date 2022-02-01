@@ -204,7 +204,7 @@
     modified: Timestamp
     # CoreObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -265,7 +265,7 @@
     modified: Timestamp
     # OscalObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
@@ -299,7 +299,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -335,7 +335,7 @@
   }
 
   input OscalLocationAddInput {
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # CyioLocation
     name: String!
     description: String
@@ -393,7 +393,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -439,7 +439,7 @@
 
   input OscalOrganizationAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # CyioIdentity
     "Identifies the name given to the party."
     name: String!
@@ -507,7 +507,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -596,7 +596,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -644,7 +644,7 @@
 
   input OscalPersonAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # CyioIdentity
     "Identifies the name given to the party."
     name: String!
@@ -714,7 +714,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -739,7 +739,7 @@
 
   input OscalRelationshipAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalRelationship
     "Identifies the type of the relationship"
     relationship_type: String!
@@ -810,7 +810,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -849,7 +849,7 @@
 
   input OscalResourceAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # Resource
     "Identifies the type of resource represented."
     resource_type: ResourceType!
@@ -922,7 +922,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -947,7 +947,7 @@
 
   input OscalResponsiblePartyAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # ResponsibleParty
     "Identifies a reference to the role that the party is responsible for."
     role: OscalRoleAddInput!
@@ -1003,7 +1003,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -1032,7 +1032,7 @@
 
   input OscalRoleAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalRole
     "Identifies the unique identifier for a specific role instance."
     role_identifier: RoleType!
@@ -1091,7 +1091,7 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references( first: Int ): CyioExternalReferenceConnection
@@ -1126,7 +1126,7 @@
 
   input OscalUserAddInput {
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # OSCAL User
     "Identifies type of user, such as internal, external, or general-public."
     user_type: UserType

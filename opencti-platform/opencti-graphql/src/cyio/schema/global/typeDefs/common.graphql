@@ -56,7 +56,7 @@
 
   "Defines the identifying information about a Core object"
   interface CoreObject {
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
   }
@@ -256,7 +256,7 @@
     # Lifecycle
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # CyioNote
     abstract: String
     content: String!
@@ -268,7 +268,7 @@
     abstract: String
     content: String!
     authors: [String]
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
   }
 
   enum CyioNotesOrdering {
@@ -324,7 +324,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
     # CyioLocation
@@ -333,7 +333,7 @@
   }
   
   input CyioLocationAddInput {
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     # CyioLocation
     location_type: CyioLocationType
     name: String!
@@ -353,7 +353,7 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels( limit: Int ): CyioLabelConnection
     external_references( first: Int ): CyioExternalReferenceConnection
     notes( first: Int ): CyioNoteConnection
     # CyioIdentity
