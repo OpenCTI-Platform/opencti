@@ -1,7 +1,7 @@
   # declares the query entry-points for this type
   extend type Query {
     cyioNote(id: ID!): CyioNote
-    cyioNoteList( 
+    cyioNotes( 
       first: Int
       offset: Int
       orderedBy: CyioNotesOrdering
@@ -11,7 +11,7 @@
       search: String
     ): CyioNoteConnection
     cyioExternalReference(id: ID!): CyioExternalReference
-    cyioExternalReferenceList(
+    cyioExternalReferences(
       first: Int
       offset: Int
       orderedBy: CyioExternalReferencesOrdering
@@ -200,7 +200,7 @@
     modified: Timestamp
     # Cyio Label
     "Identifies the text value of the label."
-    value: String!
+    name: String!
     "Identifies the color to be applied to the label."
     color: String
     "Identifies a human-readable description of the meaning of the label"
@@ -208,14 +208,14 @@
   }
 
   input CyioLabelAddInput {
-    value: String!
+    name: String!
     color: String
     description: String
   }
 
   enum CyioLabelsOrdering {
-    "Value"
-    value
+    "Name"
+    name
     "Color"
     color
     "Created"
@@ -225,8 +225,8 @@
   }
 
   enum CyioLabelsFilter {
-    "Value"
-    value
+    "Name"
+    name
   }
   input CyioLabelsFiltering {
     key: LabelsFilter!
@@ -234,7 +234,7 @@
     operator: String
     filterMode: FilterMode
   }
-  type LabelConnection {
+  type CyioLabelConnection {
     pageInfo: PageInfo!
     edges: [CyioLabelEdge]
   }
@@ -243,7 +243,7 @@
     node: CyioLabel!
   }
 
-  type CyioNote implements BasicObject {
+  type CyioNote implements BasicObject & LifecycleObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -253,7 +253,7 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # Lifecycle
     created: Timestamp
     modified: Timestamp
     labels: [String]
@@ -268,6 +268,7 @@
     abstract: String
     content: String!
     authors: [String]
+    labels: [String]
   }
 
   enum CyioNotesOrdering {
