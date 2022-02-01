@@ -56,9 +56,9 @@
 
   "Defines the identifying information about a Core object"
   interface CoreObject {
-    labels( limit: Int ): CyioLabelConnection
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    labels: [CyioLabel]
+    external_references: [CyioExternalReference]
+    notes: [CyioNote]
   }
 
   "Reference input to add a reference between two different objects"
@@ -256,7 +256,7 @@
     # Lifecycle
     created: Timestamp
     modified: Timestamp
-    labels( limit: Int ): CyioLabelConnection
+    labels: [CyioLabel]
     # CyioNote
     abstract: String
     content: String!
@@ -268,7 +268,7 @@
     abstract: String
     content: String!
     authors: [String]
-    labels( limit: Int ): CyioLabelConnection
+    labels: [CyioLabel]
   }
 
   enum CyioNotesOrdering {
@@ -324,16 +324,16 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels( limit: Int ): CyioLabelConnection
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    labels: [CyioLabel]
+    external_references: [CyioExternalReference]
+    notes: [CyioNote]
     # CyioLocation
     name: String!
     description: String
   }
   
   input CyioLocationAddInput {
-    labels( limit: Int ): CyioLabelConnection
+    labels: [CyioLabel]
     # CyioLocation
     location_type: CyioLocationType
     name: String!
@@ -353,9 +353,9 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels( limit: Int ): CyioLabelConnection
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    labels: [CyioLabel]
+    external_references: [CyioExternalReference]
+    notes: [CyioNote]
     # CyioIdentity
     name: String!
     description: String
