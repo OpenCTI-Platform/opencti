@@ -225,7 +225,8 @@ class Scans extends Component {
       openDialog: false,
       loadDialog: null,
       openedPopoverId: null,
-      pendingAnalysis: null
+      pendingAnalysis: null,
+      scanAssociation: {}
     };
   }
 
@@ -238,9 +239,9 @@ class Scans extends Component {
     return scans;
   }
 
-  componentDidMount() {
-    this.setState({client_ID: localStorage.getItem('client_id')},function() {
-      fetchAllScans(this.state.client_ID)
+  refreshScans(){
+    this.setState({ loadingScans: true });
+    fetchAllScans(this.state.client_ID)
         .then((response) => {
           const scans = response.data;
 
@@ -252,33 +253,55 @@ class Scans extends Component {
         .catch((error) => {
           console.log(error);
         });
+  }
 
-      fetchAllAnalysis(this.state.client_ID)
+  refreshAnalyses(){
+    this.setState({ loadingAnalyses: true });
+    fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
           let analyses = response.data;
           let scatterPlotData = [];
-
+          const associationTable = {}
           analyses.forEach(analysis =>{
-            getAnalysisSummary(analysis.id,this.state.client_ID)
-              .then((response) => {
-                let scatterPlot = [];
+            let associations = associationTable[analysis.scan.id]
+            if(associations === undefined){
+              associations = 1
+            } else {
+              associations++
+            }
+            associationTable[analysis.scan.id] = associations
 
-                response.data.forEach((item) => {
-                  scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
-                });
-                scatterPlotData.push(scatterPlot)
-                this.setState({scatterPlotData: scatterPlotData});
-              })
-              .catch((error) => {
-                console.log(error);
-              })
+            getAnalysisSummary(analysis.id,this.state.client_ID)
+                .then((response) => {
+
+                  let scatterPlot = [];
+                  response.data.forEach((item) => {
+                    scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                  });
+
+                  scatterPlotData.push(scatterPlot)
+
+                  this.setState({scatterPlotData: scatterPlotData});
+
+                })
+                .catch((error) => {
+                  console.log(error);
+                })
+
           })
+          this.setState({ scanAssociation: associationTable })
           this.setState({ analyses: analyses });
           this.setState({ loadingAnalyses: false });
         })
         .catch((error) => {
           console.log(error);
         });
+  };
+
+  componentDidMount() {
+    this.setState({client_ID: localStorage.getItem('client_id')},function() {
+      this.refreshScans()
+      this.refreshAnalyses()
     });
   }
 
@@ -301,7 +324,8 @@ class Scans extends Component {
       popoverAnchorEl,
       openedPopoverId,
       openAnalysisMenu,
-      pendingAnalysis
+      pendingAnalysis,
+      scanAssociation
     } = this.state;
 
     const openPopover = Boolean(popoverAnchorEl);
@@ -384,7 +408,7 @@ class Scans extends Component {
         .then((response) => {
           handleDialogClose();
           setTimeout(() => {
-            refreshAnalysis();
+            this.refreshAnalyses()
             this.setState({pendingAnalysis: null})
           }, 10000);
         })
@@ -413,7 +437,7 @@ class Scans extends Component {
       deleteAnalysis(id, client)
         .then((response) => {
           handleDialogClose();
-          refreshAnalysis();
+          this.refreshAnalyses();
         })
         .catch((error) => {
           console.log(error);
@@ -439,54 +463,8 @@ class Scans extends Component {
         });
     };
 
-    const refreshAnalysis = () => {
-      this.setState({ loadingScans: true });
-      this.setState({ loadingAnalyses: true });
-      fetchAllScans(this.state.client_ID)
-        .then((response) => {
-          const scans = response.data;
-
-          this.setState({ scans: scans });
-          this.setState({ scansReportDate: this.sortScansByReportDate(scans) });
-          this.setState({ renderScans: scans });
-          this.setState({ loadingScans: false });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-      fetchAllAnalysis(this.state.client_ID)
-        .then((response) => {
-          let analyses = response.data;
-          let scatterPlotData = [];
-
-          analyses.forEach(analysis =>{
-            getAnalysisSummary(analysis.id,this.state.client_ID)
-              .then((response) => {
-
-                let scatterPlot = [];
-                response.data.forEach((item) => {
-                  scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
-                });
-
-                scatterPlotData.push(scatterPlot)
-
-                this.setState({scatterPlotData: scatterPlotData});
-
-              })
-              .catch((error) => {
-                console.log(error);
-              })
-          })
-          this.setState({ analyses: analyses });
-          this.setState({ loadingAnalyses: false });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    };
-
     const rerenderParentCallback =() => {
-      refreshAnalysis();
+      this.refreshAnalyses();
     }
     
     const renderDialogSwitch = () => {
@@ -693,7 +671,9 @@ class Scans extends Component {
                                 </ListItemIcon>
                                 Rename
                               </MenuItem>
-                              <MenuItem>
+                              <MenuItem
+
+                              >
                                 <ListItemIcon>
                                   <DeleteIcon fontSize="small" />
                                 </ListItemIcon>
