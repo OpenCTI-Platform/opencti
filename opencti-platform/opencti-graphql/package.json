@@ -133,7 +133,9 @@
     "webpack-node-externals": "3.0.0"
   },
   "resolutions": {
-    "fs-capacitor": "6.2.0"
+    "fs-capacitor": "6.2.0",
+    "lodash": "4.17.21",
+    "node-fetch": "2.6.7"
   },
   "packageManager": "yarn@3.0.2"
 }
