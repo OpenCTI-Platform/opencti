@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
 import IconButton from '@material-ui/core/IconButton';
 import { ImageOutlined } from '@material-ui/icons';
-import { FilePdfOutline, FileDelimitedOutline } from 'mdi-material-ui';
+import { FilePdfBox, FileDelimitedOutline } from 'mdi-material-ui';
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import * as R from 'ramda';
 import Menu from '@material-ui/core/Menu';
@@ -217,7 +217,7 @@ class ExportButtons extends Component {
             aria-haspopup="true"
             color="primary"
           >
-            <FilePdfOutline />
+            <FilePdfBox />
           </IconButton>
         </Tooltip>
         <Menu
