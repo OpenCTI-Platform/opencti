@@ -876,7 +876,7 @@ class Scans extends Component {
                                         handleDialogOpen({
                                           modal: "Generate Report",
                                           id: analysis.id,
-                                          client: state.client_ID,
+                                          client: client_ID,
                                           scanName: analysis.scan.scan_name,
                                           success: false,
                                         })
