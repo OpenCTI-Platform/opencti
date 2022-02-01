@@ -205,7 +205,6 @@
   }
   
   input AssetLocationAddInput {
-    labels: [CyioLabel]
     # AssetLocation
     name: String!
     description: String

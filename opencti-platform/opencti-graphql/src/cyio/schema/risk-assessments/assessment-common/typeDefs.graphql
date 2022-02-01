@@ -80,12 +80,16 @@
 
   # declares the mutation entry-points for this type
   extend type Mutation {
+    # Actor
+    createActor(input: ActorAddInput): Actor
+    deleteActor(id: ID!): String!
+    editActor(id: ID!, input: [EditInput]!, commitMessage: String): Actor
     # Facet
     createFacet(input: FacetAddInput): Facet
     deleteFacet(id: ID!): String!
     editFacet(id: ID!, input: [EditInput]!, commitMessage: String): Facet
     # Generic Characterization
-    createGenericCharacterization(input: GenericCharacterizationAddInput): GenericCharacterization
+    # createGenericCharacterization(input: GenericCharacterizationAddInput): GenericCharacterization
     deleteGenericCharacterization(id: ID!): String!
     editGenericCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): GenericCharacterization
     # Log Entry
@@ -170,14 +174,25 @@
 #
   "Defines identifying information about an actor that produces an observation, a finding, or a risk."
   type Actor {
-    "Identifies a reference to the tool or person based on the associated type."
-    actor: PartyOrComponent!
+    "Uniquely identifies this object."
+    id: ID!
     "Identifies the kind of actor"
     actor_type: ActorType!
+    "Identifies a reference to the tool or person based on the associated type."
+    actor: PartyOrComponent!
     "For a party, this can optionally be used to specify the role the actor was performing."
     role: OscalRole
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     external_references: [CyioExternalReference]
+  }
+
+  input ActorAddInput {
+    "Identifies the kind of actor"
+    actor_type: ActorType!
+    "For a party, this can optionally be used to specify the role the actor was performing."
+    role: OscalRoleAddInput
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references: [CyioExternalReferenceAddInput]
   }
 
   # Pagination Types
@@ -422,10 +437,8 @@
     facets: [Facet]
   }
 
-  input GenericCharacterizationAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-  }
+  # input GenericCharacterizationAddInput {
+  # }
 
 ## Log Entry
 #
@@ -483,8 +496,6 @@
 
   "Defines identifying information about a risk log entry of all risk-related tasks taken."
   input LogEntryAddInput  {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     # Entry
     "Identifies the type of remediation tracking entry."
     entry_type: [EntryType!]!
@@ -700,10 +711,8 @@
     related_tasks(first: Int): RemediationTaskConnection
   }
 
-  input OriginAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-  }
+  # input OriginAddInput {
+  # }
 
   # Filtering Types
   input OriginsFiltering {
@@ -791,8 +800,6 @@
   }
 
   input RemediationTaskAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     # RemediationTask
     "Identifies the type of task."
     task_type: TaskType!
@@ -884,8 +891,6 @@
   }
 
   input RequiredAssetAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     # Required Asset
     "Identifies the name of the required asset."
     name: String!
@@ -999,8 +1004,6 @@
   }
 
   input RiskAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     "Identifies the name for the risk."
     name: String!
     "Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system."
@@ -1180,8 +1183,6 @@
   }
 
   input RiskResponseAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     # Risk Response
     "Identifies the type of response to the risk"
     response_type: ResponseType!
@@ -1250,6 +1251,10 @@
     subject_type: SubjectType!
     "Identifies the name for the referenced subject."
     name: String!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    external_references: [CyioExternalReferenceAddInput]
+    "Identifies one or more references to additional commentary on the Model."
+    notes: [CyioNoteAddInput]
   }
 
   # Filtering Types

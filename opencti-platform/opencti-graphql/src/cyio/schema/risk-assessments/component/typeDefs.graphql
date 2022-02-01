@@ -172,9 +172,6 @@
   }
 
   input ComponentAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -348,9 +345,6 @@
   }
 
   input HardwareComponentAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -534,8 +528,6 @@
   }
 
   input NetworkComponentAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -722,8 +714,6 @@
   }
 
   input ServiceComponentAddInput {
-    labels: [CyioLabel]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -911,8 +901,6 @@
   }
 
   input SoftwareComponentAddInput {
-    labels: [CyioLabel]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -1099,8 +1087,6 @@
   }
 
   input SystemComponentAddInput {
-    labels: [CyioLabel]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!

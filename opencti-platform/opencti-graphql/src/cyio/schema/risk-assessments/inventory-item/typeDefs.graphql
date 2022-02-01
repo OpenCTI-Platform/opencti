@@ -110,8 +110,6 @@
 
   # Mutation Types
   input InventoryItemAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     # Inventory Item
     "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
     asset_type: AssetType!

@@ -101,8 +101,6 @@
   }
 
   input POAMAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     "Identifies the name given to the document."
     name: String!
     "Identifies the date and time the document was published."
@@ -182,8 +180,6 @@
   }
 
   input POAMItemAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
     "Identifies the name for this POA&M item."
     name: String!
     "Identifies a human-readable description of the POA&M item."

@@ -62,7 +62,6 @@
 
   # Mutation Types
   input NetworkAssetAddInput {
-    labels: [CyioLabel]
     # Asset
     asset_id: String
     name: String!

@@ -29,7 +29,7 @@
       filterMode: FilterMode
       search: String
     ): CyioLabelConnection
-}
+  }
 
   # declares the mutation entry-points for this type
   extend type Mutation {
@@ -243,6 +243,7 @@
     node: CyioLabel!
   }
 
+
   type CyioNote implements BasicObject & LifecycleObject {
     # BasicObject
     "Uniquely identifies this object."
@@ -268,7 +269,6 @@
     abstract: String
     content: String!
     authors: [String]
-    labels: [CyioLabel]
   }
 
   enum CyioNotesOrdering {
@@ -333,7 +333,6 @@
   }
   
   input CyioLocationAddInput {
-    labels: [CyioLabel]
     # CyioLocation
     location_type: CyioLocationType
     name: String!

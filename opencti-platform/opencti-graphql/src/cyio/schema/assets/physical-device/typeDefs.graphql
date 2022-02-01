@@ -65,7 +65,6 @@
 
   # Mutation Types
   input PhysicalDeviceAssetAddInput {
-    labels: [CyioLabel]
     # Asset
     asset_id: String
     name: String!

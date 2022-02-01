@@ -162,7 +162,6 @@
 
   # Mutation Types
   input SoftwareAssetAddInput {
-    labels: [CyioLabel]
     # Asset
     asset_id: String
     name: String!
@@ -190,7 +189,6 @@
   }
 
   input OperatingSystemAssetAddInput {
-    labels: [CyioLabel]
     # Asset
     asset_id: String
     name: String!
@@ -220,7 +218,6 @@
   }
 
   input ApplicationSoftwareAssetAddInput {
-    labels: [CyioLabel]
     # Asset
     asset_id: String
     name: String!

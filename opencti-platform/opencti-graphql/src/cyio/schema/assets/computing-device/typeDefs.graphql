@@ -206,7 +206,6 @@
 
   # Mutation Types
   input ComputingDeviceAssetAddInput {
-    labels: [CyioLabel]
     # Asset
     asset_id: String
     name: String!
