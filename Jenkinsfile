@@ -68,7 +68,9 @@ void docker_steps(String registry, String image, String tag, String buildArgs) {
   }
 
   stage('Push') {
-    app.push("${tag}")
+    docker.withRegistry("https://${registry}", "docker-registry-credentials") {
+      app.push("${tag}")
+    }
   }
 
   stage('Clean') {
