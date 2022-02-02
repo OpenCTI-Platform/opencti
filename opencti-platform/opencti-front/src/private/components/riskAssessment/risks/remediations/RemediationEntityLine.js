@@ -8,6 +8,8 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Typography from '@material-ui/core/Typography';
+import Badge from '@material-ui/core/Badge';
+import Avatar from '@material-ui/core/Avatar';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
@@ -30,14 +32,14 @@ const styles = (theme) => ({
   },
   ListItem: {
     display: 'grid',
-    gridTemplateColumns: '10% 15% 15% 1fr 1fr 15%',
+    gridTemplateColumns: '20% 15% 15% 15% 1fr 1fr',
   },
   itemIcon: {
     color: theme.palette.primary.main,
   },
   bodyItem: {
     float: 'left',
-    height: '35px',
+    height: '48px',
     display: 'flex',
     overflow: 'hidden',
     fontSize: '13px',
@@ -103,6 +105,27 @@ class RemediationEntityLineComponent extends Component {
           primary={
             <div className={classes.ListItem}>
               <div className={classes.bodyItem}>
+                <div style={{ display: 'flex' }}>
+                  <Badge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    badgeContent={
+                      <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
+                    }
+                  >
+                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                  </Badge>
+                  <div style={{ marginLeft: '20px' }}>
+                    <Typography variant="subtitle1">
+                      {t('Lorem Ipsum')}
+                    </Typography>
+                    <Typography color="textSecondary" variant="disabled">
+                      {t('Lorem Ipsum Dolor Ist')}
+                    </Typography>
+                  </div>
+                </div>
+              </div>
+              <div className={classes.bodyItem}>
                 <Typography align="left">
                   {node.name && t(node.name)}
                 </Typography>
@@ -125,11 +148,6 @@ class RemediationEntityLineComponent extends Component {
               <div className={classes.bodyItem}>
                 <Typography align="left">
                   {node.modified && fldt(node.modified)}
-                </Typography>
-              </div>
-              <div className={classes.bodyItem}>
-                <Typography align="left">
-                  {node.description && t(node.description)}
                 </Typography>
               </div>
             </div>

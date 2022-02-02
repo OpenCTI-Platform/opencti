@@ -36,9 +36,11 @@ import RemediationCreationGeneral from './RemediationCreationGeneral';
 import RelatedTasks from './RelatedTasks';
 import RequiredResources from './RequiredResources';
 import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectAssetCreationExternalReferences from '../../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../../components/Loader';
+import RemediationCreationDetails from './RemediationCreationDetails';
 // import RemediationCreationDetails from './RemediationCreationDetails';
 
 const styles = (theme) => ({
@@ -322,18 +324,13 @@ class RemediationCreation extends Component {
                   classes={{ container: classes.gridContainer }}
                 >
                   <Grid item={true} xs={6}>
-              {/* <RemediationCreationOverview setFieldValue={setFieldValue} values={values} /> */}
                     <RemediationCreationGeneral
                       setFieldValue={setFieldValue}
                       values={values}
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
-                    {/* <RemediationCreationDetails setFieldValue={setFieldValue} /> */}
-                    <CyioCoreObjectOrCyioCoreRelationshipNotes
-                      cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
-                      marginTop="0px"
-                    />
+                    <RemediationCreationDetails setFieldValue={setFieldValue} />
                   </Grid>
                 </Grid>
               </Form>
@@ -348,11 +345,29 @@ class RemediationCreation extends Component {
                       stixCoreObjectId={remediation.id}
                     /> */}
                   {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
-                  <RequiredResources remediationId={remediationId}/>
+                  <RequiredResources remediationId={remediationId} />
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}
-                  <RelatedTasks remediationId={remediationId}/>
+                  <RelatedTasks remediationId={remediationId} />
+                </Grid>
+              </Grid>
+              <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+                style={{ marginTop: 50 }}
+              >
+                <Grid item={true} xs={6}>
+                  <CyioCoreObjectExternalReferences
+                    cyioCoreObjectId={remediationId}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <CyioCoreObjectOrCyioCoreRelationshipNotes
+                    cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                    marginTop='0px'
+                  />
                 </Grid>
               </Grid>
             </>

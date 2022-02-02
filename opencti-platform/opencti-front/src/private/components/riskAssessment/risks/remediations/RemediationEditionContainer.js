@@ -35,6 +35,7 @@ import { SubscriptionAvatars } from '../../../../../components/Subscription';
 import RemediationEditionGeneral from './RemediationEditionGeneral';
 import RequiredResources from './RequiredResources';
 import RelatedTasks from './RelatedTasks';
+import RemediationEditionDetails from './RemediationEditionDetails';
 // import RiskEditionOverview from '../RiskEditionOverview';
 // import RiskEditionDetails from '../RiskEditionDetails';
 
@@ -312,16 +313,7 @@ class RemediationEditionContainer extends Component {
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
-                    {/* <RiskEditionDetails
-                      risk={risk}
-                      enableReferences={this.props.enableReferences}
-                      context={editContext}
-                      handleClose={handleClose.bind(this)}
-                    /> */}
-                    <CyioCoreObjectOrCyioCoreRelationshipNotes
-                      cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
-                      marginTop='0px'
-                    />
+                    <RemediationEditionDetails risk={risk} />
                   </Grid>
                 </Grid>
               </Form>
@@ -338,6 +330,24 @@ class RemediationEditionContainer extends Component {
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}
                   <RelatedTasks remediationId={remediationId} />
+                </Grid>
+              </Grid>
+              <Grid
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+                style={{ marginTop: 50 }}
+              >
+                <Grid item={true} xs={6}>
+                  <CyioCoreObjectExternalReferences
+                    cyioCoreObjectId={remediationId}
+                  />
+                </Grid>
+                <Grid item={true} xs={6}>
+                  <CyioCoreObjectOrCyioCoreRelationshipNotes
+                    cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                    marginTop='0px'
+                  />
                 </Grid>
               </Grid>
               <Dialog

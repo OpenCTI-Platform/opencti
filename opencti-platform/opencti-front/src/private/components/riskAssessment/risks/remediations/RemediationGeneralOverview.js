@@ -70,7 +70,7 @@ class RemediationGeneralOverviewComponent extends Component {
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
-          {t('General')}
+          {t('Basic Information')}
         </Typography>
         {/*  <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
@@ -130,38 +130,25 @@ class RemediationGeneralOverviewComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <div style={{ marginBottom: '46px' }}>
+              <div style={{ marginBottom: '25px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 15 }}
+                  style={{ float: 'left' }}
                 >
-                  {t('Title')}
+                  {t('Name')}
                 </Typography>
                 <div className="clearfix" />
                 {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
                 {remediation.name && t(remediation.name)}
               </div>
-              <div style={{ marginBottom: '12px' }}>
+              <div style={{ marginBottom: '20px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 16 }}
-                >
-                  {t('ID')}
-                </Typography>
-                <div className="clearfix" />
-                {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
-                {remediation.id && t(remediation.id)}
-              </div>
-              <div style={{ marginBottom: '26px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 25 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Created')}
                 </Typography>
@@ -169,76 +156,32 @@ class RemediationGeneralOverviewComponent extends Component {
                 {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
                 {remediation.created && fd(remediation.created)}
               </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 5 }}
-                >
-                  {t('Response Type')}
-                </Typography>
-                <div className="clearfix" />
-                <Button variant="outlined" color="success" >
-                  {remediation.response_type && t(remediation.response_type)}
-                </Button>
-              </div>
             </Grid>
             <Grid item={true} xs={6}>
-              <div style={{ marginBottom: '10px' }}>
+              <div style={{ marginBottom: '25px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 15 }}
+                  style={{ float: 'left' }}
                 >
-                  {t('Source')}
+                  {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                <div style={{ display: 'flex' }}>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    badgeContent={
-                      <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                    }
-                  >
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                  </Badge>
-                  <div style={{ marginLeft: '20px' }}>
-                    <Typography variant="subtitle1">
-                      {t('Lorem Ipsum')}
-                    </Typography>
-                    {t('Lorem Ipsum Dolor Ist')}
-                  </div>
-                </div>
+                {remediation.id && t(remediation.id)}
               </div>
-              <div style={{ marginBottom: '10px' }}>
+              <div style={{ marginBottom: '20px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 30 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
                 {/* {t('June 11 2021')} */}
                 {remediation.modified && fd(remediation.modified)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Lifecycle')}
-                </Typography>
-                <div className="clearfix" />
-                <Button variant="outlined" color="primary" >
-                  {remediation.lifecycle && t(remediation.lifecycle)}
-                </Button>
               </div>
             </Grid>
           </Grid>
@@ -247,7 +190,7 @@ class RemediationGeneralOverviewComponent extends Component {
               variant="h3"
               color="textSecondary"
               gutterBottom={true}
-              style={{ float: 'left', marginTop: 30 }}
+              style={{ float: 'left' }}
             >
               {t('Description')}
             </Typography>
