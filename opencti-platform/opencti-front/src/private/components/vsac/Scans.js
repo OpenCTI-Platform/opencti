@@ -76,6 +76,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Chip from "@material-ui/core/Chip";
+import DeleteScanVerify from "./modals/DeleteScanVerify";
 
 const classes = {
   root: {
@@ -223,6 +224,7 @@ class Scans extends Component {
       renderScans: null,
       sortByLabel: "Scan Date",
       openDialog: false,
+      openScanMenu: false,
       loadDialog: null,
       openedPopoverId: null,
       pendingAnalysis: null,
@@ -309,6 +311,7 @@ class Scans extends Component {
 
     const { t, n, fsd, mtd, theme } = this.props;
     const {
+      client_ID,
       scans,
       loadingScans,
       renderScans,
@@ -319,6 +322,7 @@ class Scans extends Component {
       scatterPlotData,
       modalStyle,
       openDialog,
+      openScanMenu,
       loadDialog,
       dialogParams,
       popoverAnchorEl,
@@ -358,6 +362,10 @@ class Scans extends Component {
       this.setState({ analysisAnchorEl: event.currentTarget, openAnalysisMenu: analysis_id });
     };
 
+    const handleScanClick =(event, scan_id) => {
+      this.setState({vulnerabilityAnchorEl: event.currentTarget, openScanMenu: scan_id})
+    }
+
     const handleAnalysisClose = () => {
       this.setState({ analysisByAnchorEl: null,  openAnalysisMenu: null});
     };
@@ -377,13 +385,14 @@ class Scans extends Component {
     const handleDialogOpen = (dialogParams) => {
       this.setState({ openDialog: true });
       this.setState({ dialogParams: dialogParams });
-      this.setState({ vulnerabilityAnchorEl: null });
+      this.setState({ vulnerabilityAnchorEl: null , openScanMenu: null});
       this.setState({ analysisAnchorEl: null });
       this.setState({ analysisByAnchorEl: null,  openAnalysisMenu: null});
     };
 
     const handleDialogClose = () => {
       this.setState({ openDialog: false });
+      this.setState({ openScanMenu: null })
       this.setState({ openAnalysisMenu: null});
     };
 
@@ -466,6 +475,32 @@ class Scans extends Component {
     const rerenderParentCallback =() => {
       this.refreshAnalyses();
     }
+
+    const handleDeleteScan = (event, id) => {
+      const associations = scanAssociation[id];
+      if(associations === undefined){
+        deleteScan(id, client_ID)
+          .then(() => {
+            this.refreshScans()
+          })
+          .catch((err) => console.log(err))
+      } else {
+        const analysesToDelete = this.state.analyses.filter((a) => a.scan.id === id)
+        handleDialogOpen({
+          modal: "Scan Delete Verify",
+          clientId: client_ID,
+          scan: this.state.scans.filter((s) => s.id === id)[0],
+          analyses: analysesToDelete,
+          action: onDeleteComplete
+        })
+      }
+    }
+
+    const onDeleteComplete = () => {
+      handleDialogClose()
+      this.refreshScans()
+      this.refreshAnalyses()
+    }
     
     const renderDialogSwitch = () => {
       switch (this.state.dialogParams.modal) {
@@ -517,8 +552,16 @@ class Scans extends Component {
             rerenderParentCallback={rerenderParentCallback}
             onClose={handleDialogClose}
           />;
+        case "Scan Delete Verify":
+            return <DeleteScanVerify
+              clientId={this.state.dialogParams.clientId}
+              scan={this.state.dialogParams.scan}
+              analyses={this.state.dialogParams.analyses}
+              onComplete={this.state.dialogParams.action}
+              onClose={handleDialogClose}
+            />
         default:
-          return "foo";
+          return;
       }
     };
 
@@ -625,7 +668,7 @@ class Scans extends Component {
                 />
                 <List style={{ maxHeight: "100%", overflow: "auto" }}>
                   {!loadingScans ? (
-                    renderScans.map((scan, i) => {
+                    this.state.renderScans.map((scan, i) => {
                       return (
                         <ListItem
                           key={scan.id}
@@ -636,15 +679,17 @@ class Scans extends Component {
                           <ListItemSecondaryAction>
                             <IconButton
                               edge="end"
-                              onClick={handleClick}
+                              onClick={(e) => handleScanClick(e, scan.id)}
                             >
                               <MoreVertIcon />
                             </IconButton>
                             <Menu
                               id={"vulnerability-simple-menu-" + scan.id}
                               anchorEl={this.state.vulnerabilityAnchorEl}
-                              open={this.state.vulnerabilityAnchorEl}
-                              onClose={handleClose}
+                              open={openScanMenu === scan.id}
+                              onClose={() => {
+                                this.setState({vulnerabilityAnchorEl: null, openScanMenu: null})
+                              }}
                             >
                               <MenuItem
                                 onClick={() =>
@@ -662,9 +707,7 @@ class Scans extends Component {
                                 New Analysis
                               </MenuItem>
                               <MenuItem
-                                onClick={() =>
-                                  handleDialogOpen({ modal: "Rename" })
-                                }
+                                onClick={() => handleDialogOpen({ modal: "Rename" })}
                               >
                                 <ListItemIcon>
                                   <EditOutlinedIcon fontSize="small" />
@@ -672,7 +715,7 @@ class Scans extends Component {
                                 Rename
                               </MenuItem>
                               <MenuItem
-
+                                onClick={(e) => handleDeleteScan(e, scan.id)}
                               >
                                 <ListItemIcon>
                                   <DeleteIcon fontSize="small" />
@@ -1018,7 +1061,6 @@ class Scans extends Component {
           )}
           <Dialog
             open={openDialog}
-            onClose={() => handleDialogClose()}
             maxWidth="md"
           >
             <div>{this.state.dialogParams && renderDialogSwitch()}</div>
