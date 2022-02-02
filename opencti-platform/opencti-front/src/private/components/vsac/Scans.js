@@ -41,7 +41,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Typography from "@material-ui/core/Typography";
 import CardContent from "@material-ui/core/CardContent";
-import { fetchAllScans } from "../../../services/scan.service";
+import {deleteScan, fetchAllScans} from "../../../services/scan.service";
 import {
   fetchAllAnalysis,
   getAnalysisSummary,
@@ -273,7 +273,7 @@ class Scans extends Component {
                     }
                   });
 
-                  scatterPlotData.push(scatterPlot)
+                  scatterPlotData[analysis.id] = scatterPlot
 
                   this.setState({scatterPlotData: scatterPlotData});
 
@@ -294,11 +294,11 @@ class Scans extends Component {
 
   componentDidMount() {
     this.setState({client_ID: localStorage.getItem('client_id')},function() {
-      this.doFetchAllScans(this.state.client_ID)
-      this.doFetchAllAnalysis(this.state.client_ID)
+      this.refreshScans(this.state.client_ID)
+      this.refreshAnalyses(this.state.client_ID)
       const intervalId = setInterval(() => {
-        this.doFetchAllScans(this.state.client_ID)
-        this.doFetchAllAnalysis(this.state.client_ID)
+        this.refreshScans(this.state.client_ID)
+        this.refreshAnalyses(this.state.client_ID)
       }, 30000)
       this.setState({refreshIntervalId: intervalId})
     });
