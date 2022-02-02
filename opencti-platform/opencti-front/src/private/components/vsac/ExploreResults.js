@@ -53,7 +53,7 @@ const styles = (theme) => ({
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
-
+  
   return (
     <div
       role="tabpanel"
@@ -568,25 +568,25 @@ class ExploreResults extends Component {
                 <Card>
                   <CardContent>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
                         IP Address
                       </Typography>
                       <p>{currentResult?.host_ip}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
                         Hostname
                       </Typography>
                       <p>{currentResult?.host_name}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
                         MAC Address
                       </Typography>
                       <p>{currentResult?.host_mac}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
                         Operating System
                       </Typography>
                       <p>{currentResult?.host_os}</p>

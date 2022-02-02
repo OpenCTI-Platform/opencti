@@ -1,20 +1,14 @@
 /* eslint-disable */
-import React, { Component, useEffect } from "react";
+import React, { Component } from "react";
 import * as PropTypes from "prop-types";
-import { withRouter, Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 import * as R from "ramda";
-import { QueryRenderer } from "../../../relay/environment";
 import {
   buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
 } from "../../../utils/ListParameters";
+import { truncate } from "../../../utils/String";
 import percentage from "../../../utils/percentage";
-import ListLines from "../../../components/list_lines/ListLines";
 import inject18n from "../../../components/i18n";
-import ToolBar from "../data/ToolBar";
-import { isUniqFilter } from "../common/lists/Filters";
-import Security, { KNOWLEDGE_KNUPDATE } from "../../../utils/Security";
 import NewAnalysis from "./modals/NewAnalysis";
 import Delete from "./modals/Delete";
 import ExportCSV from "./modals/ExportCSV";
@@ -35,7 +29,6 @@ import ScannerIcon from "@material-ui/icons/Scanner";
 import PublishIcon from "@material-ui/icons/Publish";
 import Popover from '@material-ui/core/Popover';
 import Button from "@material-ui/core/Button";
-import Card from "@material-ui/core/Card";
 import CardHeader from "@material-ui/core/CardHeader";
 import CardActions from "@material-ui/core/CardActions";
 import LinearProgress from '@material-ui/core/LinearProgress';
@@ -48,9 +41,7 @@ import ListItemText from "@material-ui/core/ListItemText";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import Typography from "@material-ui/core/Typography";
 import CardContent from "@material-ui/core/CardContent";
-import { DescriptionOutlined } from "@material-ui/icons";
-import { makeStyles } from "@material-ui/core/styles";
-import { fetchAllScans, deleteScan } from "../../../services/scan.service";
+import { fetchAllScans } from "../../../services/scan.service";
 import {
   fetchAllAnalysis,
   getAnalysisSummary,
@@ -70,7 +61,6 @@ import {
   XAxis,
   YAxis,
   ZAxis,
-  CartesianGrid,
   ReferenceLine,
   Tooltip,
   ResponsiveContainer,
@@ -262,7 +252,7 @@ class Scans extends Component {
     fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
           let analyses = response.data;
-          let scatterPlotData = [];
+          let scatterPlotData = {};
           const associationTable = {}
           analyses.forEach(analysis =>{
             let associations = associationTable[analysis.scan.id]
@@ -278,7 +268,9 @@ class Scans extends Component {
 
                   let scatterPlot = [];
                   response.data.forEach((item) => {
-                    scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                    if(item.cwe_name){
+                      scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
+                    }
                   });
 
                   scatterPlotData.push(scatterPlot)
@@ -302,9 +294,18 @@ class Scans extends Component {
 
   componentDidMount() {
     this.setState({client_ID: localStorage.getItem('client_id')},function() {
-      this.refreshScans()
-      this.refreshAnalyses()
+      this.doFetchAllScans(this.state.client_ID)
+      this.doFetchAllAnalysis(this.state.client_ID)
+      const intervalId = setInterval(() => {
+        this.doFetchAllScans(this.state.client_ID)
+        this.doFetchAllAnalysis(this.state.client_ID)
+      }, 30000)
+      this.setState({refreshIntervalId: intervalId})
     });
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.state.refreshIntervalId)
   }
 
   render() {
@@ -326,6 +327,9 @@ class Scans extends Component {
       loadDialog,
       dialogParams,
       popoverAnchorEl,
+      analysisAnchorEl,
+      vulnerabilityAnchorEl,
+      sortByAnchorEl,
       openedPopoverId,
       openAnalysisMenu,
       pendingAnalysis,
@@ -645,9 +649,9 @@ class Scans extends Component {
                       </Button>
                       <Menu
                         id="simple-menu"
-                        anchorEl={this.state.sortByAnchorEl}
+                        anchorEl={sortByAnchorEl}
                         keepMounted
-                        open={this.state.sortByAnchorEl}
+                        open={sortByAnchorEl}
                         onClose={() => this.setState({ sortByAnchorEl: null })}
                       >
                         <MenuItem onClick={() => sortByReportDate()}>
@@ -697,7 +701,7 @@ class Scans extends Component {
                                     modal: "New Analysis",
                                     id: scan.id,
                                     isScan: true,
-                                    client: this.state.client_ID,
+                                    client: client_ID,
                                   })
                                 }
                               >
@@ -810,7 +814,7 @@ class Scans extends Component {
         </Typography>
         <Grid container={true} spacing={3}>
           {!loadingAnalyses ? (
-            this.state.analyses.map((analysis, i) => {
+            analyses.map((analysis, i) => {
               return (
                 <Grid item={true} xs={4}>
                   <Paper
@@ -828,128 +832,154 @@ class Scans extends Component {
                           >
                             <MoreVertIcon />
                           </IconButton>
-                          <Menu
-                            id="simple-menu"
-                            anchorEl={this.state.analysisAnchorEl}
-                            open={openAnalysisMenu === analysis.id}
-                            onClose={() =>
-                              this.setState({ analysisAnchorEl: null, openAnalysisMenu: null })
+                              {(scatterPlotData && scatterPlotData[analysis.id]) ? (
+                              <Menu
+                                  id="simple-menu"
+                                  anchorEl={analysisAnchorEl}
+                                  open={openAnalysisMenu === analysis.id}
+                                  onClose={() =>
+                                      this.setState({analysisAnchorEl: null, openAnalysisMenu: null})
+                                  }
+                              >
+                                <MenuItem
+                                    onClick={() =>
+                                        handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                                            {
+                                              analysis: analysis,
+                                              client: client_ID,
+                                              scan: getCurrentScan(analysis.scan.id, scans)
+                                            })}
+                                >
+                                  <ListItemIcon>
+                                    <ExploreIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Explore Results
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleLinkClink('/dashboard/vsac/scans/viewcharts',
+                                            {
+                                              analysis_id: analysis.id,
+                                              analyses,
+                                            })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <ShowChartIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  View Charts
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleLinkClink('/dashboard/vsac/scans/compare',
+                                            {
+                                              analyses,
+                                              scatterPlotData: scatterPlotData
+                                            }
+                                        )}
+                                >
+                                  <ListItemIcon>
+                                    <CompareIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Compare
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleDialogOpen({
+                                          modal: "Generate Report",
+                                          id: analysis.id,
+                                          client: client_ID,
+                                          scanName: analysis.scan.scan_name,
+                                          success: false,
+                                        })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <DescriptionIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Generate Report
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleDialogOpen({
+                                          modal: "Export Data",
+                                          id: analysis.id,
+                                          client: client_ID,
+                                          isLoading: false,
+                                          success: false,
+                                        })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <ImportExportIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Export Data (CVS)
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleDialogOpen({
+                                          modal: "New Analysis",
+                                          id: analysis.id,
+                                          isScan: false,
+                                          client: client_ID,
+                                        })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <AddIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  New Analysis
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() =>
+                                        handleDialogOpen({
+                                          modal: "Delete Data",
+                                          id: analysis.id,
+                                          client: client_ID,
+                                          date: analysis.completed_date,
+                                        })
+                                    }
+                                >
+                                  <ListItemIcon>
+                                    <DeleteIcon fontSize="small"/>
+                                  </ListItemIcon>
+                                  Delete Analysis
+                                </MenuItem>
+                              </Menu>
+                              ) : (
+                                <Menu
+                                  id="simple-menu"
+                                  anchorEl={analysisAnchorEl}
+                                  open={openAnalysisMenu === analysis.id}
+                                  onClose={() =>
+                                    this.setState({analysisAnchorEl: null, openAnalysisMenu: null})
+                                  }
+                                >
+                                  <MenuItem
+                                    onClick={() =>
+                                      handleDialogOpen({
+                                        modal: "Delete Data",
+                                        id: analysis.id,
+                                        client: client_ID,
+                                        date: analysis.completed_date,
+                                      })
+                                    }
+                                  >
+                                    <ListItemIcon>
+                                      <DeleteIcon fontSize="small"/>
+                                    </ListItemIcon>
+                                    Delete Analysis
+                                  </MenuItem>
+                                </Menu>
+                                )
                             }
-                          >
-                            <MenuItem
-                              onClick={() =>
-                                handleLinkClink('/dashboard/vsac/scans/exploreresults',
-                                  { analysis: analysis,
-                                    client:
-                                      this.state.client_ID,
-                                    scan: getCurrentScan(analysis.scan.id, scans)
-                                  })}
-                            >
-                              <ListItemIcon>
-                                <ExploreIcon fontSize="small" />
-                              </ListItemIcon>
-                              Explore Results
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleLinkClink('/dashboard/vsac/scans/viewcharts',
-                                  {
-                                    analysis_id: analysis.id,
-                                    analyses: this.state.analyses,
-                                  })
-                              }
-                            >
-                              <ListItemIcon>
-                                <ShowChartIcon fontSize="small" />
-                              </ListItemIcon>
-                              View Charts
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleLinkClink('/dashboard/vsac/scans/compare',
-                                  { analyses: this.state.analyses,
-                                    scatterPlotData: this.state.scatterPlotData
-                                  })}
-                            >
-                              <ListItemIcon>
-                                <CompareIcon fontSize="small" />
-                              </ListItemIcon>
-                              Compare
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleDialogOpen({
-                                  modal: "Generate Report",
-                                  id: analysis.id,
-                                  client:
-                                    this.state.client_ID,
-                                  scanName: analysis.scan.scan_name,
-                                  success: false,
-                                })
-                              }
-                            >
-                              <ListItemIcon>
-                                <DescriptionIcon fontSize="small" />
-                              </ListItemIcon>
-                              Generate Report
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleDialogOpen({
-                                  modal: "Export Data",
-                                  id: analysis.id,
-                                  client:
-                                    this.state.client_ID,
-                                  isLoading: false,
-                                  success: false,
-                                })
-                              }
-                            >
-                              <ListItemIcon>
-                                <ImportExportIcon fontSize="small" />
-                              </ListItemIcon>
-                              Export Data (CVS)
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleDialogOpen({
-                                  modal: "New Analysis",
-                                  id: analysis.id,
-                                  isScan: false,
-                                  client:
-                                    this.state.client_ID,
-                                })
-                              }
-                            >
-                              <ListItemIcon>
-                                <AddIcon fontSize="small" />
-                              </ListItemIcon>
-                              New Analysis
-                            </MenuItem>
-                            <MenuItem
-                              onClick={() =>
-                                handleDialogOpen({
-                                  modal: "Delete Data",
-                                  id: analysis.id,
-                                  client:
-                                    this.state.client_ID,
-                                  date: analysis.completed_date,
-                                })
-                              }
-                            >
-                              <ListItemIcon>
-                                <DeleteIcon fontSize="small" />
-                              </ListItemIcon>
-                              Delete Analysis
-                            </MenuItem>
-                          </Menu>
                         </div>
-                      }
-                      title={analysis.scan.scan_name}
+                        }
+                      title={truncate(t(analysis.scan.scan_name),30)}
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
                     <CardContent>
-                      {(scatterPlotData && scatterPlotData[i]) && (
+                      {(scatterPlotData && scatterPlotData[analysis.id]) && (
                         <ResponsiveContainer width="100%" aspect={1}>
                           <ScatterChart
                             width={200}
@@ -989,13 +1019,11 @@ class Scans extends Component {
                               content={<CustomTooltip />}
                               cursor={false}
                             />
-                            { scatterPlotData && (
-                              <Scatter
-                                name={analysis.scan.scan_name}
-                                data={this.state.scatterPlotData[i]}
-                                fill="#49B8FC"
-                              />
-                            )}
+                            <Scatter
+                              name={analysis.scan.scan_name}
+                              data={scatterPlotData[analysis.id]}
+                              fill="#49B8FC"
+                            />
                           </ScatterChart>
                         </ResponsiveContainer>
                       )}
@@ -1028,22 +1056,25 @@ class Scans extends Component {
                         />
                       )}
                     </CardContent>
-                    <CardActions style={{ justifyContent: "right" }}>
-                      <Button
-                        disabled={loadingAnalyses}
-                        variant="contained"
-                        color="primary"
-                        startIcon={<CloudUploadIcon />}
-                        onClick={() =>
-                          handleLinkClink('/dashboard/vsac/scans/exploreresults',
-                            { analysis: analysis,
-                              client: this.state.client_ID,
-                              scan: getCurrentScan(analysis.scan.id, scans)
-                            })}
-                      >
-                        Explore Results
-                      </Button>
-                    </CardActions>
+                    { (scatterPlotData && scatterPlotData[analysis.id]) && (
+                      <CardActions style={{justifyContent: "right"}}>
+                        <Button
+                            disabled={loadingAnalyses}
+                            variant="contained"
+                            color="primary"
+                            startIcon={<CloudUploadIcon/>}
+                            onClick={() =>
+                                handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                                    {
+                                      analysis,
+                                      client: client_ID,
+                                      scan: getCurrentScan(analysis.scan.id, scans)
+                                    })}
+                        >
+                          Explore Results
+                        </Button>
+                      </CardActions>
+                    )}
                   </Paper>
                 </Grid>
               );
@@ -1063,7 +1094,7 @@ class Scans extends Component {
             open={openDialog}
             maxWidth="md"
           >
-            <div>{this.state.dialogParams && renderDialogSwitch()}</div>
+            <div>{dialogParams && renderDialogSwitch()}</div>
           </Dialog>
         </Grid>
       </div>
