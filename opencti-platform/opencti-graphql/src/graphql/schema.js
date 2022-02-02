@@ -29,8 +29,7 @@ import {
   VoidTypeDefinition,
   VoidResolver,
 } from 'graphql-scalars';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import {DateTimeScalar} from "./scalars";
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -108,6 +107,7 @@ const createSchema = () => {
 
   const globalResolvers = {
     DateTime: GraphQLDateTime,
+    Timestamp: DateTimeScalar,
     EmailAddress: EmailAddressResolver,
     IPv4: IPv4Resolver,
     IPv6: IPv6Resolver,

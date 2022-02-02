@@ -126,14 +126,15 @@ class ViewCharts extends Component {
       tabValue: 0,
       anchorEl: false,
       clientId: localStorage.getItem('client_id'),
-      analysises: this.props.location.state.analysises,
-      analysisesIDs: this.getAnalysisesID(this.props.location.state.analysises),
+      analysis_id: this.props.location.state.analysis_id,
+      analysises: this.props.location.state.analyses,
+      analysisesIDs: this.getAnalysisesID(this.props.location.state.analyses),
       severityChartData: null,
       vulnerabilityByYearChartData: null,
       topVulnerableHost: null,
       topVulnerableProducts: null,
       trendingChatData: null,
-      isDisabled: false,
+      isDisabled: true,
       checked: [],
     };
   }
@@ -149,10 +150,13 @@ class ViewCharts extends Component {
   };
 
   componentDidMount() {
+    this.setState({isDisabled: true});
     const ids = this.state.analysisesIDs.map((i) => i).join();
+
     getSeverityPieChartData(this.state.clientId, ids)
       .then((response) => {
         this.setState({ severityChartData: response.data });
+        this.setState({isDisabled: false});
       })
       .catch((error) => {
         console.log(error);
@@ -397,7 +401,6 @@ class ViewCharts extends Component {
                             value,
                             index,
                           }) => {
-                            console.log('handling label?');
                             const RADIAN = Math.PI / 180;
                             // eslint-disable-next-line
                             const radius =
@@ -478,7 +481,7 @@ class ViewCharts extends Component {
                             domain={[1999, 2021]}
                           />
                           <YAxis type="number" />
-                          <Tooltip />
+                          <Tooltip cursor={false}/>
                           <Legend />
                           <Bar
                             stackId="a"
@@ -535,7 +538,7 @@ class ViewCharts extends Component {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" domain={[0, 'auto']} />
                           <YAxis type="category" dataKey="host" />
-                          <Tooltip />
+                          <Tooltip cursor={false}/>
                           <Legend />
                           <Bar
                             stackId="a"
@@ -587,7 +590,7 @@ class ViewCharts extends Component {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" domain={[0, 'auto']} />
                           <YAxis type="category" dataKey="product" />
-                          <Tooltip />
+                          <Tooltip cursor={false}/>
                           <Legend />
                           <Bar
                             stackId="a"
@@ -628,16 +631,19 @@ class ViewCharts extends Component {
                       dataKey="category"
                       type="category"
                       allowDuplicatedCategory={false}
+                      tick={{ fill: 'white' }}
                     />
-                    <YAxis dataKey="value" />
+                    <YAxis dataKey="value" tick={{ fill: 'white' }}/>
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ bottom: 0 }} />
                     {trendingChatData.map((s) => (
                       <Line
                         dataKey="value"
                         data={s.data}
                         name={s.name}
                         key={s.name}
+                        dot={{ r: 8 }}
+                        activeDot={{ r: 8 }}
                       />
                     ))}
                   </LineChart>

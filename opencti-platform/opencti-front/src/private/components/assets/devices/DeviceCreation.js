@@ -136,7 +136,7 @@ class DeviceCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        release_date: () => parse(values.release_date).format(),
+        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
       },
       values,
     );
@@ -226,7 +226,7 @@ class DeviceCreation extends Component {
             version: '',
             serial_number: '',
             vendor_name: '',
-            release_date: dayStartDate(),
+            release_date: null,
             ipv4_address: [],
             locations: [],
             ipv6_address: [],
@@ -311,6 +311,7 @@ class DeviceCreation extends Component {
                     {/* <DeviceCreationOverview setFieldValue={setFieldValue} values={values} /> */}
                     <CyioDomainObjectAssetCreationOverview
                       setFieldValue={setFieldValue}
+                      assetType="Device"
                       values={values}
                     />
                   </Grid>

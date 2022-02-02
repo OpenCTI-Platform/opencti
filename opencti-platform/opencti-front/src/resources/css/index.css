@@ -142,3 +142,10 @@ div.markdown p {
 .react_time_range__rail__inner {
   background-color: transparent !important;
 }
+
+.custom-file-input{
+  width: 100%;
+  height: 120px;
+
+  text-align: center;
+}

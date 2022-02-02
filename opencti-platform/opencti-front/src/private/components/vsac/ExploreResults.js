@@ -2,52 +2,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import ReactHtmlParser from 'react-html-parser';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
-import ListLines from '../../../components/list_lines/ListLines';
 import inject18n from '../../../components/i18n';
-import ToolBar from '../data/ToolBar';
-import { isUniqFilter } from '../common/lists/Filters';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import DescriptionIcon from '@material-ui/icons/Description';
-import AddIcon from '@material-ui/icons/Add';
-import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
-import ExploreIcon from '@material-ui/icons/Explore';
-import ShowChartIcon from '@material-ui/icons/ShowChart';
-import DeleteIcon from '@material-ui/icons/Delete';
-import IconButton from '@material-ui/core/IconButton';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import ImportExportIcon from '@material-ui/icons/ImportExport';
-import CompareIcon from '@material-ui/icons/Compare';
-import ScannerIcon from '@material-ui/icons/Scanner';
-import PublishIcon from '@material-ui/icons/Publish';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardActions from '@material-ui/core/CardActions';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
 import CardContent from '@material-ui/core/CardContent';
-import { DescriptionOutlined } from '@material-ui/icons';
-import { makeStyles } from '@material-ui/core/styles';
-import { fetchAllScans } from '../../../services/scan.service';
+import { withStyles } from '@material-ui/core/styles';
 import {
-  fetchAllAnalysis,
   getAnalysisHosts,
   getAnalysisSoftware,
   getAnalysisWeaknesses,
@@ -57,11 +23,7 @@ import {
   getAnalysisFilteredResultsDetails,
   getAnalysisFilteredResultsVulnerability,
 } from '../../../services/analysis.service';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import moment from 'moment';
-import Dialog from '@material-ui/core/Dialog';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -81,9 +43,17 @@ import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+const styles = (theme) => ({
+  selectedTableRow: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: 'rgba(3, 45, 105)',
+    },
+  },
+});
+
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
-
+  
   return (
     <div
       role="tabpanel"
@@ -117,7 +87,6 @@ function a11yProps(index) {
 class ExploreResults extends Component {
   constructor(props) {
     super(props);
-    console.log(this.props.location.state);
 
     this.state = {
       client: this.props.location.state.client,
@@ -125,7 +94,9 @@ class ExploreResults extends Component {
       scan: this.props.location.state.scan,
       hosts: null,
       software: null,
+      weakness: null,
       filteredResultsData: null,
+      filteredResultsDataDetails: null,
       currentResult: null,
       tabValue: 0,
       weaknessAccordion: false,
@@ -137,42 +108,45 @@ class ExploreResults extends Component {
   }
 
   componentDidMount() {
+    this.resetAllData()
+  }
+
+  resetAllData() {
     getAnalysisHosts(this.state.analysis.id, this.state.client)
-      .then((response) => {
-        this.setState({ hosts: response.data });
-        console.log(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        .then((response) => {
+          this.setState({ hosts: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
     getAnalysisSoftware(this.state.analysis.id, this.state.client)
-      .then((response) => {
-        this.setState({ software: response.data });
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        .then((response) => {
+          this.setState({ software: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
     getAnalysisWeaknesses(this.state.analysis.id, this.state.client)
-      .then((response) => {
-        this.setState({ weakness: response.data });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        .then((response) => {
+          this.setState({ weakness: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
     getAnalysisVulnerabilities(this.state.analysis.id, this.state.client)
-      .then((response) => {
-        this.setState({ vulnerabilities: response.data });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+        .then((response) => {
+          this.setState({ vulnerabilities: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
   }
 
   render() {
+    const { classes } = this.props;
     const {
       analysis,
       hosts,
@@ -201,23 +175,9 @@ class ExploreResults extends Component {
           this.setState({ filteredResultsData: response.data });
 
           if (params.host_ip) {
-            const currentResult = response.data.find(
-              ({ host_ip }) => host_ip === params.host_ip
-            );
-          }
-          /*
-          if(filteredResultsData.length == 1){
-            this.setState({ currentResult: filteredResultsData });
-          } else {
+            const currentResult = response.data.find((element) => {return element.host_ip === params.host_ip})
             this.setState({ currentResult: currentResult });
           }
-         
-
-         const detailParams = {
-            host_ip: currentResult.host_ip,
-            cpe_id: currentResult.software,
-            solution: currentResult.solution,
-          }; */
 
           const detailParams = {
             ...(params.host_ip && { host_ip: params.host_ip }),
@@ -241,7 +201,6 @@ class ExploreResults extends Component {
     const handleFilterResultsDetails = (id, client, params) => {
       getAnalysisFilteredResultsDetails(id, client, params)
         .then((response) => {
-          console.log(response);
           this.setState({ filteredResultsDataDetails: response.data });
         })
         .catch((error) => {
@@ -273,7 +232,6 @@ class ExploreResults extends Component {
       getAnalysisHosts(this.state.analysis.id, this.state.client, params)
         .then((response) => {
           this.setState({ hosts: response.data });
-          console.log(response.data);
         })
         .catch((error) => {
           console.log(error);
@@ -282,7 +240,6 @@ class ExploreResults extends Component {
       getAnalysisSoftware(this.state.analysis.id, this.state.client, params)
         .then((response) => {
           this.setState({ software: response.data });
-          console.log(response);
         })
         .catch((error) => {
           console.log(error);
@@ -311,8 +268,7 @@ class ExploreResults extends Component {
       handleFilterResults(params, name);
     };
 
-    const handleVulnerabilitiesAccordion =
-      (panel, params) => (event, isExpanded) => {
+    const handleVulnerabilitiesAccordion = (panel, params) => (event, isExpanded) => {
         this.setState({ vulnerabilitiesAccordion: isExpanded ? panel : false });
         this.setState({ vulnerabilitiesDetails: '' });
         getAnalysisFilteredResultsVulnerability(
@@ -328,15 +284,26 @@ class ExploreResults extends Component {
           });
       };
 
+    const handleReset = () => {
+      this.setState({weaknessDetails: null});
+      this.setState({weaknessAccordion: false});
+      this.setState({selectedRow: null});
+      this.setState({currentResult: null});
+      this.setState({filteredResultsData: null});
+      this.setState({filteredResultsDataDetails: null});
+      this.setState({vulnerabilitiesDetails: null});
+      this.setState({vulnerabilitiesAccordion: false});
+      this.resetAllData()
+    }
+
     return (
       <div>
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={12}>
             <Typography variant="h1" component="h2" gutterBottom>
-              {analysis.scan.scan_name} :{' '}
-              {moment(analysis.completed_date).fromNow()}
+              {`${analysis.scan.scan_name}: ${moment(analysis.completed_date).fromNow()}`}
             </Typography>
-            <div>
+            <div style={{display: "flex", alignItems: "center"}}>
               <Chip size="small" style={{ margin: 3 }} label="Top 4" />
               <Chip
                 size="small"
@@ -371,6 +338,15 @@ class ExploreResults extends Component {
                   label={analysis.vignette_name}
                 />
               )}
+              <Button
+                  size="medium"
+                  variant="contained"
+                  style={{margin: 3, marginLeft: "auto"}}
+                  disabled={selectedRow == null}
+                  onClick={handleReset}
+              >
+                Reset Filters
+              </Button>
             </div>
           </Grid>
           <Grid item={true} xs={4}>
@@ -442,6 +418,7 @@ class ExploreResults extends Component {
                                   handleFilterResults(result.host_ip, rowName)
                                 }
                                 hover
+                                classes={{ root: classes.selectedTableRow }}
                               >
                                 <TableCell component="th" scope="row">
                                   {result.score}
@@ -523,11 +500,11 @@ class ExploreResults extends Component {
                       </AccordionSummary>
                       <AccordionDetails>
                         {weaknessDetails?.description ? (
-                          <CircularProgress />
-                        ) : (
                           <Typography>
                             {weaknessDetails?.description}
                           </Typography>
+                        ) : (
+                          <CircularProgress />
                         )}
                       </AccordionDetails>
                     </Accordion>
@@ -591,25 +568,25 @@ class ExploreResults extends Component {
                 <Card>
                   <CardContent>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
                         IP Address
                       </Typography>
                       <p>{currentResult?.host_ip}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
                         Hostname
                       </Typography>
                       <p>{currentResult?.host_name}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
                         MAC Address
                       </Typography>
                       <p>{currentResult?.host_mac}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
                         Operating System
                       </Typography>
                       <p>{currentResult?.host_os}</p>
@@ -625,4 +602,4 @@ class ExploreResults extends Component {
   }
 }
 
-export default R.compose(inject18n, withRouter)(ExploreResults);
+export default R.compose(inject18n, withRouter, withStyles(styles))(ExploreResults);

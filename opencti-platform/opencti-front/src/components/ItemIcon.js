@@ -118,7 +118,7 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <Phone style={style} fontSize={fontSize} role="img" />;
     case 'pbx':
       return <PhoneLocked style={style} fontSize={fontSize} role="img" />;
-    case 'compute_device':
+    case 'computing_device':
       return <PersonalVideo style={style} fontSize={fontSize} role="img" />;
     case 'voip_router':
       return <SettingsVoice style={style} fontSize={fontSize} role="img" />;

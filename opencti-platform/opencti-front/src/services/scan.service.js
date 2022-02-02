@@ -5,7 +5,7 @@ import updateFileName from "../utils/s3FileName";
 
 export const createScan = async (params, clientID, passedConfig) => {
   const bodyParams = {
-    path: updateFileName(params.file),
+    path: updateFileName(params.fileId || params.file), // compatability for new file id over file name
     scan_name: params.scan_name,
     vulnerability_range: params.vulnerabilityRange,
     weakness_range: params.weaknessRange,

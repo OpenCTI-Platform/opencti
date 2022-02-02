@@ -19,6 +19,7 @@ import {
   compose,
 } from 'ramda';
 import Paper from '@material-ui/core/Paper';
+import MenuItem from '@material-ui/core/MenuItem';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 import { Information } from 'mdi-material-ui';
@@ -94,6 +95,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
       cyioDomainObject,
       context,
       values,
+      assetType,
       onSubmit,
       setFieldValue,
       enableReferences,
@@ -180,6 +182,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                   component={SelectField}
                   variant='outlined'
                   name="asset_type"
+                  assetType={assetType}
                   size='small'
                   fullWidth={true}
                   style={{ height: '38.09px' }}
@@ -437,6 +440,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
 CyioDomainObjectAssetEditionOverviewComponent.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
+  assetType: PropTypes.string,
   cyioDomainObject: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
