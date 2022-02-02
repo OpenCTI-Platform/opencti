@@ -251,6 +251,13 @@ class ExploreResults extends Component {
 
       switch (type) {
         case 'host':
+          getAnalysisHosts(this.state.analysis.id, this.state.client, params)
+            .then((response) => {
+              this.setState({ hosts: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
           getAnalysisSoftware(this.state.analysis.id, this.state.client, params)
             .then((response) => {
               this.setState({ software: response.data });
@@ -285,6 +292,15 @@ class ExploreResults extends Component {
           break;
 
         case 'software':
+          getAnalysisSoftware(this.state.analysis.id, this.state.client, params)
+            .then((response) => {
+              this.setState({ software: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
+
           getAnalysisWeaknesses(
             this.state.analysis.id,
             this.state.client,
@@ -312,6 +328,17 @@ class ExploreResults extends Component {
           break;
 
         case 'weakness':
+          getAnalysisWeaknesses(
+            this.state.analysis.id,
+            this.state.client,
+            params,
+          )
+            .then((response) => {
+              this.setState({ weakness: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+          });
           getAnalysisVulnerabilities(
             this.state.analysis.id,
             this.state.client,
@@ -323,6 +350,21 @@ class ExploreResults extends Component {
             .catch((error) => {
               console.log(error);
             });
+          break;
+
+          case 'vulnerabilities':
+            getAnalysisVulnerabilities(
+            this.state.analysis.id,
+            this.state.client,
+            params,
+          )
+            .then((response) => {
+              this.setState({ vulnerabilities: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
           break;
         default:
       }
@@ -419,6 +461,7 @@ class ExploreResults extends Component {
       this.setState({weaknessAccordion: false});
       this.setState({selectedRow: {}});
       this.setState({currentResult: null});
+      this.setState({filteredResultsParams: {}});
       this.setState({filteredResultsData: null});
       this.setState({filteredResultsDataDetails: null});
       this.setState({vulnerabilitiesDetails: null});
