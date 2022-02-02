@@ -13,12 +13,12 @@ import StixDomainObjectBookmarks, {
   stixDomainObjectBookmarksQuery,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmarks';
 
-const nbOfCardsToLoad = 5000;
+const nbOfCardsToLoad = 50;
 
 class SoftwareCards extends Component {
   constructor(props) {
     super(props);
-    this.state = { bookmarks: [] };
+    this.state = { bookmarks: [], offset: 0 };
   }
 
   componentDidUpdate(prevProps) {
@@ -33,6 +33,14 @@ class SoftwareCards extends Component {
   handleSetBookmarkList(bookmarks) {
     this.setState({ bookmarks });
   }
+  handleOffsetChange(){
+    const incrementedOffset = this.state.offset += nbOfCardsToLoad;
+    this.setState({ offset:incrementedOffset })
+    this.props.relay.refetchConnection(nbOfCardsToLoad, null, {
+      offset: this.state.offset,
+      first: nbOfCardsToLoad,
+    })
+  }
 
   render() {
     const {
@@ -43,7 +51,7 @@ class SoftwareCards extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const { bookmarks } = this.state;
+    const { bookmarks, offset } = this.state;
     return (
     // <QueryRenderer
     //   query={stixDomainObjectBookmarksQuery}
@@ -57,7 +65,7 @@ class SoftwareCards extends Component {
     //       />
             <CyioListCardsContent
               initialLoading={initialLoading}
-              loadMore={relay.loadMore.bind(this)}
+              loadMore={this.handleOffsetChange.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
               dataList={pathOr([], ['softwareAssetList', 'edges'], this.props.data)}
@@ -66,6 +74,7 @@ class SoftwareCards extends Component {
                 ['softwareAssetList', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
+              offset={offset}
               CardComponent={<SoftwareCard />}
               DummyCardComponent={<SoftwareCardDummy />}
               selectAll={selectAll}
@@ -93,7 +102,8 @@ SoftwareCards.propTypes = {
 export const softwareCardsQuery = graphql`
   query SoftwareCardsPaginationQuery(
     $search: String
-    $count: Int!
+    $first: Int!
+    $offset: Int!
     $cursor: ID
     $orderedBy: SoftwareAssetOrdering
     $orderMode: OrderingMode
@@ -102,7 +112,8 @@ export const softwareCardsQuery = graphql`
     ...SoftwareCards_data
       @arguments(
         search: $search
-        count: $count
+        first: $first
+        offset: $offset
         cursor: $cursor
         orderedBy: $orderedBy
         orderMode: $orderMode
@@ -118,7 +129,8 @@ export default createPaginationContainer(
       fragment SoftwareCards_data on Query
       @argumentDefinitions(
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
+        first: { type: "Int", defaultValue: 50 }
+        offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
         orderedBy: { type: "SoftwareAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
@@ -126,7 +138,8 @@ export default createPaginationContainer(
       ) {
         softwareAssetList(
           search: $search
-          first: $count
+          first: $first
+          offset: $offset
           # after: $cursor
           orderedBy: $orderedBy
           orderMode: $orderMode
@@ -163,6 +176,8 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
+        first: fragmentVariables.first,
+        offset: fragmentVariables.offset,
         count,
         cursor,
         orderedBy: fragmentVariables.orderedBy,

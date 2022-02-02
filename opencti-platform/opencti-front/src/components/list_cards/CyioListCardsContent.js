@@ -35,13 +35,14 @@ class CyioListCardsContent extends Component {
     this.gridRef = React.createRef();
     this.state = {
       loadingCardCount: 0,
+      newDataList: [],
     };
   }
 
   componentDidUpdate(prevProps) {
     const diff = R.symmetricDifferenceWith(
       (x, y) => x.node.id === y.node.id,
-      this.props.dataList,
+      this.state.newDataList,
       prevProps.dataList,
     );
     const diffBookmark = R.symmetricDifferenceWith(
@@ -61,6 +62,14 @@ class CyioListCardsContent extends Component {
     }
     if (diff.length > 0 || diffBookmark.length > 0 || selection) {
       this.gridRef.forceUpdate();
+    }
+    const checker = (arr, target) => target.every((v) => arr.includes(v));
+    if (this.state.newDataList.length !== (this.props.dataList.length + this.props.offset)) {
+      if (!checker(this.state.newDataList, this.props.dataList)) {
+        this.setState({
+          newDataList: [...this.state.newDataList, ...this.props.dataList],
+        });
+      }
     }
   }
 
@@ -85,7 +94,7 @@ class CyioListCardsContent extends Component {
     if (!hasMore() || isLoading()) {
       return;
     }
-    const difference = globalCount - dataList.length;
+    const difference = globalCount - this.state.newDataList.length;
     this.setState({
       loadingCardCount:
         difference >= nbOfCardsToLoad ? nbOfCardsToLoad : difference,
@@ -108,7 +117,7 @@ class CyioListCardsContent extends Component {
   }
 
   _isCellLoaded({ index }) {
-    return !this.props.hasMore() || index < this.props.dataList.length;
+    return !this.props.hasMore() || index < this.state.newDataList.length;
   }
 
   _cellRenderer({
@@ -136,7 +145,7 @@ class CyioListCardsContent extends Component {
         </div>
       );
     }
-    const edge = dataList[index];
+    const edge = this.state.newDataList[index];
     if (!edge) {
       return (
         <div key={key} style={style}>
@@ -168,7 +177,7 @@ class CyioListCardsContent extends Component {
       nbOfCardsToLoad,
       rowHeight,
     } = this.props;
-    const nbLineForCards = Math.ceil(dataList.length / numberOfCardsPerLine);
+    const nbLineForCards = Math.ceil(this.state.newDataList.length / numberOfCardsPerLine);
     const nbOfLinesToLoad = Math.ceil(nbOfCardsToLoad / numberOfCardsPerLine);
     const nbLinesWithLoading = isLoading()
       ? nbLineForCards + this.state.loadingCardCount
@@ -243,6 +252,7 @@ CyioListCardsContent.propTypes = {
   isLoading: PropTypes.func,
   dataList: PropTypes.array,
   bookmarkList: PropTypes.array,
+  offset: PropTypes.number,
   globalCount: PropTypes.number,
   CardComponent: PropTypes.object,
   onToggleEntity: PropTypes.func,
