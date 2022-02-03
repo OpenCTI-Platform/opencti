@@ -58,6 +58,10 @@ class ListLinesContent extends Component {
     }
     const checker = (arr, target) => target.every((v) => arr.includes(v));
     if (this.state.newDataList.length !== (this.props.dataList.length + this.props.offset)) {
+      if (this.props.dataList.length === 0) {
+        this.setState({ newDataList: [] });
+        this.listRef.forceUpdateGrid();
+      }
       if (!checker(this.state.newDataList, this.props.dataList)) {
         this.setState({
           newDataList: [...this.state.newDataList, ...this.props.dataList],
