@@ -1,0 +1,13 @@
+# Adds a field value
+mutation AddFieldValue {
+  editComputingDeviceAsset(
+    id: "ad089d66-6537-547c-9d51-aee9ffd6483e"
+    input: {
+      key:"asset_type"
+      value:["tag-12345"]
+      operation: add
+      }
+    ) {
+    id
+  }
+}

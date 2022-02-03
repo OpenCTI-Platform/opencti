@@ -3,11 +3,23 @@ query POAMItemList {
     edges {
       node {
         id
+        poam_id
         name
         description
         related_risks {
           edges {
             node {
+              id
+              created
+              modified
+              labels {
+                id
+                name
+                color
+                description
+              }
+              deadline
+              risk_status
               characterizations {
                 ... on VulnerabilityCharacterization {
                   id
@@ -38,6 +50,10 @@ query POAMItemList {
                     value
                   }
                 }
+              }
+              remediations {
+                response_type
+                lifecycle
               }
             }
           }

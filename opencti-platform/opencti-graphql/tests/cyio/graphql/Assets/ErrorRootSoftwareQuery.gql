@@ -1,0 +1,53 @@
+query ErrorRootSoftwareQuery {
+  softwareAsset(id: "ad089d66-6537-547c-9d51-aee9ffd6483e") {
+    id
+    name
+    ...Software_software
+  }
+}
+
+# # BUG: Ordering appears to confuse the query
+fragment SoftwareDetails_software on SoftwareAsset {
+  id
+  software_identifier
+  license_key
+  cpe_identifier
+  patch_level
+  installation_id
+}
+
+fragment Software_software on SoftwareAsset {
+  id
+  name
+  asset_id
+  labels {
+    name
+    color
+    description
+  }
+  description
+  locations {
+    city
+    country
+    description
+    id
+  }
+  version
+  vendor_name
+  asset_tag
+  asset_type
+  serial_number
+  is_publicly_accessible
+  is_scanned
+  release_date
+  ...SoftwareDetails_software
+}
+
+# fragment SoftwareDetails_software on SoftwareAsset {
+#   id
+#   software_identifier
+#   license_key
+#   cpe_identifier
+#   patch_level
+#   installation_id
+# }

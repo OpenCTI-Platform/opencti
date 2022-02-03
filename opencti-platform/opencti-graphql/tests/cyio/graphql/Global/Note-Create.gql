@@ -1,0 +1,11 @@
+mutation CreateNote {
+  createCyioNote(
+    input: {
+        abstract: "Creating Notes"
+        content: "In order to create a Note in __Cyio__, one **MUST** using the createCyioNote mutator.\nThis makes it all possible!"
+        authors: ["Paul Patrick","Dallas Phillips"]
+    }
+  ) {
+    id
+  }
+}
