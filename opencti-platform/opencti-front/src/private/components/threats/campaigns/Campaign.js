@@ -142,6 +142,15 @@ const Campaign = createFragmentContainer(CampaignComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...CampaignDetails_campaign
     }
   `,

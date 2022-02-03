@@ -16,6 +16,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -112,6 +113,7 @@ const campaignValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  status_id: Yup.object(),
 });
 
 class CampaignEditionOverviewComponent extends Component {
@@ -133,6 +135,7 @@ class CampaignEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
+      R.assoc('status_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -160,6 +163,10 @@ class CampaignEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'status_id') {
+        finalValue = value.value;
+      }
       campaignValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -167,7 +174,7 @@ class CampaignEditionOverviewComponent extends Component {
             mutation: campaignMutationFieldPatch,
             variables: {
               id: this.props.campaign.id,
-              input: { key: name, value: value || '' },
+              input: { key: name, value: finalValue || '' },
             },
           });
         })
@@ -244,15 +251,31 @@ class CampaignEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(campaign);
+    const status = R.pathOr(null, ['status', 'template', 'name'], campaign) === null
+      ? ''
+      : {
+        label: t(
+          `status_${R.pathOr(
+            null,
+            ['status', 'template', 'name'],
+            campaign,
+          )}`,
+        ),
+        color: R.pathOr(null, ['status', 'template', 'color'], campaign),
+        value: R.pathOr(null, ['status', 'id'], campaign),
+        order: R.pathOr(null, ['status', 'order'], campaign),
+      };
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('status_id', status),
       R.pick([
         'name',
         'confidence',
         'description',
         'createdBy',
         'objectMarking',
+        'status_id',
       ]),
     )(campaign);
     return (
@@ -305,6 +328,19 @@ class CampaignEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
+            {campaign.workflowEnabled && (
+              <StatusField
+                name="status_id"
+                type="Threat-Actor"
+                onFocus={this.handleChangeFocus.bind(this)}
+                onChange={this.handleSubmitField.bind(this)}
+                setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
+                helpertext={
+                  <SubscriptionFocus context={context} fieldName="status_id" />
+                }
+              />
+            )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -375,6 +411,15 @@ const CampaignEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
 import MomentUtils from '@date-io/moment';
 import 'moment/locale/fr';
+import 'moment/locale/zh-cn';
 import moment from 'moment';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import graphql from 'babel-plugin-relay/macro';
@@ -30,8 +31,10 @@ const AppIntlProvider = (props) => {
     ? me.language
     : platformLang;
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG];
-  if (lang === 'fr') {
-    moment.locale('fr');
+  if (lang === 'fr-fr') {
+    moment.locale('fr-fr');
+  } else if (lang === 'zh-cn') {
+    moment.locale('zh-cn');
   } else {
     moment.locale('en-us');
   }

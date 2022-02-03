@@ -1,6 +1,6 @@
 const i18n = {
   messages: {
-    fr: {
+    'fr-fr': {
       // Titles
       'OpenCTI - Cyber threat intelligence platform':
         "OpenCTI - Plateforme d'analyse de la cybermenace",
@@ -1348,8 +1348,10 @@ const i18n = {
       SYNC_MANAGER: 'Manager de synchronisation',
       SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
       RETENTION_MANAGER: 'Manager de rétention',
+      'Workflow of': 'Flux de travail de',
+      'Create a status': 'Créer un statut',
     },
-    cn: {
+    'zh-cn': {
       // Titles
       'OpenCTI - Cyber threat intelligence platform':
         'OpenCTI - 网络威胁情报平台',
@@ -1382,6 +1384,7 @@ const i18n = {
       Progress: '进展',
       errors: '错误',
       State: '状态',
+      Infrastructures: '基础设施',
       'Advanced search': '高级搜索',
       'Global keyword': '全局关键词',
       'Search for a threat...': '搜索威胁...',
@@ -2697,8 +2700,10 @@ const i18n = {
       SYNC_MANAGER: '同步管理器',
       SUBSCRIPTION_MANAGER: '订阅管理器',
       RETENTION_MANAGER: '保留管理器',
+      'Workflow of': '的工作流程',
+      'Create a status': '创建状态',
     },
-    en: {
+    'en-us': {
       progress: 'In progress',
       wait: 'Waiting',
       complete: 'Complete',

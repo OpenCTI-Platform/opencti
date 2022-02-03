@@ -116,6 +116,7 @@ const threatActorValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  status_id: Yup.object(),
 });
 
 class ThreatActorEditionOverviewComponent extends Component {
@@ -165,6 +166,10 @@ class ThreatActorEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'status_id') {
+        finalValue = value.value;
+      }
       threatActorValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -172,7 +177,7 @@ class ThreatActorEditionOverviewComponent extends Component {
             mutation: threatActorMutationFieldPatch,
             variables: {
               id: this.props.threatActor.id,
-              input: { key: name, value: value || '' },
+              input: { key: name, value: finalValue || '' },
             },
           });
         })
@@ -253,10 +258,25 @@ class ThreatActorEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(threatActor);
+    const status = R.pathOr(null, ['status', 'template', 'name'], threatActor) === null
+      ? ''
+      : {
+        label: t(
+          `status_${R.pathOr(
+            null,
+            ['status', 'template', 'name'],
+            threatActor,
+          )}`,
+        ),
+        color: R.pathOr(null, ['status', 'template', 'color'], threatActor),
+        value: R.pathOr(null, ['status', 'id'], threatActor),
+        order: R.pathOr(null, ['status', 'order'], threatActor),
+      };
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('status_id', status),
       R.assoc(
         'threat_actor_types',
         threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
@@ -269,6 +289,7 @@ class ThreatActorEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'status_id',
       ]),
     )(threatActor);
     return (
@@ -461,6 +482,15 @@ const ThreatActorEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },
