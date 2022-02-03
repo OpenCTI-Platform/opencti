@@ -129,7 +129,6 @@ class DeviceEditionContainer extends Component {
       values,
     );
     const finalValues = R.pipe(
-      R.dissoc('labels'),
       R.dissoc('locations'),
       R.dissoc('protocols'),
       R.dissoc('port_number'),
@@ -152,6 +151,7 @@ class DeviceEditionContainer extends Component {
         this.handleClose();
         this.props.history.push('/dashboard/assets/devices');
       },
+      onError: (err) => console.log('DeviceEditionContainerError', err),
     });
     // commitMutation({
     //   mutation: deviceEditionMutation,
@@ -198,6 +198,11 @@ class DeviceEditionContainer extends Component {
       R.pathOr([], ['installed_software']),
       R.map((n) => (n.id)),
     )(device);
+    const labels = R.pipe(
+      R.pathOr([], ['labels']),
+      R.map((n) => (n.id)),
+    )(device);
+    console.log('DeviceEditionData', device);
     const initialValues = R.pipe(
       R.assoc('id', device?.id || ''),
       R.assoc('asset_id', device?.asset_id || ''),
@@ -207,7 +212,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('asset_type', device?.asset_type || ''),
       R.assoc('locations', device?.locations && device?.locations.map((location) => [location.street_address, location.city, location.country, location.postal_code]).join('\n')),
       R.assoc('version', device?.version || ''),
-      R.assoc('labels', device?.labels || ''),
+      R.assoc('labels', labels),
       R.assoc('vendor_name', device?.vendor_name || ''),
       R.assoc('serial_number', device?.serial_number || ''),
       R.assoc('release_date', dateFormat(device?.release_date)),
@@ -443,6 +448,7 @@ const DeviceEditionFragment = createFragmentContainer(
       fragment DeviceEditionContainer_device on ComputingDeviceAsset {
         id
         name
+        labels
         asset_id
         network_id
         description

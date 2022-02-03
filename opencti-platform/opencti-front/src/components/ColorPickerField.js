@@ -1,12 +1,12 @@
 /* eslint-disable */
 /* Refactor */
 import React from 'react';
-import MuiTextField from '@material-ui/core/TextField';
+import TextField from '@material-ui/core/TextField';
 import { SketchPicker } from 'react-color';
 import IconButton from '@material-ui/core/IconButton';
 import Popover from '@material-ui/core/Popover';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import { useField } from 'formik';
+import { useField, Field } from 'formik';
 import { fieldToTextField } from 'formik-material-ui';
 import Box from '@material-ui/core/Box';
 import CardContent from '@material-ui/core/CardContent';
@@ -15,6 +15,7 @@ import { ColorLens, Add } from '@material-ui/icons';
 const ColorPickerField = (props) => {
   const anchorEl = React.createRef();
   const [open, setOpen] = React.useState(false);
+  const [color, setColor] = React.useState('');
   const {
     form: { setFieldValue, setTouched },
     field: { name },
@@ -49,6 +50,7 @@ const ColorPickerField = (props) => {
     [setTouched, onSubmit, name],
   );
   const handleChange = (color) => {
+    setColor(color.hex);
     setTouched(true);
     setFieldValue(name, color && color.hex ? color.hex : '');
     if (typeof onChange === 'function') {
@@ -60,42 +62,26 @@ const ColorPickerField = (props) => {
   };
 
   return (
-    <div style={{ borderBottom: '1px solid grey', margin: '20px 0' }}>
+    <div style={{ margin: '10px 0' }}>
       <CardContent
-       {...fieldToTextField(props)}
+        {...fieldToTextField(props)}
         ref={anchorEl}
         onChange={internalOnChange}
         onFocus={internalOnFocus}
         onBlur={internalOnBlur}
         style={{ display: 'flex', padding: '0px' }}
       >
-              <Box sx={{
-                width: 40,
-                height: 40,
-                bgcolor: 'primary.main',
-                borderRadius: '50%',
-              }}
-              style={{ marginRight: '8px', cursor: 'pointer' }}
-                />
-              <Box sx={{
-                width: 40,
-                height: 40,
-                bgcolor: 'primary.dark',
-                borderRadius: '50%',
-              }}
-               style={{ marginRight: '8px', cursor: 'pointer' }}
-                />
-              <Box sx={{
-                width: 40,
-                height: 40,
-                bgcolor: 'secondary.main',
-                borderRadius: '50%',
-              }}
-              style={{ marginRight: '8px', cursor: 'pointer' }}
-                />
-              <IconButton aria-label="open" onClick={() => setOpen(true)}>
-                <Add />
-              </IconButton>
+        <Field
+          component={TextField}
+          name="color"
+          label='Color'
+          fullWidth={true}
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+        />
+        <IconButton style={{ position: 'absolute', right: '20px' }} aria-label="open" onClick={() => setOpen(true)}>
+          <ColorLens />
+        </IconButton>
       </CardContent>
       {/* <MuiTextField
         {...fieldToTextField(props)}

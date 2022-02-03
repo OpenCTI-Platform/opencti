@@ -265,7 +265,14 @@ class LabelCreation extends Component {
                   <Field
                     component={TextField}
                     name="value"
-                    label={t('Value')}
+                    label={t('Label')}
+                    fullWidth={true}
+                    style={{ marginBottom: 10 }}
+                  />
+                  <Field
+                    component={TextField}
+                    name="description"
+                    label={t('Description')}
                     fullWidth={true}
                   />
                   <Field
@@ -273,12 +280,12 @@ class LabelCreation extends Component {
                     name="color"
                     label={t('Color')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    style={{ marginTop: 10 }}
                   />
                 </DialogContent>
-                <DialogActions>
+                <DialogActions style={{ margin: '0 25px 10px 0' }}>
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
@@ -292,7 +299,7 @@ class LabelCreation extends Component {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t('Add')}
                   </Button>
                 </DialogActions>
               </Dialog>
