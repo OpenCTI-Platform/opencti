@@ -58,7 +58,7 @@ import {
   exportAnalysisCsv,
   deleteAnalysis,
   createNewScanAnalysis,
-  createVulnerabilityAssesmentReport,
+  createVulnerabilityAssessmentReport,
 } from "../../../services/analysis.service";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Menu from "@material-ui/core/Menu";
@@ -396,7 +396,7 @@ class Scans extends Component {
     };
 
     const onGenerateReport = (id, client, params) => {
-      createVulnerabilityAssesmentReport(id, client, params)
+      createVulnerabilityAssessmentReport(id, client, params)
         .then((response) => {
           this.setState({
             dialogParams: {

@@ -22,7 +22,7 @@ import {
   getAnalysisFilteredResults,
   getAnalysisFilteredResultsDetails,
   getAnalysisFilteredResultsVulnerability,
-  createVulnerabilityAssesmentReport,
+  createVulnerabilityAssessmentReport,
 } from '../../../services/analysis.service';
 import moment from 'moment';
 import Table from '@material-ui/core/Table';
@@ -405,7 +405,7 @@ class ExploreResults extends Component {
     };
 
     const onGenerateReport = (id, client, params) => {
-      createVulnerabilityAssesmentReport(id, client, params)
+      createVulnerabilityAssessmentReport(id, client, params)
         .then((response) => {
           this.setState({ generateReportSuccess: true });
         })
