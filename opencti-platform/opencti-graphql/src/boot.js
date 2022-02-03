@@ -14,4 +14,6 @@ export const boot = async () => {
 process.on('SIGTERM', async () => {
   logApp.info('[OPENCTI] SIGTERM signal received, stopping OpenCTI');
   await shutdownModules();
+  logApp.info('[OPENCTI] All modules have been stopped, exiting process');
+  process.exit(0);
 });
