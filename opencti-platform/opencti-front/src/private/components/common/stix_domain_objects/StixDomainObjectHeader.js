@@ -48,13 +48,16 @@ const styles = () => ({
   aliases: {
     float: 'right',
     marginTop: '-5px',
+    overflow: 'hidden',
   },
   alias: {
     marginRight: 7,
+    overflow: 'hidden',
   },
   aliasesInput: {
     margin: '4px 15px 0 10px',
     float: 'right',
+    overflow: 'hidden',
   },
   viewAsField: {
     marginTop: -5,

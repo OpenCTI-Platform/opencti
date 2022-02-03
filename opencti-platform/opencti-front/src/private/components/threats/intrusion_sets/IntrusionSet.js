@@ -144,6 +144,15 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...IntrusionSetDetails_intrusionSet
     }
   `,

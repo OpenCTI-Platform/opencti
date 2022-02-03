@@ -546,7 +546,8 @@ export const buildCorrelationData = (
         markedBy: n.markedBy,
         createdBy: n.createdBy,
       }),
-      relatedReportNodes,
+      R.filter((m) => m
+        && R.includes(m.id, R.map((o) => o.node.id, n.reports.edges)))(relatedReportNodes),
     )),
     R.flatten,
   )(thisReportLinkNodes);

@@ -270,7 +270,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                 ]
                   ? dateFormat(stixCyberObservable[attribute.value])
                   : null;
-              } else if (includes(attribute.value, dateAttributes)) {
+              } else if (includes(attribute.value, multipleAttributes)) {
                 initialValues[attribute.value] = stixCyberObservable[
                   attribute.value
                 ]

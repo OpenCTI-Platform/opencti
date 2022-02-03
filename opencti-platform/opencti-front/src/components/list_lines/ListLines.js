@@ -175,6 +175,7 @@ class ListLines extends Component {
       iconExtension,
       searchVariant,
       message,
+      noTopMargin,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -227,7 +228,7 @@ class ListLines extends Component {
                 <span>
                   <Chip
                     key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
+                    classes={{ root: classes.fnoTopMarginilter }}
                     label={
                       <div>
                         <strong>{label}</strong>: {values}
@@ -317,6 +318,7 @@ class ListLines extends Component {
               ? classes.linesContainerBottomNav
               : classes.linesContainer,
           }}
+          style={noTopMargin ? { marginTop: 0 } : null}
         >
           {!noHeaders ? (
             <ListItem
@@ -445,6 +447,7 @@ ListLines.propTypes = {
   iconExtension: PropTypes.bool,
   searchVariant: PropTypes.string,
   message: PropTypes.string,
+  noTopMargin: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

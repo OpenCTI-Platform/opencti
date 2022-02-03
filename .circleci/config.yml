@@ -1,5 +1,6 @@
 version: 2.1
-
+orbs: 
+  slack: circleci/slack@4.5.1
 jobs:
   build_frontend:
     working_directory: ~/opencti
@@ -20,6 +21,9 @@ jobs:
       - run: 
           working_directory: ~/
           command: cp -a opencti opencti_docker && cp -a opencti opencti_musl
+      - slack/notify:
+          event: fail
+          template: basic_fail_1          
       - persist_to_workspace:
           root: ~/
           paths:
@@ -43,6 +47,9 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn build
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
       - persist_to_workspace:
           root: ~/
           paths:
@@ -64,6 +71,9 @@ jobs:
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
           command: yarn build
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
       - persist_to_workspace:
           root: ~/
           paths:
@@ -93,6 +103,9 @@ jobs:
       - run:
           working_directory: ~/opencti/release
           command: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
 
   package_rolling_musl:
     working_directory: ~/opencti_musl
@@ -118,6 +131,9 @@ jobs:
       - run: 
           working_directory: ~/opencti_musl/release
           command: scp "opencti-$(date '+%Y%m%d')_musl.tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
 
   deploy_demo:
     working_directory: ~/opencti
@@ -156,6 +172,9 @@ jobs:
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
 
   deploy_reference:
     working_directory: ~/opencti
@@ -194,6 +213,9 @@ jobs:
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
 
   deploy_testing:
     working_directory: ~/opencti
@@ -232,6 +254,9 @@ jobs:
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
           
   deploy_club:
     working_directory: ~/opencti
@@ -269,7 +294,10 @@ jobs:
           command: git add -A
       - run:
           working_directory: ~/opencti/deploy
-          command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master          
+          command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master       
+      - slack/notify:
+          event: fail
+          template: basic_fail_1                 
           
   deploy_lab:
     working_directory: ~/opencti
@@ -308,12 +336,15 @@ jobs:
       - run:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master    
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
                     
   docker_build_platform:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
-      resource_class: xlarge
+      resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -342,12 +373,15 @@ jobs:
           name: Build Docker image opencti/platform
           command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:latest -t opencti/platform:${CIRCLE_TAG} --push .
           no_output_timeout: 30m
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
 
   docker_build_worker:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
-      resource_class: xlarge
+      resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -375,12 +409,15 @@ jobs:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
           command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:latest -t opencti/worker:${CIRCLE_TAG} --push .          
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
 
   docker_build_platform_rolling:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
-      resource_class: xlarge
+      resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -409,12 +446,15 @@ jobs:
           name: Build Docker image opencti/platform
           command: docker buildx build --platform $BUILDX_PLATFORMS -f Dockerfile_circleci -t opencti/platform:rolling --push .
           no_output_timeout: 30m
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
 
   docker_build_worker_rolling:
     working_directory: ~/opencti_docker
     machine:
       image: ubuntu-1604:202007-01
-      resource_class: xlarge
+      resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
       BUILDX_PLATFORMS: linux/amd64,linux/arm64
@@ -442,6 +482,17 @@ jobs:
           working_directory: ~/opencti_docker/opencti-worker
           name: Build Docker image opencti/worker
           command: docker buildx build --platform $BUILDX_PLATFORMS -t opencti/worker:rolling --push .
+      - slack/notify:
+          event: fail
+          template: basic_fail_1              
+
+  notify:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          event: pass
+          template: basic_success_1
 
 workflows:
   opencti:
@@ -540,4 +591,13 @@ workflows:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              ignore: /.*/              
+              ignore: /.*/      
+      - notify:
+          requires:
+            - deploy_demo
+            - deploy_lab
+            - deploy_club
+            - deploy_reference
+            - deploy_testing
+            - package_rolling
+            - package_rolling_musl

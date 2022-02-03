@@ -144,6 +144,15 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...ThreatActorDetails_threatActor
     }
   `,

@@ -205,8 +205,9 @@ const ProfileOverviewComponent = (props) => {
                     <MenuItem value="auto">
                       <em>{t('Automatic')}</em>
                     </MenuItem>
-                    <MenuItem value="en">English</MenuItem>
-                    <MenuItem value="fr">Français</MenuItem>
+                    <MenuItem value="en-us">English</MenuItem>
+                    <MenuItem value="fr-fr">Français</MenuItem>
+                    <MenuItem value="zh-cn">简化字</MenuItem>
                   </Field>
                   <Field
                     component={TextField}

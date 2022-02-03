@@ -112,6 +112,7 @@ const intrusionSetValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  status_id: Yup.object(),
 });
 
 class IntrusionSetEditionOverviewComponent extends Component {
@@ -384,6 +385,15 @@ const IntrusionSetEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

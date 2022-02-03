@@ -44,7 +44,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
     },
     name: {
       label: 'Name',
-      width: '45%',
+      width: '35%',
       isSortable: true,
     },
     created_at: {
@@ -65,7 +65,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ContainerAddStixCoreObjects
           containerId={propOr(null, 'id', container)}
-          containerObjects={pathOr([], ['objects', 'edges'], container)}
+          containerStixCoreObjects={pathOr([], ['objects', 'edges'], container)}
           paginationOptions={paginationOptions}
           simple={true}
           targetStixCoreObjectTypes={[
@@ -80,6 +80,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
           dataColumns={dataColumns}
           secondaryAction={true}
           noHeaders={true}
+          noTopMargin={true}
         >
           <QueryRenderer
             query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
@@ -113,6 +114,15 @@ const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
     container: graphql`
       fragment ContainerStixObjectsOrStixRelationships_container on Container {
         id
+        objects {
+          edges {
+            node {
+              ... on BasicObject {
+                id
+              }
+            }
+          }
+        }
         ...ContainerHeader_container
       }
     `,

@@ -1,10 +1,13 @@
 {
   "extends": ["airbnb-base", "plugin:prettier/recommended"],
   "parser": "babel-eslint",
-  "env": {"jest": true},
+  "env": { "jest": true },
   "rules": {
     "max-len": [
-      "error", 180, 2, {
+      "error",
+      180,
+      2,
+      {
         "ignoreUrls": true,
         "ignoreComments": false,
         "ignoreRegExpLiterals": true,

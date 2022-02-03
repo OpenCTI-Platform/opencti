@@ -128,7 +128,6 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
       || containerStixCoreObjectsIds.includes(stixCoreObject.id);
-
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
@@ -165,6 +164,14 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
               this.props.paginationOptions,
             );
             ConnectionHandler.deleteNode(conn, stixCoreObject.id);
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixCoreObjects: filter(
+                (n) => n !== stixCoreObject.id,
+                this.state.addedStixCoreObjects,
+              ),
+            });
           },
         });
       }
@@ -211,6 +218,14 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
               paginationOptions,
             );
             ConnectionHandler.insertEdgeBefore(conn, newEdge);
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixCoreObjects: append(
+                stixCoreObject.id,
+                this.state.addedStixCoreObjects,
+              ),
+            });
           },
         });
       }

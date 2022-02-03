@@ -151,6 +151,9 @@ class ListLinesContent extends Component {
       ? dataList.length + this.state.loadingRowCount
       : dataList.length;
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
+    if (dataList.length === 0) {
+      return <div />;
+    }
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
         {({

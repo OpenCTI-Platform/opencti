@@ -256,13 +256,16 @@ class ConnectorWorksComponent extends Component {
                         classes={{ root: classes.progress }}
                         variant="determinate"
                         value={
-                          tracking?.import_expected_number === 0
-                            ? 0
-                            : Math.round(
-                              (tracking?.import_processed_number
-                                  / tracking?.import_expected_number)
-                                  * 100,
-                            )
+                          // eslint-disable-next-line no-nested-ternary
+                          tracking
+                            ? tracking.import_expected_number === 0
+                              ? 0
+                              : Math.round(
+                                (tracking.import_processed_number
+                                    / tracking.import_expected_number)
+                                    * 100,
+                              )
+                            : 0
                         }
                       />
                     </Grid>

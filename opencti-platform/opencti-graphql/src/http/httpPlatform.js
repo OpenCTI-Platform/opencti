@@ -58,6 +58,7 @@ const createApp = async (apolloServer) => {
   const securityMiddleware = helmet({
     expectCt: { enforce: true, maxAge: 30 },
     referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],

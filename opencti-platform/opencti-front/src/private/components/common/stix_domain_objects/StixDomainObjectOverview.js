@@ -30,6 +30,7 @@ import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -261,6 +262,17 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Processing status')}
+              </Typography>
+              <ItemStatus
+                status={stixDomainObject.status}
+                disabled={!stixDomainObject.workflowEnabled}
+              />
             </Grid>
           </Grid>
         </Paper>
