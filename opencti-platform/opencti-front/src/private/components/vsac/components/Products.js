@@ -37,9 +37,9 @@ class Products extends Component {
     const { classes } = this.props;
     const { software, selectedRow } = this.state;
 
-    const handleClick = (cpe_id, name) => {
+    const handleClick = (cpe, name) => {
       const params = {
-        cpe_id: cpe_id,
+        cpe: cpe,
       };
 
       this.props.action(params, name, 'software');
@@ -67,15 +67,15 @@ class Products extends Component {
                     return (
                       <TableRow
                         key={rowName}
-                        selected={rowName === selectedRow.cpe_id}
-                        onClick={() => handleClick(item.cpe_id, rowName)}
+                        selected={rowName === selectedRow.cpe}
+                        onClick={() => handleClick(item.cpe, rowName)}
                         hover
                         classes={{ root: classes.selectedTableRow }}
                       >
                         <TableCell component="th" scope="row">
                           {item.rank}
                         </TableCell>
-                        <TableCell>{item.cpe_id}</TableCell>
+                        <TableCell>{item.cpe}</TableCell>
                         <TableCell align="right">{item.record_count}</TableCell>
                       </TableRow>
                     );

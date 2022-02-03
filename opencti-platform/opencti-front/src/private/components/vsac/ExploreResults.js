@@ -110,7 +110,7 @@ class ExploreResults extends Component {
       vulnerabilitiesDetails: null,
       selectedRow: {},
       host_ip: null,
-      cpe_id: null,
+      cpe: null,
       cve_id: null,
       cwe_id: null,
     };
@@ -173,7 +173,7 @@ class ExploreResults extends Component {
       vulnerabilitiesDetails,
       selectedRow,
       host_ip,
-      cpe_id,
+      cpe,
       cve_id,
       cwe_id,
     } = this.state;
@@ -189,13 +189,13 @@ class ExploreResults extends Component {
 
         this.setState({ selectedRow: {...this.state.selectedRow, host_ip: name}});
       }
-      if (params.cpe_id) {
+      if (params.cpe) {
         this.setState(
-          { cpe_id: params.cpe_id },
+          { cpe: params.cpe },
           handleGetAnalysisFilteredResults(params, type)
         );
 
-        this.setState({ selectedRow: {...this.state.selectedRow, cpe_id: name}});
+        this.setState({ selectedRow: {...this.state.selectedRow, cpe: name}});
       }
       if (params.cwe_id) {
         this.setState(
@@ -218,7 +218,7 @@ class ExploreResults extends Component {
     const handleGetAnalysisFilteredResults = (params, type) => {
       getAnalysisFilteredResults(this.state.analysis.id, this.state.client, {
         host_ip: params.host_ip || host_ip,
-        cpe_id: params.cpe_id || cpe_id,
+        cpe: params.cpe || cpe,
         cwe_id: params.cwe_id || cwe_id,
         cve_id: params.cve_id || cve_id,
       })
@@ -234,7 +234,7 @@ class ExploreResults extends Component {
 
           const detailParams = {
             ...(params.host_ip && { host_ip: params.host_ip }),
-            ...(params.cpe_id && { cpe_id: params.cpe_id }),
+            ...(params.cpe && { cpe: params.cpe}),
             ...(params.cve_id && { cve_id: params.cve_id }),
             ...(params.cwe_id && { cwe_id: params.cwe_id }),
           };
@@ -249,16 +249,25 @@ class ExploreResults extends Component {
           console.log(error);
         });
 
-      switch (type) {
-        case 'host':
-          getAnalysisHosts(this.state.analysis.id, this.state.client, params)
+    
+          getAnalysisHosts(this.state.analysis.id, this.state.client, {
+              host_ip: params.host_ip || host_ip,
+              cpe: params.cpe || cpe,
+              cwe_id: params.cwe_id || cwe_id,
+              cve_id: params.cve_id || cve_id,
+            })
             .then((response) => {
               this.setState({ hosts: response.data });
             })
             .catch((error) => {
               console.log(error);
             });
-          getAnalysisSoftware(this.state.analysis.id, this.state.client, params)
+          getAnalysisSoftware(this.state.analysis.id, this.state.client, {
+              host_ip: params.host_ip || host_ip,
+              cpe: params.cpe || cpe,
+              cwe_id: params.cwe_id || cwe_id,
+              cve_id: params.cve_id || cve_id,
+            })
             .then((response) => {
               this.setState({ software: response.data });
             })
@@ -269,8 +278,12 @@ class ExploreResults extends Component {
           getAnalysisWeaknesses(
             this.state.analysis.id,
             this.state.client,
-            params,
-          )
+            {
+              host_ip: params.host_ip || host_ip,
+              cpe: params.cpe || cpe,
+              cwe_id: params.cwe_id || cwe_id,
+              cve_id: params.cve_id || cve_id,
+            })
             .then((response) => {
               this.setState({ weakness: response.data });
             })
@@ -281,93 +294,19 @@ class ExploreResults extends Component {
           getAnalysisVulnerabilities(
             this.state.analysis.id,
             this.state.client,
-            params,
-          )
+            {
+              host_ip: params.host_ip || host_ip,
+              cpe: params.cpe || cpe,
+              cwe_id: params.cwe_id || cwe_id,
+              cve_id: params.cve_id || cve_id,
+            })
             .then((response) => {
               this.setState({ vulnerabilities: response.data });
             })
             .catch((error) => {
               console.log(error);
             });
-          break;
-
-        case 'software':
-          getAnalysisSoftware(this.state.analysis.id, this.state.client, params)
-            .then((response) => {
-              this.setState({ software: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-
-
-          getAnalysisWeaknesses(
-            this.state.analysis.id,
-            this.state.client,
-            params,
-          )
-            .then((response) => {
-              this.setState({ weakness: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-
-          getAnalysisVulnerabilities(
-            this.state.analysis.id,
-            this.state.client,
-            params,
-          )
-            .then((response) => {
-              this.setState({ vulnerabilities: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-
-          break;
-
-        case 'weakness':
-          getAnalysisWeaknesses(
-            this.state.analysis.id,
-            this.state.client,
-            params,
-          )
-            .then((response) => {
-              this.setState({ weakness: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-          });
-          getAnalysisVulnerabilities(
-            this.state.analysis.id,
-            this.state.client,
-            params,
-          )
-            .then((response) => {
-              this.setState({ vulnerabilities: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-          break;
-
-          case 'vulnerabilities':
-            getAnalysisVulnerabilities(
-            this.state.analysis.id,
-            this.state.client,
-            params,
-          )
-            .then((response) => {
-              this.setState({ vulnerabilities: response.data });
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-
-          break;
-        default:
-      }
+        
     };
 
     const handleFilterResultsDetails = (id, client, params) => {
@@ -466,6 +405,10 @@ class ExploreResults extends Component {
       this.setState({filteredResultsDataDetails: null});
       this.setState({vulnerabilitiesDetails: null});
       this.setState({vulnerabilitiesAccordion: false});
+      this.setState({host_ip: null});
+      this.setState({cpe: null});
+      this.setState({cve_id: null});
+      this.setState({cwe_id: null});
       this.resetAllData()
     }
 
