@@ -557,7 +557,6 @@ class StixCyberObservableCreation extends Component {
                             <div key={attribute.value}>
                               <Field
                                 component={TextField}
-                                key={attribute.value}
                                 name="hashes_MD5"
                                 label="hash_md5"
                                 fullWidth={true}
@@ -565,7 +564,6 @@ class StixCyberObservableCreation extends Component {
                               />
                               <Field
                                 component={TextField}
-                                key={attribute.value}
                                 name="hashes_SHA-1"
                                 label="hash_sha-1"
                                 fullWidth={true}
@@ -573,7 +571,6 @@ class StixCyberObservableCreation extends Component {
                               />
                               <Field
                                 component={TextField}
-                                key={attribute.value}
                                 name="hashes_SHA-256"
                                 label="hash_sha-256"
                                 fullWidth={true}
@@ -652,6 +649,8 @@ class StixCyberObservableCreation extends Component {
                     <ExternalReferencesField
                       name="externalReferences"
                       style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.externalReferences}
                     />
                     <Field
                       component={SwitchField}
