@@ -5,10 +5,18 @@ node {
   String product = 'opencti'
   String branch = "${env.BRANCH_NAME}"
   String tag = 'latest'
+  String graphql = 'https://cyio.darklight.ai/graphql'
+  String api = 'api'
 
   if (branch != 'master' && branch != 'main') {
-    if (branch == 'develop' || branch == 'staging') {
+    if (branch == 'develop') {
       tag = branch
+      graphql = 'https://cyio-dev.darklight.ai/graphql'
+      api = 'api-dev'
+    } else if (branch == 'staging') {
+      tag = branch
+      graphql = 'https://cyio-staging.darklight.ai/graphql'
+      api = 'api-staging'
     } else {
       throw new Exception("Somehow a branch that was not suppose to cause a build, did. Branch: ${branch}")
     }
@@ -23,14 +31,20 @@ node {
         sh 'yarn install'
       }
       dir('opencti-front') {
+        dir('src/relay') {
+          sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
+        }
+        sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
         sh 'yarn schema-compile'
         sh 'yarn install'
       }
     }
   }
 
-  String buildArgs = '--no-cache --progress=plain'
-  docker_steps(registry, product, tag, buildArgs)
+  dir('opencti-platform') {
+    String buildArgs = '--no-cache --progress=plain .'
+    docker_steps(registry, product, tag, buildArgs)
+  }
 
   office365ConnectorSend(
     status: 'Completed',
@@ -40,8 +54,9 @@ node {
 }
 
 void docker_steps(String registry, String image, String tag, String buildArgs) {
+  def app
   stage('Build') {
-    docker.build("${registry}/${image}:${tag}", "${buildArgs}")
+    app = docker.build("${registry}/${image}:${tag}", "${buildArgs}")
   }
 
   stage('Save') {
@@ -53,7 +68,9 @@ void docker_steps(String registry, String image, String tag, String buildArgs) {
   }
 
   stage('Push') {
-    docker.push("${registry}/${image}:${tag}")
+    docker.withRegistry("https://${registry}", "docker-registry-credentials") {
+      app.push("${tag}")
+    }
   }
 
   stage('Clean') {

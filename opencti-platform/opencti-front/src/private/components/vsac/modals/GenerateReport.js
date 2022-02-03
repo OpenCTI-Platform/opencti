@@ -372,7 +372,7 @@ class GenerateReport extends Component {
 											<Button
 												color="primary"
 												onClick={handleDialogOpen}>
-												Choose Previous Analyses
+												Choose Analysis for Trending
 											</Button>
 										</ListItemSecondaryAction>
 									</ListItem>
