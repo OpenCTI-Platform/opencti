@@ -2224,6 +2224,15 @@ const buildRelationTimeFilter = (input) => {
       args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
       args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
     }
+  } else if (isStixCyberObservableRelationship(relationshipType)) {
+    if (!R.isNil(input.start_time)) {
+      args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'days').utc());
+      args.startTimeStop = prepareDate(moment(input.start_time).add(1, 'days').utc());
+    }
+    if (!R.isNil(input.stop_time)) {
+      args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'days').utc());
+      args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'days').utc());
+    }
   } else if (isStixSightingRelationship(relationshipType)) {
     if (!R.isNil(input.first_seen)) {
       args.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
