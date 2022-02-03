@@ -177,6 +177,52 @@ class RiskOverviewComponent extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Created')}
+              </Typography>
+              <div style={{ float: 'left', marginLeft: '5px' }}>
+                <Tooltip
+                  title={t(
+                    'Created',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {t('Jun 11, 2021, 9:14:22 AM')}
+              {/* {risk.created && t(risk.created)} */}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Last Modified')}
+              </Typography>
+              <div style={{ float: 'left', marginLeft: '5px' }}>
+                <Tooltip
+                  title={t(
+                    'Last Modified',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {t('Jun 11, 2021, 9:14:22 AM')}
+              {/* {risk.modified && t(risk.modified)} */}
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
             <Grid style={{ marginTop: '10px' }} item={true} xs={12}>
               <Typography
                 variant="h3"
@@ -355,8 +401,8 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                 {/* {risk.priority && t(risk.priority)} */}
-    {riskEdges.map((value) => value.priority) && t(riskEdges.map((value) => value.priority))}
+                {/* {risk.priority && t(risk.priority)} */}
+                {riskEdges.map((value) => value.priority) && t(riskEdges.map((value) => value.priority))}
               </div>
               <div style={{ marginBottom: '40px', marginTop: '25px' }}>
                 <Typography

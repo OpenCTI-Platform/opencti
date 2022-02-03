@@ -20,6 +20,9 @@ import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   item: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: theme.palette.navAlt.background,
+    },
     paddingLeft: 10,
     height: 50,
   },
@@ -73,6 +76,7 @@ class RiskLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
+        selected={selectAll || node.id in (selectedElements || {})}
         to={`/dashboard/risk-assessment/risks/${node.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>

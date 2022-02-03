@@ -18,6 +18,7 @@ import AddIcon from '@material-ui/icons/Add';
 // import AssetTaglist from '../../common/form/AssetTaglist';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -341,6 +342,68 @@ class RiskEditionOverviewComponent extends Component {
                         variant='outlined'
                         size='small'
                         name="idem_id"
+                        fullWidth={true}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                  </Grid>
+                </Grid>
+                <Grid container={true} spacing={3} style={{ marginBottom: '9px' }}>
+                  <Grid item={true} xs={6}>
+                    <Grid item={true}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Created')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                        <Tooltip
+                          title={t(
+                            'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                          )}
+                        >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={DatePickerField}
+                        variant='outlined'
+                        size='small'
+                        name="created"
+                        fullWidth={true}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <Grid item={true}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Last Modified')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                        <Tooltip
+                          title={t(
+                            'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                          )}
+                        >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={DatePickerField}
+                        variant='outlined'
+                        size='small'
+                        name="modified"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />

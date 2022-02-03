@@ -100,35 +100,81 @@ class RiskDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Name')}
+              </Typography>
+              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Name',
+                  )}
                 >
-                  {t('Name')}
-                </Typography>
-                <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Name',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {/* {risk.name && t(risk.name)} */}
-                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                  <>
-                    <div className="clearfix" />
-                    {value.name}
-                  </>
-                ))}
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
               </div>
-              <div>
+              <div className="clearfix" />
+              {/* {risk.name && t(risk.name)} */}
+              {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                <>
+                  <div className="clearfix" />
+                  {value.name}
+                </>
+              ))}
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Created')}
+              </Typography>
+              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Created',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {t('Jun 11, 2021, 9:14:22 AM')}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Last Modified')}
+              </Typography>
+              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Last Modified',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {t('Jun 11, 2021, 9:14:22 AM')}
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+            <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -161,6 +207,48 @@ class RiskDetailsComponent extends Component {
                   </div>
                 </div>
               </div>
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Statement')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Statement',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <div className='scroll-bg'>
+                  <div className={classes.scrollBg}>
+                    <div className={classes.scrollDiv}>
+                      <div className={classes.scrollObj}>
+                        {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                          <>
+                            <div className="clearfix" />
+                            {value.statement}
+                          </>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
               <div style={{ marginTop: '15px' }}>
                 <Typography
                   variant="h3"
@@ -193,39 +281,6 @@ class RiskDetailsComponent extends Component {
                     </Button>
                   </>
                 ))}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Impacted Component')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Impacted Component',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {/* {t('Description')} */}
-                      {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                        <>
-                          <div className="clearfix" />
-                          {value.impacted_component}
-                        </>
-                      ))}
-                    </div>
-                  </div>
-                </div>
               </div>
               <div>
                 <Typography
@@ -314,40 +369,6 @@ class RiskDetailsComponent extends Component {
               </div>
             </Grid>
             <Grid item={true} xs={6}>
-              <div style={{ marginTop: '37px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Statement')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Statement',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <div className='scroll-bg'>
-                  <div className={classes.scrollBg}>
-                    <div className={classes.scrollDiv}>
-                      <div className={classes.scrollObj}>
-                        {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                          <>
-                            <div className="clearfix" />
-                            {value.statement}
-                          </>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
               <div style={{ marginBottom: '12px', marginTop: '6px' }}>
                 <Typography
                   variant="h3"
@@ -370,37 +391,10 @@ class RiskDetailsComponent extends Component {
                 {/* {risk.deadline && fd(risk.deadline)} */}
                 {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
                   <>
-                  <div className="clearfix" />
-                  {fd(value.deadline)}
+                    <div className="clearfix" />
+                    {fd(value.deadline)}
                   </>
                 ))}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Inpacted Assets')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Impacted Assets',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {t('Description')}
-                    </div>
-                  </div>
-                </div>
               </div>
               <div>
                 <Typography
