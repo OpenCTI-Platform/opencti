@@ -42,7 +42,7 @@ class WeaknessAccordionCards extends Component {
         cwe_id: cwe_id,
       };
 
-      this.props.action(params, name);
+      this.props.action(params, name, 'weakness');
     };
 
     return (
@@ -68,7 +68,7 @@ class WeaknessAccordionCards extends Component {
                     return (
                       <TableRow
                         key={rowName}
-                        selected={rowName === selectedRow}
+                        selected={rowName === selectedRow.cwe_id}
                         onClick={() => handleClick(item.cwe_id, rowName)}
                         hover
                         classes={{ root: classes.selectedTableRow }}

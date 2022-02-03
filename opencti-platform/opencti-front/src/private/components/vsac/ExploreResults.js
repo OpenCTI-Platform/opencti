@@ -52,8 +52,13 @@ const styles = (theme) => ({
 });
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-  
+  const { 
+    children,
+    value,
+    index,
+    ...other 
+  } = props;
+
   return (
     <div
       role="tabpanel"
@@ -94,7 +99,7 @@ class ExploreResults extends Component {
       scan: this.props.location.state.scan,
       hosts: null,
       software: null,
-      weakness: null,
+      filteredResultsParams: {},
       filteredResultsData: null,
       filteredResultsDataDetails: null,
       currentResult: null,
@@ -103,7 +108,11 @@ class ExploreResults extends Component {
       weaknessDetails: null,
       vulnerabilitiesAccordion: false,
       vulnerabilitiesDetails: null,
-      selectedRow: null,
+      selectedRow: {},
+      host_ip: null,
+      cpe: null,
+      cve_id: null,
+      cwe_id: null,
     };
   }
 
@@ -153,6 +162,7 @@ class ExploreResults extends Component {
       software,
       weakness,
       vulnerabilities,
+      filteredResultsParams,
       filteredResultsData,
       filteredResultsDataDetails,
       currentResult,
@@ -162,26 +172,69 @@ class ExploreResults extends Component {
       vulnerabilitiesAccordion,
       vulnerabilitiesDetails,
       selectedRow,
+      host_ip,
+      cpe,
+      cve_id,
+      cwe_id,
     } = this.state;
 
-    const handleFilterResults = (params, name) => {
+    const handleFilterResults = (params, name, type) => {
       this.setState({ filteredResultsData: 'loading' });
-      getAnalysisFilteredResults(
-        this.state.analysis.id,
-        this.state.client,
-        params
-      )
+
+      if (params.host_ip) {
+        this.setState(
+          { host_ip: params.host_ip },
+          handleGetAnalysisFilteredResults(params, type)
+        );
+
+        this.setState({ selectedRow: {...this.state.selectedRow, host_ip: name}});
+      }
+      if (params.cpe) {
+        this.setState(
+          { cpe: params.cpe },
+          handleGetAnalysisFilteredResults(params, type)
+        );
+
+        this.setState({ selectedRow: {...this.state.selectedRow, cpe: name}});
+      }
+      if (params.cwe_id) {
+        this.setState(
+          { cwe_id: params.cwe_id },
+          handleGetAnalysisFilteredResults(params, type)
+        );
+
+        this.setState({ selectedRow: {...this.state.selectedRow, cwe_id: name}});
+      }
+      if (params.cve_id) {
+        this.setState(
+          { cve_id: params.cve_id },
+          handleGetAnalysisFilteredResults(params, type)
+        );
+        this.setState({ selectedRow: {...this.state.selectedRow, cve_id: name}});
+      }
+     
+    };
+
+    const handleGetAnalysisFilteredResults = (params, type) => {
+      getAnalysisFilteredResults(this.state.analysis.id, this.state.client, {
+        host_ip: params.host_ip || host_ip,
+        cpe: params.cpe || cpe,
+        cwe_id: params.cwe_id || cwe_id,
+        cve_id: params.cve_id || cve_id,
+      })
         .then((response) => {
           this.setState({ filteredResultsData: response.data });
 
           if (params.host_ip) {
-            const currentResult = response.data.find((element) => {return element.host_ip === params.host_ip})
+            const currentResult = response.data.find((element) => {
+              return element.host_ip === params.host_ip;
+            });
             this.setState({ currentResult: currentResult });
           }
 
           const detailParams = {
             ...(params.host_ip && { host_ip: params.host_ip }),
-            ...(params.cpe_id && { cpe_id: params.cpe_id }),
+            ...(params.cpe && { cpe: params.cpe}),
             ...(params.cve_id && { cve_id: params.cve_id }),
             ...(params.cwe_id && { cwe_id: params.cwe_id }),
           };
@@ -189,13 +242,71 @@ class ExploreResults extends Component {
           handleFilterResultsDetails(
             this.state.analysis.id,
             this.state.client,
-            detailParams
+            detailParams,
           );
         })
         .catch((error) => {
           console.log(error);
         });
-      this.setState({ selectedRow: name });
+
+    
+          getAnalysisHosts(this.state.analysis.id, this.state.client, {
+              host_ip: params.host_ip || host_ip,
+              cpe: params.cpe || cpe,
+              cwe_id: params.cwe_id || cwe_id,
+              cve_id: params.cve_id || cve_id,
+            })
+            .then((response) => {
+              this.setState({ hosts: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+          getAnalysisSoftware(this.state.analysis.id, this.state.client, {
+              host_ip: params.host_ip || host_ip,
+              cpe: params.cpe || cpe,
+              cwe_id: params.cwe_id || cwe_id,
+              cve_id: params.cve_id || cve_id,
+            })
+            .then((response) => {
+              this.setState({ software: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
+          getAnalysisWeaknesses(
+            this.state.analysis.id,
+            this.state.client,
+            {
+              host_ip: params.host_ip || host_ip,
+              cpe: params.cpe || cpe,
+              cwe_id: params.cwe_id || cwe_id,
+              cve_id: params.cve_id || cve_id,
+            })
+            .then((response) => {
+              this.setState({ weakness: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+
+          getAnalysisVulnerabilities(
+            this.state.analysis.id,
+            this.state.client,
+            {
+              host_ip: params.host_ip || host_ip,
+              cpe: params.cpe || cpe,
+              cwe_id: params.cwe_id || cwe_id,
+              cve_id: params.cve_id || cve_id,
+            })
+            .then((response) => {
+              this.setState({ vulnerabilities: response.data });
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        
     };
 
     const handleFilterResultsDetails = (id, client, params) => {
@@ -218,7 +329,7 @@ class ExploreResults extends Component {
       getAnalysisFilteredResultsWeakness(
         this.state.analysis.id,
         this.state.client,
-        params
+        params,
       )
         .then((response) => {
           this.setState({ weaknessDetails: response.data });
@@ -256,7 +367,7 @@ class ExploreResults extends Component {
       getAnalysisVulnerabilities(
         this.state.analysis.id,
         this.state.client,
-        params
+        params,
       )
         .then((response) => {
           this.setState({ vulnerabilities: response.data });
@@ -269,30 +380,35 @@ class ExploreResults extends Component {
     };
 
     const handleVulnerabilitiesAccordion = (panel, params) => (event, isExpanded) => {
-        this.setState({ vulnerabilitiesAccordion: isExpanded ? panel : false });
-        this.setState({ vulnerabilitiesDetails: '' });
-        getAnalysisFilteredResultsVulnerability(
-          this.state.analysis.id,
-          this.state.client,
-          params
-        )
-          .then((response) => {
-            this.setState({ vulnerabilitiesDetails: response.data });
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      };
+      this.setState({ vulnerabilitiesAccordion: isExpanded ? panel : false });
+      this.setState({ vulnerabilitiesDetails: '' });
+      getAnalysisFilteredResultsVulnerability(
+        this.state.analysis.id,
+        this.state.client,
+        params,
+      )
+        .then((response) => {
+          this.setState({ vulnerabilitiesDetails: response.data });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
 
     const handleReset = () => {
       this.setState({weaknessDetails: null});
       this.setState({weaknessAccordion: false});
-      this.setState({selectedRow: null});
+      this.setState({selectedRow: {}});
       this.setState({currentResult: null});
+      this.setState({filteredResultsParams: {}});
       this.setState({filteredResultsData: null});
       this.setState({filteredResultsDataDetails: null});
       this.setState({vulnerabilitiesDetails: null});
       this.setState({vulnerabilitiesAccordion: false});
+      this.setState({host_ip: null});
+      this.setState({cpe: null});
+      this.setState({cve_id: null});
+      this.setState({cwe_id: null});
       this.resetAllData()
     }
 
@@ -367,14 +483,14 @@ class ExploreResults extends Component {
             {weakness && (
               <WeaknessAccordionCards
                 weakness={weakness}
-                action={handleWeaknessClick}
+                action={handleFilterResults}
                 selectedRow={selectedRow}
               />
             )}
             {vulnerabilities && (
               <VulnerabilityAccordionCards
                 vulnerabilities={vulnerabilities}
-                action={handleWeaknessClick}
+                action={handleFilterResults}
                 selectedRow={selectedRow}
               />
             )}
@@ -414,9 +530,7 @@ class ExploreResults extends Component {
                               <TableRow
                                 key={rowName}
                                 selected={rowName === selectedRow}
-                                onClick={() =>
-                                  handleFilterResults(result.host_ip, rowName)
-                                }
+                                onClick={() => handleFilterResults(result.host_ip, rowName) }
                                 hover
                                 classes={{ root: classes.selectedTableRow }}
                               >
@@ -461,29 +575,30 @@ class ExploreResults extends Component {
                     Problems
                   </Typography>
                   {filteredResultsDataDetails?.details.map((i, j) => (
-                    <p>{ReactHtmlParser(i)}</p>
+                    <p key={j}>{ReactHtmlParser(i)}</p>
                   ))}
                   {filteredResultsDataDetails?.plugins.map((i, j) => (
-                    <p>{ReactHtmlParser(i)}</p>
+                    <p key={j}>{ReactHtmlParser(i)}</p>
                   ))}
                   <Typography variant="h4" gutterBottom={true}>
                     Exploitable?
                   </Typography>
                   {filteredResultsDataDetails?.exploit_frameworks.map(
                     (i, j) => (
-                      <p>{ReactHtmlParser(i)}</p>
-                    )
+                      <p key={j}>{ReactHtmlParser(i)}</p>
+                    ),
                   )}
                   <Typography variant="h4" gutterBottom={true}>
                     Details
                   </Typography>
                   {filteredResultsDataDetails?.problems.map((i, j) => (
-                    <p>{ReactHtmlParser(i)}</p>
+                    <p key={j}>{ReactHtmlParser(i)}</p>
                   ))}
                 </TabPanel>
                 <TabPanel value={tabValue} index={1}>
                   {weakness?.map((i, j) => (
                     <Accordion
+                      key={j}
                       expanded={weaknessAccordion === 'panel-' + j}
                       onChange={handleWeaknessAccordion('panel-' + j, {
                         cwe_id: i.cwe_id,
@@ -513,6 +628,7 @@ class ExploreResults extends Component {
                 <TabPanel value={tabValue} index={2}>
                   {vulnerabilities?.map((i, j) => (
                     <Accordion
+                      key={j}
                       expanded={vulnerabilitiesAccordion === 'panel-' + j}
                       onChange={handleVulnerabilitiesAccordion('panel-' + j, {
                         cve_id: i.cve_id,
@@ -568,25 +684,25 @@ class ExploreResults extends Component {
                 <Card>
                   <CardContent>
                     <div>
-                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
+                      <Typography variant="h5" gutterBottom={true}>
                         IP Address
                       </Typography>
                       <p>{currentResult?.host_ip}</p>
                     </div>
                     <div>
-                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
+                      <Typography variant="h5" gutterBottom={true}>
                         Hostname
                       </Typography>
                       <p>{currentResult?.host_name}</p>
                     </div>
                     <div>
-                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
+                      <Typography variant="h5" gutterBottom={true}>
                         MAC Address
                       </Typography>
                       <p>{currentResult?.host_mac}</p>
                     </div>
                     <div>
-                      <Typography variant="h4" color="textSecondary" gutterBottom={true}>
+                      <Typography variant="h5" gutterBottom={true}>
                         Operating System
                       </Typography>
                       <p>{currentResult?.host_os}</p>
@@ -602,4 +718,8 @@ class ExploreResults extends Component {
   }
 }
 
-export default R.compose(inject18n, withRouter, withStyles(styles))(ExploreResults);
+export default R.compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(ExploreResults);
