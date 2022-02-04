@@ -14,6 +14,12 @@ import { interval } from 'rxjs';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import { Delete, LayersRemove } from 'mdi-material-ui';
+import { DeleteSweepOutlined } from '@material-ui/icons';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
+import { withRouter } from 'react-router-dom';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -99,11 +105,22 @@ export const connectorDeletionMutation = graphql`
   }
 `;
 
+export const connectorWorkDeleteMutation = graphql`
+  mutation ConnectorWorkDeleteMutation($connectorId: String!) {
+    workDelete(connectorId: $connectorId)
+  }
+`;
+
 class ConnectorComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      displayUpdate: false,
+      displayDelete: false,
+      deleting: false,
+      displayResetState: false,
+      resetting: false,
+      displayClearWorks: false,
+      clearing: false,
     };
   }
 
@@ -117,36 +134,68 @@ class ConnectorComponent extends Component {
     this.subscription.unsubscribe();
   }
 
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
+  handleOpenDelete() {
+    this.setState({ displayDelete: true });
   }
 
-  handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
+  handleCloseDelete() {
+    this.setState({ displayDelete: false });
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  handleResetState(connectorId) {
+  handleOpenResetState() {
+    this.setState({ displayResetState: true });
+  }
+
+  handleCloseResetState() {
+    this.setState({ displayResetState: false });
+  }
+
+  handleOpenClearWorks() {
+    this.setState({ displayClearWorks: true });
+  }
+
+  handleCloseClearWorks() {
+    this.setState({ displayClearWorks: false });
+  }
+
+  submitResetState() {
+    this.setState({ resetting: true });
     commitMutation({
       mutation: connectorResetStateMutation,
       variables: {
-        id: connectorId,
+        id: this.props.connector.id,
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector state has been reset');
+        this.setState({ resetting: false, displayResetState: false });
       },
     });
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  handleDelete(connectorId) {
+  submitClearWorks() {
+    this.setState({ clearing: true });
+    commitMutation({
+      mutation: connectorWorkDeleteMutation,
+      variables: {
+        connectorId: this.props.connector.id,
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('The connector works have been cleared');
+        this.setState({ clearing: false, displayClearWorks: false });
+      },
+    });
+  }
+
+  submitDelete() {
+    this.setState({ deleting: true });
     commitMutation({
       mutation: connectorDeletionMutation,
       variables: {
-        id: connectorId,
+        id: this.props.connector.id,
       },
       onCompleted: () => {
-        MESSAGING$.notifySuccess('The connector has been cleared');
+        this.handleCloseDelete();
+        this.props.history.push('/dashboard/data/connectors');
       },
     });
   }
@@ -188,16 +237,25 @@ class ConnectorComponent extends Component {
             <Security needs={[MODULES_MODMANAGE]}>
               <Tooltip title={t('Reset the connector state')}>
                 <IconButton
-                  onClick={this.handleResetState.bind(this, connector.id)}
+                  onClick={this.handleOpenResetState.bind(this, connector.id)}
                   aria-haspopup="true"
                   color="primary"
                 >
                   <LayersRemove />
                 </IconButton>
               </Tooltip>
+              <Tooltip title={t('Clear all works')}>
+                <IconButton
+                  onClick={this.handleOpenClearWorks.bind(this, connector.id)}
+                  aria-haspopup="true"
+                  color="primary"
+                >
+                  <DeleteSweepOutlined />
+                </IconButton>
+              </Tooltip>
               <Tooltip title={t('Clear this connector')}>
                 <IconButton
-                  onClick={this.handleDelete.bind(this, connector.id)}
+                  onClick={this.handleOpenDelete.bind(this, connector.id)}
                   aria-haspopup="true"
                   color="primary"
                   disabled={connector.active}
@@ -309,6 +367,87 @@ class ConnectorComponent extends Component {
             </Paper>
           </Grid>
         </Grid>
+        <Dialog
+          open={this.state.displayDelete}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseDelete.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to delete this connector?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              disabled={this.state.deleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitDelete.bind(this)}
+              color="primary"
+              disabled={this.state.deleting}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayResetState}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseResetState.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to reset the state of this connector?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseResetState.bind(this)}
+              disabled={this.state.resetting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitResetState.bind(this)}
+              color="primary"
+              disabled={this.state.resetting}
+            >
+              {t('Reset')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayClearWorks}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseClearWorks.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to clear the works of this connector?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseClearWorks.bind(this)}
+              disabled={this.state.clearing}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitClearWorks.bind(this)}
+              color="primary"
+              disabled={this.state.clearing}
+            >
+              {t('Clear')}
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
           {t('In progress works')}
         </Typography>
@@ -346,6 +485,7 @@ ConnectorComponent.propTypes = {
   connector: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
 };
 
 export const connectorQuery = graphql`
@@ -385,4 +525,4 @@ const Connector = createRefetchContainer(
   connectorQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(Connector);
+export default compose(inject18n, withRouter, withStyles(styles))(Connector);

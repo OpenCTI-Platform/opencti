@@ -80,10 +80,12 @@
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-react": "7.28.0",
     "fs-extra": "10.0.0",
+    "node-sass": "7.0.1",
     "prettier": "2.5.1",
     "react-scripts": "4.0.3",
     "relay-compiler": "11.0.2",
-    "relay-devtools": "1.4.0"
+    "relay-devtools": "1.4.0",
+    "sass-loader": "12.4.0"
   },
   "babelMacros": {
     "relay": {}

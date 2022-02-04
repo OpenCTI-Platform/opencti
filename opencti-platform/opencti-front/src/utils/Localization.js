@@ -1351,6 +1351,12 @@ const i18n = {
       RETENTION_MANAGER: 'Manager de rétention',
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
+      'Clear all works': 'Nettoyer toutes les exécutions',
+      'Do you want to reset the state of this connector?':
+        "Souhaitez-vous réinitialiser l'état de ce connecteur ?",
+      Reset: 'Réinitialiser',
+      'Do you want to clear the works of this connector?':
+        'Souhaitez-vous nettoyer toutes les exécutions de ce connecteur ?',
     },
     'zh-cn': {
       // Titles
@@ -1361,10 +1367,8 @@ const i18n = {
       'Wrong name or password': '用户名或密码错误',
       'An unknown error has occurred!  Please try again later.':
         '发生未知错误，请稍后再试。',
-      'You must be logged in to do this.':
-        '您必须登录才能执行此操作。',
-      'You are not allowed to do this.':
-        '您这样操作不被允许。',
+      'You must be logged in to do this.': '您必须登录才能执行此操作。',
+      'You are not allowed to do this.': '您这样操作不被允许。',
       'You have successfully logged out.': '您已成功注销。',
       'You do not have any access to the knowledge of this OpenCTI instance.':
         '您无权访问此OpenCTI实例的知识数据。',
@@ -1389,120 +1393,77 @@ const i18n = {
       'Advanced search': '高级搜索',
       'Global keyword': '全局关键词',
       'Search for a threat...': '搜索威胁...',
-      'Do you want to delete this user?':
-        '是否要删除此用户？',
-      'Do you want to delete this group?':
-        '是否要删除此组？',
-      'Do you want to delete this threat actor?':
-        '是否要删除此威胁主体？',
-      'Do you want to delete this intrusion set?':
-        '是否要删除此入侵集合？',
-      'Do you want to delete this campaign?':
-        '是否要删除此攻击活动？',
-      'Do you want to delete this incident?':
-        '是否要删除此安全事件？',
-      'Do you want to browse this external link?':
-        '是否要浏览此外部链接？',
+      'Do you want to delete this user?': '是否要删除此用户？',
+      'Do you want to delete this group?': '是否要删除此组？',
+      'Do you want to delete this threat actor?': '是否要删除此威胁主体？',
+      'Do you want to delete this intrusion set?': '是否要删除此入侵集合？',
+      'Do you want to delete this campaign?': '是否要删除此攻击活动？',
+      'Do you want to delete this incident?': '是否要删除此安全事件？',
+      'Do you want to browse this external link?': '是否要浏览此外部链接？',
       'Browse the link': '浏览链接',
-      'Do you want to delete this malware?':
-        '是否要删除此恶意软件？',
+      'Do you want to delete this malware?': '是否要删除此恶意软件？',
       'Do you want to delete this marking definition?':
         '是否要删除此标记定义？',
       'Do you want to delete this kill chain phase?':
         '是否要删除此杀伤链阶段？',
-      'Do you want to delete this report?':
-        '是否要删除此报告？',
-      'Do you want to kill this session?':
-        '是否要终止此会话？',
+      'Do you want to delete this report?': '是否要删除此报告？',
+      'Do you want to kill this session?': '是否要终止此会话？',
       'Do you want to kill all the sessions of this user?':
         '是否要终止此用户的所有会话？',
       'Do you want to delete this external reference?':
         '是否要删除此外部引用？',
-      'Do you want to delete this region?':
-        '是否要删除此区域？',
-      'Do you want to delete this country?':
-        '是否要删除此国家/地区？',
-      'Do you want to delete this city?':
-        '是否要删除此城市？',
-      'Do you want to delete this sector?':
-        '是否要删除此部门？',
-      'Do you want to delete this system?':
-        '是否要删除此系统？',
-      'Do you want to delete this organization?':
-        '是否要删除此组织？',
-      'Do you want to delete this individual?':
-        '是否要删除此个体？',
-      'Do you want to delete this relation?':
-        '是否要删除此关系？',
-      'Do you want to delete this sighting?':
-        '是否要删除此目击？',
-      'Do you want to delete this workspace?':
-        '是否要删除此工作区？',
-      'Do you want to delete this attack pattern?':
-        '是否要删除此攻击模式？',
-      'Do you want to delete this course of action?':
-        '是否要删除此应对措施？',
-      'Do you want to delete this tool?':
-        '是否要删除此工具？',
-      'Do you want to delete this vulnerability?':
-        '是否要删除此脆弱性？',
-      'Do you want to delete this indicator?':
-        '是否要删除此攻击指标？',
-      'Do you want to delete this observable?':
-        '是否要删除此可观测数据？',
-      'Do you want to delete this observed data?':
-        '是否要删除此观测数据？',
+      'Do you want to delete this region?': '是否要删除此区域？',
+      'Do you want to delete this country?': '是否要删除此国家/地区？',
+      'Do you want to delete this city?': '是否要删除此城市？',
+      'Do you want to delete this sector?': '是否要删除此部门？',
+      'Do you want to delete this system?': '是否要删除此系统？',
+      'Do you want to delete this organization?': '是否要删除此组织？',
+      'Do you want to delete this individual?': '是否要删除此个体？',
+      'Do you want to delete this relation?': '是否要删除此关系？',
+      'Do you want to delete this sighting?': '是否要删除此目击？',
+      'Do you want to delete this workspace?': '是否要删除此工作区？',
+      'Do you want to delete this attack pattern?': '是否要删除此攻击模式？',
+      'Do you want to delete this course of action?': '是否要删除此应对措施？',
+      'Do you want to delete this tool?': '是否要删除此工具？',
+      'Do you want to delete this vulnerability?': '是否要删除此脆弱性？',
+      'Do you want to delete this indicator?': '是否要删除此攻击指标？',
+      'Do you want to delete this observable?': '是否要删除此可观测数据？',
+      'Do you want to delete this observed data?': '是否要删除此观测数据？',
       'Do you want to remove the entity from this report?':
         '是否要从此报告中移除该实体？',
-      'Do you want to delete this attribute?':
-        '是否要删除此属性？',
+      'Do you want to delete this attribute?': '是否要删除此属性？',
       'Do you want to remove this external reference?':
         '是否要移除此外部引用？',
-      'Do you want to remove this note?':
-        '是否要移除此注释？',
-      'Do you want to remove this report?':
-        '是否要移除此报告？',
+      'Do you want to remove this note?': '是否要移除此注释？',
+      'Do you want to remove this report?': '是否要移除此报告？',
       'Do you want to remove these elements from this report?':
         '是否要从此报告中移除这些元素？',
       'Do you want to remove these elements from this investigation?':
         '是否要从此调查中移除这些元素？',
-      'Do you want to remove this opinion?':
-        '是否要移除此意见？',
+      'Do you want to remove this opinion?': '是否要移除此意见？',
       'Do you want to remove the observable from this indicator?':
         '是否要移除此攻击指标中移除该可观测数据？',
       'Do you want to remove the entity from this container?':
         '是否要从此容器中移除该实体？',
       'Do you want to delete this role?': '是否要删除此角色？',
-      'Do you want to delete this label?':
-        '是否要删除此标签？',
-      'Do you want to delete this note?':
-        '是否要删除此注释？',
-      'Do you want to delete these entities?':
-        '是否要删除这些实体？',
-      'Do you want to delete this live stream?':
-        '是否要删除此实时流？',
-      'Do you want to delete this synchronizer?':
-        '是否要删除此同步器？',
-      'Do you want to start this synchronizer?':
-        '是否要启动此同步器？',
-      'Do you want to stop this synchronizer?':
-        '是否要删除此同步器？',
+      'Do you want to delete this label?': '是否要删除此标签？',
+      'Do you want to delete this note?': '是否要删除此注释？',
+      'Do you want to delete these entities?': '是否要删除这些实体？',
+      'Do you want to delete this live stream?': '是否要删除此实时流？',
+      'Do you want to delete this synchronizer?': '是否要删除此同步器？',
+      'Do you want to start this synchronizer?': '是否要启动此同步器？',
+      'Do you want to stop this synchronizer?': '是否要删除此同步器？',
       'Do you want to create a STIX Indcator from this observable?':
         '是否要从此可观测数据创建一个STIX攻击指标？',
-      'Do you want to enable this rule?':
-        '是否要启用该规则？',
-      'Do you want to disable this rule?':
-        '是否要禁用该规则？',
-      'Do you want to drop this bundle?':
-        '是否要丢弃此捆绑包?',
-      'Applying this rule on the existing data':
-        '对现有数据应用此规则',
+      'Do you want to enable this rule?': '是否要启用该规则？',
+      'Do you want to disable this rule?': '是否要禁用该规则？',
+      'Do you want to drop this bundle?': '是否要丢弃此捆绑包?',
+      'Applying this rule on the existing data': '对现有数据应用此规则',
       'This rule has been applied on the existing data':
         '该规则已应用于现有数据',
       'Cleaning up this rule on the existing data':
         '正在清除现有数据上的此规则',
-      'Rule has been cleaned up on the existing data':
-        '已清除现有数据上的规则',
+      'Rule has been cleaned up on the existing data': '已清除现有数据上的规则',
       'Confirmation required': '需要确认',
       'The rule has been enabled, rescan of platform data launched...':
         '该规则已启用，平台数据的重新扫描已启动',
@@ -1518,10 +1479,8 @@ const i18n = {
       Disable: '禁用',
       Rescan: '重新扫描',
       'Last notes': '最后注释',
-      'Latest reports written by this entity':
-        '该实体编写的最新报告',
-      'Latest reports about this entity':
-        '关于该实体的最新报告',
+      'Latest reports written by this entity': '该实体编写的最新报告',
+      'Latest reports about this entity': '关于该实体的最新报告',
       'Last reports about the entity': '关于该实体的最后报告',
       'Last observables': '最后的可观测数据',
       'observable(s)': '可观测数据',
@@ -1530,8 +1489,7 @@ const i18n = {
       'External authentication': '外部认证',
       'Authentication strategies': '认证策略',
       'Granted by default': '默认授予',
-      'Granted by default at user creation':
-        '在用户创建时默认授予',
+      'Granted by default at user creation': '在用户创建时默认授予',
       'Automatically authorize this group to new marking definition':
         '自动将此组权限授权给新的标记定义',
       'Unauthorized action, please refresh your browser':
@@ -1592,12 +1550,10 @@ const i18n = {
       'Select your file': '选择你的文件',
       selected: '已选',
       'selected element(s)': '已选的元素',
-      'The importation of the file has been started':
-        '已开始导入文件',
+      'The importation of the file has been started': '已开始导入文件',
       Add: '添加',
       'Turn to user': '转向用户',
-      'This individual is now a user':
-        '此个体现在是用户',
+      'This individual is now a user': '此个体现在是用户',
       'This relation is inferred': '该关系是推理出来的',
       'This field is required': '此字段为必填项',
       'This field must only contain alphanumeric chars, dashes and space':
@@ -1605,17 +1561,14 @@ const i18n = {
       'The value is too short': '该值太短',
       'The value is too long': '该值太长',
       'The value must be a number': '该值必须是一个数字',
-      'The value must be an email address':
-        '该值必须是一个邮件地址',
+      'The value must be an email address': '该值必须是一个邮件地址',
       'The value must be an URL': '该值必须是一个URL',
-      'The value must be a date (YYYY-MM-DD)':
-        '该值必须是一个日期(YYYY-MM-DD)',
+      'The value must be a date (YYYY-MM-DD)': '该值必须是一个日期(YYYY-MM-DD)',
       'The values do not match': '该值不匹配',
       'No available options': '没有可用的选项',
       'No description of this usage': '没有关于此用法的描述',
       'No description of this targeting': '没有关于此针对的描述',
-      'No history about this relationship.':
-        '没有关于此关系的历史',
+      'No history about this relationship.': '没有关于此关系的历史',
       'Create a workspace': '创建工作区',
       'Update a workspace': '更新工作区',
       'Add a widget': '添加控件',
@@ -1652,8 +1605,7 @@ const i18n = {
       Periodicity: '周期性',
       'Knowledge update (except indicators & observables)':
         '知识更新(攻击指标和可观测数据除外)',
-      'Containers (reports, notes & opinions)':
-        '容器(报告、注释和建议)',
+      'Containers (reports, notes & opinions)': '容器(报告、注释和建议)',
       'Technical elements (indicators & observables)':
         '技术元素(攻击指标和可观测数据)',
       'As it happens': '当其发生时',
@@ -1711,10 +1663,8 @@ const i18n = {
       'Update an observable': '更新可观测数据',
       'Create an indicator': '创建攻击指标',
       'Update an indicator': '更新攻击指标',
-      '[Promote] Create a STIX indicator':
-        '[升级]创建STIX攻击指标',
-      'Create an indicator from this observable':
-        '从该可观测数据创建攻击指标',
+      '[Promote] Create a STIX indicator': '[升级]创建STIX攻击指标',
+      'Create an indicator from this observable': '从该可观测数据创建攻击指标',
       'Create a relationship': '创建关系',
       'Update a relationship': '更新关系',
       'Select a relationship': '更新关系',
@@ -1761,13 +1711,10 @@ const i18n = {
       'Selected entities': '选定的实体',
       'Merged entity': '归并的实体',
       'Demo credentials': 'Demo凭证',
-      'User will be created with default roles.':
-        '使用默认角色创建用户。',
-      'No connectors are enabled on this platform.':
-        '此平台未启用任何连接器。',
+      'User will be created with default roles.': '使用默认角色创建用户。',
+      'No connectors are enabled on this platform.': '此平台未启用任何连接器。',
       'Enabled import connectors': '已启用的导入连接器',
-      'No enrichment connectors on this platform':
-        '此平台上没有富化连接器',
+      'No enrichment connectors on this platform': '此平台上没有富化连接器',
       'Enrichment connectors': '富化连接器',
       'Registered connectors': '已注册连接器',
       'The relations attached to selected entities will be copied to the merged entity.':
@@ -1775,19 +1722,15 @@ const i18n = {
       'Subscriptions & digests': '订阅和摘要',
       Scope: '范围',
       Modified: '修改的',
-      'No import connectors on this platform':
-        '此平台没有导入连接器',
-      'No connectors for this type of entity':
-        '此类型的实体没有连接器',
+      'No import connectors on this platform': '此平台没有导入连接器',
+      'No connectors for this type of entity': '此类型的实体没有连接器',
       'This connector is active': '此连接器处于活动状态',
       'This connector is disconnected': '此连接器已断开连接',
       'Reset the connector state': '重置连接器状态',
       'Clear this connector': '清除此连接器',
-      'The connector state has been reset':
-        '连接器状态已重置',
+      'The connector state has been reset': '连接器状态已重置',
       'The connector has been cleared': '连接器已清理',
-      'Refresh the knowledge using this connector':
-        '使用此连接器刷新知识',
+      'Refresh the knowledge using this connector': '使用此连接器刷新知识',
       'Sectors and organizations': '部门和组织',
       'Regions, countries and cities': '区域、国家/地区和城市',
       'Direct targeting of this sector': '直接针对该部门',
@@ -1795,8 +1738,7 @@ const i18n = {
       'Direct targeting of this country': '直接针对该国家/地区',
       'Groups permissions on data marking is not fully implemented yet.':
         '对数据标记的组权限尚未完全实现。',
-      'No potential duplicate entities has been found.':
-        '未找到潜在的重复实体',
+      'No potential duplicate entities has been found.': '未找到潜在的重复实体',
       'potential duplicate entity': '潜在重复实体',
       'has been found.': '已发现。',
       'potential duplicate entities': '潜在重复实体',
@@ -1944,11 +1886,9 @@ const i18n = {
       'Disable tree vertical mode': '禁用垂直树形模式',
       'Enable forces': '启用强制',
       'Disable forces': '禁用强制',
-      'Display time range selector':
-        '显示时间范围选择器',
+      'Display time range selector': '显示时间范围选择器',
       'Display notes': '显示注释',
-      'Unfix the nodes and re-apply forces':
-        '取消固定节点并重新应用强制',
+      'Unfix the nodes and re-apply forces': '取消固定节点并重新应用强制',
       'Fit graph to canvas': '将图表适配到画布',
       'Filter entity types': '过滤实体类型',
       'Filter authors (created by)': '过滤作者(创建者)',
@@ -2023,8 +1963,7 @@ const i18n = {
       Inferences: '引用',
       'Action type': '行动类型',
       'Inference rules': '推理规则',
-      'Inferred knowledge based on the rule ':
-        '基于规则推理的知识',
+      'Inferred knowledge based on the rule ': '基于规则推理的知识',
       'View the item': '查看项目',
       'CSV file': 'CSV文件',
       'Export data in CSV': '以CSV格式导出数据',
@@ -2042,8 +1981,7 @@ const i18n = {
       'No export connector available to generate an export':
         '没有可以用于生成导出的导出连接器',
       'Simple export (just the entity)': '简单导出(仅实体)',
-      'Full export (entity and first neighbours)':
-        '完全导出(实体和第一个邻居)',
+      'Full export (entity and first neighbours)': '完全导出(实体和第一个邻居)',
       'Uploaded files': '已上传的文件',
       'Pending files': '挂起的文件',
       'Drop this pending bundle': '丢弃此挂起的捆绑包',
@@ -2060,8 +1998,7 @@ const i18n = {
       'Targeted entities': '针对的实体',
       'Background tasks': '后台任务',
       Verify: '验证',
-      'Connection successfully verified':
-        '已成功验证连接',
+      'Connection successfully verified': '已成功验证连接',
       "You're targeting more than 1000 entities with this background task, be sure of what you're doing!":
         '您正在使用此后台任务针对超过1000个实体，请确保您正在执行的操作!',
       Filters: '过滤器',
@@ -2151,13 +2088,11 @@ const i18n = {
       'Is family?': '是否是同一家族?',
       'Architecture execution env.': '架构执行环境',
       'Implementation languages': '实现语言',
-      'This sector does not have any description.':
-        '此部门没有任何描述。',
+      'This sector does not have any description.': '此部门没有任何描述。',
       'Relationship type': '关系类型',
       'Creation date': '创建日期',
       'Created the': '已创建',
-      'Creation date (in this platform)':
-        '创建日期(在此平台中)',
+      'Creation date (in this platform)': '创建日期(在此平台中)',
       'Technical date': '技术日期',
       'Functional date': '功能日期',
       'Date reference': '日期引用',
@@ -2201,8 +2136,7 @@ const i18n = {
       'Verify SSL certificate': '验证SSL证书',
       Confirmation: '确认',
       'Kill chain': '杀伤链',
-      'This feature is not available yet.':
-        '此功能尚不可用。',
+      'This feature is not available yet.': '此功能尚不可用。',
       'This page is not found on this OpenCTI application.':
         '在此OpenCTI应用程序上找不到此页面。',
       'Phase name': '阶段名称',
@@ -2212,10 +2146,8 @@ const i18n = {
       Author: '作者',
       Owner: '所有者',
       'Publication date': '发布日期',
-      'Top 10 threats targeting this entity':
-        '针对此实体的10大威胁',
-      'Top 10 active entities (3 last months)':
-        '10大活跃实体(最近3个月)',
+      'Top 10 threats targeting this entity': '针对此实体的10大威胁',
+      'Top 10 active entities (3 last months)': '10大活跃实体(最近3个月)',
       'Targeted countries (3 last months)': '针对的国家/地区(最近3个月)',
       Publication: '发布',
       'Entity type': '实体类型',
@@ -2369,8 +2301,7 @@ const i18n = {
       'Distribution of entities': '实体分布',
       'Distribution of opinions': '意见分布',
       'Observables distribution': '可观测数据分布',
-      'Distribution of relations (including inferred)':
-        '关系分布(包含推理)',
+      'Distribution of relations (including inferred)': '关系分布(包含推理)',
       'Distribution of relations': '关系分布',
       'Distribution of sources': '源分布',
       'Latest created relationships': '最新创建的关系',
@@ -2380,8 +2311,7 @@ const i18n = {
       'Created entities': '创建的实体',
       '24 hours': '24小时',
       '30 days': '30天',
-      'No entities were found for this search.':
-        '未找到此搜索的实体。',
+      'No entities were found for this search.': '未找到此搜索的实体。',
       'API access': 'API访问',
       Example: '示例',
       'API key': 'API密钥',
@@ -2402,16 +2332,12 @@ const i18n = {
       'External references files': '外部引用文件',
       to: '到',
       'Relations of the entity': '实体关系',
-      'No entities of this type has been found.':
-        '未找到此类型的实体。',
-      'No notes about this entity yet.':
-        '尚无关于此实体的注释',
+      'No entities of this type has been found.': '未找到此类型的实体。',
+      'No notes about this entity yet.': '尚无关于此实体的注释',
       'Notes about this entity': '关于此实体的注释',
       'Notes about this relationship': '关于此关系的注释',
-      'No history about this entity.':
-        '关于此实体的历史。',
-      'No relations history about this entity.':
-        '尚无关于此实体的关系历史',
+      'No history about this entity.': '关于此实体的历史。',
+      'No relations history about this entity.': '尚无关于此实体的关系历史',
       // Explore
       'Kill chains': '杀伤链',
       'Explore the victims and the targets of the dataset through space and time.':
@@ -2704,6 +2630,12 @@ const i18n = {
       RETENTION_MANAGER: '保留管理器',
       'Workflow of': '的工作流程',
       'Create a status': '创建状态',
+      'Clear all works': '清除所有作品',
+      'Do you want to reset the state of this connector?':
+        '是否要重置此连接器的状态？',
+      'Do you want to clear the works of this connector?':
+        '你想清除这个连接器的工作吗？',
+      Reset: '重启',
     },
     'en-us': {
       progress: 'In progress',
