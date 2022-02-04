@@ -30,8 +30,11 @@ jobs:
           name: flake8
           command: flake8 --ignore=E,W ~/repo
   tests:
+    parameters:
+      version:
+        type: string
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/python:<< parameters.version >>
     steps:
       - checkout
       - run:
@@ -101,7 +104,8 @@ workflows:
       - tests:
           filters:
             tags:
-              only: /.*/      
+              only: /.*/
+          version: 3.9
       - build:
           filters:
             tags:
