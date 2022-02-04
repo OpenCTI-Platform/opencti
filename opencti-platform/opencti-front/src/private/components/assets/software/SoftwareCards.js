@@ -126,7 +126,7 @@ export default createPaginationContainer(
       ) {
         softwareAssetList(
           search: $search
-          limit: $count
+          first: $count
           # after: $cursor
           orderedBy: $orderedBy
           orderMode: $orderMode
