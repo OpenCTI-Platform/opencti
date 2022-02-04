@@ -32,7 +32,7 @@ jobs:
   tests:
     parameters:
       version:
-        type: string
+        type: number
     docker:
       - image: cimg/python:<< parameters.version >>
     steps:
