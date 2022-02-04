@@ -12,6 +12,11 @@ import { setNumberOfElements } from '../../../../utils/Number';
 const nbOfRowsToLoad = 50;
 
 class NetworkLines extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { offset: 0 };
+  }
+
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -19,6 +24,14 @@ class NetworkLines extends Component {
       'networkAssetList',
       this.props.setNumberOfElements.bind(this),
     );
+  }
+  handleOffsetChange(){
+    const incrementedOffset = this.state.offset += nbOfRowsToLoad;
+    this.setState({ offset:incrementedOffset })
+    this.props.relay.refetchConnection(nbOfRowsToLoad, null, {
+      offset: this.state.offset,
+      first: nbOfRowsToLoad,
+    })
   }
 
   render() {
@@ -34,7 +47,7 @@ class NetworkLines extends Component {
     return (
       <ListLinesContent
         initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
+        loadMore={this.handleOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
         dataList={pathOr([], ['networkAssetList', 'edges'], this.props.data)}
@@ -43,6 +56,7 @@ class NetworkLines extends Component {
           ['networkAssetList', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
+        offset={this.state.offset}
         LineComponent={<NetworkLine />}
         DummyLineComponent={<NetworkLineDummy />}
         dataColumns={dataColumns}
@@ -72,7 +86,8 @@ NetworkLines.propTypes = {
 export const networkLinesQuery = graphql`
   query NetworkLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $first: Int!
+    $offset: Int!
     $cursor: ID
     $orderedBy: NetworkAssetOrdering
     $orderMode: OrderingMode
@@ -81,7 +96,8 @@ export const networkLinesQuery = graphql`
     ...NetworkLines_data
       @arguments(
         search: $search
-        count: $count
+        first: $first
+        offset: $offset
         cursor: $cursor
         orderedBy: $orderedBy
         orderMode: $orderMode
@@ -97,7 +113,8 @@ export default createPaginationContainer(
       fragment NetworkLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
+        first: { type: "Int", defaultValue: 50 }
+        offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
         orderedBy: { type: "NetworkAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
@@ -105,7 +122,8 @@ export default createPaginationContainer(
       ) {
         networkAssetList(
           search: $search
-          first: $count
+          first: $first
+          offset: $offset
           # after: $cursor
           orderedBy: $orderedBy
           orderMode: $orderMode
@@ -142,6 +160,8 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
+        first: fragmentVariables.first,
+        offset: fragmentVariables.offset,
         count,
         cursor,
         orderedBy: fragmentVariables.orderedBy,
