@@ -75,6 +75,9 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
       || R.propOr('', 'subattackPatterns_text', n.to)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
+    const stixRelationshipsEdges = data.stixCoreRelationships.edges.map((n) => (n.node.to.entity_type === 'Attack-Pattern'
+      ? n
+      : { node: { ...n.node, to: n.node.from, from: n.node.to } }));
     const killChainPhases = R.pipe(
       // eslint-disable-next-line no-nested-ternary
       R.map((n) => (n.node.killChainPhases.edges.length > 0
@@ -84,7 +87,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
       R.uniq,
       R.indexBy(R.prop('id')),
-    )(data.stixCoreRelationships.edges);
+    )(stixRelationshipsEdges);
     const stixCoreRelationships = R.pipe(
       R.map((n) => n.node),
       R.map((n) => R.assoc('startTimeYear', yearFormat(n.start_time), n)),
@@ -122,7 +125,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
       R.mapObjIndexed((value, key) => R.assoc('attackPatterns', value, killChainPhases[key])),
       R.values,
       R.sortWith([R.ascend(R.prop('x_opencti_order'))]),
-    )(data.stixCoreRelationships.edges);
+    )(stixRelationshipsEdges);
     return (
       <div>
         <div className={classes.container} id="container">

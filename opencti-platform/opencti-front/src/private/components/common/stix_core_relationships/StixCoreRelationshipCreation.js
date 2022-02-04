@@ -150,6 +150,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
           confidence
           start_time
           stop_time
+          created
           from {
             ... on BasicObject {
               id
@@ -163,6 +164,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
             }
             ... on StixCoreRelationship {
               relationship_type
+              created
             }
           }
           to {
@@ -178,6 +180,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
             }
             ... on StixCoreRelationship {
               relationship_type
+              created
             }
           }
           created_at

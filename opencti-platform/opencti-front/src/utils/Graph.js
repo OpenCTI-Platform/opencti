@@ -257,6 +257,13 @@ export const defaultDate = (n) => {
   return null;
 };
 
+export const defaultType = (n, t) => {
+  if (n.parent_types.includes('basic-relationship')) {
+    return t(`relationship_${n.entity_type}`);
+  }
+  return t(`entity_${n.entity_type}`);
+};
+
 export const defaultValue = (n, tooltip = false) => {
   if (!n) return '';
   if (tooltip) {
@@ -280,6 +287,12 @@ export const defaultValue = (n, tooltip = false) => {
         )}`)
       || n.id
       || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
+      || (n.from
+        && n.to
+        && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
+          defaultValue(n.to),
+          20,
+        )}`)
       || 'Unknown'
     }`;
   }
@@ -302,6 +315,12 @@ export const defaultValue = (n, tooltip = false) => {
         20,
       )}`)
     || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
+    || (n.from
+      && n.to
+      && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
+        defaultValue(n.to),
+        20,
+      )}`)
     || 'Unknown'
   }`;
 };
@@ -546,8 +565,13 @@ export const buildCorrelationData = (
         markedBy: n.markedBy,
         createdBy: n.createdBy,
       }),
-      R.filter((m) => m
-        && R.includes(m.id, R.map((o) => o.node.id, n.reports.edges)))(relatedReportNodes),
+      R.filter(
+        (m) => m
+            && R.includes(
+              m.id,
+              R.map((o) => o.node.id, n.reports.edges),
+            ),
+      )(relatedReportNodes),
     )),
     R.flatten,
   )(thisReportLinkNodes);

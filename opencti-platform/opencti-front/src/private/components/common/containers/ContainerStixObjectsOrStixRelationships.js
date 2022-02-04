@@ -85,13 +85,23 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
           <QueryRenderer
             query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
             variables={{ id: container.id, count: 25 }}
-            render={({ props }) => (
-              <ContainerStixObjectsOrStixRelationshipsLines
-                container={props ? props.container : null}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-              />
-            )}
+            render={({ props }) => {
+              if (
+                props
+                && props.container
+                && props.container.objects
+                && props.container.objects.edges.length === 0
+              ) {
+                return <div />;
+              }
+              return (
+                <ContainerStixObjectsOrStixRelationshipsLines
+                  container={props ? props.container : null}
+                  dataColumns={dataColumns}
+                  initialLoading={props === null}
+                />
+              );
+            }}
           />
         </ListLines>
       </Paper>

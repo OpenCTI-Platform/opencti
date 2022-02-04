@@ -153,9 +153,8 @@ StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
 
 export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery(
-    $fromId: String
-    $toTypes: [String]
-    $relationship_type: [String]
+    $elementId: String
+    $elementWithTargetTypes: [String]
     $first: Int
   ) {
     ...StixDomainObjectAttackPatternsKillChain_data
@@ -168,9 +167,8 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
     data: graphql`
       fragment StixDomainObjectAttackPatternsKillChain_data on Query {
         stixCoreRelationships(
-          fromId: $fromId
-          toTypes: $toTypes
-          relationship_type: $relationship_type
+          elementId: $elementId
+          elementWithTargetTypes: $elementWithTargetTypes
           first: $first
         ) {
           edges {
@@ -179,6 +177,63 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
               description
               start_time
               stop_time
+              from {
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                }
+                ... on AttackPattern {
+                  id
+                  parent_types
+                  entity_type
+                  name
+                  description
+                  x_mitre_id
+                  x_mitre_platforms
+                  x_mitre_permissions_required
+                  x_mitre_detection
+                  isSubAttackPattern
+                  coursesOfAction {
+                    edges {
+                      node {
+                        id
+                        name
+                        description
+                        x_mitre_id
+                      }
+                    }
+                  }
+                  parentAttackPatterns {
+                    edges {
+                      node {
+                        id
+                        name
+                        description
+                        x_mitre_id
+                      }
+                    }
+                  }
+                  subAttackPatterns {
+                    edges {
+                      node {
+                        id
+                        name
+                        description
+                        x_mitre_id
+                      }
+                    }
+                  }
+                  killChainPhases {
+                    edges {
+                      node {
+                        id
+                        phase_name
+                        x_opencti_order
+                      }
+                    }
+                  }
+                }
+              }
               to {
                 ... on BasicRelationship {
                   id

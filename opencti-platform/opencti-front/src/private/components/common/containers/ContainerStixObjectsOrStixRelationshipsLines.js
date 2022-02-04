@@ -66,6 +66,16 @@ export const ContainerStixObjectsOrStixRelationshipsLinesQuery = graphql`
   ) {
     container(id: $id) {
       id
+      objects(first: $count, orderBy: $orderBy, orderMode: $orderMode)
+        @connection(key: "Pagination_objects") {
+        edges {
+          node {
+            ... on BasicObject {
+              id
+            }
+          }
+        }
+      }
       ...ContainerStixObjectsOrStixRelationshipsLines_container
         @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode)
     }

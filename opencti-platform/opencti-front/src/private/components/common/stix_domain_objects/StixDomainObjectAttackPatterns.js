@@ -57,9 +57,8 @@ class StixDomainObjectVictimology extends Component {
     const { viewMode, searchTerm } = this.state;
     const { classes, stixDomainObjectId, entityLink } = this.props;
     const paginationOptions = {
-      fromId: stixDomainObjectId,
-      toTypes: ['Attack-Pattern'],
-      relationship_type: 'uses',
+      elementId: stixDomainObjectId,
+      elementWithTargetTypes: ['Attack-Pattern'],
     };
     return (
       <div className={classes.container}>
