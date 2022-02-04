@@ -1,6 +1,7 @@
 /* eslint-disable */
 
 import { apiAxios, accountAxios } from "../utils/axios";
+import {toastAxiosError} from "../utils/bakedToast";
 
 export const getAccount = async () => {
   try {
@@ -12,6 +13,7 @@ export const getAccount = async () => {
     });
     return await response;
   } catch (error) {
+    toastAxiosError("Fetch Account Error")
     throw error;
   }
 };
@@ -26,6 +28,7 @@ export const getInformationPageData = (clientID) => {
     const response = apiAxios.get(`/vsa/contextual-counts`, { headers });
     return response;
   } catch (error) {
+    toastAxiosError()
     throw error;
   }
 };
@@ -40,6 +43,7 @@ export const getCVEProductList = (cve_id, clientID) => {
     const response = apiAxios.get(`/vsa/cpe-list/${cve_id}`, { headers });
     return response;
   } catch (error) {
+    toastAxiosError()
     throw error;
   }
 };
@@ -58,6 +62,7 @@ export const getTrendingChartData = (clientID, analysis_ids) => {
     });
     return response;
   } catch (error) {
+    toastAxiosError("Fetch Trending Data Error")
     throw error;
   }
 };
@@ -77,6 +82,7 @@ export const getCVESeverityChartData = (clientID, analysis_ids) => {
     });
     return response;
   } catch (error) {
+    toastAxiosError()
     throw error;
   }
 };
@@ -97,6 +103,7 @@ export const getSeverityPieChartData = (clientID, analysis_ids) => {
     });
     return response;
   } catch (error) {
+    toastAxiosError()
     throw error;
   }
 };
@@ -123,6 +130,7 @@ export const getTopVulnerableHostsChartData = (
     });
     return response;
   } catch (error) {
+    toastAxiosError()
     throw error;
   }
 };
@@ -150,6 +158,7 @@ export const getTopVulnerableProductsChartData = (
     });
     return response;
   } catch (error) {
+    toastAxiosError()
     throw error;
   }
 };
@@ -171,6 +180,7 @@ export const getSeverityByWeaknessChartData = (clientID, analysis_ids) => {
     });
     return response;
   } catch (error) {
+    toastAxiosError()
     throw error;
   }
 };

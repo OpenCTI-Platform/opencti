@@ -28,6 +28,7 @@ class ListLinesContent extends Component {
     this.listRef = React.createRef();
     this.state = {
       loadingRowCount: 0,
+      newDataList: [],
     };
   }
 
@@ -55,6 +56,18 @@ class ListLinesContent extends Component {
     if (diff.length > 0 || diffBookmark.length > 0 || selection) {
       this.listRef.forceUpdateGrid();
     }
+    const checker = (arr, target) => target.every((v) => arr.includes(v));
+    if (this.state.newDataList.length !== (this.props.dataList.length + this.props.offset)) {
+      if (this.props.dataList.length === 0) {
+        this.setState({ newDataList: [] });
+        this.listRef.forceUpdateGrid();
+      }
+      if (!checker(this.state.newDataList, this.props.dataList)) {
+        this.setState({
+          newDataList: [...this.state.newDataList, ...this.props.dataList],
+        });
+      }
+    }
   }
 
   _setRef(windowScroller) {
@@ -78,7 +91,7 @@ class ListLinesContent extends Component {
     if (!hasMore() || isLoading()) {
       return;
     }
-    const difference = globalCount - dataList.length;
+    const difference = globalCount - this.state.newDataList.length;
     this.setState({
       loadingRowCount:
         difference >= nbOfRowsToLoad ? nbOfRowsToLoad : difference,
@@ -87,7 +100,7 @@ class ListLinesContent extends Component {
   }
 
   _isRowLoaded({ index }) {
-    return !this.props.hasMore() || index < this.props.dataList.length;
+    return !this.props.hasMore() || index < this.state.newDataList.length;
   }
 
   _rowRenderer({ index, key, style }) {
@@ -107,7 +120,7 @@ class ListLinesContent extends Component {
       connectionKey,
       isTo,
     } = this.props;
-    const edge = dataList[index];
+    const edge = this.state.newDataList[index];
     if (!edge) {
       return (
         <div key={key} style={style}>
@@ -148,8 +161,8 @@ class ListLinesContent extends Component {
       classes,
     } = this.props;
     const countWithLoading = isLoading()
-      ? dataList.length + this.state.loadingRowCount
-      : dataList.length;
+      ? this.state.newDataList.length + this.state.loadingRowCount
+      : this.state.newDataList.length;
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
@@ -202,6 +215,7 @@ ListLinesContent.propTypes = {
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
   dataList: PropTypes.array,
+  offset: PropTypes.number,
   me: PropTypes.object,
   globalCount: PropTypes.number,
   LineComponent: PropTypes.object,

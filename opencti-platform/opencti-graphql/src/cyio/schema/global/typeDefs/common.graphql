@@ -1,7 +1,7 @@
   # declares the query entry-points for this type
   extend type Query {
     cyioNote(id: ID!): CyioNote
-    cyioNotes( 
+    cyioNoteList( 
       first: Int
       offset: Int
       orderedBy: CyioNotesOrdering
@@ -11,8 +11,8 @@
       search: String
     ): CyioNoteConnection
     cyioExternalReference(id: ID!): CyioExternalReference
-    cyioExternalReferences(
-      first: Int
+    cyioExternalReferenceList(
+      limit: Int
       offset: Int
       orderedBy: CyioExternalReferencesOrdering
       orderMode: OrderingMode
@@ -46,7 +46,7 @@
     editCyioLabel(id: ID!, input: [EditInput]!, commitMessage: String): CyioLabel
   }
 
-  "Defines the identifying information about a lifecycle object"
+  "Identifies the identifying information about a lifecycle object"
   interface LifecycleObject {
     "Identities the date and time at which the object was originally created."
     created: Timestamp
@@ -56,9 +56,9 @@
 
   "Defines the identifying information about a Core object"
   interface CoreObject {
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
   }
 
   "Reference input to add a reference between two different objects"
@@ -257,7 +257,7 @@
     # Lifecycle
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
+    labels: [String]
     # CyioNote
     abstract: String
     content: String!
@@ -324,15 +324,16 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # CyioLocation
     name: String!
     description: String
   }
   
   input CyioLocationAddInput {
+    labels: [String]
     # CyioLocation
     location_type: CyioLocationType
     name: String!
@@ -352,9 +353,9 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # CyioIdentity
     name: String!
     description: String
