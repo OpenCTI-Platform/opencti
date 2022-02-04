@@ -260,7 +260,7 @@ class ReportKnowledgeGraphBar extends Component {
     const isInferred = R.filter((n) => n.inferred, selectedNodes).length > 0
       || R.filter((n) => n.inferred, selectedLinks).length > 0;
     if (viewEnabled) {
-      if (numberOfSelectedNodes === 1) {
+      if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
         if (selectedNodes[0].relationship_type) {
           viewLink = `${resolveLink(selectedNodes[0].fromType)}/${
             selectedNodes[0].fromId
@@ -270,7 +270,7 @@ class ReportKnowledgeGraphBar extends Component {
             selectedNodes[0].id
           }`;
         }
-      } else if (numberOfSelectedLinks === 1) {
+      } else if (numberOfSelectedLinks === 1 && selectedLinks.length === 1) {
         const remoteRelevant = selectedLinks[0].source.relationship_type
           ? selectedLinks[0].target
           : selectedLinks[0].source;
@@ -282,15 +282,17 @@ class ReportKnowledgeGraphBar extends Component {
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
+        && selectedNodes.length === 1
         && !selectedNodes[0].isObservable)
       || (!isInferred
         && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
+        && selectedLinks.length === 1
         && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
-    const fromSelectedTypes = numberOfSelectedNodes >= 2
+    const fromSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];
-    const toSelectedTypes = numberOfSelectedNodes >= 2
+    const toSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
       : [];
     const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
