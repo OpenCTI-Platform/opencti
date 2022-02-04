@@ -105,7 +105,17 @@ workflows:
           filters:
             tags:
               only: /.*/
+          version: "3.8"
+      - tests:
+          filters:
+            tags:
+              only: /.*/
           version: "3.9"
+      - tests:
+          filters:
+            tags:
+              only: /.*/
+          version: "3.10"
       - build:
           filters:
             tags:
@@ -114,6 +124,7 @@ workflows:
             - ensure_formatting
             - linter
             - tests
+              version: "3.9"
       - deploy:
           requires:
             - build
