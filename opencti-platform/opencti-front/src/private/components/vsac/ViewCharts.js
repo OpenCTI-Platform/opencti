@@ -127,8 +127,8 @@ class ViewCharts extends Component {
       anchorEl: false,
       clientId: localStorage.getItem('client_id'),
       analysis_id: this.props.location.state.analysis_id,
-      analysises: this.props.location.state.analysises,
-      analysisesIDs: this.getAnalysisesID(this.props.location.state.analysises),
+      analysises: this.props.location.state.analyses,
+      analysisesIDs: this.getAnalysisesID(this.props.location.state.analyses),
       severityChartData: null,
       vulnerabilityByYearChartData: null,
       topVulnerableHost: null,
@@ -700,7 +700,7 @@ class ViewCharts extends Component {
               })}
           </TabPanel>
           <TabPanel
-            style={{ minHeight: 700, width: '100%', paddingTop: 20 }}
+            style={{ minHeight: 800, width: '100%', paddingTop: 20 }}
             value={tabValue}
             index={4}
           >
@@ -708,14 +708,14 @@ class ViewCharts extends Component {
               <Paper
                 elevation={2}
                 style={{
-                  height: 500,
+                  height: 750,
                   width: '100%',
                   marginBottom: 40,
                 }}
               >
                {trendingChatData &&
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart width={500} height={300}>
+                <ResponsiveContainer width="100%" height="90%">
+                  <LineChart width={500} height={500}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis
                       dataKey="category"
@@ -725,7 +725,7 @@ class ViewCharts extends Component {
                     />
                     <YAxis dataKey="value" tick={{ fill: 'white' }}/>
                     <Tooltip />
-                    <Legend wrapperStyle={{ bottom: 0 }} />
+                    <Legend wrapperStyle={{ bottom: -20 }}/>
                     {trendingChatData.map((s) => (
                       <Line
                         dataKey="value"

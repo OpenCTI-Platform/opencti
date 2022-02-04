@@ -390,12 +390,12 @@ export const locationPredicateMap = {
   },
   created: {
     predicate: "<http://darklight.ai/ns/common#created>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}^^xsd:dateTime"` : null,  this.predicate, "created");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   modified: {
     predicate: "<http://darklight.ai/ns/common#modified>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}^^xsd:dateTime"` : null,  this.predicate, "modified");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   }
 }

@@ -2,6 +2,7 @@
 
 import { analysisAxios, CancelCallToken } from "../utils/axios";
 import { Canceler } from "axios";
+import {toastAxiosError} from "../utils/bakedToast";
 
 export let cancelAllAnalysis;
 export let cancelAnalysisProfileData;
@@ -31,6 +32,7 @@ const getAnalysisData = (id, option, params, headers) => {
     });
     return response;
   } catch (error) {
+    toastAxiosError("Fetch Analysis Data Error")
     throw error;
   }
 };
@@ -45,11 +47,12 @@ export const createNewScanAnalysis = async (id, clientID, formParams) => {
     const newScan = analysisAxios.post(`vsa/analysis`, formParams, { headers });
     return await newScan;
   } catch (error) {
+    toastAxiosError("Create Analysis Error")
     throw error;
   }
 };
 
-export const createVulnerabilityAssesmentReport = async (
+export const createVulnerabilityAssessmentReport = async (
   id,
   clientID,
   params
@@ -65,6 +68,7 @@ export const createVulnerabilityAssesmentReport = async (
     });
     return await newReport;
   } catch (error) {
+    toastAxiosError("Create Assessment Error")
     throw error;
   }
 };
@@ -82,6 +86,7 @@ export const fetchTrendableAnalyses = async (id, clientID) => {
     );
     return await trendableAnalyses;
   } catch (error) {
+    toastAxiosError("Fetch Trendable Data Error")
     throw error;
   }
 };
@@ -104,7 +109,8 @@ export const fetchAllAnalysis = async (clientID, params) => {
     });
     return response;
   } catch (error) {
-    console.error(error);
+    toastAxiosError("Fetch Analyses Error")
+    throw error
   }
 };
 
@@ -120,7 +126,8 @@ export const fetchAnalysis = async (id, clientID) => {
     });
     return await response;
   } catch (error) {
-    console.error(error);
+    toastAxiosError('Analysis Fetch Error');
+    throw error;
   }
 };
 
@@ -130,6 +137,7 @@ export const deleteAnalysis = async (id, clientID) => {
     const response = analysisAxios.delete(`vsa/analysis/${id}`, { headers });
     return await response;
   } catch (error) {
+    toastAxiosError("Delete Analysis Error")
     throw error;
   }
 };
@@ -145,6 +153,7 @@ export const exportAnalysisCsv = async (id, clientID) => {
     });
     return await response;
   } catch (error) {
+    toastAxiosError("Export Analysis Error")
     throw error;
   }
 };
@@ -160,6 +169,7 @@ export const getAnalysisSummary = async (id, clientID) => {
     });
     return await response;
   } catch (error) {
+    toastAxiosError("Fetch Summary Error")
     throw error;
   }
 };

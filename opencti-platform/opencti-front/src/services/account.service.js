@@ -1,6 +1,7 @@
 /* eslint-disable func-names */
 /* eslint-disable no-useless-catch */
 import { accountAxios, organizationAxios } from '../utils/axios';
+import { toastAxiosError } from '../utils/bakedToast';
 
 export const getAccount = async () => {
   try {
@@ -12,6 +13,7 @@ export const getAccount = async () => {
     });
     return await response;
   } catch (error) {
+    toastAxiosError('Account Fetch Error');
     throw error;
   }
 };
@@ -35,6 +37,7 @@ export const getOrganizationSettings = async (clientId) => {
     });
     return await response;
   } catch (error) {
+    toastAxiosError('Fetch Organization Error');
     throw error;
   }
 };
@@ -59,6 +62,7 @@ export const updateOrganizationSettings = async (
     );
     return await response;
   } catch (error) {
+    toastAxiosError('Update Organization Error');
     throw error;
   }
 };
