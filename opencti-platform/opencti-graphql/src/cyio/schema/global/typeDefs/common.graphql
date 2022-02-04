@@ -19,6 +19,16 @@
       filters: [CyioExternalReferencesFiltering]
       filterMode: FilterMode
     ): CyioExternalReferenceConnection
+    cyioLabel(id: ID!): CyioLabel
+    cyioLabels(
+      limit: Int
+      offset: Int
+      orderBy: CyioLabelsOrdering
+      orderMode: OrderingMode
+      filters: [CyioLabelsFiltering]
+      filterMode: FilterMode
+      search: String
+    ): CyioLabelConnection
   }
 
   # declares the mutation entry-points for this type
@@ -31,6 +41,9 @@
     createCyioExternalReference(input: CyioExternalReferenceAddInput): CyioExternalReference
     deleteCyioExternalReference(id: ID!): String!
     editCyioExternalReference(id: ID!, input: [EditInput]!, commitMessage: String): CyioExternalReference
+    createCyioLabel(input: CyioLabelAddInput): CyioLabel
+    deleteCyioLabel(id: ID!): String!
+    editCyioLabel(id: ID!, input: [EditInput]!, commitMessage: String): CyioLabel
   }
 
   "Identifies the identifying information about a lifecycle object"
@@ -169,7 +182,8 @@
     SHA3_512
   }
 
-  type CyioNote implements BasicObject {
+############## Labels
+  type CyioLabel implements BasicObject & LifecycleObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -179,7 +193,68 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # Lifecycle Object
+    "Identities the date and time at which the object was originally created."
+    created: Timestamp
+    "Identifies the date and time at which the object was last modified."
+    modified: Timestamp
+    # Cyio Label
+    "Identifies the text value of the label."
+    name: String!
+    "Identifies the color to be applied to the label."
+    color: String
+    "Identifies a human-readable description of the meaning of the label"
+    description: String
+  }
+
+  input CyioLabelAddInput {
+    name: String!
+    color: String
+    description: String
+  }
+
+  enum CyioLabelsOrdering {
+    "Name"
+    name
+    "Color"
+    color
+    "Created"
+    created
+    "Modified"
+    modified
+  }
+
+  enum CyioLabelsFilter {
+    "Name"
+    name
+  }
+  input CyioLabelsFiltering {
+    key: LabelsFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+  }
+  type CyioLabelConnection {
+    pageInfo: PageInfo!
+    edges: [CyioLabelEdge]
+  }
+  type CyioLabelEdge {
+    cursor: String!
+    node: CyioLabel!
+  }
+
+
+  type CyioNote implements BasicObject & LifecycleObject {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # Lifecycle
     created: Timestamp
     modified: Timestamp
     labels: [String]

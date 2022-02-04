@@ -103,12 +103,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -172,9 +172,6 @@
   }
 
   input ComponentAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -273,12 +270,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -348,9 +345,6 @@
   }
 
   input HardwareComponentAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -460,12 +454,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -534,8 +528,6 @@
   }
 
   input NetworkComponentAddInput {
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -649,12 +641,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -722,8 +714,6 @@
   }
 
   input ServiceComponentAddInput {
-    labels: [String]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -831,12 +821,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -911,8 +901,6 @@
   }
 
   input SoftwareComponentAddInput {
-    labels: [String]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!
@@ -1028,12 +1016,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    external_references: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    notes: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1099,8 +1087,6 @@
   }
 
   input SystemComponentAddInput {
-    labels: [String]
-    # OscalObject
     # Component
     "Indicates the type of the component"
     component_type: ComponentType!

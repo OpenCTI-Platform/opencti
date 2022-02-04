@@ -216,7 +216,7 @@ class Software extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={softwareCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ props }) => (
             <SoftwareCards
               data={props}
@@ -323,7 +323,7 @@ class Software extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={softwareLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ props }) => (
             <SoftwareLines
               data={props}

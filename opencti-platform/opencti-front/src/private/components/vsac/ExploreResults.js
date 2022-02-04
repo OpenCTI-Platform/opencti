@@ -22,6 +22,7 @@ import {
   getAnalysisFilteredResults,
   getAnalysisFilteredResultsDetails,
   getAnalysisFilteredResultsVulnerability,
+  createVulnerabilityAssessmentReport,
 } from '../../../services/analysis.service';
 import moment from 'moment';
 import Table from '@material-ui/core/Table';
@@ -42,6 +43,9 @@ import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import GenerateReport from "./modals/GenerateReport";
+import Dialog from "@material-ui/core/Dialog";
+
 
 const styles = (theme) => ({
   selectedTableRow: {
@@ -113,6 +117,8 @@ class ExploreResults extends Component {
       cpe: null,
       cve_id: null,
       cwe_id: null,
+      generateReportSuccess: false,
+      openDialog: false, 
     };
   }
 
@@ -157,6 +163,7 @@ class ExploreResults extends Component {
   render() {
     const { classes } = this.props;
     const {
+      client,
       analysis,
       hosts,
       software,
@@ -176,6 +183,8 @@ class ExploreResults extends Component {
       cpe,
       cve_id,
       cwe_id,
+      generateReportSuccess,
+      openDialog,
     } = this.state;
 
     const handleFilterResults = (params, name, type) => {
@@ -395,6 +404,25 @@ class ExploreResults extends Component {
         });
     };
 
+    const onGenerateReport = (id, client, params) => {
+
+      createVulnerabilityAssessmentReport(id, client, params)
+        .then((response) => {
+          this.setState({ generateReportSuccess: true });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+
+    const handleDialogOpen = () => {
+      this.setState({ openDialog: true });
+    };
+
+    const handleDialogClose = () => {
+      this.setState({ openDialog: false });
+    };
+
     const handleReset = () => {
       this.setState({weaknessDetails: null});
       this.setState({weaknessAccordion: false});
@@ -463,6 +491,14 @@ class ExploreResults extends Component {
               >
                 Reset Filters
               </Button>
+              <Button
+                  size="medium"
+                  variant="contained"
+                  style={{margin: 3, }}
+                  onClick={handleDialogOpen}
+              >
+                Generate Report
+              </Button>
             </div>
           </Grid>
           <Grid item={true} xs={4}>
@@ -530,7 +566,7 @@ class ExploreResults extends Component {
                               <TableRow
                                 key={rowName}
                                 selected={rowName === selectedRow}
-                                onClick={() => handleFilterResults(result.host_ip, rowName) }
+                                onClick={() => handleFilterResults({host_ip: result.host_ip}, rowName) }
                                 hover
                                 classes={{ root: classes.selectedTableRow }}
                               >
@@ -684,25 +720,25 @@ class ExploreResults extends Component {
                 <Card>
                   <CardContent>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h3" gutterBottom={true}>
                         IP Address
                       </Typography>
                       <p>{currentResult?.host_ip}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h3" gutterBottom={true}>
                         Hostname
                       </Typography>
                       <p>{currentResult?.host_name}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h3" gutterBottom={true}>
                         MAC Address
                       </Typography>
                       <p>{currentResult?.host_mac}</p>
                     </div>
                     <div>
-                      <Typography variant="h5" gutterBottom={true}>
+                      <Typography variant="h3" gutterBottom={true}>
                         Operating System
                       </Typography>
                       <p>{currentResult?.host_os}</p>
@@ -713,6 +749,21 @@ class ExploreResults extends Component {
             </Grid>
           </Grid>
         </Grid>
+        <Dialog
+            open={openDialog}
+            onClose={() => handleDialogClose()}
+            maxWidth="md"
+          >
+          <GenerateReport
+            id={analysis.id}
+            client={client}
+            scanName={analysis.scan.scan_name}
+            success={generateReportSuccess}
+            onClose={handleDialogClose}
+            action={onGenerateReport}
+          />
+        </Dialog>
+
       </div>
     );
   }
