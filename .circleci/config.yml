@@ -32,7 +32,7 @@ jobs:
   tests:
     parameters:
       version:
-        type: number
+        type: string
     docker:
       - image: cimg/python:<< parameters.version >>
     steps:
@@ -105,7 +105,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-          version: 3.9
+          version: "3.9"
       - build:
           filters:
             tags:
