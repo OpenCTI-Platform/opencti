@@ -405,6 +405,7 @@ class ExploreResults extends Component {
     };
 
     const onGenerateReport = (id, client, params) => {
+
       createVulnerabilityAssessmentReport(id, client, params)
         .then((response) => {
           this.setState({ generateReportSuccess: true });

@@ -18,7 +18,10 @@ const nbOfCardsToLoad = 50;
 class NetworkCards extends Component {
   constructor(props) {
     super(props);
-    this.state = { bookmarks: [] };
+    this.state = {
+      bookmarks: [],
+      offset: 0,
+    };
   }
 
   componentDidUpdate(prevProps) {
@@ -33,6 +36,14 @@ class NetworkCards extends Component {
   handleSetBookmarkList(bookmarks) {
     this.setState({ bookmarks });
   }
+  handleOffsetChange(){
+    const incrementedOffset = this.state.offset += nbOfCardsToLoad;
+    this.setState({ offset:incrementedOffset })
+    this.props.relay.refetchConnection(nbOfCardsToLoad, null, {
+      offset: this.state.offset,
+      first: nbOfCardsToLoad,
+    })
+  }
 
   render() {
     const {
@@ -43,7 +54,7 @@ class NetworkCards extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const { bookmarks } = this.state;
+    const { bookmarks, offset } = this.state;
     return (
     // <QueryRenderer
     //   query={stixDomainObjectBookmarksQuery}
@@ -57,7 +68,7 @@ class NetworkCards extends Component {
     //       />
             <CyioListCardsContent
               initialLoading={initialLoading}
-              loadMore={relay.loadMore.bind(this)}
+              loadMore={this.handleOffsetChange.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
               dataList={pathOr([], ['networkAssetList', 'edges'], this.props.data)}
@@ -66,6 +77,7 @@ class NetworkCards extends Component {
                 ['networkAssetList', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
+              offset={offset}
               CardComponent={<NetworkCard />}
               DummyCardComponent={<NetworkCardDummy />}
               selectAll={selectAll}
@@ -93,7 +105,8 @@ NetworkCards.propTypes = {
 export const networkCardsQuery = graphql`
   query NetworkCardsPaginationQuery(
     $search: String
-    $count: Int!
+    $first: Int!
+    $offset: Int!
     $cursor: ID
     $orderedBy: NetworkAssetOrdering
     $orderMode: OrderingMode
@@ -102,7 +115,8 @@ export const networkCardsQuery = graphql`
     ...NetworkCards_data
       @arguments(
         search: $search
-        count: $count
+        first: $first
+        offset: $offset
         cursor: $cursor
         orderedBy: $orderedBy
         orderMode: $orderMode
@@ -118,7 +132,8 @@ export default createPaginationContainer(
       fragment NetworkCards_data on Query
       @argumentDefinitions(
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
+        first: { type: "Int", defaultValue: 50 }
+        offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
         orderedBy: { type: "NetworkAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
@@ -126,7 +141,8 @@ export default createPaginationContainer(
       ) {
         networkAssetList(
           search: $search
-          limit: $count
+          first: $first
+          offset: $offset
           # after: $cursor
           orderedBy: $orderedBy
           orderMode: $orderMode
@@ -163,6 +179,8 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
+        first: fragmentVariables.first,
+        offset: fragmentVariables.offset,
         count,
         cursor,
         orderedBy: fragmentVariables.orderedBy,

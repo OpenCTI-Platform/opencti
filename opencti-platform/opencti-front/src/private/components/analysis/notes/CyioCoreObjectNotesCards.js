@@ -174,7 +174,7 @@ const CyioCoreObjectNotesCards = createPaginationContainer(
       ) {
         itAsset(id: $id) {
           id
-          notes(limit: $count) @connection(key: "Pagination_notes") {
+          notes(first: $count) @connection(key: "Pagination_notes") {
             edges {
               node {
                 id

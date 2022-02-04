@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
@@ -10,6 +12,11 @@ import { setNumberOfElements } from '../../../../utils/Number';
 const nbOfRowsToLoad = 50;
 
 class DevicesLines extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { offset: 0 };
+  }
+  
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -17,6 +24,14 @@ class DevicesLines extends Component {
       'computingDeviceAssetList',
       this.props.setNumberOfElements.bind(this),
     );
+  }
+
+  handleOffsetChange(){
+    const incrementedOffset = this.state.offset += nbOfRowsToLoad;
+    this.setState({offset:incrementedOffset})
+    this.props.relay.refetchConnection(nbOfRowsToLoad, null, {
+      offset: this.state.offset,
+    })
   }
 
   render() {
@@ -32,7 +47,7 @@ class DevicesLines extends Component {
     return (
       <ListLinesContent
         initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
+        loadMore={this.handleOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
         dataList={pathOr([], ['computingDeviceAssetList', 'edges'], this.props.data)}
@@ -41,6 +56,7 @@ class DevicesLines extends Component {
           ['computingDeviceAssetList', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
+        offset={this.state.offset}
         LineComponent={<DeviceLine />}
         DummyLineComponent={<DeviceLineDummy />}
         selectAll={selectAll}
@@ -70,7 +86,8 @@ DevicesLines.propTypes = {
 export const devicesLinesQuery = graphql`
   query DevicesLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $first: Int!
+    $offset: Int!
     $cursor: ID
     $orderedBy: ComputingDeviceAssetOrdering
     $orderMode: OrderingMode
@@ -79,7 +96,8 @@ export const devicesLinesQuery = graphql`
     ...DevicesLines_data
       @arguments(
         search: $search
-        count: $count
+        first: $first
+        offset: $offset
         cursor: $cursor
         orderedBy: $orderedBy
         orderMode: $orderMode
@@ -95,7 +113,8 @@ export default createPaginationContainer(
       fragment DevicesLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
+        first: { type: "Int", defaultValue: 50 }
+        offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
         orderedBy: { type: "ComputingDeviceAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
@@ -103,9 +122,8 @@ export default createPaginationContainer(
       ) {
         computingDeviceAssetList(
           search: $search
-          limit: $count
-          # after: $cursor
-          # offset: $count
+          first: $first
+          offset: $offset
           orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
@@ -141,6 +159,8 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
+        first: fragmentVariables.first,
+        offset: fragmentVariables.offset,
         count,
         cursor,
         orderedBy: fragmentVariables.orderedBy,

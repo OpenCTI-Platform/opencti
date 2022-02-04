@@ -31,14 +31,14 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
+    labels: [String]
     # Asset
     asset_id: String
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -94,14 +94,14 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
+    labels: [String]
     # Asset
     asset_id: String
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -156,14 +156,14 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
+    labels: [String]
     # Asset
     asset_id: String
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # ItAsset
     asset_tag: String
     asset_type: AssetType!
@@ -206,6 +206,7 @@
 
   # Mutation Types
   input ComputingDeviceAssetAddInput {
+    labels: [String]
     # Asset
     asset_id: String
     name: String!
