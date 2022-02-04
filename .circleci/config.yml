@@ -32,6 +32,7 @@ jobs:
   tests:
     parameters:
       version:
+        default: "3.9"
         type: string
     docker:
       - image: cimg/python:<< parameters.version >>
@@ -124,7 +125,6 @@ workflows:
             - ensure_formatting
             - linter
             - tests
-              version: "3.9"
       - deploy:
           requires:
             - build
