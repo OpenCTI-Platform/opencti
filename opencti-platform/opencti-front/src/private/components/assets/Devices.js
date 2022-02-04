@@ -223,7 +223,7 @@ class Devices extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={devicesCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             return (
               <DevicesCards
@@ -336,7 +336,7 @@ class Devices extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={devicesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             return (
               <DevicesLines

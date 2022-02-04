@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { scanAxios } from "../utils/axios";
 import updateFileName from "../utils/s3FileName";
+import {toastAxiosError} from "../utils/bakedToast";
 
 
 export const createScan = async (params, clientID, passedConfig) => {
@@ -25,6 +26,7 @@ export const createScan = async (params, clientID, passedConfig) => {
     const newScan = scanAxios.post("vsa/scans", bodyParams, config);
     return await newScan;
   } catch (error) {
+    toastAxiosError("Scan Create Error")
     throw error;
   }
 };
@@ -43,6 +45,7 @@ export const fetchAllScans = async (clientID, params) => {
     });
     return await response;
   } catch (error) {
+    toastAxiosError("Fetch Scans Error")
     throw error;
   }
 };
@@ -58,6 +61,7 @@ export const fetchScan = async (id, clientID) => {
     });
     return await response;
   } catch (error) {
+    toastAxiosError("Fetch Scan Error")
     throw error;
   }
 };
@@ -71,6 +75,7 @@ export const updateScanName = async (id, clientID, params) => {
     });
     return await response;
   } catch (error) {
+    toastAxiosError("Update Scan Error")
     throw error;
   }
 };
@@ -81,34 +86,10 @@ export const deleteScan = async (id, clientID) => {
     const response = scanAxios.delete(`vsa/scans/${id}`, { headers });
     return await response;
   } catch (error) {
+    toastAxiosError("Scan Delete Error")
     throw error;
   }
 };
-
-/* MOVED preSignS3 TO NewVulnerabilityScan Modal due to need of Client ID
-
-export const preSignS3 = async(file: any, callback: any) => {
-  const headers = {
-    "Accept": "application/vnd.dl.s3.surl.response+json;version=1",
-    "Content-Type": "application/vnd.dl.s3.surl.request+json;version=1"
-  };
-  const bodyParams = {
-    file_name: file.name,
-    resource_type: 'nessus',
-    file_type: file.type
-  };
-  try {
-    scanAxios.post('/s3/presign', bodyParams, { headers }).then(results => {
-      callback(results.data);
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  } catch (error) {
-    throw(error);
-  }
-}
-*/
 
 export const fetchVignettes = async (clientID) => {
   try {
@@ -120,6 +101,7 @@ export const fetchVignettes = async (clientID) => {
     const response = scanAxios.get(`vsa/vignette`, { headers });
     return await response;
   } catch (error) {
+    toastAxiosError("Fetch Vignettes Error")
     throw error;
   }
 };

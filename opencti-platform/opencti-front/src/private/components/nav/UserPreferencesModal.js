@@ -1,5 +1,6 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
@@ -154,6 +155,7 @@ const UserPreferencesModal = (props) => {
   const [orgSettings, setOrgSettings] = useState([])
   const [clients, setClients] = useState();
  
+  const location = useLocation();
 
   const handleSubmit = () => {
    
@@ -162,7 +164,13 @@ const UserPreferencesModal = (props) => {
     updateOrganizationSettings(currentClient_id, param).then((results) =>{
 
       localStorage.setItem('client_id', currentClient_id);
-       window.location.reload(false);
+
+      if(location.pathname === '/dashboard/vsac/scans/exploreresults'){
+
+       window.location.replace('/dashboard/vsac/scans');
+      } else {
+        window.location.reload(false);
+      }
 
     }).catch((error) => {
       console.log(error)
