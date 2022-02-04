@@ -55,10 +55,10 @@ class LabelsAttributesMenu extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={'/dashboard/settings/attributes/report_types'}
+            to={'/dashboard/settings/attributes/fields/report_types'}
             selected={
               location.pathname
-              === '/dashboard/settings/attributes/report_types'
+              === '/dashboard/settings/attributes/fields/report_types'
             }
             dense={false}
           >

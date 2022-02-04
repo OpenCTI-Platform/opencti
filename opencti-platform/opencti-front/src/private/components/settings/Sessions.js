@@ -22,7 +22,7 @@ Transition.displayName = 'TransitionSlide';
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: '0 200px 50px 0',
   },
   parameters: {
     float: 'left',

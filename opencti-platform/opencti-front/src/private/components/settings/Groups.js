@@ -34,7 +34,7 @@ export const groupsSearchQuery = graphql`
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: '0 200px 50px 0',
   },
 });
 
