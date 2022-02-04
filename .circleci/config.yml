@@ -103,19 +103,19 @@ workflows:
             tags:
               only: /.*/    
       - tests:
-          name: test_38
+          name: tests_38
           filters:
             tags:
               only: /.*/
           version: "3.8"
       - tests:
-          name: test_39
+          name: tests_39
           filters:
             tags:
               only: /.*/
           version: "3.9"
       - tests:
-          name: test_310
+          name: tests_310
           filters:
             tags:
               only: /.*/
