@@ -21,7 +21,7 @@
     "formik-material-ui-pickers": "0.0.12",
     "graphql": "15.8.0",
     "html-to-image": "1.9.0",
-    "html-to-pdfmake": "2.3.8",
+    "html-to-pdfmake": "2.3.9",
     "http-proxy-middleware": "2.0.2",
     "js-file-download": "0.4.12",
     "leaflet": "1.7.1",
@@ -80,12 +80,10 @@
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-react": "7.28.0",
     "fs-extra": "10.0.0",
-    "node-sass": "7.0.1",
     "prettier": "2.5.1",
     "react-scripts": "4.0.3",
     "relay-compiler": "11.0.2",
-    "relay-devtools": "1.4.0",
-    "sass-loader": "12.4.0"
+    "relay-devtools": "1.4.0"
   },
   "babelMacros": {
     "relay": {}
@@ -124,6 +122,7 @@
   ],
   "resolutions": {
     "bezier-js": "4.0.3",
+    "node-sass": "7.0.1",
     "react-error-overlay": "6.0.9",
     "trim-newlines": "4.0.2",
     "webpack": "4.44.2"
