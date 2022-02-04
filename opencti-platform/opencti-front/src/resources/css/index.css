@@ -151,5 +151,8 @@ div.markdown p {
 }
 
 .NoResults{
-  background-color: #F9B406;
+  color: #F9B406;
+}
+.Invalid{
+  color: #CE202C;
 }

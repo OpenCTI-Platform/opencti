@@ -647,9 +647,14 @@ class Scans extends Component {
                     renderScans.map((scan, i) => {
 
                       let NoResults = false;
+                      let Invalid = false;
 
-                      if(scan.vulnerability_count == 0){
-                        NoResults = true
+                      if(scan.status == 'NoResults'){
+                        NoResults = true;
+                      }
+
+                      if(scan.status === 'invalid'){
+                        Invalid = true;
                       }
 
                       return (
@@ -657,7 +662,7 @@ class Scans extends Component {
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                           onMouseLeave={(e) => handlePopoverClose()}
-                          className={NoResults ? "NoResults" : ""}
+                          className={NoResults ? "NoResults" : "", Invalid ? "Invalid" : ""}
                         >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
