@@ -276,6 +276,7 @@ export function networkAssetReducer( item ) {
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
+    ...(item.labels && {labels: item.labels}),
     ...(item.name && {name: item.name}),
     ...(item.description && { description: item.description}),
     ...(item.asset_id && { asset_id: item.asset_id}),
@@ -296,7 +297,6 @@ export function networkAssetReducer( item ) {
     ...(item.iri && {parent_iri: item.iri}),
     ...(item.locations && {locations_iri: item.locations}),
     ...(item.external_references && {ext_ref_iri: item.external_references}),
-	  ...(item.labels && {labels_iri: item.labels}),
     ...(item.notes && {notes_iri: item.notes}),
     ...(item.network_address_range && {netaddr_range_iri: item.network_address_range}),
   }
