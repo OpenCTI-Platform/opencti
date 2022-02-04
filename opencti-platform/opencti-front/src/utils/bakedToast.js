@@ -2,10 +2,11 @@ import { toast } from 'react-toastify';
 
 const baseCloseTime = 4000;
 
-export const toastGenericError = () => {
+export const toastGenericError = (message) => {
   toast.error(
-    'An error has occurred',
+    message || 'An error has occurred',
     {
+      theme: 'dark',
       autoClose: baseCloseTime,
     },
   );
@@ -15,6 +16,7 @@ export const toastAxiosError = (message) => {
   toast.error(
     message || 'Data Fetch Error',
     {
+      theme: 'dark',
       autoClose: baseCloseTime,
     },
   );

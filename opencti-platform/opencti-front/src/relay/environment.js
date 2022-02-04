@@ -23,7 +23,7 @@ import {
   RelayNetworkLayer,
 } from 'react-relay-network-modern/node8';
 import uploadMiddleware from './uploadMiddleware';
-import {toast} from "react-toastify";
+import { toastGenericError } from '../utils/bakedToast';
 
 // Dev tools
 export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
@@ -128,7 +128,7 @@ export class QueryRenderer extends Component {
           const types = error ? map((e) => e.name, error) : [];
           const unmanagedErrors = difference(types, managedErrorTypes || []);
           if (!isEmpty(unmanagedErrors)) {
-            toast.error('Query Error', { autoClose: 4000});
+            toastGenericError('Query Error');
             throw new ApplicationError(error);
           }
           return render(data);

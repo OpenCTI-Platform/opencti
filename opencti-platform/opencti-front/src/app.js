@@ -7,6 +7,7 @@ import { APP_BASE_PATH } from './relay/environment';
 import RedirectManager from './components/RedirectManager';
 import RootPrivate from './private/Root';
 import 'react-toastify/dist/ReactToastify.css';
+import './resources/css/toast-override.css';
 
 const App = () => (
   <div>
@@ -25,6 +26,7 @@ const App = () => (
       newestOnTop={false}
       closeOnClick={false}
       rtl={false}
+      theme={'dark'}
       pauseOnFocusLoss
       draggable={false}
       pauseOnHover

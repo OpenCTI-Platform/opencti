@@ -167,7 +167,7 @@ class NewAnalysis extends Component {
 					console.log(error)
 				})
 		}
-  	}
+	}
 
 	render() {
 		const {
