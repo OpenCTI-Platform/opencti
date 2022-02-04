@@ -20,7 +20,7 @@ import {
 import Chip from '@material-ui/core/Chip';
 
 const Compare = (props) => {
-  const [getAnalysises] = useState(props.location.state.analysises);
+  const [getAnalyses] = useState(props.location.state.analyses);
   const [getScatterPlotData] = useState(props.location.state.scatterPlotData);
 
   const scatter = [];
@@ -51,12 +51,12 @@ const Compare = (props) => {
       <Grid item={true} xs={4}>
         <Paper elevation={2} style={{ height: '920px', marginBottom: 20, overflowY: 'scroll' }}>
           <List>
-            { getAnalysises.map((analysis, i) => {
+            { getAnalyses.map((analysis, i) => {
               const hex = Math.floor(Math.random() * 16777215).toString(16);
               const fillColor = `#${hex}`;
               scatter.push({
                 name: analysis.scan.scan_name,
-                data: getScatterPlotData[i],
+                data: getScatterPlotData[analysis.id],
                 fill: fillColor,
               });
 

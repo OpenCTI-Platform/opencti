@@ -158,7 +158,7 @@
 //         count: { type: "Int", defaultValue: 25 }
 //         cursor: { type: "ID" }
 //       ) {
-//         locations(search: $search, first: $count, after: $cursor)
+//         locations(search: $search, limit: $count, after: $cursor)
 //           @connection(key: "Pagination_locations") {
 //           edges {
 //             node {
