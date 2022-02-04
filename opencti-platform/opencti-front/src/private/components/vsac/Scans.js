@@ -77,6 +77,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Chip from "@material-ui/core/Chip";
+import {toastSuccess} from "../../../utils/bakedToast";
 
 const classes = {
   root: {
@@ -380,10 +381,11 @@ class Scans extends Component {
 
     const onNewAnalysis = (id, client, params) => {
       const scanName = scans.filter((s) => s.id === params.scan_id)[0].scan_name
-      this.setState({pendingAnalysis: scanName})
       createNewScanAnalysis(id, client, params)
         .then((response) => {
+          toastSuccess("Creating New Analysis")
           handleDialogClose();
+          this.setState({pendingAnalysis: scanName})
           setTimeout(() => {
             refreshAnalysis();
             this.setState({pendingAnalysis: null})
@@ -398,6 +400,7 @@ class Scans extends Component {
     const onGenerateReport = (id, client, params) => {
       createVulnerabilityAssessmentReport(id, client, params)
         .then((response) => {
+          toastSuccess("Report Request Submitted")
           this.setState({
             dialogParams: {
               modal: "Generate Report",
@@ -413,6 +416,7 @@ class Scans extends Component {
     const onDeleteAnalysis = (id, client) => {
       deleteAnalysis(id, client)
         .then((response) => {
+          toastSuccess("Analysis Deleted")
           handleDialogClose();
           refreshAnalysis();
         })
@@ -427,6 +431,7 @@ class Scans extends Component {
       });
       exportAnalysisCsv(id, client)
         .then((response) => {
+          toastSuccess("Export Request Submitted")
           this.setState({
             dialogParams: {
               modal: "Export Data",
