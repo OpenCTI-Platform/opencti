@@ -27,14 +27,14 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
+    labels: [String]
     # Asset
     asset_id: String
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # DocumentaryAsset
     release_date: Timestamp
   }
@@ -85,9 +85,9 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -111,9 +111,9 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -137,9 +137,9 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -163,9 +163,9 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -189,9 +189,9 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
@@ -215,9 +215,9 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
+    labels: [String]
+    external_references( first: Int ): CyioExternalReferenceConnection
+    notes( first: Int ): CyioNoteConnection
     # Asset
     name: String!
     description: String
