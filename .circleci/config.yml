@@ -114,12 +114,16 @@ workflows:
             tags:
               only: /.*/
           version: "3.9"
+          requires:
+            tests_38
       - tests:
           name: tests_310
           filters:
             tags:
               only: /.*/
           version: "3.10"
+          requires:
+            tests_39
       - build:
           filters:
             tags:
@@ -127,7 +131,7 @@ workflows:
           requires:
             - ensure_formatting
             - linter
-            - tests_39
+            - tests_310
       - deploy:
           requires:
             - build
