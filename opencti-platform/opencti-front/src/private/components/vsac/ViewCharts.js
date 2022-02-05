@@ -1,59 +1,20 @@
 /* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { QueryRenderer } from '../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  convertFilters,
-  saveViewParameters,
-} from '../../../utils/ListParameters';
-import ListLines from '../../../components/list_lines/ListLines';
 import inject18n from '../../../components/i18n';
-import ToolBar from '../data/ToolBar';
-import { isUniqFilter } from '../common/lists/Filters';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import NewAnalysis from './modals/NewAnalysis';
-import Delete from './modals/Delete';
-import ExportCSV from './modals/ExportCSV';
-import GenerateReport from './modals/GenerateReport';
-import VulnerabilityScan from './modals/VulnerabilityScan';
-import DescriptionIcon from '@material-ui/icons/Description';
-import AddIcon from '@material-ui/icons/Add';
-import EditOutlinedIcon from '@material-ui/icons/EditOutlined';
-import ExploreIcon from '@material-ui/icons/Explore';
-import ShowChartIcon from '@material-ui/icons/ShowChart';
-import DeleteIcon from '@material-ui/icons/Delete';
-import IconButton from '@material-ui/core/IconButton';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import ImportExportIcon from '@material-ui/icons/ImportExport';
-import CompareIcon from '@material-ui/icons/Compare';
-import ScannerIcon from '@material-ui/icons/Scanner';
-import PublishIcon from '@material-ui/icons/Publish';
 import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardActions from '@material-ui/core/CardActions';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Typography from '@material-ui/core/Typography';
-import CardContent from '@material-ui/core/CardContent';
-import { DescriptionOutlined } from '@material-ui/icons';
-import { makeStyles } from '@material-ui/core/styles';
-import { fetchAllScans } from '../../../services/scan.service';
-import { fetchAllAnalysis } from '../../../services/analysis.service';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import moment from 'moment';
-import Dialog from '@material-ui/core/Dialog';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Box from '@material-ui/core/Box';
@@ -64,15 +25,12 @@ import {
   Cell,
   PieChart,
   Pie,
-  ScatterChart,
-  Scatter,
-  LineChart, 
+  LineChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Legend,
-  ReferenceLine,
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
@@ -121,29 +79,29 @@ function a11yProps(index) {
 class ViewCharts extends Component {
   constructor(props) {
     super(props);
-
+    const analysesMap = {}
+    this.props.location.state.analyses.forEach((a) => analysesMap[a.id] = a)
     this.state = {
       tabValue: 0,
       anchorEl: false,
       clientId: localStorage.getItem('client_id'),
       analysis_id: this.props.location.state.analysis_id,
-      analysises: this.props.location.state.analyses,
-      analysisesIDs: this.getAnalysisesID(this.props.location.state.analyses),
-      severityChartData: null,
-      vulnerabilityByYearChartData: null,
-      topVulnerableHost: null,
-      topVulnerableProducts: null,
-      trendingChatData: null,
+      analysises: analysesMap,
+      severityChartData: {},
+      vulnerabilityByYearChartData: {},
+      topVulnerableHost: {},
+      topVulnerableProducts: {},
+      trendingChatData: [],
       isDisabled: true,
-      checked: [],
+      checked: {},
     };
   }
 
   getAnalysisesID = (analysises) => {
     const analysisesIDs = [];
 
-    analysises.map((analysis) => {
-      analysisesIDs.push(analysis.id);
+    analysises.forEach((analysis) => {
+      checked[analysis.id] = false;
     });
 
     return analysisesIDs;
@@ -151,11 +109,16 @@ class ViewCharts extends Component {
 
   componentDidMount() {
     this.setState({isDisabled: true});
-    const ids = this.state.analysisesIDs.map((i) => i).join();
 
-    getSeverityPieChartData(this.state.clientId, ids)
+    getSeverityPieChartData(this.state.clientId,  this.state.analysis_id)
       .then((response) => {
-        this.setState({ severityChartData: response.data });
+        const analysisId = this.state.analysis_id;
+        const severityChartData = {};
+        severityChartData[analysisId] = response.data[0];
+        this.setState({ severityChartData });
+        const checked = this.state.checked;
+        checked[analysisId] = true;
+        this.setState({checked})
         this.setState({isDisabled: false});
       })
       .catch((error) => {
@@ -168,7 +131,6 @@ class ViewCharts extends Component {
       tabValue,
       anchorEl,
       analysises,
-      analysisesIDs,
       severityChartData,
       vulnerabilityByYearChartData,
       topVulnerableHost,
@@ -188,54 +150,170 @@ class ViewCharts extends Component {
 
     const handleTabChange = (event, newValue) => {
       this.setState({ tabValue: newValue });
-
-      const ids = this.state.analysisesIDs.map((i) => i).join();
-
+      this.setState({isDisabled: true});
+      const ids = activeChecked().join();
       switch (newValue) {
-        case 1:
-          this.setState({isDisabled: false});
-          if (vulnerabilityByYearChartData == null) {
-            getCVESeverityChartData(this.state.clientId, ids)
-              .then((response) => {
-                this.setState({ vulnerabilityByYearChartData: response.data });
+        case 0:
+          getSeverityPieChartData(this.state.clientId, ids)
+            .then((response) => {
+              response.data.forEach((d) => {
+                severityChartData[d.id] = d;
               })
-              .catch((error) => {
-                console.log(error);
-              });
-          }
-
+              this.setState({severityChartData})
+              this.setState({isDisabled: false});
+            })
+            .catch((error) => {
+              this.setState({isDisabled: false});
+              console.log(error);
+            });
+          break;
+        case 1:
+          getCVESeverityChartData(this.state.clientId, ids)
+            .then((response) => {
+              response.data.forEach((d) => {
+                vulnerabilityByYearChartData[d.id] = d;
+              })
+              this.setState({ vulnerabilityByYearChartData });
+              this.setState({isDisabled: false});
+            })
+            .catch((error) => {
+              this.setState({isDisabled: false});
+              console.log(error);
+            });
           break;
         case 2:
           this.setState({isDisabled: false});
-          if (topVulnerableHost == null) {
-            getTopVulnerableHostsChartData(this.state.clientId, ids)
-              .then((response) => {
-                this.setState({ topVulnerableHost: response.data });
+          getTopVulnerableHostsChartData(this.state.clientId, ids)
+            .then((response) => {
+              response.data.forEach((d) => {
+                topVulnerableHost[d.id] = d;
               })
-              .catch((error) => {
-                console.log(error);
-              });
-          }
-
+              this.setState({ topVulnerableHost });
+              this.setState({isDisabled: false});
+            })
+            .catch((error) => {
+              this.setState({isDisabled: false});
+              console.log(error);
+            });
           break;
         case 3:
           this.setState({isDisabled: false});
-          if (topVulnerableProducts == null) {
-            getTopVulnerableProductsChartData(this.state.clientId, ids)
-              .then((response) => {
-                this.setState({ topVulnerableProducts: response.data });
+          getTopVulnerableProductsChartData(this.state.clientId, ids)
+            .then((response) => {
+              response.data.forEach((d) => {
+                topVulnerableProducts[d.id] = d;
               })
-              .catch((error) => {
-                console.log(error);
-              });
-          }
+              this.setState({ topVulnerableProducts });
+              this.setState({isDisabled: false});
+            })
+            .catch((error) => {
+              this.setState({isDisabled: false});
+              console.log(error);
+            });
           break;
         case 4:
           this.setState({isDisabled: true});
-          if (trendingChatData == null) {
-            getTrendingChartData(this.state.clientId, ids)
+          getTrendingChartData(this.state.clientId, ids)
+            .then((response) => {
+              const data = response.data.map((item) => {
+                return {
+                  name: item.id,
+                  data: item.data.map((item) => {
+                    return {
+                      category: item.x,
+                      value: parseInt(item.y),
+                    };
+                  }),
+                };
+              })
+              this.setState({ trendingChatData: data });
+              this.setState({isDisabled: false});
+            })
+            .catch((error) => {
+              this.setState({isDisabled: false});
+              console.log(error);
+            });
+
+          break;
+      }
+    };
+
+    const handleClick = () => {
+      this.setState({ anchorEl: true });
+    };
+
+    const handleClose = () => {
+      this.setState({ anchorEl: null });
+    };
+
+    const activeChecked = () => {
+      return Object.keys(analysises)
+        .filter((id) => checked[id])
+    };
+
+    const handleToggle = (isChecked, id) => {
+      checked[id] = isChecked
+      this.setState({isDisabled: true});
+
+      if(!isChecked){
+        delete severityChartData[id]
+        delete vulnerabilityByYearChartData[id]
+        delete topVulnerableHost[id]
+        return
+      }
+      switch (tabValue) {
+          case 0:
+            getSeverityPieChartData(this.state.clientId, id)
               .then((response) => {
-                const trendingData = response.data.map((item) => {
+                severityChartData[id] = response.data[0];
+                this.setState({ severityChartData})
+                this.setState({ isDisabled: false });
+              })
+              .catch((error) => {
+                this.setState({isDisabled: false});
+                console.log(error);
+              });
+            break;
+          case 1:
+            getCVESeverityChartData(this.state.clientId, id)
+              .then((response) => {
+                vulnerabilityByYearChartData[id] = response.data[0];
+                this.setState({ vulnerabilityByYearChartData });
+                this.setState({isDisabled: false});
+              })
+              .catch((error) => {
+                this.setState({isDisabled: false});
+                console.log(error);
+              });
+            break;
+          case 2:
+            getTopVulnerableHostsChartData(this.state.clientId, id)
+              .then((response) => {
+                topVulnerableHost[id] = response.data[0];
+                this.setState({ topVulnerableHost });
+                this.setState({isDisabled: false});
+              })
+              .catch((error) => {
+                this.setState({isDisabled: false});
+                console.log(error);
+              });
+            break;
+          case 3:
+            getTopVulnerableProductsChartData(this.state.clientId, id)
+              .then((response) => {
+                topVulnerableProducts[id] = response.data[0];
+                this.setState({ topVulnerableProducts });
+                this.setState({isDisabled: false});
+              })
+              .catch((error) => {
+                this.setState({isDisabled: false});
+                console.log(error);
+              });
+            break;
+          case 4:
+            getTrendingChartData(this.state.clientId, activeChecked().join())
+              .then((response) => {
+                const data = response.data.map((item) => {
                   return {
                     name: item.id,
                     data: item.data.map((item) => {
@@ -246,33 +324,15 @@ class ViewCharts extends Component {
                     }),
                   };
                 });
-                this.setState({ trendingChatData: trendingData });
+                this.setState({ trendingChatData: data });
+                this.setState({isDisabled: false});
               })
               .catch((error) => {
+                this.setState({isDisabled: false});
                 console.log(error);
               });
-          }
-
-          break;
-      }
-    };
-
-    const handleClick = (event) => {
-      this.setState({ anchorEl: event.currentTarget });
-    };
-
-    const handleClose = () => {
-      this.setState({ anchorEl: null });
-    };
-
-    const handleToggle = (value) => () => {
-      const currentIndex = checked.indexOf(value);
-
-      if (currentIndex === -1) {
-        checked.push(value);
-      } else {
-        checked.splice(currentIndex, 1);
-      }
+            break;
+        }
     };
 
     return (
@@ -285,7 +345,7 @@ class ViewCharts extends Component {
           onClick={handleClick}
           disabled={isDisabled}
         >
-          Select Analyses [ {checked.length} ]
+          Select Analyses [ {activeChecked().length} ]
         </Button>
         <Menu
           id="simple-menu"
@@ -296,12 +356,12 @@ class ViewCharts extends Component {
         >
           <List>
             {analysises &&
-              analysises.map((analysis, i) => {
+              Object.entries(analysises).map(([id,analysis]) => {
                 return (
                   <MenuItem onClick={handleClose}>
-                    <ListItem key={i}>
+                    <ListItem key={analysis.id}>
                       <ListItemText
-                        id={analysis.scan.id}
+                        id={analysis.id}
                         primary={analysis.scan.scan_name}
                         secondary={
                           <React.Fragment>
@@ -335,8 +395,11 @@ class ViewCharts extends Component {
                       <ListItemSecondaryAction>
                         <Checkbox
                           edge="end"
-                          onChange={handleToggle(i)}
-                          checked={checked.indexOf(i) !== -1}
+                          onChange={(e) => {
+                            console.log("changed")
+                            handleToggle(e.target.checked, analysis.id)
+                          }}
+                          checked={activeChecked().includes(analysis.id)}
                         />
                       </ListItemSecondaryAction>
                     </ListItem>
@@ -358,8 +421,8 @@ class ViewCharts extends Component {
             value={tabValue}
             index={0}
           >
-            {checked.sort().map((i) => {
-              const array = severityChartData[i].data.map((item) => {
+            { severityChartData && activeChecked().map((i) => {
+              const array = severityChartData[i]?.data?.map((item) => {
                 return {
                   name: item.label,
                   value: parseInt(item.value),
@@ -383,6 +446,7 @@ class ViewCharts extends Component {
                   >
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart width={600} height={600}>
+                      {array &&
                         <Pie
                           data={array}
                           nameKey="name"
@@ -431,8 +495,9 @@ class ViewCharts extends Component {
                               fill={COLORS[entry.name]}
                             />
                           ))}
+                          <Tooltip />
                         </Pie>
-                        <Tooltip />
+                      }
                       </PieChart>
                     </ResponsiveContainer>
                   </Paper>
@@ -446,7 +511,7 @@ class ViewCharts extends Component {
             index={1}
           >
             {vulnerabilityByYearChartData &&
-              checked.sort().map((i) => {
+              activeChecked().filter((id) => vulnerabilityByYearChartData[id]).map((i) => {
                 return (
                   <Grid item={true}>
                     <Typography variant="h4" gutterBottom={true}>
@@ -506,13 +571,14 @@ class ViewCharts extends Component {
             index={2}
           >
             {topVulnerableHost &&
-              checked.sort().map((i) => {
+              activeChecked().filter((id) => topVulnerableHost[id]).map((i) => {
                 return (
                   <Grid item={true}>
                     <Typography variant="h4" gutterBottom={true}>
                       {analysises[i].scan.scan_name} :{' '}
                       {moment(analysises[i].completed_date).fromNow()}
                     </Typography>
+                    }
                     <Paper
                       elevation={2}
                       style={{
@@ -563,7 +629,7 @@ class ViewCharts extends Component {
             index={3}
           >
             {topVulnerableProducts &&
-              checked.sort().map((i) => {
+              activeChecked().filter((id) => topVulnerableProducts[id]).map((i) => {
                 return (
                   <Grid item={true}>
                     <Typography variant="h4" gutterBottom={true}>
