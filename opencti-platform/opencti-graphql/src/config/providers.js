@@ -273,8 +273,15 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const groupsToAssociate = computeGroupsMapping();
           // endregion
           if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
-            const { email, name } = userinfo;
-            providerLoginHandler({ email, name }, rolesToAssociate, groupsToAssociate, done);
+            const nameAttribute = mappedConfig?.name_attribute ?? 'name';
+            const emailAttribute = mappedConfig?.email_attribute ?? 'email';
+            const firstnameAttribute = mappedConfig?.firstname_attribute ?? 'given_name';
+            const lastnameAttribute = mappedConfig?.lastname_attribute ?? 'family_name';
+            const name = userinfo[nameAttribute];
+            const email = userinfo[emailAttribute];
+            const firstname = userinfo[firstnameAttribute];
+            const lastname = userinfo[lastnameAttribute];
+            providerLoginHandler({ email, name, firstname, lastname }, rolesToAssociate, groupsToAssociate, done);
           } else {
             done({ message: 'Restricted access, ask your administrator' });
           }
