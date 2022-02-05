@@ -311,7 +311,7 @@ const createSeeMiddleware = () => {
       // We need to fetch from this start date until the stream existence
       let after = isNotEmptyField(startFrom) ? startFrom : FROM_START_STR;
       // Also handle event id with redis format stamp or stamp-index
-      if (isNotEmptyField(startFrom)) {
+      if (isNotEmptyField(startFrom) && typeof startFrom === 'string') {
         if (!startFrom.includes('-')) {
           after = utcDate(parseInt(startFrom, 10)).toISOString();
         } else if (startFrom.split('-').length === 2) {
