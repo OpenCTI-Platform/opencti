@@ -149,3 +149,10 @@ div.markdown p {
 
   text-align: center;
 }
+
+.NoResults{
+  color: #F9B406;
+}
+.Invalid{
+  color: #CE202C;
+}
