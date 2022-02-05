@@ -2,7 +2,7 @@
   extend type Query {
     cyioNote(id: ID!): CyioNote
     cyioNotes( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: CyioNotesOrdering
       orderMode: OrderingMode
@@ -12,7 +12,7 @@
     ): CyioNoteConnection
     cyioExternalReference(id: ID!): CyioExternalReference
     cyioExternalReferences(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: CyioExternalReferencesOrdering
       orderMode: OrderingMode
@@ -334,6 +334,7 @@
   }
   
   input CyioLocationAddInput {
+    labels: [CyioLabel]
     # CyioLocation
     location_type: CyioLocationType
     name: String!

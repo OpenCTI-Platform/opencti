@@ -48,7 +48,7 @@ import {
   exportAnalysisCsv,
   deleteAnalysis,
   createNewScanAnalysis,
-  createVulnerabilityAssesmentReport,
+  createVulnerabilityAssessmentReport,
 } from "../../../services/analysis.service";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Menu from "@material-ui/core/Menu";
@@ -66,6 +66,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import Chip from "@material-ui/core/Chip";
+import {toastSuccess} from "../../../utils/bakedToast";
 import DeleteScanVerify from "./modals/DeleteScanVerify";
 
 const classes = {
@@ -272,7 +273,7 @@ class Scans extends Component {
                       scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
                     }
                   });
-
+                  if(scatterPlot.length === 0) return;
                   scatterPlotData[analysis.id] = scatterPlot
 
                   this.setState({scatterPlotData: scatterPlotData});
@@ -416,10 +417,11 @@ class Scans extends Component {
 
     const onNewAnalysis = (id, client, params) => {
       const scanName = scans.filter((s) => s.id === params.scan_id)[0].scan_name
-      this.setState({pendingAnalysis: scanName})
       createNewScanAnalysis(id, client, params)
         .then((response) => {
+          toastSuccess("Creating New Analysis")
           handleDialogClose();
+          this.setState({pendingAnalysis: scanName})
           setTimeout(() => {
             this.refreshAnalyses()
             this.setState({pendingAnalysis: null})
@@ -432,8 +434,9 @@ class Scans extends Component {
     };
 
     const onGenerateReport = (id, client, params) => {
-      createVulnerabilityAssesmentReport(id, client, params)
+      createVulnerabilityAssessmentReport(id, client, params)
         .then((response) => {
+          toastSuccess("Report Request Submitted")
           this.setState({
             dialogParams: {
               modal: "Generate Report",
@@ -449,6 +452,7 @@ class Scans extends Component {
     const onDeleteAnalysis = (id, client) => {
       deleteAnalysis(id, client)
         .then((response) => {
+          toastSuccess("Analysis Deleted")
           handleDialogClose();
           this.refreshAnalyses();
         })
@@ -463,6 +467,7 @@ class Scans extends Component {
       });
       exportAnalysisCsv(id, client)
         .then((response) => {
+          toastSuccess("Export Request Submitted")
           this.setState({
             dialogParams: {
               modal: "Export Data",
@@ -672,12 +677,25 @@ class Scans extends Component {
                 />
                 <List style={{ maxHeight: "100%", overflow: "auto" }}>
                   {!loadingScans ? (
-                    this.state.renderScans.map((scan, i) => {
+
+                    renderScans.map((scan, i) => {
+
+                      let NoResults = false;
+                      let Invalid = false;
+
+                      if(scan.status === 'noRecords'){
+                        NoResults = true;
+                      }
+
+                      if(scan.status === 'invalid'){
+                        Invalid = true;
+                      }
                       return (
                         <ListItem
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                           onMouseLeave={(e) => handlePopoverClose()}
+                          className={NoResults ? "NoResults" : (Invalid ? "Invalid" : "")}
                         >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>

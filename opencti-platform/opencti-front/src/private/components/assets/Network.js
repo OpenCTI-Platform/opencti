@@ -212,7 +212,7 @@ class Network extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={networkCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ props }) => (
             <NetworkCards
               data={props}
@@ -223,7 +223,7 @@ class Network extends Component {
               onLabelClick={this.handleAddFilter.bind(this)}
               onToggleEntity={this.handleToggleSelectEntity.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
+            />
           )}
         />
       </CyioListCards>
@@ -313,7 +313,7 @@ class Network extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={networkLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ props }) => (
             <NetworkLines
               data={props}

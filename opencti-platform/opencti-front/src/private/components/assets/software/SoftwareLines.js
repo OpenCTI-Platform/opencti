@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
@@ -10,6 +12,11 @@ import { setNumberOfElements } from '../../../../utils/Number';
 const nbOfRowsToLoad = 50;
 
 class SoftwareLines extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { offset: 0 };
+  }
+
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -17,6 +24,14 @@ class SoftwareLines extends Component {
       'softwareAssetList',
       this.props.setNumberOfElements.bind(this),
     );
+  }
+  handleOffsetChange(){
+    const incrementedOffset = this.state.offset += nbOfRowsToLoad;
+    this.setState({ offset:incrementedOffset })
+    this.props.relay.refetchConnection(nbOfRowsToLoad, null, {
+      offset: this.state.offset,
+      first: nbOfRowsToLoad,
+    })
   }
 
   render() {
@@ -32,7 +47,7 @@ class SoftwareLines extends Component {
     return (
       <ListLinesContent
         initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
+        loadMore={this.handleOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
         dataList={pathOr([], ['softwareAssetList', 'edges'], this.props.data)}
@@ -41,6 +56,7 @@ class SoftwareLines extends Component {
           ['softwareAssetList', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
+        offset={this.state.offset}
         LineComponent={<SoftwareLine />}
         DummyLineComponent={<SoftwareLineDummy />}
         selectAll={selectAll}
@@ -68,7 +84,8 @@ SoftwareLines.propTypes = {
 export const softwareLinesQuery = graphql`
   query SoftwareLinesPaginationQuery(
     $search: String
-    $count: Int!
+    $first: Int!
+    $offset: Int!
     $cursor: ID
     $orderedBy: SoftwareAssetOrdering
     $orderMode: OrderingMode
@@ -77,7 +94,8 @@ export const softwareLinesQuery = graphql`
     ...SoftwareLines_data
       @arguments(
         search: $search
-        count: $count
+        first: $first
+        offset: $offset
         cursor: $cursor
         orderedBy: $orderedBy
         orderMode: $orderMode
@@ -93,7 +111,8 @@ export default createPaginationContainer(
       fragment SoftwareLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
+        first: { type: "Int", defaultValue: 50 }
+        offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
         orderedBy: { type: "SoftwareAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
@@ -101,7 +120,8 @@ export default createPaginationContainer(
       ) {
         softwareAssetList(
           search: $search
-          first: $count
+          first: $first
+          offset: $offset
           # after: $cursor
           orderedBy: $orderedBy
           orderMode: $orderMode
@@ -138,6 +158,8 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
+        first: fragmentVariables.first,
+        offset: fragmentVariables.offset,
         count,
         cursor,
         orderedBy: fragmentVariables.orderedBy,
