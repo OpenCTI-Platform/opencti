@@ -683,7 +683,7 @@ class Scans extends Component {
                       let NoResults = false;
                       let Invalid = false;
 
-                      if(scan.status == 'NoResults'){
+                      if(scan.status === 'noRecords'){
                         NoResults = true;
                       }
 
@@ -695,7 +695,7 @@ class Scans extends Component {
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                           onMouseLeave={(e) => handlePopoverClose()}
-                          className={NoResults ? "NoResults" : "", Invalid ? "Invalid" : ""}
+                          className={NoResults ? "NoResults" : (Invalid ? "Invalid" : "")}
                         >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
