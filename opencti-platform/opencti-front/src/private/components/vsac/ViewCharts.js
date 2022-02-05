@@ -152,10 +152,12 @@ class ViewCharts extends Component {
   componentDidMount() {
     this.setState({isDisabled: true});
 
-    getSeverityPieChartData(this.state.clientId,  this.props.location.state.analysis_id)
+    getSeverityPieChartData(this.state.clientId,  this.state.analysis_id)
       .then((response) => {
         this.setState({ severityChartData: response.data });
-        this.state.checked.push(this.props.location.state.index);
+        const analysisId = this.state.analysis_id;
+        const index = this.state.analysises.findIndex((a) => a.id === analysisId)
+        this.state.checked.push(index);
         this.setState({isDisabled: false});
       })
       .catch((error) => {
@@ -346,14 +348,9 @@ class ViewCharts extends Component {
                   console.log(error);
                 });
             }
-
-          break;
-      }
-
-
+            break;
+        }
         checked.push(value);
-
-
       } else {
         checked.splice(currentIndex, 1);
       }
@@ -442,18 +439,14 @@ class ViewCharts extends Component {
             value={tabValue}
             index={0}
           >
-            { severityChartData &&
+            { severityChartData && checked.length > 0 && checked.sort().map((i) => {
+              const array = severityChartData[i]?.data?.map((item) => {
+                return {
+                  name: item.label,
+                  value: parseInt(item.value),
+                };
+              });
 
-              checked.sort().map((i) => {
-               
-                  const array = severityChartData[i]?.data?.map((item) => {
-                    return {
-                      name: item.label,
-                      value: parseInt(item.value),
-                    };
-                  });
-
-               
               return (
                 <Grid item={true}>
                   <Typography variant="h4" gutterBottom={true}>
@@ -603,6 +596,7 @@ class ViewCharts extends Component {
                       {analysises[i].scan.scan_name} :{' '}
                       {moment(analysises[i].completed_date).fromNow()}
                     </Typography>
+                    }
                     <Paper
                       elevation={2}
                       style={{
