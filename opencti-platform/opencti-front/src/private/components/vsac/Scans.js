@@ -677,12 +677,25 @@ class Scans extends Component {
                 />
                 <List style={{ maxHeight: "100%", overflow: "auto" }}>
                   {!loadingScans ? (
-                    this.state.renderScans.map((scan, i) => {
+
+                    renderScans.map((scan, i) => {
+
+                      let NoResults = false;
+                      let Invalid = false;
+
+                      if(scan.status === 'noRecords'){
+                        NoResults = true;
+                      }
+
+                      if(scan.status === 'invalid'){
+                        Invalid = true;
+                      }
                       return (
                         <ListItem
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                           onMouseLeave={(e) => handlePopoverClose()}
+                          className={NoResults ? "NoResults" : (Invalid ? "Invalid" : "")}
                         >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
