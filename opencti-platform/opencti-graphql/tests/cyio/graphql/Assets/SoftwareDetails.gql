@@ -1,0 +1,8 @@
+query SoftwareDetails($softwareAssetId: ID!) {
+  softwareAsset(id: $softwareAssetId) {
+    id
+    name
+    vendor_name
+    is_publicly_accessible
+  }
+}

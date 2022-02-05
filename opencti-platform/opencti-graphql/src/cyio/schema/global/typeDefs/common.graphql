@@ -139,6 +139,7 @@
     description: String
     url: URL
     hashes: [HashInfoAddInput]
+    external_id: String
     # OSCAL Link
     reference_purpose: ReferencePurposeType
     media_type: String

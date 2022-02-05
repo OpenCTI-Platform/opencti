@@ -1,5 +1,5 @@
-query SoftwareList {
-  softwareAssetList {
+query LocationList {
+  assetLocationList {
     edges {
       node {
         id
@@ -10,31 +10,13 @@ query SoftwareList {
           color
           description
         }
-        asset_id
-        asset_tag
-        asset_type
         name
         description
-        serial_number
-        vendor_name
-        version
-        release_date
-        implementation_point
-        operational_status
-        function
-        cpe_identifier
-        software_identifier
-        patch_level
-        installation_id
-        license_key
-        is_publicly_accessible
-        is_scanned
-        last_scanned
-        locations {
-          id
-          name
-          description
-        }
+        street_address
+        city
+        administrative_area
+        country
+        postal_code
         external_references {
           id
           source_name

@@ -421,7 +421,9 @@ const assetLocationReducer = (item) => {
     ...(item.city && {"city": item.city}),
     ...(item.country_code && {"country": item.country_code}),
     ...(item.postal_code && {"postal_code": item.postal_code}),
-    ...(item.street_address && {"street_address": item.street_address})
+    ...(item.street_address && {"street_address": item.street_address}),
+    // HINT
+	  ...(item.labels && {labels_iri: item.labels}),
   }
 }
 

@@ -1,0 +1,22 @@
+query CyioCoreObjectExternalReferencesLinesQuery {
+  ...CyioCoreObjectExternalReferencesLines_data_44vElo
+}
+
+fragment CyioCoreObjectExternalReferencesLines_data_44vElo on Query {
+  itAsset(id: "bc6d53b3-d226-52a7-a1c3-171593167e98") {
+    __typename
+    id
+    external_references {
+      id
+      source_name
+      description
+      url
+      hashes {
+        algorithm
+        value
+      }
+      external_id
+      __typename
+    }
+  }
+}
