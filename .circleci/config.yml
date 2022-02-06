@@ -609,6 +609,8 @@ workflows:
             - deploy_testing
             - package_rolling
             - package_rolling_musl
+            - docker_build_platform_rolling
+            - docker_build_worker_rolling
       - notify:
           requires:
             - docker_build_platform
