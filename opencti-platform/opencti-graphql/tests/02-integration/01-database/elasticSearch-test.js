@@ -12,11 +12,11 @@ import {
   elIndex,
   elIndexElements,
   elIndexExists,
-  elIsAlive,
+  searchEngineInit,
   elLoadById,
   elPaginate,
   elRebuildRelation,
-} from '../../../src/database/elasticSearch';
+} from '../../../src/database/engine';
 import {
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
@@ -37,7 +37,7 @@ import { loadByIdWithMetaRels } from '../../../src/database/middleware';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
-    expect(elIsAlive()).resolves.toBeTruthy();
+    expect(searchEngineInit()).resolves.toBeTruthy();
     // expect(elVersion().then((v) => v.number)).resolves.toContain('7.16');
     expect(elIndexExists(READ_INDEX_INTERNAL_OBJECTS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();

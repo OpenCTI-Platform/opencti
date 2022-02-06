@@ -21,7 +21,6 @@ import {
 import conf, { logApp } from '../config/conf';
 import { resolveUserById } from '../domain/user';
 import {
-  buildFilters,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -38,13 +37,14 @@ import {
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
 } from '../database/utils';
-import { elPaginate, elUpdate } from '../database/elasticSearch';
+import { elPaginate, elUpdate } from '../database/engine';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { rulesCleanHandler, rulesApplyDerivedEvents } from './ruleManager';
 import { getRule } from '../domain/rule';
 import { RULE_MANAGER_USER } from '../rules/rules';
+import { buildFilters } from '../database/repository';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.

@@ -1,12 +1,13 @@
-import { deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
+import { deleteElementById, loadById, updateAttribute } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { elIndex, elPaginate } from '../database/elasticSearch';
+import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { UnsupportedError } from '../config/errors';
 import { convertFiltersToQueryOptions } from './taxii';
-import { RETENTION_MANAGER_USER } from '../manager/retentionManager';
 import { utcDate } from '../utils/format';
+import { RETENTION_MANAGER_USER } from '../utils/access';
 
 // 'id', 'standard_id', 'name', 'filters', 'last_execution_date', 'last_deleted_count', 'remaining_count'
 

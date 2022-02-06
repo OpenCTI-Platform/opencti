@@ -1,10 +1,11 @@
 import { assoc } from 'ramda';
-import { batchLoadThroughGetTo, createEntity, listEntities, loadById } from '../database/middleware';
+import { batchLoadThroughGetTo, createEntity, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY } from '../schema/stixDomainObject';
 import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { listEntities } from '../database/repository';
 
 export const findById = (user, cityId) => {
   return loadById(user, cityId, ENTITY_TYPE_LOCATION_CITY);

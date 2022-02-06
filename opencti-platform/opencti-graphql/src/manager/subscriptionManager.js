@@ -1,7 +1,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { Promise } from 'bluebird';
 import { lockResource } from '../database/redis';
-import { elList, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
+import { elList, ES_MAX_CONCURRENCY } from '../database/engine';
 import { READ_PLATFORM_INDICES } from '../database/utils';
 import { hoursAgo, minutesAgo, now, prepareDate, utcDate } from '../utils/format';
 import conf, { logApp } from '../config/conf';

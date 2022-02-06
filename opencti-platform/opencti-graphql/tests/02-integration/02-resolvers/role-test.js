@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
-import { elLoadById } from '../../../src/database/elasticSearch';
+import { elLoadById } from '../../../src/database/engine';
 import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
 import { generateStandardId } from '../../../src/schema/identifier';
 

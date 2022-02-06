@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
-import { Client } from '@elastic/elasticsearch';
+import { Client as ElkClient } from '@elastic/elasticsearch';
+import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { Promise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
@@ -73,6 +74,7 @@ import {
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
+const ELK_ENGINE = 'elk';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
@@ -104,7 +106,7 @@ export const isImpactedTypeAndSide = (type, side) => {
 };
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
-export const el = new Client({
+const searchConfiguration = {
   node: conf.get('elasticsearch:url'),
   proxy: conf.get('elasticsearch:proxy') || null,
   auth: {
@@ -119,7 +121,61 @@ export const el = new Client({
     ca: conf.get('elasticsearch:ssl:ca') ? readFileSync(conf.get('elasticsearch:ssl:ca')) : null,
     rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
   },
-});
+};
+
+const elkClient = new ElkClient(searchConfiguration);
+const openClient = new OpenClient(searchConfiguration);
+let isRuntimeSortingEnable = false;
+let el = openClient;
+
+export const searchEngineVersion = () => {
+  return openClient
+    .info()
+    .then((info) => info.body.version)
+    .catch(
+      /* istanbul ignore next */ () => {
+        return 'Disconnected';
+      }
+    );
+};
+export const searchEngineInit = async () => {
+  // region Check if search engine is accessible
+  await openClient
+    .info()
+    .then((info) => {
+      /* istanbul ignore if */
+      if (info.meta.connection.status !== 'alive') {
+        throw ConfigurationError('ElasticSearch seems down (status not alive)');
+      }
+    })
+    .catch(
+      /* istanbul ignore next */ (e) => {
+        throw ConfigurationError('ElasticSearch seems down', { error: e.message });
+      }
+    );
+  // endregion
+  // Setup the platform runtime field option
+  const searchInfo = await searchEngineVersion();
+  const searchPlatform = searchInfo.distribution || ELK_ENGINE; // openSearch or elasticSearch
+  const searchVersion = searchInfo.number;
+  isRuntimeSortingEnable = searchPlatform === ELK_ENGINE && semver.satisfies(searchVersion, '>=7.12.x');
+  // Look for the right client to use
+  if (searchPlatform === ELK_ENGINE) {
+    logApp.info(
+      `[SEARCH ENGINE] Elasticsearch (${searchVersion}) client selected / runtime sorting ${
+        isRuntimeSortingEnable ? 'enabled' : 'disabled'
+      }`
+    );
+    el = elkClient;
+  } else {
+    logApp.info(`[SEARCH ENGINE] OpenSearch (${searchVersion}) client selected / runtime sorting disabled`);
+    el = openClient;
+  }
+  // Everything is fine, return true
+  return true;
+};
+export const isRuntimeSortEnable = () => isRuntimeSortingEnable;
+export const searchClient = () => el;
 
 const buildMarkingRestriction = (user) => {
   const must = [];
@@ -180,45 +236,6 @@ const buildMarkingRestriction = (user) => {
     }
   }
   return { must, must_not };
-};
-
-export const elIsAlive = async () => {
-  return el
-    .info()
-    .then((info) => {
-      /* istanbul ignore if */
-      if (info.meta.connection.status !== 'alive') {
-        throw ConfigurationError('ElasticSearch seems down (status not alive)');
-      }
-      return true;
-    })
-    .catch(
-      /* istanbul ignore next */ (e) => {
-        throw ConfigurationError('ElasticSearch seems down', { error: e.message });
-      }
-    );
-};
-export const elVersion = () => {
-  return el
-    .info()
-    .then((info) => info.body.version)
-    .catch(
-      /* istanbul ignore next */ () => {
-        return 'Disconnected';
-      }
-    );
-};
-
-let isRuntimeSortingEnable;
-export const isRuntimeSortEnable = async () => {
-  if (isNotEmptyField(isRuntimeSortingEnable)) {
-    return isRuntimeSortingEnable;
-  }
-  const elasticInfo = await elVersion();
-  const esPlatform = elasticInfo.distribution || 'elk'; // opensearch or elasticsearch
-  const esVersion = elasticInfo.number;
-  isRuntimeSortingEnable = esPlatform === 'elk' && semver.satisfies(esVersion, '>=7.12.x');
-  return isRuntimeSortingEnable;
 };
 
 export const elIndexExists = async (indexName) => {
@@ -432,7 +449,7 @@ export const elDeleteIndexes = async (indexesToDelete) => {
       return el.indices.delete({ index }).catch((err) => {
         /* istanbul ignore next */
         if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-          logApp.error(`[ELASTICSEARCH] Delete indices fail`, { error: err });
+          logApp.error(`[SEARCH ENGINE] Delete indices fail`, { error: err });
         }
       });
     })
@@ -633,7 +650,7 @@ export const elCount = (user, indexName, options = {}) => {
       },
     },
   };
-  logApp.debug(`[ELASTICSEARCH] countEntities`, { query });
+  logApp.debug(`[SEARCH ENGINE] countEntities`, { query });
   return el
     .count(query)
     .then((data) => {
@@ -708,7 +725,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
       },
     },
   };
-  logApp.debug(`[ELASTICSEARCH] aggregationCount`, { query });
+  logApp.debug(`[SEARCH ENGINE] aggregationCount`, { query });
   return el
     .search(query)
     .then((data) => {
@@ -800,8 +817,8 @@ const elDataConverter = (esHit) => {
   }
   return data;
 };
-
 // endregion
+
 export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) => {
   const mustTerms = [];
   const markingRestrictions = buildMarkingRestriction(user);
@@ -947,7 +964,7 @@ export const elFindByIds = async (user, ids, opts = {}) => {
           },
         },
       };
-      logApp.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
+      logApp.debug(`[SEARCH ENGINE] elInternalLoadById`, { query });
       const data = await el.search(query).catch((err) => {
         throw DatabaseError('Error loading ids', { error: err, query });
       });
@@ -1091,7 +1108,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       },
     },
   };
-  logApp.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
+  logApp.debug(`[SEARCH ENGINE] aggregationRelationsCount`, { query });
   return el
     .search(query)
     .then(async (data) => {
@@ -1247,7 +1264,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
       },
     },
   };
-  logApp.debug(`[ELASTICSEARCH] histogramCount`, { query });
+  logApp.debug(`[SEARCH ENGINE] histogramCount`, { query });
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
@@ -1562,7 +1579,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     track_total_hits: true,
     body,
   };
-  logApp.debug(`[ELASTICSEARCH] paginate`, { query });
+  logApp.debug(`[SEARCH ENGINE] paginate`, { query });
   return el
     .search(query)
     .then((data) => {
@@ -1584,7 +1601,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
         )(err.meta.body.error.root_cause);
         // If uncontrolled error, log and propagate
         if (numberOfCauses > invalidMappingCauses.length) {
-          logApp.error(`[ELASTICSEARCH] Paginate fail`, { error: err, query });
+          logApp.error(`[SEARCH ENGINE] Paginate fail`, { error: err, query });
           throw err;
         } else {
           return connectionFormat ? buildPagination(0, null, [], 0) : [];
@@ -1698,7 +1715,7 @@ export const elReindex = async (indices) => {
 export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
-  logApp.debug(`[ELASTICSEARCH] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
+  logApp.debug(`[SEARCH ENGINE] index > ${entityType} ${internalId} in ${indexName}`, documentBody);
   await el
     .index({
       index: indexName,
@@ -1779,7 +1796,7 @@ export const getRelationsToRemove = async (user, elements) => {
 export const elDeleteInstanceIds = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
   if (instances.length > 0) {
-    logApp.debug(`[ELASTICSEARCH] Deleting ${instances.length} instances`);
+    logApp.debug(`[SEARCH ENGINE] Deleting ${instances.length} instances`);
     const bodyDelete = instances.flatMap((doc) => {
       return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
     });

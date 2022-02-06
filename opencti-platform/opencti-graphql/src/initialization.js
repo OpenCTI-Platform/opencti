@@ -3,7 +3,7 @@ import { ApolloError } from 'apollo-errors';
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
 import { booleanConf, logApp, PLATFORM_VERSION } from './config/conf';
-import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
+import { elCreateIndexes, elIndexExists, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
@@ -19,7 +19,7 @@ import applyMigration, { lastAvailableMigrationTime } from './database/migration
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
-import { BYPASS, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
+import { BYPASS, BYPASS_REFERENCE, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
 import { generateStandardId } from './schema/identifier';
 import { ENTITY_TYPE_MARKING_DEFINITION } from './schema/stixMetaObject';
@@ -72,7 +72,6 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SETLABELS', description: 'Manage labels & Attributes', attribute_order: 3400 },
   ],
 };
-export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
 export const CAPABILITIES = [
   BYPASS_CAPABILITIES,
   KNOWLEDGE_CAPABILITIES,
@@ -118,8 +117,8 @@ export const CAPABILITIES = [
 // Check every dependencies
 export const checkSystemDependencies = async () => {
   // Check if elasticsearch is available
-  await elIsAlive();
-  logApp.info(`[CHECK] ElasticSearch is alive`);
+  await searchEngineInit();
+  logApp.info(`[CHECK] Search engine is alive`);
   // Check if minio is here
   await isStorageAlive();
   logApp.info(`[CHECK] Minio is alive`);
@@ -149,7 +148,7 @@ const initializeSchema = async () => {
   }
   // Create default indexes
   await elCreateIndexes();
-  logApp.info(`[INIT] Elasticsearch indexes loaded`);
+  logApp.info(`[INIT] Search engine indexes loaded`);
   return true;
 };
 

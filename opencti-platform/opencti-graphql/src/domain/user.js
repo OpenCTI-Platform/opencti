@@ -11,12 +11,12 @@ import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  listEntities,
   listThroughGetTo,
   loadById,
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -34,7 +34,7 @@ import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID, OPENCTI_SYSTEM_UUID
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
-import { elLoadBy } from '../database/elasticSearch';
+import { elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { applicationSession } from '../database/session';
 import {

@@ -1,8 +1,9 @@
-import { elIndex } from '../database/elasticSearch';
+import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
-import { deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
+import { deleteElementById, loadById, updateAttribute } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { findById as findSubTypeById } from './subType';
 import { getParentTypes } from '../schema/schemaUtils';
 import { BASE_TYPE_ENTITY } from '../schema/general';

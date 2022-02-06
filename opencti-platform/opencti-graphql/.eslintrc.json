@@ -16,7 +16,8 @@
       }
     ],
     "no-underscore-dangle": 0,
-    "no-await-in-loop": 0
+    "no-await-in-loop": 0,
+    "import/no-import-module-exports": "off"
   },
   "overrides": [
     {

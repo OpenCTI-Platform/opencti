@@ -13,7 +13,7 @@ import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader } from '../database/middleware';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
-import { elBatchIds } from '../database/elasticSearch';
+import { elBatchIds } from '../database/engine';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 

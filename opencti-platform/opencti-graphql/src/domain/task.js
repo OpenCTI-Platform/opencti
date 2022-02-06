@@ -1,10 +1,11 @@
 import * as R from 'ramda';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { now } from '../utils/format';
-import { elIndex, elPaginate } from '../database/elasticSearch';
+import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
-import { buildFilters, deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
+import { deleteElementById, loadById, patchAttribute } from '../database/middleware';
+import { listEntities, buildFilters } from '../database/repository';
 import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';

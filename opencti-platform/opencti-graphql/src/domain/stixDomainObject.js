@@ -9,13 +9,13 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   internalLoadById,
-  listEntities,
   listThroughGetTo,
   loadById,
   timeSeriesEntities,
   updateAttribute,
 } from '../database/middleware';
-import { elCount } from '../database/elasticSearch';
+import { listEntities } from '../database/repository';
+import { elCount } from '../database/engine';
 import { upload } from '../database/minio';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';

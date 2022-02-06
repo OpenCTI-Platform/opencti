@@ -1,11 +1,12 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { elIndex, elPaginate, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
+import { elIndex, elPaginate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, listEntities, loadById, loadStixById, updateAttribute } from '../database/middleware';
+import { deleteElementById, loadById, loadStixById, updateAttribute } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';

@@ -1,4 +1,5 @@
-import { createEntity, listEntities, loadById } from '../database/middleware';
+import { createEntity, loadById } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INFRASTRUCTURE } from '../schema/stixDomainObject';

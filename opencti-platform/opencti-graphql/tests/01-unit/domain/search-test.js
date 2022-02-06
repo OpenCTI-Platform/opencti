@@ -1,4 +1,4 @@
-import { elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/elasticSearch';
+import { elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine';
 import { isNotEmptyField } from '../../../src/database/utils';
 
 const parse = (search) => {

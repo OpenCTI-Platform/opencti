@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { BULK_TIMEOUT, el, elBulk, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
+import { BULK_TIMEOUT, searchClient, elBulk, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import { logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 
@@ -36,7 +36,7 @@ export const up = async (next) => {
   }`;
   logApp.info(`[MIGRATION] Migrating all relationships connections`);
   const startMigrateRelationships = new Date().getTime();
-  await el
+  await searchClient()
     .updateByQuery({
       index: READ_RELATIONSHIPS_INDICES,
       refresh: true,

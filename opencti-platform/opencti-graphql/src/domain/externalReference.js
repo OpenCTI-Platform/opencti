@@ -7,12 +7,12 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  listEntities,
   listThings,
   loadById,
   paginateAllThings,
   updateAttribute,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
@@ -23,8 +23,7 @@ import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { isEmptyField } from '../database/utils';
 import { stixCoreObjectIdImportPush } from './stixCoreObject';
-import { BYPASS } from '../utils/access';
-import { BYPASS_REFERENCE } from '../initialization';
+import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 
 export const findById = (user, externalReferenceId) => {
   return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);

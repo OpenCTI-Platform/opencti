@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { paginateAllThings, listEntities, listThings, loadById, listRelations } from '../database/middleware';
+import { paginateAllThings, listThings, loadById, listRelations } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';

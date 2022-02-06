@@ -43,7 +43,9 @@ describe('Test that all STIX relationships are correctly implemented', () => {
 
           let ctiRelationships = stixRelationship;
           if (relationshipName in openctiRelationshipException) {
-            ctiRelationships = ctiRelationships.filter((n) => !openctiRelationshipException[relationshipName].includes(n));
+            ctiRelationships = ctiRelationships.filter(
+              (n) => !openctiRelationshipException[relationshipName].includes(n)
+            );
           }
           it(`Verifying that ${relationshipName} contains all STIX relationships`, () => {
             expect(lowerCaseOpenctiRelationship[relationshipName]).toEqual(ctiRelationships);
@@ -55,8 +57,6 @@ describe('Test that all STIX relationships are correctly implemented', () => {
   });
 
   it('Verifying that all STIX Relationships are implemented in OpenCTI', () => {
-    expect(Object.keys(lowerCaseOpenctiRelationship)).toEqual(
-      expect.arrayContaining(processedRelationships)
-    );
+    expect(Object.keys(lowerCaseOpenctiRelationship)).toEqual(expect.arrayContaining(processedRelationships));
   });
 });

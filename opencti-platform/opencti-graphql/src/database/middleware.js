@@ -20,7 +20,6 @@ import {
   isInferredIndex,
   isNotEmptyField,
   READ_DATA_INDICES,
-  READ_ENTITIES_INDICES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
@@ -47,7 +46,7 @@ import {
   MAX_SPLIT,
   ROLE_FROM,
   ROLE_TO,
-} from './elasticSearch';
+} from './engine';
 import {
   FIRST_OBSERVED,
   FIRST_SEEN,
@@ -199,7 +198,7 @@ import {
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles, rawFilesListing, stixFileConverter } from './minio';
-import { BYPASS, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
+import { BYPASS, BYPASS_REFERENCE, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
   FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION,
@@ -212,7 +211,7 @@ import {
   STIX_ATTRIBUTE_TO_META_FIELD,
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
-import { BYPASS_REFERENCE } from '../initialization';
+import { buildFilters, listEntities } from './repository';
 import { askEnrich } from '../domain/enrichment';
 
 // region global variables
@@ -390,70 +389,6 @@ export const loadThroughGetTo = async (user, sources, relationType, targetEntity
   return loadThrough(user, sources, 'from', relationType, targetEntityType);
 };
 // Standard listing
-export const buildFilters = (args = {}) => {
-  const builtFilters = { ...args };
-  const { types = [], entityTypes = [], relationshipTypes = [] } = args;
-  const { elementId, elementWithTargetTypes = [] } = args;
-  const { fromId, fromRole, fromTypes = [] } = args;
-  const { toId, toRole, toTypes = [] } = args;
-  const { filters = [] } = args;
-  // Config
-  const customFilters = [...(filters ?? [])];
-  // region element
-  const nestedElement = [];
-  if (elementId) {
-    nestedElement.push({ key: 'internal_id', values: [elementId] });
-  }
-  if (nestedElement.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedElement });
-  }
-  const nestedElementTypes = [];
-  if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
-    nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
-  }
-  if (nestedElementTypes.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedElementTypes });
-  }
-  // endregion
-  // region from filtering
-  const nestedFrom = [];
-  if (fromId) {
-    nestedFrom.push({ key: 'internal_id', values: [fromId] });
-  }
-  if (fromTypes && fromTypes.length > 0) {
-    nestedFrom.push({ key: 'types', values: fromTypes });
-  }
-  if (fromRole) {
-    nestedFrom.push({ key: 'role', values: [fromRole] });
-  } else if (fromId || (fromTypes && fromTypes.length > 0)) {
-    nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-  }
-  if (nestedFrom.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedFrom });
-  }
-  // endregion
-  // region to filtering
-  const nestedTo = [];
-  if (toId) {
-    nestedTo.push({ key: 'internal_id', values: [toId] });
-  }
-  if (toTypes && toTypes.length > 0) {
-    nestedTo.push({ key: 'types', values: toTypes });
-  }
-  if (toRole) {
-    nestedTo.push({ key: 'role', values: [toRole] });
-  } else if (toId || (toTypes && toTypes.length > 0)) {
-    nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-  }
-  if (nestedTo.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedTo });
-  }
-  // endregion
-  // Override some special filters
-  builtFilters.types = [...(types ?? []), ...entityTypes, ...relationshipTypes];
-  builtFilters.filters = customFilters;
-  return builtFilters;
-};
 const buildRelationsFilter = (relationshipTypes, args) => {
   const relationsToGet = Array.isArray(relationshipTypes)
     ? relationshipTypes
@@ -568,11 +503,6 @@ export const paginateAllThings = async (user, thingsTypes, args = {}) => {
   const result = await listAllThings(user, thingsTypes, args);
   const nodeResult = result.map((n) => ({ node: n }));
   return buildPagination(0, null, nodeResult, nodeResult.length);
-};
-export const listEntities = async (user, entityTypes, args = {}) => {
-  const { indices = READ_ENTITIES_INDICES } = args;
-  const paginateArgs = buildFilters({ entityTypes, ...args });
-  return elPaginate(user, indices, paginateArgs);
 };
 export const listRelations = async (user, relationshipType, args = {}) => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
@@ -763,7 +693,7 @@ export const timeSeriesRelations = async (user, options) => {
   const histogramData = await elHistogramCount(user, entityType, field, interval, startDate, endDate, toTypes, filters);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const distributionEntities = async (user, entityType, filters = [], options) => {
+export const distributionEntities = async (user, entityType, filters, options = {}) => {
   // filters: { isRelation: true, type: stix_relation, start: date, end: date, value: uuid }
   const { limit = 10, order = 'desc' } = options;
   const { startDate, endDate, field } = options;
@@ -2989,6 +2919,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
     if (lock) await lock.unlock();
   }
 };
+
 export const createEntity = async (user, input, type) => {
   // volumes of objects relationships must be controlled
   if (input.objects && input.objects.length > MAX_BATCH_SIZE) {

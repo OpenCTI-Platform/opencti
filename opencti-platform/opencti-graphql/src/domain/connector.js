@@ -1,37 +1,17 @@
 import EventSource from 'eventsource';
-import { assoc, filter, includes, map, pipe } from 'ramda';
-import {
-  createEntity,
-  deleteElementById,
-  listEntities,
-  loadById,
-  patchAttribute,
-  updateAttribute,
-} from '../database/middleware';
-import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
+import { createEntity, deleteElementById, loadById, patchAttribute, updateAttribute } from '../database/middleware';
+import { listEntities, completeConnector, connectorsFor } from '../database/repository';
+import { registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { FROM_START_STR, now, sinceNowInMinutes } from '../utils/format';
-import { elLoadById } from '../database/elasticSearch';
+import { FROM_START_STR, now } from '../utils/format';
+import { elLoadById } from '../database/engine';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { deleteWorkForConnector } from './work';
-
-// region utils
-const completeConnector = (connector) => {
-  if (connector) {
-    return pipe(
-      assoc('connector_scope', connector.connector_scope ? connector.connector_scope.split(',') : []),
-      assoc('config', connectorConfig(connector.id)),
-      assoc('active', sinceNowInMinutes(connector.updated_at) < 5)
-    )(connector);
-  }
-  return null;
-};
-// endregion
 
 // region connectors
 export const loadConnectorById = (user, id) => {
@@ -42,31 +22,6 @@ export const connectorForWork = async (user, id) => {
   const work = await elLoadById(user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   if (work) return loadConnectorById(user, work.connector_id);
   return null;
-};
-
-export const connectors = (user) => {
-  return listEntities(user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false }).then((elements) =>
-    map((conn) => completeConnector(conn), elements)
-  );
-};
-
-export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
-  const connects = await connectors(user);
-  return pipe(
-    filter((c) => c.connector_type === type),
-    filter((c) => (onlyAlive ? c.active === true : true)),
-    filter((c) => (onlyAuto ? c.auto === true : true)),
-    filter((c) => (onlyContextual ? c.only_contextual === true : true)),
-    // eslint-disable-next-line prettier/prettier
-    filter((c) =>
-      scope && c.connector_scope && c.connector_scope.length > 0
-        ? includes(
-            scope.toLowerCase(),
-            map((s) => s.toLowerCase(), c.connector_scope)
-          )
-        : true
-    )
-  )(connects);
 };
 
 export const connectorsForExport = async (user, scope, onlyAlive = false) => {

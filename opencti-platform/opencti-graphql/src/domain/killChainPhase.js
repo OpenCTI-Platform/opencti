@@ -1,13 +1,7 @@
 import { pipe, assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  createEntity,
-  createRelation,
-  deleteElementById,
-  listEntities,
-  loadById,
-  updateAttribute,
-} from '../database/middleware';
+import { createEntity, createRelation, deleteElementById, loadById, updateAttribute } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixMetaRelationship';

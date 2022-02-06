@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import {
   loadById,
-  listEntities,
   createEntity,
   deleteElementById,
   updateAttribute,
@@ -11,7 +10,8 @@ import {
 import { ENTITY_TYPE_ATTRIBUTE } from '../schema/internalObject';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { elAttributeValues, elUpdateAttributeValue } from '../database/elasticSearch';
+import { elAttributeValues, elUpdateAttributeValue } from '../database/engine';
+import { listEntities } from '../database/repository';
 
 export const findById = (user, attributeId) => {
   return loadById(user, attributeId, ENTITY_TYPE_ATTRIBUTE);

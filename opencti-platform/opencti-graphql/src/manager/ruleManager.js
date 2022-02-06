@@ -14,7 +14,7 @@ import {
 } from '../database/middleware';
 import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
-import { elList } from '../database/elasticSearch';
+import { elList } from '../database/engine';
 import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -297,7 +297,9 @@ const initRuleManager = () => {
   let streamProcessor;
   let syncListening = true;
   const wait = (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
   };
   const ruleHandler = async () => {
     let lock;

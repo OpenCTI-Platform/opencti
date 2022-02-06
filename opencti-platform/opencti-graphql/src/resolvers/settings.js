@@ -13,7 +13,7 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { PROVIDERS } from '../config/providers';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { elAggregationCount } from '../database/elasticSearch';
+import { elAggregationCount } from '../database/engine';
 
 const settingsResolvers = {
   Query: {

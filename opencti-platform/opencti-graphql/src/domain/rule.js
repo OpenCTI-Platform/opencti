@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { listEntities } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_RULE } from '../schema/internalObject';
 import { isNotEmptyField } from '../database/utils';

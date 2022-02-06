@@ -4,12 +4,12 @@ import { Promise } from 'bluebird';
 import {
   createEntity,
   createRelation,
-  listEntities,
   batchListThroughGetTo,
   loadById,
   timeSeriesEntities,
   distributionEntities,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
@@ -21,7 +21,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { now } from '../utils/format';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 const OpenCTITimeToLive = {

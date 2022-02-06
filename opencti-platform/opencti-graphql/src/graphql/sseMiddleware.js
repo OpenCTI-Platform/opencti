@@ -9,7 +9,7 @@ import { findById, streamCollectionGroups } from '../domain/stream';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from '../database/rabbitmq';
 import { loadStixById, loadByIdWithMetaRels } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
-import { elList, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
+import { elList, ES_MAX_CONCURRENCY } from '../database/engine';
 import {
   generateCreateMessage,
   isNotEmptyField,

@@ -8,7 +8,6 @@ import {
   distributionRelations,
   fullLoadById,
   internalLoadById,
-  listEntities,
   listRelations,
   loadById,
   mergeEntities,
@@ -19,7 +18,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { el, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
+import { searchClient, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
 import { ADMIN_USER, sleep } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -52,6 +51,7 @@ import { INTERNAL_FROM_FIELD } from '../../../src/schema/identifier';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
+import { listEntities } from '../../../src/database/repository';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -769,7 +769,7 @@ const isOneOfThisIdsExists = async (ids) => {
       },
     },
   };
-  const looking = await el.search(query);
+  const looking = await searchClient().search(query);
   const numberOfResult = looking.body.hits.total.value;
   return numberOfResult > 0;
 };

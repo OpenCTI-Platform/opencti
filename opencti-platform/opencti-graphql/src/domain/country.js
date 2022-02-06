@@ -1,5 +1,6 @@
 import { assoc } from 'ramda';
-import { createEntity, listEntities, loadById, batchLoadThroughGetTo } from '../database/middleware';
+import { createEntity, loadById, batchLoadThroughGetTo } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';

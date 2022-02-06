@@ -1,7 +1,6 @@
 import {
   connectorDelete,
   connectorForWork,
-  connectors,
   connectorsForExport,
   connectorsForImport,
   findAllSync,
@@ -33,6 +32,7 @@ import {
 import { findById as findUserById } from '../domain/user';
 import { redisGetWork, redisUpdateActionExpectation } from '../database/redis';
 import { now } from '../utils/format';
+import { connectors } from '../database/repository';
 
 const connectorResolvers = {
   Query: {
