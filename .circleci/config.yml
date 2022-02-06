@@ -79,7 +79,7 @@ jobs:
           command: python3 setup.py verify
       - run:
           name: install twine
-          command: sudo pip3 install twine
+          command: pip3 install twine
       - run:
           name: init .pypirc
           command: |
