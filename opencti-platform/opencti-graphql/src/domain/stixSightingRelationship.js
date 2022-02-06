@@ -33,7 +33,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 
 export const findAll = async (user, args) => {

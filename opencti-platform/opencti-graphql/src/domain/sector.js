@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import {
   createEntity,
-  listEntities,
   batchListThroughGetFrom,
   batchListThroughGetTo,
   loadById,
@@ -9,6 +8,7 @@ import {
   listThroughGetFrom,
   batchLoadThroughGetTo,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';

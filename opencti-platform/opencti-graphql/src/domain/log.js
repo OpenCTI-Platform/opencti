@@ -1,6 +1,6 @@
 import { head } from 'ramda';
 import * as R from 'ramda';
-import { elPaginate } from '../database/elasticSearch';
+import { elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById } from './user';

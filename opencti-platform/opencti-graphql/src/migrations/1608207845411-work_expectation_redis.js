@@ -1,5 +1,5 @@
 import { DatabaseError } from '../config/errors';
-import { el } from '../database/elasticSearch';
+import { searchClient } from '../database/engine';
 import { READ_INDEX_HISTORY } from '../database/utils';
 
 export const up = async (next) => {
@@ -7,7 +7,7 @@ export const up = async (next) => {
     match: { entity_type: 'Work' },
   };
   // Clean all current platform works
-  await el
+  await searchClient()
     .deleteByQuery({
       index: READ_INDEX_HISTORY,
       refresh: true,

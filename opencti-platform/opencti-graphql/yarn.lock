@@ -1538,15 +1538,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elastic/elasticsearch@npm:7.13.0":
-  version: 7.13.0
-  resolution: "@elastic/elasticsearch@npm:7.13.0"
+"@elastic/elasticsearch@npm:7.17.0":
+  version: 7.17.0
+  resolution: "@elastic/elasticsearch@npm:7.17.0"
   dependencies:
     debug: ^4.3.1
     hpagent: ^0.1.1
     ms: ^2.1.3
     secure-json-parse: ^2.4.0
-  checksum: a33fe16bc9c46bc9232ed1efc97c512c1e2aa21eb3c26385b383d3a2dfd3b00af92521849aa032a080a55262bccd34183881d8404c91e9df8741f155dc156524
+  checksum: 08113bcb14203c5700e6575cb720aa32f5573a1776e13b78bf101ffeae46308c3664b94f16f7e2c5ec26e14c459d8d1491e234940e635cddfe3ee61a52fb51f9
   languageName: node
   linkType: hard
 
@@ -2099,6 +2099,18 @@ __metadata:
     mkdirp: ^1.0.4
     rimraf: ^3.0.2
   checksum: c96381d4a37448ea280951e46233f7e541058cf57a57d4094dd4bdcaae43fa5872b5f2eb6bfb004591a68e29c5877abe3cdc210cb3588cbf20ab2877f31a7de7
+  languageName: node
+  linkType: hard
+
+"@opensearch-project/opensearch@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@opensearch-project/opensearch@npm:1.0.2"
+  dependencies:
+    debug: ^4.3.1
+    hpagent: ^0.1.1
+    ms: ^2.1.3
+    secure-json-parse: ^2.4.0
+  checksum: 0fd79b7bae939a6265ab5f43078f7af7eed0874241f0726e84af67da2efc811897e511d0601b5a5c4954bc052b9b3d81ee882dff9c0c6cd5c2c27284e2059f3b
   languageName: node
   linkType: hard
 
@@ -9082,10 +9094,11 @@ __metadata:
     "@babel/plugin-transform-runtime": 7.16.10
     "@babel/preset-env": 7.16.11
     "@babel/runtime": 7.16.7
-    "@elastic/elasticsearch": 7.13.0
+    "@elastic/elasticsearch": 7.17.0
     "@graphql-tools/schema": 7.1.5
     "@graphql-tools/utils": 7.10.0
     "@jest/test-sequencer": 27.4.6
+    "@opensearch-project/opensearch": ^1.0.2
     amqplib: 0.8.0
     apollo-errors: 1.9.0
     apollo-server-express: 2.25.3

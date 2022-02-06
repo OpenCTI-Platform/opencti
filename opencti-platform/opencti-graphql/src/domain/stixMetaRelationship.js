@@ -1,5 +1,5 @@
 import { assoc, dissoc, propOr } from 'ramda';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';

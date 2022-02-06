@@ -1,17 +1,11 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
-import { elIndex } from '../database/elasticSearch';
+import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_USER_SUBSCRIPTION } from '../schema/internalObject';
-import {
-  deleteElementById,
-  fullLoadById,
-  internalLoadById,
-  listEntities,
-  loadById,
-  updateAttribute,
-} from '../database/middleware';
+import { deleteElementById, fullLoadById, internalLoadById, loadById, updateAttribute } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { baseUrl, BUS_TOPICS } from '../config/conf';
 import { FROM_START_STR, hoursAgo, minutesAgo, prepareDate } from '../utils/format';

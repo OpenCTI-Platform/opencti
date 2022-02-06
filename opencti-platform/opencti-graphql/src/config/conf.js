@@ -30,9 +30,7 @@ const LINUX_CERTFILES = [
 
 const DEFAULT_ENV = 'production';
 export const OPENCTI_SESSION = 'opencti_session';
-export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';
-export const OPENCTI_DEFAULT_DURATION = 'P99Y';
 export const BUS_TOPICS = {
   [O.ENTITY_TYPE_SETTINGS]: {
     EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',

@@ -3,17 +3,17 @@ import {
   createEntity,
   distributionEntities,
   internalLoadById,
-  listEntities,
   loadById,
   timeSeriesEntities,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { find as findAttribute, addAttribute } from './attribute';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 

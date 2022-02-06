@@ -12,7 +12,7 @@ import {
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {

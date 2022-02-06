@@ -139,7 +139,7 @@ export const upload = async (user, path, file, metadata = {}) => {
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
     const fileStream = createReadStream();
-    return minioClient.putObject(bucketName, fileDirName, fileStream, null, fileMeta, (err) => {
+    minioClient.putObject(bucketName, fileDirName, fileStream, null, fileMeta, (err) => {
       if (err) {
         return reject(err);
       }

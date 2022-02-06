@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_IDENTITY_SYSTEM } from '../schema/stixDomainObject';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
+import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { SYSTEM_USER } from '../utils/access';

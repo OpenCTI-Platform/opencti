@@ -162,7 +162,7 @@ class RedisStore extends Store {
     this._scanKeys({}, 0, pattern, this.scanCount, cb);
   }
 
-  _scanKeys(keys = {}, cursor, pattern, count, cb = noop) {
+  _scanKeys(keys, cursor, pattern, count, cb = noop) {
     const args = [cursor, 'match', pattern, 'count', count];
     this.client.scan(args, (err, data) => {
       if (err) return cb(err);

@@ -1,4 +1,4 @@
-import { elCreateIndexes } from '../database/elasticSearch';
+import { elCreateIndexes } from '../database/engine';
 import { INDEX_INFERRED_ENTITIES, INDEX_INFERRED_RELATIONSHIPS } from '../database/utils';
 
 export const up = async (next) => {

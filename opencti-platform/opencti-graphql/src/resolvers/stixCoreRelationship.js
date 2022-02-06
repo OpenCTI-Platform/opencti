@@ -27,7 +27,7 @@ import { distributionRelations, timeSeriesRelations, batchLoader, convertDataToR
 import { creator } from '../domain/log';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
-import { elBatchIds } from '../database/elasticSearch';
+import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 
 const loadByIdLoader = batchLoader(elBatchIds);

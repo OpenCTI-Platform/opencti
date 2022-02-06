@@ -4,12 +4,12 @@ import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  listEntities,
   batchListThroughGetFrom,
   batchListThroughGetTo,
   loadById,
   updateAttribute,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';

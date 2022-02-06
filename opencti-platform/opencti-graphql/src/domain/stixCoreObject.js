@@ -8,13 +8,13 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  listEntities,
   batchListThroughGetFrom,
   loadById,
   mergeEntities,
   updateAttribute,
   batchLoadThroughGetTo,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { lockResource, notify, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -50,7 +50,7 @@ import { now, observableValue } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, stixFileConverter, upload } from '../database/minio';
 import { uploadJobImport } from './file';
-import { elUpdateElement } from '../database/elasticSearch';
+import { elUpdateElement } from '../database/engine';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { getInstanceIds } from '../schema/identifier';
 

@@ -1,4 +1,5 @@
-import { internalLoadById, listEntities, listThings } from '../../src/database/middleware';
+import { internalLoadById, listThings } from '../../src/database/middleware';
+import { listEntities } from '../../src/database/repository';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS } from '../../src/database/utils';
 import { setRuleActivation } from '../../src/manager/ruleManager';

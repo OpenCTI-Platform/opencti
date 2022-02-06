@@ -5,24 +5,12 @@ import { findAll as findRetentionRulesToExecute } from '../domain/retentionRule'
 import conf, { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { deleteElementById, patchAttribute } from '../database/middleware';
-import { BYPASS, ROLE_ADMINISTRATOR } from '../utils/access';
+import { RETENTION_MANAGER_USER } from '../utils/access';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { now, utcDate } from '../utils/format';
 import { READ_INDEX_STIX_META_OBJECTS, READ_INDEX_STIX_META_RELATIONSHIPS, READ_STIX_INDICES } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
-import { elPaginate } from '../database/elasticSearch';
-
-const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
-export const RETENTION_MANAGER_USER = {
-  id: RETENTION_MANAGER_USER_UUID,
-  internal_id: RETENTION_MANAGER_USER_UUID,
-  name: 'RETENTION MANAGER',
-  user_email: 'RETENTION MANAGER',
-  origin: {},
-  roles: [{ name: ROLE_ADMINISTRATOR }],
-  capabilities: [{ name: BYPASS }],
-  allowed_marking: [],
-};
+import { elPaginate } from '../database/engine';
 
 // Retention manager responsible to cleanup old data
 // Each API will start is retention manager.

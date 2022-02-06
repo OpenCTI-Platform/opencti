@@ -1,4 +1,5 @@
-import { createEntity, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
+import { createEntity, batchListThroughGetTo, loadById } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';

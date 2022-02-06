@@ -17,7 +17,7 @@ import {
   SYNC_RESTORE_START_REMOTE_URI,
   SYNC_TEST_REMOTE_URI,
 } from '../utils/testQuery';
-import { elAggregationCount } from '../../src/database/elasticSearch';
+import { elAggregationCount } from '../../src/database/engine';
 import { execPython3, executePython } from '../../src/python/pythonBridge';
 import { fullLoadById } from '../../src/database/middleware';
 import { buildStixData } from '../../src/database/stix';

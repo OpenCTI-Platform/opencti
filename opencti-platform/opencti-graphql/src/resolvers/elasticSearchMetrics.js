@@ -1,4 +1,4 @@
-import { getMetrics } from '../domain/elasticSearchMetrics';
+import { getMetrics } from '../domain/searchMetrics';
 
 const elasticSearchMetricsResolvers = {
   Query: {

@@ -1,4 +1,4 @@
-import { elLoadById } from '../database/elasticSearch';
+import { elLoadById } from '../database/engine';
 import { READ_PLATFORM_INDICES } from '../database/utils';
 
 // eslint-disable-next-line import/prefer-default-export

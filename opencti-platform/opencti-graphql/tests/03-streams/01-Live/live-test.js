@@ -4,7 +4,7 @@ import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE } from '../../utils/tes
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { fullLoadById } from '../../../src/database/middleware';
 import { buildStixData } from '../../../src/database/stix';
-import { elAggregationCount } from '../../../src/database/elasticSearch';
+import { elAggregationCount } from '../../../src/database/engine';
 import { convertEntityTypeToStixType } from '../../../src/schema/schemaUtils';
 
 describe('Live streams tests', () => {
