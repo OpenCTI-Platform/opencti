@@ -118,7 +118,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             data={data}
             entityLink={entityLink}
             paginationOptions={paginationOptions}
-            handleDelete={this.props.relay.refetch.bind(this)}
+            onDelete={this.props.relay.refetch.bind(this)}
             searchTerm={searchTerm}
             coursesOfAction={true}
           />

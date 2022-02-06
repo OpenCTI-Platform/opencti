@@ -340,7 +340,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
 StixDomainObjectAttackPatternsKillChainLines.propTypes = {
   stixDomainObjectId: PropTypes.string,
   searchTerm: PropTypes.string,
-  handleDelete: PropTypes.func,
+  onDelete: PropTypes.func,
   data: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
