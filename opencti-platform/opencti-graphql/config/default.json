@@ -44,6 +44,10 @@
       "max_ttl": 60000,
       "extension_threshold": 5000
     },
+    "live_stream": {
+      "cache_max_size": 5000,
+      "cache_max_time": 2
+    },
     "performance_logger": false,
     "map_tile_server_dark": "https://map.opencti.io/styles/1fdd936a-084b-46ac-a948-22ce1686aadf/{z}/{x}/{y}.png",
     "map_tile_server_light": "https://map.opencti.io/styles/klokantech-basic/{z}/{x}/{y}.png",
