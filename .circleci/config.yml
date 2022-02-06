@@ -1,6 +1,6 @@
 version: 2.1
 orbs: 
-  slack: circleci/slack@4.5.1
+  slack: circleci/slack@4.7.1
 jobs:
   build_frontend:
     working_directory: ~/opencti
@@ -486,6 +486,14 @@ jobs:
           event: fail
           template: basic_fail_1              
 
+  notify_rolling:
+    docker:
+      - image: 'cimg/base:stable'
+    steps:
+      - slack/notify:
+          event: pass
+          template: basic_success_1
+
   notify:
     docker:
       - image: 'cimg/base:stable'
@@ -592,7 +600,7 @@ workflows:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
               ignore: /.*/      
-      - notify:
+      - notify_rolling:
           requires:
             - deploy_demo
             - deploy_lab
@@ -601,3 +609,7 @@ workflows:
             - deploy_testing
             - package_rolling
             - package_rolling_musl
+      - notify:
+          requires:
+            - docker_build_platform
+            - docker_build_worker
