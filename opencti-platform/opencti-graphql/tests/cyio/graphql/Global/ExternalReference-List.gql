@@ -1,5 +1,5 @@
 query ExternalReferenceList {
-  cyioExternalReferences(first: 4) {
+  cyioExternalReferences(limit: 4) {
     pageInfo {
       globalCount
       startCursor
