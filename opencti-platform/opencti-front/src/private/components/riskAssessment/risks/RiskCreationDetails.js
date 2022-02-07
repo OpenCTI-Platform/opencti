@@ -215,34 +215,32 @@ class RiskCreationDetailsComponent extends Component {
           </Grid>
           <Grid container={true} spacing={3}>
             <Grid xs={12} item={true}>
-              <Grid style={{ marginBottom: '15px' }} item={true}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Description')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                <Tooltip
+                  title={t(
+                    'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                  )}
                 >
-                  {t('Description')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={TextField}
-                  name="Description"
-                  fullWidth={true}
-                  multiline={true}
-                  rows="3"
-                  variant='outlined'
-                />
-              </Grid>
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <Field
+                component={TextField}
+                name="Description"
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                variant='outlined'
+              />
             </Grid>
             <Grid xs={12} item={true}>
               <Typography
@@ -268,7 +266,7 @@ class RiskCreationDetailsComponent extends Component {
                 name="statement"
                 fullWidth={true}
                 multiline={true}
-                rows="3"
+                rows="4"
                 variant='outlined'
               />
             </Grid>

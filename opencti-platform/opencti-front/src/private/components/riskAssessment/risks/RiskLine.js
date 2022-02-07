@@ -106,10 +106,10 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.priority.width }}
+                style={{ width: dataColumns.name.width }}
               >
                 {/* {node.priority && node.priority} */}
-                {t('High')}
+                {t('Lorem Ipsum')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -147,17 +147,10 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.component.width }}
+                style={{ width: dataColumns.occurrences.width }}
               >
                 Lorem
                 {node.component_type && node.component_type}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.asset.width }}
-              >
-                <LayersIcon /> {t('Lorem')}
-                {/* {node.network_id && node.network_id} */}
               </div>
               <div
                 className={classes.bodyItem}
@@ -297,7 +290,7 @@ class RiskLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.priority.width }}
+                style={{ width: dataColumns.name.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -352,24 +345,13 @@ class RiskLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.component.width }}
+                style={{ width: dataColumns.occurrences.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rect"
                   width={140}
                   height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.asset.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height='100%'
                 />
               </div>
               <div

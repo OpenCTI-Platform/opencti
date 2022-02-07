@@ -265,18 +265,18 @@ class Risks extends Component {
     }
     const dataColumns = {
       id: {
-        label: 'ID',
-        width: '11%',
+        label: 'POAM_ID',
+        width: '13%',
         isSortable: true,
       },
-      priority: {
-        label: 'Priority',
-        width: '8%',
+      name: {
+        label: 'Name',
+        width: '15%',
         isSortable: false,
       },
       risk: {
         label: 'Risk',
-        width: '9%',
+        width: '7%',
         isSortable: true,
       },
       status: {
@@ -291,16 +291,11 @@ class Risks extends Component {
       },
       lifecycle: {
         label: 'Lifecycle',
-        width: '11%',
+        width: '15%',
         isSortable: true,
       },
-      component: {
-        label: 'Component',
-        width: '11%',
-        isSortable: true,
-      },
-      asset: {
-        label: 'Asset',
+      occurrences: {
+        label: 'Occurrences',
         width: '11%',
         isSortable: true,
       },

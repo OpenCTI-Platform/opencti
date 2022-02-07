@@ -524,40 +524,6 @@ class RiskEditionOverviewComponent extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid style={{ marginBottom: '10px' }} item={true}>
-                      <Typography color="textSecondary" variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-                        {t('Responsible Parties')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                        <Tooltip
-                          title={t(
-                            'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                          )}
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <AddIcon fontSize="small" style={{ margin: '-5px 0 0 0' }} />
-                      <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="responsible_parties"
-                        size='small'
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                      />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="responsible_parties"
-                        size='small'
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                      />
-                    </Grid>
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Grid style={{ marginBottom: '15px' }} item={true}>

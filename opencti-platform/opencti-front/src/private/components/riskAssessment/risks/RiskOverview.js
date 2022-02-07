@@ -176,7 +176,7 @@ class RiskOverviewComponent extends Component {
               {risk.poam_id && t(risk.poam_id)}
             </Grid>
           </Grid>
-          <Grid container={true} spacing={3}>
+          <Grid style={{ marginTop: '10px' }} container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography
                 variant="h3"
@@ -318,45 +318,6 @@ class RiskOverviewComponent extends Component {
                 {t('2.0')}
                 {/* {risk.impact && t(risk.impact)} */}
               </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Responsible Parties')}
-                </Typography>
-                <div style={{ float: 'left', marginLeft: '5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Responsible Parties',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <div style={{ display: 'flex' }}>
-                  <Badge
-                    overlap="circular"
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    badgeContent={
-                      <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                    }
-                  >
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                  </Badge>
-                  <div style={{ marginLeft: '20px' }}>
-                    <Typography variant="subtitle1">
-                      {t('Lorem Ipsum')}
-                    </Typography>
-                    <Typography color="textSecondary" variant="disabled">
-                      {t('Lorem Ipsum Dolor Ist')}
-                    </Typography>
-                  </div>
-                </div>
-              </div>
             </Grid>
             <Grid item={true} xs={6}>
               <div style={{ marginTop: '10px' }}>
@@ -379,6 +340,7 @@ class RiskOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Chip key={risk.id} classes={{ root: classes.chip }} label={t('Lorem Ipsum Dono Ist Sei')} color="primary" />
+                <br/>
                 <Chip key={risk.id} classes={{ root: classes.chip }} label={t('Lorem Ipsum Dono Ist Sei')} color="primary" />
                 {/* <ItemCreator creator={risk.creator} /> */}
               </div>
@@ -402,9 +364,9 @@ class RiskOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {/* {risk.priority && t(risk.priority)} */}
-                {riskEdges.map((value) => value.priority) && t(riskEdges.map((value) => value.priority))}
+        {riskEdges.map((value) => value.priority) && t(riskEdges.map((value) => value.priority))}
               </div>
-              <div style={{ marginBottom: '40px', marginTop: '25px' }}>
+              <div style={{ marginBottom: '20px', marginTop: '25px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -425,29 +387,10 @@ class RiskOverviewComponent extends Component {
                 <div className="clearfix" />
                 {t('June 11, 2021')}
               </div>
-              <div style={{ display: 'flex', marginTop: '15px' }}>
-                <Badge
-                  overlap="circular"
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  badgeContent={
-                    <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                  }
-                >
-                  <Avatar alt="AB" src="/static/images/avatar/2.jpg" />
-                </Badge>
-                <div style={{ marginLeft: '20px' }}>
-                  <Typography variant="subtitle1">
-                    {t('Lorem Ipsum')}
-                  </Typography>
-                  <Typography variant="disabled" color="textSecondary">
-                    {t('Lorem Ipsum Dolor Ist')}
-                  </Typography>
-                </div>
-              </div>
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
-            <Grid style={{ marginTop: '20px' }} item={true} xs={12}>
+            <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
                 color="textSecondary"

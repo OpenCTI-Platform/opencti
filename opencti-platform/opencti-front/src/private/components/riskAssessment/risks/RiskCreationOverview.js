@@ -30,6 +30,7 @@ import { commitMutation } from '../../../../relay/environment';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import DatePickerField from '../../../../components/DatePickerField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
@@ -160,6 +161,68 @@ class RiskCreationOverviewComponent extends Component {
               </Grid>
             </Grid>
           </Grid>
+          <Grid container={true} spacing={3} style={{ marginBottom: '9px' }}>
+            <Grid item={true} xs={6}>
+              <Grid item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Created')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={DatePickerField}
+                  variant='outlined'
+                  size='small'
+                  name="created"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Grid item={true}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Last Modified')}
+                </Typography>
+                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                  <Tooltip
+                    title={t(
+                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Field
+                  component={DatePickerField}
+                  variant='outlined'
+                  size='small'
+                  name="modified"
+                  fullWidth={true}
+                  containerstyle={{ width: '100%' }}
+                />
+              </Grid>
+            </Grid>
+          </Grid>
           <Grid item={true} xs={12} style={{ marginBottom: '15px' }}>
             <Typography
               variant="h3"
@@ -272,40 +335,6 @@ class RiskCreationOverviewComponent extends Component {
                   name="impact"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
-                />
-              </Grid>
-              <Grid style={{ marginBottom: '10px' }} item={true}>
-                <Typography color="textSecondary" variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-                  {t('Responsible Parties')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip
-                    title={t(
-                      'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <AddIcon fontSize="small" style={{ margin: '-5px 0 0 0' }} />
-                <div className="clearfix" />
-                <Field
-                  component={SelectField}
-                  variant='outlined'
-                  name="ports"
-                  size='small'
-                  fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                />
-                <Field
-                  component={SelectField}
-                  variant='outlined'
-                  name="ports"
-                  size='small'
-                  fullWidth={true}
-                  style={{ height: '38.09px' }}
-                  containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                 />
               </Grid>
             </Grid>
