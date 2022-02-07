@@ -560,7 +560,7 @@ workflows:
                 - master
       - deploy_club:
           requires:
-            - deploy_reference
+            - build_platform
           filters:
             branches:
               only:
