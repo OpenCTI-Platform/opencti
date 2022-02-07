@@ -511,14 +511,16 @@ workflows:
               only: /.*/
       - build_platform:
           filters:
-            tags:
-              only: /.*/
+            branches:
+              only:
+                - master
           requires:
             - build_frontend
       - build_platform_musl:
           filters:
-            tags:
-              only: /.*/      
+            branches:
+              only:
+                - master
           requires:
             - build_frontend
       - package_rolling:
@@ -599,7 +601,7 @@ workflows:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/
             branches:
-              ignore: /.*/      
+              ignore: /.*/
       - notify_rolling:
           requires:
             - deploy_demo
