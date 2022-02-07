@@ -987,7 +987,7 @@ const hashMergeValidation = (instances) => {
     Object.entries(groupElements).forEach(([algo, values]) => {
       const hashes = R.uniq(values.map(([, data]) => data));
       if (hashes.length > 1) {
-        const field = `hash_${algo.toUpperCase()}`;
+        const field = `hashes_${algo.toUpperCase()}`;
         const message = { message: `Hashes collision for ${algo} algorithm` };
         throw ValidationError(field, message);
       }

@@ -59,11 +59,20 @@ const createApp = async (apolloServer) => {
     expectCt: { enforce: true, maxAge: 30 },
     referrerPolicy: { policy: 'unsafe-url' },
     crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
     contentSecurityPolicy: {
+      useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc,
         styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'http://cdn.jsdelivr.net/npm/@apollographql/',
+          'https://fonts.googleapis.com/',
+        ],
+        scriptSrcAttr: [
           "'self'",
           "'unsafe-inline'",
           'http://cdn.jsdelivr.net/npm/@apollographql/',
