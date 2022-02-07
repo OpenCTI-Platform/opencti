@@ -172,14 +172,11 @@ const CyioCoreObjectNotesCards = createPaginationContainer(
         count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
       ) {
-        itAsset(id: $id) {
-          id
-          notes(first: $count) @connection(key: "Pagination_notes") {
-            edges {
-              node {
-                id
-                ...CyioCoreObjectOrCyioCoreRelationshipNoteCard_node
-              }
+        cyioNotes(first: $count) @connection(key: "Pagination_cyioNotes") {
+          edges {
+            node {
+              id
+              ...CyioCoreObjectOrCyioCoreRelationshipNoteCard_node
             }
           }
         }

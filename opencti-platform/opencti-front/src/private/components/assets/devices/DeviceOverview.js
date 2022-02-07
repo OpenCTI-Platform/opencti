@@ -114,7 +114,12 @@ const DeviceOverview = createFragmentContainer(
         release_date
         # responsible_parties
         operational_status
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
       }
     `,
   },

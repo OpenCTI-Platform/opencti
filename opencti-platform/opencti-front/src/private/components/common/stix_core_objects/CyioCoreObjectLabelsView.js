@@ -22,14 +22,16 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
+import { commitMutation as CM } from 'react-relay';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import { Add, CancelOutlined } from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import { Label, Information } from 'mdi-material-ui';
+import environmentDarkLight, { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { labelsSearchQuery } from '../../settings/LabelsQuery';
+import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
 import SelectField from '../../../../components/SelectField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
@@ -69,52 +71,25 @@ const styles = () => ({
 
 const cyioCoreObjectMutationRelationsAdd = graphql`
   mutation CyioCoreObjectLabelsViewRelationsAddMutation(
-    $id: ID!
-    $input: StixMetaRelationshipsAddInput!
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
   ) {
-    stixCoreObjectEdit(id: $id) {
-      relationsAdd(input: $input) {
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
-      }
-    }
+    addReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
   }
 `;
 
 const cyioCoreObjectMutationRelationDelete = graphql`
   mutation CyioCoreObjectLabelsViewRelationDeleteMutation(
     $id: ID!
-    $toId: String!
-    $relationship_type: String!
   ) {
-    stixCoreObjectEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ... on StixCoreObject {
-          objectLabel {
-            edges {
-              node {
-                id
-                value
-                color
-              }
-            }
-          }
-        }
-      }
-    }
+    deleteCyioLabel(id: $id)
   }
 `;
 
 const CyioCoreObjectLabelsView = (props) => {
   const {
-    classes, labels, t, marginTop,
+    classes, labels, t, marginTop, id,
   } = props;
   const { me } = useContext(UserContext);
   const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
@@ -125,7 +100,7 @@ const CyioCoreObjectLabelsView = (props) => {
 
   const searchLabels = (event) => {
     setLabelInput(event && event.target.value !== 0 ? event.target.value : '');
-    fetchQuery(labelsSearchQuery, {
+    fetchDarklightQuery(cyioLabelsQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
     })
       .toPromise()
@@ -144,36 +119,44 @@ const CyioCoreObjectLabelsView = (props) => {
 
   const handleCloseAdd = () => setOpenAdd(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const currentLabelsIds = map((label) => label.node.id, labels.edges);
-    const labelsIds = pipe(
-      map((value) => value.value),
-      filter((value) => !currentLabelsIds.includes(value)),
-    )(values.new_labels);
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: cyioCoreObjectMutationRelationsAdd,
       variables: {
-        id: props.id,
-        input: {
-          toIds: labelsIds,
-          relationship_type: 'object-label',
-        },
+        toId: values.id,
+        fromId: id,
+        fieldName: 'labels',
       },
       setSubmitting,
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         handleCloseAdd();
       },
+      onError: (err) => console.log('cyioCoreObjectLabelsError', err),
     });
+    // commitMutation({
+    //   mutation: cyioCoreObjectMutationRelationsAdd,
+    //   variables: {
+    //     id: props.id,
+    //     input: {
+    //       toIds: labelsIds,
+    //       relationship_type: 'object-label',
+    //     },
+    //   },
+    //   setSubmitting,
+    //   onCompleted: () => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     handleCloseAdd();
+    //   },
+    // });
   };
 
   const handleRemoveLabel = (labelId) => {
-    commitMutation({
+    CM(environmentDarkLight, {
       mutation: cyioCoreObjectMutationRelationDelete,
       variables: {
-        id: props.id,
-        toId: labelId,
-        relationship_type: 'object-label',
+        id: labelId,
       },
     });
   };
@@ -185,10 +168,14 @@ const CyioCoreObjectLabelsView = (props) => {
     setOpenAdd(false);
   };
 
+  // const labelsNodes = pipe(
+  //   map((n) => n.node),
+  //   sortWith([ascend(prop('value'))]),
+  // )(labels.edges);
   const labelsNodes = pipe(
-    map((n) => n.node),
-    sortWith([ascend(prop('value'))]),
-  )(labels.edges);
+    map((n) => n),
+    sortWith([ascend(prop('name'))]),
+  )(labels);
   return (
     <div style={{ marginTop: marginTop || 0 }}>
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -204,15 +191,15 @@ const CyioCoreObjectLabelsView = (props) => {
         </Tooltip>
       </div>
       {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-        <IconButton
-          color="secondary"
-          aria-label="Label"
-          size="small"
-          onClick={handleOpenAdd}
-          style={{ float: 'left', margin: '-8px 0 0 -2px' }}
-        >
-          <Add fontSize="small" />
-        </IconButton>
+      <IconButton
+        color="secondary"
+        aria-label="Label"
+        size="small"
+        onClick={handleOpenAdd}
+        style={{ float: 'left', margin: '-8px 0 0 -2px' }}
+      >
+        <Add fontSize="small" />
+      </IconButton>
       {/* </Security> */}
       <div className="clearfix" />
       {labels ? (
@@ -223,7 +210,7 @@ const CyioCoreObjectLabelsView = (props) => {
                 key={label.id}
                 variant="outlined"
                 classes={{ root: classes.label }}
-                label={label.value}
+                label={label.name}
                 style={{
                   color: label.color,
                   borderColor: label.color,
@@ -275,54 +262,54 @@ const CyioCoreObjectLabelsView = (props) => {
           >
             <DialogTitle>{t('Add Labels')}</DialogTitle>
             <div style={{ display: 'flex', padding: '20px 20px 20px 0' }}>
-                <DialogContent style={{ overflowY: 'hidden', width: '70%', paddingTop: '0' }}>
-                  <Form>
+              <DialogContent style={{ overflowY: 'hidden', width: '70%', paddingTop: '0' }}>
+                <Form>
                   <Field
-                      component={AutocompleteField}
-                      name="new_labels"
-                      multiple={true}
-                      freeSolo={false}
-                      textfieldprops={{
-                        label: t('Labels'),
-                        onFocus: searchLabels,
-                      }}
-                      noOptionsText={t('No available options')}
-                      options={stateLabels}
-                      onInputChange={searchLabels}
-                      openCreate={handleOpenCreate}
-                      renderOption={(option) => (
-                        <React.Fragment>
-                          <div
-                            className={classes.icon}
-                            style={{ color: option.color }}
-                          >
-                            <Label />
-                          </div>
-                          <div className={classes.text}>{option.label}</div>
-                        </React.Fragment>
-                      )}
-                      classes={{ clearIndicator: classes.autoCompleteIndicator }}
-                    />
-                  </Form>
-                </DialogContent>
-                <DialogActions style={{ width: '30%', padding: '0' }}>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    color="primary"
-                    variant= 'outlined'
-                  >
-                    {t('Close')}
-                  </Button>
-                  <Button
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    color="primary"
-                    variant="contained"
-                  >
-                    {t('Add')}
-                  </Button>
-                </DialogActions>
+                    component={AutocompleteField}
+                    name="new_labels"
+                    multiple={true}
+                    freeSolo={false}
+                    textfieldprops={{
+                      label: t('Labels'),
+                      onFocus: searchLabels,
+                    }}
+                    noOptionsText={t('No available options')}
+                    options={stateLabels}
+                    onInputChange={searchLabels}
+                    openCreate={handleOpenCreate}
+                    renderOption={(option) => (
+                      <React.Fragment>
+                        <div
+                          className={classes.icon}
+                          style={{ color: option.color }}
+                        >
+                          <Label />
+                        </div>
+                        <div className={classes.text}>{option.label}</div>
+                      </React.Fragment>
+                    )}
+                    classes={{ clearIndicator: classes.autoCompleteIndicator }}
+                  />
+                </Form>
+              </DialogContent>
+              <DialogActions style={{ width: '30%', padding: '0' }}>
+                <Button
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  color="primary"
+                  variant='outlined'
+                >
+                  {t('Close')}
+                </Button>
+                <Button
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  color="primary"
+                  variant="contained"
+                >
+                  {t('Add')}
+                </Button>
+              </DialogActions>
             </div>
             <LabelCreation
               contextual={true}

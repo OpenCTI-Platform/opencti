@@ -214,7 +214,12 @@ const NetworkLineFragment = createFragmentContainer(
         #     }
         #   }
         # }
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         # created
         # modified
         # objectMarking {

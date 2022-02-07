@@ -448,7 +448,12 @@ const DeviceEditionFragment = createFragmentContainer(
       fragment DeviceEditionContainer_device on ComputingDeviceAsset {
         id
         name
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         asset_id
         network_id
         description

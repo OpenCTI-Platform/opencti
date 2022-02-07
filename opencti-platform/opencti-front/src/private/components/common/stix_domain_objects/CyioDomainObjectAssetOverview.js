@@ -20,6 +20,7 @@ import ItemPatternType from '../../../../components/ItemPatternType';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
 import ItemIcon from '../../../../components/ItemIcon';
+import CyioCoreObjectLabelsView from '../stix_core_objects/CyioCoreObjectLabelsView';
 
 const styles = (theme) => ({
   paper: {
@@ -248,24 +249,15 @@ class CyioDomainObjectAssetOverview extends Component {
                   ))}
               </div>
               <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Label')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Label')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <StixCoreObjectLabels
+                <CyioCoreObjectLabelsView
+                  labels={cyioDomainObject.labels}
+                  marginTop={20}
+                  id={cyioDomainObject.id}
+                />
+                {/* <StixCoreObjectLabels
                   labels={objectLabel}
                   marginTop={20}
-                />
+                /> */}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
