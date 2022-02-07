@@ -273,7 +273,7 @@ class Scans extends Component {
                       scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
                     }
                   });
-
+                  if(scatterPlot.length === 0) return;
                   scatterPlotData[analysis.id] = scatterPlot
 
                   this.setState({scatterPlotData: scatterPlotData});
