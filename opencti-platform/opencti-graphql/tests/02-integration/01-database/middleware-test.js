@@ -503,7 +503,7 @@ describe('Attribute updated and indexed correctly', () => {
   it('should entity report attribute updated', async () => {
     const attrValues = await getRuntimeAttributeValues(ADMIN_USER, { attributeName: 'report_types' });
     expect(attrValues).not.toBeNull();
-    expect(attrValues.edges.length).toEqual(2);
+    expect(attrValues.edges.length).toEqual(1);
     const typeMap = new Map(attrValues.edges.map((i) => [i.node.value, i]));
     const threatReportAttribute = typeMap.get('threat-report');
     expect(threatReportAttribute).not.toBeUndefined();
