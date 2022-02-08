@@ -379,7 +379,7 @@ const CyioCoreObjectExternalReferencesLines = createPaginationContainer(
         count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
       ) {
-        cyioExternalReferences(first: $count)
+        cyioExternalReferences(limit: $count)
           @connection(key: "Pagination_cyioExternalReferences") {
           edges {
             node {

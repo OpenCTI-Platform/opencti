@@ -1,5 +1,5 @@
 query NotesList {
-  cyioNotes(first: 5) {
+  cyioNotes(limit: 5) {
     pageInfo {
       globalCount
       startCursor
