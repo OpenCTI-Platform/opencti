@@ -19,7 +19,7 @@ import {
 } from '../../../src/database/middleware';
 import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
 import { searchClient, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
-import { ADMIN_USER, sleep } from '../../utils/testQuery';
+import { ADMIN_USER } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -507,34 +507,30 @@ describe('Attribute updated and indexed correctly', () => {
     const typeMap = new Map(attrValues.edges.map((i) => [i.node.value, i]));
     const threatReportAttribute = typeMap.get('threat-report');
     expect(threatReportAttribute).not.toBeUndefined();
-    const attributeId = threatReportAttribute.node.id;
+    const attributeName = threatReportAttribute.node.key;
     // 01. Get the report directly and test if type is "Threat report".
-    const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
+    const stixId = 'report--9cb6f428-2609-5a40-bb10-e3fe4d42c21c';
     let report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
     // 02. Update attribute "Threat report" to "Threat test"
     let updatedAttribute = await attributeEditField({
-      id: attributeId,
+      id: attributeName,
       previous: 'threat-report',
       current: 'threat-test',
     });
     expect(updatedAttribute).not.toBeNull();
-    // Wait a bit for elastic refresh
-    await sleep(2000);
     // 03. Get the report directly and test if type is Threat test
     report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-test']);
     // 04. Back to original configuration
     updatedAttribute = await attributeEditField({
-      id: attributeId,
+      id: attributeName,
       previous: 'threat-test',
       current: 'threat-report',
     });
     expect(updatedAttribute).not.toBeNull();
-    // Wait a bit for elastic refresh
-    await sleep(2000);
     report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
