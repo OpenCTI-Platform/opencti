@@ -429,14 +429,14 @@ class Filters extends Component {
         break;
       case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {
-          fieldKey: 'x_opencti_base_severity',
+          attributeName: 'x_opencti_base_severity',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
             const severityEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+              R.pathOr([], ['runtimeAttributes', 'edges']),
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
@@ -456,14 +456,14 @@ class Filters extends Component {
         break;
       case 'x_opencti_attack_vector':
         fetchQuery(attributesSearchQuery, {
-          fieldKey: 'x_opencti_attack_vector',
+          attributeName: 'x_opencti_attack_vector',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
             const attackVectorEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+              R.pathOr([], ['runtimeAttributes', 'edges']),
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
@@ -511,14 +511,14 @@ class Filters extends Component {
         break;
       case 'x_opencti_organization_type':
         fetchQuery(attributesSearchQuery, {
-          fieldKey: 'x_opencti_organization_type',
+          attributeName: 'x_opencti_organization_type',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
             const organizationTypeEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+              R.pathOr([], ['runtimeAttributes', 'edges']),
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
@@ -538,14 +538,14 @@ class Filters extends Component {
         break;
       case 'report_types':
         fetchQuery(attributesSearchQuery, {
-          key: 'report_types',
+          attributeName: 'report_types',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
             const reportTypesEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+              R.pathOr([], ['runtimeAttributes', 'edges']),
               R.map((n) => ({
                 label: t(n.node.value),
                 value: n.node.value,

@@ -9,7 +9,6 @@ import {
 import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { find as findAttribute, addAttribute } from './attribute';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
@@ -128,17 +127,6 @@ export const reportsDistributionByEntity = async (user, args) => {
 
 // region mutations
 export const addReport = async (user, report) => {
-  if (report.report_types) {
-    await Promise.all(
-      report.report_types.map(async (reportType) => {
-        const currentAttribute = await findAttribute(user, 'report_types', reportType);
-        if (!currentAttribute) {
-          await addAttribute(user, { key: 'report_types', value: reportType });
-        }
-        return true;
-      })
-    );
-  }
   const finalReport = R.assoc('created', report.published, report);
   const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

@@ -11,7 +11,6 @@ import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
-import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { cachePurge, lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
@@ -175,12 +174,6 @@ const alignMigrationLastRun = async () => {
   }
 };
 
-// eslint-disable-next-line
-const createAttributesTypes = async () => {
-  await addAttribute(SYSTEM_USER, { key: 'report_types', value: 'threat-report' });
-  await addAttribute(SYSTEM_USER, { key: 'report_types', value: 'internal-report' });
-};
-
 const createMarkingDefinitions = async () => {
   // Create marking defs
   const WHITE = { definition_type: 'TLP', definition: 'TLP:WHITE' };
@@ -336,7 +329,6 @@ const initializeDefaultValues = async (withMarkings = true) => {
     platform_language: 'auto',
   });
   await createDefaultStatusTemplates();
-  await createAttributesTypes();
   await createBasicRolesAndCapabilities();
   if (withMarkings) {
     await createMarkingDefinitions();

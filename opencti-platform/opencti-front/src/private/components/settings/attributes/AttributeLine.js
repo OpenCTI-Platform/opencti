@@ -44,12 +44,11 @@ const styles = (theme) => ({
   },
 });
 
-class AttributeLineComponent extends Component {
-  render() {
-    const {
-      classes, node, dataColumns, paginationOptions,
-    } = this.props;
-    return (
+const AttributeLineComponent = (props) => {
+  const {
+    classes, node, dataColumns, paginationOptions, refetch,
+  } = props;
+  return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ShortTextOutlined />
@@ -57,25 +56,19 @@ class AttributeLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.value.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
                 {node.value}
               </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          <AttributePopover
-            attributeId={node.id}
-            paginationOptions={paginationOptions}
-          />
+          <AttributePopover attribute={node} refetch={refetch}
+                            paginationOptions={paginationOptions} />
         </ListItemSecondaryAction>
       </ListItem>
-    );
-  }
-}
+  );
+};
 
 AttributeLineComponent.propTypes = {
   dataColumns: PropTypes.object,
@@ -111,10 +104,7 @@ class AttributeLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.value.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
                 <Skeleton
                   animation="wave"
                   variant="rect"

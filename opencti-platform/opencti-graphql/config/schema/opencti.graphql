@@ -310,11 +310,6 @@ type Attribute {
   key: String!
   value: String!
 }
-input AttributeAddInput {
-  key: String!
-  value: String!
-  clientMutationId: String
-}
 input WorkErrorInput {
   error: String
   source: String
@@ -8582,17 +8577,13 @@ type Query {
     filters: [WorksFiltering]
     filterMode: FilterMode
   ): WorkConnection @auth(for: [MODULES])
-  attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
-  attributes(
+  runtimeAttributes(
     first: Int
-    after: ID
-    orderBy: AttributesOrdering
-    orderMode: OrderingMode
-    key: String
-    elementType: String
-    fieldKey: String
     search: String
+    orderMode: OrderingMode
+    attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
+  schemaAttributes(elementType: String!) : AttributeConnection @auth(for: [KNOWLEDGE])
   workspace(id: String): Workspace @auth(for: [EXPLORE])
   workspaces(
     first: Int
@@ -9959,8 +9950,7 @@ type Mutation {
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
-  attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
-  attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
+  runtimeAttributeEdit(id: String!, previous: String!, current: String!): ID! @auth(for: [SETTINGS])
   workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
   workspaceEdit(id: ID!): WorkspaceEditMutations @auth(for: [EXPLORE_EXUPDATE])
   taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])

@@ -175,8 +175,9 @@ class ReportCreation extends Component {
             query={attributesQuery}
             variables={{ key: 'report_types' }}
             render={({ props }) => {
-              if (props && props.attributes) {
-                const reportClassesEdges = props.attributes.edges;
+              if (props && props.runtimeAttributes) {
+                const reportEdges = props.runtimeAttributes.edges.map((e) => e.node.value);
+                const elements = R.uniq([...reportEdges, 'threat-report', 'internal-report']);
                 return (
                   <div>
                     <div className={classes.header}>
@@ -242,12 +243,9 @@ class ReportCreation extends Component {
                                 width: '100%',
                               }}
                             >
-                              {reportClassesEdges.map((reportClassEdge) => (
-                                <MenuItem
-                                  key={reportClassEdge.node.id}
-                                  value={reportClassEdge.node.value}
-                                >
-                                  {reportClassEdge.node.value}
+                              {elements.map((reportType) => (
+                                <MenuItem key={reportType} value={reportType}>
+                                  {reportType}
                                 </MenuItem>
                               ))}
                             </Field>

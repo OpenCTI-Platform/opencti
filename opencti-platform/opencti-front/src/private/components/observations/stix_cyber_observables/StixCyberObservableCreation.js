@@ -488,7 +488,7 @@ class StixCyberObservableCreation extends Component {
         query={stixCyberObservablesLinesAttributesQuery}
         variables={{ elementType: type }}
         render={({ props }) => {
-          if (props && props.attributes) {
+          if (props && props.schemaAttributes) {
             const initialValues = {
               x_opencti_description: '',
               x_opencti_score: 50,
@@ -504,7 +504,7 @@ class StixCyberObservableCreation extends Component {
                 (n) => !includes(n.value, ignoredAttributes)
                   && !n.value.startsWith('i_'),
               ),
-            )(props.attributes.edges);
+            )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {
                 initialValues[attribute.value] = null;

@@ -1,16 +1,12 @@
-import { findById, findAll, attributeEditField, attributeDelete, addAttribute } from '../domain/attribute';
+import { getRuntimeAttributeValues, attributeEditField, getSchemaAttributeValues } from '../domain/attribute';
 
 const attributeResolvers = {
   Query: {
-    attribute: (_, { id }, { user }) => findById(user, id),
-    attributes: (_, args, { user }) => findAll(user, args),
+    runtimeAttributes: (_, args, { user }) => getRuntimeAttributeValues(user, args),
+    schemaAttributes: (_, { elementType }) => getSchemaAttributeValues(elementType),
   },
   Mutation: {
-    attributeEdit: (_, { id }, { user }) => ({
-      delete: () => attributeDelete(user, id),
-      fieldPatch: ({ input }) => attributeEditField(user, id, input),
-    }),
-    attributeAdd: (_, { input }, { user }) => addAttribute(user, input),
+    runtimeAttributeEdit: (_, input) => attributeEditField(input),
   },
 };
 

@@ -17,7 +17,7 @@ import {
   timeSeriesRelations,
   updateAttribute,
 } from '../../../src/database/middleware';
-import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
+import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
 import { searchClient, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
 import { ADMIN_USER, sleep } from '../../utils/testQuery';
 import {
@@ -501,10 +501,10 @@ describe('Element loader', () => {
 
 describe('Attribute updated and indexed correctly', () => {
   it('should entity report attribute updated', async () => {
-    const entityTypes = await findAllAttributes(ADMIN_USER, { type: 'report_types' });
-    expect(entityTypes).not.toBeNull();
-    expect(entityTypes.edges.length).toEqual(2);
-    const typeMap = new Map(entityTypes.edges.map((i) => [i.node.value, i]));
+    const attrValues = await getRuntimeAttributeValues(ADMIN_USER, { attributeName: 'report_types' });
+    expect(attrValues).not.toBeNull();
+    expect(attrValues.edges.length).toEqual(2);
+    const typeMap = new Map(attrValues.edges.map((i) => [i.node.value, i]));
     const threatReportAttribute = typeMap.get('threat-report');
     expect(threatReportAttribute).not.toBeUndefined();
     const attributeId = threatReportAttribute.node.id;
