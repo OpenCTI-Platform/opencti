@@ -141,12 +141,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
+    labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -183,7 +183,7 @@
     "For a party, this can optionally be used to specify the role the actor was performing."
     role: OscalRole
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
   }
 
   input ActorAddInput {
@@ -231,9 +231,9 @@
     "Identifies a human-readable description of the collection of subjects being included in this assessment."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Indicates to include all subjects."
     include_all: Boolean!
     "Identifies a set of assessment subjects to include"
@@ -249,13 +249,13 @@
     "Identifies a references to an activity defined in the list of activities."
     activity: Activity
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies the person or organization responsible for performing a specific role related to the task."
     responsible_roles: [OscalResponsibleParty]
     "Identifies an include/exclude pair starts with processing the include, then removing matching entries in the exclude."
     subject: [AssessmentSubject]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Characterization
@@ -270,9 +270,9 @@
     modified: Timestamp
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -334,9 +334,9 @@
     "Identifies a human-readable description of the evidence."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Facet
@@ -354,9 +354,9 @@
     "Indicates the value of the facet."
     value: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
   }
 
   input FacetAddInput {
@@ -403,7 +403,7 @@
     "Identifies a human-readable description of the assessor's conclusions regarding the degree to which an objective is satisfied."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies whether the objective is satisfied or not within a given system."
     objective_status_state: ObjectiveStatusState!
     "Identifies the reason the objective was given it's status."
@@ -413,7 +413,7 @@
     "Indicates the degree to which the given control was implemented."
     implementation_status: ImplementationStatus
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
   }
 
 ## Generic Characterization
@@ -428,9 +428,9 @@
     modified: Timestamp
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -459,12 +459,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
+    labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -566,12 +566,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
+    labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -610,12 +610,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
+    labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -762,12 +762,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
+    labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -865,12 +865,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
+    labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -948,12 +948,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
+    labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1075,9 +1075,9 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -1149,12 +1149,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
+    labels: [String]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1241,9 +1241,9 @@
     "Identifies the name for the referenced subject."
     name: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
   }
 
   input SubjectAddInput {
@@ -1298,9 +1298,9 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    external_references( first: Int ): CyioExternalReferenceConnection
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    notes( first: Int ): CyioNoteConnection
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
