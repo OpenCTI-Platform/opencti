@@ -190,8 +190,26 @@ const RiskAnalysisCharacterization = createFragmentContainer(
         characterizations {
           ... on VulnerabilityCharacterization {
             id
-            # risk_state
+            origins{
+              id
+              origin_actors {
+                actor_type
+                actor {
+                  ... on Component {
+                    id
+                    component_type
+                    name          # Detection Source
+                  }
+                  ... on OscalParty {
+                  id
+                  party_type
+                  name            # Detection Source
+                  }
+                }
+              }
+            }
             vulnerability_id
+            exploitability
             exploitability
             severity
             cvss3_vector_string
@@ -203,76 +221,66 @@ const RiskAnalysisCharacterization = createFragmentContainer(
             cvss2_temporal_score
             cvss2_environmental_score
             score_rationale
-            origins {
-              id
-              origin_actors {
-                actor_type
-                actor {
-                  ... on OscalPerson {
-                    id
-                    name                  # Detection Source
-                  }
-                }
-              }
-            }
             facets {
               id
               risk_state
-              name                        # Characterization Name
-              value                       # Characterization Value
+              name            # Characterization Name
+              value           # Characterization Value
             }
           }
           ... on RiskCharacterization {
             id
-            risk_state
-            risk
-            likelihood
-            impact
-            origins {
+            origins{
               id
               origin_actors {
                 actor_type
                 actor {
-                  ... on OscalPerson {
+                  ... on Component {
                     id
-                    name                   # Detection Source
+                    component_type
+                    name          # Detection Source
+                  }
+                  ... on OscalParty {
+                  id
+                  party_type
+                  name            # Detection Source
                   }
                 }
               }
             }
+            risk
+            likelihood
+            impact
             facets {
               id
               risk_state
-              name                         # Characterization Name
-              value                        # Characterization Value
+              name            # Characterization Name
+              value           # Characterization Value
             }
           }
         }
-        external_references(first: 5) {
-          edges {
-            node {
-              id
-              created
-              modified
-              external_id                 # external id
-              source_name                 # Title
-              description                 # Description
-              url                         # URL
-              media_type                  # Media Type
-            }
-          }
-        }
-        notes( first: 5) {
-          edges {
-            node {
-              id
-              abstract
-              content
-              authors
-              labels
-            }
-          }
-        }
+        # external_references {
+          # id
+          # created
+          # modified
+          # external_id     # external id
+          # source_name     # Title
+          # description     # description
+          # url             # URL
+          # media_type      # Media Type
+        # }
+        # notes {
+        #   id
+        #   abstract
+        #   content
+        #   authors
+        #   labels {
+        #     id
+        #     name
+        #     color
+        #     description
+        #   }
+        # }
       }
     `,
   },

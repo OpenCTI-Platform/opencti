@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
@@ -16,7 +18,7 @@ const nbOfCardsToLoad = 50;
 class RisksCards extends Component {
   constructor(props) {
     super(props);
-    this.state = { bookmarks: [] };
+    this.state = { bookmarks: [], offset: 0 };
   }
 
   componentDidUpdate(prevProps) {
@@ -32,6 +34,15 @@ class RisksCards extends Component {
     this.setState({ bookmarks });
   }
 
+  handleOffsetChange(){
+    const incrementedOffset = this.state.offset += nbOfCardsToLoad;
+    this.setState({ offset:incrementedOffset })
+    this.props.relay.refetchConnection(nbOfCardsToLoad, null, {
+      offset: this.state.offset,
+      first: nbOfCardsToLoad,
+    })
+  }
+
   render() {
     const {
       initialLoading,
@@ -41,7 +52,7 @@ class RisksCards extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const { bookmarks } = this.state;
+    const { bookmarks, offset } = this.state;
     return (
     // <QueryRenderer
     //   query={stixDomainObjectBookmarksQuery}
@@ -55,7 +66,7 @@ class RisksCards extends Component {
     //       />
             <CyioListCardsContent
               initialLoading={initialLoading}
-              loadMore={relay.loadMore.bind(this)}
+              loadMore={this.handleOffsetChange.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
               dataList={pathOr([], ['poamItems', 'edges'], this.props.data)}
@@ -64,6 +75,7 @@ class RisksCards extends Component {
                 ['poamItems', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
+              offset={offset}
               CardComponent={<RiskCard />}
               DummyCardComponent={<RiskCardDummy />}
               nbOfCardsToLoad={nbOfCardsToLoad}
@@ -93,7 +105,8 @@ RisksCards.propTypes = {
 export const risksCardsQuery = graphql`
   query RisksCardsPaginationQuery(
     $search: String
-    $count: Int!
+    $first: Int!
+    $offset: Int!
     $cursor: ID
     $orderedBy: POAMItemsOrdering
     $orderMode: OrderingMode
@@ -102,7 +115,8 @@ export const risksCardsQuery = graphql`
     ...RisksCards_data
       @arguments(
         search: $search
-        count: $count
+        first: $first
+        offset: $offset
         cursor: $cursor
         orderedBy: $orderedBy
         orderMode: $orderMode
@@ -118,15 +132,17 @@ export default createPaginationContainer(
       fragment RisksCards_data on Query
       @argumentDefinitions(
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
+        first: { type: "Int", defaultValue: 50 }
+        offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "POAMItemsOrdering", defaultValue: name }
+        orderedBy: { type: "POAMItemsOrdering", defaultValue: poam_id }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[POAMItemsFiltering]" }
       ) {
         poamItems(
           search: $search
-          first: $count
+          first: $first
+          offset: $offset
           # after: $cursor
           orderedBy: $orderedBy
           orderMode: $orderMode
@@ -163,6 +179,8 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
+        first: fragmentVariables.first,
+        offset: fragmentVariables.offset,
         count,
         cursor,
         orderedBy: fragmentVariables.orderedBy,

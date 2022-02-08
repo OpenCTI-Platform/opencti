@@ -99,7 +99,7 @@ class RiskLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
+                style={{ width: dataColumns.poam_id.width }}
               >
                 {/* KK-HWELL-011 */}
                 {node.id && node.id}
@@ -149,8 +149,7 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.occurrences.width }}
               >
-                Lorem
-                {node.component_type && node.component_type}
+                {node.occurrences && node.occurrences}
               </div>
               <div
                 className={classes.bodyItem}
@@ -197,61 +196,23 @@ const RiskLineFragment = createFragmentContainer(
     node: graphql`
       fragment RiskLine_node on POAMItem {
         id
+        poam_id
         name
-        description
+        occurrences
         related_risks {
           edges {
             node {
+              risk_status
+              deadline
               characterizations {
-                ... on VulnerabilityCharacterization {
-                  id
-                  vulnerability_id
-                  facets {
-                    id
-                    name
-                    value
-                  }
-                }
                 ... on RiskCharacterization {
                   id
                   risk
-                  risk_state
-                  likelihood
-                  impact
-                  facets {
-                    id
-                    name
-                    value
-                  }
-                }
-                ... on GenericCharacterization {
-                  id
-                  facets {
-                    id
-                    name
-                    value
-                  }
                 }
               }
-            }
-          }
-        }
-        related_observations {
-          edges {
-            node {
-              name
-              subjects {
-                subject_type
-                subject {
-                  ... on OscalParty {
-                    name
-                    party_type
-                  }
-                  ... on Component {
-                    name
-                    component_type
-                  }
-                }
+              remediations {
+                response_type
+                lifecycle
               }
             }
           }
@@ -279,7 +240,7 @@ class RiskLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.id.width }}
+                style={{ width: dataColumns.poam_id.width }}
               >
                 <Skeleton
                   animation="wave"

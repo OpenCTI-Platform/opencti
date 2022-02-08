@@ -196,8 +196,8 @@ class RiskOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {t('Jun 11, 2021, 9:14:22 AM')}
-              {/* {risk.created && t(risk.created)} */}
+              {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
+              {risk.created && t(risk.created)}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography
@@ -218,8 +218,8 @@ class RiskOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {t('Jun 11, 2021, 9:14:22 AM')}
-              {/* {risk.modified && t(risk.modified)} */}
+              {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
+              {risk.modified && t(risk.modified)}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -434,82 +434,91 @@ const RiskOverview = createFragmentContainer(
     risk: graphql`
       fragment RiskOverview_risk on POAMItem {
         id
-        poam_id   #Item Id
-        name      #Weakness
+        created
+        modified
+        poam_id     # Item ID
+        name        # Weakness
         description
         labels
+        origins {
+          id
+          origin_actors {       # only use if UI support Detection Source
+            actor_type
+            actor {
+              ... on Component {
+                id
+                name
+              }
+              ... on OscalParty {
+                id
+                name
+              }
+            }
+          }
+        }
+        # external_references {
+        #   id
+        #   created
+        #   modified
+        #   external_id     # external id
+        #   source_name     # Title
+        #   description     # description
+        #   url             # URL
+        #   media_type      # Media Type
+        # }
+        # notes {
+        #   id
+        #   abstract
+        #   content
+        #   authors
+        # }
         related_risks {
           edges {
-            node {
-              id
-              name
-              description
-              statement
-              risk_status         #Risk Status
-              deadline
-              priority
-              accepted
-              false_positive      #False-Positive
-              risk_adjusted       #Operational Required
-              vendor_dependency   #Vendor Dependency
-              characterizations {
-                id
-                ... on GenericCharacterization {
-                  origins {
-                    id
-                    origin_actors {
-                      actor_type
-                      actor {
-                        ... on OscalPerson {
-                          id
-                          name    #Detection Source
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        related_observations {
-          edges {
-            node {
-              id
-              name              #Impacted Component
-              subjects {
-                subject {
-                  ... on HardwareComponent {
-                    id
-                    name        #Impacted Asset
-                  }
-                }
-              }
-            }
-          }
-        }
-        external_references {
-          edges {
-            node {
+            node{
               id
               created
               modified
-              external_id     #external id
-              source_name     #Title
-              description     #description
-              url             #URL
-              media_type      #media Type
-            }
-          }
-        }
-        notes {
-          edges {
-            node {
-              id
-              abstract
-              content
-              authors
-              labels
+              name
+              description
+              statement
+              risk_status       # Risk Status
+              deadline
+              priority
+              impacted_control_id
+              accepted
+              false_positive    # False-Positive
+              risk_adjusted     # Operational Required
+              vendor_dependency # Vendor Dependency
+              characterizations {
+                ... on RiskCharacterization {
+                  id
+                  risk
+                  impact
+                  likelihood
+                }
+                origins {
+                  id
+                  origin_actors {
+                    actor_type
+                    actor {
+                      ... on Component {
+                        id
+                        component_type
+                        name          # Detection Source
+                      }
+                      ... on OscalParty {
+                      id
+                      party_type
+                      name            # Detection Source
+                      }
+                    }
+                  }          
+                }
+              }
+              remediations {
+                response_type
+                lifecycle
+              }          
             }
           }
         }

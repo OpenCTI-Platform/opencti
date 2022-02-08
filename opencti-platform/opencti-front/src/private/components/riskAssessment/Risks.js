@@ -33,7 +33,7 @@ class Risks extends Component {
       'view-risks',
     );
     this.state = {
-      sortBy: R.propOr('name', 'sortBy', params),
+      sortBy: R.propOr('poam_id', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -165,10 +165,12 @@ class Risks extends Component {
       selectAll,
     } = this.state;
     const dataColumns = {
+      poam_id: {
+        label: 'Poam id',
+      },
       name: {
         label: 'Name',
       },
-
       created: {
         label: 'Creation date',
       },
@@ -210,7 +212,7 @@ class Risks extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={risksCardsQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => <RisksCards
               data={props}
               extra={props}
@@ -264,8 +266,8 @@ class Risks extends Component {
       numberOfSelectedElements = numberOfElements.original;
     }
     const dataColumns = {
-      id: {
-        label: 'POAM_ID',
+      poam_id: {
+        label: 'Poam id',
         width: '13%',
         isSortable: true,
       },
@@ -345,7 +347,7 @@ class Risks extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={risksLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`props : ${props} Error : ${error}`);
             return (<RisksLines
