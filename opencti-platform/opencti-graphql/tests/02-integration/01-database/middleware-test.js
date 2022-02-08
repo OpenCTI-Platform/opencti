@@ -509,7 +509,7 @@ describe('Attribute updated and indexed correctly', () => {
     expect(threatReportAttribute).not.toBeUndefined();
     const attributeName = threatReportAttribute.node.key;
     // 01. Get the report directly and test if type is "Threat report".
-    const stixId = 'report--9cb6f428-2609-5a40-bb10-e3fe4d42c21c';
+    const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
     let report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
