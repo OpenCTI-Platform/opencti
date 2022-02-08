@@ -83,6 +83,7 @@ class RiskDetailsComponent extends Component {
         false_positive: value.node.false_positive,
         risk_adjusted: value.node.risk_adjusted,
         vendor_dependency: value.node.vendor_dependency,
+        impacted_control_id: value.node.impacted_control_id,
       })),
     )(risk);
     const relatedObservationsEdges = R.pipe(
@@ -92,7 +93,7 @@ class RiskDetailsComponent extends Component {
         impacted_asset: value.node.subjects,
       })),
     )(risk);
-    console.log('RiskDetailsMain', relatedObservationsEdges);
+    const riskDetectionSource = R.pathOr([], ['related_risks', 'edges', 0, 'node', 'characterizations', 0, 'origins', 0, 'origin_actors', 0, 'actor'], risk);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -303,7 +304,7 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Dolor Sit Amet')}
+                {t(riskDetectionSource.name)}
               </div>
               <div>
                 <Typography
@@ -417,7 +418,12 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Lorem Ipsum Dono Ist')}
+                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
+                  <>
+                    <div className="clearfix" />
+                    {fd(value.impacted_control_id)}
+                  </>
+                ))}
               </div>
               <div>
                 <Typography

@@ -167,29 +167,9 @@ const RemediationEntitiesLinesFragment = createFragmentContainer(
     risk: graphql`
     fragment RemediationEntitiesLines_risk on Risk{
       id
-      name
       created
       modified
-      remediations{
-        id
-        name            # Title
-        description     # Description
-        created         # Created
-        modified        # Last Modified
-        lifecycle       # Lifecycle
-        response_type   # Response Type
-        origins {
-          id
-          origin_actors {
-            actor {
-              ... on OscalPerson {
-                id
-                name
-              }
-            }
-          }
-        }
-      }
+      ...RemediationEntityLine_node
     }
     `,
   },

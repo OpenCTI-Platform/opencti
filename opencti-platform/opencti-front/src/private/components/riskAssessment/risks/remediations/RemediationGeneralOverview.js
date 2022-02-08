@@ -236,18 +236,6 @@ const RemediationGeneralOverview = createFragmentContainer(
         modified            # Last Modified
         lifecycle           # Lifecycle
         response_type       # Response Type
-        origins{
-          id
-          origin_actors {
-            actor_type
-            actor {
-              ... on OscalPerson {
-                id
-                name        #Source
-              }
-            }
-          }
-        }
       }
     `,
   },

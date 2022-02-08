@@ -74,6 +74,7 @@ class RemediationGeneralDetailsComponent extends Component {
       fd,
       history,
     } = this.props;
+    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     // const relatedRisksEdges = R.pipe(
     //   R.pathOr([], ['related_risks', 'edges']),
     //   R.map((value) => ({
@@ -125,7 +126,7 @@ class RemediationGeneralDetailsComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {t('Lorem Ipsum')}
+                      {remediationOriginData.name && t(remediationOriginData.name)}
                     </Typography>
                     <Typography color="textSecondary" variant="disabled">
                       {t('Lorem Ipsum Dolor Ist')}
@@ -148,7 +149,7 @@ class RemediationGeneralDetailsComponent extends Component {
                   size="small"
                   style={{ cursor: 'default', marginBottom: '5px' }}
                 >
-                  {t('Avoid')}
+                  {remediation.response_type && t(remediation.response_type)}
                 </Button>
               </div>
             </Grid>
@@ -168,7 +169,7 @@ class RemediationGeneralDetailsComponent extends Component {
                   size="small"
                   style={{ cursor: 'default', marginBottom: '5px' }}
                 >
-                  {t('Recommended')}
+                  {remediation.lifecycle && t(remediation.lifecycle)}
                 </Button>
               </div>
             </Grid>
@@ -198,14 +199,20 @@ const RemediationGeneralDetails = createFragmentContainer(
         modified            # Last Modified
         lifecycle           # Lifecycle
         response_type       # Response Type
-        origins{
+        origins{            # Detection Source
           id
           origin_actors {
             actor_type
             actor {
-              ... on OscalPerson {
+              ... on Component {
                 id
-                name        #Source
+                component_type
+                name          # Source
+              }
+              ... on OscalParty {
+                id
+                party_type
+                name            # Source
               }
             }
           }

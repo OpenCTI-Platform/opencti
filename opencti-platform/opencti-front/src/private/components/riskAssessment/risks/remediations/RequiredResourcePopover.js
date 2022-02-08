@@ -32,6 +32,7 @@ import SelectField from '../../../../../components/SelectField';
 import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import MarkDownField from '../../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   container: {
@@ -394,7 +395,7 @@ class RequiredResourcePopover extends Component {
                       </div>
                       <div className="clearfix" />
                       <Field
-                        component={TextField}
+                        component={MarkDownField}
                         name="description"
                         fullWidth={true}
                         multiline={true}

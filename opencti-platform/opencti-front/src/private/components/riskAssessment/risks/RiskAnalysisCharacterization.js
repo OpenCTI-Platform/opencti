@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr, map } from 'ramda';
+import {
+  compose,
+  pathOr,
+  map,
+  pipe,
+} from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -21,11 +26,12 @@ import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   paper: {
-    height: '100%',
+    height: '506px',
     minHeight: '100%',
     margin: '10px 0 0 0',
     padding: '0 24px',
     borderRadius: 6,
+    overflowY: 'scroll',
   },
   header: {
     borderBottom: '1px solid white',
@@ -46,7 +52,10 @@ class RiskAnalysisCharacterizationComponent extends Component {
     const {
       t, fldt, classes, risk,
     } = this.props;
-    console.log('RiskAnalysisCharacterizationContainer', risk);
+    const riskAnalysisCharacterization = pathOr([], ['characterizations'], risk);
+    // const riskcharacterizationfacets = pathOr([], [], riskAnalysisCharacterization);
+    console.log('RiskAnalysisCharacterizationContainer', risk, '----', riskAnalysisCharacterization);
+
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -137,7 +146,8 @@ class RiskAnalysisCharacterizationComponent extends Component {
               </Typography>
             </Grid>
           </Grid>
-          <Grid container={true} style={{ borderBottom: '1px solid grey' }}>
+          {riskAnalysisCharacterization.map((characterizationData) => (
+            <Grid key={characterizationData.id} container={true} style={{ borderBottom: '1px solid grey' }}>
             <Grid item={true} xs={4}>
               <Typography
                 variant="h2"
@@ -166,6 +176,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
               </Typography>
             </Grid>
           </Grid>
+          ))}
         </Paper>
       </div>
     );

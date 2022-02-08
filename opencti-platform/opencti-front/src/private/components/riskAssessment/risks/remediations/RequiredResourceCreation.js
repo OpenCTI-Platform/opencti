@@ -471,7 +471,7 @@ class RequiredResourceCreation extends Component {
                       </div>
                       <div className="clearfix" />
                       <Field
-                        component={TextField}
+                        component={MarkDownField}
                         name="description"
                         fullWidth={true}
                         multiline={true}

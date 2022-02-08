@@ -50,24 +50,42 @@ const remediationEntitiesQuery = graphql`
   query RemediationEntitiesQuery($id: ID!) {
     risk(id: $id) {
       id
-      name
       created
       modified
-      remediations{
+      remediations {
         id
-        name            # Title
-        description     # Description
-        created         # Created
-        modified        # Last Modified
-        lifecycle       # Lifecycle
-        response_type   # Response Type
-        origins {
+        name                # Title
+        description         # Description
+        created             # Created
+        modified            # Last Modified
+        lifecycle           # Lifecycle
+        response_type       # Response Type
+        origins{
           id
           origin_actors {
+            actor_type
             actor {
-              ... on OscalPerson {
+              ... on Component {
                 id
-                name
+                component_type
+                name          # Source
+              }
+              ... on OscalParty {
+              id
+              party_type
+              name            # Source
+              }
+            }
+          }
+        }
+        tasks {             # only necessary if Start/End date is supported in UI
+          edges {
+            node {
+              timing {
+                ... on DateRangeTiming {
+                  start_date
+                  end_date
+                }
               }
             }
           }

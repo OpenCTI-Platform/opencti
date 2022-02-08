@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  compose,
+  pipe,
+  map,
+  pathOr,
+} from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -69,7 +74,12 @@ class RiskLineComponent extends Component {
       selectedElements,
     } = this.props;
     console.log('RiskLineNode', node);
+    const riskData = pathOr([], ['related_risks', 'edges', 0], node);
+    const riskCharacterization = pathOr(null, ['node', 'characterizations', 0], riskData);
+    const riskRemediation = pathOr([], ['node', 'remediations', 0], riskData);
+    console.log('RiskLineData', riskCharacterization, riskRemediation);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -101,22 +111,19 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.poam_id.width }}
               >
-                {/* KK-HWELL-011 */}
-                {node.id && node.id}
+                {node.poam_id && node.poam_id}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {/* {node.priority && node.priority} */}
-                {t('Lorem Ipsum')}
+                {node.name && node.name}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.risk.width }}
               >
-                {/* {node.risk && t(node.risk)} */}
-                {t('Low')}
+                {riskCharacterization.risk && riskCharacterization.risk}
               </div>
               <div
                 className={classes.bodyItem}
@@ -125,25 +132,37 @@ class RiskLineComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
+                  color="success"
                   style={{ cursor: 'default' }}
                 >
-                  {t('Lorem Ipsum')}
-                  {node.risk_state && t(node.risk_state)}
+                  {riskData.node.risk_status && t(riskData.node.risk_status)}
                 </Button>
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.response.width }}
               >
-                {t('Avoid')}
-                {/* {node.response_type && t(node.response_type)} */}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="primary"
+                  style={{ cursor: 'default' }}
+                >
+                {riskRemediation.response_type && t(riskRemediation.response_type)}
+                </Button>
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.lifecycle.width }}
               >
-                {t('Lorem')}
-                {/* {node.lifecycle && node.lifecycle} */}
+              <Button
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  style={{ cursor: 'default' }}
+                >
+                {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
+                </Button>
               </div>
               <div
                 className={classes.bodyItem}
@@ -155,10 +174,7 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.deadline.width }}
               >
-                {/* {fd(node.modified)} */}
-                {/* Lorem Ipsum Lorem Ipsum */}
-                {/* {node.deadline && fd(node.deadline)} */}
-                {t('Lorem Ipsum')}
+                {riskData.node.deadline && t(riskData.node.deadline)}
               </div>
               {/* <div
                 className={classes.bodyItem}

@@ -259,7 +259,13 @@ class RelatedTasksLinesContainer extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <div style={{ display: 'grid', gridTemplateColumns: '90% 10%' }}>
+          {relatedTasksEdges.map((relatedTaskdata, i) => (
+            <div key={i} style={{
+              display: 'grid',
+              gridTemplateColumns: '90% 10%',
+              borderBottom: '1px solid grey',
+              margin: '0 20px',
+            }}>
             <Accordion style={{ borderBottom: '0', boxShadow: 'none' }}>
               <AccordionSummary
                 onClick={() => this.handleClick()}
@@ -413,14 +419,6 @@ class RelatedTasksLinesContainer extends Component {
                     <div className={classes.scrollBg}>
                       <div className={classes.scrollDiv}>
                         <div className={classes.scrollObj}>
-                          {/* {device.locations && device.locations.map((location, key) => (
-                          <div key={key}>
-                            {`${location.street_address && t(location.street_address)}, `}
-                            {`${location.city && t(location.city)}, `}
-  {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
-                          </div>
-                        ))} */}
-                          {/* {t('Description')} */}
                           {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
                             <>
                               <div className="clearfix" />
@@ -454,6 +452,7 @@ class RelatedTasksLinesContainer extends Component {
               />
             </div>
           </div>
+          ))}
         </Paper>
         <Dialog
           open={this.state.displayDialog}

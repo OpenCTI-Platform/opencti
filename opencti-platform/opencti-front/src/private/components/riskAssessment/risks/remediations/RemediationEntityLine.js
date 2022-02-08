@@ -72,7 +72,7 @@ class RemediationEntityLineComponent extends Component {
       entityId,
     } = this.props;
     const origins = R.pathOr([], ['origins'], node);
-    console.log('remediationEntityLineData', origins);
+    console.log('remediationEntityLineData', node);
     let restricted = false;
     let targetEntity = null;
     if (node.from && node.from.id === entityId) {
@@ -142,12 +142,16 @@ class RemediationEntityLineComponent extends Component {
               </div>
               <div className={classes.bodyItem}>
                 <Typography align="left">
+                  {/* {node.tasks.edges[0].node.timing.start_date
+                  && fldt(node.tasks.edges[0].node.timing.start_date)} */}
                   {node.created && fldt(node.created)}
                 </Typography>
               </div>
               <div className={classes.bodyItem}>
                 <Typography align="left">
                   {node.modified && fldt(node.modified)}
+                  {/* {node.tasks.edges[0].node.timing.end_date
+                  && fldt(node.tasks.edges[0].node.timing.end_date)} */}
                 </Typography>
               </div>
             </div>
@@ -196,24 +200,42 @@ const RemediationEntityLineFragment = createFragmentContainer(
     risk: graphql`
       fragment RemediationEntityLine_node on Risk {
         id
-        name
         created
         modified
-        remediations{
+        remediations {
           id
-          name            # Title
-          description     # Description
-          created         # Created
-          modified        # Last Modified
-          lifecycle       # Lifecycle
-          response_type   # Response Type
-          origins {
+          name                # Title
+          description         # Description
+          created             # Created
+          modified            # Last Modified
+          lifecycle           # Lifecycle
+          response_type       # Response Type
+          origins{
             id
             origin_actors {
+              actor_type
               actor {
-                ... on OscalPerson {
+                ... on Component {
                   id
-                  name
+                  component_type
+                  name          # Source
+                }
+                ... on OscalParty {
+                id
+                party_type
+                name            # Source
+                }
+              }
+            }
+          }
+          tasks {             # only necessary if Start/End date is supported in UI
+            edges {
+              node {
+                timing {
+                  ... on DateRangeTiming {
+                    start_date
+                    end_date
+                  }
                 }
               }
             }

@@ -50,7 +50,7 @@ class RequiredResources extends Component {
       <QR
         environment={QueryRendererDarkLight}
         query={requiredResourcesLinesQuery}
-        variables={{ id: '4b5f8565-55d3-5496-a366-345bd9f17e72', count: 200 }}
+        variables={{ id: remediationId, count: 200 }}
         render={({ props }) => {
           if (props) {
             return (

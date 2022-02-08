@@ -337,7 +337,7 @@ class RiskTrackingLineContainer extends Component {
                     </div>
                   </Grid>
                 </Grid>
-                <Grid container={true}>
+                <Grid style={{ marginTop: '10px' }} container={true}>
                   <Grid item={true} xs={3}>
                     <div>
                       <Typography align="left" variant="h3" color="textSecondary">
@@ -357,7 +357,7 @@ class RiskTrackingLineContainer extends Component {
                     </div>
                   </Grid>
                   <Grid item={true} xs={5}>
-                    <div style={{ textAlign: 'left', marginLeft: '90px' }}>
+                    <div style={{ textAlign: 'left', marginLeft: '117px' }}>
                       <Typography align="left" variant="h3" color="textSecondary">
                         {t('Status Change')}
                       </Typography>
@@ -373,7 +373,7 @@ class RiskTrackingLineContainer extends Component {
                     <Typography align="left" variant="subtitle2">
                       <span className={classes.cardContent}>
                         <LaunchIcon style={{ marginRight: '5px' }} fontSize="small" />
-                        {t('Lorem Ipsum')}
+                        {node.related_responses[0].name && t(node.related_responses[0].name)}
                       </span>
                     </Typography>
                   </Grid>

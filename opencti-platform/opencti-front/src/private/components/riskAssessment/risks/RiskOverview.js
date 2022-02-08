@@ -69,7 +69,8 @@ class RiskOverviewComponent extends Component {
         priority: value.node.priority,
       })),
     )(risk);
-    console.log('RiskOverview', riskEdges);
+    const relatedRiskData = R.pathOr([], ['related_risks', 'edges', 0, 'node'], risk);
+    const riskCharacterization = R.pathOr([], ['characterizations', 0], relatedRiskData);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }} className="break">
@@ -272,7 +273,6 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
                 {risk.name && t(risk.name)}
               </div>
               <div>
@@ -294,7 +294,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {riskCharacterization.risk && t(riskCharacterization.risk)}
               </div>
               <div style={{ marginTop: '25px' }}>
                 <Typography
@@ -315,8 +315,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('2.0')}
-                {/* {risk.impact && t(risk.impact)} */}
+                {riskCharacterization.impact && t(riskCharacterization.impact)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -385,7 +384,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('June 11, 2021')}
+                {riskCharacterization.likelihood && t(riskCharacterization.likelihood)}
               </div>
             </Grid>
           </Grid>
