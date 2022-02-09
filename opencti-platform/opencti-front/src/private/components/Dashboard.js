@@ -49,6 +49,7 @@ import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationship
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import { computeLevel } from '../../utils/Number';
 import ItemMarkings from '../../components/ItemMarkings';
+import ImportFreshdeskScript from '../../utils/freshdesk';
 
 const styles = (theme) => ({
   root: {
@@ -354,6 +355,7 @@ class Dashboard extends Component {
     const {
       t, n, fsd, mtd, classes, theme,
     } = this.props;
+    ImportFreshdeskScript();
     return (
       <div >
         <Security

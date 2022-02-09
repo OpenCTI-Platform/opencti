@@ -273,7 +273,7 @@ class Scans extends Component {
                       scatterPlot.push({ cwe_name: item.cwe_name, x: item.host_percent, y: item.score, score: item.score, host_count_total: item.host_count });
                     }
                   });
-
+                  if(scatterPlot.length === 0) return;
                   scatterPlotData[analysis.id] = scatterPlot
 
                   this.setState({scatterPlotData: scatterPlotData});
@@ -692,12 +692,25 @@ class Scans extends Component {
                 />
                 <List style={{ maxHeight: "100%", overflow: "auto" }}>
                   {!loadingScans ? (
-                    this.state.renderScans.map((scan, i) => {
+
+                    renderScans.map((scan, i) => {
+
+                      let NoResults = false;
+                      let Invalid = false;
+
+                      if(scan.status === 'noRecords'){
+                        NoResults = true;
+                      }
+
+                      if(scan.status === 'invalid'){
+                        Invalid = true;
+                      }
                       return (
                         <ListItem
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                           onMouseLeave={(e) => handlePopoverClose()}
+                          className={NoResults ? "NoResults" : (Invalid ? "Invalid" : "")}
                         >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
