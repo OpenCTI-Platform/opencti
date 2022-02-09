@@ -1,5 +1,4 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-const TestSequencer = require('@jest/test-sequencer').default;
+import TestSequencer from '@jest/test-sequencer';
 
 class CustomSequencer extends TestSequencer {
   // eslint-disable-next-line class-methods-use-this

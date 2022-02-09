@@ -1,5 +1,5 @@
-import fetch from 'node-fetch';
 import { ApolloServer } from 'apollo-server-express';
+import axios from 'axios';
 import createSchema from '../../src/graphql/schema';
 import conf from '../../src/config/conf';
 import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/utils/access';
@@ -27,16 +27,17 @@ export const generateBasicAuth = () => {
 };
 
 export const executeExternalQuery = async (uri, query, variables = {}) => {
-  const response = await fetch(uri, {
+  const response = await axios({
+    url: uri,
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
       authorization: generateBasicAuth(),
     },
-    body: JSON.stringify({ query, variables }),
-  }).then((r) => r.json());
-  const { data } = response;
+    data: { query, variables },
+  });
+  const { data } = response.data;
   return data;
 };
 

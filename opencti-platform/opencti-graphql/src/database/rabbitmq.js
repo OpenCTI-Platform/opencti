@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';

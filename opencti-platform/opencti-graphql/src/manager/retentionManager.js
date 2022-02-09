@@ -57,7 +57,6 @@ const retentionHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([RETENTION_MANAGER_KEY]);
-    logApp.info('[OPENCTI] Running retention manager');
     const retentionRules = await findRetentionRulesToExecute(RETENTION_MANAGER_USER, { connectionFormat: false });
     logApp.debug(`[OPENCTI] Retention manager execution for ${retentionRules.length} rules`);
     // Execution of retention rules
@@ -82,6 +81,7 @@ const initRetentionManager = () => {
   let scheduler;
   return {
     start: () => {
+      logApp.info('[OPENCTI] Running retention manager');
       scheduler = setIntervalAsync(async () => {
         await retentionHandler();
       }, SCHEDULE_TIME);

@@ -128,18 +128,16 @@
     "jest": "27.4.7",
     "jest-junit": "13.0.0",
     "jest-transform-graphql": "2.1.0",
-    "node-fetch": "2.6.7",
     "prettier": "2.5.1",
     "run-script-webpack-plugin": "0.0.11",
-    "terser-webpack-plugin": "5.3.0",
+    "terser-webpack-plugin": "5.3.1",
     "webpack": "5.68.0",
     "webpack-cli": "4.9.2",
     "webpack-node-externals": "3.0.0"
   },
   "resolutions": {
     "fs-capacitor": "6.2.0",
-    "lodash": "4.17.21",
-    "node-fetch": "2.6.7"
+    "lodash": "4.17.21"
   },
   "packageManager": "yarn@3.0.2"
 }

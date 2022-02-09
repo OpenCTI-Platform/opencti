@@ -1,10 +1,7 @@
-// noinspection NodeCoreCodingAssistance
-import https from 'https';
-// noinspection NodeCoreCodingAssistance
-import http from 'http';
-// noinspection NodeCoreCodingAssistance
+import https from 'node:https';
+import http from 'node:http';
 import { graphqlUploadExpress } from 'graphql-upload';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
 import nconf from 'nconf';

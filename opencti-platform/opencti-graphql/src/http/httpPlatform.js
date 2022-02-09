@@ -1,11 +1,9 @@
 /* eslint-disable camelcase */
 import express from 'express';
 import * as R from 'ramda';
-import { URL } from 'url';
-// noinspection NodeCoreCodingAssistance
-import { readFileSync } from 'fs';
-// noinspection NodeCoreCodingAssistance
-import path from 'path';
+import { URL } from 'node:url';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import bodyParser from 'body-parser';
 import prometheus from 'express-prometheus-middleware';
 import compression from 'compression';
