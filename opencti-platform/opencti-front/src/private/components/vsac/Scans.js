@@ -248,14 +248,14 @@ class Scans extends Component {
         });
   }
 
-  refreshAnalyses(){
-    this.setState({ loadingAnalyses: true });
+  refreshAnalyses(refreshInBackground){
+    console.log('refreshing...')
     fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
-          let analyses = response.data;
+          let newAnalyses = response.data;
           let scatterPlotData = {};
           const associationTable = {}
-          analyses.forEach(analysis =>{
+          newAnalyses.forEach(analysis =>{
             let associations = associationTable[analysis.scan.id]
             if(associations === undefined){
               associations = 1
@@ -284,9 +284,23 @@ class Scans extends Component {
                 })
 
           })
-          this.setState({ scanAssociation: associationTable })
-          this.setState({ analyses: analyses });
+
+          if(!refreshInBackground || refreshInBackground == undefined ){
+            this.setState({ scanAssociation: associationTable })
+            this.setState({ analyses: newAnalyses });
+          } else {
+
+            if(!JSON.stringify(array1) === JSON.stringify(array2)){
+              this.setState({ analyses: newAnalyses }, function(){
+                 this.setState({ loadingAnalyses: true });
+              });
+              this.setState({ scanAssociation: associationTable })
+              
+            }
+          }
+          
           this.setState({ loadingAnalyses: false });
+          
         })
         .catch((error) => {
           console.log(error);
@@ -295,11 +309,12 @@ class Scans extends Component {
 
   componentDidMount() {
     this.setState({client_ID: localStorage.getItem('client_id')},function() {
-      this.refreshScans(this.state.client_ID)
-      this.refreshAnalyses(this.state.client_ID)
+      this.refreshScans()
+      this.refreshAnalyses()
+      
       const intervalId = setInterval(() => {
-        this.refreshScans(this.state.client_ID)
-        this.refreshAnalyses(this.state.client_ID)
+        this.refreshScans(true)
+        this.refreshAnalyses(true)
       }, 30000)
       this.setState({refreshIntervalId: intervalId})
     });
@@ -825,7 +840,7 @@ class Scans extends Component {
                   <Paper
                     classes={{ root: classes.paper }}
                     elevation={2}
-                    style={{ marginBottom: 20 }}
+                    style={{ marginBottom: 20, height: 575 }}
                   >
                     <CardHeader
                       style={{ padding: 16 }}
