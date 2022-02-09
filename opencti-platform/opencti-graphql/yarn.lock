@@ -3926,6 +3926,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"busboy@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "busboy@npm:0.3.1"
+  dependencies:
+    dicer: 0.3.0
+  checksum: d2bcb788c4595edca4ea2168ab8bf7f9558b627ddcec2fb6bbaf0aa6a10b63da48dce35ce56936570f330c5268a3204f7037021a310a895a8b1a223568e0cc1b
+  languageName: node
+  linkType: hard
+
 "bytes@npm:3.0.0":
   version: 3.0.0
   resolution: "bytes@npm:3.0.0"
@@ -4817,6 +4826,15 @@ __metadata:
   version: 3.1.0
   resolution: "detect-newline@npm:3.1.0"
   checksum: ae6cd429c41ad01b164c59ea36f264a2c479598e61cba7c99da24175a7ab80ddf066420f2bec9a1c57a6bead411b4655ff15ad7d281c000a89791f48cbe939e7
+  languageName: node
+  linkType: hard
+
+"dicer@npm:0.3.0":
+  version: 0.3.0
+  resolution: "dicer@npm:0.3.0"
+  dependencies:
+    streamsearch: 0.1.2
+  checksum: 9f61aea61fcd81457f1b43967af7e66415b7a31d393336fa05a29b221b5ba065b99e5cac46476b2da36eb7af7665bf8dad6f9500409116dc6a35ada183841598
   languageName: node
   linkType: hard
 
@@ -5898,6 +5916,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fs-capacitor@npm:6.2.0":
+  version: 6.2.0
+  resolution: "fs-capacitor@npm:6.2.0"
+  checksum: acdbeb92eedb1d7094f623e7be518c4d73075cb45ea97cc80ae23fc31adb066853723be824caf3e3c8f40944548c8cdc9bf0f0735eabb9413e734fe045b303b1
+  languageName: node
+  linkType: hard
+
 "fs-minipass@npm:^1.2.7":
   version: 1.2.7
   resolution: "fs-minipass@npm:1.2.7"
@@ -6296,6 +6321,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"graphql-upload@npm:^13.0.0":
+  version: 13.0.0
+  resolution: "graphql-upload@npm:13.0.0"
+  dependencies:
+    busboy: ^0.3.1
+    fs-capacitor: ^6.2.0
+    http-errors: ^1.8.1
+    object-path: ^0.11.8
+  peerDependencies:
+    graphql: 0.13.1 - 16
+  checksum: 3b4b7dd717d5cfcd1d59f3656bcc7281dbe1aaa0d64b5404eb7333db913976154349dd65cf9774a9efc3a6478b1578335c83dd0696c041e3f63efff589d7d457
+  languageName: node
+  linkType: hard
+
 "graphql@npm:16.3.0":
   version: 16.3.0
   resolution: "graphql@npm:16.3.0"
@@ -6443,7 +6482,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-errors@npm:1.8.1":
+"http-errors@npm:1.8.1, http-errors@npm:^1.8.1":
   version: 1.8.1
   resolution: "http-errors@npm:1.8.1"
   dependencies:
@@ -8767,6 +8806,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"object-path@npm:^0.11.8":
+  version: 0.11.8
+  resolution: "object-path@npm:0.11.8"
+  checksum: 684ccf0fb6b82f067dc81e2763481606692b8485bec03eb2a64e086a44dbea122b2b9ef44423a08e09041348fe4b4b67bd59985598f1652f67df95f0618f5968
+  languageName: node
+  linkType: hard
+
 "object.assign@npm:^4.1.0, object.assign@npm:^4.1.2":
   version: 4.1.2
   resolution: "object.assign@npm:4.1.2"
@@ -8943,6 +8989,7 @@ __metadata:
     graphql-scalars: 1.14.1
     graphql-subscriptions: 2.0.0
     graphql-tag: 2.12.6
+    graphql-upload: ^13.0.0
     he: 1.2.0
     helmet: 5.0.2
     ioredis: 4.28.3
@@ -10592,6 +10639,13 @@ resolve@^2.0.0-next.3:
   version: 1.5.0
   resolution: "statuses@npm:1.5.0"
   checksum: c469b9519de16a4bb19600205cffb39ee471a5f17b82589757ca7bd40a8d92ebb6ed9f98b5a540c5d302ccbc78f15dc03cc0280dd6e00df1335568a5d5758a5c
+  languageName: node
+  linkType: hard
+
+"streamsearch@npm:0.1.2":
+  version: 0.1.2
+  resolution: "streamsearch@npm:0.1.2"
+  checksum: d2db57cbfbf7947ab9c75a7b4c80a8ef8d24850cf0a1a24258bb6956c97317ce1eab7dbcbf9c5aba3e6198611af1053b02411057bbedb99bf9c64b8275248997
   languageName: node
   linkType: hard
 

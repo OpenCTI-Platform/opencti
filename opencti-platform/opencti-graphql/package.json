@@ -59,6 +59,7 @@
     "graphql-relay": "0.10.0",
     "graphql-scalars": "1.14.1",
     "graphql-subscriptions": "2.0.0",
+    "graphql-upload": "^13.0.0",
     "he": "1.2.0",
     "helmet": "5.0.2",
     "ioredis": "4.28.3",

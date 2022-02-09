@@ -3,6 +3,7 @@ import https from 'https';
 // noinspection NodeCoreCodingAssistance
 import http from 'http';
 // noinspection NodeCoreCodingAssistance
+import { graphqlUploadExpress } from 'graphql-upload';
 import { readFileSync } from 'fs';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 import { execute, subscribe } from 'graphql';
@@ -82,6 +83,7 @@ const createHttpServer = async () => {
   });
   await apolloServer.start();
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
+  app.use(graphqlUploadExpress());
   apolloServer.applyMiddleware({
     app,
     cors: true,
