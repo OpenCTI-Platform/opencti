@@ -52,12 +52,12 @@ const executeProcessing = async (retentionRule) => {
 };
 
 const retentionHandler = async () => {
-  logApp.debug('[OPENCTI] Running Retention manager');
+  logApp.debug('[OPENCTI-MODULE] Running retention manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([RETENTION_MANAGER_KEY]);
-    logApp.debug('[OPENCTI] Retention manager lock acquired');
+    logApp.info('[OPENCTI] Running retention manager');
     const retentionRules = await findRetentionRulesToExecute(RETENTION_MANAGER_USER, { connectionFormat: false });
     logApp.debug(`[OPENCTI] Retention manager execution for ${retentionRules.length} rules`);
     // Execution of retention rules

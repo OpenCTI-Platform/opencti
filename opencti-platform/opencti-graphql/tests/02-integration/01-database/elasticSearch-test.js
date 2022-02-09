@@ -406,8 +406,6 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES);
     expect(data).not.toBeNull();
-    const test = R.uniq(R.map((e) => `${e.node.standard_id}-${e.node.name}`, data.edges));
-    console.log(test);
     expect(data.edges.length).toEqual(97);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);

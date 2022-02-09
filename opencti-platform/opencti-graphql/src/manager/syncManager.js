@@ -100,7 +100,7 @@ const syncManagerInstance = (syncId) => {
     syncElement = await loadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
     const { token, ssl_verify: ssl = false } = syncElement;
     const eventSourceUri = createSyncHttpUri(syncElement);
-    logApp.info(`[OPENCTI] Starting sync manager for ${syncId} (${eventSourceUri})`);
+    logApp.info(`[OPENCTI] Running sync manager for ${syncId} (${eventSourceUri})`);
     eventSource = new EventSource(eventSourceUri, {
       rejectUnauthorized: ssl,
       headers: { authorization: `Bearer ${token}` },
@@ -354,7 +354,7 @@ const initSyncManager = () => {
   const syncManagerHandler = async () => {
     let lock;
     try {
-      logApp.debug('[OPENCTI] Running sync manager');
+      logApp.debug('[OPENCTI-MODULE] Running sync manager');
       lock = await lockResource([SYNC_MANAGER_KEY]);
       await processingLoop();
     } catch (e) {

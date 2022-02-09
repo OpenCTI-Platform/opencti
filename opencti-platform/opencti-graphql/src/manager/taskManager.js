@@ -265,12 +265,10 @@ const executeProcessing = async (user, taskId, processingElements) => {
 };
 
 const taskHandler = async () => {
-  logApp.debug('[OPENCTI] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
-    logApp.debug('[OPENCTI] Task manager lock acquired');
     const task = await findTaskToExecute();
     // region Task checking
     if (!task) {
@@ -330,6 +328,7 @@ const initTaskManager = () => {
   let scheduler;
   return {
     start: () => {
+      logApp.info('[OPENCTI-MODULE] Running task manager');
       scheduler = setIntervalAsync(async () => {
         await taskHandler();
       }, SCHEDULE_TIME);
