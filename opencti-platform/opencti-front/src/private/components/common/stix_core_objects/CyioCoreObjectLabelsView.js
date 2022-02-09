@@ -106,9 +106,9 @@ const CyioCoreObjectLabelsView = (props) => {
       .toPromise()
       .then((data) => {
         const transformLabels = pipe(
-          pathOr([], ['labels', 'edges']),
+          pathOr([], ['labels']),
           map((n) => ({
-            label: n.node.value,
+            label: n.node.name,
             value: n.node.id,
             color: n.node.color,
           })),
