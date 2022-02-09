@@ -12,7 +12,7 @@ import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import showdown from 'showdown';
-import RateLimit from 'express-rate-limit';
+import rateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, formatPath, logApp, logAudit } from '../config/conf';
@@ -38,7 +38,7 @@ const extractRefererPathFromReq = (req) => {
 };
 
 const createApp = async (app) => {
-  const limiter = new RateLimit({
+  const limiter = rateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     max: nconf.get('app:rate_protection:max_requests'),
     handler: (req, res /* , next */) => {

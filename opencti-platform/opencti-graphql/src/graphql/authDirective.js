@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle,no-param-reassign */
-import { mapSchema, getDirectives, MapperKind } from '@graphql-tools/utils';
+import { mapSchema, MapperKind, getDirective } from '@graphql-tools/utils';
 import { includes, map, filter } from 'ramda';
 import { defaultFieldResolver, responsePathAsArray } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
@@ -15,7 +15,8 @@ export const authDirectiveBuilder = (directiveName) => {
     authDirectiveTransformer: (schema) =>
       mapSchema(schema, {
         [MapperKind.TYPE]: (type) => {
-          const authDirective = getDirectives(schema, type, [directiveName])?.[directiveName];
+          const directive = getDirective(schema, type, directiveName);
+          const authDirective = directive?.[0];
           if (authDirective) {
             typeDirectiveArgumentMaps[type.name] = authDirective;
           }
@@ -23,8 +24,8 @@ export const authDirectiveBuilder = (directiveName) => {
         },
         [MapperKind.OBJECT_FIELD]: (fieldConfig, _fieldName, typeName) => {
           // eslint-disable-next-line prettier/prettier
-          const authDirective = getDirectives(schema, fieldConfig, [directiveName])?.[directiveName]
-              ?? typeDirectiveArgumentMaps[typeName];
+          const directive = getDirective(schema, fieldConfig, directiveName);
+          const authDirective = directive?.[0] ?? typeDirectiveArgumentMaps[typeName];
           if (authDirective) {
             const { for: requiredCapabilities, and: requiredAll } = authDirective;
             if (requiredCapabilities) {

@@ -5576,10 +5576,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-rate-limit@npm:5.5.1":
-  version: 5.5.1
-  resolution: "express-rate-limit@npm:5.5.1"
-  checksum: 264820bd5fe350794f90497c5bdc7b323eec4394873cd4b9f9d3654b2c47b285e87270a5a11721fb7fb895d56218e9657ea7bb9a544dd43770c6e7beaad217e8
+"express-rate-limit@npm:6.2.0":
+  version: 6.2.0
+  resolution: "express-rate-limit@npm:6.2.0"
+  peerDependencies:
+    express: ^4
+  checksum: 642f148e6b19e1b33f237a06dcd2f5a1b3fd00f72d6ed7f41320fc07b8ef5376f4f51a0753c8396f0f66c6a6f2b82ca6751f54906ec4265b3043837ff6a52d30
   languageName: node
   linkType: hard
 
@@ -8977,7 +8979,7 @@ __metadata:
     eventsource: 1.1.0
     express: 4.17.2
     express-prometheus-middleware: 1.2.0
-    express-rate-limit: 5.5.1
+    express-rate-limit: 6.2.0
     express-session: 1.17.2
     github-api: 3.4.0
     glob: 7.2.0

@@ -48,7 +48,7 @@
     "eventsource": "1.1.0",
     "express": "4.17.2",
     "express-prometheus-middleware": "1.2.0",
-    "express-rate-limit": "5.5.1",
+    "express-rate-limit": "6.2.0",
     "express-session": "1.17.2",
     "github-api": "3.4.0",
     "glob": "7.2.0",
