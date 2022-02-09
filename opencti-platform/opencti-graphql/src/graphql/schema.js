@@ -52,10 +52,10 @@ import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../resolvers/indicator';
 import incidentResolvers from '../resolvers/incident';
-import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
+import { authDirectiveBuilder } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
-import typeDefs from '../../config/schema/opencti.graphql';
+import schemaTypeDefs from '../../config/schema/opencti.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
 import taxiiResolvers from '../resolvers/taxii';
 import taskResolvers from '../resolvers/task';
@@ -70,7 +70,6 @@ const createSchema = () => {
   const globalResolvers = {
     DateTime: GraphQLDateTime,
   };
-
   const resolvers = mergeResolvers([
     // INTERNAL
     globalResolvers,
@@ -155,16 +154,15 @@ const createSchema = () => {
     organizationOrIndividualResolvers,
     stixObjectOrStixRelationshipResolvers,
   ]);
-
-  return makeExecutableSchema({
-    typeDefs,
+  const { authDirectiveTransformer } = authDirectiveBuilder('auth');
+  let schema = makeExecutableSchema({
+    typeDefs: [schemaTypeDefs],
     resolvers,
-    schemaDirectives: {
-      [AUTH_DIRECTIVE]: AuthDirectives,
-    },
-    schemaTransforms: [constraintDirective()],
     inheritResolversFromInterfaces: true,
   });
+  schema = constraintDirective()(schema);
+  schema = authDirectiveTransformer(schema);
+  return schema;
 };
 
 export default createSchema;

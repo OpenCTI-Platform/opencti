@@ -1,14 +1,14 @@
 import { ApolloServer, UserInputError } from 'apollo-server-express';
+import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { dissocPath } from 'ramda';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
-import conf, { DEV_MODE } from '../config/conf';
+import { DEV_MODE } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
-import { applicationSession } from '../database/session';
 
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
@@ -18,16 +18,11 @@ const buildContext = (user, req, res) => {
   return { req, res, user, workId };
 };
 const createApolloServer = () => {
-  const cdnUrl = conf.get('app:playground_cdn_url');
-  return new ApolloServer({
-    schema: createSchema(),
+  const schema = createSchema();
+  const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground();
+  const apolloServer = new ApolloServer({
+    schema,
     introspection: true,
-    playground: {
-      cdnUrl,
-      settings: {
-        'request.credentials': 'same-origin',
-      },
-    },
     async context({ req, res, connection }) {
       // For websocket connection.
       if (connection) {
@@ -39,7 +34,7 @@ const createApolloServer = () => {
       return buildContext(user, req, res);
     },
     tracing: DEV_MODE,
-    plugins: [loggerPlugin, httpResponsePlugin],
+    plugins: [playgroundPlugin, loggerPlugin, httpResponsePlugin],
     formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof UserInputError) {
@@ -53,29 +48,8 @@ const createApolloServer = () => {
       // Remove the exception stack in production.
       return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
     },
-    subscriptions: {
-      keepAlive: 10000,
-      // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
-      onConnect: async (connectionParams, webSocket) => {
-        const wsSession = await new Promise((resolve) => {
-          // use same session parser as normal gql queries
-          const { session } = applicationSession();
-          session(webSocket.upgradeReq, {}, () => {
-            if (webSocket.upgradeReq.session) {
-              resolve(webSocket.upgradeReq.session);
-            }
-            return false;
-          });
-        });
-        // We have a good session. attach to context
-        if (wsSession.user) {
-          return { user: wsSession.user };
-        }
-        // throwing error rejects the connection
-        return { user: null };
-      },
-    },
   });
+  return { schema, apolloServer };
 };
 
 export default createApolloServer;

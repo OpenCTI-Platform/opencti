@@ -19,14 +19,9 @@ import { basePath, booleanConf, DEV_MODE, formatPath, logApp, logAudit } from '.
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile } from '../database/minio';
-import { checkSystemDependencies } from '../initialization';
-import { getSettings } from '../domain/settings';
 import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
-import { initializeSession } from '../database/session';
 import { LOGIN_ACTION } from '../config/audit';
-
-const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -42,8 +37,7 @@ const extractRefererPathFromReq = (req) => {
   return refererUrl.pathname;
 };
 
-const createApp = async (apolloServer) => {
-  const appSessionHandler = initializeSession();
+const createApp = async (app) => {
   const limiter = new RateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     max: nconf.get('app:rate_protection:max_requests'),
@@ -87,7 +81,6 @@ const createApp = async (apolloServer) => {
     },
   });
   // Init the http server
-  const app = express();
   app.use(limiter);
   if (DEV_MODE) {
     app.set('json spaces', 2);
@@ -119,19 +112,9 @@ const createApp = async (apolloServer) => {
     res.send(withBasePath);
   });
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
-  // -- Session and data middlewares
-  app.use(appSessionHandler.session);
+
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));
-  apolloServer.applyMiddleware({
-    app,
-    cors: true,
-    bodyParserConfig: {
-      limit: requestSizeLimit,
-    },
-    onHealthCheck,
-    path: `${basePath}/graphql`,
-  });
 
   const seeMiddleware = createSeeMiddleware();
   seeMiddleware.applyMiddleware({ app });
@@ -292,7 +275,7 @@ const createApp = async (apolloServer) => {
     res.redirect('/');
     next();
   });
-  return { app, seeMiddleware };
+  return { seeMiddleware };
 };
 
 export default createApp;
