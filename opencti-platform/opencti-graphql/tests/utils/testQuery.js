@@ -1,6 +1,5 @@
 import fetch from 'node-fetch';
 import { ApolloServer } from 'apollo-server-express';
-import { createTestClient } from 'apollo-server-testing';
 import createSchema from '../../src/graphql/schema';
 import conf from '../../src/config/conf';
 import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/utils/access';
@@ -63,5 +62,5 @@ export const sleep = (ms) => {
     setTimeout(resolve, ms);
   });
 };
-export const queryAsAdmin = createTestClient(serverFromUser()).query;
-export const queryAsUser = (user) => createTestClient(serverFromUser(user)).query;
+export const queryAsAdmin = (request) => serverFromUser().executeOperation(request);
+export const queryAsUser = (user, request) => serverFromUser(user).executeOperation(request);
