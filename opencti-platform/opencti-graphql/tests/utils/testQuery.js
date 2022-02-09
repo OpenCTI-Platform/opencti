@@ -63,5 +63,5 @@ export const sleep = (ms) => {
     setTimeout(resolve, ms);
   });
 };
-export const queryAsAdmin = (request) => serverFromUser().executeOperation(request);
-export const queryAsUser = (user, request) => serverFromUser(user).executeOperation(request);
+const adminApolloServer = serverFromUser();
+export const queryAsAdmin = (request) => adminApolloServer.executeOperation(request);
