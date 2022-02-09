@@ -1,6 +1,6 @@
 {
   "extends": ["airbnb-base", "plugin:prettier/recommended"],
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "env": { "jest": true },
   "rules": {
     "max-len": [
@@ -17,7 +17,8 @@
     ],
     "no-underscore-dangle": 0,
     "no-await-in-loop": 0,
-    "import/no-import-module-exports": "off"
+    "import/no-import-module-exports": "off",
+    "camelcase": "off"
   },
   "overrides": [
     {
