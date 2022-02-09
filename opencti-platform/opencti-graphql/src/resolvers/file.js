@@ -1,3 +1,4 @@
+import { GraphQLUpload } from 'graphql-upload';
 import { deleteFile, filesListing, loadFile } from '../database/minio';
 import { askJobImport, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
@@ -19,6 +20,7 @@ const fileResolvers = {
       return file.metaData;
     },
   },
+  Upload: GraphQLUpload, // Maps the `Upload` scalar to the implementation provided by the `graphql-upload` package.
   Mutation: {
     uploadImport: (_, { file }, { user }) => uploadImport(user, file),
     uploadPending: (_, { file, entityId }, { user }) => uploadPending(user, file, entityId),

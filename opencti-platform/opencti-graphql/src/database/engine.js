@@ -4,7 +4,7 @@ import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { Promise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import {
   buildPagination,
   cursorToOffset,

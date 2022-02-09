@@ -1,6 +1,6 @@
 import { stixCoreRelationshipsMapping, stixCyberObservableRelationshipsMapping } from '../../../src/database/stix';
 
-const stixRelationships = require('../../data/stix_relationships.json');
+import stixRelationships from '../../data/stix_relationships.json';
 
 const openctiStixMapping = {
   identity: ['individual', 'organization', 'sector'],

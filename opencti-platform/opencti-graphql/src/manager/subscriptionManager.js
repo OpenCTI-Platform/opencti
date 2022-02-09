@@ -21,12 +21,11 @@ const SUBSCRIPTION_MANAGER_KEY = conf.get('subscription_scheduler:lock_key');
 const defaultCrons = ['5-minutes', '1-hours', '24-hours', '1-weeks'];
 
 const subscriptionHandler = async () => {
-  logApp.debug('[OPENCTI] Running Subscription manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([SUBSCRIPTION_MANAGER_KEY]);
-    logApp.debug('[OPENCTI] Subscription manager lock acquired');
+    logApp.info('[OPENCTI-MODULE] Running subscription manager');
     // Execute the cleaning
     const callback = async (elements) => {
       logApp.info(`[OPENCTI] Subscription manager will send reports for ${elements.length} subscriptions`);

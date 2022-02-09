@@ -29,53 +29,43 @@ export const startModules = async () => {
   // region Expiration manager
   if (ENABLED_EXPIRED_MANAGER) {
     await expiredManager.start();
-    logApp.info(`[OPENCTI] Expiration manager started`);
   } else {
-    logApp.info(`[OPENCTI] Expiration manager not started (disabled by configuration)`);
+    logApp.info(`[OPENCTI-MODULE] Expiration manager not started (disabled by configuration)`);
   }
   // endregion
   // region Retention manager
   if (ENABLED_RETENTION_MANAGER) {
     await retentionManager.start();
-    logApp.info(`[OPENCTI] Retention manager started`);
   } else {
-    logApp.info(`[OPENCTI] Retention manager not started (disabled by configuration)`);
+    logApp.info(`[OPENCTI-MODULE] Retention manager not started (disabled by configuration)`);
   }
   // endregion
   // region Task manager
   if (ENABLED_TASK_SCHEDULER) {
     await taskManager.start();
-    logApp.info(`[OPENCTI] Task manager started`);
   } else {
-    logApp.info(`[OPENCTI] Task manager not started (disabled by configuration)`);
+    logApp.info(`[OPENCTI-MODULE] Task manager not started (disabled by configuration)`);
   }
   // endregion
   // region Inference engine
   if (ENABLED_RULE_ENGINE) {
-    const engineStarted = await ruleEngine.start();
-    if (engineStarted) {
-      logApp.info(`[OPENCTI] Rule engine started`);
-    } else {
-      logApp.info('[OPENCTI] Rule engine not started (already started by another instance)');
-    }
+    await ruleEngine.start();
   } else {
-    logApp.info(`[OPENCTI] Rule engine not started (disabled by configuration)`);
+    logApp.info(`[OPENCTI-MODULE] Rule engine not started (disabled by configuration)`);
   }
   // endregion
   // region Subscription manager
   if (ENABLED_SUBSCRIPTION_MANAGER) {
     await subscriptionManager.start();
-    logApp.info(`[OPENCTI] Subscription manager started`);
   } else {
-    logApp.info(`[OPENCTI] Subscription manager not started (disabled by configuration)`);
+    logApp.info(`[OPENCTI-MODULE] Subscription manager not started (disabled by configuration)`);
   }
   // endregion
   // region Sync manager
   if (ENABLED_SYNC_MANAGER) {
     await syncManager.start();
-    logApp.info(`[OPENCTI] Sync manager started`);
   } else {
-    logApp.info(`[OPENCTI] Sync manager not started (disabled by configuration)`);
+    logApp.info(`[OPENCTI-MODULE] Sync manager not started (disabled by configuration)`);
   }
   // endregion
 };
@@ -87,26 +77,26 @@ export const shutdownModules = async () => {
   // endregion
   // region Expiration manager
   await expiredManager.shutdown();
-  logApp.info(`[OPENCTI] Expiration manager stopped`);
+  logApp.info(`[OPENCTI-MODULE] Expiration manager stopped`);
   // endregion
   // region Retention manager
   await retentionManager.shutdown();
-  logApp.info(`[OPENCTI] Retention manager stopped`);
+  logApp.info(`[OPENCTI-MODULE] Retention manager stopped`);
   // endregion
   // region Task manager
   await taskManager.shutdown();
-  logApp.info(`[OPENCTI] Task manager stopped`);
+  logApp.info(`[OPENCTI-MODULE] Task manager stopped`);
   // endregion
   // region Inference engine
   await ruleEngine.shutdown();
-  logApp.info(`[OPENCTI] Rule engine stopped`);
+  logApp.info(`[OPENCTI-MODULE] Rule engine stopped`);
   // endregion
   // region Subscription manager
   await subscriptionManager.shutdown();
-  logApp.info(`[OPENCTI] Subscription manager stopped`);
+  logApp.info(`[OPENCTI-MODULE] Subscription manager stopped`);
   // endregion
   // region Sync manager
   await syncManager.shutdown();
-  logApp.info(`[OPENCTI] Sync manager stopped`);
+  logApp.info(`[OPENCTI-MODULE] Sync manager stopped`);
   // endregion
 };

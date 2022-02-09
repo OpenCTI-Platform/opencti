@@ -1,10 +1,10 @@
-import { lstatSync, readFileSync } from 'fs';
+import { lstatSync, readFileSync } from 'node:fs';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import path from 'path';
+import path from 'node:path';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -15,8 +15,6 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-
-const pjson = require('../../package.json');
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -117,7 +115,7 @@ export const BUS_TOPICS = {
   },
 };
 
-export const PLATFORM_VERSION = pjson.version;
+export const PLATFORM_VERSION = process.env.npm_package_version;
 
 export const booleanConf = (key, defaultValue = true) => {
   const configValue = nconf.get(key);

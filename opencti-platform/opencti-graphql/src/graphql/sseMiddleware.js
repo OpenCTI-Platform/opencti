@@ -321,7 +321,7 @@ const createSeeMiddleware = () => {
       // Create channel.
       const { channel, client } = createSseChannel(req, res);
       // If stream is starting after, we need to use the main database to catchup
-      const cache = new LRU({ max: MAX_CACHE_SIZE, maxAge: MAX_CACHE_TIME });
+      const cache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
       let after = isNotEmptyField(startFrom) ? startFrom : FROM_START_STR;
@@ -412,7 +412,7 @@ const createSeeMiddleware = () => {
           }
         }
         // All event must invalidate the cache
-        elements.forEach((e) => cache.del(e.data.data.id));
+        elements.forEach((e) => cache.delete(e.data.data.id));
       });
       // noinspection ES6MissingAwait
       processor.start();

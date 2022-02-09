@@ -291,6 +291,11 @@ const ruleStreamHandler = async (streamEvents) => {
   }
 };
 
+const getInitRuleManager = () => {
+  const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
+  return createEntity(RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
+};
+
 const initRuleManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let scheduler;
@@ -306,14 +311,12 @@ const initRuleManager = () => {
     try {
       // Lock the manager
       lock = await lockResource([RULE_ENGINE_KEY]);
-      logApp.debug('[RULE] Running Rule manager');
-      // Get the processor status
-      const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
-      const ruleStatus = await createEntity(RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
+      logApp.info('[OPENCTI-MODULE] Running rule manager');
       // Start the stream listening
+      const ruleManager = await getInitRuleManager();
       activatedRules = await getActivatedRules();
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
-      await streamProcessor.start(ruleStatus.lastEventId);
+      await streamProcessor.start(ruleManager.lastEventId);
       while (syncListening) {
         await wait(WAIT_TIME_ACTION);
       }
@@ -337,6 +340,7 @@ const initRuleManager = () => {
   };
   return {
     start: async () => {
+      await getInitRuleManager();
       scheduler = setIntervalAsync(async () => {
         await ruleHandler();
       }, SCHEDULE_TIME);
