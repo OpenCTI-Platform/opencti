@@ -412,7 +412,7 @@ const createSeeMiddleware = () => {
           }
         }
         // All event must invalidate the cache
-        elements.forEach((e) => cache.del(e.data.data.id));
+        elements.forEach((e) => cache.delete(e.data.data.id));
       });
       // noinspection ES6MissingAwait
       processor.start();
