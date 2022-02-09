@@ -36,7 +36,6 @@ import {
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
-import { addAttribute, find as findAttribute } from './attribute';
 import { escape } from '../utils/format';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 
@@ -201,17 +200,6 @@ export const stixDomainObjectEditField = async (user, stixObjectId, input, opts 
   const stixDomainObject = await loadById(user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
-  }
-  if (input.key === 'report_types') {
-    await Promise.all(
-      input.value.map(async (reportType) => {
-        const currentAttribute = await findAttribute(user, 'report_types', reportType);
-        if (!currentAttribute) {
-          await addAttribute(user, { key: 'report_types', value: reportType });
-        }
-        return true;
-      })
-    );
   }
   const { element: updatedElem } = await updateAttribute(user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {

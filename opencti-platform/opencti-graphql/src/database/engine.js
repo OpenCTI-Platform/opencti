@@ -1560,7 +1560,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   };
   // Add extra configuration
   if (isNotEmptyField(runtimeMappings)) {
-    const isRuntimeSortFeatureEnable = await isRuntimeSortEnable();
+    const isRuntimeSortFeatureEnable = isRuntimeSortEnable();
     if (!isRuntimeSortFeatureEnable) {
       throw UnsupportedError(`Sorting of field ${orderBy} is only possible with elastic >=7.12`);
     }
@@ -1647,13 +1647,26 @@ export const elLoadBy = async (user, field, value, type = null, indices = READ_D
   if (hits.length > 1) throw UnsupportedError(`Expected only one response, found ${hits.length}`);
   return R.head(hits);
 };
-export const elAttributeValues = async (user, field) => {
+export const elAttributeValues = async (user, field, opts = {}) => {
+  const { first, orderMode = 'asc', search } = opts;
   const markingRestrictions = buildMarkingRestriction(user);
   const isDateOrNumber = dateAttributes.includes(field) || numericOrBooleanAttributes.includes(field);
+  const must = [];
+  if (isNotEmptyField(search) && search.length > 0) {
+    const shouldSearch = elGenerateFullTextSearchShould(search);
+    const bool = {
+      bool: {
+        should: shouldSearch,
+        minimum_should_match: 1,
+      },
+    };
+    must.push(bool);
+  }
+  must.push(...markingRestrictions.must);
   const body = {
     query: {
       bool: {
-        must: markingRestrictions.must,
+        must,
         must_not: markingRestrictions.must_not,
       },
     },
@@ -1661,6 +1674,8 @@ export const elAttributeValues = async (user, field) => {
       values: {
         terms: {
           field: isDateOrNumber ? field : `${field}.keyword`,
+          size: first,
+          order: { _key: orderMode },
         },
       },
     },
@@ -1672,11 +1687,9 @@ export const elAttributeValues = async (user, field) => {
   };
   const data = await el.search(query);
   const { buckets } = data.body.aggregations.values;
-  const finalResult = R.pipe(
-    R.map((n) => ({ node: { id: n.key, key: n.key, value: n.key } })),
-    R.sortWith([R.ascend(R.prop('value'))])
-  )(buckets);
-  return buildPagination(0, null, finalResult, finalResult.length);
+  const values = (buckets ?? []).map((n) => n.key);
+  const nodeElements = values.map((val) => ({ node: { id: val, key: field, value: val } }));
+  return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 // endregion
 
@@ -2065,7 +2078,7 @@ export const elUpdateAttributeValue = async (key, previousValue, value) => {
   const query = { match_phrase: { [`${key}.keyword`]: previousValue } };
   const params = {
     index: READ_DATA_INDICES,
-    refresh: false,
+    refresh: true,
     body: {
       script: { source, params: { key, value, previousValue } },
       query,

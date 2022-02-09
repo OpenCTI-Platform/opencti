@@ -272,7 +272,7 @@ export const queryAttributes = async (type) => {
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
-    R.map((n) => ({ node: { id: n, key: n, value: n } }))
+    R.map((n) => ({ node: { id: n, key: type, value: n } }))
   )(attributes);
   return buildPagination(0, null, finalResult, finalResult.length);
 };

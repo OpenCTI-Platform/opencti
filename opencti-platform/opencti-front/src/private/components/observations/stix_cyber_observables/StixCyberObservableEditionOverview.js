@@ -222,7 +222,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         query={stixCyberObservablesLinesAttributesQuery}
         variables={{ elementType: stixCyberObservable.entity_type }}
         render={({ props }) => {
-          if (props && props.attributes) {
+          if (props && props.schemaAttributes) {
             const createdBy = pathOr(null, ['createdBy', 'name'], stixCyberObservable) === null
               ? ''
               : {
@@ -262,7 +262,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                 (n) => !includes(n.value, ignoredAttributes)
                   && !n.value.startsWith('i_'),
               ),
-            )(props.attributes.edges);
+            )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {
                 initialValues[attribute.value] = stixCyberObservable[

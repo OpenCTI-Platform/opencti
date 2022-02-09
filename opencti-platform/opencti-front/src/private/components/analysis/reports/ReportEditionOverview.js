@@ -276,8 +276,9 @@ class ReportEditionOverviewComponent extends Component {
           query={attributesQuery}
           variables={{ key: 'report_types' }}
           render={({ props }) => {
-            if (props && props.attributes) {
-              const reportTypesEdges = props.attributes.edges;
+            if (props && props.runtimeAttributes) {
+              const reportEdges = props.runtimeAttributes.edges.map((e) => e.node.value);
+              const elements = R.uniq([...reportEdges, 'threat-report', 'internal-report']);
               return (
                 <Formik
                   enableReinitialize={true}
@@ -324,12 +325,9 @@ class ReportEditionOverviewComponent extends Component {
                             />
                           }
                         >
-                          {reportTypesEdges.map((reportTypeEdge) => (
-                            <MenuItem
-                              key={reportTypeEdge.node.value}
-                              value={reportTypeEdge.node.value}
-                            >
-                              {reportTypeEdge.node.value}
+                          {elements.map((reportType) => (
+                            <MenuItem key={reportType} value={reportType}>
+                              {reportType}
                             </MenuItem>
                           ))}
                         </Field>
