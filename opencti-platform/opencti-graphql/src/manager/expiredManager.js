@@ -17,12 +17,10 @@ const SCHEDULE_TIME = conf.get('expiration_scheduler:interval');
 const EXPIRED_MANAGER_KEY = conf.get('expiration_scheduler:lock_key');
 
 const expireHandler = async () => {
-  logApp.debug('[OPENCTI-MODULE] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([EXPIRED_MANAGER_KEY]);
-    logApp.info('[OPENCTI] Running expiration manager');
     // Execute the cleaning
     const callback = async (elements) => {
       logApp.info(`[OPENCTI] Expiration manager will revoke ${elements.length} elements`);
@@ -55,6 +53,7 @@ const initExpiredManager = () => {
   let scheduler;
   return {
     start: () => {
+      logApp.info('[OPENCTI-MODULE] Running Expiration manager');
       scheduler = setIntervalAsync(async () => {
         await expireHandler();
       }, SCHEDULE_TIME);
