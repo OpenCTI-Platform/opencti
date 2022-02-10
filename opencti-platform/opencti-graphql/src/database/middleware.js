@@ -2342,6 +2342,14 @@ const checkRelationConsistency = (relationshipType, from, to) => {
     }
   }
 };
+const isRelationConsistent = (relationshipType, from, to) => {
+  try {
+    checkRelationConsistency(relationshipType, from, to);
+    return true;
+  } catch {
+    return false;
+  }
+};
 const buildRelationData = async (user, input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
@@ -2581,7 +2589,9 @@ export const createRelationRaw = async (user, input, opts = {}) => {
       // Check cyclic reference consistency for embedded relationships before creation
       if (isStixEmbeddedRelationship(relationshipType)) {
         const toRefs = instanceMetaRefsExtractor(to);
-        if (toRefs.includes(from.internal_id)) {
+        // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
+        // Checking the direction of the relation to allow relationships
+        if (toRefs.includes(from.internal_id) && isRelationConsistent(relationshipType, to, from)) {
           throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
         }
       }
