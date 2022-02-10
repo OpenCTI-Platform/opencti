@@ -1,0 +1,3 @@
+mutation DeleteLabel {
+  deleteCyioLabel(id: "9acfa99c-81ff-590a-8e91-13c0c31ce9d1")
+}

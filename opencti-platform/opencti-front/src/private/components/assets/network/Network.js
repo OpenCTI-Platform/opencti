@@ -133,7 +133,12 @@ const Network = createFragmentContainer(NetworkComponent, {
       asset_type
       asset_id
       serial_number
-      labels
+      labels {
+        id
+        name
+        color
+        description
+      }
       description
       release_date
       vendor_name

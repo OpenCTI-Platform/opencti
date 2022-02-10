@@ -315,7 +315,12 @@ const NetworkCardFragment = createFragmentContainer(
         asset_type
         asset_id
         network_id
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         # ipv4_address{
         #   ip_address_value
         # }

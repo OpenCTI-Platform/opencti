@@ -1,4 +1,3 @@
-//import { mergeResolvers } from 'merge-graphql-schemas';
 import { mergeResolvers } from '@graphql-tools/merge';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { constraintDirective } from 'graphql-constraint-directive';
@@ -96,7 +95,9 @@ import assetCommonResolvers from '../cyio/schema/assets/asset-common/resolvers.j
 import computingDeviceResolvers from '../cyio/schema/assets/computing-device/resolvers.js';
 import networkResolvers from '../cyio/schema/assets/network/resolvers.js';
 import softwareResolvers from '../cyio/schema/assets/software/resolvers.js';
-
+import cyioExternalReferenceResolvers from '../cyio/schema/global/resolvers/externalReference.js';
+import cyioLabelResolvers from '../cyio/schema/global/resolvers/label.js';
+import cyioNoteResolvers from '../cyio/schema/global/resolvers/note.js';
 // Cyio Extensions to support merged graphQL schema
 import { loadSchemaSync } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader' ;
@@ -209,7 +210,10 @@ const createSchema = () => {
     computingDeviceResolvers,
     networkResolvers,
     softwareResolvers,
-  ]);
+    cyioExternalReferenceResolvers,
+    cyioLabelResolvers,
+    cyioNoteResolvers,
+]);
 
   // load the OpenCTI and each of the Cyio GraphQL schema files
   const typeDefs = loadSchemaSync('./**/**/*.graphql', {
@@ -219,8 +223,6 @@ const createSchema = () => {
   let schema = makeExecutableSchema({
     typeDefs: [
       typeDefs,
-      // openctiTypeDefs,
-      // DateTimeTypeDefinition,
       EmailAddressTypeDefinition,
       IPv4Definition,
       IPv6Definition,

@@ -32,6 +32,7 @@ import {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
+import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
 const styles = (theme) => ({
   card: {
@@ -113,13 +114,13 @@ class DeviceCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          style= {{ background:  (selectAll || node.id in (selectedElements || {})) && '#075AD3'}}
+          style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           to={`/dashboard/assets/devices/${node.id}`}
         >
           {/* <CardHeader
@@ -174,7 +175,7 @@ class DeviceCardComponent extends Component {
                   {t('Type')}
                 </Typography>
                 {node.asset_type
-                && <ItemIcon type={node.asset_type}/>}
+                  && <ItemIcon type={node.asset_type}/>}
               </div>
               <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
                 <Typography
@@ -201,9 +202,9 @@ class DeviceCardComponent extends Component {
             <Grid xs={12} container={true} >
               <Grid item={true} xs={6} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 gutterBottom ={true}>
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom ={true}>
                   {t('Asset ID')}
                 </Typography>
                 <Typography>
@@ -212,10 +213,10 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('FQDN')}
                 </Typography>
@@ -226,9 +227,9 @@ class DeviceCardComponent extends Component {
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 gutterBottom ={true}>
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom ={true}>
                   {t('IP Address')}
                 </Typography>
                 <Typography>
@@ -242,49 +243,53 @@ class DeviceCardComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 <Typography
-                 variant="h3"
-                 color="textSecondary"
-                 style={{ marginTop: '13px' }}
-                 gutterBottom={true}
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
                 >
                   {t('Network ID')}
                 </Typography>
                 <Typography>
-                    {/* {t('Lorem Ipsum')} */}
-                    {node.network_id && t(node.network_id)}
+                  {/* {t('Lorem Ipsum')} */}
+                  {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
               <Grid>
                 <div>
                   <Typography
-                   variant="h3"
-                   color="textSecondary"
-                   gutterBottom ={true}>
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom ={true}>
                     {t('Operating System')}
                   </Typography>
                   <div>
-                  {node?.installed_operating_system?.name && node?.installed_operating_system?.vendor_name
-                    && <div>
-                      <Typography style={{ display: 'flex', alignItems: 'center' }}>
-                        <ItemIcon type={node.installed_operating_system.vendor_name} />&nbsp;&nbsp;
-                        {t(node.installed_operating_system.name)}
-                      </Typography>
-                    </div>}
+                    {node?.installed_operating_system?.name && node?.installed_operating_system?.vendor_name
+                      && <div>
+                        <Typography style={{ display: 'flex', alignItems: 'center' }}>
+                          <ItemIcon type={node.installed_operating_system.vendor_name} />&nbsp;&nbsp;
+                          {t(node.installed_operating_system.name)}
+                        </Typography>
+                      </div>}
                   </div>
                 </div>
               </Grid>
             </Grid>
             <div className={classes.objectLabel}>
               <Typography
-               variant="h3"
-               color="textSecondary"
-               gutterBottom ={true}>
+                variant="h3"
+                color="textSecondary"
+                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              <StixCoreObjectLabels
-                labels={objectLabel}
+              <CyioCoreObjectLabels
+                labels={node.labels}
                 onClick={onLabelClick.bind(this)}
               />
+              {/* <StixCoreObjectLabels
+                labels={node.labels}
+                onClick={onLabelClick.bind(this)}
+              /> */}
             </div>
           </CardContent>
         </CardActionArea>
@@ -320,7 +325,12 @@ const DeviceCardFragment = createFragmentContainer(
         }
         asset_type
         fqdn
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         network_id
       }
     `,

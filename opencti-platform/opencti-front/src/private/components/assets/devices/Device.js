@@ -138,7 +138,12 @@ const Device = createFragmentContainer(DeviceComponent, {
       vendor_name
       serial_number
       release_date
-      labels
+      labels {
+        id
+        name
+        color
+        description
+      }
       # responsible_parties
       operational_status
       ...DeviceDetails_device

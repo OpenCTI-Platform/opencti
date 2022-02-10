@@ -11,7 +11,10 @@ export const itAssetFiltersDeviceFieldsQuery = graphql`
         node {
           id
           name
-          labels
+          labels {
+            id
+            name
+          }
         }
       }
     }
@@ -29,7 +32,10 @@ export const itAssetFiltersNetworkFieldsQuery = graphql`
         node {
           id
           name
-          labels
+          labels {
+            id
+            name
+          }
         }
       }
     }
@@ -47,7 +53,10 @@ export const itAssetFiltersSoftwareFieldsQuery = graphql`
         node {
           id
           name
-          labels
+          labels {
+            id
+            name
+          }
           vendor_name
         }
       }

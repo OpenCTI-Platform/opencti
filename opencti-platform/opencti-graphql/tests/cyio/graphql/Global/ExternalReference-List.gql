@@ -1,0 +1,29 @@
+query ExternalReferenceList {
+  cyioExternalReferences(limit: 4) {
+    pageInfo {
+      globalCount
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+    edges {
+      cursor
+      node {
+        id
+        created
+        modified
+        source_name
+        description
+        url
+        hashes {
+          algorithm
+          value
+        }
+        external_id
+        reference_purpose
+        media_type
+      }
+    }
+  }
+}

@@ -427,7 +427,12 @@ const NetworkEditionFragment = createFragmentContainer(
           description
         }
         version
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         vendor_name
         asset_tag
         asset_type

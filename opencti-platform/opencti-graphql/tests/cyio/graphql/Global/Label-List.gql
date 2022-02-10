@@ -1,0 +1,21 @@
+query ListLabels {
+  cyioLabels {
+    pageInfo {
+      globalCount
+      startCursor
+      endCursor
+      hasPreviousPage
+      hasNextPage
+    }
+    edges {
+      node {
+        id
+        created
+        modified
+        name
+        color
+        description
+      }
+    }
+  }
+}

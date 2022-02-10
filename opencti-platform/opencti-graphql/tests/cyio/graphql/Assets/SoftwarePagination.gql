@@ -23,5 +23,9 @@ fragment SoftwareLine_node on SoftwareAsset {
   name
   created
   modified
-  labels
+  labels {
+    name
+    color
+    description
+  }
 }

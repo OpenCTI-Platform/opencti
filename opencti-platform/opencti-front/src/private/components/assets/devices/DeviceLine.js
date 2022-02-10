@@ -18,6 +18,7 @@ import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
+import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -65,7 +66,7 @@ class DeviceLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -153,11 +154,16 @@ class DeviceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.labels.width }}
               >
-                <StixCoreObjectLabels
+                <CyioCoreObjectLabels
+                  variant="inList"
+                  labels={node.labels}
+                  onClick={onLabelClick.bind(this)}
+                />
+                {/* <StixCoreObjectLabels
                   variant="inList"
                   labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
-                />
+                /> */}
               </div>
             </div>
           }
@@ -206,7 +212,12 @@ const DeviceLineFragment = createFragmentContainer(
         #     }
         #   }
         # }
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         # objectMarking {
         #   edges {
         #     node {
