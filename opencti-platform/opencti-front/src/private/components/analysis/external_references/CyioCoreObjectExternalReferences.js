@@ -48,7 +48,7 @@ class CyioCoreObjectExternalReferences extends Component {
        <QR
           environment={DarkLightEnvironment}
           query={cyioCoreObjectExternalReferencesLinesQuery}
-          variables={{ id: cyioCoreObjectId, count: 200 }}
+          variables={{ count: 200 }}
           render={({ props }) => {
             if (props) {
               return (

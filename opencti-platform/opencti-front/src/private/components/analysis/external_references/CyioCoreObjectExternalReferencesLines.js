@@ -25,7 +25,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
-import { commitMutation as CM, createPaginationContainer } from 'react-relay';
+import { commitMutation as CM, createFragmentContainer, createPaginationContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -364,23 +364,21 @@ CyioCoreObjectExternalReferencesLinesContainer.propTypes = {
 };
 
 export const cyioCoreObjectExternalReferencesLinesQuery = graphql`
-  query CyioCoreObjectExternalReferencesLinesQuery($count: Int!, $id: ID!) {
+  query CyioCoreObjectExternalReferencesLinesQuery($count: Int!) {
     ...CyioCoreObjectExternalReferencesLines_data
-      @arguments(count: $count, id: $id)
+      @arguments(count: $count)
   }
 `;
 
-const CyioCoreObjectExternalReferencesLines = createPaginationContainer(
+const CyioCoreObjectExternalReferencesLines = createFragmentContainer(
   CyioCoreObjectExternalReferencesLinesContainer,
   {
     data: graphql`
       fragment CyioCoreObjectExternalReferencesLines_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
-        id: { type: "ID!" }
       ) {
-        cyioExternalReferences(limit: $count)
-          @connection(key: "Pagination_cyioExternalReferences") {
+        cyioExternalReferences(limit: $count) {
           edges {
             node {
               id
@@ -396,25 +394,6 @@ const CyioCoreObjectExternalReferencesLines = createPaginationContainer(
         }
       }
     `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.itAsset.external_references;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count }, fragmentVariables) {
-      return {
-        count,
-        id: fragmentVariables.id,
-      };
-    },
-    query: cyioCoreObjectExternalReferencesLinesQuery,
   },
 );
 
