@@ -60,8 +60,7 @@ const createHttpServer = async () => {
         if (wsSession.user) {
           return { user: wsSession.user };
         }
-        // throwing error rejects the connection
-        return { user: null };
+        throw new Error('User must be authenticated');
       },
     },
     {
