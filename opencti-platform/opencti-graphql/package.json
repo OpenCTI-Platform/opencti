@@ -24,7 +24,7 @@
     ]
   },
   "engines": {
-    "node": ">= 15.* <= 16.*"
+    "node": ">= 16.*"
   },
   "dependencies": {
     "@elastic/elasticsearch": "7.17.0",

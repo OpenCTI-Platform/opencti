@@ -89,7 +89,7 @@
     "relay": {}
   },
   "engines": {
-    "node": ">= 15.* <= 16.*"
+    "node": ">= 16.*"
   },
   "scripts": {
     "start": "yarn relay && react-scripts start",
