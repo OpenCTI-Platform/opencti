@@ -21,9 +21,7 @@ export function getReducer( type ) {
 //
 const externalReferenceReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
-  } else {
+  if ( item.object_type === undefined ) {
     item.object_type = 'external-reference';
   }
 
@@ -40,6 +38,7 @@ const externalReferenceReducer = (item) => {
     // OSCAL Link
     ...(item.reference_purpose && {"reference_purpose": item.reference_purpose}),
     ...(item.media_type && {"media_type": item.media_type}),
+    ...(item.label_text && {"label_text": item.label_text}),
     //HINTS
     ...(item.hashes && {hashes_iri: item.hashes}),
   }
@@ -47,9 +46,7 @@ const externalReferenceReducer = (item) => {
 
 const labelReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
-  } else {
+  if ( item.object_type === undefined ) {
     item.object_type = 'label';
   }
 
@@ -67,9 +64,7 @@ const labelReducer = (item) => {
 
 const noteReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
-  } else {
+  if ( item.object_type === undefined ) {
     item.object_type = 'note';
   }
 
@@ -138,13 +133,18 @@ export const externalReferencePredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   reference_purpose: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#reference_purpose>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "reference_purpose");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   media_type: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#media_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "media_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  label_text: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#label_text>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "label_text");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
@@ -246,7 +246,6 @@ export const insertLabelQuery = (propValues) => {
   INSERT DATA {
     GRAPH ${iri} {
       ${iri} a <http://darklight.ai/ns/common#Label> .
-      ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}".
       ${iri} <http://darklight.ai/ns/common#object_type> "label" . 
@@ -325,7 +324,6 @@ export const insertExternalReferenceQuery = (propValues) => {
     GRAPH ${iri} {
       ${iri} a <http://darklight.ai/ns/common#ExternalReference> .
       ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
-      ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}".
       ${iri} <http://darklight.ai/ns/common#object_type> "external-reference" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 

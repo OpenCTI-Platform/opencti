@@ -188,15 +188,17 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # LifecycleObject
     created: Timestamp
     modified: Timestamp
+    # CoreObject
     labels: [CyioLabel]
     external_references: [CyioExternalReference]
     notes: [CyioNote]
-    # AssetLocation
+    #CyioLocation
     name: String!
     description: String
+    # AssetLocation
     street_address: String
     city: String
     administrative_area: String

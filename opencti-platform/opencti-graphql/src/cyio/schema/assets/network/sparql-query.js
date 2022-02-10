@@ -296,8 +296,8 @@ export function networkAssetReducer( item ) {
     ...(item.iri && {parent_iri: item.iri}),
     ...(item.locations && {locations_iri: item.locations}),
     ...(item.external_references && {ext_ref_iri: item.external_references}),
-    ...(item.notes && {notes_iri: item.notes}),
 	  ...(item.labels && {labels_iri: item.labels}),
+    ...(item.notes && {notes_iri: item.notes}),
     ...(item.network_address_range && {netaddr_range_iri: item.network_address_range}),
   }
 }

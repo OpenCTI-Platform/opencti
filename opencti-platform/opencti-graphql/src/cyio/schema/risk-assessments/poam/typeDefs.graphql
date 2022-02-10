@@ -1,6 +1,15 @@
   # declares the query entry-points for this type
   extend type Query {
     poam( id: ID ): POAM
+    poams(
+      limit: Int
+      offset: Int
+      orderedBy: POAMOrdering
+      orderMode: OrderingMode
+      filters: [POAMFiltering]
+      filterMode: FilterMode
+      search: String
+    ): POAMConnection
     poamItem( id: ID ): POAMItem
     poamItems(
       first: Int
@@ -20,15 +29,14 @@
     deletePOAM(id: ID!): String!
     editPOAM(id: ID!, input: [EditInput]!, commitMessage: String): POAM
     # POAM Item
-    createPOAMItem(input: POAMItemAddInput): POAMItem
-    deletePOAMItem(id: ID!): String!
+    createPOAMItem(poam: ID = "ddb9452b-9e71-53ee-b6e6-f3bcfc098ee2", input: POAMItemAddInput): POAMItem
+    deletePOAMItem(poam: ID = "ddb9452b-9e71-53ee-b6e6-f3bcfc098ee2", id: ID!): String!
     editPOAMItem(id: ID!, input: [EditInput]!, commitMessage: String): POAMItem
-
   }
 
 ## POAM
 #
-  type POAM implements BasicObject & LifecycleObject & CoreObject & OscalObject &  Model {
+  type POAM implements BasicObject & LifecycleObject & OscalObject &  Model {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -43,13 +51,13 @@
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
+    # OscalObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [CyioLabel]
-    # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -121,8 +129,54 @@
     system_identifier_type: String!
   }
 
+    # Pagination Types
+  type POAMConnection {
+    pageInfo: PageInfo!
+    edges: [POAMEdge]
+  }
+  type POAMEdge {
+    cursor: String!
+    node: POAM!
+  }
+  # Filtering Types
+  input POAMFiltering {
+    key: POAMFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+
+  enum POAMOrdering {
+    "POAM ID"
+    poam_id
+    "Created"
+    created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Modified"
+    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Name"
+    name
+    "Last Modified"
+    last_modified
+    "Published"
+    published
+    "System Identifier"
+    system_id
+  }
+
+  enum POAMFilter {
+    "Created"
+    created         # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Modified"
+    modified        # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Last Modified"
+    last_modified
+    "Published"
+    published
+  }
+
+
   "Defines identifying information about a POAM Item"
-  type POAMItem implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type POAMItem implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -137,13 +191,13 @@
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
+    # OscalObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
     labels: [CyioLabel]
-    # OscalObject
     "Identifies a list of external references, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -231,12 +285,13 @@
   }
 
   enum POAMItemsFilter {
+    "Created"
     created         # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Modified"
     modified        # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Risk Level"
     risk_level      # Risk Level (key:risk_level, values: ["value1","value2"], operator: eq)
-    "Risk Status" 
+    "Risk Status"
     risk_status     # Risk Status (key:risk_status, values: ["value1","value2"], operator: eq)
     "Risk Response"
     risk_response   # Risk Response (key:response_type, values: ["value1","value2"], operator: eq)
@@ -251,6 +306,6 @@
   type POAMLocalDefinition {
     components( first: Int ): ComponentConnection
     inventory_items( first: Int ): InventoryItemConnection
-    notes: [CyioNote]
+    remarks: [CyioNote]
   }
 

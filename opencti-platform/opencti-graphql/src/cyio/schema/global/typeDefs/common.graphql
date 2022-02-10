@@ -334,7 +334,6 @@
   }
   
   input CyioLocationAddInput {
-    labels: [CyioLabel]
     # CyioLocation
     location_type: CyioLocationType
     name: String!
@@ -351,12 +350,9 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # LifecycleObject
     created: Timestamp
     modified: Timestamp
-    labels: [CyioLabel]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
     # CyioIdentity
     name: String!
     description: String

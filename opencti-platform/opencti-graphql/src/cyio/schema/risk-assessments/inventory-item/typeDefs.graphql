@@ -42,9 +42,9 @@
     labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -193,7 +193,7 @@
 #####   Appliance
 ##
   "Defines identifying information about an Appliance"
-  type Appliance implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+  type Appliance implements BasicObject & LifecycleObject & OscalObject & InventoryItem {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -212,9 +212,9 @@
     labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -281,7 +281,7 @@
 #####   Computing Device
 ##
   "Defines identifying information about an Computing Device"
-  type ComputingDevice implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+  type ComputingDevice implements BasicObject & LifecycleObject & OscalObject & InventoryItem {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -300,9 +300,9 @@
     labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -369,7 +369,7 @@
 #####   Firewall
 ##
   "Defines identifying information about an Firewall"
-  type Firewall implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+  type Firewall implements BasicObject & LifecycleObject & OscalObject & InventoryItem {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -388,9 +388,9 @@
     labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -457,7 +457,7 @@
 #####   Hardware
 ##
   "Defines identifying information about an Hardware"
-  type Hardware implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+  type Hardware implements BasicObject & LifecycleObject & OscalObject & InventoryItem {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -476,9 +476,9 @@
     labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -545,7 +545,7 @@
 #####   Network Device
 ##
   "Defines identifying information about an Network Device"
-  type NetworkDevice implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+  type NetworkDevice implements BasicObject & LifecycleObject & OscalObject & InventoryItem {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -564,9 +564,9 @@
     labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -633,7 +633,7 @@
 #####   Router
 ##
   "Defines identifying information about an Router"
-  type Router implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+  type Router implements BasicObject & LifecycleObject & OscalObject & InventoryItem {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -652,9 +652,9 @@
     labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -721,7 +721,7 @@
 #####   Switch
 ##
   "Defines identifying information about an Switch"
-  type Switch implements BasicObject & LifecycleObject & CoreObject & OscalObject & InventoryItem {
+  type Switch implements BasicObject & LifecycleObject & OscalObject & InventoryItem {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -740,9 +740,9 @@
     labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReference]
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNote]
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
