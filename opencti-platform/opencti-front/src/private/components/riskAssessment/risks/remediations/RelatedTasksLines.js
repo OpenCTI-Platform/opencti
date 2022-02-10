@@ -31,7 +31,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
-import { interval } from 'rxjs';
+// import { interval } from 'rxjs';
 import inject18n from '../../../../../components/i18n';
 import { truncate } from '../../../../../utils/String';
 import { commitMutation } from '../../../../../relay/environment';
@@ -44,13 +44,14 @@ import Security, {
 } from '../../../../../utils/Security';
 // import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import FileLine from '../../../common/files/FileLine';
-import { FIVE_SECONDS } from '../../../../../utils/Time';
+// import { FIVE_SECONDS } from '../../../../../utils/Time';
 import FileUploader from '../../../common/files/FileUploader';
 import RelatedTaskPopover from './RelatedTaskPopover';
 import CyioCoreobjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import RelatedTaskLine from './RelatedTaskLine';
 
-const interval$ = interval(FIVE_SECONDS);
+// const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   paper: {
@@ -139,15 +140,15 @@ class RelatedTasksLinesContainer extends Component {
     };
   }
 
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(200);
-    });
-  }
+  // componentDidMount() {
+  //   this.subscription = interval$.subscribe(() => {
+  //     this.props.relay.refetchConnection(200);
+  //   });
+  // }
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
+  // componentWillUnmount() {
+  //   this.subscription.unsubscribe();
+  // }
 
   handleToggleExpand() {
     this.setState({ expanded: !this.state.expanded });
@@ -224,15 +225,7 @@ class RelatedTasksLinesContainer extends Component {
     // const externalReferencesEdges = data.riskResponse.external_references.edges;
     // const expandable = externalReferencesEdges.length > 7;
     console.log('RelatedTasksData', data);
-    const relatedTasksEdges = R.pipe(
-      R.pathOr([], ['tasks', 'edges']),
-      R.map((value) => ({
-        name: value.node.name,
-        description: value.node.description,
-        id: value.node.id,
-        task_type: value.node.task_type,
-      })),
-    )(data.riskResponse);
+    const relatedTasksEdges = R.pathOr([], ['tasks', 'edges'], data.riskResponse);
     console.log('relatedTasksEdges', relatedTasksEdges);
     return (
       <div style={{ height: '100%' }}>
@@ -259,199 +252,12 @@ class RelatedTasksLinesContainer extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          {relatedTasksEdges.map((relatedTaskdata, i) => (
-            <div key={i} style={{
-              display: 'grid',
-              gridTemplateColumns: '90% 10%',
-              borderBottom: '1px solid grey',
-              margin: '0 20px',
-            }}>
-            <Accordion style={{ borderBottom: '0', boxShadow: 'none' }}>
-              <AccordionSummary
-                onClick={() => this.handleClick()}
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
-                {this.state.value ? '' : (
-                  <CardContent className={classes.cardContent}>
-                    <FlagIcon fontSize='large' color="disabled" />
-                    <div style={{ marginLeft: '10px' }}>
-                      <Typography align="left" color="textSecondary" variant="h3">{t('Lorel Ipsum')}</Typography>
-                      <Typography align="left" variant="subtitle1">{t('https://loreipsumdolorsitametloreamet.com')}</Typography>
-                    </div>
-                  </CardContent>
-                )
-                }
-              </AccordionSummary>
-              <AccordionDetails classes={{ root: classes.accordionDetails }}>
-                <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={6}>
-                    <Grid style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '15px',
-                      marginLeft: '1px',
-                    }}>
-                      <div style={{ marginLeft: '10px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
-                        <Typography align="left" variant="subtitle1">
-                          {/* {t('Lorem Ipsum')} */}
-                          {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
-                            <>
-                              <div className="clearfix" />
-                              {value.name}
-                            </>
-                          ))}
-                        </Typography>
-                      </div>
-                    </Grid>
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <Grid style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '15px',
-                      marginLeft: '-4px',
-                    }}>
-                      <div style={{ marginLeft: '10px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
-                        <Typography align="left" variant="subtitle1">
-                          {/* {t('Lorem Ipsum')} */}
-                          {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
-                            <>
-                              <div className="clearfix" />
-                              {value.id}
-                            </>
-                          ))}
-                        </Typography>
-                      </div>
-                    </Grid>
-                  </Grid>
-                </Grid>
-                <Grid container={true}>
-                  <Grid item={true} xs={6}>
-                    <Grid style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                      <div style={{ marginLeft: '10px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('Task Type')}</Typography>
-                        <div className={classes.cardContent}>
-                          <FlagIcon fontSize='large' color="disabled" />
-                          <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
-                            {/* {t('Lorem Ipsum')} */}
-                          {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
-                              <>
-                                <div className="clearfix" />
-                                {value.task_type}
-                              </>
-                          ))}
-                          </Typography>
-                        </div>
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6} className={classes.cardContent} style={{ marginBottom: '15px' }}>
-                      <div style={{ marginLeft: '10px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('Start Date')}</Typography>
-                        <Typography align="left" variant="subtitle1">
-                          {t('21 June 2021')}
-                        </Typography>
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6} className={classes.cardContent} style={{ marginBottom: '15px' }}>
-                      <div style={{ marginLeft: '10px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('Tasks')}</Typography>
-                        <Typography align="left" variant="subtitle1">
-                          {t('Lorem Ipsum')}
-                        </Typography>
-                      </div>
-                    </Grid>
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <Grid className={classes.cardContent} style={{ marginBottom: '20px' }}>
-                      <div style={{ marginLeft: '18px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('Dependency')}</Typography>
-                        <Typography align="left" variant="subtitle1">{t('Lorem Ipsum Dolor Sit Amet')}</Typography>
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6} style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '15px',
-                    }}>
-                      <div style={{ marginLeft: '18px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('End Date')}</Typography>
-                        <Typography align="left" variant="subtitle1">{t('11 June 2021')}</Typography>
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={12} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                      <div style={{ marginLeft: '18px' }}>
-                        <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
-                        <div className={classes.cardContent}>
-                          <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                          <div style={{ marginLeft: '10px' }}>
-                            <Typography variant="subtitle1">
-                              {t('Lorem Ipsum')}
-                            </Typography>
-                            {t('Lorem Ipsum')}
-                          </div>
-                        </div>
-                      </div>
-                    </Grid>
-                  </Grid>
-
-                </Grid>
-                <Grid container={true}>
-                  <Grid item={true} xs={12} style={{ marginBottom: '10px' }}>
-                    <Typography
-                      color="textSecondary"
-                      gutterBottom={true}
-                      style={{ float: 'left', marginTop: 20 }}
-                    >
-                      {t('Description')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                      <Tooltip
-                        title='Description'
-                      >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <div className={classes.scrollBg}>
-                      <div className={classes.scrollDiv}>
-                        <div className={classes.scrollObj}>
-                          {relatedTasksEdges?.length > 0 && relatedTasksEdges.map((value, key) => (
-                            <>
-                              <div className="clearfix" />
-                              {value.description}
-                            </>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </Grid>
-                  <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
-                    <CyioCoreobjectExternalReferences
-                      cyioCoreObjectId={remediationId}
-                    />
-                  </Grid>
-                  <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
-                    <CyioCoreObjectOrCyioCoreRelationshipNotes
-                      cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
-                      marginTop='20px'
-                    // data={props}
-                    // marginTop={marginTop}
-                    />
-                  </Grid>
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-            <div style={{ marginTop: '30px' }}>
-              <RelatedTaskPopover
-                handleRemove={this.handleOpenDialog.bind(this)}
-                remediationId={remediationId}
-              />
-            </div>
-          </div>
+          {relatedTasksEdges.map((relatedTaskData, i) => (
+            <RelatedTaskLine
+              remediationId={remediationId}
+              key={relatedTaskData.id}
+              data={relatedTaskData}
+            />
           ))}
         </Paper>
         <Dialog
@@ -593,7 +399,7 @@ const RelatedTasksLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.riskResponse.external_references;
+      return props.data && props.data.riskResponse.tasks;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

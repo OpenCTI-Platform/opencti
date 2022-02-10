@@ -85,6 +85,7 @@ class RiskDetailsComponent extends Component {
         vendor_dependency: value.node.vendor_dependency,
         impacted_control_id: value.node.impacted_control_id,
       })),
+      R.mergeAll,
     )(risk);
     const relatedObservationsEdges = R.pipe(
       R.pathOr([], ['related_observations', 'edges']),
@@ -94,6 +95,7 @@ class RiskDetailsComponent extends Component {
       })),
     )(risk);
     const riskDetectionSource = R.pathOr([], ['related_risks', 'edges', 0, 'node', 'characterizations', 0, 'origins', 0, 'origin_actors', 0, 'actor'], risk);
+    console.log('relatedRisksEdgesDetails', risk);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -121,12 +123,7 @@ class RiskDetailsComponent extends Component {
               </div>
               <div className="clearfix" />
               {/* {risk.name && t(risk.name)} */}
-              {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                <>
-                  <div className="clearfix" />
-                  {value.name}
-                </>
-              ))}
+              {relatedRisksEdges.name && t(relatedRisksEdges.name)}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -177,7 +174,7 @@ class RiskDetailsComponent extends Component {
           </Grid>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
-            <div>
+              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -200,12 +197,7 @@ class RiskDetailsComponent extends Component {
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
                       {/* {risk.description && t(risk.description)} */}
-                      {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                        <>
-                          <div className="clearfix" />
-                          {value.description}
-                        </>
-                      ))}
+                      {relatedRisksEdges.description && t(relatedRisksEdges.description)}
                     </div>
                   </div>
                 </div>
@@ -237,12 +229,7 @@ class RiskDetailsComponent extends Component {
                   <div className={classes.scrollBg}>
                     <div className={classes.scrollDiv}>
                       <div className={classes.scrollObj}>
-                        {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                          <>
-                            <div className="clearfix" />
-                            {value.statement}
-                          </>
-                        ))}
+                        {relatedRisksEdges.statement && t(relatedRisksEdges.statement)}
                       </div>
                     </div>
                   </div>
@@ -272,18 +259,13 @@ class RiskDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {/* {risk.risk_status && t(risk.risk_status)} */}
-                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                  <>
-                    <div className="clearfix" />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      style={{ cursor: 'default', marginBottom: '5px' }}
-                      key={key}>
-                      {value.risk_status}
-                    </Button>
-                  </>
-                ))}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default', marginBottom: '5px' }}
+                >
+                  {relatedRisksEdges.risk_status && t(relatedRisksEdges.risk_status)}
+                </Button>
               </div>
               <div>
                 <Typography
@@ -325,18 +307,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                  <>
-                    <div className="clearfix" />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      style={{ cursor: 'default', marginBottom: '5px' }}
-                      key={key}>
-                      {value.false_positive}
-                    </Button>
-                  </>
-                ))}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default', marginBottom: '5px' }}
+                >
+                  {relatedRisksEdges.false_positive && t(relatedRisksEdges.false_positive)}
+                </Button>
               </div>
               <div>
                 <Typography
@@ -357,18 +334,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                  <>
-                    <div className="clearfix" />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      style={{ cursor: 'default', marginBottom: '5px' }}
-                      key={key}>
-                      {value.risk_adjusted}
-                    </Button>
-                  </>
-                ))}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default', marginBottom: '5px' }}
+                >
+                  {relatedRisksEdges.risk_adjusted && t(relatedRisksEdges.risk_adjusted)}
+                </Button>
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -392,12 +364,7 @@ class RiskDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {/* {risk.deadline && fd(risk.deadline)} */}
-                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                  <>
-                    <div className="clearfix" />
-                    {fd(value.deadline)}
-                  </>
-                ))}
+                {relatedRisksEdges.deadline && t(relatedRisksEdges.deadline)}
               </div>
               <div>
                 <Typography
@@ -418,12 +385,6 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                  <>
-                    <div className="clearfix" />
-                    {fd(value.impacted_control_id)}
-                  </>
-                ))}
               </div>
               <div>
                 <Typography
@@ -444,18 +405,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                  <>
-                    <div className="clearfix" />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      style={{ cursor: 'default', marginBottom: '5px' }}
-                      key={key}>
-                      {value.risk_adjusted}
-                    </Button>
-                  </>
-                ))}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default', marginBottom: '5px' }}
+                >
+                  {/* {relatedRisksEdges.deadline && t(relatedRisksEdges.deadline)} */}
+                </Button>
               </div>
               <div>
                 <Typography
@@ -476,18 +432,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {relatedRisksEdges?.length > 0 && relatedRisksEdges.map((value, key) => (
-                  <>
-                    <div className="clearfix" />
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      style={{ cursor: 'default', marginBottom: '5px' }}
-                      key={key}>
-                      {value.vendor_dependency}
-                    </Button>
-                  </>
-                ))}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  style={{ cursor: 'default', marginBottom: '5px' }}
+                >
+                  {relatedRisksEdges.vendor_dependency && t(relatedRisksEdges.vendor_dependency)}
+                </Button>
               </div>
             </Grid>
           </Grid>

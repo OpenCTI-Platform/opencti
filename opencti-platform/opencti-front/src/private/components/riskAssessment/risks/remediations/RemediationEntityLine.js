@@ -71,8 +71,11 @@ class RemediationEntityLineComponent extends Component {
       displayRelation,
       entityId,
     } = this.props;
-    const origins = R.pathOr([], ['origins'], node);
-    console.log('remediationEntityLineData', node);
+    const remediationTiming = R.pipe(
+      R.pathOr([], ['tasks', 'edges']),
+      R.mergeAll,
+    )(node);
+    console.log('remediationEntityLineData', remediationTiming);
     let restricted = false;
     let targetEntity = null;
     if (node.from && node.from.id === entityId) {
@@ -144,12 +147,14 @@ class RemediationEntityLineComponent extends Component {
                 <Typography align="left">
                   {/* {node.tasks.edges[0].node.timing.start_date
                   && fldt(node.tasks.edges[0].node.timing.start_date)} */}
-                  {node.created && fldt(node.created)}
+                  {remediationTiming?.node?.timing?.start_date
+                  && fldt(remediationTiming?.node?.timing?.start_date)}
                 </Typography>
               </div>
               <div className={classes.bodyItem}>
                 <Typography align="left">
-                  {node.modified && fldt(node.modified)}
+                  {remediationTiming?.node?.timing?.end_date
+                  && fldt(remediationTiming?.node?.timing?.end_date)}
                   {/* {node.tasks.edges[0].node.timing.end_date
                   && fldt(node.tasks.edges[0].node.timing.end_date)} */}
                 </Typography>
@@ -197,7 +202,7 @@ RemediationEntityLineComponent.propTypes = {
 const RemediationEntityLineFragment = createFragmentContainer(
   RemediationEntityLineComponent,
   {
-    risk: graphql`
+    node: graphql`
       fragment RemediationEntityLine_node on Risk {
         id
         created

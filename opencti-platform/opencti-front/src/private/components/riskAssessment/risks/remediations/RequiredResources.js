@@ -46,9 +46,7 @@ class RequiredResources extends Component {
   render() {
     const { t, classes, remediationId } = this.props;
     return (
-      // <QueryRenderer
-      <QR
-        environment={QueryRendererDarkLight}
+      <QueryRenderer
         query={requiredResourcesLinesQuery}
         variables={{ id: remediationId, count: 200 }}
         render={({ props }) => {

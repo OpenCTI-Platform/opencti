@@ -198,14 +198,6 @@ class RemediationGeneralOverviewComponent extends Component {
             <div className={classes.scrollBg}>
               <div className={classes.scrollDiv}>
                 <div className={classes.scrollObj}>
-                  {/* {device.locations && device.locations.map((location, key) => (
-                    <div key={key}>
-                      {`${location.street_address && t(location.street_address)}, `}
-                      {`${location.city && t(location.city)}, `}
-  {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
-                    </div>
-                  ))} */}
-                  {/* {t('Description')} */}
                   {remediation.description && t(remediation.description)}
                 </div>
               </div>

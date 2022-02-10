@@ -69,9 +69,17 @@ class RiskOverviewComponent extends Component {
         priority: value.node.priority,
       })),
     )(risk);
-    const relatedRiskData = R.pathOr([], ['related_risks', 'edges', 0, 'node'], risk);
-    const riskCharacterization = R.pathOr([], ['characterizations', 0], relatedRiskData);
+    const relatedRiskData = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((relatedRisk) => ({
+        characterization: relatedRisk.node.characterizations,
+      })),
+      R.mergeAll,
+      R.path(['characterization']),
+      R.mergeAll,
+    )(risk);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+    console.log('riskOverviewData', relatedRiskData);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -294,7 +302,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {riskCharacterization.risk && t(riskCharacterization.risk)}
+                {relatedRiskData.risk && t(relatedRiskData.risk)}
               </div>
               <div style={{ marginTop: '25px' }}>
                 <Typography
@@ -315,7 +323,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {riskCharacterization.impact && t(riskCharacterization.impact)}
+                {relatedRiskData.impact && t(relatedRiskData.impact)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -384,7 +392,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {riskCharacterization.likelihood && t(riskCharacterization.likelihood)}
+                {relatedRiskData.likelihood && t(relatedRiskData.likelihood)}
               </div>
             </Grid>
           </Grid>

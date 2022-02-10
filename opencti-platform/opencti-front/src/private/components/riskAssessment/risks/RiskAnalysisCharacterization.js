@@ -4,6 +4,8 @@ import {
   compose,
   pathOr,
   map,
+  path,
+  mergeAll,
   pipe,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
@@ -146,37 +148,45 @@ class RiskAnalysisCharacterizationComponent extends Component {
               </Typography>
             </Grid>
           </Grid>
-          {riskAnalysisCharacterization.map((characterizationData) => (
-            <Grid key={characterizationData.id} container={true} style={{ borderBottom: '1px solid grey' }}>
-            <Grid item={true} xs={4}>
-              <Typography
-                variant="h2"
-                gutterBottom={true}
-                className={ classes.tableText }
-              >
-                {t('Lorem Ipsum')}
-              </Typography>
-            </Grid>
-            <Grid item={true} xs={4}>
-              <Typography
-                variant="h2"
-                gutterBottom={true}
-                className={ classes.tableText }
-              >
-                {t('Lorem Ipsum')}
-              </Typography>
-            </Grid>
-            <Grid item={true} xs={4}>
-              <Typography
-                variant="h2"
-                gutterBottom={true}
-                className={ classes.tableText }
-              >
-                {t('Lorem Ipsum')}
-              </Typography>
-            </Grid>
-          </Grid>
-          ))}
+          {riskAnalysisCharacterization.map((characterizationData) => {
+            const detectionSource = pipe(
+              pathOr([], ['origins']),
+              mergeAll,
+              path(['origin_actors']),
+              mergeAll,
+            )(characterizationData);
+            return (
+              <Grid key={characterizationData.id} container={true} style={{ borderBottom: '1px solid grey' }}>
+                <Grid item={true} xs={4}>
+                  <Typography
+                    variant="h2"
+                    gutterBottom={true}
+                    className={ classes.tableText }
+                  >
+                    {t('Lorem Ipsum')}
+                  </Typography>
+                </Grid>
+                <Grid item={true} xs={4}>
+                  <Typography
+                    variant="h2"
+                    gutterBottom={true}
+                    className={ classes.tableText }
+                  >
+                    {t('Lorem Ipsum')}
+                  </Typography>
+                </Grid>
+                <Grid item={true} xs={4}>
+                  <Typography
+                    variant="h2"
+                    gutterBottom={true}
+                    className={ classes.tableText }
+                  >
+                    {detectionSource.actor.name && t(detectionSource.actor.name)}
+                  </Typography>
+                </Grid>
+              </Grid>
+            );
+          })}
         </Paper>
       </div>
     );
@@ -199,93 +209,82 @@ const RiskAnalysisCharacterization = createFragmentContainer(
         created
         modified
         characterizations {
-          ... on VulnerabilityCharacterization {
+          __typename
+          id
+          origins {
+            __typename
             id
-            origins{
-              id
-              origin_actors {
-                actor_type
-                actor {
-                  ... on Component {
-                    id
-                    component_type
-                    name          # Detection Source
-                  }
-                  ... on OscalParty {
+            origin_actors {
+              __typename
+              actor_type
+              actor {
+                ... on Component {
+                  __typename
+                  id
+                  component_type
+                  name # Detection Source
+                }
+                ... on OscalParty {
+                  __typename
                   id
                   party_type
-                  name            # Detection Source
-                  }
+                  name # Detection Source
                 }
               }
-            }
-            vulnerability_id
-            exploitability
-            exploitability
-            severity
-            cvss3_vector_string
-            cvss3_base_score
-            cvss3_temporal_score
-            cvss3_environmental_score
-            cvss2_vector_string
-            cvss2_base_score
-            cvss2_temporal_score
-            cvss2_environmental_score
-            score_rationale
-            facets {
-              id
-              risk_state
-              name            # Characterization Name
-              value           # Characterization Value
             }
           }
-          ... on RiskCharacterization {
+          facets {
+            __typename
             id
-            origins{
-              id
-              origin_actors {
-                actor_type
-                actor {
-                  ... on Component {
-                    id
-                    component_type
-                    name          # Detection Source
-                  }
-                  ... on OscalParty {
-                  id
-                  party_type
-                  name            # Detection Source
-                  }
-                }
-              }
-            }
-            risk
-            likelihood
-            impact
-            facets {
-              id
-              risk_state
-              name            # Characterization Name
-              value           # Characterization Value
-            }
+            risk_state
+            # ... on CustomFacet {
+            #   name 
+            #   value
+            # }
+            # ... on RiskFacet {
+            #   risk_name: name   # characterization name
+            #   value             # characterization value
+            # }
+            # ... on Cvss2Facet {
+            #   cvss2_name: name  # characterization name
+            #   value             # characterization value
+            # }
+            # ... on Cvss3Facet {
+            #   cvss3_name: name  # characterization name
+            #   value             # characterization value
+            # }
+            # ... on VulnerabilityFacet {
+            #   vuln_name: name   # characterization name
+            #   value             # characterization value
+            # }
           }
         }
-        # external_references {
-          # id
-          # created
-          # modified
-          # external_id     # external id
-          # source_name     # Title
-          # description     # description
-          # url             # URL
-          # media_type      # Media Type
+        # links {
+        #   __typename
+        #   id
+        #   created
+        #   modified
+        #   external_id # external id
+        #   source_name # Title
+        #   description # description
+        #   url # URL
+        #   media_type # Media Type
         # }
-        # notes {
+        # labels {
+        #   __typename
+        #   id
+        #   name
+        #   description
+        #   color
+        # }
+        # remarks {
+        #   __typename
         #   id
         #   abstract
         #   content
         #   authors
         #   labels {
+        #     __typename
         #     id
         #     name
         #     color
