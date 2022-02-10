@@ -95,10 +95,9 @@ import assetCommonResolvers from '../cyio/schema/assets/asset-common/resolvers.j
 import computingDeviceResolvers from '../cyio/schema/assets/computing-device/resolvers.js';
 import networkResolvers from '../cyio/schema/assets/network/resolvers.js';
 import softwareResolvers from '../cyio/schema/assets/software/resolvers.js';
-import cyioExternalReferenceResolvers from '../schema/global/resolvers/externalReference.js';
-import cyioLabelResolvers from '../schema/global/resolvers/label.js';
-import cyioNoteResolvers from '../schema/global/resolvers/note.js';
-
+import cyioExternalReferenceResolvers from '../cyio/schema/global/resolvers/externalReference.js';
+import cyioLabelResolvers from '../cyio/schema/global/resolvers/label.js';
+import cyioNoteResolvers from '../cyio/schema/global/resolvers/note.js';
 // Cyio Extensions to support merged graphQL schema
 import { loadSchemaSync } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader' ;
