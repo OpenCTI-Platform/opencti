@@ -1,0 +1,30 @@
+query Risks {
+  poamItems {
+    edges {
+      node {
+        id
+        poam_id
+        name
+        occurrences
+        related_risks {
+          edges {
+            node {
+              risk_status
+              deadline
+              characterizations {
+                ... on RiskCharacterization {
+                  id
+                  risk
+                }
+              }
+              remediations {
+                response_type
+                lifecycle
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

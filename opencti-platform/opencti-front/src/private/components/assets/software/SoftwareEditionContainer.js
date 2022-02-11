@@ -420,7 +420,12 @@ const SoftwareEditionFragment = createFragmentContainer(
         version
         vendor_name
         asset_tag
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         asset_type
         serial_number
         release_date

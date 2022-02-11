@@ -7,7 +7,12 @@ query POAMRiskList {
           id
           created
           modified
-          labels
+          labels {
+            id
+            name
+            color
+            description
+          }
           deadline
           risk_status
           characterizations {

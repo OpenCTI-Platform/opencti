@@ -1,0 +1,18 @@
+mutation SoftwareCreationMutation {
+  createSoftwareAsset(
+    input: {
+      name: "DarkLight Cyio"
+      asset_id: "a1abd449-1aab-4694-9a1b-15ad21cc89bb"
+      asset_tag: "darklight-2021-a1abd449-1aab-4694-9a1b-15ad21cc89bb"
+      asset_type: software
+      vendor_name: "DarkLight"
+      version: "0.1"
+      implementation_point: external
+      operational_status: under_development
+      release_date: "2021-12-17T05:00:00.059Z"
+      function: "Provides customer single-point of risk management."
+    }
+  ) {
+    id
+  }
+}

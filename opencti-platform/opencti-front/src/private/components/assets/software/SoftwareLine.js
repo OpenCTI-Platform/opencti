@@ -165,7 +165,12 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
     fragment SoftwareLine_node on SoftwareAsset {
       id
       name
-      labels
+      labels {
+        id
+        name
+        color
+        description
+      }
       asset_type
       asset_id
       vendor_name

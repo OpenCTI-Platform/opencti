@@ -1,0 +1,42 @@
+query NetworkCardsPaginationQuery {
+  ...NetworkCards_data
+}
+fragment NetworkCards_data on Query {
+  networkAssetList(
+    search: ""
+    first: 25
+    # after: $cursor
+    orderedBy: name
+    orderMode: asc
+    filters: []
+  ) {
+    edges {
+      node {
+        id
+        # name
+        description
+        ...NetworkCard_node
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+      globalCount
+    }
+  }
+}
+fragment NetworkCard_node on NetworkAsset {
+  id
+  network_name
+  asset_type
+  asset_id
+  network_id
+  labels {
+    name
+    color
+    description
+  }
+  # ipv4_address{
+  #   ip_address_value
+  # }
+}

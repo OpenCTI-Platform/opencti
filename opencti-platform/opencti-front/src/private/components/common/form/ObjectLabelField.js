@@ -90,7 +90,7 @@ class ObjectLabelField extends Component {
           noOptionsText={t('No available options')}
           options={this.state.labels}
           onInputChange={this.searchLabels.bind(this)}
-          openCreate={this.handleOpenLabelCreation.bind(this)}
+          // openCreate={this.handleOpenLabelCreation.bind(this)}
           renderOption={(option) => (
             <React.Fragment>
               <div className={classes.icon} style={{ color: option.color }}>
@@ -101,7 +101,7 @@ class ObjectLabelField extends Component {
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />
-        <LabelCreation
+        {/* <LabelCreation
           contextual={true}
           inputValue={this.state.labelInput}
           open={this.state.labelCreation}
@@ -118,7 +118,7 @@ class ObjectLabelField extends Component {
               ),
             );
           }}
-        />
+        /> */}
       </div>
     );
   }

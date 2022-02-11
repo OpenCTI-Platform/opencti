@@ -11,11 +11,13 @@ import { Add, Close } from '@material-ui/icons';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
+import { commitMutation as CM } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
@@ -77,11 +79,10 @@ const labelMutation = graphql`
   }
 `;
 
-const labelContextualMutation = graphql`
-  mutation LabelCreationContextualMutation($input: LabelAddInput!) {
-    labelAdd(input: $input) {
+export const labelContextualMutation = graphql`
+  mutation LabelCreationContextualMutation($input: CyioLabelAddInput!) {
+    createCyioLabel(input: $input) {
       id
-      value
     }
   }
 `;
@@ -116,23 +117,10 @@ class LabelCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    commitMutation({
-      mutation: this.props.contextual ? labelContextualMutation : labelMutation,
+    CM(environmentDarkLight, {
+      mutation: labelContextualMutation,
       variables: {
         input: values,
-      },
-      updater: (store) => {
-        if (!this.props.contextual) {
-          const payload = store.getRootField('labelAdd');
-          const newEdge = payload.setLinkedRecord(payload, 'node');
-          const container = store.getRoot();
-          sharedUpdater(
-            store,
-            container.getDataID(),
-            this.props.paginationOptions,
-            newEdge,
-          );
-        }
       },
       setSubmitting,
       onCompleted: (response) => {
@@ -145,7 +133,38 @@ class LabelCreation extends Component {
           this.handleClose();
         }
       },
+      onError: (err) => console.log('LabelCreationMutationError', err),
     });
+    // commitMutation({
+    //   mutation: this.props.contextual ? labelContextualMutation : labelMutation,
+    //   variables: {
+    //     input: values,
+    //   },
+    //   updater: (store) => {
+    //     if (!this.props.contextual) {
+    //       const payload = store.getRootField('labelAdd');
+    //       const newEdge = payload.setLinkedRecord(payload, 'node');
+    //       const container = store.getRoot();
+    //       sharedUpdater(
+    //         store,
+    //         container.getDataID(),
+    //         this.props.paginationOptions,
+    //         newEdge,
+    //       );
+    //     }
+    //   },
+    //   setSubmitting,
+    //   onCompleted: (response) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     if (this.props.contextual) {
+    //       this.props.creationCallback(response);
+    //       this.props.handleClose();
+    //     } else {
+    //       this.handleClose();
+    //     }
+    //   },
+    // });
   }
 
   onResetClassic() {
@@ -264,8 +283,15 @@ class LabelCreation extends Component {
                 <DialogContent classes={{ root: classes.dialog }}>
                   <Field
                     component={TextField}
-                    name="value"
-                    label={t('Value')}
+                    name="name"
+                    label={t('Label')}
+                    fullWidth={true}
+                    style={{ marginBottom: 10 }}
+                  />
+                  <Field
+                    component={TextField}
+                    name="description"
+                    label={t('Description')}
                     fullWidth={true}
                   />
                   <Field
@@ -273,12 +299,12 @@ class LabelCreation extends Component {
                     name="color"
                     label={t('Color')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    style={{ marginTop: 10 }}
                   />
                 </DialogContent>
-                <DialogActions>
+                <DialogActions style={{ margin: '0 25px 10px 0' }}>
                   <Button
-                    variant="contained"
+                    variant="outlined"
                     onClick={handleReset}
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
@@ -292,7 +318,7 @@ class LabelCreation extends Component {
                     disabled={isSubmitting}
                     classes={{ root: classes.button }}
                   >
-                    {t('Create')}
+                    {t('Add')}
                   </Button>
                 </DialogActions>
               </Dialog>

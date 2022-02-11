@@ -2,8 +2,6 @@
   extend type Query {
     # Characterizations
     characterization(id: ID!): Characterization
-    riskCharacterization(id: ID!): RiskCharacterization
-    vulnerabilityCharacterization(id: ID!): VulnerabilityCharacterization
     # Facet
     facet(id: ID!): Facet
     # Log Entry
@@ -85,13 +83,9 @@
     deleteActor(id: ID!): String!
     editActor(id: ID!, input: [EditInput]!, commitMessage: String): Actor
     # Facet
-    createFacet(input: FacetAddInput): Facet
+    createFacet(input: CustomFacetAddInput): Facet
     deleteFacet(id: ID!): String!
     editFacet(id: ID!, input: [EditInput]!, commitMessage: String): Facet
-    # Generic Characterization
-    # createGenericCharacterization(input: GenericCharacterizationAddInput): GenericCharacterization
-    deleteGenericCharacterization(id: ID!): String!
-    editGenericCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): GenericCharacterization
     # Log Entry
     createLogEntry(input: LogEntryAddInput): LogEntry
     deleteLogEntry(id: ID!): String!
@@ -104,10 +98,6 @@
     createRisk(input: RiskAddInput): Risk
     deleteRisk(id: ID!): String!
     editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk
-    # Risk Characterization
-    createRiskCharacterization(input: RiskCharacterizationAddInput): RiskCharacterization
-    deleteRiskCharacterization(id: ID!): String!
-    editRiskCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): RiskCharacterization
     # Risk Response
     createRiskResponse(input: RiskResponseAddInput): RiskResponse
     deleteRiskResponse(id: ID!): String!
@@ -116,16 +106,12 @@
     createSubject(input: SubjectAddInput): Subject
     deleteSubject(id: ID!): String!
     editSubject(id: ID!, input: [EditInput]!, commitMessage: String): Subject
-    # Vulnerability Characterization
-    createVulnerabilityCharacterization(input: VulnerabilityCharacterizationAddInput): VulnerabilityCharacterization
-    deleteVulnerabilityCharacterization(id: ID!): String!
-    editVulnerabilityCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): VulnerabilityCharacterization
   }
 
 ## Activity
 #
   "Defines identifying information about an assessment or related process that can be performed. In the assessment plan, this is an intended activity which may be associated with an assessment task. In the assessment results, this an activity that was actually performed as part of an assessment."
-  type Activity implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type Activity implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -141,12 +127,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -183,7 +169,7 @@
     "For a party, this can optionally be used to specify the role the actor was performing."
     role: OscalRole
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
   }
 
   input ActorAddInput {
@@ -192,7 +178,7 @@
     "For a party, this can optionally be used to specify the role the actor was performing."
     role: OscalRoleAddInput
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReferenceAddInput]
+    links: [CyioExternalReferenceAddInput]
   }
 
   # Pagination Types
@@ -231,9 +217,9 @@
     "Identifies a human-readable description of the collection of subjects being included in this assessment."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Indicates to include all subjects."
     include_all: Boolean!
     "Identifies a set of assessment subjects to include"
@@ -249,19 +235,19 @@
     "Identifies a references to an activity defined in the list of activities."
     activity: Activity
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies the person or organization responsible for performing a specific role related to the task."
     responsible_roles: [OscalResponsibleParty]
     "Identifies an include/exclude pair starts with processing the include, then removing matching entries in the exclude."
     subject: [AssessmentSubject]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
   }
 
 ## Characterization
 #
   "Defines identifying information about a characterization of risk."
-  interface Characterization {
+  type Characterization {
     "Uniquely identifies this object."
     id: ID!
     "Indicates the date and time at which the object was originally created."
@@ -270,9 +256,9 @@
     modified: Timestamp
     # Characterization
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies a reference to tool that performed the detection."
     origins: [Origin]
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
@@ -287,7 +273,7 @@
 
   type CharacterizationEdge {
     cursor: String!
-    node: CharacterizationType!
+    node: Characterization!
   }
 
   # Filtering Types
@@ -334,15 +320,29 @@
     "Identifies a human-readable description of the evidence."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
   }
 
 ## Facet
 #
-  "Defines identifying information about a facet."
-  type Facet {
+  "Defines the basic interface of a facet."
+  interface Facet {
+    "Uniquely identifies this object."
+    id: ID!
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+    source_system: URL!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+  }
+
+  "Defines identifying information about a custom facet."
+  type CustomFacet implements Facet {
     "Uniquely identifies this object."
     id: ID!
     "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
@@ -354,12 +354,12 @@
     "Indicates the value of the facet."
     value: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
   }
 
-  input FacetAddInput {
+  input CustomFacetAddInput {
     "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
     risk_state: RiskState!
     "Identifies the name of the risk metric within the specified system."
@@ -367,7 +367,117 @@
     "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
     source_system: URL!
     "Indicates the value of the facet."
+    value: String!
+  }
+
+  "Defines an OSCAL Risk Facet"
+  type RiskFacet implements Facet {
+    "Uniquely identifies this object."
+    id: ID!
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Identifies the name of the risk metric within the specified system."
+    name: RiskFacetName!
+    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+    source_system: URL!
+    "Indicates the value of the facet."
+    value: String!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+  }
+
+  input RiskFacetAddInput {
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Identifies the name of the risk metric within the specified system."
+    name: RiskFacetName!
+    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+    source_system: URL!
+    "Indicates the value of the facet."
     value: String!    
+  }
+
+  "Defines a Vulnerability Facet"
+  type VulnerabilityFacet implements Facet {
+    "Uniquely identifies this object."
+    id: ID!
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Identifies the name of the risk metric within the specified system."
+    name: VulnerabilityFacetName!
+    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+    source_system: URL!
+    "Indicates the value of the facet."
+    value: String!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+  }
+
+  input VulnerabilityFacetAddInput {
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Identifies the name of the risk metric within the specified system."
+    name: VulnerabilityFacetName!
+    "Indicates the value of the facet."
+    value: String!    
+  }
+
+  "Defines a CVSS 2.0 Facet"
+  type Cvss2Facet implements Facet {
+    "Uniquely identifies this object."
+    id: ID!
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Identifies the name of the risk metric within the specified system."
+    name: Cvss2FacetName!
+    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+    source_system: URL!
+    "Indicates the value of the facet."
+    value: String!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+  }
+
+  input Cvss2FacetAddInput {
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Identifies the name of the risk metric within the specified system."
+    name: Cvss2FacetName!
+    "Indicates the value of the facet."
+    value: String!
+  }
+
+  "Defines a CVSS 3.* Facet"
+  type Cvss3Facet implements Facet {
+    "Uniquely identifies this object."
+    id: ID!
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Identifies the name of the risk metric within the specified system."
+    name: Cvss3FacetName!
+    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+    source_system: URL!
+    "Indicates the value of the facet."
+    value: String!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+  }
+
+  input Cvss3FacetAddInput {
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Identifies the name of the risk metric within the specified system."
+    name: Cvss3FacetName!
+    "Indicates the value of the facet."
+    value: String!
   }
 
   # Filtering Types
@@ -403,7 +513,7 @@
     "Identifies a human-readable description of the assessor's conclusions regarding the degree to which an objective is satisfied."
     description: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies whether the objective is satisfied or not within a given system."
     objective_status_state: ObjectiveStatusState!
     "Identifies the reason the objective was given it's status."
@@ -413,37 +523,13 @@
     "Indicates the degree to which the given control was implemented."
     implementation_status: ImplementationStatus
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
   }
-
-## Generic Characterization
-#
-  "Defines identifying information about a Generic characterization of risk."
-  type GenericCharacterization implements Characterization {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
-    # Characterization
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
-    "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
-    "Identifies a reference to tool that performed the detection."
-    origins: [Origin]
-    "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
-    facets: [Facet]
-  }
-
-  # input GenericCharacterizationAddInput {
-  # }
 
 ## Log Entry
 #
   "Defines identifying information about a risk log entry of all risk-related tasks taken."
-  type LogEntry implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type LogEntry implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -459,12 +545,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -550,7 +636,7 @@
 ## Mitigating Factor
 #
   "Defines identifying information about a mitigation factor."
-  type MitigatingFactor implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type MitigatingFactor implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -566,12 +652,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -594,7 +680,7 @@
 ## Observation
 #
   "Defines identifying information about an observation."
-  type Observation implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type Observation implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -609,13 +695,13 @@
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
     # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -746,7 +832,7 @@
 ## Remediation Task
 #
   "Defines identifying information about a scheduled event or milestone, which may be associated with a series of assessment actions."
-  type RemediationTask implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type RemediationTask implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -762,12 +848,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -849,7 +935,7 @@
 ## RequiredAsset
 #
   "Defines identifying information about an asset required to achieve remediation."
-  type RequiredAsset implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type RequiredAsset implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -865,12 +951,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -932,7 +1018,7 @@
   }
 
   "Defines identifying information about a Risk"
-  type Risk implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type Risk implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -947,13 +1033,13 @@
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
     # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1064,76 +1150,10 @@
     deadline
   }
 
-## Risk Characterization
-#
-  "Defines identifying information about a general characterization of the risk."
-  type RiskCharacterization implements Characterization {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
-    "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
-    "Identifies a reference to tool that performed the detection."
-    origins: [Origin]
-    "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
-    facets: [Facet]
-    # RiskCharacterization based on the OSCAL Facet
-    "Indicates the state of the risk."
-    risk_state: RiskState!
-    "Identifies level of the risk."
-    risk: RiskLevel!
-    "Identifies a rating for the likelihood the risk could successfully occur."
-    likelihood: RiskLikelihood!
-    "Identifies a rating that if the risk were be successfully exploit, the level of impact it would have."
-    impact: RiskImpact!
-  }
-
-  input RiskCharacterizationAddInput {
-    "Identifies level of the risk."
-    risk: RiskLevel!
-    "Identifies a rating for the likelihood the risk could successfully occur."
-    likelihood: RiskLikelihood!
-    "Identifies a rating that if the risk were be successfully exploit, the level of impact it would have."
-    impact: RiskImpact!
-    # RiskCharacterization
-    "Indicates the state of the characterization."
-    risk_state: RiskState
-  }
-
-  # Filtering Types
-  input RiskCharacterizationsFiltering {
-    key: RiskCharacterizationsFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
-
-  enum RiskCharacterizationsOrdering {
-    created
-    modified
-    labels
-    name
-    risk_status
-    deadline
-  }
-
-  enum RiskCharacterizationsFilter {
-    created
-    modified
-    labels
-    risk_status
-    deadline
-  }
-
 ## Risk Response
 #
   "Defines identifying information about a response to a risk."
-  type RiskResponse implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type RiskResponse implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -1149,12 +1169,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1241,9 +1261,9 @@
     "Identifies the name for the referenced subject."
     name: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
   }
 
   input SubjectAddInput {
@@ -1252,9 +1272,9 @@
     "Identifies the name for the referenced subject."
     name: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReferenceAddInput]
+    links: [CyioExternalReferenceAddInput]
     "Identifies one or more references to additional commentary on the Model."
-    notes: [CyioNoteAddInput]
+    remarks: [CyioNoteAddInput]
   }
 
   # Filtering Types
@@ -1287,90 +1307,9 @@
     threat_identifier: URL
   }
 
-## Vulnerability Characterization
-#
-  "Defines identifying information about a characterization of a vulnerability."
-  type VulnerabilityCharacterization implements Characterization {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
-    "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
-    "Identifies a reference to tool that performed the detection."
-    origins: [Origin]
-    "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
-    facets: [Facet]
-    #VulnerabilityCharacterization
-    "Indicates the state of the characterization."
-    risk_state: RiskState
-    "Indicates the identifier assigned to the vulnerability"
-    vulnerability_id: String!
-    "Identifies whether there is a known exploit available."
-    exploit_available: Boolean
-    "Identifies the maturity of the exploit."
-    exploitability: ExploitMaturity
-    "Identifies a rating for the severity of the risk."
-    severity: VulnerabilitySeverity
-    "Indicates a text representation of a set of CVSS v2.0 metrics."
-    cvss2_vector_string: String
-    "Indicates the CVSS v2 Base Score"
-    cvss2_base_score: Float
-    "Indicates the CVSS v2 Temporal Score"
-    cvss2_temporal_score: Float
-    "Indicates the CVSS v2 Environmental Score"
-    cvss2_environmental_score: Float
-    "Indicates a text representation of a set of CVSS v3.* metrics."
-    cvss3_vector_string: String
-    "Indicates the CVSS v3.* Base Score"
-    cvss3_base_score: Float
-    "Indicates the CVSS v3.* Temporal Score"
-    cvss3_temporal_score: Float
-    "Indicates the CVSS v3.* Environmental Score"
-    cvss3_environmental_score: Float
-    "Indicates the rationale behind the score"
-    score_rationale: String
-  }
-
-  input VulnerabilityCharacterizationAddInput {
-    #VulnerabilityCharacterization
-    "Indicates the state of the characterization."
-    risk_state: RiskState
-    "Indicates the identifier assigned to the vulnerability"
-    vulnerability_id: String!
-    "Identifies whether there is a known exploit available."
-    exploit_available: Boolean
-    "Identifies the maturity of the exploit."
-    exploitability: ExploitMaturity
-    "Identifies a rating for the severity of the risk."
-    severity: VulnerabilitySeverity
-    "Indicates a text representation of a set of CVSS v2.0 metrics."
-    cvss2_vector_string: String
-    "Indicates the CVSS v2 Base Score"
-    cvss2_base_score: Float
-    "Indicates the CVSS v2 Temporal Score"
-    cvss2_temporal_score: Float
-    "Indicates the CVSS v2 Environmental Score"
-    cvss2_environmental_score: Float
-    "Indicates a text representation of a set of CVSS v3.* metrics."
-    cvss3_vector_string: String
-    "Indicates the CVSS v3.* Base Score"
-    cvss3_base_score: Float
-    "Indicates the CVSS v3.* Temporal Score"
-    cvss3_temporal_score: Float
-    "Indicates the CVSS v3.* Environmental Score"
-    cvss3_environmental_score: Float
-    "Indicates the rationale behind the score"
-    score_rationale: String
-  }
 
 ## Unions
 #
-  union CharacterizationType = GenericCharacterization | RiskCharacterization | VulnerabilityCharacterization
   union EventTiming = DateRangeTiming | OnDateTiming
   union PartyTypes = OscalPerson | OscalOrganization
   # union StatementOrObjects = ControlStatement | ControlObjective
@@ -1630,3 +1569,375 @@
     "Vulnerability is not of concern."
     very_low
   }
+
+
+"Defines the set of OSCAL/FedRAMP Facet names"
+enum RiskFacetName {
+  "Likelihood"
+  likelihood
+  "Impact rating"
+  impact
+  "General risk rating"
+  risk
+  "General severity rating"
+  severity
+}
+
+"Defines the set of NIST CVE Facet Names"
+enum VulnerabilityFacetName {
+  "CVE Identifier"
+  cve_id
+}
+
+"Defines the set of CVSS 2.0 Facet Names"
+enum Cvss2FacetName {
+  "Base: Access Vector (AV)"
+  access_vector
+  "Base: Access Complexity (AC)"
+  access_complexity
+  "Base: Authentication (Au)"
+  authentication
+  "Base: Confidentiality Impact (C)"
+  confidentiality_impact
+  "Base: Integrity Impact (I)"
+  integrity_impact
+  "Base: Availability Impact (A)"
+  availability_impact
+  "Temporal: Exploitability (E)"
+  exploitability
+  "Temporal: Remediation Level (RL)"
+  remediaton_level
+  "Temporal: Report Confidence (RC)"
+  report_confidence
+  "Environmental: Collateral Damage Potential (CDP)"
+  collateral_damage_potential
+  "Environmental: Target Distribution (TD)"
+  target_distribution
+  "Environmental: Confidentiality Requirement (CR)"
+  confidentiality_requirement
+  "Environmental: Integrity Requirement (IR)"
+  integrity_requirement
+  "Environmental: Availability Requirement (AR)"
+  availability_requirement
+}
+
+"Defines valid CVSS 2.0 Access Vector values"
+enum Cvss2AccessVector {
+  "Exploitable with local access"
+  local
+  "Exploitable with adjacent network access"
+  adjacent_network
+  "Exploitable remotely"
+  network
+}
+
+"Defines valid CVSS 2.0 Access Complexity values"
+enum Cvss2AccessComplexity {
+  "Specialized access conditions exist"
+  high
+  "Access conditions are somewhat specialized"
+  medium
+  "Specialized access conditions or extenuating circumstances do not exist"
+  low
+}
+
+"Defines valid CVSS 2.0 Access Authentication values"
+enum Cvss2Authentication {
+  "Exploiting the vulnerability requires that the attacker authenticate two or more times, even if the same credentials are used each time."
+  multiple
+  "The vulnerability requires an attacker to be logged into the system."
+  single
+  "Authentication is not required to exploit the vulnerability."
+  none
+}
+
+"Defines valid CVSS 2.0 Confidentiality impact values"
+enum Cvss2ConfidentialityImpact {
+  "There is no impact to confidentiality of to the system."
+  none
+  "There is considerable informational disclosure."
+  partial
+  "There is total information disclosure, resulting in all system files being revealed."
+  complete
+}
+
+"Defines valid CVSS 2.0 Integrity impact values"
+enum Cvss2IntegrityImpact {
+  "There is no impact to integrity of to the system."
+  none
+  "Modification of some system files or information is possible, but the attacker does not have control over what can be modified, or the scope of what the attacker can affect is limited."
+  partial
+  "There is a total compromise of system integrity."
+  complete
+}
+
+"Defines valid CVSS 2.0 Availability impact values"
+enum Cvss2IntegrityImpact {
+  "There is no impact to the availability of the system."
+  none
+  "There is reduced performance or interruptions in resource availability."
+  partial
+  "There is a total shutdown of the affected resource."
+  complete
+}
+
+"Defines valid CVSS 2.0 Exploitability values"
+enum Cvss2Exploitability {
+  "No exploit code is available, or an exploit is entirely theoretical."
+  unproven
+  "Proof-of-concept exploit code or an attack demonstration that is not practical for most systems is available."
+  proof_of_concept
+  "Functional exploit code is available."
+  functional
+  "Either the vulnerability is exploitable by functional mobile autonomous code, or no exploit is required (manual trigger) and details are widely available."
+  high
+  "Not defined"
+  not_defined
+}
+
+"Defines valid CVSS 2.0 Remediation Level values"
+enum Cvss2RemediationLevel {
+  "A complete vendor solution is available."
+  offical_fix
+  "There is an official but temporary fix available."
+  temporary_fix
+  "There is an unofficial, non-vendor solution available."
+  workaround
+  "There is either no solution available or it is impossible to apply."
+  unavailable
+  "Not defined"
+  not_defined
+}
+
+"Defines valid CVSS 2.0 Report Confidence values"
+enum Cvss2ReportConfidence {
+  "There is a single unconfirmed source or possibly multiple conflicting reports."
+  unconfirmed
+  "There are multiple non-official sources, possibly including independent security companies or research organizations."
+  uncorroborated
+  "The vulnerability has been acknowledged by the vendor or author of the affected technology."
+  confirmed
+  "Not defined"
+  not_defined
+}
+
+"Defines valid CVSS 2.0 Collateral Damage Potential values"
+enum Cvss2CollateralDamagePotential {
+  "There is no potential for loss of life, physical assets, productivity or revenue."
+  none
+  "A successful exploit of this vulnerability may result in slight physical or property damage."
+  low
+  "A successful exploit of this vulnerability may result in moderate physical or property damage."
+  low_medium
+  "A successful exploit of this vulnerability may result in significant physical or property damage or loss. "
+  medium_high
+  "A successful exploit of this vulnerability may result in catastrophic physical or property damage and loss."
+  high
+  "Not defined"
+  not_defined
+}
+
+"Defines valid CVSS 2.0 Target Distribution values"
+enum Cvss2TargetDistribution {
+  "No target systems exist, or targets are so highly specialized that they only exist in a laboratory setting."
+  none
+  "Targets exist inside the environment, but on a small scale. Between 1% - 25% of the total environment is at risk."
+  low
+  "Targets exist inside the environment, but on a medium scale. Between 26% - 75% of the total environment is at risk."
+  medium
+  "Targets exist inside the environment on a considerable scale. Between 76% - 100% of the total environment is considered at risk."
+  high
+  "Not defined"
+  not_defined
+}
+
+"Defines valid CVSS 2.0 Security Requirement values"
+enum Cvss2SecurityRequirements {
+  "No Loss of [confidentiality / integrity / availability] that is likely to adverse effect on the organization or individuals associated with the organization (e.g., employees, customers)."
+  none
+  "Loss of [confidentiality / integrity / availability] is likely to have only a limited adverse effect on the organization or individuals associated with the organization (e.g., employees, customers)."
+  low
+  "Loss of [confidentiality / integrity / availability] is likely to have a serious adverse effect on the organization or individuals associated with the organization (e.g., employees, customers)."
+  medium
+  "Loss of [confidentiality / integrity / availability] is likely to have a catastrophic adverse effect on the organization or individuals associated with the organization (e.g., employees, customers)."
+  high
+  "Not defined"
+  not_defined
+}
+
+"Defines the set of CVSS 3.* Facet Names"
+enum Cvss3FacetName {
+  "Base: Attack Vector (AV)"
+  attack_vector
+  "Base: Attack Complexity (AC)"
+  attack_complexity
+  "Base: Privileges Required (PR)"
+  privileges_required
+  "Base: User Interaction (UI))"
+  user_interaction
+  "Base: Scope (S)"
+  scope
+  "Base: Confidentiality Impact (C)"
+  confidentiality_impact
+  "Base: Integrity Impact (I)"
+  integrity_impact
+  "Base: Availability Impact (A)"
+  availability_impact
+  "Temporal: Exploit Code Maturity (E)"
+  exploit_code_maturity
+  "Temporal: Remediation Level (RL)"
+  remediaton_level
+  "Temporal: Report Confidence (RC)"
+  report_confidence
+  "Environmental: Confidentiality Requirement (CR)"
+  confidentiality_requirement
+  "Environmental: Integrity Requirement (IR)"
+  integrity_requirement
+  "Environmental: Availability Requirement (AR)"
+  availability_requirement
+  "Environmental: Modified Attack Vector (MAV)"
+  modified_attack_vector
+  "Environmental: Modified Attack Complexity (MAC)"
+  modified_attack_complexity
+  "Environmental: Modified Privileges Required (MPR)"
+  modified_privileges_required
+  "Environmental: Modified User Interaction (MUI)"
+  modified_user_interaction
+  "Environmental: Modified Scope (MS)"
+  modified_scope
+  "Environmental: Modified Confidentiality Impact (MC)"
+  modified_confidentiality
+  "Environmental: Modified Integrity Impact (MI)"
+  modified_integrity
+  "Environmental: Modified Availability Impact (MA)"
+  modified_availability
+}
+
+"Defines valid CVSS 3.* Attack Vector values"
+enum Cvss3AttackVector {
+  "The vulnerable component is bound to the network stack and the set of possible attackers extends beyond the other options listed below, up to and including the entire Internet"
+  network
+  "The vulnerable component is bound to the network stack, but the attack is limited at the protocol level to a logically adjacent topology."
+  adjacent
+  "The vulnerable component is not bound to the network stack and the attacker’s path is via read/write/execute capabilities."
+  local
+  "The attack requires the attacker to physically touch or manipulate the vulnerable component."
+  physical
+}
+
+"Defines valid CVSS 3.* Attack Complexity values"
+enum Cvss3AttackComplexity {
+  "Specialized access conditions exist"
+  high
+  "Specialized access conditions or extenuating circumstances do not exist"
+  low
+}
+
+"Defines valid CVSS 3.* Privileges Requid values"
+enum Cvss3PrivilegesRequired {
+  "The attacker is unauthorized prior to attack, and therefore does not require any access to settings or files of the vulnerable system to carry out an attack."
+  none
+  "The attacker requires privileges that provide basic user capabilities that could normally affect only settings and files owned by a user."
+  low
+  "The attacker requires privileges that provide significant (e.g., administrative) control over the vulnerable component allowing access to component-wide settings and files."
+  high
+}
+
+"Defines valid CVSS 3.* User Interaction values"
+enum Cvss3UserInteraction {
+  "The vulnerable system can be exploited without interaction from any user."
+  none
+  "Successful exploitation of this vulnerability requires a user to take some action before the vulnerability can be exploited."
+  required
+}
+
+"Defines valid CVSS 3.* Scope values"
+enum Cvss3Scope {
+  "An exploited vulnerability can only affect resources managed by the same security authority."
+  unchanged
+  "An exploited vulnerability can affect resources beyond the security scope managed by the security authority of the vulnerable component."
+  changed
+}
+
+"Defines valid CVSS 3.* Confidentiality impact values"
+enum Cvss3ConfidentialityImpact {
+  "There is no loss of confidentiality within the impacted component."
+  none
+  "There is some loss of confidentiality."
+  low
+  "There is a total loss of confidentiality, resulting in all resources within the impacted component being divulged to the attacker."
+  high
+}
+
+"Defines valid CVSS 3.* Integrity impact values"
+enum Cvss3IntegrityImpact {
+  "There is no loss of integrity within the impacted component."
+  none
+  "Modification of data is possible, but the attacker does not have control over the consequence of a modification, or the amount of modification is limited."
+  low
+  "There is a total loss of integrity, or a complete loss of protection."
+  high
+}
+
+"Defines valid CVSS 3.* Availability impact values"
+enum Cvss3IntegrityImpact {
+  "There is no impact to availability within the impacted component."
+  none
+  "Performance is reduced or there are interruptions in resource availability."
+  low
+  "There is a total loss of availability, resulting in the attacker being able to fully deny access to resources in the impacted component; this loss is either sustained (while the attacker continues to deliver the attack) or persistent (the condition persists even after the attack has completed)."
+  high
+}
+
+"Defines valid CVSS 3.* Exploit Code Maturity values"
+enum Cvss3EXploitCodeMaturity {
+  "No exploit code is available, or an exploit is theoretical."
+  unproven
+  "Proof-of-concept exploit code is available, or an attack demonstration is not practical for most systems."
+  proof_of_concept
+  "Functional exploit code is available. The code works in most situations where the vulnerability exists."
+  functional
+  "Functional autonomous code exists, or no exploit is required (manual trigger) and details are widely available."
+  high
+  "Not Defined"
+  not_defined
+}
+
+"Defines valid CVSS 3.* Remediation Level values"
+enum Cvss3RemediationLevel {
+  "A complete vendor solution is available."
+  offical_fix
+  "There is an official but temporary fix available."
+  temporary_fix
+  "There is an unofficial, non-vendor solution available. "
+  workaround
+  "There is either no solution available or it is impossible to apply."
+  unavailable
+  "Not defined"
+  not_defined
+}
+
+"Defines valid CVSS 3.* Report Confidence values"
+enum Cvss3ReportConfidence {
+  "There are reports of impacts that indicate a vulnerability is present."
+  unknown
+  "Significant details are published, but researchers either do not have full confidence in the root cause, or do not have access to source code to fully confirm all of the interactions that may lead to the result."
+  reasonable
+  "Detailed reports exist, or functional reproduction is possible (functional exploits may provide this)."
+  confirmed
+  "Not defined"
+  not_defined
+}
+
+"Defines valid CVSS 3.* Security Requirement values"
+enum Cvss3SecurityRequirements {
+  "Loss of [confidentiality / integrity / availability] is likely to have only a limited adverse effect on the organization or individuals associated with the organization (e.g., employees, customers)."
+  low
+  "Loss of [confidentiality / integrity / availability] is likely to have a serious adverse effect on the organization or individuals associated with the organization (e.g., employees, customers)."
+  medium
+  "Loss of [confidentiality / integrity / availability] is likely to have a catastrophic adverse effect on the organization or individuals associated with the organization (e.g., employees, customers)."
+  high
+  "Not defined"
+  not_defined
+}
+

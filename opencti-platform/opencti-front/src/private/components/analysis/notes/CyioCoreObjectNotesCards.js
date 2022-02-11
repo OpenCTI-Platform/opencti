@@ -5,7 +5,7 @@ import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
-import { createPaginationContainer } from 'react-relay';
+import { createFragmentContainer, createPaginationContainer } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
@@ -158,52 +158,29 @@ CyioCoreObjectNotesCardsContainer.propTypes = {
 };
 
 export const cyioCoreObjectNotesCardsQuery = graphql`
-  query CyioCoreObjectNotesCardsQuery($count: Int!, $id: ID!) {
-    ...CyioCoreObjectNotesCards_data @arguments(count: $count, id: $id)
+  query CyioCoreObjectNotesCardsQuery($count: Int!) {
+    ...CyioCoreObjectNotesCards_data @arguments(count: $count)
   }
 `;
 
-const CyioCoreObjectNotesCards = createPaginationContainer(
+const CyioCoreObjectNotesCards = createFragmentContainer(
   CyioCoreObjectNotesCardsContainer,
   {
     data: graphql`
       fragment CyioCoreObjectNotesCards_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
-        id: { type: "ID!" }
       ) {
-        itAsset(id: $id) {
-          id
-          notes(first: $count) @connection(key: "Pagination_notes") {
-            edges {
-              node {
-                id
-                ...CyioCoreObjectOrCyioCoreRelationshipNoteCard_node
-              }
+        cyioNotes(limit: $count) {
+          edges {
+            node {
+              id
+              ...CyioCoreObjectOrCyioCoreRelationshipNoteCard_node
             }
           }
         }
       }
     `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.itAsset.notes;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count }, fragmentVariables) {
-      return {
-        count,
-        id: fragmentVariables.id,
-      };
-    },
-    query: cyioCoreObjectNotesCardsQuery,
   },
 );
 

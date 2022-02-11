@@ -1,0 +1,3 @@
+mutation DeleteNote {
+  deleteCyioNote(id: "99501a54-2031-5ba5-b048-ba2b09884f38")
+}

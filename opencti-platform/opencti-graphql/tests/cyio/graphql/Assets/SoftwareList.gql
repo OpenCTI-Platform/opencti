@@ -5,7 +5,11 @@ query SoftwareList {
         id
         created
         modified
-        labels
+        labels {
+          name
+          color
+          description
+        }
         asset_id
         asset_tag
         asset_type
@@ -32,29 +36,24 @@ query SoftwareList {
           description
         }
         external_references {
-          edges {
-            node {
-              id
-              modified
-              source_name
-              description
-              external_id
-              url
-              reference_purpose
-              media_type
-            }
+          id
+          source_name
+          description
+          url
+          hashes {
+            algorithm
+            value
           }
+          external_id
+          __typename
         }
         notes {
-          edges {
-            node {
-              id
-              modified
-              abstract
-              content
-              authors
-            }
-          }
+          id
+          created
+          modified
+          abstract
+          content
+          authors
         }
       }
     }

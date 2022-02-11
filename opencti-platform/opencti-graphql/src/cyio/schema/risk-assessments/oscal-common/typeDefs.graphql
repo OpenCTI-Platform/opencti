@@ -133,7 +133,6 @@
     createOscalUser(input: OscalUserAddInput): OscalUser
     deleteOscalUser(id: ID!): String!
     editOscalUser( id: ID!, input: [EditInput]!, commitMessage: String): OscalUser
-    
   }
 
   "Defines identifying information about a system privilege held by the user."
@@ -176,14 +175,14 @@
     "Identifies a line of citation text."
     text: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
   }
 
   input CitationAddInput {
     "Identifies a line of citation text."
     text: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references: [CyioExternalReferenceAddInput]
+    links: [CyioExternalReferenceAddInput]
   }
 
   "Defines identifying information about an OSCAL Model."
@@ -202,14 +201,13 @@
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
-    # CoreObject
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
     # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -249,27 +247,13 @@
 
   "Defines the identifying information about an OSCAL object."
   interface OscalObject {
-    # BasicObject
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the parent types of this object."
-    parent_types: [String]!
-    # LifecycleObject
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
     # OscalObject
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -283,7 +267,7 @@
   }
 
   "Defines identifying information about a location."
-  type OscalLocation implements BasicObject & LifecycleObject & CoreObject & OscalObject & CyioLocation{
+  type OscalLocation implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -299,12 +283,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -320,6 +304,7 @@
     name: String!
     "Identifies a brief description of the location."
     description: String
+    # Oscal Location
     "Identifies the type of the location."
     location_type: OscalLocationType
     "Identifies the purpose of the location."
@@ -376,7 +361,7 @@
   }
 
   "Defines identifying information about an OSCAL Organization"
-  type OscalOrganization implements BasicObject & LifecycleObject & CoreObject & OscalObject & CyioIdentity & OscalParty {
+  type OscalOrganization implements BasicObject & LifecycleObject & OscalObject & CyioIdentity & OscalParty {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -386,18 +371,18 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # LifecycleObject
     "Indicates the date and time at which the object was originally created."
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
     # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -498,18 +483,18 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # LifecycleObject
     "Indicates the date and time at which the object was originally created."
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
     # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -605,7 +590,7 @@
   }
 
   "Defines identifying information about a Person in OSCAL"
-  type OscalPerson implements BasicObject & LifecycleObject & CoreObject & OscalObject & CyioIdentity & OscalParty {
+  type OscalPerson implements BasicObject & LifecycleObject & OscalObject & CyioIdentity & OscalParty {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -615,18 +600,18 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # LifecycleObject
     "Indicates the date and time at which the object was originally created."
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
     # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -736,13 +721,13 @@
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
     # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     # OscalRelationship
     "Identifies the type of the relationship"
     relationship_type: String!
@@ -815,7 +800,7 @@
 
 
   "Defines identifying information about a resource in OSCAL"
-  type OscalResource implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type OscalResource implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -831,12 +816,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -941,12 +926,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1005,7 +990,7 @@
   }
 
   "Defines identifying information about a function assumed or expected to be assumed by a party in a specific situation."
-  type OscalRole implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type OscalRole implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -1021,12 +1006,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1091,7 +1076,7 @@
   }
 
   "Defines identifying information about a type of user that interacts with the system based on an associated role."
-  type OscalUser implements BasicObject & LifecycleObject & CoreObject & OscalObject {
+  type OscalUser implements BasicObject & LifecycleObject  & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -1107,12 +1092,12 @@
     "Indicates the date and time that this particular version of the object was last modified."
     modified: Timestamp
     "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [String]
+    labels: [CyioLabel]
     # OscalObject
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int
@@ -1193,6 +1178,8 @@
 
   "Defines identifying information about a Revision"
   type Revision {
+    "Uniquely identifies this object."
+    id: ID!
     "Identifies the name given to the document."
     name: String!
     "Identifies the date and time the document was published."
@@ -1204,9 +1191,9 @@
     "Identifies the OSCAL model version the document was authored against."
     oscal_version: String
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    external_references( first: Int ): CyioExternalReferenceConnection
+    links: [CyioExternalReference]
     "Identifies one or more references to additional commentary on the Model."
-    notes( first: Int ): CyioNoteConnection
+    remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
       first: Int

@@ -12,7 +12,11 @@ query SoftwareFilter {
         asset_id
         asset_type
         name
-        labels
+        labels {
+          name
+          color
+          description
+        }
         vendor_name
       }
     }

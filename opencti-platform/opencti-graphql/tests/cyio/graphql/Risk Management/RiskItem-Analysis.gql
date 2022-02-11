@@ -75,29 +75,26 @@ query RiskItemAnalysis {
         }
       }
     }
-    external_references(first: 5) {
-      edges {
-        node {
-          id
-          created
-          modified
-          external_id     # external id
-          source_name     # Title
-          description     # description
-          url             # URL
-          media_type      # Media Type
-        }
-      }
+    external_references {
+      id
+      created
+      modified
+      external_id     # external id
+      source_name     # Title
+      description     # description
+      url             # URL
+      media_type      # Media Type
     }
-    notes( first: 5) {
-      edges {
-        node {
-          id
-          abstract
-          content
-          authors
-          labels
-        }
+    notes {
+      id
+      abstract
+      content
+      authors
+      labels {
+        id
+        name
+        color
+        description
       }
     }
   }

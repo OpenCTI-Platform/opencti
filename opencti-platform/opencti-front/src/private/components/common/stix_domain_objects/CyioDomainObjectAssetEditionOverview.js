@@ -101,7 +101,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
       enableReferences,
     } = this.props;
     // const { editContext } = cyioDomainObject;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
+    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -344,7 +344,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 />
               </div>
               <CyioCoreObjectLabelsView
-                labels={objectLabel}
+                labels={cyioDomainObject.labels}
                 marginTop={20}
                 id={cyioDomainObject?.id}
               />

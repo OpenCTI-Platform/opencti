@@ -1,0 +1,43 @@
+query LocationList {
+  assetLocationList {
+    edges {
+      node {
+        id
+        created
+        modified
+        labels {
+          name
+          color
+          description
+        }
+        name
+        description
+        street_address
+        city
+        administrative_area
+        country
+        postal_code
+        external_references {
+          id
+          source_name
+          description
+          url
+          hashes {
+            algorithm
+            value
+          }
+          external_id
+          __typename
+        }
+        notes {
+          id
+          created
+          modified
+          abstract
+          content
+          authors
+        }
+      }
+    }
+  }
+}

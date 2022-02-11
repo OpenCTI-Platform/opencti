@@ -1,0 +1,27 @@
+query NotesList {
+  cyioNotes(limit: 5) {
+    pageInfo {
+      globalCount
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
+    edges {
+      node {
+        id
+        created
+        modified
+        labels {
+          id
+          name
+          color
+          description
+        }
+        abstract
+        content
+        authors
+      }
+    }
+  }
+}
