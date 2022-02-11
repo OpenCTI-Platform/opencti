@@ -68,6 +68,7 @@ import {
 import Chip from "@material-ui/core/Chip";
 import {toastSuccess} from "../../../utils/bakedToast";
 import DeleteScanVerify from "./modals/DeleteScanVerify";
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const classes = {
   root: {
@@ -219,7 +220,8 @@ class Scans extends Component {
       loadDialog: null,
       openedPopoverId: null,
       pendingAnalysis: null,
-      scanAssociation: {}
+      scanAssociation: {},
+      analysisLoaderNoDisplay: true,
     };
   }
 
@@ -232,15 +234,27 @@ class Scans extends Component {
     return scans;
   }
 
-  refreshScans(){
+  refreshScans(refreshInBackground){
     this.setState({ loadingScans: true });
     fetchAllScans(this.state.client_ID)
         .then((response) => {
-          const scans = response.data;
+          const newScans = response.data;
 
-          this.setState({ scans: scans });
-          this.setState({ scansReportDate: this.sortScansByReportDate(scans) });
-          this.setState({ renderScans: scans });
+          if(refreshInBackground){
+            
+            if(JSON.stringify(this.state.scans) !== JSON.stringify(newScans)){
+              this.setState({ scans: newScans });
+              this.setState({ scansReportDate: this.sortScansByReportDate(newScans) });
+              this.setState({ renderScans: newScans });
+              clearInterval(this.state.refreshIntervalId);
+
+            }
+          } else {
+            this.setState({ scans: newScans });
+            this.setState({ scansReportDate: this.sortScansByReportDate(newScans) });
+            this.setState({ renderScans: newScans });
+          }
+
           this.setState({ loadingScans: false });
         })
         .catch((error) => {
@@ -249,7 +263,9 @@ class Scans extends Component {
   }
 
   refreshAnalyses(refreshInBackground){
-    console.log('refreshing...')
+
+    const prevAnalysis = this.state.analyses;
+
     fetchAllAnalysis(this.state.client_ID)
         .then((response) => {
           let newAnalyses = response.data;
@@ -274,10 +290,8 @@ class Scans extends Component {
                     }
                   });
                   if(scatterPlot.length === 0) return;
-                  scatterPlotData[analysis.id] = scatterPlot
-
-                  this.setState({scatterPlotData: scatterPlotData});
-
+                  scatterPlotData[analysis.id] = scatterPlot;
+                  
                 })
                 .catch((error) => {
                   console.log(error);
@@ -285,19 +299,31 @@ class Scans extends Component {
 
           })
 
-          if(!refreshInBackground || refreshInBackground == undefined ){
-            this.setState({ scanAssociation: associationTable })
-            this.setState({ analyses: newAnalyses });
-          } else {
+         
 
-            if(!JSON.stringify(array1) === JSON.stringify(array2)){
-              this.setState({ analyses: newAnalyses }, function(){
-                 this.setState({ loadingAnalyses: true });
-              });
-              this.setState({ scanAssociation: associationTable })
+          if(refreshInBackground){
+            
+            if(JSON.stringify(prevAnalysis) !== JSON.stringify(newAnalyses)){
+              this.setState({analysisLoaderNoDisplay: true});
+              this.setState({ analyses: newAnalyses });
+              this.setState({ scanAssociation: associationTable });
+              this.setState({scatterPlotData: scatterPlotData},function(){});
+              setTimeout(() => {this.setState({analysisLoaderNoDisplay: false})}, 3000);
+
+              clearInterval(this.state.refreshIntervalId);
               
             }
+
+          } else {
+            this.setState({analysisLoaderNoDisplay: true})
+            this.setState({ scanAssociation: associationTable })
+            this.setState({ analyses: newAnalyses });
+            this.setState({scatterPlotData: scatterPlotData});
+            setTimeout(() => {this.setState({analysisLoaderNoDisplay: false})}, 3000);
           }
+          
+         
+          
           
           this.setState({ loadingAnalyses: false });
           
@@ -307,16 +333,12 @@ class Scans extends Component {
         });
   };
 
+
+
   componentDidMount() {
     this.setState({client_ID: localStorage.getItem('client_id')},function() {
-      this.refreshScans()
-      this.refreshAnalyses()
-      
-      const intervalId = setInterval(() => {
-        this.refreshScans(true)
-        this.refreshAnalyses(true)
-      }, 30000)
-      this.setState({refreshIntervalId: intervalId})
+      this.refreshScans(false)
+      this.refreshAnalyses(false)
     });
   }
 
@@ -349,7 +371,8 @@ class Scans extends Component {
       openedPopoverId,
       openAnalysisMenu,
       pendingAnalysis,
-      scanAssociation
+      scanAssociation,
+      analysisLoaderNoDisplay,
     } = this.state;
 
     const openPopover = Boolean(popoverAnchorEl);
@@ -389,6 +412,16 @@ class Scans extends Component {
     const handleAnalysisClose = () => {
       this.setState({ analysisByAnchorEl: null,  openAnalysisMenu: null});
     };
+
+    const triggerPageRefreshInterval = () =>{
+        this.refreshScans(false);
+        this.refreshAnalyses(false);
+       const intervalId = setInterval(() => {
+        this.refreshScans(true);
+        this.refreshAnalyses(true);
+      }, 30000)
+      this.setState({refreshIntervalId: intervalId});
+    }
 
     const sortByReportDate = () => {
       this.setState({ sortByLabel: "Report Date" });
@@ -497,7 +530,7 @@ class Scans extends Component {
     };
 
     const rerenderParentCallback =() => {
-      this.refreshAnalyses();
+      triggerPageRefreshInterval();
     }
 
     const handleDeleteScan = (event, id) => {
@@ -505,7 +538,7 @@ class Scans extends Component {
       if(associations === undefined){
         deleteScan(id, client_ID)
           .then(() => {
-            this.refreshScans()
+            this.refreshScans(false)
           })
           .catch((err) => console.log(err))
       } else {
@@ -522,8 +555,8 @@ class Scans extends Component {
 
     const onDeleteComplete = () => {
       handleDialogClose()
-      this.refreshScans()
-      this.refreshAnalyses()
+      this.refreshScans(false)
+      this.refreshAnalyses(false)
     }
     
     const renderDialogSwitch = () => {
@@ -710,7 +743,7 @@ class Scans extends Component {
                           key={scan.id}
                           onMouseEnter={(e) => handlePopoverOpen(e, scan.id)}
                           onMouseLeave={(e) => handlePopoverClose()}
-                          className={NoResults ? "NoResults" : (Invalid ? "Invalid" : "")}
+                          className={["scansListItem" , NoResults ? "NoResults" : (Invalid ? "Invalid" : "")]}
                         >
                           <ListItemText primary={scan.scan_name} />
                           <ListItemSecondaryAction>
@@ -770,13 +803,14 @@ class Scans extends Component {
                             style={{ pointerEvents: 'none'}}
                             open={openedPopoverId === scan.id}
                             anchorEl={popoverAnchorEl}
+                            
                             anchorOrigin={{
                               vertical: 'bottom',
-                              horizontal: 'left',
+                              horizontal: 'center',
                             }}
                             transformOrigin={{
-                              vertical: 'bottom',
-                              horizontal: 'left',
+                              vertical: 'top',
+                              horizontal: 'center',
                             }}
                             onClose={handlePopoverClose}
                             disableRestoreFocus
@@ -1012,7 +1046,12 @@ class Scans extends Component {
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
                     <CardContent>
+                    <div style={{ width: 370, height: 370}}>
+                          <div className={analysisLoaderNoDisplay ? "AnalysisLoader" : "NoDisplay"}>
+                            <CircularProgress  />
+                          </div>
                       {(scatterPlotData && scatterPlotData[analysis.id]) && (
+                        
                         <ResponsiveContainer width="100%" aspect={1}>
                           <ScatterChart
                             width={200}
@@ -1059,7 +1098,9 @@ class Scans extends Component {
                             />
                           </ScatterChart>
                         </ResponsiveContainer>
+                        
                       )}
+                      </div>
                       {analysis.completed_date && (
                         <Chip
                           size="small"
