@@ -2873,7 +2873,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:4.17.13":
+"@types/express@npm:4, @types/express@npm:4.17.13":
   version: 4.17.13
   resolution: "@types/express@npm:4.17.13"
   dependencies:
@@ -10713,6 +10713,7 @@ __metadata:
     "@jest/test-sequencer": 27.5.1
     "@opensearch-project/opensearch": 1.0.2
     "@types/bcryptjs": ^2.4.2
+    "@types/express": 4
     "@types/jest": ^27.4.0
     "@types/ramda": ^0.27.64
     "@types/uuid": ^8.3.4
