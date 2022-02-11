@@ -127,5 +127,5 @@
     "trim-newlines": "4.0.2",
     "webpack": "4.44.2"
   },
-  "packageManager": "yarn@3.0.2"
+  "packageManager": "yarn@3.1.1"
 }
