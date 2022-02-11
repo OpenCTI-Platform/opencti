@@ -28,7 +28,7 @@ const subscriptionHandler = async () => {
     logApp.info('[OPENCTI-MODULE] Running subscription manager');
     // Execute the cleaning
     const callback = async (elements) => {
-      logApp.info(`[OPENCTI] Subscription manager will send reports for ${elements.length} subscriptions`);
+      logApp.info(`[OPENCTI-MODULE] Subscription manager will send reports for ${elements.length} subscriptions`);
       const concurrentSend = async (element) => {
         try {
           const mailContent = await generateDigestForSubscription(element);
@@ -38,7 +38,7 @@ const subscriptionHandler = async () => {
           const patch = { last_run: now() };
           await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);
         } catch (e) {
-          logApp.error('[OPENCTI] Subscription manager failed to send', { error: e });
+          logApp.error('[OPENCTI-MODULE] Subscription manager failed to send', { error: e });
         }
       };
       await Promise.map(elements, concurrentSend, { concurrency: ES_MAX_CONCURRENCY });

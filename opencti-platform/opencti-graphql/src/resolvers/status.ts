@@ -1,6 +1,7 @@
 import { findById, findAll, findTemplateById, findAllTemplates } from '../domain/status';
+import type { Resolvers } from '../generated/graphql';
 
-const statusResolvers = {
+const statusResolvers: Resolvers = {
   Query: {
     statusTemplate: (_, { id }, { user }) => findTemplateById(user, id),
     statusTemplates: (_, args, { user }) => findAllTemplates(user, args),

@@ -69,9 +69,9 @@ const retentionHandler = async () => {
   } catch (e) {
     // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.info('[OPENCTI] Retention manager already in progress by another API');
+      logApp.info('[OPENCTI-MODULE] Retention manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI] Retention manager fail to execute', { error: e });
+      logApp.error('[OPENCTI-MODULE] Retention manager fail to execute', { error: e });
     }
   } finally {
     if (lock) await lock.unlock();
@@ -81,7 +81,7 @@ const initRetentionManager = () => {
   let scheduler;
   return {
     start: () => {
-      logApp.info('[OPENCTI] Running retention manager');
+      logApp.info('[OPENCTI-MODULE] Running retention manager');
       scheduler = setIntervalAsync(async () => {
         await retentionHandler();
       }, SCHEDULE_TIME);

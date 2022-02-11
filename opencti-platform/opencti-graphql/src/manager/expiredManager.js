@@ -42,9 +42,9 @@ const expireHandler = async () => {
     await elList(SYSTEM_USER, READ_DATA_INDICES, opts);
   } catch (e) {
     // We dont care about failing to get the lock.
-    logApp.info('[OPENCTI] Expiration manager already in progress by another API');
+    logApp.info('[OPENCTI-MODULE] Expiration manager already in progress by another API');
   } finally {
-    logApp.debug('[OPENCTI] Expiration manager done');
+    logApp.debug('[OPENCTI-MODULE] Expiration manager done');
     if (lock) await lock.unlock();
   }
 };

@@ -121,7 +121,7 @@ const createSeeMiddleware = () => {
   ];
   createHeartbeatProcessor();
   const wait = (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(() => resolve(), ms));
   };
   const isUserGlobalCapabilityGranted = (user) => {
     const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;

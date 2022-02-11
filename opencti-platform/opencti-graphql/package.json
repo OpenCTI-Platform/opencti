@@ -5,7 +5,8 @@
   "author": "Luatix",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "webpack --mode development",
+    "build:types": "graphql-codegen --config graphql-codegen.yml",
+    "start": "yarn build:types && webpack --mode development",
     "clean:relations": "node build/script-clean-relations.js",
     "install:python": "pip3 install -r src/python/requirements.txt",
     "build:api": "webpack --mode production",
@@ -110,7 +111,16 @@
     "@babel/plugin-transform-runtime": "7.17.0",
     "@babel/preset-env": "7.16.11",
     "@babel/runtime": "7.17.2",
+    "@graphql-codegen/cli": "2.6.1",
+    "@graphql-codegen/introspection": "2.1.1",
+    "@graphql-codegen/typescript": "2.4.3",
+    "@graphql-codegen/typescript-resolvers": "2.5.0",
     "@jest/test-sequencer": "27.5.1",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/ramda": "^0.27.64",
+    "@types/uuid": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "^5.11.0",
+    "@typescript-eslint/parser": "^5.11.0",
     "babel-loader": "8.2.3",
     "babel-plugin-require-context-hook": "1.0.0",
     "babel-plugin-transform-require-context": "0.1.1",
@@ -118,8 +128,9 @@
     "eslint": "8.8.0",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-airbnb-typescript": "^16.1.0",
     "eslint-config-prettier": "8.3.0",
-    "eslint-plugin-import": "2.25.4",
+    "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jsx-a11y": "6.5.1",
     "eslint-plugin-prettier": "4.0.0",
     "eslint-plugin-react": "7.28.0",
@@ -131,6 +142,8 @@
     "prettier": "2.5.1",
     "run-script-webpack-plugin": "0.0.11",
     "terser-webpack-plugin": "5.3.1",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.5.5",
     "webpack": "5.68.0",
     "webpack-cli": "4.9.2",
     "webpack-node-externals": "3.0.0"
@@ -140,5 +153,5 @@
     "lodash": "4.17.21",
     "node-fetch": "2.6.7"
   },
-  "packageManager": "yarn@3.0.2"
+  "packageManager": "yarn@3.1.1"
 }
