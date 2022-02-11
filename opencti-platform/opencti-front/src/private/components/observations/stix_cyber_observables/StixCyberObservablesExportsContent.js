@@ -128,7 +128,7 @@ const StixCyberObservablesExportsContent = createRefetchContainer(
       fragment StixCyberObservablesExportsContent_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
-        context: { type: "String!" }
+        context: { type: "String" }
       ) {
         stixCyberObservablesExportFiles(first: $count, context: $context)
           @connection(key: "Pagination_stixCyberObservablesExportFiles") {

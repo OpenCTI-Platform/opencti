@@ -11,15 +11,15 @@
     "@material-ui/lab": "4.0.0-alpha.60",
     "@material-ui/pickers": "3.3.10",
     "axios": "0.25.0",
-    "babel-loader": "8.1.0",
-    "babel-plugin-relay": "11.0.2",
+    "babel-loader": "8.2.3",
+    "babel-plugin-relay": "13.1.1",
     "dagre": "0.8.5",
     "eslint-config-react-app": "7.0.0",
     "extract-files": "11.0.0",
     "formik": "2.2.9",
     "formik-material-ui": "3.0.1",
     "formik-material-ui-pickers": "0.0.12",
-    "graphql": "15.8.0",
+    "graphql": "16.3.0",
     "html-to-image": "1.9.0",
     "html-to-pdfmake": "2.3.9",
     "http-proxy-middleware": "2.0.2",
@@ -45,13 +45,13 @@
     "react-markdown": "7.1.2",
     "react-mde": "11.5.0",
     "react-pdf": "5.7.0",
-    "react-relay": "11.0.2",
+    "react-relay": "13.1.1",
     "react-relay-network-modern": "6.2.1",
     "react-router-dom": "5.3.0",
     "react-timeline-range-slider": "1.4.1",
     "react-virtualized": "9.22.3",
     "recharts": "2.1.8",
-    "relay-runtime": "11.0.2",
+    "relay-runtime": "13.1.1",
     "remark-gfm": "3.0.1",
     "remark-parse": "10.0.1",
     "rich-markdown-editor": "11.21.3",
@@ -66,10 +66,10 @@
     "yup": "0.32.11"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "6.4.17",
-    "@storybook/addon-links": "6.4.17",
-    "@storybook/addons": "6.4.17",
-    "@storybook/react": "6.4.17",
+    "@storybook/addon-actions": "6.4.18",
+    "@storybook/addon-links": "6.4.18",
+    "@storybook/addons": "6.4.18",
+    "@storybook/react": "6.4.18",
     "babel-core": "6.26.3",
     "babel-runtime": "6.26.0",
     "cross-env": "7.0.3",
@@ -81,8 +81,8 @@
     "eslint-plugin-react": "7.28.0",
     "fs-extra": "10.0.0",
     "prettier": "2.5.1",
-    "react-scripts": "4.0.3",
-    "relay-compiler": "11.0.2",
+    "react-scripts": "5.0.0",
+    "relay-compiler": "13.1.1",
     "relay-devtools": "1.4.0"
   },
   "babelMacros": {
@@ -92,14 +92,14 @@
     "node": ">= 16.*"
   },
   "scripts": {
-    "start": "yarn relay && react-scripts start",
+    "start": "yarn relay && cross-env GENERATE_SOURCEMAP=false react-scripts --max_old_space_size=8192 start",
     "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% react-scripts build",
     "build": "yarn relay && yarn generate && node src/setupBuild.js",
     "lint": "eslint .",
     "storybook": "start-storybook -p 9009 -s public",
     "build-storybook": "build-storybook -s public",
     "control": "yarn audit --groups dependencies --summary",
-    "relay": "relay-compiler --watchman false --src ./src --schema ../opencti-graphql/config/schema/opencti.graphql --extensions js jsx",
+    "relay": "relay-compiler",
     "test": "react-scripts test --coverage --watchAll=false"
   },
   "jest": {
@@ -124,8 +124,7 @@
     "bezier-js": "4.0.3",
     "node-sass": "7.0.1",
     "react-error-overlay": "6.0.9",
-    "trim-newlines": "4.0.2",
-    "webpack": "4.44.2"
+    "trim-newlines": "4.0.2"
   },
   "packageManager": "yarn@3.1.1"
 }
