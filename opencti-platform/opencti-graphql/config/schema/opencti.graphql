@@ -507,6 +507,7 @@ input StatusesFiltering {
 }
 type Status {
   id: ID!
+  template_id: String!
   template: StatusTemplate
   type: String!
   order: Int!

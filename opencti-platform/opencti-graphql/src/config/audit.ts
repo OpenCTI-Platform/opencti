@@ -19,9 +19,13 @@ export const ROLE_CREATION = 'ROLE_CREATION';
 export const ROLE_DELETION = 'ROLE_DELETION';
 // endregion
 
-export const convertRelationToAction = (name, isAdd = true) => {
+export const convertRelationToAction = (name: string, isAdd = true): string => {
   let convertName = 'UNDEFINED';
-  if (name === 'has-role') convertName = 'ROLE';
-  if (name === 'member-of') convertName = 'GROUP';
+  if (name === 'has-role') {
+    convertName = 'ROLE';
+  }
+  if (name === 'member-of') {
+    convertName = 'GROUP';
+  }
   return isAdd ? `${convertName}_ADD` : `${convertName}_REMOVE`;
 };

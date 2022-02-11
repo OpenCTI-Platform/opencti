@@ -4,6 +4,7 @@ module.exports = {
   testRegex: 'tests/.*-test.js$',
   transform: {
     '\\.js$': ['babel-jest'],
+    '\\.(ts)$': 'ts-jest',
     '\\.graphql$': 'jest-transform-graphql',
   },
   reporters: ['default', ['jest-junit', { outputDirectory: './test-results/jest/', outputName: 'results.xml' }]],

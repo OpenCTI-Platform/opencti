@@ -7,24 +7,37 @@ import { listEntities } from '../database/repository';
 import { findById as findSubTypeById } from './subType';
 import { getParentTypes } from '../schema/schemaUtils';
 import { BASE_TYPE_ENTITY } from '../schema/general';
+import type {
+  Status,
+  StatusTemplate,
+  QueryStatusTemplatesArgs,
+  QueryStatusesArgs,
+  EditInput,
+} from '../generated/graphql';
+import { OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
+import type { StatusInput, StatusTemplateInput, AuthUser } from '../utils/definitions';
 
-export const findTemplateById = async (user, statusTemplateId) => {
-  return loadById(user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
+export const findTemplateById = (user: AuthUser, statusTemplateId: string): StatusTemplate => {
+  return loadById(user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
 };
-export const findAllTemplates = async (user, args) => {
+export const findAllTemplates = async (user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return listEntities(user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
-export const findById = async (user, statusId) => {
-  return loadById(user, statusId, ENTITY_TYPE_STATUS);
+export const findById = (user: AuthUser, statusId: string): Status => {
+  return loadById(user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
 };
-export const findAll = (user, args) => {
+export const findAll = (user: AuthUser, args: QueryStatusesArgs) => {
   return listEntities(user, [ENTITY_TYPE_STATUS], args);
 };
-export const getTypeStatuses = async (user, type) => {
-  const args = { orderBy: 'order', orderMode: 'asc', filters: [{ key: 'type', values: [type] }] };
+export const getTypeStatuses = async (user: AuthUser, type: string) => {
+  const args = {
+    orderBy: StatusOrdering.Order,
+    orderMode: OrderingMode.Asc,
+    filters: [{ key: StatusFilter.Type, values: [type] }],
+  };
   return findAll(user, args);
 };
-export const createStatusTemplate = async (user, input) => {
+export const createStatusTemplate = async (user: AuthUser, input: StatusTemplateInput) => {
   const statusTemplateId = generateInternalId();
   const data = {
     id: statusTemplateId,
@@ -38,7 +51,7 @@ export const createStatusTemplate = async (user, input) => {
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
   return data;
 };
-export const createStatus = async (user, subTypeId, input, returnStatus = false) => {
+export const createStatus = async (user: AuthUser, subTypeId: string, input: StatusInput, returnStatus = false) => {
   const statusId = generateInternalId();
   const data = {
     id: statusId,
@@ -56,11 +69,11 @@ export const createStatus = async (user, subTypeId, input, returnStatus = false)
   }
   return findSubTypeById(subTypeId);
 };
-export const statusEditField = async (user, subTypeId, statusId, input) => {
+export const statusEditField = async (user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
   await updateAttribute(user, statusId, ENTITY_TYPE_STATUS, input);
   return findSubTypeById(subTypeId);
 };
-export const statusDelete = async (user, subTypeId, statusId) => {
+export const statusDelete = async (user: AuthUser, subTypeId: string, statusId: string) => {
   await deleteElementById(user, statusId, ENTITY_TYPE_STATUS);
   return findSubTypeById(subTypeId);
 };

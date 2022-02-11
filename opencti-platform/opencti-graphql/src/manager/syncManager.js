@@ -359,9 +359,9 @@ const initSyncManager = () => {
       await processingLoop();
     } catch (e) {
       // We dont care about failing to get the lock.
-      logApp.info('[OPENCTI] Sync manager already in progress by another API');
+      logApp.info('[OPENCTI-MODULE] Sync manager already in progress by another API');
     } finally {
-      logApp.debug('[OPENCTI] Sync manager done');
+      logApp.debug('[OPENCTI-MODULE] Sync manager done');
       if (lock) await lock.unlock();
     }
   };
@@ -383,7 +383,7 @@ const initSyncManager = () => {
       if (module.hot) {
         module.hot.dispose(async () => {
           await shutdown();
-          logApp.info(`[OPENCTI] Sync hot reload dispose`);
+          logApp.info(`[OPENCTI-MODULE] Sync hot reload dispose`);
         });
       }
     },

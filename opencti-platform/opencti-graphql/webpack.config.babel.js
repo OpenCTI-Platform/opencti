@@ -1,10 +1,10 @@
-const path = require('path');
-const glob = require('glob');
-const { DefinePlugin, HotModuleReplacementPlugin } = require('webpack');
-const nodeExternals = require('webpack-node-externals');
-const TerserPlugin = require('terser-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const { RunScriptWebpackPlugin } = require('run-script-webpack-plugin');
+import path from 'node:path';
+import glob from 'glob';
+import { DefinePlugin, HotModuleReplacementPlugin } from 'webpack';
+import nodeExternals from 'webpack-node-externals';
+import TerserPlugin from 'terser-webpack-plugin';
+import { CleanWebpackPlugin } from 'clean-webpack-plugin';
+import { RunScriptWebpackPlugin } from 'run-script-webpack-plugin';
 
 module.exports = (env, argv) => {
   const resolvePath = (dir) => path.resolve(__dirname, dir);
@@ -25,7 +25,7 @@ module.exports = (env, argv) => {
       'script-clean-relations': [resolvePath('script/script-clean-relations')],
     },
     resolve: {
-      extensions: ['.wasm', '.mjs', '.js', '.json', '.graphql'],
+      extensions: ['.wasm', '.mjs', '.js', '.json', '.graphql', '.ts'],
     },
     externals: [
       nodeExternals({
@@ -62,6 +62,11 @@ module.exports = (env, argv) => {
     },
     module: {
       rules: [
+        {
+          use: 'ts-loader',
+          test: /\.ts$/,
+          include: resolvePath('src'),
+        },
         {
           use: 'babel-loader',
           test: /\.js$/,

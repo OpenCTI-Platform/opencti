@@ -1,0 +1,13 @@
+overwrite: true
+schema: "./config/schema/opencti.graphql"
+documents: null
+generates:
+  src/generated/graphql.ts:
+    plugins:
+      - "typescript"
+      - "typescript-resolvers"
+    config:
+      useTypeImports: true
+  ./graphql.schema.json:
+    plugins:
+      - "introspection"

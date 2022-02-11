@@ -163,7 +163,7 @@ const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
 
 const handleRuleError = async (event, error) => {
   const { type } = event;
-  logApp.error(`[OPENCTI] Rule error applying ${type} event`, { event, error });
+  logApp.error(`[OPENCTI-MODULE] Rule error applying ${type} event`, { event, error });
 };
 
 export const rulesApplyDerivedEvents = async (eventId, derivedEvents, forRules = []) => {
@@ -323,9 +323,9 @@ const initRuleManager = () => {
       await streamProcessor.shutdown();
     } catch (e) {
       if (e.name === TYPE_LOCK_ERROR) {
-        logApp.info('[OPENCTI] Rule engine already started by another API');
+        logApp.info('[OPENCTI-MODULE] Rule engine already started by another API');
       } else {
-        logApp.error('[OPENCTI] Rule engine failed to start', { error: e });
+        logApp.error('[OPENCTI-MODULE] Rule engine failed to start', { error: e });
       }
     } finally {
       if (lock) await lock.unlock();

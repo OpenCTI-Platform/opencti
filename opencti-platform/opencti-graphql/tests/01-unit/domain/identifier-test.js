@@ -145,7 +145,7 @@ test('should relation to input name', () => {
   let name = STIX_META_RELATION_TO_FIELD['object-marking'];
   expect(name).toEqual('objectMarking');
   // eslint-disable-next-line dot-notation
-  name = STIX_META_RELATION_TO_FIELD['object'];
+  name = STIX_META_RELATION_TO_FIELD.object;
   expect(name).toEqual('objects');
 });
 

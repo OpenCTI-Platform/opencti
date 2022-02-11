@@ -279,7 +279,7 @@ const taskHandler = async () => {
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
     if (!isQueryTask && !isListTask && !isRuleTask) {
-      logApp.error(`[OPENCTI] Task manager can't process ${task.type} type`);
+      logApp.error(`[OPENCTI-MODULE] Task manager can't process ${task.type} type`);
       return;
     }
     // endregion
@@ -315,12 +315,12 @@ const taskHandler = async () => {
   } catch (e) {
     // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.debug('[OPENCTI] Task manager already in progress by another API');
+      logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI] Task manager fail to execute', { error: e });
+      logApp.error('[OPENCTI-MODULE] Task manager fail to execute', { error: e });
     }
   } finally {
-    logApp.debug('[OPENCTI] Task manager done');
+    logApp.debug('[OPENCTI-MODULE] Task manager done');
     if (lock) await lock.unlock();
   }
 };
