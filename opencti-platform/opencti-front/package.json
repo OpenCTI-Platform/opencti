@@ -11,7 +11,7 @@
     "@material-ui/lab": "4.0.0-alpha.60",
     "@material-ui/pickers": "3.3.10",
     "axios": "0.25.0",
-    "babel-loader": "8.1.0",
+    "babel-loader": "8.2.3",
     "babel-plugin-relay": "11.0.2",
     "dagre": "0.8.5",
     "eslint-config-react-app": "7.0.0",
@@ -66,10 +66,10 @@
     "yup": "0.32.11"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "6.4.17",
-    "@storybook/addon-links": "6.4.17",
-    "@storybook/addons": "6.4.17",
-    "@storybook/react": "6.4.17",
+    "@storybook/addon-actions": "6.4.18",
+    "@storybook/addon-links": "6.4.18",
+    "@storybook/addons": "6.4.18",
+    "@storybook/react": "6.4.18",
     "babel-core": "6.26.3",
     "babel-runtime": "6.26.0",
     "cross-env": "7.0.3",
@@ -81,7 +81,7 @@
     "eslint-plugin-react": "7.28.0",
     "fs-extra": "10.0.0",
     "prettier": "2.5.1",
-    "react-scripts": "4.0.3",
+    "react-scripts": "5.0.0",
     "relay-compiler": "11.0.2",
     "relay-devtools": "1.4.0"
   },
@@ -92,7 +92,7 @@
     "node": ">= 16.*"
   },
   "scripts": {
-    "start": "yarn relay && react-scripts start",
+    "start": "yarn relay && cross-env GENERATE_SOURCEMAP=false react-scripts start",
     "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% react-scripts build",
     "build": "yarn relay && yarn generate && node src/setupBuild.js",
     "lint": "eslint .",
@@ -124,8 +124,7 @@
     "bezier-js": "4.0.3",
     "node-sass": "7.0.1",
     "react-error-overlay": "6.0.9",
-    "trim-newlines": "4.0.2",
-    "webpack": "4.44.2"
+    "trim-newlines": "4.0.2"
   },
   "packageManager": "yarn@3.1.1"
 }

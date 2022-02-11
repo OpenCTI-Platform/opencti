@@ -18,6 +18,7 @@ coverage
 test-results
 logs
 yarn-error.log
+graphql.schema.json
 __pycache__
 
 # Yarn
