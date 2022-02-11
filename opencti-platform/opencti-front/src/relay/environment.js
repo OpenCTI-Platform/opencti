@@ -128,8 +128,15 @@ export class QueryRenderer extends Component {
           const types = error ? map((e) => e.name, error) : [];
           const unmanagedErrors = difference(types, managedErrorTypes || []);
           if (!isEmpty(unmanagedErrors)) {
-            toastGenericError('Query Error');
-            throw new ApplicationError(error);
+            // This is to fix the error that constantly comes up when the user is not authenticated
+            // when accessing the site. This is the first query to be run for any page so should be
+            // binary good or fail
+            if (query.operation.name === 'RootPrivateQuery') {
+              render(error);
+            } else {
+              toastGenericError('Query Error');
+              throw new ApplicationError(error);
+            }
           }
           return render(data);
         }}
