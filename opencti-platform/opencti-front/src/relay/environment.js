@@ -1,6 +1,4 @@
 import { Environment, RecordSource, Store, Observable } from 'relay-runtime';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { installRelayDevTools } from 'relay-devtools';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -20,10 +18,6 @@ import {
 } from 'react-relay-network-modern/node8';
 import * as R from 'ramda';
 import uploadMiddleware from './uploadMiddleware';
-
-// Dev tools
-export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
-if (IN_DEV_MODE) installRelayDevTools();
 
 // Service bus
 const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
