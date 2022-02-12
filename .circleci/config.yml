@@ -6,7 +6,7 @@ jobs:
     working_directory: ~/opencti
     docker:
       - image: nikolaik/python-nodejs:python3.9-nodejs16
-    resource_class: medium+
+    resource_class: large
     steps:
       - run:
           command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev
