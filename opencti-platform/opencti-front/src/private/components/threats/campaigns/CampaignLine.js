@@ -4,13 +4,13 @@ import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import { ChessKnight } from 'mdi-material-ui';
-import Skeleton from '@material-ui/lab/Skeleton';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
@@ -150,7 +150,7 @@ class CampaignLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton animation="wave" variant="circle" width={30} height={30} />
+          <Skeleton animation="wave" variant="circular" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -161,7 +161,7 @@ class CampaignLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -172,7 +172,7 @@ class CampaignLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -183,7 +183,7 @@ class CampaignLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width={140}
                   height="100%"
                 />
@@ -194,7 +194,7 @@ class CampaignLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width={140}
                   height="100%"
                 />

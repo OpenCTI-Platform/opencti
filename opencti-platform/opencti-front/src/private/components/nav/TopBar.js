@@ -2,20 +2,21 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
 import {
   AccountCircleOutlined,
   ExploreOutlined,
   InsertChartOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import { UploadOutline } from 'mdi-material-ui';
-import Menu from '@material-ui/core/Menu';
-import Divider from '@material-ui/core/Divider';
-import MenuItem from '@material-ui/core/MenuItem';
-import Tooltip from '@material-ui/core/Tooltip';
+import Menu from '@mui/material/Menu';
+import Divider from '@mui/material/Divider';
+import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
@@ -345,7 +346,7 @@ const TopBar = ({
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
-                >
+                  size="large">
                   <InsertChartOutlined fontSize="medium" />
                 </IconButton>
               </Tooltip>
@@ -368,7 +369,7 @@ const TopBar = ({
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
-                >
+                  size="large">
                   <ExploreOutlined fontSize="medium" />
                 </IconButton>
               </Tooltip>
@@ -389,7 +390,7 @@ const TopBar = ({
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
-                >
+                  size="large">
                   <UploadOutline fontSize="medium" />
                 </IconButton>
               </Tooltip>

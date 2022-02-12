@@ -4,28 +4,28 @@ import { compose, propOr } from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core';
-import IconButton from '@material-ui/core/IconButton';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
 import { FileOutline } from 'mdi-material-ui';
 import {
   DeleteOutlined,
   CancelOutlined,
   GetAppOutlined,
   WarningOutlined,
-} from '@material-ui/icons';
-import Tooltip from '@material-ui/core/Tooltip';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import CircularProgress from '@material-ui/core/CircularProgress';
+} from '@mui/icons-material';
+import Tooltip from '@mui/material/Tooltip';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Link } from 'react-router-dom';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
 import FileWork from './FileWork';
 import inject18n from '../../../../components/i18n';
 import {
@@ -176,7 +176,7 @@ class PendingFileLineComponent extends Component {
                     href={`${APP_BASE_PATH}/storage/get/${file.id}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
-                  >
+                    size="large">
                     <GetAppOutlined />
                   </IconButton>
                 </span>
@@ -189,7 +189,7 @@ class PendingFileLineComponent extends Component {
                     disabled={isProgress}
                     color={nested ? 'inherit' : 'primary'}
                     onClick={this.handleOpenDelete.bind(this)}
-                  >
+                    size="large">
                     <DeleteOutlined />
                   </IconButton>
                 </span>
@@ -201,7 +201,7 @@ class PendingFileLineComponent extends Component {
                     disabled={isProgress}
                     color={nested ? 'inherit' : 'primary'}
                     onClick={this.handleOpenDelete.bind(this)}
-                  >
+                    size="large">
                     <CancelOutlined />
                   </IconButton>
                 </span>

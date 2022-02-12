@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { createPaginationContainer } from 'react-relay';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import {
   EditOutlined,
   ExpandMoreOutlined,
   RateReviewOutlined,
-} from '@material-ui/icons';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
+} from '@mui/icons-material';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Form, Formik } from 'formik';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { ConnectionHandler } from 'relay-runtime';
@@ -143,7 +143,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
             color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
-          >
+            size="large">
             <EditOutlined fontSize="small" />
           </IconButton>
           <AddNotes

@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Skeleton from '@material-ui/lab/Skeleton';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreRelationshipStixCoreRelationshipsLines, {
@@ -81,7 +81,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                       <ListItemIcon>
                         <Skeleton
                           animation="wave"
-                          variant="circle"
+                          variant="circular"
                           width={30}
                           height={30}
                         />
@@ -90,7 +90,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                         primary={
                           <Skeleton
                             animation="wave"
-                            variant="rect"
+                            variant="rectangular"
                             width="90%"
                             height={15}
                             style={{ marginBottom: 10 }}
@@ -99,7 +99,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                         secondary={
                           <Skeleton
                             animation="wave"
-                            variant="rect"
+                            variant="rectangular"
                             width="90%"
                             height={15}
                           />

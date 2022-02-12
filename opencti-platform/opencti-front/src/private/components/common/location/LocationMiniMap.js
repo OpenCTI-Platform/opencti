@@ -3,11 +3,12 @@ import * as PropTypes from 'prop-types';
 import {
   compose, flatten, propOr, pluck, includes, uniq, pipe,
 } from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import {
-  Map, TileLayer, GeoJSON, Marker,
+  MapContainer, TileLayer, GeoJSON, Marker,
 } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
@@ -59,7 +60,7 @@ const LocationMiniMap = (props) => {
         {`${t('Mini map')} (lat. ${center[0]}, long. ${center[1]})`}
       </Typography>
       <Paper classes={{ root: classes.paper }} elevation={2}>
-        <Map
+        <MapContainer
           center={center}
           zoom={zoom}
           attributionControl={false}
@@ -67,14 +68,14 @@ const LocationMiniMap = (props) => {
         >
           <TileLayer
             url={
-              theme.palette.type === 'light'
+              theme.palette.mode === 'light'
                 ? settings.platform_map_tile_server_light
                 : settings.platform_map_tile_server_dark
             }
           />
           <GeoJSON data={countries} style={getStyle} />
           {position ? <Marker position={position} icon={pointerIcon} /> : ''}
-        </Map>
+        </MapContainer>
       </Paper>
     </div>
   );

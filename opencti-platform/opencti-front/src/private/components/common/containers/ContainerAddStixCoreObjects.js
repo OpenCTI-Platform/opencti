@@ -1,23 +1,23 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
-import Chip from '@material-ui/core/Chip';
-import Alert from '@material-ui/lab/Alert';
-import Tooltip from '@material-ui/core/Tooltip';
-import Skeleton from '@material-ui/lab/Skeleton';
-import SpeedDial from '@material-ui/lab/SpeedDial';
-import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
+import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -371,7 +371,7 @@ class ContainerAddStixCoreObjects extends Component {
                     <ListItemIcon>
                       <Skeleton
                         animation="wave"
-                        variant="circle"
+                        variant="circular"
                         width={30}
                         height={30}
                       />
@@ -380,7 +380,7 @@ class ContainerAddStixCoreObjects extends Component {
                       primary={
                         <Skeleton
                           animation="wave"
-                          variant="rect"
+                          variant="rectangular"
                           width="90%"
                           height={15}
                           style={{ marginBottom: 10 }}
@@ -389,7 +389,7 @@ class ContainerAddStixCoreObjects extends Component {
                       secondary={
                         <Skeleton
                           animation="wave"
-                          variant="rect"
+                          variant="rectangular"
                           width="90%"
                           height={15}
                         />
@@ -503,7 +503,7 @@ class ContainerAddStixCoreObjects extends Component {
               color="primary"
               aria-label="Add"
               onClick={this.handleOpen.bind(this)}
-            >
+              size="large">
               <Add />
             </IconButton>
           </Tooltip>
@@ -513,7 +513,7 @@ class ContainerAddStixCoreObjects extends Component {
             aria-label="Add"
             onClick={this.handleOpen.bind(this)}
             classes={{ root: classes.createButtonSimple }}
-          >
+            size="large">
             <Add fontSize="small" />
           </IconButton>
         ) : (
@@ -545,7 +545,7 @@ class ContainerAddStixCoreObjects extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-            >
+              size="large">
               <Close fontSize="small" />
             </IconButton>
             {(ContainerAddStixCoreObjects.isTypeDomainObject(

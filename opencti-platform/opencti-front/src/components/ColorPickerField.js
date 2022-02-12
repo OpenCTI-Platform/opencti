@@ -1,12 +1,12 @@
 import React from 'react';
-import MuiTextField from '@material-ui/core/TextField';
+import MuiTextField from '@mui/material/TextField';
 import { SketchPicker } from 'react-color';
-import IconButton from '@material-ui/core/IconButton';
-import Popover from '@material-ui/core/Popover';
-import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Popover from '@mui/material/Popover';
+import InputAdornment from '@mui/material/InputAdornment';
 import { useField } from 'formik';
-import { fieldToTextField } from 'formik-material-ui';
-import { ColorLens } from '@material-ui/icons';
+import { fieldToTextField } from 'formik-mui';
+import { ColorLens } from '@mui/icons-material';
 
 const ColorPickerField = (props) => {
   const anchorEl = React.createRef();
@@ -66,7 +66,7 @@ const ColorPickerField = (props) => {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton aria-label="open" onClick={() => setOpen(true)}>
+              <IconButton aria-label="open" onClick={() => setOpen(true)} size="large">
                 <ColorLens />
               </IconButton>
             </InputAdornment>

@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import Drawer from '@material-ui/core/Drawer';
-import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
+import Drawer from '@mui/material/Drawer';
+import withStyles from '@mui/styles/withStyles';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import { GraphOutline } from 'mdi-material-ui';
-import { TableChartOutlined } from '@material-ui/icons';
+import { TableChartOutlined } from '@mui/icons-material';
 import * as R from 'ramda';
 import { last, map, toPairs } from 'ramda';
-import Chip from '@material-ui/core/Chip';
+import Chip from '@mui/material/Chip';
 import { QueryRenderer } from '../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -504,7 +504,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
                     <IconButton
                       color="secondary"
                       onClick={this.handleChangeView.bind(this, 'lines')}
-                    >
+                      size="large">
                       <TableChartOutlined />
                     </IconButton>
                   </Tooltip>
@@ -512,7 +512,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
                     <IconButton
                       color="primary"
                       onClick={this.handleChangeView.bind(this, 'graph')}
-                    >
+                      size="large">
                       <GraphOutline />
                     </IconButton>
                   </Tooltip>

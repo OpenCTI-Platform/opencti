@@ -4,12 +4,12 @@ import { createPaginationContainer } from 'react-relay';
 import {
   map, filter, head, compose, pathOr,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { CheckCircle, WorkOutline } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { CheckCircle, WorkOutline } from '@mui/icons-material';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';

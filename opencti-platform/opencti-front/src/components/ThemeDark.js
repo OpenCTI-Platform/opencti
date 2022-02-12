@@ -2,7 +2,7 @@ export default (logo = null, primary = null, secondary = null) => ({
   fontFamily: 'Roboto, sans-serif',
   logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
-    type: 'dark',
+    mode: 'dark',
     text: { secondary: 'rgba(255, 255, 255, 0.5)' },
     primary: { main: primary || '#00bcd4' },
     secondary: { main: secondary || '#d84315' },
@@ -26,7 +26,6 @@ export default (logo = null, primary = null, secondary = null) => ({
     divider: 'rgba(255, 255, 255, 0.2)',
   },
   typography: {
-    useNextVariants: true,
     body2: {
       fontSize: '0.8rem',
     },
@@ -73,88 +72,90 @@ export default (logo = null, primary = null, secondary = null) => ({
       fontSize: 18,
     },
   },
-  overrides: {
+  components: {
     MuiCssBaseline: {
-      '@global': {
-        '*': {
-          scrollbarColor: '#14262c #2d4b5b',
-        },
-        '*::-webkit-scrollbar': {
-          width: 12,
-        },
-        '*::-webkit-scrollbar-track': {
-          background: '#2d4b5b',
-        },
-        '*::-webkit-scrollbar-thumb': {
-          backgroundColor: '#14262c',
-          borderRadius: 20,
-          border: '3px solid #2d4b5b',
-        },
-        html: {
-          WebkitFontSmoothing: 'auto',
-        },
-        a: {
-          color: primary || '#00bcd4',
-        },
-        'input:-webkit-autofill': {
-          '-webkit-animation': 'autofill 0s forwards',
-          animation: 'autofill 0s forwards',
-          '-webkit-text-fill-color': '#ffffff !important',
-          caretColor: 'transparent !important',
-          '-webkit-box-shadow':
-            '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
-          borderTopLeftRadius: 'inherit',
-          borderTopRightRadius: 'inherit',
-        },
-        pre: {
-          background: '#2d5161',
-        },
-        code: {
-          background: '#2b6779',
-        },
-        '.react-mde': {
-          border: '0 !important',
-          borderBottom: '1px solid #b9bfc1 !important',
-          '&:hover': {
-            borderBottom: '2px solid #ffffff !important',
-            marginBottom: '-1px !important',
+      styleOverrides: {
+        '@global': {
+          '*': {
+            scrollbarColor: '#14262c #2d4b5b',
           },
-        },
-        '.error .react-mde': {
-          border: '0 !important',
-          borderBottom: '2px solid #f44336 !important',
-          marginBottom: '-1px !important',
-          '&:hover': {
+          '*::-webkit-scrollbar': {
+            width: 12,
+          },
+          '*::-webkit-scrollbar-track': {
+            background: '#2d4b5b',
+          },
+          '*::-webkit-scrollbar-thumb': {
+            backgroundColor: '#14262c',
+            borderRadius: 20,
+            border: '3px solid #2d4b5b',
+          },
+          html: {
+            WebkitFontSmoothing: 'auto',
+          },
+          a: {
+            color: primary || '#00bcd4',
+          },
+          'input:-webkit-autofill': {
+            '-webkit-animation': 'autofill 0s forwards',
+            animation: 'autofill 0s forwards',
+            '-webkit-text-fill-color': '#ffffff !important',
+            caretColor: 'transparent !important',
+            '-webkit-box-shadow':
+              '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
+            borderTopLeftRadius: 'inherit',
+            borderTopRightRadius: 'inherit',
+          },
+          pre: {
+            background: '#2d5161',
+          },
+          code: {
+            background: '#2b6779',
+          },
+          '.react-mde': {
+            border: '0 !important',
+            borderBottom: '1px solid #b9bfc1 !important',
+            '&:hover': {
+              borderBottom: '2px solid #ffffff !important',
+              marginBottom: '-1px !important',
+            },
+          },
+          '.error .react-mde': {
             border: '0 !important',
             borderBottom: '2px solid #f44336 !important',
             marginBottom: '-1px !important',
+            '&:hover': {
+              border: '0 !important',
+              borderBottom: '2px solid #f44336 !important',
+              marginBottom: '-1px !important',
+            },
           },
-        },
-        '.mde-header': {
-          border: '0 !important',
-          backgroundColor: 'transparent !important',
-          color: '#ffffff !important',
-        },
-        '.mde-header-item button': {
-          color: '#ffffff !important',
-        },
-        '.mde-tabs button': {
-          color: '#ffffff !important',
-        },
-        '.mde-textarea-wrapper textarea': {
-          color: '#ffffff',
-          backgroundColor: '#14262c',
-        },
-        '.react-grid-placeholder': {
-          backgroundColor: 'rgba(0, 188, 212, 0.8) !important',
-        },
-        '.react_time_range__track': {
-          backgroundColor: 'rgba(1, 226, 255, 0.1) !important',
-          borderLeft: '1px solid #00bcd4 !important',
-          borderRight: '1px solid #00bcd4 !important',
-        },
-        '.react_time_range__handle_marker': {
-          backgroundColor: '#00bcd4 !important',
+          '.mde-header': {
+            border: '0 !important',
+            backgroundColor: 'transparent !important',
+            color: '#ffffff !important',
+          },
+          '.mde-header-item button': {
+            color: '#ffffff !important',
+          },
+          '.mde-tabs button': {
+            color: '#ffffff !important',
+          },
+          '.mde-textarea-wrapper textarea': {
+            color: '#ffffff',
+            backgroundColor: '#14262c',
+          },
+          '.react-grid-placeholder': {
+            backgroundColor: 'rgba(0, 188, 212, 0.8) !important',
+          },
+          '.react_time_range__track': {
+            backgroundColor: 'rgba(1, 226, 255, 0.1) !important',
+            borderLeft: '1px solid #00bcd4 !important',
+            borderRight: '1px solid #00bcd4 !important',
+          },
+          '.react_time_range__handle_marker': {
+            backgroundColor: '#00bcd4 !important',
+          },
         },
       },
     },

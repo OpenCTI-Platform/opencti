@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles/index';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../components/i18n';
 import { QueryRenderer } from '../../relay/environment';
 import ProfileOverview from './profile/ProfileOverview';

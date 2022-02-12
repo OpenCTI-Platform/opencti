@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectIncidentsAreaChart from '../../events/incidents/StixCoreObjectIncidentsAreaChart';
 import StixCoreObjectIncidentsVerticalBars from '../../events/incidents/StixCoreObjectIncidentsVerticalBars';

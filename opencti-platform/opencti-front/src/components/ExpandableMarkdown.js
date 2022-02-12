@@ -3,10 +3,10 @@ import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { ExpandMore, ExpandLess } from '@material-ui/icons';
-import IconButton from '@material-ui/core/IconButton';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import { compose } from 'ramda';
-import { withTheme } from '@material-ui/core/styles';
+import withTheme from '@mui/styles/withTheme';
 import { truncate } from '../utils/String';
 
 export const MarkDownComponents = (theme) => ({
@@ -58,7 +58,7 @@ const ExpandableMarkdown = (props) => {
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
         <div style={{ position: 'absolute', top: -32, right: 0 }}>
-          <IconButton onClick={onClick}>
+          <IconButton onClick={onClick} size="large">
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </div>

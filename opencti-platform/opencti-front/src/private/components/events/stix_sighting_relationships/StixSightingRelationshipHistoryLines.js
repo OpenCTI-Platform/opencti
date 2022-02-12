@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { createRefetchContainer } from 'react-relay';
-import Paper from '@material-ui/core/Paper';
+import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
 import StixSightingRelationshipHistoryLine from './StixSightingRelationshipHistoryLine';
 

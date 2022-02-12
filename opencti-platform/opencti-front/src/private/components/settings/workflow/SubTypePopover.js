@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles/index';
-import Drawer from '@material-ui/core/Drawer';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import IconButton from '@material-ui/core/IconButton';
-import Slide from '@material-ui/core/Slide';
-import MoreVert from '@material-ui/icons/MoreVert';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import Slide from '@mui/material/Slide';
+import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import SubTypeEdition from './SubTypeEdition';
@@ -79,7 +79,7 @@ class SubTypePopover extends Component {
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 1 }}
-        >
+          size="large">
           <MoreVert />
         </IconButton>
         <Menu

@@ -3,14 +3,14 @@ import * as PropTypes from 'prop-types';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { interval } from 'rxjs';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import List from '@material-ui/core/List';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import List from '@mui/material/List';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
+import withStyles from '@mui/styles/withStyles';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import { FileExportOutline } from 'mdi-material-ui';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from './FileLine';
@@ -67,7 +67,7 @@ const FileExportViewerBase = ({
                 disabled={!isExportPossible}
                 aria-haspopup="true"
                 color="primary"
-              >
+                size="large">
                 <FileExportOutline />
               </IconButton>
             </span>

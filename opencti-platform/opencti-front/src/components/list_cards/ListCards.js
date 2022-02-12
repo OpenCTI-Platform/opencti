@@ -3,20 +3,20 @@ import * as PropTypes from 'prop-types';
 import {
   compose, last, map, toPairs,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import {
   ArrowDownward,
   ArrowUpward,
   TableChartOutlined,
   DashboardOutlined,
-} from '@material-ui/icons';
-import Chip from '@material-ui/core/Chip';
-import Tooltip from '@material-ui/core/Tooltip';
+} from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
@@ -163,7 +163,7 @@ class ListCards extends Component {
             aria-label="Sort by"
             onClick={this.reverse.bind(this)}
             classes={{ root: classes.sortIcon }}
-          >
+            size="large">
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
           </IconButton>
           <div className={classes.filters}>
@@ -224,7 +224,7 @@ class ListCards extends Component {
                 <IconButton
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'cards')}
-                >
+                  size="large">
                   <DashboardOutlined />
                 </IconButton>
               </Tooltip>
@@ -236,7 +236,7 @@ class ListCards extends Component {
                 <IconButton
                   color="primary"
                   onClick={handleChangeView.bind(this, 'lines')}
-                >
+                  size="large">
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
@@ -249,7 +249,7 @@ class ListCards extends Component {
                   <IconButton
                     color={openExports ? 'secondary' : 'primary'}
                     onClick={handleToggleExports.bind(this)}
-                  >
+                    size="large">
                     <FileExportOutline />
                   </IconButton>
                 </Tooltip>

@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import * as R from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import { Launch } from '@material-ui/icons';
-import Grid from '@material-ui/core/Grid';
-import Chip from '@material-ui/core/Chip';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import { Launch } from '@mui/icons-material';
+import Grid from '@mui/material/Grid';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
@@ -63,7 +63,7 @@ class ToolDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Tool types')}
               </Typography>
-              {propOr(['-'], 'tool_types', tool).map((toolType) => (
+              {R.propOr(['-'], 'tool_types', tool).map((toolType) => (
                 <Chip
                   key={toolType}
                   classes={{ root: classes.chip }}
@@ -130,4 +130,4 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ToolDetails);
+export default R.compose(inject18n, withStyles(styles))(ToolDetails);

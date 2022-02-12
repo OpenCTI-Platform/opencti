@@ -104,7 +104,7 @@ export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAu
     filter((c) => (onlyAuto ? c.auto === true : true)),
     filter((c) => (onlyContextual ? c.only_contextual === true : true)),
     // eslint-disable-next-line prettier/prettier
-      filter((c) =>
+    filter((c) =>
       scope && c.connector_scope && c.connector_scope.length > 0
         ? includes(
             scope.toLowerCase(),

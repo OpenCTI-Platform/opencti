@@ -5,14 +5,14 @@ import {
   compose, propOr, filter, append, take,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Slide from '@material-ui/core/Slide';
-import { Add, Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Slide from '@mui/material/Slide';
+import { Add, Close } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import inject18n from '../../../components/i18n';
@@ -184,7 +184,7 @@ class WorkspaceHeader extends Component {
                 color="secondary"
                 aria-tag="Tag"
                 onClick={this.handleToggleCreateTag.bind(this)}
-              >
+                size="large">
                 {this.state.openTag ? (
                   <Close fontSize="small" />
                 ) : (

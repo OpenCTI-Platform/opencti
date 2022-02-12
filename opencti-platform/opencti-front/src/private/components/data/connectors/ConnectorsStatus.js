@@ -13,20 +13,20 @@ import {
 } from 'ramda';
 import { interval } from 'rxjs';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles/index';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
+import withStyles from '@mui/styles/withStyles';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
 import { createRefetchContainer } from 'react-relay';
-import { ArrowDropDown, ArrowDropUp, Extension } from '@material-ui/icons';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import List from '@material-ui/core/List';
-import Tooltip from '@material-ui/core/Tooltip';
+import { ArrowDropDown, ArrowDropUp, Extension } from '@mui/icons-material';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import List from '@mui/material/List';
+import Tooltip from '@mui/material/Tooltip';
 import { LayersRemove, Delete } from 'mdi-material-ui';
-import IconButton from '@material-ui/core/IconButton';
+import IconButton from '@mui/material/IconButton';
 import { Link, withRouter } from 'react-router-dom';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -361,7 +361,7 @@ class ConnectorsStatusComponent extends Component {
                         onClick={this.handleResetState.bind(this, connector.id)}
                         aria-haspopup="true"
                         color="primary"
-                      >
+                        size="large">
                         <LayersRemove />
                       </IconButton>
                     </Tooltip>
@@ -371,7 +371,7 @@ class ConnectorsStatusComponent extends Component {
                         aria-haspopup="true"
                         color="primary"
                         disabled={connector.active}
-                      >
+                        size="large">
                         <Delete />
                       </IconButton>
                     </Tooltip>

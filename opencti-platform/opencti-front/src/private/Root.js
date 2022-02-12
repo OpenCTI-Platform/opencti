@@ -1,7 +1,7 @@
 import React from 'react';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import CssBaseline from '@material-ui/core/CssBaseline';
+import CssBaseline from '@mui/material/CssBaseline';
 import { QueryRenderer } from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';

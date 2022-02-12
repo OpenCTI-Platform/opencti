@@ -2,8 +2,8 @@ import React from 'react';
 import { compose, includes, dissoc } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
-import Alert from '@material-ui/lab/Alert';
-import AlertTitle from '@material-ui/lab/AlertTitle';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import { ApplicationError } from '../../relay/environment';
 import ErrorNotFound from '../../components/ErrorNotFound';
 

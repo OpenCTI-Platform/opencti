@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import {
   compose, pathOr, pipe, map,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import { CenterFocusStrong } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import { CenterFocusStrong } from '@mui/icons-material';
 import { Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import { fetchQuery } from '../../../../relay/environment';

@@ -4,15 +4,16 @@ import { Formik, Form, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import MenuItem from '@material-ui/core/MenuItem';
-import Tooltip from '@material-ui/core/Tooltip';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Close, ArrowRightAlt } from '@material-ui/icons';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
+import { Close, ArrowRightAlt } from '@mui/icons-material';
 import { fetchQuery, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -450,7 +451,7 @@ class StixCoreRelationshipCreation extends Component {
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
-              >
+                size="large">
                 <Close fontSize="small" />
               </IconButton>
               <Typography variant="h6">{t('Create a relationship')}</Typography>
@@ -658,7 +659,7 @@ class StixCoreRelationshipCreation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-          >
+            size="large">
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6">{t('Select a relationship')}</Typography>

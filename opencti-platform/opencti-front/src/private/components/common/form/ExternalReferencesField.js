@@ -11,8 +11,8 @@ import {
   append,
 } from 'ramda';
 import { Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import { LanguageOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import { LanguageOutlined } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';

@@ -3,16 +3,16 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Collapse from '@material-ui/core/Collapse';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Collapse from '@mui/material/Collapse';
 import { Launch, LockPattern, ProgressWrench } from 'mdi-material-ui';
-import { ExpandLess, ExpandMore } from '@material-ui/icons';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { yearFormat } from '../../../../utils/Time';
@@ -151,7 +151,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                         stixCoreRelationship.id,
                       )}
                       aria-haspopup="true"
-                    >
+                      size="large">
                       {this.state.expandedLines[stixCoreRelationship.id]
                       === false ? (
                         <ExpandMore />
@@ -244,7 +244,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                       attackPattern.id,
                                     )}
                                     aria-haspopup="true"
-                                  >
+                                    size="large">
                                     {this.state.expandedLines[
                                       attackPattern.id
                                     ] === false ? (

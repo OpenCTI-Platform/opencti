@@ -1,23 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import {
   CheckCircleOutlined,
   CancelOutlined,
   DeleteOutlined,
-} from '@material-ui/icons';
-import Drawer from '@material-ui/core/Drawer';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
+} from '@mui/icons-material';
+import Drawer from '@mui/material/Drawer';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -110,7 +111,7 @@ class PendingFileToolBar extends Component {
                 onClick={handleValidate.bind(this)}
                 color="primary"
                 disabled={isDeleteActive}
-              >
+                size="large">
                 <CheckCircleOutlined />
               </IconButton>
             </span>
@@ -122,7 +123,7 @@ class PendingFileToolBar extends Component {
                   aria-label="drop"
                   onClick={this.handleOpenDelete.bind(this)}
                   color="primary"
-                >
+                  size="large">
                   <DeleteOutlined />
                 </IconButton>
               </span>
@@ -134,7 +135,7 @@ class PendingFileToolBar extends Component {
                   aria-label="drop"
                   onClick={this.handleOpenDelete.bind(this)}
                   color="primary"
-                >
+                  size="large">
                   <CancelOutlined />
                 </IconButton>
               </span>

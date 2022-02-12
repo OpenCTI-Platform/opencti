@@ -5,17 +5,18 @@ import {
   compose, head, pathOr, assoc, map, pluck, last,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import CardContent from '@material-ui/core/CardContent';
-import { DescriptionOutlined } from '@material-ui/icons';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import CardContent from '@mui/material/CardContent';
+import { DescriptionOutlined } from '@mui/icons-material';
 import {
   Database,
   GraphOutline,
@@ -34,7 +35,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import * as R from 'ramda';
-import Slide from '@material-ui/core/Slide';
+import Slide from '@mui/material/Slide';
 import { QueryRenderer } from '../../relay/environment';
 import {
   yearsAgo, dayAgo, now, monthsAgo,

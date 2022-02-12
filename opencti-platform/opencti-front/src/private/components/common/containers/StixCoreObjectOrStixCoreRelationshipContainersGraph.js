@@ -4,7 +4,7 @@ import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import * as R from 'ramda';
 import { Subject, timer } from 'rxjs';
-import { withTheme } from '@material-ui/core/styles';
+import withTheme from '@mui/styles/withTheme';
 import { debounce } from 'rxjs/operators';
 import { withRouter } from 'react-router-dom';
 import ForceGraph3D from 'react-force-graph-3d';

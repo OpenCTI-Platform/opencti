@@ -19,7 +19,7 @@ import {
   Visibility,
   PlaceOutlined,
   StorageOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import {
   Biohazard,
   DiamondOutline,

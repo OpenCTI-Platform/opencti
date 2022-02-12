@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import { Close } from '@mui/icons-material';
 import { CloudRefresh } from 'mdi-material-ui';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ExternalReferenceEnrichmentLines, {
@@ -67,7 +67,7 @@ class ExternalReferenceEnrichment extends Component {
             onClick={this.handleOpen.bind(this)}
             color="inherit"
             aria-label="Refresh"
-          >
+            size="large">
             <CloudRefresh />
           </IconButton>
         </Tooltip>
@@ -82,7 +82,7 @@ class ExternalReferenceEnrichment extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-            >
+              size="large">
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>

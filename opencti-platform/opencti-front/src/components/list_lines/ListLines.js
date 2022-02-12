@@ -3,24 +3,24 @@ import * as PropTypes from 'prop-types';
 import {
   compose, last, map, toPairs,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
 import {
   ArrowDropDown,
   ArrowDropUp,
   DashboardOutlined,
   TableChartOutlined,
-} from '@material-ui/icons';
-import Chip from '@material-ui/core/Chip';
-import Tooltip from '@material-ui/core/Tooltip';
+} from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
+import Tooltip from '@mui/material/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
-import Checkbox from '@material-ui/core/Checkbox';
-import Alert from '@material-ui/lab/Alert';
+import Checkbox from '@mui/material/Checkbox';
+import Alert from '@mui/material/Alert';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -260,7 +260,7 @@ class ListLines extends Component {
                 <IconButton
                   color="primary"
                   onClick={handleChangeView.bind(this, 'cards')}
-                >
+                  size="large">
                   <DashboardOutlined />
                 </IconButton>
               </Tooltip>
@@ -270,7 +270,7 @@ class ListLines extends Component {
                 <IconButton
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'lines')}
-                >
+                  size="large">
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
@@ -280,7 +280,7 @@ class ListLines extends Component {
                 <IconButton
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'duplicates')}
-                >
+                  size="large">
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
@@ -291,7 +291,7 @@ class ListLines extends Component {
                   <IconButton
                     color={openExports ? 'secondary' : 'primary'}
                     onClick={handleToggleExports.bind(this)}
-                  >
+                    size="large">
                     <FileExportOutline />
                   </IconButton>
                 </Tooltip>

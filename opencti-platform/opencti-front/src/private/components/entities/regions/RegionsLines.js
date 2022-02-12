@@ -17,8 +17,8 @@ import {
 } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core';
-import List from '@material-ui/core/List';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
 import { RegionLine, RegionLineDummy } from './RegionLine';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';

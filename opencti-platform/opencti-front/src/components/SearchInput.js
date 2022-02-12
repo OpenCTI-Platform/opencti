@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Input from '@material-ui/core/Input';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import { Search } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Input from '@mui/material/Input';
+import InputAdornment from '@mui/material/InputAdornment';
+import { Search } from '@mui/icons-material';
 import { compose } from 'ramda';
 import inject18n from './i18n';
 
@@ -22,7 +22,7 @@ const styles = (theme) => ({
     borderRadius: 5,
     padding: '0 10px 0 10px',
     backgroundColor:
-      theme.palette.type === 'light'
+      theme.palette.mode === 'light'
         ? theme.palette.background.paperLight
         : theme.palette.navAlt.background,
   },

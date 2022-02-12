@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
-import Skeleton from '@material-ui/lab/Skeleton';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import StixDomainObjectAddObjectRefsLines, {
@@ -117,7 +117,7 @@ class StixDomainObjectAddObjectRefs extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-            >
+              size="large">
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
@@ -157,7 +157,7 @@ class StixDomainObjectAddObjectRefs extends Component {
                         <ListItemIcon>
                           <Skeleton
                             animation="wave"
-                            variant="circle"
+                            variant="circular"
                             width={30}
                             height={30}
                           />
@@ -166,7 +166,7 @@ class StixDomainObjectAddObjectRefs extends Component {
                           primary={
                             <Skeleton
                               animation="wave"
-                              variant="rect"
+                              variant="rectangular"
                               width="90%"
                               height={15}
                               style={{ marginBottom: 10 }}
@@ -175,7 +175,7 @@ class StixDomainObjectAddObjectRefs extends Component {
                           secondary={
                             <Skeleton
                               animation="wave"
-                              variant="rect"
+                              variant="rectangular"
                               width="90%"
                               height={15}
                             />

@@ -3,12 +3,13 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Drawer from '@mui/material/Drawer';
+import Fab from '@mui/material/Fab';
 import {
   Edit,
   GroupOutlined,
@@ -16,9 +17,9 @@ import {
   DeleteForeverOutlined,
   SecurityOutlined,
   ReceiptOutlined,
-} from '@material-ui/icons';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
+} from '@mui/icons-material';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
 import {
   AreaChart,
   ResponsiveContainer,
@@ -28,16 +29,16 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -353,7 +354,7 @@ class UserComponent extends Component {
                     aria-label="Delete all"
                     onClick={this.handleOpenKillSessions.bind(this)}
                     classes={{ root: classes.killAllSessionsButton }}
-                  >
+                    size="large">
                     <DeleteForeverOutlined fontSize="small" />
                   </IconButton>
                   <div className="clearfix" />
@@ -387,7 +388,7 @@ class UserComponent extends Component {
                               this,
                               session.id,
                             )}
-                          >
+                            size="large">
                             <Delete fontSize="small" />
                           </IconButton>
                         </ListItemSecondaryAction>

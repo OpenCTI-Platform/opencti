@@ -1,6 +1,6 @@
 import React from 'react';
-import { KeyboardDatePicker } from '@material-ui/pickers';
-import { fieldToKeyboardDatePicker } from 'formik-material-ui-pickers';
+import DatePicker from '@mui/lab/DatePicker';
+import { fieldToDatePicker } from 'formik-mui-lab';
 import { parse } from '../utils/Time';
 
 const DatePickerField = (props) => {
@@ -45,8 +45,8 @@ const DatePickerField = (props) => {
     [setTouched, onSubmit, name],
   );
   return (
-    <KeyboardDatePicker
-      {...fieldToKeyboardDatePicker(props)}
+    <DatePicker
+      {...fieldToDatePicker(props)}
       variant="inline"
       disableToolbar={false}
       autoOk={true}

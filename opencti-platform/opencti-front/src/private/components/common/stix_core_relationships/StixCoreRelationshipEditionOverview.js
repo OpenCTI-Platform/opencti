@@ -14,11 +14,11 @@ import {
   pick,
   pipe,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
-import { Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { dateFormat } from '../../../../utils/Time';
@@ -383,7 +383,7 @@ const StixCoreRelationshipEditionContainer = ({
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-        >
+          size="large">
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>

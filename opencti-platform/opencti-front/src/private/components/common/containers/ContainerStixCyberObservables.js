@@ -5,7 +5,7 @@ import {
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { withStyles } from '@material-ui/core';
+import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';

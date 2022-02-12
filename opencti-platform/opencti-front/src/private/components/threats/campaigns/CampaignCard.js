@@ -5,15 +5,15 @@ import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import Avatar from '@material-ui/core/Avatar';
-import IconButton from '@material-ui/core/IconButton';
-import { StarBorderOutlined } from '@material-ui/icons';
-import Skeleton from '@material-ui/lab/Skeleton';
+import withStyles from '@mui/styles/withStyles';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import Avatar from '@mui/material/Avatar';
+import IconButton from '@mui/material/IconButton';
+import { StarBorderOutlined } from '@mui/icons-material';
+import Skeleton from '@mui/material/Skeleton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
@@ -202,7 +202,7 @@ class CampaignCardDummyComponent extends Component {
             avatar={
               <Skeleton
                 animation="wave"
-                variant="circle"
+                variant="circular"
                 width={30}
                 height={30}
               />
@@ -210,7 +210,7 @@ class CampaignCardDummyComponent extends Component {
             title={
               <Skeleton
                 animation="wave"
-                variant="rect"
+                variant="rectangular"
                 width="90%"
                 style={{ marginBottom: 10 }}
               />
@@ -219,7 +219,7 @@ class CampaignCardDummyComponent extends Component {
             subheader={
               <Skeleton
                 animation="wave"
-                variant="rect"
+                variant="rectangular"
                 width="90%"
                 style={{ marginBottom: 10 }}
               />
@@ -227,7 +227,7 @@ class CampaignCardDummyComponent extends Component {
             action={
               <Skeleton
                 animation="wave"
-                variant="circle"
+                variant="circular"
                 width={30}
                 height={30}
               />
@@ -236,19 +236,19 @@ class CampaignCardDummyComponent extends Component {
           <CardContent classes={{ root: classes.contentDummy }}>
             <Skeleton
               animation="wave"
-              variant="rect"
+              variant="rectangular"
               width="90%"
               style={{ marginBottom: 10 }}
             />
             <Skeleton
               animation="wave"
-              variant="rect"
+              variant="rectangular"
               width="95%"
               style={{ marginBottom: 10 }}
             />
             <Skeleton
               animation="wave"
-              variant="rect"
+              variant="rectangular"
               width="90%"
               style={{ marginBottom: 10 }}
             />

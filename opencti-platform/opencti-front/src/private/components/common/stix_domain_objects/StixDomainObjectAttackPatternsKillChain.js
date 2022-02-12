@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
-import { ViewListOutlined, ViewColumnOutlined } from '@material-ui/icons';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import { ViewListOutlined, ViewColumnOutlined } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -67,7 +67,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             <IconButton
               color={currentView === 'matrix' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'matrix')}
-            >
+              size="large">
               <ViewColumnOutlined />
             </IconButton>
           </Tooltip>
@@ -75,7 +75,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             <IconButton
               color={currentView === 'list' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'list')}
-            >
+              size="large">
               <ViewListOutlined />
             </IconButton>
           </Tooltip>
@@ -85,7 +85,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                 currentView === 'courses-of-action' ? 'secondary' : 'primary'
               }
               onClick={handleChangeView.bind(this, 'courses-of-action')}
-            >
+              size="large">
               <ProgressWrench />
             </IconButton>
           </Tooltip>

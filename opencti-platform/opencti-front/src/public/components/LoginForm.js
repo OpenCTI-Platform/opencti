@@ -1,8 +1,8 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { Form, Formik, Field } from 'formik';
-import { TextField } from 'formik-material-ui';
-import Button from '@material-ui/core/Button';
+import { TextField } from 'formik-mui';
+import Button from '@mui/material/Button';
 import graphql from 'babel-plugin-relay/macro';
 import { withRouter } from 'react-router-dom';
 import { compose, head, isEmpty } from 'ramda';

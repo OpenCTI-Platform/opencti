@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter } from 'ramda';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Button from '@mui/material/Button';
 import {
   Google, KeyOutline, Facebook, Github,
 } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
-import Paper from '@material-ui/core/Paper';
+import Paper from '@mui/material/Paper';
 import { APP_BASE_PATH } from '../../relay/environment';
 import logo from '../../resources/images/logo_opencti.png';
 import LoginForm from './LoginForm';
@@ -129,7 +130,7 @@ const Login = ({ classes, theme, settings }) => {
     </div>
   );
   const loginMessage = settings.platform_login_message;
-  const loginLogo = theme.palette.type === 'dark'
+  const loginLogo = theme.palette.mode === 'dark'
     ? settings.platform_theme_dark_logo_login
     : settings.platform_theme_light_logo_login;
   const providers = settings.platform_providers;

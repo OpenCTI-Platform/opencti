@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { ExpandMore, ExpandLess } from '@material-ui/icons';
-import IconButton from '@material-ui/core/IconButton';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import { truncate } from '../utils/String';
 
 const ExpandablePre = (props) => {
@@ -16,7 +16,7 @@ const ExpandablePre = (props) => {
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
         <div style={{ position: 'absolute', top: -32, right: 0 }}>
-          <IconButton onClick={onClick}>
+          <IconButton onClick={onClick} size="large">
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </div>

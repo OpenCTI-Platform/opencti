@@ -24,19 +24,19 @@ import {
   propOr,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Collapse from '@material-ui/core/Collapse';
-import { Domain, ExpandLess, ExpandMore } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Collapse from '@mui/material/Collapse';
+import { Domain, ExpandLess, ExpandMore } from '@mui/icons-material';
 import { createRefetchContainer } from 'react-relay';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import { yearFormat } from '../../../../utils/Time';
@@ -305,7 +305,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                       <IconButton
                         onClick={this.handleToggleLine.bind(this, sector.id)}
                         aria-haspopup="true"
-                      >
+                        size="large">
                         {this.state.expandedLines[sector.id] === true ? (
                           <ExpandLess />
                         ) : (
@@ -433,7 +433,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                     subsector.id,
                                   )}
                                   aria-haspopup="true"
-                                >
+                                  size="large">
                                   {this.state.expandedLines[subsector.id]
                                   === true ? (
                                     <ExpandLess />

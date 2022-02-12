@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
-import Chip from '@material-ui/core/Chip';
+import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
 import { evolve, pluck } from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -189,7 +189,7 @@ const StreamCollectionCreation = (props) => {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-          >
+            size="large">
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6">{t('Create a live stream')}</Typography>

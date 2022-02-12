@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixSightingRelationshipOverview from './StixSightingRelationshipOverview';

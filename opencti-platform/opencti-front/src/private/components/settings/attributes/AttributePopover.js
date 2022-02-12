@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles/index';
-import Drawer from '@material-ui/core/Drawer';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import IconButton from '@material-ui/core/IconButton';
-import Slide from '@material-ui/core/Slide';
-import { MoreVertOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
+import Slide from '@mui/material/Slide';
+import { MoreVertOutlined } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import AttributeEdition from './AttributeEdition';
 
@@ -71,7 +71,8 @@ class AttributePopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}>
+          style={{ marginTop: 1 }}
+          size="large">
           <MoreVertOutlined />
         </IconButton>
         <Menu

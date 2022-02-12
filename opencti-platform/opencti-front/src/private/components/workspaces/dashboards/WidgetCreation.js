@@ -2,24 +2,24 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { v4 as uuid } from 'uuid';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Stepper from '@material-ui/core/Stepper';
-import Step from '@material-ui/core/Step';
-import StepButton from '@material-ui/core/StepButton';
-import StepLabel from '@material-ui/core/StepLabel';
-import Slide from '@material-ui/core/Slide';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import { Add, MapOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepButton from '@mui/material/StepButton';
+import StepLabel from '@mui/material/StepLabel';
+import Slide from '@mui/material/Slide';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardContent from '@mui/material/CardContent';
+import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+import { Add, MapOutlined } from '@mui/icons-material';
 import {
   FlaskOutline,
   FolderTableOutline,
@@ -31,12 +31,12 @@ import {
   DatabaseOutline,
   ViewListOutline,
 } from 'mdi-material-ui';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import Markdown from 'react-markdown';
-import Skeleton from '@material-ui/lab/Skeleton';
+import Skeleton from '@mui/material/Skeleton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -247,7 +247,7 @@ class WidgetCreation extends Component {
                   <ListItemIcon>
                     <Skeleton
                       animation="wave"
-                      variant="circle"
+                      variant="circular"
                       width={30}
                       height={30}
                     />
@@ -256,7 +256,7 @@ class WidgetCreation extends Component {
                     primary={
                       <Skeleton
                         animation="wave"
-                        variant="rect"
+                        variant="rectangular"
                         width="90%"
                         height={15}
                         style={{ marginBottom: 10 }}
@@ -265,7 +265,7 @@ class WidgetCreation extends Component {
                     secondary={
                       <Skeleton
                         animation="wave"
-                        variant="rect"
+                        variant="rectangular"
                         width="90%"
                         height={15}
                       />

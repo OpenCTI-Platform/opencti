@@ -10,7 +10,7 @@ import {
   union,
 } from 'ramda';
 import { Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { Launch } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';

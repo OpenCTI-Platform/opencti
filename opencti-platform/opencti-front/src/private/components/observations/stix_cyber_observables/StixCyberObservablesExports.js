@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Slide from '@material-ui/core/Slide';
-import Drawer from '@material-ui/core/Drawer';
+import withStyles from '@mui/styles/withStyles';
+import Slide from '@mui/material/Slide';
+import Drawer from '@mui/material/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCyberObservablesExportsContent, {
   stixCyberObservablesExportsContentQuery,

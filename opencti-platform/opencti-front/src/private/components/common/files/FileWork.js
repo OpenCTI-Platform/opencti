@@ -4,20 +4,20 @@ import { propOr, compose } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import {
   CheckCircleOutlined,
   DeleteOutlined,
   WarningOutlined,
-} from '@material-ui/icons';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
+} from '@mui/icons-material';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -146,7 +146,7 @@ const FileWorkComponent = (props) => {
                     color="primary"
                     onClick={() => deleteWork(work.id)}
                     disabled={work.status === 'deleting'}
-                  >
+                    size="large">
                     <DeleteOutlined />
                   </IconButton>
                 </ListItemSecondaryAction>

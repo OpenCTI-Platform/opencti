@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { ArrowUpward, ArrowDownward, ArrowForward } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import { ArrowUpward, ArrowDownward, ArrowForward } from '@mui/icons-material';
 
 import inject18n from './i18n';
 

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import UserHistoryLines, { userHistoryLinesQuery } from './UserHistoryLines';
 import { QueryRenderer } from '../../../../relay/environment';

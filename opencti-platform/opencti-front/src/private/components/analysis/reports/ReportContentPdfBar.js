@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
 import {
   ZoomInOutlined,
   ZoomOutOutlined,
   CloudDownloadOutlined,
-} from '@material-ui/icons';
-import Drawer from '@material-ui/core/Drawer';
-import Slide from '@material-ui/core/Slide';
+} from '@mui/icons-material';
+import Drawer from '@mui/material/Drawer';
+import Slide from '@mui/material/Slide';
 import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 
@@ -63,14 +64,14 @@ class ReportContentPdfBar extends Component {
               color="primary"
               onClick={handleZoomOut.bind(this)}
               disabled={currentZoom <= 0.6}
-            >
+              size="large">
               <ZoomOutOutlined />
             </IconButton>
             <IconButton
               color="primary"
               onClick={handleZoomIn.bind(this)}
               disabled={currentZoom >= 2}
-            >
+              size="large">
               <ZoomInOutlined />
             </IconButton>
           </div>
@@ -89,11 +90,11 @@ class ReportContentPdfBar extends Component {
                 to={directDownload}
                 target="_blank"
                 rel="noopener noreferrer"
-              >
+                size="large">
                 <CloudDownloadOutlined />
               </IconButton>
             ) : (
-              <IconButton color="primary" onClick={handleDownload.bind(this)}>
+              <IconButton color="primary" onClick={handleDownload.bind(this)} size="large">
                 <CloudDownloadOutlined />
               </IconButton>
             )}

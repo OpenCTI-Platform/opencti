@@ -12,17 +12,17 @@ import {
   zip,
 } from 'ramda';
 import * as Yup from 'yup';
-import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
-import MenuItem from '@material-ui/core/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import { createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
 import SelectField from '../../../../components/SelectField';

@@ -6,10 +6,10 @@ import { Field, Form, Formik } from 'formik';
 import {
   compose, defaultTo, lensProp, over, pickAll,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import {
@@ -153,7 +153,7 @@ class KillChainPhaseEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-          >
+            size="large">
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

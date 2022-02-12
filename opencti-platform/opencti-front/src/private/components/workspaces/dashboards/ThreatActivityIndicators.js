@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectIndicatorsHorizontalBars from '../../observations/indicators/StixCoreObjectIndicatorsHorizontalBars';
 import StixCoreObjectIndicatorsDonut from '../../observations/indicators/StixCoreObjectIndicatorsDonut';

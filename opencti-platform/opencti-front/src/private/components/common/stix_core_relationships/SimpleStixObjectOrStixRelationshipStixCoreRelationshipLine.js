@@ -4,15 +4,15 @@ import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVertOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { MoreVertOutlined } from '@mui/icons-material';
 import { AutoFix, VectorRadius } from 'mdi-material-ui';
-import Skeleton from '@material-ui/lab/Skeleton';
-import Tooltip from '@material-ui/core/Tooltip';
+import Skeleton from '@mui/material/Skeleton';
+import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemConfidence from '../../../../components/ItemConfidence';
@@ -563,7 +563,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummyComponent e
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton animation="wave" variant="circle" width={30} height={30} />
+          <Skeleton animation="wave" variant="circular" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -574,7 +574,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummyComponent e
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -585,7 +585,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummyComponent e
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -596,7 +596,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummyComponent e
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width={140}
                   height="100%"
                 />
@@ -607,7 +607,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummyComponent e
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width={140}
                   height="100%"
                 />
@@ -618,7 +618,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummyComponent e
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width={100}
                   height="100%"
                 />

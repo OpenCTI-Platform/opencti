@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
-import Drawer from '@material-ui/core/Drawer';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Drawer from '@mui/material/Drawer';
 import {
   DomainOutlined,
   LocalPlayOutlined,
   GroupOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import Loader from '../../../../components/Loader';
 import StixDomainObjectVictimologySectors, {
   stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery,
@@ -100,7 +100,7 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'sectors' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'sectors')}
-                >
+                  size="large">
                   <DomainOutlined />
                 </IconButton>
               </Tooltip>
@@ -110,7 +110,7 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'regions' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'regions')}
-                >
+                  size="large">
                   <LocalPlayOutlined />
                 </IconButton>
               </Tooltip>
@@ -120,7 +120,7 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'individuals' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'individuals')}
-                >
+                  size="large">
                   <GroupOutlined />
                 </IconButton>
               </Tooltip>

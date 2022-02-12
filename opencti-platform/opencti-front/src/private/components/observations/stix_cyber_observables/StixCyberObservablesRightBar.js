@@ -3,15 +3,15 @@ import PropTypes from 'prop-types';
 import {
   compose, pipe, sortBy, prop, toLower, map, assoc,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import { FilterOffOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -90,7 +90,7 @@ class StixCyberObservablesRightBar extends Component {
                           onClick={handleClear.bind(this)}
                           disabled={types.length === 0}
                           color="primary"
-                        >
+                          size="large">
                           <FilterOffOutline fontSize="small" />
                         </IconButton>
                       </Tooltip>

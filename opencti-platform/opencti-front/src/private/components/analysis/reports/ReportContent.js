@@ -3,21 +3,18 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
 import pdfMake from 'pdfmake';
-import Editor from 'rich-markdown-editor';
 import { pdfjs, Document, Page } from 'react-pdf/dist/esm/entry.webpack';
-import { light, dark } from 'rich-markdown-editor/dist/styles/theme';
-import SunEditor from 'suneditor-react';
 import htmlToPdfmake from 'html-to-pdfmake';
 import { createFragmentContainer } from 'react-relay';
-
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import TextField from '@material-ui/core/TextField';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import TextField from '@mui/material/TextField';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
 import ReportContentFiles, {
   reportContentFilesRefetchQuery,
@@ -250,7 +247,7 @@ class ReportContentComponent extends Component {
   }
 
   componentWillMount() {
-    if (this.props.theme.palette.type === 'dark') {
+    if (this.props.theme.palette.mode === 'dark') {
       // eslint-disable-next-line global-require
       require('../../../../resources/css/suneditor-dark.css');
       // eslint-disable-next-line global-require
@@ -506,9 +503,7 @@ class ReportContentComponent extends Component {
   }
 
   render() {
-    const {
-      classes, theme, t, report,
-    } = this.props;
+    const { classes, t, report } = this.props;
     const {
       isLoading,
       currentTab,
@@ -524,14 +519,6 @@ class ReportContentComponent extends Component {
     const isFilePdf = currentFile.metaData.mimetype === 'application/pdf';
     const isFileHtml = currentFile.metaData.mimetype === 'text/html';
     const isReadOnly = isFilePdf;
-    const customTheme = {
-      fontFamily: 'Roboto',
-      zIndex: 5000,
-      background: theme.palette.background.paper,
-    };
-    const editorTheme = theme.palette.type === 'dark'
-      ? { ...dark, ...customTheme }
-      : { ...light, ...customTheme };
     const { innerHeight } = window;
     const height = innerHeight - 250;
     return (
@@ -577,20 +564,7 @@ class ReportContentComponent extends Component {
             elevation={2}
             style={{ minHeight: height, fontSize: '120%' }}
           >
-            {isLoading ? (
-              <Loader variant="inElement" />
-            ) : (
-              <Editor
-                key={currentFile.id}
-                id={currentFile.id}
-                value={initialContent}
-                dark={theme.palette.type === 'dark'}
-                theme={editorTheme}
-                readOnly={isReadOnly}
-                onBlur={!isReadOnly && this.saveFile.bind(this)}
-                onChange={!isReadOnly && this.onEditorChange.bind(this)}
-              />
-            )}
+            {isLoading ? <Loader variant="inElement" /> : <div />}
           </Paper>
         )}
         {this.state.currentTab === 0 && isFileHtml && (
@@ -603,38 +577,7 @@ class ReportContentComponent extends Component {
               <Loader variant="inElement" />
             ) : (
               <div style={{ height: '100%' }}>
-                <SunEditor
-                  getSunEditorInstance={this.setSunEditorInstance.bind(this)}
-                  defaultValue={initialContent}
-                  height="100%"
-                  setOptions={{
-                    buttonList: [
-                      ['undo', 'redo', 'font', 'fontSize', 'formatBlock'],
-                      [
-                        'bold',
-                        'underline',
-                        'italic',
-                        'strike',
-                        'subscript',
-                        'superscript',
-                        'removeFormat',
-                      ],
-                      [
-                        'fontColor',
-                        'hiliteColor',
-                        'outdent',
-                        'indent',
-                        'align',
-                        'horizontalRule',
-                        'list',
-                        'table',
-                      ],
-                      ['link', 'image', 'video', 'showBlocks', 'preview'],
-                    ],
-                  }}
-                  onChange={this.onHtmlEditorChange.bind(this)}
-                  onBlur={this.saveFile.bind(this)}
-                />
+                <div />
               </div>
             )}
           </Paper>

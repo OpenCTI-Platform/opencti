@@ -1,7 +1,7 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 import { compose } from 'ramda';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';

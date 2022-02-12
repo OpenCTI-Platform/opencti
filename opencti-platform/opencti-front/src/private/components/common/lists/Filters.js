@@ -1,23 +1,24 @@
 import React, { Component } from 'react';
 import * as R from 'ramda';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import { KeyboardDatePicker } from '@material-ui/pickers';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import TextField from '@material-ui/core/TextField';
-import Popover from '@material-ui/core/Popover';
-import IconButton from '@material-ui/core/IconButton';
-import { FilterListOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Grid from '@mui/material/Grid';
+import DatePicker from '@mui/lab/DatePicker';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+import Popover from '@mui/material/Popover';
+import IconButton from '@mui/material/IconButton';
+import { FilterListOutlined } from '@mui/icons-material';
 import * as PropTypes from 'prop-types';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import { ToyBrickSearchOutline } from 'mdi-material-ui';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import Dialog from '@material-ui/core/Dialog';
-import Chip from '@material-ui/core/Chip';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@mui/material/Dialog';
+import Chip from '@mui/material/Chip';
 import { withRouter } from 'react-router-dom';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
@@ -262,7 +263,7 @@ class Filters extends Component {
                     value: null,
                     type: 'Label',
                     color:
-                      theme.palette.type === 'dark' ? '#ffffff' : '#000000',
+                      theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
                   },
                   ...R.union(
                     labelledByEntities,
@@ -713,7 +714,7 @@ class Filters extends Component {
           ) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
-                <KeyboardDatePicker
+                <DatePicker
                   label={t(`filter_${filterKey}`)}
                   value={currentValue ? currentValue.id : null}
                   variant="inline"
@@ -742,7 +743,7 @@ class Filters extends Component {
                 onInputChange={this.searchEntities.bind(this, filterKey)}
                 inputValue={inputValues[filterKey] || ''}
                 onChange={this.handleChange.bind(this, filterKey)}
-                getOptionSelected={(option, value) => option.value === value.value
+                isOptionEqualToValue={(option, value) => option.value === value.value
                 }
                 renderInput={(params) => (
                   <TextField
@@ -798,7 +799,7 @@ class Filters extends Component {
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
             style={{ float: 'left' }}
-          >
+            size="large">
             <FilterListOutlined />
           </IconButton>
         )}
@@ -834,7 +835,7 @@ class Filters extends Component {
               options={entities[filterKey] ? entities[filterKey] : []}
               onInputChange={this.searchEntities.bind(this, filterKey)}
               onChange={this.handleChange.bind(this, filterKey)}
-              getOptionSelected={(option, value) => option.value === value}
+              isOptionEqualToValue={(option, value) => option.value === value}
               inputValue={inputValues[filterKey] || ''}
               renderInput={(params) => (
                 <TextField
@@ -913,7 +914,7 @@ class Filters extends Component {
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
             style={{ color: theme.palette.header.text }}
-          >
+            size="large">
             <ToyBrickSearchOutline fontSize="medium" />
           </IconButton>
         </Tooltip>

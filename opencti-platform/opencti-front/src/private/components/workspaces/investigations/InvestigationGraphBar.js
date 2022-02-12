@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
 import {
   YAxis,
   ZAxis,
@@ -23,7 +24,7 @@ import {
   ScatterPlotOutlined,
   DateRangeOutlined,
   LinkOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import {
   Video3d,
   SelectAll,
@@ -32,25 +33,25 @@ import {
   AutoFix,
 } from 'mdi-material-ui';
 import TimeRange from 'react-timeline-range-slider';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Tooltip from '@material-ui/core/Tooltip';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Drawer from '@material-ui/core/Drawer';
-import Popover from '@material-ui/core/Popover';
+import LinearProgress from '@mui/material/LinearProgress';
+import Tooltip from '@mui/material/Tooltip';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Drawer from '@mui/material/Drawer';
+import Popover from '@mui/material/Popover';
 import { Field, Form, Formik } from 'formik';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import MenuItem from '@material-ui/core/MenuItem';
-import Divider from '@material-ui/core/Divider';
-import Slide from '@material-ui/core/Slide';
-import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
+import Slide from '@mui/material/Slide';
+import DialogContentText from '@mui/material/DialogContentText';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
@@ -391,7 +392,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color={currentMode3D ? 'secondary' : 'primary'}
                     onClick={handleToggle3DMode.bind(this)}
-                  >
+                    size="large">
                     <Video3d />
                   </IconButton>
                 </span>
@@ -410,7 +411,7 @@ class InvestigationGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'vertical')}
                     disabled={currentModeFixed}
-                  >
+                    size="large">
                     <FamilyTree />
                   </IconButton>
                 </span>
@@ -429,7 +430,7 @@ class InvestigationGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'horizontal')}
                     disabled={currentModeFixed}
-                  >
+                    size="large">
                     <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                   </IconButton>
                 </span>
@@ -443,7 +444,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color={currentModeFixed ? 'primary' : 'secondary'}
                     onClick={handleToggleFixedMode.bind(this)}
-                  >
+                    size="large">
                     <ScatterPlotOutlined />
                   </IconButton>
                 </span>
@@ -453,17 +454,14 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color={displayTimeRange ? 'secondary' : 'primary'}
                     onClick={handleToggleDisplayTimeRange.bind(this)}
-                  >
+                    size="large">
                     <DateRangeOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
               <Tooltip title={t('Fit graph to canvas')}>
                 <span>
-                  <IconButton
-                    color="primary"
-                    onClick={handleZoomToFit.bind(this)}
-                  >
+                  <IconButton color="primary" onClick={handleZoomToFit.bind(this)} size="large">
                     <AspectRatio />
                   </IconButton>
                 </span>
@@ -474,7 +472,7 @@ class InvestigationGraphBar extends Component {
                     color="primary"
                     onClick={handleResetLayout.bind(this)}
                     disabled={currentModeFixed}
-                  >
+                    size="large">
                     <AutoFix />
                   </IconButton>
                 </span>
@@ -485,7 +483,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
-                  >
+                    size="large">
                     <FilterListOutlined />
                   </IconButton>
                 </span>
@@ -534,10 +532,7 @@ class InvestigationGraphBar extends Component {
               </Popover>
               <Tooltip title={t('Filter marking definitions')}>
                 <span>
-                  <IconButton
-                    color="primary"
-                    onClick={this.handleOpenMarkedBy.bind(this)}
-                  >
+                  <IconButton color="primary" onClick={this.handleOpenMarkedBy.bind(this)} size="large">
                     <CenterFocusStrongOutlined />
                   </IconButton>
                 </span>
@@ -589,7 +584,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenCreatedBy.bind(this)}
-                  >
+                    size="large">
                     <AccountBalanceOutlined />
                   </IconButton>
                 </span>
@@ -638,7 +633,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenSelectByType.bind(this)}
-                  >
+                    size="large">
                     <SelectGroup />
                   </IconButton>
                 </span>
@@ -678,10 +673,7 @@ class InvestigationGraphBar extends Component {
               </Popover>
               <Tooltip title={t('Select all nodes')}>
                 <span>
-                  <IconButton
-                    color="primary"
-                    onClick={handleSelectAll.bind(this)}
-                  >
+                  <IconButton color="primary" onClick={handleSelectAll.bind(this)} size="large">
                     <SelectAll />
                   </IconButton>
                 </span>
@@ -720,7 +712,7 @@ class InvestigationGraphBar extends Component {
                       disabled={
                         (viewLink && viewLink.includes('null')) || !viewEnabled
                       }
-                    >
+                      size="large">
                       <InfoOutlined />
                     </IconButton>
                   </span>
@@ -731,7 +723,7 @@ class InvestigationGraphBar extends Component {
                       color="primary"
                       onClick={this.handleOpenEditItem.bind(this)}
                       disabled={!editionEnabled}
-                    >
+                      size="large">
                       <EditOutlined />
                     </IconButton>
                   </span>
@@ -757,7 +749,7 @@ class InvestigationGraphBar extends Component {
                       color="primary"
                       onClick={this.handleOpenExpandElements.bind(this)}
                       disabled={!expandEnabled}
-                    >
+                      size="large">
                       <OpenWithOutlined />
                     </IconButton>
                   </span>
@@ -769,7 +761,7 @@ class InvestigationGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenCreateRelationship.bind(this)}
                         disabled={!relationEnabled}
-                      >
+                        size="large">
                         <LinkOutlined />
                       </IconButton>
                     </span>
@@ -799,7 +791,7 @@ class InvestigationGraphBar extends Component {
                         numberOfSelectedNodes === 0
                         && numberOfSelectedLinks === 0
                       }
-                    >
+                      size="large">
                       <DeleteOutlined />
                     </IconButton>
                   </span>

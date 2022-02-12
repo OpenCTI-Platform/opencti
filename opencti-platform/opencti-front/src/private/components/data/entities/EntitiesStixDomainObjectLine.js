@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
+import withStyles from '@mui/styles/withStyles';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
 import { compose, pathOr } from 'ramda';
-import Skeleton from '@material-ui/lab/Skeleton';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { truncate } from '../../../../utils/String';
@@ -318,7 +318,7 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
           <Checkbox edge="start" disabled={true} disableRipple={true} />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circle" width={30} height={30} />
+          <Skeleton animation="wave" variant="circular" width={30} height={30} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -329,7 +329,7 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -340,7 +340,7 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -351,7 +351,7 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -362,7 +362,7 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -373,7 +373,7 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width={140}
                   height="100%"
                 />
@@ -384,7 +384,7 @@ class EntitiesStixDomainObjectLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width={100}
                   height="100%"
                 />

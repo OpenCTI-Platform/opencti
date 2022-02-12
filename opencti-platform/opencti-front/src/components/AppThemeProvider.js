@@ -3,7 +3,11 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { pathOr } from 'ramda';
-import { createTheme, ThemeProvider } from '@material-ui/core/styles';
+import {
+  createTheme,
+  ThemeProvider,
+  StyledEngineProvider,
+} from '@mui/material/styles';
 import { UserContext } from '../utils/Security';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
@@ -68,7 +72,11 @@ const AppThemeProvider = (props) => {
       ),
     );
   }
-  return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;
+  return (
+    <StyledEngineProvider injectFirst>
+      <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>
+    </StyledEngineProvider>
+  );
 };
 
 AppThemeProvider.propTypes = {

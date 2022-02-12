@@ -3,27 +3,28 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
-import List from '@material-ui/core/List';
-import Radio from '@material-ui/core/Radio';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Table from '@material-ui/core/Table';
-import TableHead from '@material-ui/core/TableHead';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableRow from '@material-ui/core/TableRow';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+import List from '@mui/material/List';
+import Radio from '@mui/material/Radio';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Table from '@mui/material/Table';
+import TableHead from '@mui/material/TableHead';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableRow from '@mui/material/TableRow';
+import IconButton from '@mui/material/IconButton';
 import {
   AddOutlined,
   DeleteOutlined,
@@ -32,20 +33,20 @@ import {
   BrushOutlined,
   CenterFocusStrong,
   CancelOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import { Label, Merge } from 'mdi-material-ui';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import Drawer from '@material-ui/core/Drawer';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
-import Chip from '@material-ui/core/Chip';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import Alert from '@material-ui/lab/Alert';
-import TextField from '@material-ui/core/TextField';
-import Grid from '@material-ui/core/Grid';
+import Autocomplete from '@mui/material/Autocomplete';
+import Drawer from '@mui/material/Drawer';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
+import Chip from '@mui/material/Chip';
+import DialogTitle from '@mui/material/DialogTitle';
+import Alert from '@mui/material/Alert';
+import TextField from '@mui/material/TextField';
+import Grid from '@mui/material/Grid';
 import {
   map, pathOr, pipe, union,
 } from 'ramda';
@@ -823,7 +824,7 @@ class ToolBar extends Component {
               aria-label="clear"
               disabled={numberOfSelectedElements === 0 || this.state.processing}
               onClick={handleClearSelectedElements.bind(this)}
-            >
+              size="large">
               <ClearOutlined fontSize="small" />
             </IconButton>
           </Typography>
@@ -837,7 +838,7 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleOpenUpdate.bind(this)}
                   color="primary"
-                >
+                  size="large">
                   <BrushOutlined />
                 </IconButton>
               </span>
@@ -856,7 +857,7 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleOpenMerge.bind(this)}
                   color="primary"
-                >
+                  size="large">
                   <Merge />
                 </IconButton>
               </span>
@@ -872,7 +873,7 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleLaunchDelete.bind(this)}
                   color="primary"
-                >
+                  size="large">
                   <DeleteOutlined />
                 </IconButton>
               </span>
@@ -930,7 +931,7 @@ class ToolBar extends Component {
                           padding: '2px 5px 2px 5px',
                           marginRight: 5,
                           color:
-                            theme.palette.type === 'dark'
+                            theme.palette.mode === 'dark'
                               ? '#000000'
                               : '#ffffff',
                           backgroundColor: theme.palette.primary.main,
@@ -1041,7 +1042,7 @@ class ToolBar extends Component {
                               padding: '2px 5px 2px 5px',
                               marginRight: 5,
                               color:
-                                theme.palette.type === 'dark'
+                                theme.palette.mode === 'dark'
                                   ? '#000000'
                                   : '#ffffff',
                               backgroundColor: theme.palette.primary.main,
@@ -1102,7 +1103,7 @@ class ToolBar extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseUpdate.bind(this)}
-            >
+              size="large">
               <CloseOutlined fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Update entities')}</Typography>
@@ -1117,7 +1118,7 @@ class ToolBar extends Component {
                     aria-label="Delete"
                     className={classes.stepCloseButton}
                     onClick={this.handleRemoveStep.bind(this, i)}
-                  >
+                    size="large">
                     <CancelOutlined fontSize="small" />
                   </IconButton>
                   <Grid container={true} spacing={3}>
@@ -1186,7 +1187,7 @@ class ToolBar extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseMerge.bind(this)}
-            >
+              size="large">
               <CloseOutlined fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Merge entities')}</Typography>

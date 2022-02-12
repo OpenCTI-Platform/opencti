@@ -3,12 +3,12 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import Chip from '@material-ui/core/Chip';
+import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -147,7 +147,7 @@ const TaxiiCollectionEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-        >
+          size="large">
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6">{t('Update a TAXII collection')}</Typography>

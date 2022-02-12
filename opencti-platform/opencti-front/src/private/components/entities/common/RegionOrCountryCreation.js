@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import SpeedDial from '@material-ui/lab/SpeedDial';
-import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
-import { Close, FlagOutlined, LocalPlayOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import { Close, FlagOutlined, LocalPlayOutlined } from '@mui/icons-material';
 import {
   compose, pipe, pluck, assoc,
 } from 'ramda';
@@ -240,7 +241,7 @@ class RegionOrCountryCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseRegion.bind(this)}
-            >
+              size="large">
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create a region')}</Typography>
@@ -321,7 +322,7 @@ class RegionOrCountryCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseCountry.bind(this)}
-            >
+              size="large">
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create a country')}</Typography>

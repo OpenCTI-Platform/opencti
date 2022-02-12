@@ -3,22 +3,22 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import Chip from '@material-ui/core/Chip';
-import Slide from '@material-ui/core/Slide';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import { Delete, LayersRemove } from 'mdi-material-ui';
-import { DeleteSweepOutlined } from '@material-ui/icons';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
+import { DeleteSweepOutlined } from '@mui/icons-material';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 import { withRouter } from 'react-router-dom';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import inject18n from '../../../../components/i18n';
@@ -240,7 +240,7 @@ class ConnectorComponent extends Component {
                   onClick={this.handleOpenResetState.bind(this, connector.id)}
                   aria-haspopup="true"
                   color="primary"
-                >
+                  size="large">
                   <LayersRemove />
                 </IconButton>
               </Tooltip>
@@ -249,7 +249,7 @@ class ConnectorComponent extends Component {
                   onClick={this.handleOpenClearWorks.bind(this, connector.id)}
                   aria-haspopup="true"
                   color="primary"
-                >
+                  size="large">
                   <DeleteSweepOutlined />
                 </IconButton>
               </Tooltip>
@@ -259,7 +259,7 @@ class ConnectorComponent extends Component {
                   aria-haspopup="true"
                   color="primary"
                   disabled={connector.active}
-                >
+                  size="large">
                   <Delete />
                 </IconButton>
               </Tooltip>

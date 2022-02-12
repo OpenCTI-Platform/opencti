@@ -11,11 +11,11 @@ import {
   yellow,
   indigo,
   teal,
-} from '@material-ui/core/colors';
+} from '@mui/material/colors';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Avatar from '@material-ui/core/Avatar';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Avatar from '@mui/material/Avatar';
 import {
   AddOutlined,
   EditOutlined,
@@ -23,23 +23,23 @@ import {
   LinkOffOutlined,
   HelpOutlined,
   LanguageOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Badge from '@material-ui/core/Badge';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import Slide from '@material-ui/core/Slide';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Badge from '@mui/material/Badge';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import DialogContentText from '@mui/material/DialogContentText';
+import Slide from '@mui/material/Slide';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 
@@ -279,7 +279,7 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
         <div className={classes.avatar}>
           <Badge
             color="secondary"
-            overlap="circle"
+            overlap="circular"
             badgeContent="M"
             invisible={node.context_data.commit === null}
           >

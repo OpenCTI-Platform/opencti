@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Slide from '@material-ui/core/Slide';
+import withStyles from '@mui/styles/withStyles';
+import Slide from '@mui/material/Slide';
 import { createRefetchContainer } from 'react-relay';
-import List from '@material-ui/core/List';
+import List from '@mui/material/List';
 import { interval } from 'rxjs';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
+import ListSubheader from '@mui/material/ListSubheader';
+import IconButton from '@mui/material/IconButton';
+import { Close } from '@mui/icons-material';
 import StixDomainObjectsExportCreation from './StixDomainObjectsExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import FileLine from '../files/FileLine';
@@ -95,7 +95,7 @@ class StixDomainObjectsExportsContentComponent extends Component {
               color="inherit"
               classes={{ root: classes.buttonClose }}
               onClick={handleToggle.bind(this)}
-            >
+              size="large">
               <Close />
             </IconButton>
             <div className="clearfix" />

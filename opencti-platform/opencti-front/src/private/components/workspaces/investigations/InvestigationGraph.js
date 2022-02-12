@@ -9,7 +9,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import { withRouter } from 'react-router-dom';
-import { withTheme } from '@material-ui/core/styles';
+import withTheme from '@mui/styles/withTheme';
 import inject18n from '../../../../components/i18n';
 import InvestigationGraphBar from './InvestigationGraphBar';
 import {

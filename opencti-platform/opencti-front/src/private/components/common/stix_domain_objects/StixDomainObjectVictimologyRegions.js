@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import { MapOutlined, TableChartOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import { MapOutlined, TableChartOutlined } from '@mui/icons-material';
 import { createRefetchContainer } from 'react-relay';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import SearchInput from '../../../../components/SearchInput';
@@ -64,7 +64,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
             <IconButton
               color={currentView === 'map' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'map')}
-            >
+              size="large">
               <MapOutlined />
             </IconButton>
           </Tooltip>
@@ -72,7 +72,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
             <IconButton
               color={currentView === 'list' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'list')}
-            >
+              size="large">
               <TableChartOutlined />
             </IconButton>
           </Tooltip>

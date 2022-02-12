@@ -4,8 +4,8 @@ import { Field } from 'formik';
 import {
   assoc, compose, map, pipe, prop, sortBy, toLower,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
+import withStyles from '@mui/styles/withStyles';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../components/i18n';
 import SelectField from '../../../components/SelectField';
 import { QueryRenderer } from '../../../relay/environment';
