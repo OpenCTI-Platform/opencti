@@ -82,8 +82,7 @@
     "prettier": "2.5.1",
     "react-scripts": "5.0.0",
     "relay-compiler": "13.1.1",
-    "relay-devtools": "1.4.0",
-    "sass-loader": "12.4.0"
+    "relay-devtools": "1.4.0"
   },
   "babelMacros": {
     "relay": {}
@@ -120,5 +119,8 @@
     "not ie <= 11",
     "not op_mini all"
   ],
+  "resolutions": {
+    "node-sass": "7.0.1"
+  },
   "packageManager": "yarn@3.1.1"
 }
