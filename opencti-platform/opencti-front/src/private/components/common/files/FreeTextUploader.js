@@ -135,7 +135,8 @@ class FreeTextUploader extends Component {
           <IconButton
             onClick={this.handleOpen.bind(this)}
             color={color || 'primary'}
-            size="large">
+            size="large"
+          >
             <TextFieldsOutlined />
           </IconButton>
         </Tooltip>

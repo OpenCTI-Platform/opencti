@@ -69,9 +69,7 @@ class WorkersStatusComponent extends Component {
   }
 
   render() {
-    const {
-      classes, t, n, data,
-    } = this.props;
+    const { classes, t, n, data } = this.props;
     const { consumers, overview } = data.rabbitMQMetrics;
     const { docs, search, indexing } = data.elasticSearchMetrics;
     const currentReadOperations = search.query_total;

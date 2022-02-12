@@ -1,6 +1,4 @@
-import {
-  append, keys, pipe, filter, map, split, includes,
-} from 'ramda';
+import { append, keys, pipe, filter, map, split, includes } from 'ramda';
 
 const relationsTypesMapping = {
   'Attack-Pattern_Malware': ['delivers', 'uses'],

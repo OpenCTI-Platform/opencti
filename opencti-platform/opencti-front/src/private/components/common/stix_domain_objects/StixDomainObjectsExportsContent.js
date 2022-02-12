@@ -95,7 +95,8 @@ class StixDomainObjectsExportsContentComponent extends Component {
               color="inherit"
               classes={{ root: classes.buttonClose }}
               onClick={handleToggle.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close />
             </IconButton>
             <div className="clearfix" />

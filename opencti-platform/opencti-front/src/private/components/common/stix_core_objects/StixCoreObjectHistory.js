@@ -35,9 +35,7 @@ class StixCoreObjectHistory extends Component {
   }
 
   render() {
-    const {
-      classes, t, stixCoreObjectId, withoutRelations,
-    } = this.props;
+    const { classes, t, stixCoreObjectId, withoutRelations } = this.props;
     const { entitySearchTerm, relationsSearchTerm } = this.state;
     return (
       <Grid

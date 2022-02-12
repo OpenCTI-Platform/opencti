@@ -146,7 +146,8 @@ const FileWorkComponent = (props) => {
                     color="primary"
                     onClick={() => deleteWork(work.id)}
                     disabled={work.status === 'deleting'}
-                    size="large">
+                    size="large"
+                  >
                     <DeleteOutlined />
                   </IconButton>
                 </ListItemSecondaryAction>

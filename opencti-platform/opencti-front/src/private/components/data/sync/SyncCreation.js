@@ -178,7 +178,8 @@ const SyncCreation = (props) => {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6">{t('Create a synchronizer')}</Typography>
@@ -197,9 +198,7 @@ const SyncCreation = (props) => {
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({
-              submitForm, handleReset, isSubmitting, values,
-            }) => (
+            {({ submitForm, handleReset, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}

@@ -58,9 +58,7 @@ class StixCyberObservablesExportsContentComponent extends Component {
   }
 
   render() {
-    const {
-      classes, t, data, paginationOptions, handleToggle, context,
-    } = this.props;
+    const { classes, t, data, paginationOptions, handleToggle, context } = this.props;
     const stixCyberObservablesExportFiles = pathOr(
       [],
       ['stixCyberObservablesExportFiles', 'edges'],
@@ -86,7 +84,8 @@ class StixCyberObservablesExportsContentComponent extends Component {
               color="inherit"
               classes={{ root: classes.buttonClose }}
               onClick={handleToggle.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close />
             </IconButton>
             <div className="clearfix" />

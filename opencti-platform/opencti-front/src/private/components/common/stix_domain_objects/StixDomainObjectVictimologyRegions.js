@@ -64,7 +64,8 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
             <IconButton
               color={currentView === 'map' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'map')}
-              size="large">
+              size="large"
+            >
               <MapOutlined />
             </IconButton>
           </Tooltip>
@@ -72,7 +73,8 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
             <IconButton
               color={currentView === 'list' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'list')}
-              size="large">
+              size="large"
+            >
               <TableChartOutlined />
             </IconButton>
           </Tooltip>

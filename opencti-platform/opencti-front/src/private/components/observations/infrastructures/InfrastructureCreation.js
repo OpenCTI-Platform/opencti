@@ -8,9 +8,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import {
-  compose, pluck, evolve, path,
-} from 'ramda';
+import { compose, pluck, evolve, path } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -177,7 +175,8 @@ class InfrastructureCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">

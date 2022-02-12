@@ -409,7 +409,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -542,7 +543,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
-                size="large">
+                size="large"
+              >
                 <Close fontSize="small" />
               </IconButton>
               <Typography variant="h6">{t('Create a relationship')}</Typography>
@@ -714,7 +716,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large">
+            size="large"
+          >
             <Add fontSize="small" />
           </IconButton>
         ) : (

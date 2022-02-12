@@ -17,9 +17,7 @@ const styles = () => ({
 
 class GlobalActivityIndicators extends Component {
   render() {
-    const {
-      t, widget, startDate, endDate, field, timeField,
-    } = this.props;
+    const { t, widget, startDate, endDate, field, timeField } = this.props;
     let dateAttribute = 'created_at';
     if (timeField === 'functional') {
       dateAttribute = 'valid_from';

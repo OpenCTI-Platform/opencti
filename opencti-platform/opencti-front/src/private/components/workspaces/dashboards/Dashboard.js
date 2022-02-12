@@ -487,9 +487,7 @@ class DashboardComponent extends Component {
   }
 
   render() {
-    const {
-      t, classes, workspace, noToolbar,
-    } = this.props;
+    const { t, classes, workspace, noToolbar } = this.props;
     const manifest = this.decodeManifest();
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
     let timeField = R.propOr('technical', 'timeField', manifest.config);

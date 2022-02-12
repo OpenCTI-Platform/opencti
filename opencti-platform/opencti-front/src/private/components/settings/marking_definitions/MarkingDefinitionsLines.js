@@ -28,9 +28,7 @@ export const markingDefinitionsLinesSearchQuery = graphql`
 
 class MarkingDefinitionsLines extends Component {
   render() {
-    const {
-      initialLoading, dataColumns, relay, paginationOptions,
-    } = this.props;
+    const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}

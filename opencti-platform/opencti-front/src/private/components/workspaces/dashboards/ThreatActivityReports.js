@@ -16,9 +16,7 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const {
-      t, widget, startDate, endDate,
-    } = this.props;
+    const { t, widget, startDate, endDate } = this.props;
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (

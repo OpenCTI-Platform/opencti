@@ -46,9 +46,7 @@ const inlineStyles = {
 
 class ItemNumberDifference extends Component {
   render() {
-    const {
-      t, difference, classes, description,
-    } = this.props;
+    const { t, difference, classes, description } = this.props;
     if (difference < 0) {
       return (
         <div className={classes.diff} style={inlineStyles.red}>

@@ -115,23 +115,21 @@ class StixCyberObservableRelationshipPopover extends Component {
   }
 
   render() {
-    const {
-      classes, t, stixCyberObservableRelationshipId, disabled,
-    } = this.props;
+    const { classes, t, stixCyberObservableRelationshipId, disabled } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           disabled={disabled}
-          size="large">
+          size="large"
+        >
           <MoreVertOutlined />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}

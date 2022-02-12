@@ -1,15 +1,11 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, flatten, propOr, pluck, includes, uniq, pipe,
-} from 'ramda';
+import { compose, flatten, propOr, pluck, includes, uniq, pipe } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import {
-  MapContainer, TileLayer, GeoJSON, Marker,
-} from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
@@ -50,9 +46,7 @@ const LocationMiniMap = (props) => {
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const {
-    t, center, zoom, classes, theme, city,
-  } = props;
+  const { t, center, zoom, classes, theme, city } = props;
   const position = city && city.latitude ? [city.latitude, city.longitude] : null;
   return (
     <div style={{ height: '100%' }}>

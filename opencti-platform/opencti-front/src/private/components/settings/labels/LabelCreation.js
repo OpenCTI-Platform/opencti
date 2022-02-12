@@ -179,7 +179,8 @@ class LabelCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create a label')}</Typography>
@@ -238,9 +239,7 @@ class LabelCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t, classes, open, inputValue, handleClose,
-    } = this.props;
+    const { t, classes, open, inputValue, handleClose } = this.props;
     return (
       <div>
         <Formik

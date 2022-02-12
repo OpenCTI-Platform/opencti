@@ -235,9 +235,7 @@ class CampaignEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, campaign, context, enableReferences,
-    } = this.props;
+    const { t, campaign, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], campaign) === null
       ? ''
       : {

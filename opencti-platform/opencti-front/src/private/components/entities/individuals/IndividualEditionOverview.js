@@ -238,9 +238,7 @@ class IndividualEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, individual, context, enableReferences,
-    } = this.props;
+    const { t, individual, context, enableReferences } = this.props;
     const external = individual.external === true;
     const createdBy = pathOr(null, ['createdBy', 'name'], individual) === null
       ? ''

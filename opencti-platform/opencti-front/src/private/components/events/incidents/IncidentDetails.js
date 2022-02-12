@@ -24,9 +24,7 @@ const styles = () => ({
 
 class IncidentDetailsComponent extends Component {
   render() {
-    const {
-      fld, t, classes, incident,
-    } = this.props;
+    const { fld, t, classes, incident } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

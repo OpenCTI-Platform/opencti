@@ -65,9 +65,7 @@ const inlineStyles = {
 
 class ItemPatternType extends Component {
   render() {
-    const {
-      classes, variant, label, t,
-    } = this.props;
+    const { classes, variant, label, t } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (this.props.color) {
       return (

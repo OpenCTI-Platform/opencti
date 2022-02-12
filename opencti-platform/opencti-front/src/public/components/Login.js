@@ -4,9 +4,7 @@ import { compose, filter } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import Button from '@mui/material/Button';
-import {
-  Google, KeyOutline, Facebook, Github,
-} from 'mdi-material-ui';
+import { Google, KeyOutline, Facebook, Github } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@mui/material/Paper';
 import { APP_BASE_PATH } from '../../relay/environment';

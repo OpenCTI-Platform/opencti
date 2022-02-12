@@ -50,9 +50,7 @@ const styles = (theme) => ({
 
 class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component {
   render() {
-    const {
-      t, classes, entityId, data, paginationOptions,
-    } = this.props;
+    const { t, classes, entityId, data, paginationOptions } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>

@@ -87,7 +87,8 @@ class AttackPatternSubAttackPatternsComponent extends Component {
                     this,
                     subAttackPattern,
                   )}
-                  size="large">
+                  size="large"
+                >
                   <LinkOff />
                 </IconButton>
               </ListItemSecondaryAction>

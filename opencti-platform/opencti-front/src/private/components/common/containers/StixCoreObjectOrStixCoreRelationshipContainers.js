@@ -436,9 +436,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       stixDomainObjectOrStixCoreRelationship,
       authorId,
     } = this.props;
-    const {
-      view, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
     const reportFilterClass = reportType !== 'all' && reportType !== undefined
       ? reportType.replace(/_/g, ' ')
       : '';
@@ -504,7 +502,8 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
                     <IconButton
                       color="secondary"
                       onClick={this.handleChangeView.bind(this, 'lines')}
-                      size="large">
+                      size="large"
+                    >
                       <TableChartOutlined />
                     </IconButton>
                   </Tooltip>
@@ -512,7 +511,8 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
                     <IconButton
                       color="primary"
                       onClick={this.handleChangeView.bind(this, 'graph')}
-                      size="large">
+                      size="large"
+                    >
                       <GraphOutline />
                     </IconButton>
                   </Tooltip>

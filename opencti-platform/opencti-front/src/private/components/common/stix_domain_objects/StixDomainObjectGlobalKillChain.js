@@ -69,9 +69,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, entityLink, paginationOptions,
-    } = this.props;
+    const { t, classes, data, entityLink, paginationOptions } = this.props;
     // Extract all kill chain phases
     const killChainPhases = pipe(
       // eslint-disable-next-line no-nested-ternary
@@ -155,7 +153,8 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                         stixRelationship.id,
                       )}
                       aria-haspopup="true"
-                      size="large">
+                      size="large"
+                    >
                       {this.state.expandedLines[stixRelationship.id]
                       === false ? (
                         <ExpandMore />

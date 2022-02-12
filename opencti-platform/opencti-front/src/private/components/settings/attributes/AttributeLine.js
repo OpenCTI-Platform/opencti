@@ -45,28 +45,32 @@ const styles = (theme) => ({
 });
 
 const AttributeLineComponent = (props) => {
-  const {
-    classes, node, dataColumns, paginationOptions, refetch,
-  } = props;
+  const { classes, node, dataColumns, paginationOptions, refetch } = props;
   return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
-        <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ShortTextOutlined />
-        </ListItemIcon>
-        <ListItemText
-          primary={
-            <div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
-                {node.value}
-              </div>
+    <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItemIcon classes={{ root: classes.itemIcon }}>
+        <ShortTextOutlined />
+      </ListItemIcon>
+      <ListItemText
+        primary={
+          <div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.value.width }}
+            >
+              {node.value}
             </div>
-          }
+          </div>
+        }
+      />
+      <ListItemSecondaryAction>
+        <AttributePopover
+          attribute={node}
+          refetch={refetch}
+          paginationOptions={paginationOptions}
         />
-        <ListItemSecondaryAction>
-          <AttributePopover attribute={node} refetch={refetch}
-                            paginationOptions={paginationOptions} />
-        </ListItemSecondaryAction>
-      </ListItem>
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };
 
@@ -99,12 +103,20 @@ class AttributeLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.value.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.value.width }}
+              >
                 <Skeleton
                   animation="wave"
                   variant="rectangular"

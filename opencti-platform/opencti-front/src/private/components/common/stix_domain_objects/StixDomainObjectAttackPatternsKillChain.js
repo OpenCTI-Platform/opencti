@@ -67,7 +67,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             <IconButton
               color={currentView === 'matrix' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'matrix')}
-              size="large">
+              size="large"
+            >
               <ViewColumnOutlined />
             </IconButton>
           </Tooltip>
@@ -75,7 +76,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             <IconButton
               color={currentView === 'list' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'list')}
-              size="large">
+              size="large"
+            >
               <ViewListOutlined />
             </IconButton>
           </Tooltip>
@@ -85,7 +87,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                 currentView === 'courses-of-action' ? 'secondary' : 'primary'
               }
               onClick={handleChangeView.bind(this, 'courses-of-action')}
-              size="large">
+              size="large"
+            >
               <ProgressWrench />
             </IconButton>
           </Tooltip>

@@ -90,9 +90,7 @@ const styles = (theme) => ({
 });
 
 const StixCoreObjectEnrichment = (props) => {
-  const {
-    stixCoreObject, connectorsForImport, relay, classes, t, nsdt,
-  } = props;
+  const { stixCoreObject, connectorsForImport, relay, classes, t, nsdt } = props;
   const { id } = stixCoreObject;
   const file = stixCoreObject.importFiles && stixCoreObject.importFiles.edges.length > 0
     ? stixCoreObject.importFiles.edges[0].node
@@ -191,7 +189,8 @@ const StixCoreObjectEnrichment = (props) => {
                           ? askJob(connector.id)
                           : askEnrich(connector.id))
                         }
-                        size="large">
+                        size="large"
+                      >
                         <Refresh />
                       </IconButton>
                     </Tooltip>
@@ -259,7 +258,10 @@ const StixCoreObjectEnrichment = (props) => {
                         </ListItemIcon>
                         <ListItemText primary={nsdt(work.timestamp)} />
                         <ListItemSecondaryAction style={{ right: 0 }}>
-                          <IconButton onClick={() => deleteWork(work.id)} size="large">
+                          <IconButton
+                            onClick={() => deleteWork(work.id)}
+                            size="large"
+                          >
                             <Delete />
                           </IconButton>
                         </ListItemSecondaryAction>

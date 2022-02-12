@@ -13,12 +13,12 @@ import { environment } from './relay/environment';
 const { Suspense } = React;
 
 ReactDOM.render(
-    <RelayEnvironmentProvider environment={environment}>
-        <Suspense fallback={'Loading...'}>
-            <App />
-        </Suspense>
-    </RelayEnvironmentProvider>,
-    document.getElementById('root'),
+  <RelayEnvironmentProvider environment={environment}>
+    <Suspense fallback={'Loading...'}>
+      <App />
+    </Suspense>
+  </RelayEnvironmentProvider>,
+  document.getElementById('root'),
 );
 
 // If you want your app to work offline and load faster, you can change

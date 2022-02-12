@@ -156,9 +156,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
   }
 
   render() {
-    const {
-      t, fd, classes, stixCyberObservable,
-    } = this.props;
+    const { t, fd, classes, stixCyberObservable } = this.props;
     const indicators = map((n) => n.node, stixCyberObservable.indicators.edges);
     return (
       <div style={{ height: '100%' }}>
@@ -174,7 +172,8 @@ class StixCyberObservableIndicatorsComponent extends Component {
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large">
+            size="large"
+          >
             <Add fontSize="small" />
           </IconButton>
           <Menu

@@ -69,9 +69,7 @@ const styles = (theme) => ({
 
 class RegionLineComponent extends Component {
   render() {
-    const {
-      classes, subRegions, countries, node, isSubRegion, keyword,
-    } = this.props;
+    const { classes, subRegions, countries, node, isSubRegion, keyword } = this.props;
     const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
@@ -148,11 +146,21 @@ class RegionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
-            <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              height={20}
+            />
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>

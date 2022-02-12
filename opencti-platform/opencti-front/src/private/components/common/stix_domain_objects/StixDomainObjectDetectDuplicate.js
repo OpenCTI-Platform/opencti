@@ -167,7 +167,11 @@ class StixDomainObjectDetectDuplicate extends Component {
                           )}
                       </div>
                       <ListItemSecondaryAction>
-                        <IconButton component={Link} to={`${link}/${element.node.id}`} size="large">
+                        <IconButton
+                          component={Link}
+                          to={`${link}/${element.node.id}`}
+                          size="large"
+                        >
                           <VisibilityOutlined />
                         </IconButton>
                       </ListItemSecondaryAction>

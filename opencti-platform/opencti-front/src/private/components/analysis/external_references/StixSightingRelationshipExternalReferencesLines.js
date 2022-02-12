@@ -166,9 +166,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
   }
 
   render() {
-    const {
-      t, classes, stixSightingRelationshipId, data,
-    } = this.props;
+    const { t, classes, stixSightingRelationshipId, data } = this.props;
     const { expanded } = this.state;
     const externalReferencesEdges = data.stixSightingRelationship.externalReferences.edges;
     const expandable = externalReferencesEdges.length > 7;

@@ -170,9 +170,7 @@ class Infrastructures extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,

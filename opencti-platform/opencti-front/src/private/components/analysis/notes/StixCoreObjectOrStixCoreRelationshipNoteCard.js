@@ -240,7 +240,8 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             component={Link}
             to={`/dashboard/analysis/notes/${node.id}`}
             classes={{ root: classes.external }}
-            size="large">
+            size="large"
+          >
             <OpenInNewOutlined fontSize="small" />
           </IconButton>
         </CardContent>

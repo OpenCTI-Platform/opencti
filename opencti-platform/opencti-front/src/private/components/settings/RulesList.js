@@ -162,9 +162,7 @@ class RulesListComponent extends Component {
   }
 
   render() {
-    const {
-      classes, t, data, keyword, nsdt,
-    } = this.props;
+    const { classes, t, data, keyword, nsdt } = this.props;
     const sortByNameCaseInsensitive = R.sortBy(
       R.compose(R.toLower, R.prop('name')),
     );

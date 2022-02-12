@@ -82,9 +82,7 @@ class StixCoreRelationshipCreationFromEntityLinesContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, handleSelect, targetEntities,
-    } = this.props;
+    const { t, classes, data, handleSelect, targetEntities } = this.props;
     const targetEntitiesIds = R.pluck('id', targetEntities);
     const stixDomainObjectsNodes = R.map(
       (n) => n.node,

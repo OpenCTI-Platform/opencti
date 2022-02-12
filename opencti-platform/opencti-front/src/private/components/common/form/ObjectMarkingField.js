@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import {
-  compose, pathOr, pipe, map,
-} from 'ramda';
+import { compose, pathOr, pipe, map } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { CenterFocusStrong } from '@mui/icons-material';
 import { Field } from 'formik';
@@ -70,9 +68,7 @@ class ObjectMarkingField extends Component {
   }
 
   render() {
-    const {
-      t, name, style, classes, onChange, helpertext, disabled,
-    } = this.props;
+    const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
     return (
       <Field
         component={AutocompleteField}

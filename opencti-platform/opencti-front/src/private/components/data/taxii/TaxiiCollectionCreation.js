@@ -184,7 +184,8 @@ const TaxiiCollectionCreation = (props) => {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6">{t('Create a TAXII collection')}</Typography>

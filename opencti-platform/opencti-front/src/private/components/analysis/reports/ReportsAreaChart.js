@@ -58,9 +58,7 @@ const reportsAreaChartTimeSeriesQuery = graphql`
 
 class ReportsAreaChart extends Component {
   renderContent() {
-    const {
-      t, md, nsd, reportType, startDate, endDate, theme,
-    } = this.props;
+    const { t, md, nsd, reportType, startDate, endDate, theme } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
@@ -166,9 +164,7 @@ class ReportsAreaChart extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

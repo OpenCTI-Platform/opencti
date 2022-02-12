@@ -44,9 +44,7 @@ const styles = (theme) => ({
 
 class PositionLineComponent extends Component {
   render() {
-    const {
-      fd, classes, dataColumns, node,
-    } = this.props;
+    const { fd, classes, dataColumns, node } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -119,7 +117,12 @@ class PositionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

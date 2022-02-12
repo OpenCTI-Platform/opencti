@@ -25,9 +25,7 @@ const styles = () => ({
 
 class SystemOverviewComponent extends Component {
   render() {
-    const {
-      t, fldt, classes, system,
-    } = this.props;
+    const { t, fldt, classes, system } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>

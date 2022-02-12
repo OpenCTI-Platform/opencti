@@ -76,9 +76,7 @@ const taxiiCollectionValidation = (t) => Yup.object().shape({
 });
 
 const TaxiiCollectionEditionContainer = (props) => {
-  const {
-    t, classes, handleClose, taxiiCollection,
-  } = props;
+  const { t, classes, handleClose, taxiiCollection } = props;
   const initialValues = R.pickAll(['name', 'description'], taxiiCollection);
   const [filters, setFilters] = useState(
     JSON.parse(props.taxiiCollection.filters),
@@ -145,7 +143,8 @@ const TaxiiCollectionEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large">
+          size="large"
+        >
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6">{t('Update a TAXII collection')}</Typography>

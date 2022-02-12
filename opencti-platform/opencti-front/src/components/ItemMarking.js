@@ -71,9 +71,7 @@ const inlineStylesLight = {
 
 class ItemMarking extends Component {
   render() {
-    const {
-      classes, variant, label, color, theme,
-    } = this.props;
+    const { classes, variant, label, color, theme } = this.props;
     const tuncatedLabel = truncate(label, 20);
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (color) {

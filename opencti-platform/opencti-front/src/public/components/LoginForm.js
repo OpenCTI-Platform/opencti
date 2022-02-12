@@ -71,6 +71,7 @@ const LoginForm = (props) => {
               name="email"
               label={t('Login')}
               fullWidth={true}
+              variant="standard"
             />
             <Field
               component={TextField}
@@ -78,6 +79,7 @@ const LoginForm = (props) => {
               label={t('Password')}
               type="password"
               fullWidth={true}
+              variant="standard"
               style={{ marginTop: 20 }}
             />
             <Button

@@ -334,7 +334,8 @@ class StixDomainObjectHeader extends Component {
                   color="secondary"
                   aria-label="Alias"
                   onClick={this.handleToggleCreateAlias.bind(this)}
-                  size="large">
+                  size="large"
+                >
                   {this.state.openAlias ? (
                     <Close fontSize="small" />
                   ) : (
@@ -480,7 +481,8 @@ class StixDomainObjectHeader extends Component {
                               ? this.handleOpenCommitDelete.bind(this, label)
                               : this.deleteAlias.bind(this, label)
                           }
-                          size="large">
+                          size="large"
+                        >
                           <Delete />
                         </IconButton>
                       </ListItemSecondaryAction>

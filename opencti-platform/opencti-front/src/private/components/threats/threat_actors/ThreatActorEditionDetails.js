@@ -168,9 +168,7 @@ class ThreatActorEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, threatActor, context, enableReferences,
-    } = this.props;
+    const { t, threatActor, context, enableReferences } = this.props;
     const initialValues = R.pipe(
       R.assoc('first_seen', dateFormat(threatActor.first_seen)),
       R.assoc('last_seen', dateFormat(threatActor.last_seen)),

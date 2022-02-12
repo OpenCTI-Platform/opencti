@@ -157,9 +157,7 @@ class TasksListComponent extends Component {
   }
 
   render() {
-    const {
-      classes, data, t, nsdt, n,
-    } = this.props;
+    const { classes, data, t, nsdt, n } = this.props;
     const tasks = R.pathOr([], ['tasks', 'edges'], data);
     return (
       <div>

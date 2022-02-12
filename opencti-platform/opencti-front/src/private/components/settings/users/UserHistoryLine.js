@@ -252,9 +252,7 @@ class UserHistoryLineComponent extends Component {
   }
 
   render() {
-    const {
-      nsdt, classes, node, t,
-    } = this.props;
+    const { nsdt, classes, node, t } = this.props;
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>

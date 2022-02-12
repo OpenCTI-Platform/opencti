@@ -46,7 +46,10 @@ const SelectField = (props) => {
       style={props.containerstyle}
       error={meta.touched && !isNil(meta.error)}
     >
-      <InputLabel style={{ color: props.disabled ? '#4f4f4f' : '' }}>
+      <InputLabel
+        style={{ color: props.disabled ? '#4f4f4f' : '' }}
+        variant={props.variant}
+      >
         {props.label}
       </InputLabel>
       <MuiSelect

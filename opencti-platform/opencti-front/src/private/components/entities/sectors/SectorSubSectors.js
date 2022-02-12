@@ -74,7 +74,8 @@ class SectorSubSectorsComponent extends Component {
                   <IconButton
                     aria-label="Remove"
                     onClick={this.removeSubSector.bind(this, subSectorEdge)}
-                    size="large">
+                    size="large"
+                  >
                     <LinkOff />
                   </IconButton>
                 </ListItemSecondaryAction>

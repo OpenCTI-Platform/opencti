@@ -261,9 +261,7 @@ class StixCyberObservables extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm, filters, openExports,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters, openExports } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       types: ['Artifact'],

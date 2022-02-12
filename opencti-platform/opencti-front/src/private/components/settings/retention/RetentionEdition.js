@@ -88,9 +88,7 @@ const retentionValidation = (t) => Yup.object().shape({
 });
 
 const RetentionEditionContainer = (props) => {
-  const {
-    t, classes, handleClose, retentionRule,
-  } = props;
+  const { t, classes, handleClose, retentionRule } = props;
   const initialValues = R.pickAll(['name', 'max_retention'], retentionRule);
   const [filters, setFilters] = useState(
     JSON.parse(props.retentionRule.filters),
@@ -170,7 +168,8 @@ const RetentionEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large">
+          size="large"
+        >
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6">{t('Update a retention policy')}</Typography>

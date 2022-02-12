@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, last, map, toPairs,
-} from 'ramda';
+import { compose, last, map, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -110,9 +108,7 @@ class ListLines extends Component {
   }
 
   renderHeaderElement(field, label, width, isSortable) {
-    const {
-      classes, t, sortBy, orderAsc, handleToggleSelectAll,
-    } = this.props;
+    const { classes, t, sortBy, orderAsc, handleToggleSelectAll } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (
         <ArrowDropDown
@@ -260,7 +256,8 @@ class ListLines extends Component {
                 <IconButton
                   color="primary"
                   onClick={handleChangeView.bind(this, 'cards')}
-                  size="large">
+                  size="large"
+                >
                   <DashboardOutlined />
                 </IconButton>
               </Tooltip>
@@ -270,7 +267,8 @@ class ListLines extends Component {
                 <IconButton
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'lines')}
-                  size="large">
+                  size="large"
+                >
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
@@ -280,7 +278,8 @@ class ListLines extends Component {
                 <IconButton
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'duplicates')}
-                  size="large">
+                  size="large"
+                >
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
@@ -291,7 +290,8 @@ class ListLines extends Component {
                   <IconButton
                     color={openExports ? 'secondary' : 'primary'}
                     onClick={handleToggleExports.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <FileExportOutline />
                   </IconButton>
                 </Tooltip>

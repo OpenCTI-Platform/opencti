@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, includes, pipe, assoc, propOr,
-} from 'ramda';
+import { compose, includes, pipe, assoc, propOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Grid from '@mui/material/Grid';
@@ -136,9 +134,7 @@ class EntityStixCoreRelationships extends Component {
   }
 
   renderBottomMenu() {
-    const {
-      t, classes, targetStixDomainObjectTypes, relationshipTypes,
-    } = this.props;
+    const { t, classes, targetStixDomainObjectTypes, relationshipTypes } = this.props;
     const {
       openEntityType,
       openRelationshipType,
@@ -265,9 +261,7 @@ class EntityStixCoreRelationships extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, numberOfElements } = this.state;
-    const {
-      entityLink, entityId, isRelationReversed, allDirections,
-    } = this.props;
+    const { entityLink, entityId, isRelationReversed, allDirections } = this.props;
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',

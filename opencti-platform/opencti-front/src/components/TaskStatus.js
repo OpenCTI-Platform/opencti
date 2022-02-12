@@ -49,9 +49,7 @@ const inlineStyles = {
 
 class TaskStatus extends Component {
   render() {
-    const {
-      classes, label, status, variant,
-    } = this.props;
+    const { classes, label, status, variant } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     switch (status) {
       case 'progress':

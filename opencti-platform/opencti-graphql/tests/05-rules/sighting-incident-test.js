@@ -24,7 +24,9 @@ describe('Sighting incident rule', () => {
   };
 
   // eslint-disable-next-line prettier/prettier
-  it('Should rule successfully activated', async () => {
+  it(
+    'Should rule successfully activated',
+    async () => {
       // ---- 01. Test live behaviors
       await startModules();
       await activateRule(RuleSightingIncident.id);

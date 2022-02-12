@@ -3,9 +3,7 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import {
-  assoc, compose, join, pick, pipe, split,
-} from 'ramda';
+import { assoc, compose, join, pick, pipe, split } from 'ramda';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -141,9 +139,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, intrusionSet, context, enableReferences,
-    } = this.props;
+    const { t, intrusionSet, context, enableReferences } = this.props;
     const initialValues = pipe(
       assoc('first_seen', dateFormat(intrusionSet.first_seen)),
       assoc('last_seen', dateFormat(intrusionSet.last_seen)),

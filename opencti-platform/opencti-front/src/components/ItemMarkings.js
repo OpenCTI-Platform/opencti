@@ -72,9 +72,7 @@ const inlineStylesLight = {
 
 class ItemMarkings extends Component {
   render() {
-    const {
-      classes, variant, markingDefinitions, limit, theme,
-    } = this.props;
+    const { classes, variant, markingDefinitions, limit, theme } = this.props;
     const className = variant === 'inList' ? classes.chipInList : classes.chip;
     const number = limit || 1;
     const sortBy = R.sortWith([R.descend(R.prop('definition'))]);

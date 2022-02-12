@@ -29,7 +29,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -143,14 +142,14 @@ class RolePopover extends Component {
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 1 }}
-          size="large">
+          size="large"
+        >
           <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
@@ -196,12 +195,12 @@ class RolePopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              color="secondary"
             >
               {t('Cancel')}
             </Button>
             <Button
               onClick={this.submitDelete.bind(this)}
-              color="primary"
               disabled={this.state.deleting}
             >
               {t('Delete')}

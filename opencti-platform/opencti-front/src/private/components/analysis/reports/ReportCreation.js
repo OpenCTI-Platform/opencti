@@ -176,8 +176,14 @@ class ReportCreation extends Component {
             variables={{ key: 'report_types' }}
             render={({ props }) => {
               if (props && props.runtimeAttributes) {
-                const reportEdges = props.runtimeAttributes.edges.map((e) => e.node.value);
-                const elements = R.uniq([...reportEdges, 'threat-report', 'internal-report']);
+                const reportEdges = props.runtimeAttributes.edges.map(
+                  (e) => e.node.value,
+                );
+                const elements = R.uniq([
+                  ...reportEdges,
+                  'threat-report',
+                  'internal-report',
+                ]);
                 return (
                   <div>
                     <div className={classes.header}>
@@ -185,7 +191,8 @@ class ReportCreation extends Component {
                         aria-label="Close"
                         className={classes.closeButton}
                         onClick={this.handleClose.bind(this)}
-                        size="large">
+                        size="large"
+                      >
                         <Close fontSize="small" />
                       </IconButton>
                       <Typography variant="h6">

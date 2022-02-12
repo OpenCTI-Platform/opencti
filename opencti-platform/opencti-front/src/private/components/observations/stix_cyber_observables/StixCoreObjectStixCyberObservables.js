@@ -155,9 +155,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       noRightBar,
       isRelationReversed,
     } = this.props;
-    const {
-      view, targetStixCyberObservableTypes, sortBy, orderAsc,
-    } = this.state;
+    const { view, targetStixCyberObservableTypes, sortBy, orderAsc } = this.state;
     let paginationOptions = {
       fromTypes: targetStixCyberObservableTypes,
       toId: stixCoreObjectId,

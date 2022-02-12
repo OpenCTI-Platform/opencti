@@ -17,9 +17,7 @@ const styles = () => ({
 
 class GlobalVictimologyAll extends Component {
   render() {
-    const {
-      t, startDate, endDate, timeField, widget,
-    } = this.props;
+    const { t, startDate, endDate, timeField, widget } = this.props;
     let dateAttribute = 'created_at';
     if (timeField === 'functional') {
       dateAttribute = 'start_time';

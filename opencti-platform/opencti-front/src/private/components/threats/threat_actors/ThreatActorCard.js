@@ -87,9 +87,7 @@ const styles = (theme) => ({
 
 class ThreatActorCardComponent extends Component {
   render() {
-    const {
-      t, fsd, classes, node, bookmarksIds, onLabelClick,
-    } = this.props;
+    const { t, fsd, classes, node, bookmarksIds, onLabelClick } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea

@@ -88,9 +88,7 @@ class StixDomainObjectAddObjectRefs extends Component {
   }
 
   render() {
-    const {
-      t, classes, stixDomainObjectId, stixDomainObjectObjectRefs,
-    } = this.props;
+    const { t, classes, stixDomainObjectId, stixDomainObjectObjectRefs } = this.props;
     const paginationOptions = {
       search: this.state.search,
       orderBy: 'created_at',
@@ -117,7 +115,8 @@ class StixDomainObjectAddObjectRefs extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>

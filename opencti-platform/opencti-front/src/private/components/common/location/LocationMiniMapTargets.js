@@ -13,9 +13,7 @@ import {
 } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
-import {
-  MapContainer, TileLayer, GeoJSON, Marker,
-} from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
@@ -78,9 +76,7 @@ const LocationMiniMapTargets = (props) => {
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const {
-    center, zoom, cities, theme,
-  } = props;
+  const { center, zoom, cities, theme } = props;
   const locatedCities = cities
     ? filter((n) => n.latitude && n.longitude, cities)
     : [];

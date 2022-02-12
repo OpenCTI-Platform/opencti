@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import {
-  compose, propOr, filter, append, take,
-} from 'ramda';
+import { compose, propOr, filter, append, take } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
@@ -131,9 +129,7 @@ class WorkspaceHeader extends Component {
   }
 
   render() {
-    const {
-      t, classes, workspace, variant, adjust,
-    } = this.props;
+    const { t, classes, workspace, variant, adjust } = this.props;
     const tags = propOr([], 'tags', workspace);
     return (
       <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
@@ -184,7 +180,8 @@ class WorkspaceHeader extends Component {
                 color="secondary"
                 aria-tag="Tag"
                 onClick={this.handleToggleCreateTag.bind(this)}
-                size="large">
+                size="large"
+              >
                 {this.state.openTag ? (
                   <Close fontSize="small" />
                 ) : (

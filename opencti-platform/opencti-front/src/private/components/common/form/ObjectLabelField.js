@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import {
-  compose, pathOr, pipe, map, union, append,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union, append } from 'ramda';
 import { Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import { Label } from 'mdi-material-ui';
@@ -64,9 +62,7 @@ class ObjectLabelField extends Component {
   }
 
   render() {
-    const {
-      t, name, style, classes, setFieldValue, values, helpertext,
-    } = this.props;
+    const { t, name, style, classes, setFieldValue, values, helpertext } = this.props;
     return (
       <div>
         <Field

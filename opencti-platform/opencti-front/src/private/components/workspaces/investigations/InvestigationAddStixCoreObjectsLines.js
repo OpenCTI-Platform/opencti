@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  map, filter, keys, groupBy, assoc, compose, append,
-} from 'ramda';
+import { map, filter, keys, groupBy, assoc, compose, append } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -193,9 +191,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, fd,
-    } = this.props;
+    const { t, classes, data, fd } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = map((n) => n.node, data.stixCoreObjects.edges);
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);

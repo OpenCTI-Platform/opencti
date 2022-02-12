@@ -50,9 +50,7 @@ const inlineStyles = {
 
 class ItemReliability extends Component {
   render() {
-    const {
-      classes, label, reliability, variant,
-    } = this.props;
+    const { classes, label, reliability, variant } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     switch (reliability) {
       case 'A':

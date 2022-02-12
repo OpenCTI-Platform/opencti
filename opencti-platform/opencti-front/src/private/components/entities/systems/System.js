@@ -29,9 +29,7 @@ const styles = () => ({
 
 class SystemComponent extends Component {
   render() {
-    const {
-      classes, system, viewAs, onViewAs,
-    } = this.props;
+    const { classes, system, viewAs, onViewAs } = this.props;
     const lastReportsProps = viewAs === 'knowledge'
       ? { stixCoreObjectOrStixCoreRelationshipId: system.id }
       : { authorId: system.id };

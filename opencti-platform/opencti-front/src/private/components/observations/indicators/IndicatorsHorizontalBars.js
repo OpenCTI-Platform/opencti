@@ -63,9 +63,7 @@ const tickFormatter = (title) => truncate(title, 10);
 
 class IndicatorsHorizontalBars extends Component {
   renderContent() {
-    const {
-      t, field, startDate, endDate, theme,
-    } = this.props;
+    const { t, field, startDate, endDate, theme } = this.props;
     const indicatorsDistributionVariables = {
       field: field || 'pattern_type',
       operation: 'count',
@@ -175,9 +173,7 @@ class IndicatorsHorizontalBars extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

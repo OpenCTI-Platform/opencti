@@ -47,9 +47,7 @@ const styles = (theme) => ({
 
 class KillChainPhaseLineComponent extends Component {
   render() {
-    const {
-      fd, classes, node, dataColumns, paginationOptions,
-    } = this.props;
+    const { fd, classes, node, dataColumns, paginationOptions } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -132,7 +130,12 @@ class KillChainPhaseLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -136,9 +136,7 @@ class MarkingDefinitionEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, markingDefinition,
-    } = this.props;
+    const { t, classes, handleClose, markingDefinition } = this.props;
     const { editContext } = markingDefinition;
     const initialValues = pick(
       ['definition_type', 'definition', 'x_opencti_color', 'x_opencti_order'],
@@ -151,7 +149,8 @@ class MarkingDefinitionEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

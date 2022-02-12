@@ -11,7 +11,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { Launch, SettingsApplications, PermIdentity } from '@mui/icons-material';
+import {
+  Launch,
+  SettingsApplications,
+  PermIdentity,
+} from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';

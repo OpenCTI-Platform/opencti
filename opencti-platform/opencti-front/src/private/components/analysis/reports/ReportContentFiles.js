@@ -56,9 +56,7 @@ class ReportContentFilesComponent extends Component {
   }
 
   render() {
-    const {
-      classes, t, handleSelectFile, report, fld, currentFile,
-    } = this.props;
+    const { classes, t, handleSelectFile, report, fld, currentFile } = this.props;
     const sortByLastModified = R.sortBy(R.prop('name'));
     const importFiles = R.map(
       (n) => n.node,

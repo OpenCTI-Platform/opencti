@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { assoc, compose, map } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
-} from 'recharts';
+import { ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -66,9 +64,7 @@ class ReportsDonut extends Component {
   renderLabel(props) {
     const { theme } = this.props;
     const RADIAN = Math.PI / 180;
-    const {
-      cx, cy, midAngle, outerRadius, fill, payload, percent, value,
-    } = props;
+    const { cx, cy, midAngle, outerRadius, fill, payload, percent, value } = props;
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);
     const sx = cx + (outerRadius + 10) * cos;
@@ -112,9 +108,7 @@ class ReportsDonut extends Component {
   }
 
   renderContent() {
-    const {
-      t, field, startDate, endDate, variant, theme,
-    } = this.props;
+    const { t, field, startDate, endDate, variant, theme } = this.props;
     const reportsDistributionVariables = {
       field: field || 'report_types',
       operation: 'count',
@@ -213,9 +207,7 @@ class ReportsDonut extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

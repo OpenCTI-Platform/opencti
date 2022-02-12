@@ -266,9 +266,7 @@ class ToolEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, tool, context, enableReferences,
-    } = this.props;
+    const { t, tool, context, enableReferences } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], tool) === null
       ? ''
       : {

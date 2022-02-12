@@ -188,7 +188,8 @@ class StixDomainObjectsExportCreationComponent extends Component {
               color="secondary"
               aria-label="Add"
               disabled={!isExportPossible}
-              size="large">
+              size="large"
+            >
               <Add />
             </IconButton>
           </span>

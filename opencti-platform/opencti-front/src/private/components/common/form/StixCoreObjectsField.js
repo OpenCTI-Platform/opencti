@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import {
-  compose, pathOr, pipe, map, union,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union } from 'ramda';
 import { Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import graphql from 'babel-plugin-relay/macro';
@@ -190,9 +188,7 @@ class StixCoreObjectsField extends Component {
   }
 
   render() {
-    const {
-      t, name, style, classes, helpertext,
-    } = this.props;
+    const { t, name, style, classes, helpertext } = this.props;
     return (
       <div>
         <Field

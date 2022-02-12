@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, last, map, toPairs,
-} from 'ramda';
+import { compose, last, map, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import FormControl from '@mui/material/FormControl';
@@ -163,7 +161,8 @@ class ListCards extends Component {
             aria-label="Sort by"
             onClick={this.reverse.bind(this)}
             classes={{ root: classes.sortIcon }}
-            size="large">
+            size="large"
+          >
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
           </IconButton>
           <div className={classes.filters}>
@@ -224,7 +223,8 @@ class ListCards extends Component {
                 <IconButton
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'cards')}
-                  size="large">
+                  size="large"
+                >
                   <DashboardOutlined />
                 </IconButton>
               </Tooltip>
@@ -236,7 +236,8 @@ class ListCards extends Component {
                 <IconButton
                   color="primary"
                   onClick={handleChangeView.bind(this, 'lines')}
-                  size="large">
+                  size="large"
+                >
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
@@ -249,7 +250,8 @@ class ListCards extends Component {
                   <IconButton
                     color={openExports ? 'secondary' : 'primary'}
                     onClick={handleToggleExports.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <FileExportOutline />
                   </IconButton>
                 </Tooltip>

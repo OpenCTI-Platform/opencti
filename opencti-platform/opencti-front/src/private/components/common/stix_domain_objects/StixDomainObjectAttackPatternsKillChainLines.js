@@ -151,7 +151,8 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                         stixCoreRelationship.id,
                       )}
                       aria-haspopup="true"
-                      size="large">
+                      size="large"
+                    >
                       {this.state.expandedLines[stixCoreRelationship.id]
                       === false ? (
                         <ExpandMore />
@@ -244,7 +245,8 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                       attackPattern.id,
                                     )}
                                     aria-haspopup="true"
-                                    size="large">
+                                    size="large"
+                                  >
                                     {this.state.expandedLines[
                                       attackPattern.id
                                     ] === false ? (

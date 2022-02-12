@@ -5,7 +5,10 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined, DomainOutlined } from '@mui/icons-material';
+import {
+  KeyboardArrowRightOutlined,
+  DomainOutlined,
+} from '@mui/icons-material';
 import { compose, map } from 'ramda';
 import List from '@mui/material/List';
 import Skeleton from '@mui/material/Skeleton';
@@ -55,9 +58,7 @@ const styles = (theme) => ({
 
 class SectorLineComponent extends Component {
   render() {
-    const {
-      classes, subSectors, node, isSubSector, t,
-    } = this.props;
+    const { classes, subSectors, node, isSubSector, t } = this.props;
     return (
       <div>
         <ListItem
@@ -124,11 +125,21 @@ class SectorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
-            <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              height={20}
+            />
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>

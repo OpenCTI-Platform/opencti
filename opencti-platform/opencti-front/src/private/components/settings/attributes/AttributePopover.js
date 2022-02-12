@@ -63,23 +63,22 @@ class AttributePopover extends Component {
   }
 
   render() {
-    const {
-      classes, t, paginationOptions, attribute,
-    } = this.props;
+    const { classes, t, paginationOptions, attribute } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 1 }}
-          size="large">
+          size="large"
+        >
           <MoreVertOutlined />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}>
+        >
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -88,12 +87,13 @@ class AttributePopover extends Component {
           open={this.state.displayUpdate}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}>
-            <AttributeEdition
-                attribute={attribute}
-                paginationOptions={paginationOptions}
-                handleClose={this.handleCloseUpdate.bind(this)}
-            />
+          onClose={this.handleCloseUpdate.bind(this)}
+        >
+          <AttributeEdition
+            attribute={attribute}
+            paginationOptions={paginationOptions}
+            handleClose={this.handleCloseUpdate.bind(this)}
+          />
         </Drawer>
       </div>
     );

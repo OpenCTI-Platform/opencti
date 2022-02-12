@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, map, pipe, prop, sortBy, toLower,
-} from 'ramda';
+import { assoc, compose, map, pipe, prop, sortBy, toLower } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -192,7 +190,8 @@ class IndicatorsRightBar extends Component {
                           onClick={handleClearObservableTypes.bind(this)}
                           disabled={observableTypes.length === 0}
                           color="primary"
-                          size="large">
+                          size="large"
+                        >
                           <FilterOffOutline fontSize="small" />
                         </IconButton>
                       </Tooltip>

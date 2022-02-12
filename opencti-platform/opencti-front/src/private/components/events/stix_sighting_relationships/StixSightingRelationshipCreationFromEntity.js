@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  assoc, compose, includes, pipe, pluck,
-} from 'ramda';
+import { assoc, compose, includes, pipe, pluck } from 'ramda';
 import * as Yup from 'yup';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
@@ -514,7 +512,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -576,16 +575,15 @@ class StixSightingRelationshipCreationFromEntity extends Component {
         onSubmit={this.onSubmit.bind(this)}
         onReset={this.handleClose.bind(this)}
       >
-        {({
-          submitForm, handleReset, isSubmitting, setFieldValue,
-        }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
           <Form>
             <div className={classes.header}>
               <IconButton
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
-                size="large">
+                size="large"
+              >
                 <Close fontSize="small" />
               </IconButton>
               <Typography variant="h6">{t('Create a sighting')}</Typography>
@@ -816,9 +814,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
   }
 
   render() {
-    const {
-      classes, entityId, variant, paddingRight,
-    } = this.props;
+    const { classes, entityId, variant, paddingRight } = this.props;
 
     const { open, step } = this.state;
 
@@ -830,7 +826,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large">
+            size="large"
+          >
             <Add fontSize="small" />
           </IconButton>
         ) : (

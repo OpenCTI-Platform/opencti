@@ -112,9 +112,7 @@ class StixCyberObservableKnowledgeEntities extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm, relationReversed,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, relationReversed } = this.state;
     const { classes, t, entityId } = this.props;
     const paginationOptions = {
       elementId: entityId,

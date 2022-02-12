@@ -37,9 +37,7 @@ const styles = (theme) => ({
 
 class IntrusionSetDetailsComponent extends Component {
   render() {
-    const {
-      t, classes, intrusionSet, fd,
-    } = this.props;
+    const { t, classes, intrusionSet, fd } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

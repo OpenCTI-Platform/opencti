@@ -229,9 +229,7 @@ class PositionEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, position, context, enableReferences,
-    } = this.props;
+    const { t, position, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], position) === null
       ? ''
       : {

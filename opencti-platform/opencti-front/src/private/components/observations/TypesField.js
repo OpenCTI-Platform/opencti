@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Field } from 'formik';
-import {
-  assoc, compose, map, pipe, prop, sortBy, toLower,
-} from 'ramda';
+import { assoc, compose, map, pipe, prop, sortBy, toLower } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../components/i18n';
@@ -19,9 +17,7 @@ const styles = () => ({
 
 class TypesField extends Component {
   render() {
-    const {
-      t, name, label, containerstyle,
-    } = this.props;
+    const { t, name, label, containerstyle } = this.props;
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesSubTypesQuery}

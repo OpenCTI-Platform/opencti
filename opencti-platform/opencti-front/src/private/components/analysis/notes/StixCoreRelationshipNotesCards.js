@@ -144,9 +144,7 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
   }
 
   render() {
-    const {
-      t, stixCoreRelationshipId, marginTop, data, classes,
-    } = this.props;
+    const { t, stixCoreRelationshipId, marginTop, data, classes } = this.props;
     const { open } = this.state;
     const notes = R.pathOr(
       [],
@@ -163,7 +161,8 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
             color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
-            size="large">
+            size="large"
+          >
             <EditOutlined fontSize="small" />
           </IconButton>
           <AddNotes

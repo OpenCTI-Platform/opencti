@@ -54,9 +54,7 @@ const inlineStyles = {
 
 class ItemConfidence extends Component {
   render() {
-    const {
-      t, confidence, classes, variant,
-    } = this.props;
+    const { t, confidence, classes, variant } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (confidence >= 80) {
       return (

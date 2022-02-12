@@ -149,9 +149,7 @@ class CampaignEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, campaign, context, enableReferences,
-    } = this.props;
+    const { t, campaign, context, enableReferences } = this.props;
     const initialValues = R.pipe(
       R.assoc('first_seen', dateFormat(campaign.first_seen)),
       R.assoc('last_seen', dateFormat(campaign.last_seen)),

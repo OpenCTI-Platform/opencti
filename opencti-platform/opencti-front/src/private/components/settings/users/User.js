@@ -47,9 +47,7 @@ import UserPopover, { userEditionQuery } from './UserPopover';
 import AccessesMenu from '../AccessesMenu';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
-import {
-  FIVE_SECONDS, now, timestamp, yearsAgo,
-} from '../../../../utils/Time';
+import { FIVE_SECONDS, now, timestamp, yearsAgo } from '../../../../utils/Time';
 import UserHistory from './UserHistory';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -234,9 +232,7 @@ class UserComponent extends Component {
   }
 
   render() {
-    const {
-      classes, theme, user, t, mtd, fsd, nsdt,
-    } = this.props;
+    const { classes, theme, user, t, mtd, fsd, nsdt } = this.props;
     const orderedSessions = R.sort(
       (a, b) => timestamp(a.created) - timestamp(b.created),
       user.sessions,
@@ -354,7 +350,8 @@ class UserComponent extends Component {
                     aria-label="Delete all"
                     onClick={this.handleOpenKillSessions.bind(this)}
                     classes={{ root: classes.killAllSessionsButton }}
-                    size="large">
+                    size="large"
+                  >
                     <DeleteForeverOutlined fontSize="small" />
                   </IconButton>
                   <div className="clearfix" />
@@ -388,7 +385,8 @@ class UserComponent extends Component {
                               this,
                               session.id,
                             )}
-                            size="large">
+                            size="large"
+                          >
                             <Delete fontSize="small" />
                           </IconButton>
                         </ListItemSecondaryAction>

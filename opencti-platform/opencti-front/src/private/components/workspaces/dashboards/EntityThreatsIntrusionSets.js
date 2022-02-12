@@ -16,9 +16,7 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const {
-      t, widget, startDate, endDate, timeField,
-    } = this.props;
+    const { t, widget, startDate, endDate, timeField } = this.props;
     let dateAttribute = 'created_at';
     if (timeField === 'functional') {
       dateAttribute = 'start_time';

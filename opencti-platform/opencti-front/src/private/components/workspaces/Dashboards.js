@@ -53,9 +53,7 @@ class Dashboards extends Component {
   }
 
   renderLines(paginationOptions) {
-    const {
-      sortBy, orderAsc, searchTerm, numberOfElements,
-    } = this.state;
+    const { sortBy, orderAsc, searchTerm, numberOfElements } = this.state;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -107,9 +105,7 @@ class Dashboards extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm } = this.state;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,

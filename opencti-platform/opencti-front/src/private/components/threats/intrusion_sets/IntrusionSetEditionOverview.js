@@ -228,9 +228,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, intrusionSet, context, enableReferences,
-    } = this.props;
+    const { t, intrusionSet, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], intrusionSet) === null
       ? ''
       : {

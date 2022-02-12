@@ -93,9 +93,7 @@ const styles = (theme) => ({
 });
 
 const ExternalReferenceEnrichment = (props) => {
-  const {
-    externalReference, connectorsForImport, relay, classes, t, nsdt,
-  } = props;
+  const { externalReference, connectorsForImport, relay, classes, t, nsdt } = props;
   const { id } = externalReference;
   const file = externalReference.importFiles
     && externalReference.importFiles.edges.length > 0
@@ -195,7 +193,8 @@ const ExternalReferenceEnrichment = (props) => {
                           ? askJob(connector.id)
                           : askEnrich(connector.id))
                         }
-                        size="large">
+                        size="large"
+                      >
                         <Refresh />
                       </IconButton>
                     </Tooltip>
@@ -263,7 +262,10 @@ const ExternalReferenceEnrichment = (props) => {
                         </ListItemIcon>
                         <ListItemText primary={nsdt(work.timestamp)} />
                         <ListItemSecondaryAction style={{ right: 0 }}>
-                          <IconButton onClick={() => deleteWork(work.id)} size="large">
+                          <IconButton
+                            onClick={() => deleteWork(work.id)}
+                            size="large"
+                          >
                             <Delete />
                           </IconButton>
                         </ListItemSecondaryAction>

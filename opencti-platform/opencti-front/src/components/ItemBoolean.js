@@ -43,9 +43,7 @@ const inlineStyles = {
 
 class ItemBoolean extends Component {
   render() {
-    const {
-      classes, label, status, variant, t, reverse,
-    } = this.props;
+    const { classes, label, status, variant, t, reverse } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (status === true) {
       return (

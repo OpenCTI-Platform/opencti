@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, filter, isEmpty, propOr,
-} from 'ramda';
+import { compose, filter, isEmpty, propOr } from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -174,7 +172,8 @@ class FileLineComponent extends Component {
                     onClick={handleOpenImport.bind(this, file)}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
-                    size="large">
+                    size="large"
+                  >
                     <ProgressUpload />
                   </IconButton>
                 </span>
@@ -188,7 +187,8 @@ class FileLineComponent extends Component {
                     href={`${APP_BASE_PATH}/storage/get/${file.id}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
-                    size="large">
+                    size="large"
+                  >
                     <GetAppOutlined />
                   </IconButton>
                 </span>
@@ -200,7 +200,8 @@ class FileLineComponent extends Component {
                   disabled={isProgress}
                   color={nested ? 'inherit' : 'primary'}
                   onClick={this.handleRemoveFile.bind(this, file.id)}
-                  size="large">
+                  size="large"
+                >
                   <DeleteOutlined />
                 </IconButton>
               </span>

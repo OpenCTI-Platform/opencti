@@ -29,9 +29,7 @@ const styles = () => ({
 
 class ItemStatus extends Component {
   render() {
-    const {
-      classes, t, status, variant, disabled,
-    } = this.props;
+    const { classes, t, status, variant, disabled } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (status) {
       return (

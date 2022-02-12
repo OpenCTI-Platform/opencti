@@ -34,9 +34,7 @@ class StixDomainObjectBookmarksComponent extends Component {
   }
 
   render() {
-    const {
-      classes, data, t, relay,
-    } = this.props;
+    const { classes, data, t, relay } = this.props;
     const bookmarks = pathOr([], ['bookmarks', 'edges'], data);
     if (bookmarks.length > 0) {
       return (

@@ -71,7 +71,13 @@ const saveParamsToLocalStorage = (localStorageKey, params) => {
   localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
 };
 
-export const saveViewParameters = (history, location, localStorageKey, params, refresh = false) => {
+export const saveViewParameters = (
+  history,
+  location,
+  localStorageKey,
+  params,
+  refresh = false,
+) => {
   // Save the params in local storage
   saveParamsToLocalStorage(localStorageKey, params);
   // Apply params in history
@@ -84,7 +90,11 @@ export const saveViewParameters = (history, location, localStorageKey, params, r
   }
 };
 
-export const buildViewParamsFromUrlAndStorage = (history, location, localStorageKey) => {
+export const buildViewParamsFromUrlAndStorage = (
+  history,
+  location,
+  localStorageKey,
+) => {
   const queryParams = [
     ...new URLSearchParams(location.search).entries(),
   ].reduce(

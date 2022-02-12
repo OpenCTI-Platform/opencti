@@ -305,7 +305,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                       <IconButton
                         onClick={this.handleToggleLine.bind(this, sector.id)}
                         aria-haspopup="true"
-                        size="large">
+                        size="large"
+                      >
                         {this.state.expandedLines[sector.id] === true ? (
                           <ExpandLess />
                         ) : (
@@ -433,7 +434,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                     subsector.id,
                                   )}
                                   aria-haspopup="true"
-                                  size="large">
+                                  size="large"
+                                >
                                   {this.state.expandedLines[subsector.id]
                                   === true ? (
                                     <ExpandLess />

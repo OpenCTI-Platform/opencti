@@ -19,9 +19,7 @@ const styles = () => ({
 
 class StixSightingRelationshipHistoryLinesComponent extends Component {
   render() {
-    const {
-      t, classes, data, isRelationLog,
-    } = this.props;
+    const { t, classes, data, isRelationLog } = this.props;
     const logs = pathOr([], ['logs', 'edges'], data);
     return (
       <Paper classes={{ root: classes.paperHistory }} elevation={2}>

@@ -291,9 +291,7 @@ class IndicatorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, indicator, context, enableReferences,
-    } = this.props;
+    const { t, indicator, context, enableReferences } = this.props;
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({

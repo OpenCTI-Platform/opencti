@@ -66,9 +66,7 @@ const styles = (theme) => ({
 
 class SyncLineLineComponent extends Component {
   render() {
-    const {
-      classes, node, dataColumns, paginationOptions, t, nsdt,
-    } = this.props;
+    const { classes, node, dataColumns, paginationOptions, t, nsdt } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
@@ -160,7 +158,12 @@ class SyncDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

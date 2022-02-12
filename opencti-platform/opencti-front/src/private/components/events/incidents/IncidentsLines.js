@@ -20,9 +20,7 @@ class IncidentsLines extends Component {
   }
 
   render() {
-    const {
-      initialLoading, dataColumns, relay, onLabelClick,
-    } = this.props;
+    const { initialLoading, dataColumns, relay, onLabelClick } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}

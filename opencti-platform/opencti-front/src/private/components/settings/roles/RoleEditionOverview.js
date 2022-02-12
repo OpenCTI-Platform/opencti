@@ -4,9 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import {
-  compose, filter, find, includes, pick, propEq,
-} from 'ramda';
+import { compose, filter, find, includes, pick, propEq } from 'ramda';
 import * as Yup from 'yup';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -28,7 +26,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -119,9 +116,7 @@ const roleValidation = (t) => Yup.object().shape({
   default_assignation: Yup.bool(),
 });
 
-const RoleEditionOverviewComponent = ({
-  t, role, context, classes,
-}) => {
+const RoleEditionOverviewComponent = ({ t, role, context, classes }) => {
   const initialValues = pick(
     ['name', 'description', 'default_assignation'],
     role,

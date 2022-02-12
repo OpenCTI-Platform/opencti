@@ -121,9 +121,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
   }
 
   toggleStixCoreObject(stixCoreObject) {
-    const {
-      containerId, paginationOptions, knowledgeGraph, onAdd, onDelete,
-    } = this.props;
+    const { containerId, paginationOptions, knowledgeGraph, onAdd, onDelete } = this.props;
     const { addedStixCoreObjects } = this.state;
     const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
@@ -249,9 +247,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, fd,
-    } = this.props;
+    const { t, classes, data, fd } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = pipe(
       map((n) => n.node),

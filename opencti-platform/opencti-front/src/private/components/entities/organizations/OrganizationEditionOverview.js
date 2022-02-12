@@ -244,9 +244,7 @@ class OrganizationEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, organization, context, enableReferences,
-    } = this.props;
+    const { t, organization, context, enableReferences } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], organization) === null
       ? ''
       : {

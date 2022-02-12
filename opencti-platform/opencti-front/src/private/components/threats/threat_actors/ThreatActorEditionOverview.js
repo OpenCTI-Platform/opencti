@@ -235,9 +235,7 @@ class ThreatActorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, threatActor, context, enableReferences,
-    } = this.props;
+    const { t, threatActor, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], threatActor) === null
       ? ''
       : {

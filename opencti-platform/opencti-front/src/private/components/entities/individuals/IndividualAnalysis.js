@@ -19,9 +19,7 @@ const styles = () => ({
 
 class IndividualAnalysisComponent extends Component {
   render() {
-    const {
-      classes, individual, viewAs, onViewAs,
-    } = this.props;
+    const { classes, individual, viewAs, onViewAs } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader

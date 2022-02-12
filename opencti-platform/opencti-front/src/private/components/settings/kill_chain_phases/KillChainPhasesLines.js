@@ -13,9 +13,7 @@ const nbOfRowsToLoad = 50;
 
 class KillChainPhasesLines extends Component {
   render() {
-    const {
-      initialLoading, dataColumns, relay, paginationOptions,
-    } = this.props;
+    const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}

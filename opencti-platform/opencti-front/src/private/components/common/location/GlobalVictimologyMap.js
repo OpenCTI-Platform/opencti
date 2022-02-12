@@ -61,9 +61,7 @@ const styles = () => ({
 
 class GlobalVictimologyMap extends Component {
   render() {
-    const {
-      t, title, startDate, endDate, dateAttribute,
-    } = this.props;
+    const { t, title, startDate, endDate, dateAttribute } = this.props;
     return (
       <div style={{ height: '100%', paddingBottom: 10 }}>
         <Typography

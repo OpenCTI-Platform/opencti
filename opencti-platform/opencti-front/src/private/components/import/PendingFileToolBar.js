@@ -111,7 +111,8 @@ class PendingFileToolBar extends Component {
                 onClick={handleValidate.bind(this)}
                 color="primary"
                 disabled={isDeleteActive}
-                size="large">
+                size="large"
+              >
                 <CheckCircleOutlined />
               </IconButton>
             </span>
@@ -123,7 +124,8 @@ class PendingFileToolBar extends Component {
                   aria-label="drop"
                   onClick={this.handleOpenDelete.bind(this)}
                   color="primary"
-                  size="large">
+                  size="large"
+                >
                   <DeleteOutlined />
                 </IconButton>
               </span>
@@ -135,7 +137,8 @@ class PendingFileToolBar extends Component {
                   aria-label="drop"
                   onClick={this.handleOpenDelete.bind(this)}
                   color="primary"
-                  size="large">
+                  size="large"
+                >
                   <CancelOutlined />
                 </IconButton>
               </span>

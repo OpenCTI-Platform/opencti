@@ -4,9 +4,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import {
-  assoc, compose, pick, pipe,
-} from 'ramda';
+import { assoc, compose, pick, pipe } from 'ramda';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';

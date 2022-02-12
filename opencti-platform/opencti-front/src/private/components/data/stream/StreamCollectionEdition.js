@@ -10,9 +10,7 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
-import {
-  difference, head, map, pathOr, pipe,
-} from 'ramda';
+import { difference, head, map, pathOr, pipe } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -100,9 +98,7 @@ const groupMutationRelationDelete = graphql`
 `;
 
 const StreamCollectionEditionContainer = (props) => {
-  const {
-    t, classes, handleClose, streamCollection,
-  } = props;
+  const { t, classes, handleClose, streamCollection } = props;
   const groups = pipe(
     pathOr([], ['groups']),
     map((n) => ({
@@ -208,7 +204,8 @@ const StreamCollectionEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large">
+          size="large"
+        >
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6">{t('Update a live stream')}</Typography>

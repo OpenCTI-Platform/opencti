@@ -58,9 +58,7 @@ class ThreatActorEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, threatActor,
-    } = this.props;
+    const { t, classes, handleClose, threatActor } = this.props;
     const { editContext } = threatActor;
     return (
       <div>
@@ -69,7 +67,8 @@ class ThreatActorEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

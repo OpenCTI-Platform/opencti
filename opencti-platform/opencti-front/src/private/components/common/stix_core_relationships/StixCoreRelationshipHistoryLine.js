@@ -271,9 +271,7 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
   }
 
   render() {
-    const {
-      nsdt, classes, node, isRelation, t,
-    } = this.props;
+    const { nsdt, classes, node, isRelation, t } = this.props;
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>

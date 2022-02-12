@@ -22,7 +22,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -42,8 +41,6 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -144,6 +141,7 @@ class RoleCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -152,7 +150,8 @@ class RoleCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create a role')}</Typography>
@@ -174,6 +173,7 @@ class RoleCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                    variant="standard"
                   />
                   <Field
                     component={MarkDownField}

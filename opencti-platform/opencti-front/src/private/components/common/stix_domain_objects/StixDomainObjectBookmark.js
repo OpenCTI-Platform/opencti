@@ -132,9 +132,7 @@ const styles = (theme) => ({
 
 class StixDomainObjectBookmarkComponent extends Component {
   render() {
-    const {
-      t, fsd, classes, node,
-    } = this.props;
+    const { t, fsd, classes, node } = this.props;
     const link = resolveLink(node.entity_type);
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>

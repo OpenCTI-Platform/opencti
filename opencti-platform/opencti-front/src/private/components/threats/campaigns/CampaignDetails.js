@@ -25,9 +25,7 @@ const styles = () => ({
 
 class CampaignDetailsComponent extends Component {
   render() {
-    const {
-      fld, t, classes, campaign,
-    } = this.props;
+    const { fld, t, classes, campaign } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

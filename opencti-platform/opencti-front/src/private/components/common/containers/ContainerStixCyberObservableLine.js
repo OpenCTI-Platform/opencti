@@ -201,7 +201,12 @@ class ContainerStixCyberObservableLineDummyComponent extends Component {
           <Checkbox edge="start" disabled={true} disableRipple={true} />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

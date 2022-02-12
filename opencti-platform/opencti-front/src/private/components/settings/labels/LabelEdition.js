@@ -125,9 +125,7 @@ class LabelEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, label,
-    } = this.props;
+    const { t, classes, handleClose, label } = this.props;
     const { editContext } = label;
     const initialValues = pick(['value', 'color'], label);
     return (
@@ -137,7 +135,8 @@ class LabelEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

@@ -155,9 +155,7 @@ class ListLinesContent extends Component {
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({
-          height, isScrolling, onChildScroll, scrollTop,
-        }) => (
+        {({ height, isScrolling, onChildScroll, scrollTop }) => (
           <div className={classes.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isRowLoaded}

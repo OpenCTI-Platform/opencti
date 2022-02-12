@@ -44,9 +44,7 @@ const styles = (theme) => ({
 
 class SearchInput extends Component {
   render() {
-    const {
-      t, classes, onChange, onSubmit, variant, keyword, fullWidth,
-    } = this.props;
+    const { t, classes, onChange, onSubmit, variant, keyword, fullWidth } = this.props;
     let classRoot = classes.searchRoot;
     if (variant === 'inDrawer') {
       classRoot = classes.searchRootInDrawer;

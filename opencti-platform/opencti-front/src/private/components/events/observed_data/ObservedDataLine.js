@@ -49,9 +49,7 @@ const styles = (theme) => ({
 
 class ObservedDataLineComponent extends Component {
   render() {
-    const {
-      nsdt, classes, node, dataColumns, onLabelClick, n,
-    } = this.props;
+    const { nsdt, classes, node, dataColumns, onLabelClick, n } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -192,7 +190,12 @@ class ObservedDataLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

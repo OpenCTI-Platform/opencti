@@ -159,7 +159,8 @@ class IntrusionSetCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create an intrusion set')}</Typography>

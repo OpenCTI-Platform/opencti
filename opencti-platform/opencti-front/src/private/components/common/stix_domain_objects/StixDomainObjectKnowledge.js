@@ -92,9 +92,7 @@ const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
 
 class StixDomainObjectKnowledge extends Component {
   render() {
-    const {
-      t, n, classes, stixDomainObjectId,
-    } = this.props;
+    const { t, n, classes, stixDomainObjectId } = this.props;
     return (
       <div>
         <Grid container={true} spacing={3}>

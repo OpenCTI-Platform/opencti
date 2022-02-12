@@ -85,9 +85,7 @@ class AddSubSector extends Component {
   }
 
   render() {
-    const {
-      t, classes, sectorId, sectorSubSectors,
-    } = this.props;
+    const { t, classes, sectorId, sectorSubSectors } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
@@ -98,7 +96,8 @@ class AddSubSector extends Component {
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
-          size="large">
+          size="large"
+        >
           <Add fontSize="small" />
         </IconButton>
         <Drawer
@@ -112,7 +111,8 @@ class AddSubSector extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>

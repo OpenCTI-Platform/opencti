@@ -61,9 +61,7 @@ const tickFormatter = (title) => truncate(title, 10);
 
 class StixCoreObjectIndicatorsHorizontalBars extends Component {
   renderContent() {
-    const {
-      t, stixCoreObjectId, field, theme,
-    } = this.props;
+    const { t, stixCoreObjectId, field, theme } = this.props;
     const indicatorsDistributionVariables = {
       objectId: stixCoreObjectId,
       field: field || 'indicator_types',
@@ -172,9 +170,7 @@ class StixCoreObjectIndicatorsHorizontalBars extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

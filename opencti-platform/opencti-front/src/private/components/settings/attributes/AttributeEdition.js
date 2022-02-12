@@ -46,7 +46,11 @@ const styles = (theme) => ({
 });
 
 const attributeMutationUpdate = graphql`
-  mutation AttributeEditionUpdateMutation($id: String!, $previous: String!, $current: String!) {
+  mutation AttributeEditionUpdateMutation(
+    $id: String!
+    $previous: String!
+    $current: String!
+  ) {
     runtimeAttributeEdit(id: $id, previous: $previous, current: $current)
   }
 `;
@@ -57,9 +61,7 @@ const attributeValidation = (t) => Yup.object().shape({
 
 const AttributeEditionContainer = (props) => {
   const { t } = useFormatter();
-  const {
-    classes, handleClose, attribute, paginationOptions,
-  } = props;
+  const { classes, handleClose, attribute, paginationOptions } = props;
   const [previous] = useState(attribute.value);
 
   const onSubmit = (values, { setSubmitting }) => {
@@ -71,7 +73,11 @@ const AttributeEditionContainer = (props) => {
         setSubmitting,
         updater: (store) => {
           const record = store.get(store.getRoot().getDataID());
-          const conn = ConnectionHandler.getConnection(record, 'Pagination_runtimeAttributes', paginationOptions);
+          const conn = ConnectionHandler.getConnection(
+            record,
+            'Pagination_runtimeAttributes',
+            paginationOptions,
+          );
           ConnectionHandler.deleteNode(conn, previous);
         },
         onCompleted: () => {
@@ -93,7 +99,8 @@ const AttributeEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large">
+          size="large"
+        >
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
@@ -106,7 +113,8 @@ const AttributeEditionContainer = (props) => {
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={attributeValidation(t)}
-          onSubmit={onSubmit}>
+          onSubmit={onSubmit}
+        >
           {({ submitForm, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -121,7 +129,8 @@ const AttributeEditionContainer = (props) => {
                   color="primary"
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}>
+                  classes={{ root: classes.button }}
+                >
                   {t('Update')}
                 </Button>
               </div>
@@ -133,6 +142,6 @@ const AttributeEditionContainer = (props) => {
   );
 };
 
-export default compose(
-  withStyles(styles, { withTheme: true }),
-)(AttributeEditionContainer);
+export default compose(withStyles(styles, { withTheme: true }))(
+  AttributeEditionContainer,
+);

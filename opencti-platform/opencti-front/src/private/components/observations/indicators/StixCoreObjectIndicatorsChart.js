@@ -86,9 +86,7 @@ class StixCoreObjectIndicatorsChart extends Component {
   }
 
   render() {
-    const {
-      t, md, classes, stixCoreObjectId, indicatorType, theme,
-    } = this.props;
+    const { t, md, classes, stixCoreObjectId, indicatorType, theme } = this.props;
     const indicatorsTimeSeriesVariables = {
       authorId: null,
       objectId: stixCoreObjectId,

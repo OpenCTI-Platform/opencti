@@ -159,11 +159,7 @@ const TopBar = ({
     }
   };
   return (
-    <AppBar
-      position="fixed"
-      className={classes.appBar}
-      elevation={1}
-    >
+    <AppBar position="fixed" className={classes.appBar} elevation={1}>
       <Toolbar>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
@@ -345,7 +341,8 @@ const TopBar = ({
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
-                  size="large">
+                  size="large"
+                >
                   <InsertChartOutlined fontSize="medium" />
                 </IconButton>
               </Tooltip>
@@ -368,7 +365,8 @@ const TopBar = ({
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
-                  size="large">
+                  size="large"
+                >
                   <ExploreOutlined fontSize="medium" />
                 </IconButton>
               </Tooltip>
@@ -389,7 +387,8 @@ const TopBar = ({
                       : 'inherit'
                   }
                   classes={{ root: classes.button }}
-                  size="large">
+                  size="large"
+                >
                   <UploadOutline fontSize="medium" />
                 </IconButton>
               </Tooltip>

@@ -129,7 +129,8 @@ class ContainerHeaderComponent extends Component {
                   color={currentMode === 'graph' ? 'secondary' : 'primary'}
                   component={Link}
                   to={`${link}/graph`}
-                  size="large">
+                  size="large"
+                >
                   <GraphOutline />
                 </IconButton>
               </Tooltip>
@@ -142,7 +143,8 @@ class ContainerHeaderComponent extends Component {
                   }
                   component={Link}
                   to={`${link}/correlation`}
-                  size="large">
+                  size="large"
+                >
                   <VectorLink />
                 </IconButton>
               </Tooltip>
@@ -153,7 +155,8 @@ class ContainerHeaderComponent extends Component {
                   color={currentMode === 'matrix' ? 'secondary' : 'primary'}
                   component={Link}
                   to={`${link}/matrix`}
-                  size="large">
+                  size="large"
+                >
                   <ViewColumnOutlined />
                 </IconButton>
               </Tooltip>

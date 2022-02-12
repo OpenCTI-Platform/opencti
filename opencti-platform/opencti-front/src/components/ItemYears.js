@@ -20,9 +20,7 @@ const styles = () => ({
 
 class ItemYears extends Component {
   render() {
-    const {
-      years, classes, variant, disabled,
-    } = this.props;
+    const { years, classes, variant, disabled } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     return (
       <Chip

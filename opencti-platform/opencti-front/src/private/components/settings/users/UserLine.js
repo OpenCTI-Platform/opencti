@@ -48,9 +48,7 @@ const styles = (theme) => ({
 
 class UserLineComponent extends Component {
   render() {
-    const {
-      fd, classes, dataColumns, node,
-    } = this.props;
+    const { fd, classes, dataColumns, node } = this.props;
     const external = node.external === true;
     return (
       <ListItem
@@ -141,7 +139,12 @@ class UserLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

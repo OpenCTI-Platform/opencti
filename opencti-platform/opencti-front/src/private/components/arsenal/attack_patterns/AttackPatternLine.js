@@ -55,9 +55,7 @@ const styles = (theme) => ({
 
 class AttackPatternLineComponent extends Component {
   render() {
-    const {
-      classes, subAttackPatterns, node, isSubAttackPattern, t,
-    } = this.props;
+    const { classes, subAttackPatterns, node, isSubAttackPattern, t } = this.props;
     return (
       <div>
         <ListItem
@@ -136,11 +134,21 @@ class AttackPatternLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
-            <Skeleton animation="wave" variant="rectangular" width="90%" height={20} />
+            <Skeleton
+              animation="wave"
+              variant="rectangular"
+              width="90%"
+              height={20}
+            />
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>

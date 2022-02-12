@@ -518,9 +518,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
 
   renderSelectEntity() {
     const { search } = this.state;
-    const {
-      classes, t, targetStixDomainObjectTypes, onlyObservables,
-    } = this.props;
+    const { classes, t, targetStixDomainObjectTypes, onlyObservables } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search,
       types: targetStixDomainObjectTypes
@@ -539,7 +537,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -617,9 +616,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   renderForm(sourceEntity) {
-    const {
-      t, classes, isRelationReversed, allowedRelationshipTypes,
-    } = this.props;
+    const { t, classes, isRelationReversed, allowedRelationshipTypes } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
@@ -662,16 +659,15 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         onSubmit={this.onSubmit.bind(this)}
         onReset={this.handleClose.bind(this)}
       >
-        {({
-          submitForm, handleReset, isSubmitting, setFieldValue, values,
-        }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Form>
             <div className={classes.header}>
               <IconButton
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
-                size="large">
+                size="large"
+              >
                 <Close fontSize="small" />
               </IconButton>
               <Typography variant="h6">{t('Create a relationship')}</Typography>
@@ -894,9 +890,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   render() {
-    const {
-      classes, entityId, variant, paddingRight,
-    } = this.props;
+    const { classes, entityId, variant, paddingRight } = this.props;
     const { open, step } = this.state;
     return (
       <div>
@@ -906,7 +900,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large">
+            size="large"
+          >
             <Add fontSize="small" />
           </IconButton>
         ) : (

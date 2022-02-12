@@ -81,9 +81,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, entityLink, paginationOptions, searchTerm,
-    } = this.props;
+    const { t, classes, data, entityLink, paginationOptions, searchTerm } = this.props;
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || propOr('', 'countries_text', n)
@@ -313,7 +311,8 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                   <IconButton
                     onClick={this.handleToggleLine.bind(this, region.id)}
                     aria-haspopup="true"
-                    size="large">
+                    size="large"
+                  >
                     {this.state.expandedLines[region.id] === true ? (
                       <ExpandLess />
                     ) : (
@@ -439,7 +438,8 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                 country.id,
                               )}
                               aria-haspopup="true"
-                              size="large">
+                              size="large"
+                            >
                               {this.state.expandedLines[country.id] === true ? (
                                 <ExpandLess />
                               ) : (

@@ -101,9 +101,7 @@ class ListCardsContent extends Component {
     return !this.props.hasMore() || index < this.props.dataList.length;
   }
 
-  _cellRenderer({
-    columnIndex, key, rowIndex, style,
-  }) {
+  _cellRenderer({ columnIndex, key, rowIndex, style }) {
     const {
       classes,
       dataList,
@@ -160,9 +158,7 @@ class ListCardsContent extends Component {
     const rowCount = initialLoading ? nbOfLinesToLoad : nbLinesWithLoading;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({
-          height, isScrolling, onChildScroll, scrollTop,
-        }) => (
+        {({ height, isScrolling, onChildScroll, scrollTop }) => (
           <div className={styles.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isCellLoaded}

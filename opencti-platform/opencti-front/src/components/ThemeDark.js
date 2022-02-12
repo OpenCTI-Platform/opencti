@@ -70,21 +70,6 @@ export default (
     },
   },
   components: {
-    MuiTextField: {
-      defaultProps: {
-        variant: 'standard',
-      },
-    },
-    MuiSelect: {
-      defaultProps: {
-        variant: 'standard',
-      },
-    },
-    MuiInputLabel: {
-      defaultProps: {
-        variant: 'standard',
-      },
-    },
     MuiCssBaseline: {
       styleOverrides: {
         body: {
@@ -139,11 +124,6 @@ export default (
           },
           '.react-mde': {
             border: '0 !important',
-            borderBottom: '1px solid #b9bfc1 !important',
-            '&:hover': {
-              borderBottom: '2px solid #ffffff !important',
-              marginBottom: '-1px !important',
-            },
           },
           '.error .react-mde': {
             border: '0 !important',
@@ -168,7 +148,17 @@ export default (
           },
           '.mde-textarea-wrapper textarea': {
             color: '#ffffff',
-            backgroundColor: nav || '#071a2e',
+            background: 'transparent',
+            borderBottom: '1px solid #b9bfc1 !important',
+            transition: 'borderBottom .3s',
+            '&:hover': {
+              borderBottom: '2px solid #ffffff !important',
+              marginBottom: '-1px !important',
+            },
+            '&:focus': {
+              borderBottom: `2px solid #${primary || '00b1ff'} !important`,
+              marginBottom: '-1px !important',
+            },
           },
           '.react-grid-placeholder': {
             backgroundColor: 'rgba(0, 188, 212, 0.8) !important',

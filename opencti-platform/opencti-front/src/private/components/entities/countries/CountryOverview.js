@@ -24,9 +24,7 @@ const styles = () => ({
 
 class CountryOverviewComponent extends Component {
   render() {
-    const {
-      t, fldt, classes, country,
-    } = this.props;
+    const { t, fldt, classes, country } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>

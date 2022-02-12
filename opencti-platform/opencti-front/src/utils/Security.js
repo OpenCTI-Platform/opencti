@@ -42,9 +42,7 @@ export const granted = (me, capabilities, matchAll = false) => {
   return numberOfAvailableCapabilities > 0;
 };
 
-const Security = ({
-  needs, matchAll, children, placeholder = <span />,
-}) => (
+const Security = ({ needs, matchAll, children, placeholder = <span /> }) => (
   <UserContext.Consumer>
     {({ me }) => {
       if (granted(me, needs, matchAll)) return children;

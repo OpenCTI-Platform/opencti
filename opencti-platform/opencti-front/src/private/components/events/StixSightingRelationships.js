@@ -195,9 +195,7 @@ class StixSightingRelationships extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
     let toSightingId = null;
     let processedFilters = filters;
     if (filters.toSightingId) {

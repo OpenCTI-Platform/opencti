@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, map, take, sortWith, prop, ascend, pipe,
-} from 'ramda';
+import { compose, map, take, sortWith, prop, ascend, pipe } from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
@@ -44,9 +42,7 @@ const styles = () => ({
 
 class StixCoreObjectLabels extends Component {
   render() {
-    const {
-      classes, labels, t, onClick, variant, theme,
-    } = this.props;
+    const { classes, labels, t, onClick, variant, theme } = this.props;
     let style = classes.label;
     if (variant === 'inList') {
       style = classes.labelInList;

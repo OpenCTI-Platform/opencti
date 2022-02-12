@@ -58,9 +58,7 @@ class KillChainPhasesField extends Component {
   }
 
   render() {
-    const {
-      t, name, style, classes, onChange, helpertext,
-    } = this.props;
+    const { t, name, style, classes, onChange, helpertext } = this.props;
     return (
       <Field
         component={AutocompleteField}

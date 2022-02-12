@@ -35,9 +35,7 @@ const styles = (theme) => ({
 
 class StixCyberObservableOverview extends Component {
   render() {
-    const {
-      t, fldt, classes, stixCyberObservable,
-    } = this.props;
+    const { t, fldt, classes, stixCyberObservable } = this.props;
     const stixIds = stixCyberObservable.x_opencti_stix_ids || [];
     return (
       <div style={{ height: '100%' }} className="break">

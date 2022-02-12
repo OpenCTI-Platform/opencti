@@ -7,7 +7,10 @@ import withStyles from '@mui/styles/withStyles';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { KeyboardArrowRightOutlined, PersonOutlined } from '@mui/icons-material';
+import {
+  KeyboardArrowRightOutlined,
+  PersonOutlined,
+} from '@mui/icons-material';
 import { compose } from 'ramda';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
@@ -45,9 +48,7 @@ const styles = (theme) => ({
 
 class IndividualLineComponent extends Component {
   render() {
-    const {
-      fd, classes, dataColumns, node, onLabelClick,
-    } = this.props;
+    const { fd, classes, dataColumns, node, onLabelClick } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -143,7 +144,12 @@ class IndividualLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

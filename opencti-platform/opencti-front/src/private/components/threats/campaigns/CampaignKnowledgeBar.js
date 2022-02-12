@@ -37,9 +37,7 @@ const styles = (theme) => ({
 
 class CampaignKnowledgeBar extends Component {
   render() {
-    const {
-      t, location, classes, campaignId,
-    } = this.props;
+    const { t, location, classes, campaignId } = this.props;
     return (
       <Drawer
         variant="permanent"

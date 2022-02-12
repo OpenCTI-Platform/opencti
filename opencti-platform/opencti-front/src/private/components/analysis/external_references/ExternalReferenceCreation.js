@@ -191,7 +191,8 @@ class ExternalReferenceCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">
@@ -277,9 +278,7 @@ class ExternalReferenceCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t, classes, inputValue, display, open, handleClose,
-    } = this.props;
+    const { t, classes, inputValue, display, open, handleClose } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!handleClose && (

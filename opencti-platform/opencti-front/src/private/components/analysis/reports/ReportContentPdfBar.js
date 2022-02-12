@@ -64,14 +64,16 @@ class ReportContentPdfBar extends Component {
               color="primary"
               onClick={handleZoomOut.bind(this)}
               disabled={currentZoom <= 0.6}
-              size="large">
+              size="large"
+            >
               <ZoomOutOutlined />
             </IconButton>
             <IconButton
               color="primary"
               onClick={handleZoomIn.bind(this)}
               disabled={currentZoom >= 2}
-              size="large">
+              size="large"
+            >
               <ZoomInOutlined />
             </IconButton>
           </div>
@@ -90,11 +92,16 @@ class ReportContentPdfBar extends Component {
                 to={directDownload}
                 target="_blank"
                 rel="noopener noreferrer"
-                size="large">
+                size="large"
+              >
                 <CloudDownloadOutlined />
               </IconButton>
             ) : (
-              <IconButton color="primary" onClick={handleDownload.bind(this)} size="large">
+              <IconButton
+                color="primary"
+                onClick={handleDownload.bind(this)}
+                size="large"
+              >
                 <CloudDownloadOutlined />
               </IconButton>
             )}

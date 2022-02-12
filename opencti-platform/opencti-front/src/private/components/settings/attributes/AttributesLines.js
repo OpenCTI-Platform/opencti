@@ -8,27 +8,25 @@ import { AttributeLine, AttributeLineDummy } from './AttributeLine';
 const nbOfRowsToLoad = 200;
 
 const AttributesLines = (props) => {
-  const {
-    data, initialLoading, dataColumns, relay, paginationOptions,
-  } = props;
+  const { data, initialLoading, dataColumns, relay, paginationOptions } = props;
   const attributes = data?.runtimeAttributes?.edges ?? [];
   const globalCount = data?.runtimeAttributes?.pageInfo?.globalCount ?? nbOfRowsToLoad;
   const refetch = () => relay.refetchConnection(nbOfRowsToLoad);
   return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore}
-        hasMore={relay.hasMore}
-        refetch={refetch}
-        isLoading={relay.isLoading}
-        dataList={attributes}
-        globalCount={globalCount}
-        LineComponent={<AttributeLine />}
-        DummyLineComponent={<AttributeLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-      />
+    <ListLinesContent
+      initialLoading={initialLoading}
+      loadMore={relay.loadMore}
+      hasMore={relay.hasMore}
+      refetch={refetch}
+      isLoading={relay.isLoading}
+      dataList={attributes}
+      globalCount={globalCount}
+      LineComponent={<AttributeLine />}
+      DummyLineComponent={<AttributeLineDummy />}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+    />
   );
 };
 

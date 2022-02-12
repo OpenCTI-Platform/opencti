@@ -23,9 +23,7 @@ const styles = () => ({
 
 class CourseOfActionOverviewComponent extends Component {
   render() {
-    const {
-      t, fldt, classes, courseOfAction,
-    } = this.props;
+    const { t, fldt, classes, courseOfAction } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>

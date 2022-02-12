@@ -252,9 +252,7 @@ class EntityStixCoreRelationshipsList extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant,
-    } = this.props;
+    const { t, classes, title, variant } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

@@ -72,7 +72,8 @@ class StixCoreObjectEnrichment extends Component {
             color="primary"
             aria-label="Refresh"
             className={classes.enrichButton}
-            size="large">
+            size="large"
+          >
             <CloudRefresh />
           </IconButton>
         </Tooltip>
@@ -87,7 +88,8 @@ class StixCoreObjectEnrichment extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>

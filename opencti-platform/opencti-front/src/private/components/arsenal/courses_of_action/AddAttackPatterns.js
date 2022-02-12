@@ -94,7 +94,8 @@ class AddAttackPatterns extends Component {
           aria-label="Attack Pattern"
           onClick={this.handleOpen.bind(this)}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large">
+          size="large"
+        >
           <Add fontSize="small" />
         </IconButton>
         <Drawer
@@ -108,7 +109,8 @@ class AddAttackPatterns extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>

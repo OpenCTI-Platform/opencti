@@ -229,9 +229,7 @@ class IncidentEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, incident, context, enableReferences,
-    } = this.props;
+    const { t, incident, context, enableReferences } = this.props;
     const isInferred = incident.is_inferred;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], incident) === null
       ? ''

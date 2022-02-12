@@ -115,15 +115,7 @@ class PendingFileLineComponent extends Component {
   }
 
   render() {
-    const {
-      classes,
-      t,
-      fld,
-      file,
-      dense,
-      directDownload,
-      nested,
-    } = this.props;
+    const { classes, t, fld, file, dense, directDownload, nested } = this.props;
     const { displayDelete } = this.state;
     const { uploadStatus, metaData } = file;
     const { errors } = metaData;
@@ -176,7 +168,8 @@ class PendingFileLineComponent extends Component {
                     href={`${APP_BASE_PATH}/storage/get/${file.id}`}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
-                    size="large">
+                    size="large"
+                  >
                     <GetAppOutlined />
                   </IconButton>
                 </span>
@@ -189,7 +182,8 @@ class PendingFileLineComponent extends Component {
                     disabled={isProgress}
                     color={nested ? 'inherit' : 'primary'}
                     onClick={this.handleOpenDelete.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <DeleteOutlined />
                   </IconButton>
                 </span>
@@ -201,7 +195,8 @@ class PendingFileLineComponent extends Component {
                     disabled={isProgress}
                     color={nested ? 'inherit' : 'primary'}
                     onClick={this.handleOpenDelete.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <CancelOutlined />
                   </IconButton>
                 </span>

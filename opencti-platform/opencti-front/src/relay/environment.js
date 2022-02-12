@@ -1,6 +1,4 @@
-import {
-  Environment, RecordSource, Store, Observable,
-} from 'relay-runtime';
+import { Environment, RecordSource, Store, Observable } from 'relay-runtime';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installRelayDevTools } from 'relay-devtools';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
@@ -15,9 +13,7 @@ import {
   fetchQuery as FQ,
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
-import {
-  map, isEmpty, difference, filter, pathOr, isNil,
-} from 'ramda';
+import { map, isEmpty, difference, filter, pathOr, isNil } from 'ramda';
 import {
   urlMiddleware,
   RelayNetworkLayer,
@@ -93,9 +89,7 @@ export const environment = new Environment({
 // Components
 export class QueryRenderer extends Component {
   render() {
-    const {
-      variables, query, render, managedErrorTypes,
-    } = this.props;
+    const { variables, query, render, managedErrorTypes } = this.props;
     return (
       <QR
         environment={environment}

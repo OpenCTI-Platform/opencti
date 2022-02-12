@@ -47,9 +47,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import {
-  map, pathOr, pipe, union,
-} from 'ramda';
+import { map, pathOr, pipe, union } from 'ramda';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
 import {
@@ -755,9 +753,7 @@ class ToolBar extends Component {
       withPaddingRight,
       theme,
     } = this.props;
-    const {
-      actions, keptEntityId, mergingElement, actionsInputs,
-    } = this.state;
+    const { actions, keptEntityId, mergingElement, actionsInputs } = this.state;
     const isOpen = numberOfSelectedElements > 0;
     const typesAreDifferent = R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))
       .length > 1;
@@ -824,7 +820,8 @@ class ToolBar extends Component {
               aria-label="clear"
               disabled={numberOfSelectedElements === 0 || this.state.processing}
               onClick={handleClearSelectedElements.bind(this)}
-              size="large">
+              size="large"
+            >
               <ClearOutlined fontSize="small" />
             </IconButton>
           </Typography>
@@ -838,7 +835,8 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleOpenUpdate.bind(this)}
                   color="primary"
-                  size="large">
+                  size="large"
+                >
                   <BrushOutlined />
                 </IconButton>
               </span>
@@ -857,7 +855,8 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleOpenMerge.bind(this)}
                   color="primary"
-                  size="large">
+                  size="large"
+                >
                   <Merge />
                 </IconButton>
               </span>
@@ -873,7 +872,8 @@ class ToolBar extends Component {
                   }
                   onClick={this.handleLaunchDelete.bind(this)}
                   color="primary"
-                  size="large">
+                  size="large"
+                >
                   <DeleteOutlined />
                 </IconButton>
               </span>
@@ -1103,7 +1103,8 @@ class ToolBar extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseUpdate.bind(this)}
-              size="large">
+              size="large"
+            >
               <CloseOutlined fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Update entities')}</Typography>
@@ -1118,7 +1119,8 @@ class ToolBar extends Component {
                     aria-label="Delete"
                     className={classes.stepCloseButton}
                     onClick={this.handleRemoveStep.bind(this, i)}
-                    size="large">
+                    size="large"
+                  >
                     <CancelOutlined fontSize="small" />
                   </IconButton>
                   <Grid container={true} spacing={3}>
@@ -1187,7 +1189,8 @@ class ToolBar extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseMerge.bind(this)}
-              size="large">
+              size="large"
+            >
               <CloseOutlined fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Merge entities')}</Typography>

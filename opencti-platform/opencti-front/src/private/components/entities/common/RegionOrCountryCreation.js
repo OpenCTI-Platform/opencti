@@ -11,9 +11,7 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { Close, FlagOutlined, LocalPlayOutlined } from '@mui/icons-material';
-import {
-  compose, pipe, pluck, assoc,
-} from 'ramda';
+import { compose, pipe, pluck, assoc } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
@@ -241,7 +239,8 @@ class RegionOrCountryCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseRegion.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create a region')}</Typography>
@@ -258,9 +257,7 @@ class RegionOrCountryCreation extends Component {
               onSubmit={this.onSubmitRegion.bind(this)}
               onReset={this.onResetRegion.bind(this)}
             >
-              {({
-                submitForm, handleReset, isSubmitting, setFieldValue,
-              }) => (
+              {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
@@ -322,7 +319,8 @@ class RegionOrCountryCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseCountry.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create a country')}</Typography>
@@ -339,9 +337,7 @@ class RegionOrCountryCreation extends Component {
               onSubmit={this.onSubmitCountry.bind(this)}
               onReset={this.onResetCountry.bind(this)}
             >
-              {({
-                submitForm, handleReset, isSubmitting, setFieldValue,
-              }) => (
+              {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}

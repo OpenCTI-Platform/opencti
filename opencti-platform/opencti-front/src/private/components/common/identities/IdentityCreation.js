@@ -156,7 +156,8 @@ class IdentityCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create an entity')}</Typography>
@@ -262,9 +263,7 @@ class IdentityCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t, classes, inputValue, open, onlyAuthors,
-    } = this.props;
+    const { t, classes, inputValue, open, onlyAuthors } = this.props;
     return (
       <div>
         <Formik

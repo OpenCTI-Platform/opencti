@@ -102,9 +102,7 @@ class Labels extends Component {
 
   render() {
     const { classes } = this.props;
-    const {
-      view, sortBy, orderAsc, searchTerm,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm } = this.state;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,

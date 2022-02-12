@@ -248,6 +248,7 @@ class Settings extends Component {
                                 fullWidth={true}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -263,6 +264,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -281,6 +283,7 @@ class Settings extends Component {
                                 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onChange={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helpertext={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -302,6 +305,7 @@ class Settings extends Component {
                                 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onChange={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helpertext={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -364,6 +368,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -404,6 +409,7 @@ class Settings extends Component {
                                 fullWidth={true}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -423,6 +429,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -442,6 +449,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -463,6 +471,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -482,6 +491,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -501,6 +511,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -520,6 +531,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -541,6 +553,7 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}

@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import {
-  compose, evolve, path, pluck,
-} from 'ramda';
+import { compose, evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
@@ -183,7 +181,8 @@ class ObservedDataCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create an observed data')}</Typography>
@@ -303,9 +302,7 @@ class ObservedDataCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t, classes, inputValue, display,
-    } = this.props;
+    const { t, classes, inputValue, display } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab

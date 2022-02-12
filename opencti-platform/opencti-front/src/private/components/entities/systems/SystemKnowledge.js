@@ -25,9 +25,7 @@ const styles = () => ({
 
 class SystemKnowledgeComponent extends Component {
   render() {
-    const {
-      classes, system, viewAs, onViewAs,
-    } = this.props;
+    const { classes, system, viewAs, onViewAs } = this.props;
     const link = `/dashboard/entities/systems/${system.id}/knowledge`;
     return (
       <div

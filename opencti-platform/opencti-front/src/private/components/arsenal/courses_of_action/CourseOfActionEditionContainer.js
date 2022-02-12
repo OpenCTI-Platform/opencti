@@ -52,9 +52,7 @@ class CourseOfActionEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, courseOfAction,
-    } = this.props;
+    const { t, classes, handleClose, courseOfAction } = this.props;
     const { editContext } = courseOfAction;
     return (
       <div>
@@ -63,7 +61,8 @@ class CourseOfActionEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

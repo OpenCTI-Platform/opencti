@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  map, filter, head, keys, groupBy, assoc, compose,
-} from 'ramda';
+import { map, filter, head, keys, groupBy, assoc, compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -93,9 +91,7 @@ class StixDomainObjectAddObjectRefsLinesContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, stixDomainObjectObjectRefs,
-    } = this.props;
+    const { t, classes, data, stixDomainObjectObjectRefs } = this.props;
     const stixDomainObjectObjectRefsIds = map(
       (n) => n.id,
       stixDomainObjectObjectRefs,

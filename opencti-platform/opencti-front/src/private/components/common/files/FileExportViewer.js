@@ -67,7 +67,8 @@ const FileExportViewerBase = ({
                 disabled={!isExportPossible}
                 aria-haspopup="true"
                 color="primary"
-                size="large">
+                size="large"
+              >
                 <FileExportOutline />
               </IconButton>
             </span>

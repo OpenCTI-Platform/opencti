@@ -218,9 +218,7 @@ class ObservedDatas extends Component {
       objectId,
       authorId,
     } = this.props;
-    const {
-      view, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
     const observedDataFilterClass = observedDataType !== 'all' && observedDataType !== undefined
       ? observedDataType.replace(/_/g, ' ')
       : '';

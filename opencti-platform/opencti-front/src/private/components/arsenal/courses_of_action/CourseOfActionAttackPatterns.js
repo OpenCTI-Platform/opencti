@@ -101,7 +101,8 @@ class CourseOfActionAttackPatternComponent extends Component {
                       this,
                       attackPatternEdge,
                     )}
-                    size="large">
+                    size="large"
+                  >
                     <LinkOff />
                   </IconButton>
                 </ListItemSecondaryAction>

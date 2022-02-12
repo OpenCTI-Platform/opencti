@@ -37,9 +37,7 @@ const styles = (theme) => ({
 
 class ThreatActorDetailsComponent extends Component {
   render() {
-    const {
-      t, classes, threatActor, fd,
-    } = this.props;
+    const { t, classes, threatActor, fd } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

@@ -13,8 +13,6 @@ import RoleEditionOverview from './RoleEditionOverview';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -43,9 +41,7 @@ const styles = (theme) => ({
 
 class RoleEdition extends Component {
   render() {
-    const {
-      t, classes, handleClose, role,
-    } = this.props;
+    const { t, classes, handleClose, role } = this.props;
     const { editContext } = role;
     return (
       <div>
@@ -54,7 +50,8 @@ class RoleEdition extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

@@ -58,9 +58,7 @@ class CampaignEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, campaign,
-    } = this.props;
+    const { t, classes, handleClose, campaign } = this.props;
     const { editContext } = campaign;
     return (
       <div>
@@ -69,7 +67,8 @@ class CampaignEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

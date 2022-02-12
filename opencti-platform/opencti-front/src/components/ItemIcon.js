@@ -180,10 +180,8 @@ const iconSelector = (type, variant, fontSize, color) => {
 
 class ItemIcon extends Component {
   render() {
-    const {
-      type, size, variant, color,
-    } = this.props;
-    const fontSize = size || 'default';
+    const { type, size, variant, color } = this.props;
+    const fontSize = size || 'medium';
     return iconSelector(type, variant, fontSize, color);
   }
 }

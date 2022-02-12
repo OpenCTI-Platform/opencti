@@ -122,9 +122,7 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
 
 class StixDomainObjectAuthorKnowledge extends Component {
   render() {
-    const {
-      t, fsd, mtd, n, classes, stixDomainObjectId, theme,
-    } = this.props;
+    const { t, fsd, mtd, n, classes, stixDomainObjectId, theme } = this.props;
     return (
       <div>
         <Grid container={true} spacing={3}>

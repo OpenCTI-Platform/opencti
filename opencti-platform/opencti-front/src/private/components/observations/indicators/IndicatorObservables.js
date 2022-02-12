@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, includes, filter, append,
-} from 'ramda';
+import { compose, includes, filter, append } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -86,9 +84,7 @@ class IndicatorObservablesComponent extends Component {
   }
 
   render() {
-    const {
-      t, fd, classes, indicator,
-    } = this.props;
+    const { t, fd, classes, indicator } = this.props;
     return (
       <div style={{ marginTop: 20 }}>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>

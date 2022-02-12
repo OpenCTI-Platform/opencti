@@ -490,9 +490,7 @@ class ContainerAddStixCoreObjects extends Component {
   }
 
   render() {
-    const {
-      t, classes, withPadding, simple, knowledgeGraph, openExports,
-    } = this.props;
+    const { t, classes, withPadding, simple, knowledgeGraph, openExports } = this.props;
     const paginationOptions = this.getPaginationOptions();
     return (
       <div>
@@ -503,7 +501,8 @@ class ContainerAddStixCoreObjects extends Component {
               color="primary"
               aria-label="Add"
               onClick={this.handleOpen.bind(this)}
-              size="large">
+              size="large"
+            >
               <Add />
             </IconButton>
           </Tooltip>
@@ -513,7 +512,8 @@ class ContainerAddStixCoreObjects extends Component {
             aria-label="Add"
             onClick={this.handleOpen.bind(this)}
             classes={{ root: classes.createButtonSimple }}
-            size="large">
+            size="large"
+          >
             <Add fontSize="small" />
           </IconButton>
         ) : (
@@ -545,7 +545,8 @@ class ContainerAddStixCoreObjects extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             {(ContainerAddStixCoreObjects.isTypeDomainObject(

@@ -103,7 +103,8 @@ class AttackPtternsMatrixBar extends Component {
                   <IconButton
                     color={currentModeOnlyActive ? 'secondary' : 'primary'}
                     onClick={handleToggleModeOnlyActive.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <FilterListOutlined />
                   </IconButton>
                 </span>
@@ -119,7 +120,8 @@ class AttackPtternsMatrixBar extends Component {
                   <IconButton
                     color={currentColorsReversed ? 'secondary' : 'primary'}
                     onClick={handleToggleColorsReversed.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <InvertColorsOffOutlined />
                   </IconButton>
                 </span>

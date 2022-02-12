@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, pipe, map, assoc,
-} from 'ramda';
+import { compose, pipe, map, assoc } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
@@ -42,9 +40,7 @@ const styles = (theme) => ({
 
 class StixDomainObjectTimelineComponent extends Component {
   render() {
-    const {
-      md, classes, data, stixDomainObjectId, entityLink, timeField,
-    } = this.props;
+    const { md, classes, data, stixDomainObjectId, entityLink, timeField } = this.props;
     const stixRelationships = pipe(
       map((n) => n.node),
       map((n) => (n.from.id === stixDomainObjectId

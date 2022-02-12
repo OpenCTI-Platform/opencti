@@ -3,9 +3,7 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import {
-  compose, pick, pipe, assoc,
-} from 'ramda';
+import { compose, pick, pipe, assoc } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import MenuItem from '@mui/material/MenuItem';
@@ -98,9 +96,7 @@ class StatusEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, handleClose, open, status,
-    } = this.props;
+    const { t, handleClose, open, status } = this.props;
     const initialValues = pipe(
       assoc('template_id', status.template.id),
       pick(['template_id', 'order']),

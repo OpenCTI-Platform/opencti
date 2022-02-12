@@ -69,9 +69,7 @@ class StixCoreRelationshipInference extends Component {
   }
 
   render() {
-    const {
-      t, classes, inference, theme, stixCoreRelationship, paddingRight,
-    } = this.props;
+    const { t, classes, inference, theme, stixCoreRelationship, paddingRight } = this.props;
     const width = window.innerWidth - (paddingRight ? 450 : 250);
     const graphObjects = [
       R.assoc('inferred', true, stixCoreRelationship),

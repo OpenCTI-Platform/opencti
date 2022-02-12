@@ -48,9 +48,7 @@ const styles = (theme) => ({
   },
 });
 
-const GroupEdition = ({
-  t, classes, handleClose, group,
-}) => {
+const GroupEdition = ({ t, classes, handleClose, group }) => {
   const [currentTab, setTab] = useState(0);
   const { editContext } = group;
   return (
@@ -60,7 +58,8 @@ const GroupEdition = ({
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large">
+          size="large"
+        >
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>

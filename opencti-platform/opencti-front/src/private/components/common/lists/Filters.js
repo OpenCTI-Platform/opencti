@@ -776,12 +776,8 @@ class Filters extends Component {
   }
 
   renderListFilters() {
-    const {
-      t, classes, availableFilterKeys, noDirectFilters,
-    } = this.props;
-    const {
-      open, anchorEl, entities, inputValues,
-    } = this.state;
+    const { t, classes, availableFilterKeys, noDirectFilters } = this.props;
+    const { open, anchorEl, entities, inputValues } = this.state;
     return (
       <div className={classes.filters}>
         {this.props.variant === 'text' ? (

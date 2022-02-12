@@ -76,9 +76,7 @@ const passwordValidation = (t) => Yup.object().shape({
 });
 
 const ProfileOverviewComponent = (props) => {
-  const {
-    t, me, classes, fldt, subscriptionStatus, about,
-  } = props;
+  const { t, me, classes, fldt, subscriptionStatus, about } = props;
   const external = false;
   const initialValues = pick(
     [

@@ -18,9 +18,7 @@ const styles = () => ({
 
 class GlobalVictimologyCountries extends Component {
   render() {
-    const {
-      t, startDate, endDate, widget, mapReload, timeField,
-    } = this.props;
+    const { t, startDate, endDate, widget, mapReload, timeField } = this.props;
     let dateAttribute = 'created_at';
     if (timeField === 'functional') {
       dateAttribute = 'start_time';

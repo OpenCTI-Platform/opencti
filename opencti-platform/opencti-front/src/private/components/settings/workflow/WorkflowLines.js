@@ -124,9 +124,7 @@ class WorkflowLinesComponent extends Component {
   }
 
   render() {
-    const {
-      classes, data, keyword, t,
-    } = this.props;
+    const { classes, data, keyword, t } = this.props;
     const filterByKeyword = (n) => keyword === ''
       || n.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || n.tlabel.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;

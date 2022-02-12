@@ -228,9 +228,7 @@ class ConnectorsStatusComponent extends Component {
   }
 
   render() {
-    const {
-      classes, t, n, nsdt, data,
-    } = this.props;
+    const { classes, t, n, nsdt, data } = this.props;
     const { queues } = data.rabbitMQMetrics;
     const connectors = map(
       (i) => assoc(
@@ -361,7 +359,8 @@ class ConnectorsStatusComponent extends Component {
                         onClick={this.handleResetState.bind(this, connector.id)}
                         aria-haspopup="true"
                         color="primary"
-                        size="large">
+                        size="large"
+                      >
                         <LayersRemove />
                       </IconButton>
                     </Tooltip>
@@ -371,7 +370,8 @@ class ConnectorsStatusComponent extends Component {
                         aria-haspopup="true"
                         color="primary"
                         disabled={connector.active}
-                        size="large">
+                        size="large"
+                      >
                         <Delete />
                       </IconButton>
                     </Tooltip>

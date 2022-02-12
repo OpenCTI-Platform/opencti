@@ -116,9 +116,7 @@ const stixCoreObjectMutationRelationDelete = graphql`
 `;
 
 const StixCoreObjectLabelsView = (props) => {
-  const {
-    classes, labels, t, marginTop,
-  } = props;
+  const { classes, labels, t, marginTop } = props;
   const { me } = useContext(UserContext);
   const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
   const [openAdd, setOpenAdd] = useState(false);
@@ -203,7 +201,8 @@ const StixCoreObjectLabelsView = (props) => {
           aria-label="Label"
           onClick={handleOpenAdd}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-          size="large">
+          size="large"
+        >
           <Add fontSize="small" />
         </IconButton>
       </Security>
@@ -240,9 +239,7 @@ const StixCoreObjectLabelsView = (props) => {
         onSubmit={onSubmit}
         onReset={onReset}
       >
-        {({
-          submitForm, handleReset, isSubmitting, setFieldValue, values,
-        }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Dialog
             open={openAdd}
             TransitionComponent={Transition}

@@ -147,9 +147,7 @@ class ExportButtons extends Component {
 
   render() {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
-    const {
-      classes, t, domElementId, name, csvData,
-    } = this.props;
+    const { classes, t, domElementId, name, csvData } = this.props;
     return (
       <div className={classes.exportButtons}>
         <Tooltip title={t('Export to image')}>
@@ -157,7 +155,8 @@ class ExportButtons extends Component {
             onClick={this.handleOpenImage.bind(this)}
             aria-haspopup="true"
             color="primary"
-            size="large">
+            size="large"
+          >
             <ImageOutlined />
           </IconButton>
         </Tooltip>
@@ -217,7 +216,8 @@ class ExportButtons extends Component {
             onClick={this.handleOpenPdf.bind(this)}
             aria-haspopup="true"
             color="primary"
-            size="large">
+            size="large"
+          >
             <FilePdfBox />
           </IconButton>
         </Tooltip>

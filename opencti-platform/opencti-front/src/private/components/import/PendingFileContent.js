@@ -26,9 +26,7 @@ import * as Yup from 'yup';
 import { Link, withRouter } from 'react-router-dom';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { CodeJson } from 'mdi-material-ui';
-import {
-  Cell, Pie, PieChart, ResponsiveContainer,
-} from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import withTheme from '@mui/styles/withTheme';
 import Select from '@mui/material/Select';
 import IconButton from '@mui/material/IconButton';
@@ -646,9 +644,7 @@ class PendingFileContentComponent extends Component {
   renderLabel(props) {
     const { theme } = this.props;
     const RADIAN = Math.PI / 180;
-    const {
-      cx, cy, midAngle, outerRadius, fill, payload, percent, value,
-    } = props;
+    const { cx, cy, midAngle, outerRadius, fill, payload, percent, value } = props;
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);
     const sx = cx + (outerRadius + 10) * cos;

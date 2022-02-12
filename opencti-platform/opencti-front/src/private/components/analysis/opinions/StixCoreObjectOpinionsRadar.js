@@ -109,9 +109,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
 
   tickFormatter(props) {
     const { classes } = this.props;
-    const {
-      payload, x, y, textAnchor,
-    } = props;
+    const { payload, x, y, textAnchor } = props;
     const color = colors[payload.value];
     return (
       <text
@@ -185,9 +183,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
   }
 
   renderContent() {
-    const {
-      t, data, field, theme,
-    } = this.props;
+    const { t, data, field, theme } = this.props;
     if (data && data.opinionsDistribution) {
       let distributionData;
       if (field && field.includes('internal_id')) {
@@ -307,9 +303,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
 
   render() {
     const { currentOpinion } = this.state;
-    const {
-      t, classes, title, variant, height, marginTop, stixCoreObjectId,
-    } = this.props;
+    const { t, classes, title, variant, height, marginTop, stixCoreObjectId } = this.props;
     const marks = [
       { label: '-', value: 1 },
       { label: 'disagree', value: 2 },
@@ -332,7 +326,8 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-            size="large">
+            size="large"
+          >
             <ThumbsUpDownOutlined fontSize="small" />
           </IconButton>
           <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>

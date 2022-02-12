@@ -128,9 +128,7 @@ class Groups extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm } = this.state;
     const { classes } = this.props;
     const paginationOptions = {
       search: searchTerm,

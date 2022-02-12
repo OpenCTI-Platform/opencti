@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  map, keys, groupBy, assoc, compose,
-} from 'ramda';
+import { map, keys, groupBy, assoc, compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -73,9 +71,7 @@ class StixSightingRelationshipCreationFromRelationStixCyberObservablesLinesConta
   }
 
   render() {
-    const {
-      t, classes, data, handleSelect,
-    } = this.props;
+    const { t, classes, data, handleSelect } = this.props;
     const stixCyberObservablesNodes = map(
       (n) => n.node,
       data.stixCyberObservables.edges,

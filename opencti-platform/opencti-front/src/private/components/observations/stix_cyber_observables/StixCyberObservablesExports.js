@@ -28,9 +28,7 @@ const styles = (theme) => ({
 
 class StixCyberObservablesExports extends Component {
   render() {
-    const {
-      classes, paginationOptions, open, handleToggle, context,
-    } = this.props;
+    const { classes, paginationOptions, open, handleToggle, context } = this.props;
     return (
       <Drawer
         variant="persistent"

@@ -48,9 +48,7 @@ const styles = (theme) => ({
 
 class OrganizationLineComponent extends Component {
   render() {
-    const {
-      t, fd, classes, dataColumns, node, onLabelClick,
-    } = this.props;
+    const { t, fd, classes, dataColumns, node, onLabelClick } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -155,7 +153,12 @@ class OrganizationLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

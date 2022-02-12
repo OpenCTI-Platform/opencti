@@ -41,9 +41,7 @@ const styles = (theme) => ({
 
 class IndicatorDetailsComponent extends Component {
   render() {
-    const {
-      t, fld, classes, indicator,
-    } = this.props;
+    const { t, fld, classes, indicator } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>

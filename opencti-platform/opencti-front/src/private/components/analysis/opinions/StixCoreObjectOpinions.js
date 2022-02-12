@@ -17,9 +17,7 @@ const styles = () => ({
 
 class StixCoreObjectOpinions extends Component {
   render() {
-    const {
-      title, variant, height, marginTop, stixCoreObjectId, field,
-    } = this.props;
+    const { title, variant, height, marginTop, stixCoreObjectId, field } = this.props;
     const opinionsDistributionVariables = {
       objectId: stixCoreObjectId,
       field: field || 'opinion',

@@ -201,9 +201,7 @@ class ConnectorComponent extends Component {
   }
 
   render() {
-    const {
-      classes, connector, t, nsdt,
-    } = this.props;
+    const { classes, connector, t, nsdt } = this.props;
     const optionsInProgress = {
       count: 50,
       filters: [
@@ -240,7 +238,8 @@ class ConnectorComponent extends Component {
                   onClick={this.handleOpenResetState.bind(this, connector.id)}
                   aria-haspopup="true"
                   color="primary"
-                  size="large">
+                  size="large"
+                >
                   <LayersRemove />
                 </IconButton>
               </Tooltip>
@@ -249,7 +248,8 @@ class ConnectorComponent extends Component {
                   onClick={this.handleOpenClearWorks.bind(this, connector.id)}
                   aria-haspopup="true"
                   color="primary"
-                  size="large">
+                  size="large"
+                >
                   <DeleteSweepOutlined />
                 </IconButton>
               </Tooltip>
@@ -259,7 +259,8 @@ class ConnectorComponent extends Component {
                   aria-haspopup="true"
                   color="primary"
                   disabled={connector.active}
-                  size="large">
+                  size="large"
+                >
                   <Delete />
                 </IconButton>
               </Tooltip>

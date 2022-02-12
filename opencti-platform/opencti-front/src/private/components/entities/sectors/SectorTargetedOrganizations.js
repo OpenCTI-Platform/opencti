@@ -114,9 +114,7 @@ const sectorTargetedOrganizationsQuery = graphql`
 
 class SectorTargetedOrganizations extends Component {
   render() {
-    const {
-      t, fsd, classes, sectorId,
-    } = this.props;
+    const { t, fsd, classes, sectorId } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

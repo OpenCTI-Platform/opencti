@@ -41,9 +41,7 @@ const styles = (theme) => ({
 
 class StixCoreRelationshipStixCoreRelationships extends Component {
   render() {
-    const {
-      t, classes, entityId, relationshipType,
-    } = this.props;
+    const { t, classes, entityId, relationshipType } = this.props;
     const paginationOptions = {
       fromId: entityId,
       relationship_type: relationshipType,

@@ -361,7 +361,8 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color={currentMode3D ? 'secondary' : 'primary'}
                     onClick={handleToggle3DMode.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <Video3d />
                   </IconButton>
                 </span>
@@ -380,7 +381,8 @@ class ReportKnowledgeGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'vertical')}
                     disabled={currentModeFixed}
-                    size="large">
+                    size="large"
+                  >
                     <FamilyTree />
                   </IconButton>
                 </span>
@@ -399,7 +401,8 @@ class ReportKnowledgeGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'horizontal')}
                     disabled={currentModeFixed}
-                    size="large">
+                    size="large"
+                  >
                     <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                   </IconButton>
                 </span>
@@ -413,7 +416,8 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color={currentModeFixed ? 'primary' : 'secondary'}
                     onClick={handleToggleFixedMode.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <ScatterPlotOutlined />
                   </IconButton>
                 </span>
@@ -423,14 +427,19 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color={displayTimeRange ? 'secondary' : 'primary'}
                     onClick={handleToggleDisplayTimeRange.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <DateRangeOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
               <Tooltip title={t('Fit graph to canvas')}>
                 <span>
-                  <IconButton color="primary" onClick={handleZoomToFit.bind(this)} size="large">
+                  <IconButton
+                    color="primary"
+                    onClick={handleZoomToFit.bind(this)}
+                    size="large"
+                  >
                     <AspectRatio />
                   </IconButton>
                 </span>
@@ -441,7 +450,8 @@ class ReportKnowledgeGraphBar extends Component {
                     color="primary"
                     onClick={handleResetLayout.bind(this)}
                     disabled={currentModeFixed}
-                    size="large">
+                    size="large"
+                  >
                     <AutoFix />
                   </IconButton>
                 </span>
@@ -452,7 +462,8 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <FilterListOutlined />
                   </IconButton>
                 </span>
@@ -501,7 +512,11 @@ class ReportKnowledgeGraphBar extends Component {
               </Popover>
               <Tooltip title={t('Filter marking definitions')}>
                 <span>
-                  <IconButton color="primary" onClick={this.handleOpenMarkedBy.bind(this)} size="large">
+                  <IconButton
+                    color="primary"
+                    onClick={this.handleOpenMarkedBy.bind(this)}
+                    size="large"
+                  >
                     <CenterFocusStrongOutlined />
                   </IconButton>
                 </span>
@@ -553,7 +568,8 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenCreatedBy.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <AccountBalanceOutlined />
                   </IconButton>
                 </span>
@@ -602,7 +618,8 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenSelectByType.bind(this)}
-                    size="large">
+                    size="large"
+                  >
                     <SelectGroup />
                   </IconButton>
                 </span>
@@ -642,7 +659,11 @@ class ReportKnowledgeGraphBar extends Component {
               </Popover>
               <Tooltip title={t('Select all nodes')}>
                 <span>
-                  <IconButton color="primary" onClick={handleSelectAll.bind(this)} size="large">
+                  <IconButton
+                    color="primary"
+                    onClick={handleSelectAll.bind(this)}
+                    size="large"
+                  >
                     <SelectAll />
                   </IconButton>
                 </span>
@@ -683,7 +704,8 @@ class ReportKnowledgeGraphBar extends Component {
                       target="_blank"
                       to={viewLink}
                       disabled={!viewEnabled}
-                      size="large">
+                      size="large"
+                    >
                       <InfoOutlined />
                     </IconButton>
                   </span>
@@ -694,7 +716,8 @@ class ReportKnowledgeGraphBar extends Component {
                       color="primary"
                       onClick={this.handleOpenEditItem.bind(this)}
                       disabled={!editionEnabled}
-                      size="large">
+                      size="large"
+                    >
                       <EditOutlined />
                     </IconButton>
                   </span>
@@ -721,7 +744,8 @@ class ReportKnowledgeGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenCreateRelationship.bind(this)}
                         disabled={!relationEnabled}
-                        size="large">
+                        size="large"
+                      >
                         <LinkOutlined />
                       </IconButton>
                     </span>
@@ -759,7 +783,8 @@ class ReportKnowledgeGraphBar extends Component {
                           numberOfSelectedNodes === 0
                           && numberOfSelectedLinks === 0
                         }
-                        size="large">
+                        size="large"
+                      >
                         <DeleteOutlined />
                       </IconButton>
                     </span>

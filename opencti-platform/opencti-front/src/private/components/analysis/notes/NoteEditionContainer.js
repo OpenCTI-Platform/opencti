@@ -52,9 +52,7 @@ class NoteEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, note,
-    } = this.props;
+    const { t, classes, handleClose, note } = this.props;
     const { editContext } = note;
     return (
       <div>
@@ -63,7 +61,8 @@ class NoteEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

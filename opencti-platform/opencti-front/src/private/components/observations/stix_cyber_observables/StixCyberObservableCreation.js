@@ -715,7 +715,8 @@ class StixCyberObservableCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">{t('Create an observable')}</Typography>
@@ -730,9 +731,7 @@ class StixCyberObservableCreation extends Component {
 
   renderContextual() {
     const { type } = this.state;
-    const {
-      t, classes, display, speeddial,
-    } = this.props;
+    const { t, classes, display, speeddial } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!speeddial && (

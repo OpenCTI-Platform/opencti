@@ -98,9 +98,7 @@ const stixDomainObjectVictimologyMapQuery = graphql`
 
 class StixDomainObjectVictimologyMap extends Component {
   render() {
-    const {
-      t, title, stixDomainObjectId, startDate, endDate,
-    } = this.props;
+    const { t, title, stixDomainObjectId, startDate, endDate } = this.props;
     return (
       <div style={{ height: '100%', paddingBottom: 10 }}>
         <Typography

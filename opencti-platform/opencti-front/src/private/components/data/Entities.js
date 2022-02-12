@@ -288,9 +288,7 @@ class Entities extends Component {
 
   render() {
     const { classes } = this.props;
-    const {
-      view, types, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
+    const { view, types, sortBy, orderAsc, searchTerm, filters } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       types: types.length > 0 ? types : null,

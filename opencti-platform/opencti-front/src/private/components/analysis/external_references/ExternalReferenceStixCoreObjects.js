@@ -31,9 +31,7 @@ const styles = () => ({
 
 class ExternalReferenceStixCoreObjectsComponent extends Component {
   render() {
-    const {
-      t, fd, classes, externalReference,
-    } = this.props;
+    const { t, fd, classes, externalReference } = this.props;
     const stixCoreObjects = R.map(
       (n) => n.node,
       externalReference.references.edges,

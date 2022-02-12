@@ -23,9 +23,7 @@ const styles = () => ({
 
 class InfrastructureDetailsComponent extends Component {
   render() {
-    const {
-      t, fld, classes, infrastructure,
-    } = this.props;
+    const { t, fld, classes, infrastructure } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

@@ -113,9 +113,7 @@ class InvestigationAddStixCoreObjects extends Component {
   }
 
   renderSearchResults(paginationOptions) {
-    const {
-      classes, workspaceId, workspaceStixCoreObjects, t,
-    } = this.props;
+    const { classes, workspaceId, workspaceStixCoreObjects, t } = this.props;
     const { search } = this.state;
 
     return (
@@ -283,7 +281,8 @@ class InvestigationAddStixCoreObjects extends Component {
             color="primary"
             aria-label="Add"
             onClick={this.handleOpen.bind(this)}
-            size="large">
+            size="large"
+          >
             <Add />
           </IconButton>
         </Tooltip>
@@ -299,7 +298,8 @@ class InvestigationAddStixCoreObjects extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
-              size="large">
+              size="large"
+            >
               <Close fontSize="small" />
             </IconButton>
             {(InvestigationAddStixCoreObjects.isTypeDomainObject(

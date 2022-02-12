@@ -27,9 +27,7 @@ const fileUploaderEntityMutation = graphql`
 `;
 
 const FileUploader = (props) => {
-  const {
-    entityId, onUploadSuccess, t, color,
-  } = props;
+  const { entityId, onUploadSuccess, t, color } = props;
   const uploadRef = useRef(null);
   const [upload, setUpload] = useState(null);
   const handleOpenUpload = () => uploadRef.current.click();
@@ -85,7 +83,8 @@ const FileUploader = (props) => {
             onClick={handleOpenUpload}
             aria-haspopup="true"
             color={color || 'primary'}
-            size="large">
+            size="large"
+          >
             <CloudUploadOutlined />
           </IconButton>
         </Tooltip>

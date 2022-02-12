@@ -59,9 +59,7 @@ class UserEdition extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, user,
-    } = this.props;
+    const { t, classes, handleClose, user } = this.props;
     const { editContext } = user;
     const external = user.external === true;
     return (
@@ -71,7 +69,8 @@ class UserEdition extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

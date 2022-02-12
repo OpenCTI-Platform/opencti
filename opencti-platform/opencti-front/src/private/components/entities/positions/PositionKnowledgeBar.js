@@ -28,9 +28,7 @@ const styles = (theme) => ({
 
 class PositionKnowledgeBar extends Component {
   render() {
-    const {
-      t, location, classes, positionId,
-    } = this.props;
+    const { t, location, classes, positionId } = this.props;
     return (
       <Drawer
         variant="permanent"

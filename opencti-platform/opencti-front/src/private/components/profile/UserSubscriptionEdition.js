@@ -85,9 +85,7 @@ const userSubscriptionValidation = (t) => Yup.object().shape({
 });
 
 const UserSubscriptionEditionContainer = (props) => {
-  const {
-    t, classes, handleClose, userSubscription,
-  } = props;
+  const { t, classes, handleClose, userSubscription } = props;
   const entities = R.pipe(
     R.propOr([], 'entities'),
     R.map((n) => ({
@@ -187,7 +185,8 @@ const UserSubscriptionEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large">
+          size="large"
+        >
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6">{t('Update a subscription')}</Typography>

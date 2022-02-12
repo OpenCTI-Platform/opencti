@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import {
-  compose, pathOr, pipe, map, union,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
@@ -122,9 +120,7 @@ class StatusField extends Component {
   }
 
   render() {
-    const {
-      t, name, style, classes, onChange, helpertext,
-    } = this.props;
+    const { t, name, style, classes, onChange, helpertext } = this.props;
     return (
       <div>
         <Field

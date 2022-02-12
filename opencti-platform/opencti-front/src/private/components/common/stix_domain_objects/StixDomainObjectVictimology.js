@@ -73,9 +73,7 @@ class StixDomainObjectVictimology extends Component {
 
   render() {
     const { type, viewMode } = this.state;
-    const {
-      classes, stixDomainObjectId, entityLink, t,
-    } = this.props;
+    const { classes, stixDomainObjectId, entityLink, t } = this.props;
     let types = ['Sector', 'Organization'];
     if (type === 'regions') {
       types = ['Region', 'Country', 'City'];
@@ -100,7 +98,8 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'sectors' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'sectors')}
-                  size="large">
+                  size="large"
+                >
                   <DomainOutlined />
                 </IconButton>
               </Tooltip>
@@ -110,7 +109,8 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'regions' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'regions')}
-                  size="large">
+                  size="large"
+                >
                   <LocalPlayOutlined />
                 </IconButton>
               </Tooltip>
@@ -120,7 +120,8 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'individuals' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'individuals')}
-                  size="large">
+                  size="large"
+                >
                   <GroupOutlined />
                 </IconButton>
               </Tooltip>

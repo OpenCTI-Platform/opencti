@@ -230,9 +230,7 @@ class ObservedDataEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, observedData, context, enableReferences,
-    } = this.props;
+    const { t, observedData, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], observedData) === null
       ? ''
       : {

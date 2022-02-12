@@ -29,9 +29,7 @@ const styles = () => ({
 
 class IndividualComponent extends Component {
   render() {
-    const {
-      classes, individual, viewAs, onViewAs,
-    } = this.props;
+    const { classes, individual, viewAs, onViewAs } = this.props;
     const lastReportsProps = viewAs === 'knowledge'
       ? { stixCoreObjectOrStixCoreRelationshipId: individual.id }
       : { authorId: individual.id };

@@ -88,9 +88,7 @@ class StixDomainObjectOverview extends Component {
   }
 
   render() {
-    const {
-      t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
-    } = this.props;
+    const { t, fldt, classes, stixDomainObject, withoutMarking, withPattern } = this.props;
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
       (n) => n !== stixDomainObject.standard_id,
@@ -294,7 +292,8 @@ class StixDomainObjectOverview extends Component {
                           edge="end"
                           aria-label="delete"
                           onClick={this.deleteStixId.bind(this, stixId)}
-                          size="large">
+                          size="large"
+                        >
                           <Delete />
                         </IconButton>
                       </ListItemSecondaryAction>

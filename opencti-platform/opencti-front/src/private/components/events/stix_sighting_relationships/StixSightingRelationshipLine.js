@@ -68,9 +68,7 @@ const styles = (theme) => ({
 
 class StixSightingRelationshipLineComponent extends Component {
   render() {
-    const {
-      nsdt, t, fd, classes, dataColumns, node, paginationOptions,
-    } = this.props;
+    const { nsdt, t, fd, classes, dataColumns, node, paginationOptions } = this.props;
     const entityFrom = node.from;
     const entityTo = node.to;
     const restrictedFrom = entityFrom === null;
@@ -408,7 +406,12 @@ class StixSightingRelationshipLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

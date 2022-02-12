@@ -58,9 +58,7 @@ class IncidentEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, incident,
-    } = this.props;
+    const { t, classes, handleClose, incident } = this.props;
     const { editContext } = incident;
     return (
       <div>
@@ -69,7 +67,8 @@ class IncidentEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

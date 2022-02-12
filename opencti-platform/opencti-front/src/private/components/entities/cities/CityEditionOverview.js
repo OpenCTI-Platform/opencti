@@ -225,9 +225,7 @@ class CityEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, city, context, enableReferences,
-    } = this.props;
+    const { t, city, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], city) === null
       ? ''
       : {

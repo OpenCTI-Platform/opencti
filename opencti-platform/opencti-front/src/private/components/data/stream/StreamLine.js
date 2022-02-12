@@ -8,9 +8,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { MoreVert, CastConnectedOutlined } from '@mui/icons-material';
-import {
-  compose, last, map, toPairs,
-} from 'ramda';
+import { compose, last, map, toPairs } from 'ramda';
 import Chip from '@mui/material/Chip';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
@@ -68,9 +66,7 @@ const styles = (theme) => ({
 
 class StreamLineLineComponent extends Component {
   render() {
-    const {
-      t, classes, node, dataColumns, paginationOptions,
-    } = this.props;
+    const { t, classes, node, dataColumns, paginationOptions } = this.props;
     const filters = JSON.parse(node.filters);
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
@@ -190,7 +186,12 @@ class StreamDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

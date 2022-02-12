@@ -129,9 +129,7 @@ class SessionsListComponent extends Component {
   }
 
   render() {
-    const {
-      classes, nsdt, t, data, keyword,
-    } = this.props;
+    const { classes, nsdt, t, data, keyword } = this.props;
     const sortByNameCaseInsensitive = R.sortBy(
       R.compose(R.toLower, R.path(['user', 'name'])),
     );
@@ -209,7 +207,8 @@ class SessionsListComponent extends Component {
                             this,
                             userSession.id,
                           )}
-                          size="large">
+                          size="large"
+                        >
                           <Delete />
                         </IconButton>
                       </ListItemSecondaryAction>

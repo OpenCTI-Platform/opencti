@@ -166,9 +166,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, stixCoreObjectId, data,
-    } = this.props;
+    const { t, classes, stixCoreObjectId, data } = this.props;
     const { expanded } = this.state;
     const externalReferencesEdges = data && data.stixCoreObject
       ? data.stixCoreObject.externalReferences.edges

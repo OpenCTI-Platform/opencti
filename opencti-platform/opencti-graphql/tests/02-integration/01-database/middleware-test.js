@@ -995,7 +995,9 @@ describe('Upsert and merge entities', () => {
     // eslint-disable-next-line prettier/prettier
     const patchSha1 = updateAttribute(SYSTEM_USER, sha1.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);
     // eslint-disable-next-line prettier/prettier
-    const patchSha256 = updateAttribute(SYSTEM_USER, sha256.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);
+    const patchSha256 = updateAttribute(SYSTEM_USER, sha256.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [
+      md5Input,
+    ]);
     await Promise.all([patchSha1, patchSha256]);
     // Check
     const idsThatShouldNotExists = [sha1.internal_id, sha256.internal_id];

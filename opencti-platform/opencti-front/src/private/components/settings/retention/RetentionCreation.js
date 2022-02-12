@@ -168,7 +168,9 @@ const RetentionCreation = (props) => {
       },
       onCompleted: (data) => {
         setVerified(true);
-        MESSAGING$.notifySuccess(t(`Retention policy will delete ${data.retentionRuleCheck} elements`));
+        MESSAGING$.notifySuccess(
+          t(`Retention policy will delete ${data.retentionRuleCheck} elements`),
+        );
       },
       onError: () => {
         setVerified(false);
@@ -219,7 +221,8 @@ const RetentionCreation = (props) => {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6">{t('Create a retention policy')}</Typography>
@@ -231,9 +234,7 @@ const RetentionCreation = (props) => {
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({
-              submitForm, handleReset, isSubmitting, values,
-            }) => (
+            {({ submitForm, handleReset, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -324,11 +325,11 @@ const RetentionCreation = (props) => {
                     {t('Cancel')}
                   </Button>
                   <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => handleVerify(values)}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleVerify(values)}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
                   >
                     {t('Verify')}
                   </Button>

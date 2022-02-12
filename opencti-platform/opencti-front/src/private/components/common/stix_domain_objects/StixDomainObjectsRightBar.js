@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import {
-  compose, pipe, sortBy, prop, toLower, map, assoc,
-} from 'ramda';
+import { compose, pipe, sortBy, prop, toLower, map, assoc } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -90,7 +88,8 @@ class StixDomainObjectsRightBar extends Component {
                           onClick={handleClear.bind(this)}
                           disabled={types.length === 0}
                           color="primary"
-                          size="large">
+                          size="large"
+                        >
                           <FilterOffOutline fontSize="small" />
                         </IconButton>
                       </Tooltip>

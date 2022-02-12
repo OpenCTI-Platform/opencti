@@ -55,9 +55,7 @@ const indicatorsListDistributionQuery = graphql`
 
 class IndicatorsList extends Component {
   renderContent() {
-    const {
-      t, field, startDate, endDate,
-    } = this.props;
+    const { t, field, startDate, endDate } = this.props;
     const indicatorsDistributionVariables = {
       field: field || 'pattern_type',
       operation: 'count',
@@ -138,9 +136,7 @@ class IndicatorsList extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%', overflow: 'hidden' }}>
         <Typography variant="h4" gutterBottom={true}>

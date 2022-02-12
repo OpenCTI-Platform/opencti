@@ -27,9 +27,7 @@ const styles = () => ({
 
 class StixCyberObservableHeaderComponent extends Component {
   render() {
-    const {
-      classes, variant, stixCyberObservable, isArtifact,
-    } = this.props;
+    const { classes, variant, stixCyberObservable, isArtifact } = this.props;
     return (
       <div>
         <Typography

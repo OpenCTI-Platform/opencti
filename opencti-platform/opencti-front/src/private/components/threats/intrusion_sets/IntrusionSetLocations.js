@@ -94,7 +94,8 @@ class IntrusionSetLocationsComponent extends Component {
                   <IconButton
                     aria-label="Remove"
                     onClick={this.removeLocation.bind(this, locationEdge)}
-                    size="large">
+                    size="large"
+                  >
                     <LinkOff />
                   </IconButton>
                 </ListItemSecondaryAction>

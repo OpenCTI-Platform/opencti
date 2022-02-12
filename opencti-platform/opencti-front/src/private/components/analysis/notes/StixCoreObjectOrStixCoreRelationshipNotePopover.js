@@ -138,14 +138,14 @@ class StixCoreObjectOrStixCoreRelationshipNotePopover extends Component {
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           style={{ marginTop: 1 }}
-          size="large">
+          size="large"
+        >
           <MoreVertOutlined />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}

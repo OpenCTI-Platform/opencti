@@ -88,9 +88,7 @@ class StixCoreObjectReportsChart extends Component {
   }
 
   render() {
-    const {
-      t, md, classes, stixCoreObjectId, authorId, reportType, theme,
-    } = this.props;
+    const { t, md, classes, stixCoreObjectId, authorId, reportType, theme } = this.props;
     let reportsTimeSeriesVariables;
     if (authorId) {
       reportsTimeSeriesVariables = {

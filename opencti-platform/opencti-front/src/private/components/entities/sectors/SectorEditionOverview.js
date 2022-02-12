@@ -275,9 +275,7 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, sector, context, enableReferences,
-    } = this.props;
+    const { t, sector, context, enableReferences } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], sector) === null
       ? ''
       : {

@@ -144,9 +144,7 @@ class ConnectorWorksComponent extends Component {
   }
 
   render() {
-    const {
-      classes, data, t, nsdt,
-    } = this.props;
+    const { classes, data, t, nsdt } = this.props;
     const works = pathOr([], ['works', 'edges'], data);
     return (
       <div>

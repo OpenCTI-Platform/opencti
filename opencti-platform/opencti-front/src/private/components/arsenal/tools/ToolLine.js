@@ -46,9 +46,7 @@ const styles = (theme) => ({
 
 class ToolLineComponent extends Component {
   render() {
-    const {
-      fd, classes, node, dataColumns, onLabelClick,
-    } = this.props;
+    const { fd, classes, node, dataColumns, onLabelClick } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -141,7 +139,12 @@ class ToolLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circular" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

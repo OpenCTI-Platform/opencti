@@ -181,9 +181,7 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   render() {
-    const {
-      t, nsdt, classes, stixCoreRelationship, paddingRight,
-    } = this.props;
+    const { t, nsdt, classes, stixCoreRelationship, paddingRight } = this.props;
     const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;

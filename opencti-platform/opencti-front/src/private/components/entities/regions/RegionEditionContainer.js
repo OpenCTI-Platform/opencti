@@ -43,9 +43,7 @@ const styles = (theme) => ({
 
 class RegionEditionContainer extends Component {
   render() {
-    const {
-      t, classes, handleClose, region,
-    } = this.props;
+    const { t, classes, handleClose, region } = this.props;
     const { editContext } = region;
     return (
       <div>
@@ -54,7 +52,8 @@ class RegionEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

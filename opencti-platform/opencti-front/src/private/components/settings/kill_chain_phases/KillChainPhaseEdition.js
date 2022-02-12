@@ -3,9 +3,7 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import {
-  compose, defaultTo, lensProp, over, pickAll,
-} from 'ramda';
+import { compose, defaultTo, lensProp, over, pickAll } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
@@ -132,9 +130,7 @@ class KillChainPhaseEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, killChainPhase,
-    } = this.props;
+    const { t, classes, handleClose, killChainPhase } = this.props;
     const { editContext } = killChainPhase;
     const initialValues = over(
       lensProp('x_opencti_order'),
@@ -151,7 +147,8 @@ class KillChainPhaseEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

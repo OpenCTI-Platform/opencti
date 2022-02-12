@@ -226,9 +226,7 @@ class StixDomainObjectThreatKnowledge extends Component {
   }
 
   render() {
-    const {
-      viewType, filters, timeField, openTimeField, anchorEl, notes,
-    } = this.state;
+    const { viewType, filters, timeField, openTimeField, anchorEl, notes } = this.state;
     const {
       t,
       n,
@@ -527,7 +525,8 @@ class StixDomainObjectThreatKnowledge extends Component {
               color="primary"
               onClick={this.handleOpenTimeField.bind(this)}
               style={{ float: 'left', marginTop: -7 }}
-              size="large">
+              size="large"
+            >
               <SettingsOutlined />
             </IconButton>
             <Popover

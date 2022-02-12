@@ -68,7 +68,8 @@ const AutocompleteField = (props) => {
           onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
-          size="large">
+          size="large"
+        >
           <Add />
         </IconButton>
       )}

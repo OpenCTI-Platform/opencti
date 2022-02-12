@@ -175,9 +175,7 @@ class StixSightingRelationshipContainer extends Component {
   }
 
   render() {
-    const {
-      t, n, nsdt, classes, stixSightingRelationship, paddingRight,
-    } = this.props;
+    const { t, n, nsdt, classes, stixSightingRelationship, paddingRight } = this.props;
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
     const linkFrom = from.relationship_type

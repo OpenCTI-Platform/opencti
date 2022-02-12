@@ -193,9 +193,7 @@ class UserEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, user, context, classes,
-    } = this.props;
+    const { t, user, context, classes } = this.props;
     const external = user.external === true;
     const userRoles = pipe(map((n) => ({ label: n.name, value: n.id })))(
       user.roles,

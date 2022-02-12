@@ -451,7 +451,8 @@ class StixCoreRelationshipCreation extends Component {
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
-                size="large">
+                size="large"
+              >
                 <Close fontSize="small" />
               </IconButton>
               <Typography variant="h6">{t('Create a relationship')}</Typography>
@@ -648,9 +649,7 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   renderSelectRelation() {
-    const {
-      fsd, t, classes, fromObjects, toObjects, theme,
-    } = this.props;
+    const { fsd, t, classes, fromObjects, toObjects, theme } = this.props;
     const { existingRelations } = this.state;
     return (
       <div>
@@ -659,7 +658,8 @@ class StixCoreRelationshipCreation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6">{t('Select a relationship')}</Typography>
@@ -887,9 +887,7 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   render() {
-    const {
-      open, fromObject, toObjects, classes,
-    } = this.props;
+    const { open, fromObject, toObjects, classes } = this.props;
     const { step } = this.state;
     return (
       <Drawer

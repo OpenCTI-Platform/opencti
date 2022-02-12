@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, dissoc, pipe, map, toPairs, filter, includes,
-} from 'ramda';
+import { compose, dissoc, pipe, map, toPairs, filter, includes } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
@@ -28,9 +26,7 @@ const styles = () => ({
 
 class StixCyberObservableDetailsComponent extends Component {
   render() {
-    const {
-      t, b, classes, stixCyberObservable,
-    } = this.props;
+    const { t, b, classes, stixCyberObservable } = this.props;
     const observableAttributes = pipe(
       dissoc('id'),
       dissoc('entity_type'),

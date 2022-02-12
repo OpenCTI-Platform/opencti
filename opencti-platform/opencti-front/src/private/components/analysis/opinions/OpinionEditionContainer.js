@@ -52,9 +52,7 @@ class OpinionEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, handleClose, opinion,
-    } = this.props;
+    const { t, classes, handleClose, opinion } = this.props;
     const { editContext } = opinion;
     return (
       <div>
@@ -63,7 +61,8 @@ class OpinionEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
-            size="large">
+            size="large"
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>

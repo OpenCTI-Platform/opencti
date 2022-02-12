@@ -73,9 +73,7 @@ const syncValidation = (t) => Yup.object().shape({
 });
 
 const SyncEditionContainer = (props) => {
-  const {
-    t, classes, handleClose, synchronizer,
-  } = props;
+  const { t, classes, handleClose, synchronizer } = props;
   const initialValues = R.pickAll(
     ['name', 'uri', 'token', 'stream_id', 'listen_deletion', 'ssl_verify'],
     synchronizer,
@@ -114,7 +112,8 @@ const SyncEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
-          size="large">
+          size="large"
+        >
           <Close fontSize="small" />
         </IconButton>
         <Typography variant="h6">{t('Update a synchronizer')}</Typography>

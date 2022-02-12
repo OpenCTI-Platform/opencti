@@ -119,9 +119,7 @@ class UserSubscriptionPopover extends Component {
   }
 
   render() {
-    const {
-      classes, t, userSubscriptionId, disabled,
-    } = this.props;
+    const { classes, t, userSubscriptionId, disabled } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -129,14 +127,14 @@ class UserSubscriptionPopover extends Component {
           aria-haspopup="true"
           style={{ marginTop: 1 }}
           disabled={disabled}
-          size="large">
+          size="large"
+        >
           <MoreVert />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
