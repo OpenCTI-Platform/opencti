@@ -13,8 +13,6 @@ import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -34,8 +32,6 @@ const styles = (theme) => ({
   appBar: {
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.header.text,
     borderBottom: '1px solid #5c5c5c',
   },
   title: {

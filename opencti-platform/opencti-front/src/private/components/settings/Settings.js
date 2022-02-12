@@ -47,14 +47,6 @@ const styles = (theme) => ({
   nested: {
     paddingLeft: theme.spacing(4),
   },
-  enabled: {
-    backgroundColor: '#2e7d32',
-    color: '#ffffff',
-  },
-  disabled: {
-    backgroundColor: '#c62828',
-    color: '#ffffff',
-  },
 });
 
 const settingsQuery = graphql`
@@ -235,127 +227,105 @@ class Settings extends Component {
                 <div>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
-                      <Paper classes={{ root: classes.paper }} elevation={2}>
+                      <Paper
+                        classes={{ root: classes.paper }}
+                        variant="outlined"
+                      >
+                        <Typography variant="h1" gutterBottom={true}>
+                          {t('Configuration')}
+                        </Typography>
                         <Formik
                           enableReinitialize={true}
                           initialValues={initialValues}
                           validationSchema={settingsValidation(t)}
                         >
                           {() => (
-                            <div>
-                              <Typography variant="h1" gutterBottom={true}>
-                                {t('Configuration')}
-                              </Typography>
-                              <Form style={{ marginTop: 20 }}>
-                                <Field
-                                  component={TextField}
-                                  name="platform_title"
-                                  label={t('Name')}
-                                  fullWidth={true}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_title"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={TextField}
-                                  name="platform_email"
-                                  label={t('Sender email address')}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_email"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={SelectField}
-                                  name="platform_theme"
-                                  label={t('Theme')}
-                                  fullWidth={true}
-                                  containerstyle={{
-                                    marginTop: 20,
-                                    width: '100%',
-                                  }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onChange={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helpertext={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme"
-                                    />
-                                  }
-                                >
-                                  <MenuItem value="dark">{t('Dark')}</MenuItem>
-                                  <MenuItem value="light">
-                                    {t('Light')}
-                                  </MenuItem>
-                                </Field>
-                                <Field
-                                  component={SelectField}
-                                  name="platform_language"
-                                  label={t('Language')}
-                                  fullWidth={true}
-                                  containerstyle={{
-                                    marginTop: 20,
-                                    width: '100%',
-                                  }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onChange={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helpertext={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_language"
-                                    />
-                                  }
-                                >
-                                  <MenuItem value="auto">
-                                    <em>{t('Automatic')}</em>
-                                  </MenuItem>
-                                  <MenuItem value="en-us">English</MenuItem>
-                                  <MenuItem value="fr-fr">Français</MenuItem>
-                                  <MenuItem value="zh-cn">简化字</MenuItem>
-                                </Field>
-                              </Form>
-                            </div>
+                            <Form style={{ marginTop: 20 }}>
+                              <Field
+                                component={TextField}
+                                name="platform_title"
+                                label={t('Name')}
+                                fullWidth={true}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_title"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={TextField}
+                                name="platform_email"
+                                label={t('Sender email address')}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_email"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={SelectField}
+                                name="platform_theme"
+                                label={t('Theme')}
+                                fullWidth={true}
+                                containerstyle={{
+                                  marginTop: 20,
+                                  width: '100%',
+                                }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onChange={this.handleSubmitField.bind(this, id)}
+                                helpertext={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme"
+                                  />
+                                }
+                              >
+                                <MenuItem value="dark">{t('Dark')}</MenuItem>
+                                <MenuItem value="light">{t('Light')}</MenuItem>
+                              </Field>
+                              <Field
+                                component={SelectField}
+                                name="platform_language"
+                                label={t('Language')}
+                                fullWidth={true}
+                                containerstyle={{
+                                  marginTop: 20,
+                                  width: '100%',
+                                }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onChange={this.handleSubmitField.bind(this, id)}
+                                helpertext={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_language"
+                                  />
+                                }
+                              >
+                                <MenuItem value="auto">
+                                  <em>{t('Automatic')}</em>
+                                </MenuItem>
+                                <MenuItem value="en-us">English</MenuItem>
+                                <MenuItem value="fr-fr">Français</MenuItem>
+                                <MenuItem value="zh-cn">简化字</MenuItem>
+                              </Field>
+                            </Form>
                           )}
                         </Formik>
                       </Paper>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <Paper classes={{ root: classes.paper }} elevation={2}>
+                      <Paper
+                        classes={{ root: classes.paper }}
+                        variant="outlined"
+                      >
                         <Typography variant="h1" gutterBottom={true}>
                           {t('Authentication strategies')}
                         </Typography>
@@ -409,229 +379,185 @@ class Settings extends Component {
                   </Grid>
                   <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
                     <Grid item={true} xs={6}>
-                      <Paper classes={{ root: classes.paper }} elevation={2}>
+                      <Paper
+                        classes={{ root: classes.paper }}
+                        variant="outlined"
+                      >
+                        <Typography variant="h1" gutterBottom={true}>
+                          {t('Theme')}
+                        </Typography>
                         <Formik
                           enableReinitialize={true}
                           initialValues={initialValues}
                           validationSchema={settingsValidation(t)}
                         >
                           {() => (
-                            <div>
-                              <Typography variant="h1" gutterBottom={true}>
-                                {t('Theme')}
-                              </Typography>
-                              <Form style={{ marginTop: 20 }}>
-                                <Field
-                                  component={ColorPickerField}
-                                  name="platform_theme_dark_primary"
-                                  label={t('[Theme dark] Primary color')}
-                                  placeholder={t('Default')}
-                                  InputLabelProps={{
-                                    shrink: true,
-                                  }}
-                                  fullWidth={true}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme_dark_primary"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={ColorPickerField}
-                                  name="platform_theme_dark_secondary"
-                                  label={t('[Theme dark] Secondary color')}
-                                  placeholder={t('Default')}
-                                  InputLabelProps={{
-                                    shrink: true,
-                                  }}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme_dark_secondary"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={TextField}
-                                  name="platform_theme_dark_logo"
-                                  label={t('[Theme dark] Logo URL')}
-                                  placeholder={t('Default')}
-                                  InputLabelProps={{
-                                    shrink: true,
-                                  }}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme_dark_logo"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={TextField}
-                                  name="platform_theme_dark_logo_login"
-                                  label={t(
-                                    '[Theme dark] Logo URL for login page',
-                                  )}
-                                  placeholder={t('Default')}
-                                  InputLabelProps={{
-                                    shrink: true,
-                                  }}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme_dark_logo_login"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={ColorPickerField}
-                                  name="platform_theme_light_primary"
-                                  label={t('[Theme light] Primary color')}
-                                  placeholder={t('Default')}
-                                  InputLabelProps={{
-                                    shrink: true,
-                                  }}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme_light_primary"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={ColorPickerField}
-                                  name="platform_theme_light_secondary"
-                                  label={t('[Theme light] Secondary color')}
-                                  placeholder={t('Default')}
-                                  InputLabelProps={{
-                                    shrink: true,
-                                  }}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme_light_secondary"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={TextField}
-                                  name="platform_theme_light_logo"
-                                  label={t('[Theme light] Logo URL')}
-                                  placeholder={t('Default')}
-                                  InputLabelProps={{
-                                    shrink: true,
-                                  }}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme_light_logo"
-                                    />
-                                  }
-                                />
-                                <Field
-                                  component={TextField}
-                                  name="platform_theme_light_logo_login"
-                                  label={t(
-                                    '[Theme light] Logo URL for login page',
-                                  )}
-                                  placeholder={t('Default')}
-                                  InputLabelProps={{
-                                    shrink: true,
-                                  }}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  onFocus={this.handleChangeFocus.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  onSubmit={this.handleSubmitField.bind(
-                                    this,
-                                    id,
-                                  )}
-                                  helperText={
-                                    <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="platform_theme_light_logo_login"
-                                    />
-                                  }
-                                />
-                              </Form>
-                            </div>
+                            <Form style={{ marginTop: 20 }}>
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_dark_primary"
+                                label={t('[Theme dark] Primary color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_dark_primary"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_dark_secondary"
+                                label={t('[Theme dark] Secondary color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_dark_secondary"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={TextField}
+                                name="platform_theme_dark_logo"
+                                label={t('[Theme dark] Logo URL')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_dark_logo"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={TextField}
+                                name="platform_theme_dark_logo_login"
+                                label={t(
+                                  '[Theme dark] Logo URL for login page',
+                                )}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_dark_logo_login"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_light_primary"
+                                label={t('[Theme light] Primary color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_light_primary"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_light_secondary"
+                                label={t('[Theme light] Secondary color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_light_secondary"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={TextField}
+                                name="platform_theme_light_logo"
+                                label={t('[Theme light] Logo URL')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_light_logo"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={TextField}
+                                name="platform_theme_light_logo_login"
+                                label={t(
+                                  '[Theme light] Logo URL for login page',
+                                )}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_light_logo_login"
+                                  />
+                                }
+                              />
+                            </Form>
                           )}
                         </Formik>
                       </Paper>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <Paper classes={{ root: classes.paper }} elevation={2}>
+                      <Paper
+                        classes={{ root: classes.paper }}
+                        variant="outlined"
+                      >
                         <QueryRenderer
                           query={settingsAboutQuery}
                           render={({ props: aboutProps }) => {
@@ -663,10 +589,10 @@ class Settings extends Component {
                                                 ? t('Enabled')
                                                 : t('Disabled')
                                             }
-                                            className={
+                                            color={
                                               module.enable
-                                                ? classes.enabled
-                                                : classes.disabled
+                                                ? 'success'
+                                                : 'error'
                                             }
                                           />
                                         </ListItem>

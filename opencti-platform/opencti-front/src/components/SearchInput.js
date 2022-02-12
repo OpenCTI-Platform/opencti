@@ -16,15 +16,10 @@ const styles = (theme) => ({
   searchRootInDrawer: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
-    backgroundColor: theme.palette.navAlt.background,
   },
   searchRootInDrawer2: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? theme.palette.background.paperLight
-        : theme.palette.navAlt.background,
   },
   searchRootNoAnimation: {
     borderRadius: 5,

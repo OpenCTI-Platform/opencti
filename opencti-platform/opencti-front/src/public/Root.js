@@ -1,5 +1,6 @@
 import React from 'react';
 import graphql from 'babel-plugin-relay/macro';
+import { StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { QueryRenderer } from '../relay/environment';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
@@ -31,12 +32,14 @@ const Root = () => (
     render={({ props }) => {
       if (props && props.settings) {
         return (
-          <ConnectedThemeProvider settings={props.settings}>
-            <CssBaseline />
-            <ConnectedIntlProvider settings={props.settings}>
-              <Login settings={props.settings} />
-            </ConnectedIntlProvider>
-          </ConnectedThemeProvider>
+          <StyledEngineProvider injectFirst={true}>
+            <ConnectedThemeProvider settings={props.settings}>
+              <CssBaseline />
+              <ConnectedIntlProvider settings={props.settings}>
+                <Login settings={props.settings} />
+              </ConnectedIntlProvider>
+            </ConnectedThemeProvider>
+          </StyledEngineProvider>
         );
       }
       return <div />;

@@ -309,8 +309,8 @@ StixCoreRelationshipsHorizontalBars.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   height: PropTypes.number,
-  startDate: PropTypes.object,
-  endDate: PropTypes.object,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   dateAttribute: PropTypes.string,
   variant: PropTypes.string,
 };

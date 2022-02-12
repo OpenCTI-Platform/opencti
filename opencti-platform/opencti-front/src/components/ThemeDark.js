@@ -1,29 +1,23 @@
-export default (logo = null, primary = null, secondary = null) => ({
+export default (
+  logo = null,
+  primary = null,
+  primaryAccent = null,
+  secondary = null,
+  background = null,
+  paper = null,
+  nav = null,
+) => ({
   fontFamily: 'Roboto, sans-serif',
   logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
     mode: 'dark',
-    text: { secondary: 'rgba(255, 255, 255, 0.5)' },
-    primary: { main: primary || '#00bcd4' },
-    secondary: { main: secondary || '#d84315' },
-    header: { background: '#1b2226', text: '#ffffff' },
-    navAlt: {
-      background: '#14262c',
-      backgroundHeader: '#2d5161',
-      backgroundHeaderText: '#ffffff',
-    },
-    navBottom: { background: '#0f181f' },
+    primary: { main: primary || '#00b1ff' },
+    secondary: { main: secondary || '#e91e63' },
     background: {
-      paper: '#28353a',
-      paperLight: '#2d5161',
-      nav: '#28353a',
-      navLight: '#14262c',
-      default: '#222c30',
-      chip: 'rgba(64, 193, 255, 0.2)',
-      line: 'rgba(64, 193, 255, 0.05)',
+      default: background || '#0a1929',
+      paper: paper || '#001e3c',
+      nav: nav || '#071a2e',
     },
-    action: { disabled: '#4f4f4f', grid: '#0f181f', expansion: '#193e45' },
-    divider: 'rgba(255, 255, 255, 0.2)',
   },
   typography: {
     body2: {
@@ -32,10 +26,13 @@ export default (logo = null, primary = null, secondary = null) => ({
     body1: {
       fontSize: '0.9rem',
     },
+    overline: {
+      fontWeight: 500,
+    },
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#00bcd4',
+      color: primary || '#00b1ff',
       fontWeight: 400,
       fontSize: 22,
     },
@@ -49,7 +46,7 @@ export default (logo = null, primary = null, secondary = null) => ({
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#00bcd4',
+      color: primary || '#00b1ff',
       fontWeight: 400,
       fontSize: 13,
     },
@@ -73,44 +70,72 @@ export default (logo = null, primary = null, secondary = null) => ({
     },
   },
   components: {
+    MuiTextField: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
+    MuiSelect: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
+    MuiInputLabel: {
+      defaultProps: {
+        variant: 'standard',
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
-        '@global': {
-          '*': {
-            scrollbarColor: '#14262c #2d4b5b',
+        body: {
+          scrollbarColor: '#6b6b6b #2b2b2b',
+          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+            backgroundColor: paper || '#001e3c',
           },
-          '*::-webkit-scrollbar': {
-            width: 12,
+          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+            borderRadius: 8,
+            backgroundColor: primaryAccent || '#01478dff',
+            minHeight: 24,
+            border: '3px solid #001e3c',
           },
-          '*::-webkit-scrollbar-track': {
-            background: '#2d4b5b',
-          },
-          '*::-webkit-scrollbar-thumb': {
-            backgroundColor: '#14262c',
-            borderRadius: 20,
-            border: '3px solid #2d4b5b',
+          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
+            {
+              backgroundColor: primaryAccent || '#01478dff',
+            },
+          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
+            {
+              backgroundColor: primaryAccent || '#01478dff',
+            },
+          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
+            {
+              backgroundColor: primaryAccent || '#01478dff',
+            },
+          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
+            backgroundColor: primaryAccent || '#01478dff',
           },
           html: {
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            color: primary || '#00bcd4',
+            color: primary || '#00b1ff',
           },
           'input:-webkit-autofill': {
-            '-webkit-animation': 'autofill 0s forwards',
+            WebkitAnimation: 'autofill 0s forwards',
             animation: 'autofill 0s forwards',
-            '-webkit-text-fill-color': '#ffffff !important',
+            WebkitTextFillColor: '#ffffff !important',
             caretColor: 'transparent !important',
-            '-webkit-box-shadow':
+            WebkitBoxShadow:
               '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
             borderTopLeftRadius: 'inherit',
             borderTopRightRadius: 'inherit',
           },
           pre: {
-            background: '#2d5161',
+            color: '#ffffff !important',
+            background: '#01478DFF !important',
           },
           code: {
-            background: '#2b6779',
+            color: '#ffffff !important',
+            background: '#01478DFF !important',
           },
           '.react-mde': {
             border: '0 !important',
@@ -143,7 +168,7 @@ export default (logo = null, primary = null, secondary = null) => ({
           },
           '.mde-textarea-wrapper textarea': {
             color: '#ffffff',
-            backgroundColor: '#14262c',
+            backgroundColor: nav || '#071a2e',
           },
           '.react-grid-placeholder': {
             backgroundColor: 'rgba(0, 188, 212, 0.8) !important',
@@ -155,6 +180,9 @@ export default (logo = null, primary = null, secondary = null) => ({
           },
           '.react_time_range__handle_marker': {
             backgroundColor: '#00bcd4 !important',
+          },
+          '.leaflet-container': {
+            backgroundColor: '#0a1929 !important',
           },
         },
       },

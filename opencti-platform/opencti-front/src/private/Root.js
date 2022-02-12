@@ -2,6 +2,7 @@ import React from 'react';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import CssBaseline from '@mui/material/CssBaseline';
+import { StyledEngineProvider } from '@mui/material/styles';
 import { QueryRenderer } from '../relay/environment';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
@@ -74,12 +75,14 @@ const Root = () => (
                 helper: buildHelper(props.settings),
               }}
             >
-              <ConnectedThemeProvider settings={props.settings}>
-                <CssBaseline />
-                <ConnectedIntlProvider settings={props.settings}>
-                  <Index me={props.me} />
-                </ConnectedIntlProvider>
-              </ConnectedThemeProvider>
+              <StyledEngineProvider injectFirst={true}>
+                <ConnectedThemeProvider settings={props.settings}>
+                  <CssBaseline />
+                  <ConnectedIntlProvider settings={props.settings}>
+                    <Index me={props.me} />
+                  </ConnectedIntlProvider>
+                </ConnectedThemeProvider>
+              </StyledEngineProvider>
             </UserContext.Provider>
           );
         }

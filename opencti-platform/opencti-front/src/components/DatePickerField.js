@@ -1,5 +1,6 @@
 import React from 'react';
 import DatePicker from '@mui/lab/DatePicker';
+import TextField from '@mui/material/TextField';
 import { fieldToDatePicker } from 'formik-mui-lab';
 import { parse } from '../utils/Time';
 
@@ -56,6 +57,7 @@ const DatePickerField = (props) => {
       onChange={internalOnChange}
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
+      renderInput={(params) => <TextField {...params} />}
     />
   );
 };

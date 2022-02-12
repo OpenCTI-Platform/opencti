@@ -71,8 +71,8 @@ const styles = (theme) => ({
   appBar: {
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.header.background,
-    color: theme.palette.header.text,
+    background: 0,
+    backgroundColor: theme.palette.background.nav,
   },
   flex: {
     flexGrow: 1,
@@ -163,7 +163,6 @@ const TopBar = ({
       position="fixed"
       className={classes.appBar}
       elevation={1}
-      style={{ backgroundColor: theme.palette.header.background }}
     >
       <Toolbar>
         <div className={classes.logoContainer}>

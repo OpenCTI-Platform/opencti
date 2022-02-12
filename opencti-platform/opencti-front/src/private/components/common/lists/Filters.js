@@ -726,6 +726,7 @@ class Filters extends Component {
                   size="small"
                   fullWidth={variant === 'dialog'}
                   onChange={this.handleChangeDate.bind(this, filterKey)}
+                  renderInput={(params) => <TextField {...params} />}
                 />
               </Grid>
             );
@@ -799,7 +800,8 @@ class Filters extends Component {
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
             style={{ float: 'left' }}
-            size="large">
+            size="large"
+          >
             <FilterListOutlined />
           </IconButton>
         )}
@@ -903,9 +905,7 @@ class Filters extends Component {
   }
 
   renderDialogFilters() {
-    const {
-      t, classes, theme, disabled,
-    } = this.props;
+    const { t, classes, disabled } = this.props;
     const { open, filters } = this.state;
     return (
       <div style={{ float: 'left' }}>
@@ -913,8 +913,8 @@ class Filters extends Component {
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
-            style={{ color: theme.palette.header.text }}
-            size="large">
+            size="large"
+          >
             <ToyBrickSearchOutline fontSize="medium" />
           </IconButton>
         </Tooltip>

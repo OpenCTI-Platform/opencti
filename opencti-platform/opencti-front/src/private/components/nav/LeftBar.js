@@ -42,6 +42,7 @@ const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 180,
+    background: 0,
     backgroundColor: theme.palette.background.nav,
   },
   menuList: {

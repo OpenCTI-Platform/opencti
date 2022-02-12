@@ -16505,6 +16505,7 @@ __metadata:
     remark-gfm: 3.0.1
     remark-parse: 10.0.1
     rxjs: 7.5.2
+    sass-loader: 12.4.0
     subscriptions-transport-ws: 0.9.19
     three-spritetext: 1.6.3
     typeface-roboto: 1.1.13
@@ -20177,7 +20178,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass-loader@npm:^12.3.0":
+"sass-loader@npm:12.4.0, sass-loader@npm:^12.3.0":
   version: 12.4.0
   resolution: "sass-loader@npm:12.4.0"
   dependencies:
