@@ -537,20 +537,20 @@ workflows:
             branches:
               only:
                 - master
-      - deploy_demo:
-          requires:
-            - build_platform
-          filters:
-            branches:
-              only:
-                - master                
-      - deploy_reference:
-          requires:
-            - build_platform
-          filters:
-            branches:
-              only:
-                - master
+      #- deploy_demo:
+      #    requires:
+      #      - build_platform
+      #    filters:
+      #      branches:
+      #        only:
+      #          - master                
+      #- deploy_reference:
+      #    requires:
+      #      - build_platform
+      #    filters:
+      #      branches:
+      #        only:
+      #         - master
       - deploy_testing:
           requires:
             - build_platform
@@ -604,10 +604,10 @@ workflows:
               ignore: /.*/
       - notify_rolling:
           requires:
-            - deploy_demo
+            #- deploy_demo
             - deploy_lab
             - deploy_club
-            - deploy_reference
+            #- deploy_reference
             - deploy_testing
             - package_rolling
             - package_rolling_musl

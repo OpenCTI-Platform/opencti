@@ -1,23 +1,23 @@
-import React, { Suspense } from "react";
-import { Link } from "react-router-dom";
-import { head, pathOr, assoc, map, pluck, last } from "ramda";
-import graphql from "babel-plugin-relay/macro";
-import { makeStyles, useTheme } from "@mui/styles";
-import Card from "@mui/material/Card";
-import Grid from "@mui/material/Grid";
-import Paper from "@mui/material/Paper";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Typography from "@mui/material/Typography";
-import CardContent from "@mui/material/CardContent";
-import { DescriptionOutlined } from "@mui/icons-material";
+import React, { Suspense } from 'react';
+import { Link } from 'react-router-dom';
+import { head, pathOr, assoc, map, pluck, last } from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
+import { makeStyles, useTheme } from '@mui/styles';
+import Card from '@mui/material/Card';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import CardContent from '@mui/material/CardContent';
+import { DescriptionOutlined } from '@mui/icons-material';
 import {
   Database,
   GraphOutline,
   HexagonMultipleOutline,
-} from "mdi-material-ui";
+} from 'mdi-material-ui';
 import {
   BarChart,
   AreaChart,
@@ -29,45 +29,45 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from "recharts";
-import Slide from "@mui/material/Slide";
-import { useLazyLoadQuery } from "react-relay";
-import { yearsAgo, dayAgo, now, monthsAgo } from "../../utils/Time";
-import { useFormatter } from "../../components/i18n";
-import ItemNumberDifference from "../../components/ItemNumberDifference";
-import Loader from "../../components/Loader";
-import Security, { EXPLORE, KNOWLEDGE } from "../../utils/Security";
-import { resolveLink } from "../../utils/Entity";
-import ItemIcon from "../../components/ItemIcon";
-import { hexToRGB, itemColor } from "../../utils/Colors";
-import { truncate } from "../../utils/String";
-import StixCoreRelationshipsHorizontalBars from "./common/stix_core_relationships/StixCoreRelationshipsHorizontalBars";
-import LocationMiniMapTargets from "./common/location/LocationMiniMapTargets";
-import { computeLevel } from "../../utils/Number";
-import ItemMarkings from "../../components/ItemMarkings";
-import DashboardView from "./workspaces/dashboards/Dashboard";
+} from 'recharts';
+import Slide from '@mui/material/Slide';
+import { useLazyLoadQuery } from 'react-relay';
+import { yearsAgo, dayAgo, now, monthsAgo } from '../../utils/Time';
+import { useFormatter } from '../../components/i18n';
+import ItemNumberDifference from '../../components/ItemNumberDifference';
+import Loader from '../../components/Loader';
+import Security, { EXPLORE, KNOWLEDGE } from '../../utils/Security';
+import { resolveLink } from '../../utils/Entity';
+import ItemIcon from '../../components/ItemIcon';
+import { hexToRGB, itemColor } from '../../utils/Colors';
+import { truncate } from '../../utils/String';
+import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
+import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
+import { computeLevel } from '../../utils/Number';
+import ItemMarkings from '../../components/ItemMarkings';
+import DashboardView from './workspaces/dashboards/Dashboard';
 
-import { useViewStorage } from "../../utils/ListParameters";
-import TopBar from "./nav/TopBar";
-import ErrorNotFound from "../../components/ErrorNotFound";
+import { useViewStorage } from '../../utils/ListParameters';
+import TopBar from './nav/TopBar';
+import ErrorNotFound from '../../components/ErrorNotFound';
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
-Transition.displayName = "TransitionSlide";
+Transition.displayName = 'TransitionSlide';
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
   },
   card: {
-    width: "100%",
+    width: '100%',
     marginBottom: 20,
     borderRadius: 6,
-    position: "relative",
+    position: 'relative',
   },
   paper: {
-    margin: "10px 0 0 0",
+    margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
@@ -78,9 +78,9 @@ const useStyles = makeStyles((theme) => ({
     paddingRight: 0,
   },
   itemText: {
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     paddingRight: 24,
   },
   itemIconSecondary: {
@@ -89,32 +89,32 @@ const useStyles = makeStyles((theme) => ({
   },
   number: {
     marginTop: 10,
-    float: "left",
+    float: 'left',
     fontSize: 30,
   },
   title: {
     marginTop: 5,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
     fontSize: 12,
     fontWeight: 500,
     color: theme.palette.text.secondary,
   },
   icon: {
-    position: "absolute",
+    position: 'absolute',
     color: theme.palette.primary.main,
     top: 35,
     right: 20,
   },
   graphContainer: {
-    width: "100%",
-    padding: "20px 20px 0 0",
+    width: '100%',
+    padding: '20px 20px 0 0',
   },
   labelsCloud: {
-    width: "100%",
+    width: '100%',
     height: 300,
   },
   label: {
-    width: "100%",
+    width: '100%',
     height: 100,
     padding: 15,
   },
@@ -130,30 +130,30 @@ const useStyles = makeStyles((theme) => ({
     minWidth: 200,
     maxWidth: 200,
     paddingRight: 24,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    textAlign: "left",
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textAlign: 'left',
   },
   itemType: {
     width: 100,
     minWidth: 100,
     maxWidth: 100,
     paddingRight: 24,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    textAlign: "left",
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textAlign: 'left',
   },
   itemDate: {
     width: 120,
     minWidth: 120,
     maxWidth: 120,
     paddingRight: 24,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    textAlign: "left",
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    textAlign: 'left',
   },
 }));
 // endregion
@@ -162,15 +162,15 @@ const useStyles = makeStyles((theme) => ({
 const NoTableElement = () => {
   const { t } = useFormatter();
   return (
-    <div style={{ display: "table", height: "100%", width: "100%" }}>
+    <div style={{ display: 'table', height: '100%', width: '100%' }}>
       <span
         style={{
-          display: "table-cell",
-          verticalAlign: "middle",
-          textAlign: "center",
+          display: 'table-cell',
+          verticalAlign: 'middle',
+          textAlign: 'center',
         }}
       >
-        {t("No entities of this type has been found.")}
+        {t('No entities of this type has been found.')}
       </span>
     </div>
   );
@@ -198,7 +198,7 @@ const TotalEntitiesCard = ({ title, options, Icon }) => {
       <div className={classes.number}>{n(total)}</div>
       <ItemNumberDifference
         difference={difference}
-        description={t("24 hours")}
+        description={t('24 hours')}
       />
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
@@ -222,7 +222,7 @@ const TotalRelationshipsCard = ({ title, options, Icon }) => {
   `;
   const data = useLazyLoadQuery(
     dashboardStixCoreRelationshipsNumberQuery,
-    options
+    options,
   );
   const { total } = data.stixCoreRelationshipsNumber;
   const difference = total - data.stixCoreRelationshipsNumber.count;
@@ -232,7 +232,7 @@ const TotalRelationshipsCard = ({ title, options, Icon }) => {
       <div className={classes.number}>{n(total)}</div>
       <ItemNumberDifference
         difference={difference}
-        description={t("24 hours")}
+        description={t('24 hours')}
       />
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
@@ -256,7 +256,7 @@ const TotalObservablesCard = ({ title, options, Icon }) => {
   `;
   const data = useLazyLoadQuery(
     dashboardStixCyberObservablesNumberQuery,
-    options
+    options,
   );
   const { total } = data.stixCyberObservablesNumber;
   const difference = total - data.stixCyberObservablesNumber.count;
@@ -266,7 +266,7 @@ const TotalObservablesCard = ({ title, options, Icon }) => {
       <div className={classes.number}>{n(total)}</div>
       <ItemNumberDifference
         difference={difference}
-        description={t("24 hours")}
+        description={t('24 hours')}
       />
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
@@ -315,14 +315,14 @@ const TopLabelsCard = () => {
   const data = useLazyLoadQuery(
     dashboardStixMetaRelationshipsDistributionQuery,
     {
-      field: "internal_id",
-      operation: "count",
-      relationship_type: "object-label",
-      toTypes: ["Label"],
+      field: 'internal_id',
+      operation: 'count',
+      relationship_type: 'object-label',
+      toTypes: ['Label'],
       startDate: monthsAgo(3),
       endDate: now(),
       limit: 9,
-    }
+    },
   );
   const distribution = data.stixMetaRelationshipsDistribution;
   if (distribution.length === 0) {
@@ -377,11 +377,11 @@ const IngestedEntitiesGraph = () => {
     }
   `;
   const data = useLazyLoadQuery(dashboardStixDomainObjectsTimeSeriesQuery, {
-    field: "created_at",
-    operation: "count",
+    field: 'created_at',
+    operation: 'count',
     startDate: yearsAgo(1),
     endDate: now(),
-    interval: "month",
+    interval: 'month',
   });
   return (
     <div className={classes.graphContainer}>
@@ -409,12 +409,12 @@ const IngestedEntitiesGraph = () => {
           <YAxis stroke={theme.palette.text.primary} />
           <Tooltip
             cursor={{
-              fill: "rgba(0, 0, 0, 0.2)",
-              stroke: "rgba(0, 0, 0, 0.2)",
+              fill: 'rgba(0, 0, 0, 0.2)',
+              stroke: 'rgba(0, 0, 0, 0.2)',
               strokeWidth: 2,
             }}
             contentStyle={{
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               fontSize: 12,
               borderRadius: 10,
             }}
@@ -477,25 +477,24 @@ const TargetedCountries = ({ timeField }) => {
   const data = useLazyLoadQuery(
     dashboardStixCoreRelationshipsDistributionQuery,
     {
-      field: "internal_id",
-      operation: "count",
-      relationship_type: "targets",
-      toTypes: ["Country"],
+      field: 'internal_id',
+      operation: 'count',
+      relationship_type: 'targets',
+      toTypes: ['Country'],
       startDate: monthsAgo(3),
       endDate: now(),
-      dateAttribute: timeField === "functional" ? "start_time" : "created_at",
+      dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
       limit: 20,
-    }
+    },
   );
-  const values = pluck("value", data.stixCoreRelationshipsDistribution);
+  const values = pluck('value', data.stixCoreRelationshipsDistribution);
   const countries = map(
-    (x) =>
-      assoc(
-        "level",
-        computeLevel(x.value, last(values), head(values) + 1),
-        x.entity
-      ),
-    data.stixCoreRelationshipsDistribution
+    (x) => assoc(
+      'level',
+      computeLevel(x.value, last(values), head(values) + 1),
+      x.entity,
+    ),
+    data.stixCoreRelationshipsDistribution,
   );
   return (
     <LocationMiniMapTargets
@@ -560,9 +559,9 @@ const LastIngestedAnalysis = () => {
   `;
   const data = useLazyLoadQuery(dashboardLastStixDomainObjectsQuery, {
     first: 8,
-    orderBy: "created_at",
-    orderMode: "desc",
-    types: ["Report", "Note", "Opinion"],
+    orderBy: 'created_at',
+    orderMode: 'desc',
+    types: ['Report', 'Note', 'Opinion'],
   });
   const objects = data.stixDomainObjects;
   if (objects.length === 0) {
@@ -573,7 +572,7 @@ const LastIngestedAnalysis = () => {
       {objects.edges.map((stixDomainObjectEdge) => {
         const stixDomainObject = stixDomainObjectEdge.node;
         const stixDomainObjectLink = `${resolveLink(
-          stixDomainObject.entity_type
+          stixDomainObject.entity_type,
         )}/${stixDomainObject.id}`;
         return (
           <ListItem
@@ -597,15 +596,15 @@ const LastIngestedAnalysis = () => {
             <ListItemText
               primary={
                 <div className={classes.itemText}>
-                  {stixDomainObject.name ||
-                    stixDomainObject.attribute_abstract ||
-                    truncate(stixDomainObject.content, 30) ||
-                    stixDomainObject.opinion}
+                  {stixDomainObject.name
+                    || stixDomainObject.attribute_abstract
+                    || truncate(stixDomainObject.content, 30)
+                    || stixDomainObject.opinion}
                 </div>
               }
             />
             <div className={classes.itemAuthor}>
-              {pathOr("", ["createdBy", "name"], stixDomainObject)}
+              {pathOr('', ['createdBy', 'name'], stixDomainObject)}
             </div>
             <div className={classes.itemDate}>
               {fsd(stixDomainObject.created_at)}
@@ -621,8 +620,8 @@ const LastIngestedAnalysis = () => {
               <ItemMarkings
                 markingDefinitions={pathOr(
                   [],
-                  ["objectMarking", "edges"],
-                  stixDomainObject
+                  ['objectMarking', 'edges'],
+                  stixDomainObject,
                 )}
                 limit={1}
                 variant="inList"
@@ -652,7 +651,7 @@ const ObservablesDistribution = () => {
   `;
   const data = useLazyLoadQuery(
     dashboardStixCyberObservablesDistributionQuery,
-    { field: "entity_type", operation: "count" }
+    { field: 'entity_type', operation: 'count' },
   );
   const distribution = data.stixCyberObservablesDistribution;
   if (distribution.length === 0) {
@@ -686,12 +685,12 @@ const ObservablesDistribution = () => {
           />
           <Tooltip
             cursor={{
-              fill: "rgba(0, 0, 0, 0.2)",
-              stroke: "rgba(0, 0, 0, 0.2)",
+              fill: 'rgba(0, 0, 0, 0.2)',
+              stroke: 'rgba(0, 0, 0, 0.2)',
               strokeWidth: 2,
             }}
             contentStyle={{
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
               fontSize: 12,
               borderRadius: 10,
             }}
@@ -740,15 +739,19 @@ const DefaultDashboard = ({ timeField }) => {
     <Security
       needs={[KNOWLEDGE]}
       placeholder={t(
-        "You do not have any access to the knowledge of this OpenCTI instance."
+        'You do not have any access to the knowledge of this OpenCTI instance.',
       )}
     >
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={3}>
-          <Card classes={{ root: classes.card }} style={{ height: 110 }}>
+          <Card
+            classes={{ root: classes.card }}
+            style={{ height: 110 }}
+            variant="outlined"
+          >
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalEntitiesCard
-                title={"Total entities"}
+                title={'Total entities'}
                 options={{ endDate: dayAgo() }}
                 Icon={Database}
                 classes={classes}
@@ -757,11 +760,15 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item={true} xs={3}>
-          <Card classes={{ root: classes.card }} style={{ height: 110 }}>
+          <Card
+            classes={{ root: classes.card }}
+            style={{ height: 110 }}
+            variant="outlined"
+          >
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalRelationshipsCard
-                title={"Total relationships"}
-                options={{ type: "stix-core-relationship", endDate: dayAgo() }}
+                title={'Total relationships'}
+                options={{ type: 'stix-core-relationship', endDate: dayAgo() }}
                 Icon={GraphOutline}
                 classes={classes}
               />
@@ -769,11 +776,15 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item={true} xs={3}>
-          <Card classes={{ root: classes.card }} style={{ height: 110 }}>
+          <Card
+            classes={{ root: classes.card }}
+            style={{ height: 110 }}
+            variant="outlined"
+          >
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalEntitiesCard
-                title={"Total reports"}
-                options={{ types: ["report"], endDate: dayAgo() }}
+                title={'Total reports'}
+                options={{ types: ['report'], endDate: dayAgo() }}
                 Icon={DescriptionOutlined}
                 classes={classes}
               />
@@ -781,10 +792,14 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item={true} xs={3}>
-          <Card classes={{ root: classes.card }} style={{ height: 110 }}>
+          <Card
+            classes={{ root: classes.card }}
+            style={{ height: 110 }}
+            variant="outlined"
+          >
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalObservablesCard
-                title={"Total observables"}
+                title={'Total observables'}
                 options={{ endDate: dayAgo() }}
                 Icon={HexagonMultipleOutline}
                 classes={classes}
@@ -796,11 +811,11 @@ const DefaultDashboard = ({ timeField }) => {
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
-            {t("Top Labels (3 last months)")}
+            {t('Top Labels (3 last months)')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
-            elevation={2}
+            variant="outlined"
             style={{ height: 300 }}
           >
             <Suspense fallback={<Loader variant="inElement" />}>
@@ -810,11 +825,11 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item={true} xs={8}>
           <Typography variant="h4" gutterBottom={true}>
-            {t("Ingested entities")}
+            {t('Ingested entities')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
-            elevation={2}
+            variant="outlined"
             style={{ height: 300 }}
           >
             <Suspense fallback={<Loader variant="inElement" />}>
@@ -829,29 +844,29 @@ const DefaultDashboard = ({ timeField }) => {
             height={400}
             relationshipType="stix-core-relationship"
             toTypes={[
-              "Threat-Actor",
-              "Intrusion-Set",
-              "Campaign",
-              "Malware",
-              "Tool",
-              "Vulnerability",
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Malware',
+              'Tool',
+              'Vulnerability',
             ]}
-            title={t("Top 10 active entities (3 last months)")}
+            title={t('Top 10 active entities (3 last months)')}
             field="internal_id"
             startDate={monthsAgo(3)}
             endDate={now()}
             dateAttribute={
-              timeField === "functional" ? "start_time" : "created_at"
+              timeField === 'functional' ? 'start_time' : 'created_at'
             }
           />
         </Grid>
         <Grid item={true} xs={6}>
           <Typography variant="h4" gutterBottom={true}>
-            {t("Targeted countries (3 last months)")}
+            {t('Targeted countries (3 last months)')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
-            elevation={2}
+            variant="outlined"
             style={{ height: 400 }}
           >
             {/* eslint-disable-next-line max-len */}
@@ -871,11 +886,11 @@ const DefaultDashboard = ({ timeField }) => {
       <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
         <Grid item={true} xs={8}>
           <Typography variant="h4" gutterBottom={true}>
-            {t("Last ingested analysis (creation date in the platform)")}
+            {t('Last ingested analysis (creation date in the platform)')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
-            elevation={2}
+            variant="outlined"
             style={{ height: 420 }}
           >
             <Suspense fallback={<Loader variant="inElement" />}>
@@ -885,11 +900,11 @@ const DefaultDashboard = ({ timeField }) => {
         </Grid>
         <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
-            {t("Observables distribution")}
+            {t('Observables distribution')}
           </Typography>
           <Paper
             classes={{ root: classes.paper }}
-            elevation={2}
+            variant="outlined"
             style={{ height: 420 }}
           >
             <Suspense fallback={<Loader variant="inElement" />}>
@@ -907,7 +922,7 @@ const CustomDashboard = ({ dashboard, timeField }) => {
     <Security
       needs={[EXPLORE]}
       placeholder={t(
-        "You do not have any access to the explore part of this OpenCTI instance."
+        'You do not have any access to the explore part of this OpenCTI instance.',
       )}
     >
       <Suspense fallback={<Loader />}>
@@ -918,12 +933,10 @@ const CustomDashboard = ({ dashboard, timeField }) => {
 };
 const Dashboard = () => {
   const classes = useStyles();
-  const [view, saveView] = useViewStorage("view-dashboard");
-  const { dashboard = "default", timeField = "technical" } = view;
-  const handleChangeTimeField = (event) =>
-    saveView({ dashboard, timeField: event.target.value });
-  const handleChangeDashboard = (event) =>
-    saveView({ dashboard: event.target.value, timeField });
+  const [view, saveView] = useViewStorage('view-dashboard');
+  const { dashboard = 'default', timeField = 'technical' } = view;
+  const handleChangeTimeField = (event) => saveView({ dashboard, timeField: event.target.value });
+  const handleChangeDashboard = (event) => saveView({ dashboard: event.target.value, timeField });
   return (
     <div className={classes.root}>
       <TopBar
@@ -932,7 +945,7 @@ const Dashboard = () => {
         handleChangeDashboard={handleChangeDashboard}
         dashboard={dashboard}
       />
-      {dashboard === "default" ? (
+      {dashboard === 'default' ? (
         <DefaultDashboard timeField={timeField} />
       ) : (
         <CustomDashboard dashboard={dashboard} timeField={timeField} />
