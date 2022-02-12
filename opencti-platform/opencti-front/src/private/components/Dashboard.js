@@ -1,12 +1,10 @@
 import React, { Suspense } from 'react';
-import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import {
-  compose, head, pathOr, assoc, map, pluck, last,
+  head, pathOr, assoc, map, pluck, last,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
+import { makeStyles, useTheme } from '@mui/styles';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -62,7 +60,7 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
   },
@@ -161,7 +159,7 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
     textAlign: 'left',
   },
-});
+}));
 // endregion
 
 // region inner components
@@ -173,7 +171,8 @@ const NoTableElement = () => {
     </span>
   </div>;
 };
-const TotalEntitiesCard = ({ title, options, classes, Icon }) => {
+const TotalEntitiesCard = ({ title, options, Icon }) => {
+  const classes = useStyles();
   const { t, n } = useFormatter();
   const dashboardStixDomainObjectsNumberQuery = graphql`
     query DashboardStixDomainObjectsNumberQuery(
@@ -198,7 +197,8 @@ const TotalEntitiesCard = ({ title, options, classes, Icon }) => {
       </div>
   </CardContent>;
 };
-const TotalRelationshipsCard = ({ title, options, classes, Icon }) => {
+const TotalRelationshipsCard = ({ title, options, Icon }) => {
+  const classes = useStyles();
   const { t, n } = useFormatter();
   const dashboardStixCoreRelationshipsNumberQuery = graphql`
     query DashboardStixCoreRelationshipsNumberQuery(
@@ -223,7 +223,8 @@ const TotalRelationshipsCard = ({ title, options, classes, Icon }) => {
     </div>
   </CardContent>;
 };
-const TotalObservablesCard = ({ title, options, classes, Icon }) => {
+const TotalObservablesCard = ({ title, options, Icon }) => {
+  const classes = useStyles();
   const { t, n } = useFormatter();
   const dashboardStixCyberObservablesNumberQuery = graphql`
     query DashboardStixCyberObservablesNumberQuery(
@@ -248,7 +249,8 @@ const TotalObservablesCard = ({ title, options, classes, Icon }) => {
     </div>
   </CardContent>;
 };
-const TopLabelsCard = ({ classes }) => {
+const TopLabelsCard = () => {
+  const classes = useStyles();
   const { n } = useFormatter();
   const dashboardStixMetaRelationshipsDistributionQuery = graphql`
     query DashboardStixMetaRelationshipsDistributionQuery(
@@ -319,7 +321,9 @@ const TopLabelsCard = ({ classes }) => {
       </Grid>
     </div>;
 };
-const IngestedEntitiesGraph = ({ classes, theme }) => {
+const IngestedEntitiesGraph = () => {
+  const classes = useStyles();
+  const theme = useTheme();
   const { mtd, fsd } = useFormatter();
   const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
     query DashboardStixDomainObjectsTimeSeriesQuery(
@@ -454,7 +458,9 @@ const TargetedCountries = ({ timeField }) => {
       />
   );
 };
-const LastIngestedAnalysis = ({ classes, theme }) => {
+const LastIngestedAnalysis = () => {
+  const classes = useStyles();
+  const theme = useTheme();
   const { t, fsd } = useFormatter();
   const dashboardLastStixDomainObjectsQuery = graphql`
     query DashboardLastStixDomainObjectsQuery(
@@ -569,7 +575,9 @@ const LastIngestedAnalysis = ({ classes, theme }) => {
     )}
   </List>;
 };
-const ObservablesDistribution = ({ classes, theme }) => {
+const ObservablesDistribution = () => {
+  const classes = useStyles();
+  const theme = useTheme();
   const { t } = useFormatter();
   const tickFormatter = (title) => truncate(t(`entity_${title}`), 10);
   const dashboardStixCyberObservablesDistributionQuery = graphql`
@@ -629,8 +637,10 @@ const WorkspaceDashboard = ({ dashboard, timeField }) => {
 };
 // endregion
 
-const DefaultDashboard = ({ timeField, classes, theme }) => {
+const DefaultDashboard = ({ timeField }) => {
   const { t } = useFormatter();
+  const classes = useStyles();
+  const theme = useTheme();
   return <Security needs={[KNOWLEDGE]}
                    placeholder={t('You do not have any access to the knowledge of this OpenCTI instance.')}>
     <Grid container={true} spacing={3}>
@@ -755,7 +765,8 @@ const CustomDashboard = ({ dashboard, timeField }) => {
     </Suspense>
   </Security>;
 };
-const Dashboard = ({ classes, theme }) => {
+const Dashboard = () => {
+  const classes = useStyles();
   const [view, saveView] = useViewStorage('view-dashboard');
   const { dashboard = 'default', timeField = 'technical' } = view;
   const handleChangeTimeField = (event) => saveView({ dashboard, timeField: event.target.value });
@@ -765,7 +776,7 @@ const Dashboard = ({ classes, theme }) => {
         <TopBar handleChangeTimeField={handleChangeTimeField} timeField={timeField}
                 handleChangeDashboard={handleChangeDashboard} dashboard={dashboard}/>
         {dashboard === 'default' ? (
-          <DefaultDashboard timeField={timeField} classes={classes} theme={theme}/>
+          <DefaultDashboard timeField={timeField}/>
         ) : (
           <CustomDashboard dashboard={dashboard} timeField={timeField}/>
         )}
@@ -773,14 +784,4 @@ const Dashboard = ({ classes, theme }) => {
   );
 };
 
-Dashboard.propTypes = {
-  theme: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  n: PropTypes.func,
-  fsd: PropTypes.func,
-  mtd: PropTypes.func,
-  history: PropTypes.object,
-};
-
-export default compose(withTheme, withStyles(styles))(Dashboard);
+export default Dashboard;
