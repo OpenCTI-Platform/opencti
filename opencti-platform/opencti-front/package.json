@@ -81,8 +81,7 @@
     "fs-extra": "10.0.0",
     "prettier": "2.5.1",
     "react-scripts": "5.0.0",
-    "relay-compiler": "13.1.1",
-    "relay-devtools": "1.4.0"
+    "relay-compiler": "13.1.1"
   },
   "babelMacros": {
     "relay": {}
