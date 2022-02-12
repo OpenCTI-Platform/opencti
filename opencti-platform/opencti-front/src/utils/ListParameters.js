@@ -9,30 +9,10 @@ import {
   last,
   assoc,
 } from 'ramda';
+import { useHistory, useLocation } from 'react-router-dom';
 import { APP_BASE_PATH } from '../relay/environment';
 
-export const saveViewParameters = (
-  history,
-  location,
-  localStorageKey,
-  params,
-  noRedirect = false,
-) => {
-  const storageParams = pipe(
-    dissoc('searchTerm'),
-    dissoc('graphData'),
-    dissoc('anchorEl'),
-    dissoc('openTimeField'),
-    dissoc('initialContent'),
-    dissoc('currentContent'),
-    dissoc('currentHtmlContent'),
-    dissoc('currentBase64Content'),
-    dissoc('totalPdfPageNumber'),
-    dissoc('currentPdfPageNumber'),
-    dissoc('mentions'),
-    dissoc('mentionKeyword'),
-  )(params);
-  localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
+const buildParamsFromHistory = (history, location, params) => {
   let urlParams = pipe(
     dissoc('graphData'),
     dissoc('openTimeField'),
@@ -70,18 +50,41 @@ export const saveViewParameters = (
   if (params.zoom) {
     urlParams = assoc('zoom', JSON.stringify(params.zoom), urlParams);
   }
-  if (!noRedirect) {
-    const newUrl = `${APP_BASE_PATH}${location.pathname}?${new URLSearchParams(urlParams).toString()}`;
-    window.history.replaceState(null, '', newUrl);
-  }
-  return params;
+  return new URLSearchParams(urlParams).toString();
 };
 
-export const buildViewParamsFromUrlAndStorage = (
-  history,
-  location,
-  localStorageKey,
-) => {
+const saveParamsToLocalStorage = (localStorageKey, params) => {
+  const storageParams = pipe(
+    dissoc('searchTerm'),
+    dissoc('graphData'),
+    dissoc('anchorEl'),
+    dissoc('openTimeField'),
+    dissoc('initialContent'),
+    dissoc('currentContent'),
+    dissoc('currentHtmlContent'),
+    dissoc('currentBase64Content'),
+    dissoc('totalPdfPageNumber'),
+    dissoc('currentPdfPageNumber'),
+    dissoc('mentions'),
+    dissoc('mentionKeyword'),
+  )(params);
+  localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
+};
+
+export const saveViewParameters = (history, location, localStorageKey, params, refresh = false) => {
+  // Save the params in local storage
+  saveParamsToLocalStorage(localStorageKey, params);
+  // Apply params in history
+  const searchParams = buildParamsFromHistory(history, location, params);
+  const newUrl = `${APP_BASE_PATH}${location.pathname}?${searchParams}`;
+  if (refresh) {
+    history.replace(newUrl);
+  } else {
+    window.history.replaceState(null, '', newUrl);
+  }
+};
+
+export const buildViewParamsFromUrlAndStorage = (history, location, localStorageKey) => {
   const queryParams = [
     ...new URLSearchParams(location.search).entries(),
   ].reduce(
@@ -168,6 +171,16 @@ export const buildViewParamsFromUrlAndStorage = (
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;
+};
+
+export const useViewStorage = ({ storageKey }) => {
+  const history = useHistory();
+  const location = useLocation();
+  const view = buildViewParamsFromUrlAndStorage(history, location, storageKey);
+  const saveView = (saveParams) => {
+    saveViewParameters(history, location, storageKey, saveParams, true);
+  };
+  return [view, saveView];
 };
 
 export const convertFilters = (filters) => pipe(

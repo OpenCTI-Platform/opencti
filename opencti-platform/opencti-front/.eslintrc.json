@@ -12,7 +12,8 @@
     "react/no-unused-prop-types": 0,
     "react/prop-types": 0,
     "max-classes-per-file": ["error", 2],
-    "no-unused-vars": ["warn"]
+    "no-unused-vars": ["warn"],
+    "object-curly-newline": "off"
   },
   "settings": {
     "react": {
