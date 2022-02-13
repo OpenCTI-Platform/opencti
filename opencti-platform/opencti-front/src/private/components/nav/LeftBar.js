@@ -171,7 +171,7 @@ const LeftBar = ({
                 </ListItemIcon>
                 <ListItemText primary={t('Assets')} />
               </MenuItem>
-              <MenuItem
+             {/* <MenuItem
                 component={Link}
                 to="/dashboard/events"
                 selected={location.pathname.includes('/dashboard/events')}
@@ -182,8 +182,8 @@ const LeftBar = ({
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
                 <ListItemText primary={t('Information Systems')} />
-              </MenuItem>
-            </MenuList>
+              </MenuItem> */}
+            </MenuList> 
           <MenuItem
             dense={false}
             classes={{ root: classes.menuItem }}
@@ -195,7 +195,7 @@ const LeftBar = ({
             <ListItemText primary={t('Activities')} />
           </MenuItem>
             <MenuList component="nav" disablePadding={true}>
-              <MenuItem
+              {/*<MenuItem
                 component={Link}
                 to="/dashboard/threats"
                 selected={location.pathname.includes('/dashboard/threats')}
@@ -206,7 +206,7 @@ const LeftBar = ({
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
                 <ListItemText primary={t('Threats Assessment')} />
-              </MenuItem>
+              </MenuItem>*/}
               <MenuItem
                 component={Link}
                 to="/dashboard/vsac"
@@ -236,7 +236,7 @@ const LeftBar = ({
       </MenuList>
       <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
-        <MenuList component="nav" classes={{ root: classes.menuList }}>
+      {/*  <MenuList component="nav" classes={{ root: classes.menuList }}>
             <MenuItem
               component={Link}
               to={toData}
@@ -261,7 +261,7 @@ const LeftBar = ({
               </ListItemIcon>
               <ListItemText primary={t('Settings')} />
             </MenuItem>
-            </MenuList>
+            </MenuList> */}
             <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
             <MenuItem
               component={Link}
