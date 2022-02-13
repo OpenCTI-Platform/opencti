@@ -7117,7 +7117,7 @@ __metadata:
     anymatch: ~3.1.2
     braces: ~3.0.2
     fsevents: ~2.3.2
-    glob-parent: ~5.1.2chokidar
+    glob-parent: ~5.1.2
     is-binary-path: ~2.1.0
     is-glob: ~4.0.1
     normalize-path: ~3.0.0
@@ -15097,11 +15097,11 @@ __metadata:
   linkType: hard
 
 "minimatch@npm:^3.0.2, minimatch@npm:^3.0.4, minimatch@npm:~3.0.2":
-  version: 3.0.5
-  resolution: "minimatch@npm:3.0.5"
+  version: 3.0.6
+  resolution: "minimatch@npm:3.0.6"
   dependencies:
     brace-expansion: ^1.1.7
-  checksum: a3b84b426eafca947741b864502cee02860c4e7b145de11ad98775cfcf3066fef422583bc0ffce0952ddf4750c1ccf4220b1556430d4ce10139f66247d87d69e
+  checksum: 95140c3bb5b0aab6d84ef8c20de66629bb4c37174b388a6266a3b9f0cdcd01cc01cc4cce8c351dec3938e802aad5ec6a691349489ee6e7fc1f270f2372736ee6
   languageName: node
   linkType: hard
 
