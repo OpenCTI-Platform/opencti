@@ -91,7 +91,7 @@
   },
   "scripts": {
     "start": "yarn relay && cross-env GENERATE_SOURCEMAP=false react-scripts --max_old_space_size=8192 start",
-    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% react-scripts --max-old-space-size=8192 build",
+    "generate": "cross-env GENERATE_SOURCEMAP=false PUBLIC_URL=%BASE_PATH% react-scripts --max-old-space-size=7168 build",
     "build": "yarn relay && yarn generate && node src/setupBuild.js",
     "lint": "eslint .",
     "storybook": "start-storybook -p 9009 -s public",
