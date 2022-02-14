@@ -345,7 +345,12 @@ const SoftwareCardFragment = createFragmentContainer(
         patch_level
         cpe_identifier
         software_identifier
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
       }
     `,
   },

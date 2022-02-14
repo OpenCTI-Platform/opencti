@@ -284,7 +284,6 @@ function itAssetReducer( item ) {
 	  ...(item.object_type && {entity_type: item.object_type}),
 	  ...(item.created && {created: item.created}),
 	  ...(item.modified && {modified: item.modified}),
-	  ...(item.labels && {labels: item.labels}),
 	  ...(item.name && { name: item.name} ),
 	  ...(item.description && { description: item.description}),
 	  ...(item.asset_id && { asset_id: item.asset_id}),
@@ -329,6 +328,7 @@ function itAssetReducer( item ) {
 	  ...(item.iri && {parent_iri: item.iri}),
 	  ...(item.locations && {locations_iri: item.locations}),
 	  ...(item.external_references && {ext_ref_iri: item.external_references}),
+	  ...(item.labels && {labels_iri: item.labels}),
 	  ...(item.notes && {notes_iri: item.notes}),
     ...(item.installed_hardware && {installed_hw_iri: item.installed_hardware}),
     ...(item.installed_operating_system && {installed_os_iri: item.installed_operating_system}),
@@ -413,7 +413,6 @@ const assetLocationReducer = (item) => {
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.created && {"created": item.created}),
     ...(item.modified && {"modified": item.modified}),
-    ...(item.labels && {"labels": item.labels}),
     ...(item.name && {"name": item.name} ),
     ...(item.description && {"description": item.description}),
     // Location
@@ -421,7 +420,9 @@ const assetLocationReducer = (item) => {
     ...(item.city && {"city": item.city}),
     ...(item.country_code && {"country": item.country_code}),
     ...(item.postal_code && {"postal_code": item.postal_code}),
-    ...(item.street_address && {"street_address": item.street_address})
+    ...(item.street_address && {"street_address": item.street_address}),
+    // HINT
+	  ...(item.labels && {labels_iri: item.labels}),
   }
 }
 

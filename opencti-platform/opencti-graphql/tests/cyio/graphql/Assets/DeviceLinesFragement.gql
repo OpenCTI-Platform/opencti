@@ -18,7 +18,11 @@ fragment Device_device on ComputingDeviceAsset {
   vendor_name
   serial_number
   release_date
-  labels
+  labels {
+    name
+    color
+    description
+  }
   ...DeviceDetails_device
 }
 

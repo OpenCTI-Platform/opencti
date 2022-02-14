@@ -27,14 +27,14 @@
     # CoreObject
     created: Timestamp
     modified: Timestamp
-    labels: [String]
+    labels: [CyioLabel]
     # Asset
     asset_id: String
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references( first: Int ): CyioExternalReferenceConnection
-    notes( first: Int ): CyioNoteConnection
+    external_references: [CyioExternalReference]
+    notes: [CyioNote]
     # Data
   }
 

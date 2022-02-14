@@ -1,26 +1,73 @@
 query RiskItemOverview {
   poamItem(id: "59e5ebe3-edc6-4d39-b0c5-7ab63da99145") {
     id
+    created
+    modified
     poam_id     # Item ID
     name        # Weakness
     description
-    labels
+    labels {
+      id
+      name
+      color
+      description
+    }
+    origins {
+      id
+      origin_actors {       # only use if UI support Detection Source
+        actor_type
+        actor {
+          ... on Component {
+            id
+            name
+          }
+          ... on OscalParty {
+            id
+            name
+          }
+        }
+      }
+    }
+    external_references {
+      id
+      created
+      modified
+      external_id     # external id
+      source_name     # Title
+      description     # description
+      url             # URL
+      media_type      # Media Type
+    }
+    notes {
+      id
+      abstract
+      content
+      authors
+    }
     related_risks {
       edges {
         node{
           id
+          created
+          modified
           name
           description
           statement
           risk_status       # Risk Status
           deadline
           priority
+          impacted_control_id
           accepted
           false_positive    # False-Positive
           risk_adjusted     # Operational Required
           vendor_dependency # Vendor Dependency
           characterizations {
-            id
+            ... on RiskCharacterization {
+              id
+              risk
+              impact
+              likelihood
+            }
             origins {
               id
               origin_actors {
@@ -39,54 +86,11 @@ query RiskItemOverview {
                 }
               }          
             }
-          }          
-        }
-      }
-    }
-    related_observations {
-      edges {
-        node {
-          id
-          name          # Impacted Component
-          subjects {
-            subject {
-              ... on InventoryItem {
-                id
-                asset_type
-                name   # Impacted Asset
-              }
-              ... on Component{
-                id
-                component_type
-                name    # Impacted Asset
-              }
-            }
           }
-        }
-      }
-    }
-    external_references(first: 5) {
-      edges {
-        node {
-          id
-          created
-          modified
-          external_id     # external id
-          source_name     # Title
-          description     # description
-          url             # URL
-          media_type      # Media Type
-        }
-      }
-    }
-    notes( first: 5) {
-      edges {
-        node {
-          id
-          abstract
-          content
-          authors
-          labels
+          remediations {
+            response_type
+            lifecycle
+          }          
         }
       }
     }

@@ -1,8 +1,5 @@
 query RiskItemTracking {
   risk(id: "d67ba9c2-9421-4e3e-ba6c-8a3ab382dc3a") {
-    id
-    created
-    modified
     risk_log(first: 5) {
       edges {
         node {
