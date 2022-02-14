@@ -18,6 +18,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
+import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -137,11 +138,16 @@ class SoftwareLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.labels.width }}
               >
-                <StixCoreObjectLabels
+                <CyioCoreObjectLabels
+                  variant="inList"
+                  labels={node.labels}
+                  onClick={onLabelClick.bind(this)}
+                />
+                {/* <StixCoreObjectLabels
                   variant="inList"
                   labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
-                />
+                /> */}
               </div>
             </div>
           }
