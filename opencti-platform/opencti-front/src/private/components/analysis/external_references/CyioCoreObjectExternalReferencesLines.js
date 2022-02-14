@@ -190,7 +190,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
       t, classes, cyioCoreObjectId, data,
     } = this.props;
     const { expanded, displayExternalRefID } = this.state;
-    const externalReferencesEdges = data?.itAsset?.external_references?.edges || [];
+    const externalReferencesEdges = data?.cyioExternalReferences?.edges || [];
     // const externalReferencesEdges = [data.externalReference];
     const expandable = externalReferencesEdges.length > 7;
     return (

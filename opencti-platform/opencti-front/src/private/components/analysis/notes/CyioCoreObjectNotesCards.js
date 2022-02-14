@@ -112,7 +112,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
     const {
       t, cyioCoreObjectId, marginTop, data,
     } = this.props;
-    const notes = R.pathOr([], ['itAsset', 'notes', 'edges'], data);
+    const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
     const paginationOptions = {
       search: this.state.search,
     };
@@ -130,7 +130,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
         />
         {/* </Security> */}
         <div className="clearfix" />
-        <Paper style={{ height: '100px' }} >
+        <Paper style={{ height: '100%' }} >
         {notes.map((noteEdge) => {
           const note = noteEdge.node;
           return (
