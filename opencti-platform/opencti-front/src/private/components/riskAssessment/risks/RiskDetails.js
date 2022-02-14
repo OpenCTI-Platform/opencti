@@ -410,7 +410,7 @@ class RiskDetailsComponent extends Component {
                   size="small"
                   style={{ cursor: 'default', marginBottom: '5px' }}
                 >
-                  {/* {relatedRisksEdges.deadline && t(relatedRisksEdges.deadline)} */}
+                  {relatedRisksEdges.risk_adjusted && t(relatedRisksEdges.risk_adjusted)}
                 </Button>
               </div>
               <div>
@@ -466,7 +466,12 @@ const RiskDetails = createFragmentContainer(
         poam_id     # Item ID
         name        # Weakness
         description
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         origins {
           id
           origin_actors {       # only use if UI support Detection Source
@@ -483,22 +488,22 @@ const RiskDetails = createFragmentContainer(
             }
           }
         }
-        # external_references {
-        #   id
-        #   created
-        #   modified
-        #   external_id     # external id
-        #   source_name     # Title
-        #   description     # description
-        #   url             # URL
-        #   media_type      # Media Type
-        # }
-        # notes {
-        #   id
-        #   abstract
-        #   content
-        #   authors
-        # }
+        links {
+          id
+          created
+          modified
+          external_id     # external id
+          source_name     # Title
+          description     # description
+          url             # URL
+          media_type      # Media Type
+        }
+        remarks {
+          id
+          abstract
+          content
+          authors
+        }
         related_risks {
           edges {
             node{
@@ -517,12 +522,6 @@ const RiskDetails = createFragmentContainer(
               risk_adjusted     # Operational Required
               vendor_dependency # Vendor Dependency
               characterizations {
-                ... on RiskCharacterization {
-                  id
-                  risk
-                  impact
-                  likelihood
-                }
                 origins {
                   id
                   origin_actors {
@@ -539,13 +538,13 @@ const RiskDetails = createFragmentContainer(
                       name            # Detection Source
                       }
                     }
-                  }          
+                  }
                 }
               }
               remediations {
                 response_type
                 lifecycle
-              }          
+              }
             }
           }
         }

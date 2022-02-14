@@ -355,7 +355,12 @@ const RelatedTasksLines = createPaginationContainer(
                 id
                 created
                 modified
-                labels
+                labels {
+                  id
+                  name
+                  color
+                  description
+                }
                 task_type
                 name
                 description
@@ -380,7 +385,12 @@ const RelatedTasksLines = createPaginationContainer(
                   id
                   created
                   modified
-                  labels
+                  labels {
+                    id
+                    name
+                    color
+                    description
+                  }
                   role {
                     id
                     created

@@ -502,7 +502,12 @@ const RiskAnalysisEditionCharacterization = createFragmentContainer(
         poam_id                   #Item Id
         name                      #Weakness
         description
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         related_risks {
           edges {
             node {

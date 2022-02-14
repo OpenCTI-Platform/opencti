@@ -314,61 +314,23 @@ const RiskCardFragment = createFragmentContainer(
     node: graphql`
       fragment RiskCard_node on POAMItem {
         id
+        poam_id
         name
-        description
+        occurrences
         related_risks {
           edges {
             node {
-              characterizations {
-                ... on VulnerabilityCharacterization {
-                  id
-                  vulnerability_id
-                  facets {
-                    id
-                    name
-                    value
-                  }
-                }
-                ... on RiskCharacterization {
-                  id
-                  risk
-                  risk_state
-                  likelihood
-                  impact
-                  facets {
-                    id
-                    name
-                    value
-                  }
-                }
-                ... on GenericCharacterization {
-                  id
-                  facets {
-                    id
-                    name
-                    value
-                  }
-                }
-              }
-            }
-          }
-        }
-        related_observations {
-          edges {
-            node {
-              name
-              subjects {
-                subject_type
-                subject {
-                  ... on OscalParty {
-                    name
-                    party_type
-                  }
-                  ... on Component {
-                    name
-                    component_type
-                  }
-                }
+              risk_status
+              deadline
+              # characterizations {
+              #   ... on RiskCharacterization {
+              #     id
+              #     risk
+              #   }
+              # }
+              remediations {
+                response_type
+                lifecycle
               }
             }
           }

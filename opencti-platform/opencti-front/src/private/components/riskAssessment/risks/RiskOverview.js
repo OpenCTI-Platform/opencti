@@ -68,6 +68,7 @@ class RiskOverviewComponent extends Component {
       R.map((value) => ({
         priority: value.node.priority,
       })),
+      R.mergeAll,
     )(risk);
     const relatedRiskData = R.pipe(
       R.pathOr([], ['related_risks', 'edges']),
@@ -371,7 +372,7 @@ class RiskOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {/* {risk.priority && t(risk.priority)} */}
-        {riskEdges.map((value) => value.priority) && t(riskEdges.map((value) => value.priority))}
+                {riskEdges.priority && t(riskEdges.priority)}
               </div>
               <div style={{ marginBottom: '20px', marginTop: '25px' }}>
                 <Typography
@@ -446,7 +447,12 @@ const RiskOverview = createFragmentContainer(
         poam_id     # Item ID
         name        # Weakness
         description
-        labels
+        labels {
+          id
+          name
+          color
+          description
+        }
         origins {
           id
           origin_actors {       # only use if UI support Detection Source
@@ -463,22 +469,22 @@ const RiskOverview = createFragmentContainer(
             }
           }
         }
-        # external_references {
-        #   id
-        #   created
-        #   modified
-        #   external_id     # external id
-        #   source_name     # Title
-        #   description     # description
-        #   url             # URL
-        #   media_type      # Media Type
-        # }
-        # notes {
-        #   id
-        #   abstract
-        #   content
-        #   authors
-        # }
+        links {
+          id
+          created
+          modified
+          external_id     # external id
+          source_name     # Title
+          description     # description
+          url             # URL
+          media_type      # Media Type
+        }
+        remarks {
+          id
+          abstract
+          content
+          authors
+        }
         related_risks {
           edges {
             node{
@@ -497,12 +503,6 @@ const RiskOverview = createFragmentContainer(
               risk_adjusted     # Operational Required
               vendor_dependency # Vendor Dependency
               characterizations {
-                ... on RiskCharacterization {
-                  id
-                  risk
-                  impact
-                  likelihood
-                }
                 origins {
                   id
                   origin_actors {
@@ -519,13 +519,13 @@ const RiskOverview = createFragmentContainer(
                       name            # Detection Source
                       }
                     }
-                  }          
+                  }
                 }
               }
               remediations {
                 response_type
                 lifecycle
-              }          
+              }
             }
           }
         }

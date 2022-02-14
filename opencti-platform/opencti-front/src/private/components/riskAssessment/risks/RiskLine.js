@@ -5,6 +5,7 @@ import {
   pipe,
   map,
   pathOr,
+  mergeAll,
 } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
@@ -73,11 +74,22 @@ class RiskLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    console.log('RiskLineNode', node);
-    const riskData = pathOr([], ['related_risks', 'edges', 0], node);
-    const riskCharacterization = pathOr(null, ['node', 'characterizations', 0], riskData);
-    const riskRemediation = pathOr([], ['node', 'remediations', 0], riskData);
-    console.log('RiskLineData', riskCharacterization, riskRemediation);
+    const riskData = pipe(
+      pathOr([], ['related_risks', 'edges']),
+      mergeAll,
+    )(node);
+    const riskRemediation = pipe(
+      pathOr([], ['remediations']),
+      mergeAll,
+    )(riskData.node);
+    const riskCharacterization = pipe(
+      pathOr([], ['characterizations']),
+      mergeAll,
+    )(riskData.node);
+    console.log('RiskLineNode', node, '----', riskRemediation);
+    // const riskCharacterization = pathOr(null, ['node', 'characterizations', 0], riskData);
+    // const riskRemediation = pathOr([], ['node', 'remediations', 0], riskData);
+    // console.log('RiskLineData', riskCharacterization, riskRemediation);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
 
     return (
@@ -123,7 +135,7 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.risk.width }}
               >
-                {riskCharacterization.risk && riskCharacterization.risk}
+                {/* {riskCharacterization.risk && riskCharacterization.risk} */}
               </div>
               <div
                 className={classes.bodyItem}
@@ -220,12 +232,12 @@ const RiskLineFragment = createFragmentContainer(
             node {
               risk_status
               deadline
-              characterizations {
-                ... on RiskCharacterization {
-                  id
-                  risk
-                }
-              }
+              # characterizations {
+              #   ... on RiskCharacterization {
+              #     id
+              #     risk
+              #   }
+              # }
               remediations {
                 response_type
                 lifecycle

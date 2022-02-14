@@ -56,7 +56,6 @@ class RiskAnalysisCharacterizationComponent extends Component {
     } = this.props;
     const riskAnalysisCharacterization = pathOr([], ['characterizations'], risk);
     // const riskcharacterizationfacets = pathOr([], [], riskAnalysisCharacterization);
-    console.log('RiskAnalysisCharacterizationContainer', risk, '----', riskAnalysisCharacterization);
 
     return (
       <div style={{ height: '100%' }} className="break">
@@ -155,6 +154,11 @@ class RiskAnalysisCharacterizationComponent extends Component {
               path(['origin_actors']),
               mergeAll,
             )(characterizationData);
+            const characterizationFacets = pipe(
+              pathOr([], ['facets']),
+              mergeAll,
+            )(characterizationData);
+            console.log('RiskAnalysisCharacterizationData', characterizationFacets);
             return (
               <Grid key={characterizationData.id} container={true} style={{ borderBottom: '1px solid grey' }}>
                 <Grid item={true} xs={4}>
@@ -209,88 +213,54 @@ const RiskAnalysisCharacterization = createFragmentContainer(
         created
         modified
         characterizations {
-          __typename
           id
-          origins {
-            __typename
+          origins{
             id
             origin_actors {
-              __typename
               actor_type
               actor {
                 ... on Component {
-                  __typename
                   id
                   component_type
-                  name # Detection Source
+                  name          # Detection Source
                 }
                 ... on OscalParty {
-                  __typename
-                  id
-                  party_type
-                  name # Detection Source
+                id
+                party_type
+                name            # Detection Source
                 }
               }
             }
           }
           facets {
-            __typename
             id
             risk_state
-            # ... on CustomFacet {
-            #   name 
-            #   value
-            # }
-            # ... on RiskFacet {
-            #   risk_name: name   # characterization name
-            #   value             # characterization value
-            # }
-            # ... on Cvss2Facet {
-            #   cvss2_name: name  # characterization name
-            #   value             # characterization value
-            # }
-            # ... on Cvss3Facet {
-            #   cvss3_name: name  # characterization name
-            #   value             # characterization value
-            # }
-            # ... on VulnerabilityFacet {
-            #   vuln_name: name   # characterization name
-            #   value             # characterization value
-            # }
+            # name            # Characterization Name
+            # value           # Characterization Value
           }
         }
-        # links {
-        #   __typename
-        #   id
-        #   created
-        #   modified
-        #   external_id # external id
-        #   source_name # Title
-        #   description # description
-        #   url # URL
-        #   media_type # Media Type
-        # }
-        # labels {
-        #   __typename
-        #   id
-        #   name
-        #   description
-        #   color
-        # }
-        # remarks {
-        #   __typename
-        #   id
-        #   abstract
-        #   content
-        #   authors
-        #   labels {
-        #     __typename
-        #     id
-        #     name
-        #     color
-        #     description
-        #   }
-        # }
+        links {
+          id
+          created
+          modified
+          external_id     # external id
+          source_name     # Title
+          description     # description
+          url             # URL
+          media_type      # Media Type
+        }
+        remarks {
+          id
+          abstract
+          content
+          authors
+          labels {
+            id
+            name
+            color
+            description
+          }
+        }
       }
     `,
   },
