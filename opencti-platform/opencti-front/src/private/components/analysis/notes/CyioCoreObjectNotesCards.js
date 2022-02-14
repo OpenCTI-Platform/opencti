@@ -130,7 +130,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
         />
         {/* </Security> */}
         <div className="clearfix" />
-        <Paper style={{ height: '100%' }} >
+        <Paper style={{ height: '100%', paddingTop: '15px' }} >
         {notes.map((noteEdge) => {
           const note = noteEdge.node;
           return (
