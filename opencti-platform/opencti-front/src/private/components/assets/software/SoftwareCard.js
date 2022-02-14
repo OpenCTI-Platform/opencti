@@ -30,6 +30,7 @@ import {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
+import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
 const styles = (theme) => ({
   card: {
@@ -281,10 +282,14 @@ class SoftwareCardComponent extends Component {
                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              <StixCoreObjectLabels
-                labels={objectLabel}
+              <CyioCoreObjectLabels
+                labels={node.labels}
                 onClick={onLabelClick.bind(this)}
               />
+              {/* <StixCoreObjectLabels
+                labels={objectLabel}
+                onClick={onLabelClick.bind(this)}
+              /> */}
             </div>
           </CardContent>
         </CardActionArea>

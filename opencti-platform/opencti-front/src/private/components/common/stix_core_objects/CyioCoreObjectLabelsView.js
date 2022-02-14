@@ -81,9 +81,11 @@ const cyioCoreObjectMutationRelationsAdd = graphql`
 
 const cyioCoreObjectMutationRelationDelete = graphql`
   mutation CyioCoreObjectLabelsViewRelationDeleteMutation(
-    $id: ID!
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
   ) {
-    deleteCyioLabel(id: $id)
+    removeReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
   }
 `;
 
@@ -106,7 +108,7 @@ const CyioCoreObjectLabelsView = (props) => {
       .toPromise()
       .then((data) => {
         const transformLabels = pipe(
-          pathOr([], ['labels']),
+          pathOr([], ['cyioLabels', 'edges']),
           map((n) => ({
             label: n.node.name,
             value: n.node.id,
@@ -119,28 +121,36 @@ const CyioCoreObjectLabelsView = (props) => {
 
   const handleCloseAdd = () => setOpenAdd(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    CM(environmentDarkLight, {
-      mutation: cyioCoreObjectMutationRelationsAdd,
-      variables: {
-        toId: values.id,
-        fromId: id,
-        fieldName: 'labels',
-      },
-      setSubmitting,
-      onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        handleCloseAdd();
-      },
-      onError: (err) => console.log('cyioCoreObjectLabelsError', err),
-    });
+    const labelsValues = pipe(
+      pathOr([], ['new_labels']),
+      map((n) => ({
+        id: n.value,
+      })),
+    )(values);
+    map((label) => {
+      CM(environmentDarkLight, {
+        mutation: cyioCoreObjectMutationRelationsAdd,
+        variables: {
+          toId: id,
+          fromId: label.id,
+          fieldName: 'labels',
+        },
+        setSubmitting,
+        onCompleted: (response) => {
+          setSubmitting(false);
+          resetForm();
+          handleCloseAdd();
+        },
+        onError: (err) => console.log('cyioCoreObjectLabelsError', err),
+      });
+    }, labelsValues);
     // commitMutation({
     //   mutation: cyioCoreObjectMutationRelationsAdd,
     //   variables: {
-    //     id: props.id,
     //     input: {
-    //       toIds: labelsIds,
-    //       relationship_type: 'object-label',
+    //       toId: id,
+    //       fromId: labelsValues[0].id,
+    //       fieldName: 'labels',
     //     },
     //   },
     //   setSubmitting,
@@ -149,6 +159,7 @@ const CyioCoreObjectLabelsView = (props) => {
     //     resetForm();
     //     handleCloseAdd();
     //   },
+    //   onError: (error) => console.log('cyioCoreObjectError', error),
     // });
   };
 
@@ -156,7 +167,9 @@ const CyioCoreObjectLabelsView = (props) => {
     CM(environmentDarkLight, {
       mutation: cyioCoreObjectMutationRelationDelete,
       variables: {
-        id: labelId,
+        toId: labelId,
+        fromId: id,
+        fieldName: 'labels',
       },
     });
   };
@@ -321,8 +334,8 @@ const CyioCoreObjectLabelsView = (props) => {
                   'new_labels',
                   append(
                     {
-                      label: data.labelAdd.value,
-                      value: data.labelAdd.id,
+                      label: data.createCyioLabel.name,
+                      value: data.createCyioLabel.id,
                     },
                     values.new_labels,
                   ),

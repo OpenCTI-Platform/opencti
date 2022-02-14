@@ -70,7 +70,7 @@ class CyioCoreObjectLabels extends Component {
                 key={label.id}
                 variant="outlined"
                 classes={{ root: style }}
-                label={label}
+                label={label.name}
                 style={{
                   color: label.color,
                   borderColor: label.color,

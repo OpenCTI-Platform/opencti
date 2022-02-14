@@ -14,6 +14,8 @@ export const itAssetFiltersDeviceFieldsQuery = graphql`
           labels {
             id
             name
+            color
+            description
           }
         }
       }
@@ -35,6 +37,8 @@ export const itAssetFiltersNetworkFieldsQuery = graphql`
           labels {
             id
             name
+            color
+            description
           }
         }
       }
@@ -56,6 +60,8 @@ export const itAssetFiltersSoftwareFieldsQuery = graphql`
           labels {
             id
             name
+            color
+            description
           }
           vendor_name
         }

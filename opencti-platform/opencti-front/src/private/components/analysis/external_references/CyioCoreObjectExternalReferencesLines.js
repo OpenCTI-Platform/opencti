@@ -97,15 +97,15 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
     };
   }
 
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(200);
-    });
-  }
+  // componentDidMount() {
+  //   this.subscription = interval$.subscribe(() => {
+  //     this.props.relay.refetchConnection(200);
+  //   });
+  // }
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
+  // componentWillUnmount() {
+  //   this.subscription.unsubscribe();
+  // }
 
   handleToggleExpand() {
     this.setState({ expanded: !this.state.expanded });
