@@ -79,9 +79,9 @@ const styles = (theme) => ({
 
 const cyioExternalReferenceCreationMutation = graphql`
   mutation CyioExternalReferenceCreationMutation(
-    $input: ExternalReferenceAddInput!
+    $input: CyioExternalReferenceAddInput!
   ) {
-    externalReferenceAdd(input: $input) {
+    createCyioExternalReference(input: $input) {
       id
       source_name
       description
@@ -131,7 +131,7 @@ class CyioExternalReferenceCreation extends Component {
         resetForm();
         this.handleClose();
         if (this.props.onCreate) {
-          this.props.onCreate(response.externalReferenceAdd, true);
+          this.props.onCreate(response.createCyioExternalReference, true);
         }
       },
       // onError: (err) => console.log('ExternalReferenceCreationMutationError', err),

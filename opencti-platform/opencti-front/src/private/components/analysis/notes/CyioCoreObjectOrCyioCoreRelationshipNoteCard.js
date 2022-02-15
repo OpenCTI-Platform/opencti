@@ -28,6 +28,7 @@ import { commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 // import { commitMutation } from '../../../../relay/environment';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import CyioNotePopover from './CyioNotePopover';
@@ -77,6 +78,14 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
+const cyioCoreObjectOrCyioCoreRelationshipNoteCardDelete = graphql`
+  mutation CyioCoreObjectOrCyioCoreRelationshipNoteCardDeleteMutation(
+    $id: ID!
+  ) {
+    deleteCyioNote(id: $id)
+  }
+`;
+
 class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
   constructor(props) {
     super(props);
@@ -116,11 +125,9 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
 
   removeNote(noteId) {
     CM(environmentDarkLight, {
-      mutation: noteMutationRelationDelete,
+      mutation: cyioCoreObjectOrCyioCoreRelationshipNoteCardDelete,
       variables: {
         id: noteId,
-        toId: this.props.CyioCoreObjectOrCyioCoreRelationshipId,
-        relationship_type: 'object',
       },
       onCompleted: () => {
         this.setState({ removing: false });
@@ -186,26 +193,26 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
           title={
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div>
-                  <div
-                    style={{
-                      fontDecoration: 'none',
-                      textTransform: 'none',
-                      paddingTop: '3px',
-                    }}
-                  >
-                    <strong>
-                      {authorLink ? (
-                        <Link to={authorLink}>{authorName}</Link>
-                      ) : (
-                        t('Unknown')
-                      )}
-                    </strong>
-                    <span style={{ color: theme.palette.text.secondary }}>
-                      {t(' added a note on ')}
-                    </span>
-                    {nsdt(node.created)}
-                  </div>
-                  {/* <div
+                <div
+                  style={{
+                    fontDecoration: 'none',
+                    textTransform: 'none',
+                    paddingTop: '3px',
+                  }}
+                >
+                  <strong>
+                    {authorLink ? (
+                      <Link to={authorLink}>{authorName}</Link>
+                    ) : (
+                      t(node.abstract)
+                    )}
+                  </strong>
+                  <span style={{ color: theme.palette.text.secondary }}>
+                    {t(' added a note on ')}
+                  </span>
+                  {nsdt(node?.created)}
+                </div>
+                {/* <div
                     style={{
                       float: 'left',
                       marginLeft: 20,
@@ -224,26 +231,26 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
                       ),
                     )}
                   </div> */}
-                  <div
-                    style={{
-                      float: 'right',
-                      fontDecoration: 'none',
-                      textTransform: 'none',
-                    }}
-                  >
-                  </div>
+                <div
+                  style={{
+                    float: 'right',
+                    fontDecoration: 'none',
+                    textTransform: 'none',
+                  }}
+                >
+                </div>
               </div>
-                <IconButton
+              <IconButton
                 aria-haspopup="true"
                 style={{ marginTop: '-6px' }}
                 onClick={this.toggleExpand.bind(this)}
-                >
-                  {this.state.open ? (
-                    <ExpandLessOutlined />
-                  ) : (
-                    <ExpandMoreOutlined />
-                  )}
-                </IconButton>
+              >
+                {this.state.open ? (
+                  <ExpandLessOutlined />
+                ) : (
+                  <ExpandMoreOutlined />
+                )}
+              </IconButton>
               {/* <IconButton
                 aria-haspopup="true"
                 style={{ marginTop: 1 }}
@@ -261,19 +268,19 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
             </div>
           }
         />
-           <CardContent style={{
-             padding: '0 0 0 15px',
-             // borderBottom: `1px solid ${theme.palette.divider}`,
-           }}>
-           {
-             this.state.open
-               ? (
+        <CardContent style={{
+          padding: '0 0 0 15px',
+          // borderBottom: `1px solid ${theme.palette.divider}`,
+        }}>
+          {
+            this.state.open
+              ? (
                 <Typography style={{ margin: '0 0 10px 0' }} align="left" variant="body2">
-                    {node.content}
+                  {node.content}
                 </Typography>
-               )
-               : (
-              <Typography
+              )
+              : (
+                <Typography
                   variant="body2"
                   noWrap={true}
                   style={{ margin: '0 0 10px 0', fontWeight: 500 }}
@@ -286,31 +293,35 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
                     {node.attribute_abstract}
                   </Markdown>
                 </Typography>
-               )
-           }
-                {/* <Markdown
+              )
+          }
+          {/* <Markdown
                   remarkPlugins={[remarkGfm, remarkParse]}
                   parserOptions={{ commonmark: true }}
                   className="markdown"
                 >
                   {node.content}
                 </Markdown> */}
-                {/* <IconButton
+          {/* <IconButton
                   component={Link}
                   to={`/dashboard/analysis/notes/${node.id}`}
                   classes={{ root: classes.external }}
                 >
                   <OpenInNewOutlined fontSize="small" />
                 </IconButton> */}
-            </CardContent>
-            <Collapse sx={{ width: '1100px', borderRadius: 0 }} in={this.state.open} timeout="auto" unmountOnExit>
-                <CardActions style={{ color: '#F9B406', padding: '0 20px 20px 15px' }}>
-                         <StixCoreObjectLabels
-                      variant="inList"
-                      labels={objectLabel}
-                    />
-                </CardActions>
-            </Collapse>
+        </CardContent>
+        <Collapse sx={{ width: '1100px', borderRadius: 0 }} in={this.state.open} timeout="auto" unmountOnExit>
+          <CardActions style={{ color: '#F9B406', padding: '0 20px 20px 15px' }}>
+            <CyioCoreObjectLabels
+              variant="inList"
+              labels={node.labels}
+            />
+            {/* <StixCoreObjectLabels
+              variant="inList"
+              labels={objectLabel}
+            /> */}
+          </CardActions>
+        </Collapse>
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -352,34 +363,34 @@ CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent.propTypes = {
   nsdt: PropTypes.func,
 };
 
-const CyioCoreObjectOrCyioCoreRelationshipNoteCard = createFragmentContainer(
-  CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent,
-  {
-    node: graphql`
-      fragment CyioCoreObjectOrCyioCoreRelationshipNoteCard_node on CyioNote {
-        id
-        # attribute_abstract
-        content
-        created
-        modified
-        abstract
-        authors
-        # objectLabel {
-        #   edges {
-        #     node {
-        #       id
-        #       value
-        #       color
-        #     }
-        #   }
-        # }
-      }
-    `,
-  },
-);
+// const CyioCoreObjectOrCyioCoreRelationshipNoteCard = createFragmentContainer(
+//   CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent,
+//   {
+//     node: graphql`
+//       fragment CyioCoreObjectOrCyioCoreRelationshipNoteCard_node on CyioNote {
+//         id
+//         # attribute_abstract
+//         content
+//         created
+//         modified
+//         abstract
+//         authors
+//         # objectLabel {
+//         #   edges {
+//         #     node {
+//         #       id
+//         #       value
+//         #       color
+//         #     }
+//         #   }
+//         # }
+//       }
+//     `,
+//   },
+// );
 
 export default compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(CyioCoreObjectOrCyioCoreRelationshipNoteCard);
+)(CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent);

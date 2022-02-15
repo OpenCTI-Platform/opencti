@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, take } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Button from '@material-ui/core/Button';
+import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -13,8 +15,9 @@ import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { QueryRenderer } from '../../../../relay/environment';
 import CyioCoreObjectExternalReferencesLines, {
-  cyioCoreObjectExternalReferencesLinesQuery,
+// cyioCoreObjectExternalReferencesLinesQuery,
 } from './CyioCoreObjectExternalReferencesLines';
+import CyioAddExternalReferences from './CyioAddExternalReferences';
 
 const styles = (theme) => ({
   paper: {
@@ -22,7 +25,6 @@ const styles = (theme) => ({
     minHeight: '100%',
     margin: '-4px 0 0 0',
     padding: 0,
-    borderRadius: 6,
   },
   avatar: {
     width: 24,
@@ -38,83 +40,98 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  buttonExpand: {
+    position: 'absolute',
+    bottom: 2,
+    width: '100%',
+    height: 25,
+    backgroundColor: 'rgba(255, 255, 255, .2)',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, .5)',
+    },
+  },
 });
 
 class CyioCoreObjectExternalReferences extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      expanded: false,
+    };
+  }
+
+  handleToggleExpand() {
+    this.setState({ expanded: !this.state.expanded });
+  }
+
   render() {
-    const { t, classes, cyioCoreObjectId } = this.props;
+    const {
+      t,
+      classes,
+      cyioCoreObjectId,
+      externalReferences,
+    } = this.props;
+    const { expanded } = this.state;
+    const expandable = externalReferences.length > 7;
     return (
       <>
-       <QR
-          environment={DarkLightEnvironment}
-          query={cyioCoreObjectExternalReferencesLinesQuery}
-          variables={{ count: 200 }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <CyioCoreObjectExternalReferencesLines
-                  cyioCoreObjectId={cyioCoreObjectId}
-                  data={props}
-                />
-              );
-            }
-            return (
-              <div style={{ height: '100%' }}>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginBottom: 15 }}
-                >
-                  {t('External references')}
-                </Typography>
-                <div className="clearfix" />
-                <Paper classes={{ root: classes.paper }} elevation={2}>
-                  <List>
-                    {Array.from(Array(5), (e, i) => (
-                      <ListItem
-                        key={i}
-                        dense={true}
-                        divider={true}
-                        button={false}
-                      >
-                        {/* <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatarDisabled }}>
-                            {i}
-                          </Avatar>
-                        </ListItemIcon> */}
-                        <ListItemText
-                          primary={
-                            <Skeleton
-                              animation="wave"
-                              variant="rect"
-                              width="90%"
-                              height={15}
-                              style={{ marginBottom: 10 }}
-                            />
-                          }
-                          secondary={
-                            <Skeleton
-                              animation="wave"
-                              variant="rect"
-                              width="90%"
-                              height={15}
-                            />
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Paper>
-              </div>
-            );
-          }}
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {t('External references')}
+        </Typography>
+        <CyioAddExternalReferences
+          cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
+          cyioCoreObjectOrCyioCoreRelationshipReferences={
+            externalReferences
+            // externalReference.externalReference
+          }
         />
+        <div className="clearfix" />
+        <Paper classes={{ root: classes.paper }} elevation={2}>
+          {externalReferences.length > 0 ? (
+            take(expanded ? 200 : 7, externalReferences).map((externalReference) => (
+              <CyioCoreObjectExternalReferencesLines
+                key={externalReference.id}
+                cyioCoreObjectId={cyioCoreObjectId}
+                externalReference={externalReference}
+              />
+            ))
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No entities of this type has been found.')}
+              </span>
+            </div>
+          )}
+          {expandable && (
+           <Button
+             variant="contained"
+             size="small"
+             onClick={this.handleToggleExpand.bind(this)}
+             classes={{ root: classes.buttonExpand }}
+           >
+             {expanded ? (
+               <ExpandLessOutlined fontSize="small" />
+             ) : (
+               <ExpandMoreOutlined fontSize="small" />
+             )}
+           </Button>
+          )}
+        </Paper>
       </>
     );
   }
 }
 
 CyioCoreObjectExternalReferences.propTypes = {
+  externalReferences: PropTypes.array,
   cyioCoreObjectId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,

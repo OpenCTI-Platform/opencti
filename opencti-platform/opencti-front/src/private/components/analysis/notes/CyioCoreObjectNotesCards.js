@@ -112,7 +112,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
     const {
       t, cyioCoreObjectId, marginTop, data,
     } = this.props;
-    const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
+    // const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
     const paginationOptions = {
       search: this.state.search,
     };
@@ -131,16 +131,13 @@ class CyioCoreObjectNotesCardsContainer extends Component {
         {/* </Security> */}
         <div className="clearfix" />
         <Paper style={{ height: '100%', paddingTop: '15px' }} >
-        {notes.map((noteEdge) => {
-          const note = noteEdge.node;
-          return (
+          {data.map((note) => (
             <CyioCoreObjectOrCyioCoreRelationshipNoteCard
               key={note.id}
               node={note}
               cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
             />
-          );
-        })}
+          ))}
         </Paper>
         {/* <div style={{ marginTop: 100 }} /> */}
         <div ref={this.bottomRef} />
@@ -157,34 +154,34 @@ CyioCoreObjectNotesCardsContainer.propTypes = {
   t: PropTypes.func,
 };
 
-export const cyioCoreObjectNotesCardsQuery = graphql`
-  query CyioCoreObjectNotesCardsQuery($count: Int!) {
-    ...CyioCoreObjectNotesCards_data @arguments(count: $count)
-  }
-`;
+// export const cyioCoreObjectNotesCardsQuery = graphql`
+//   query CyioCoreObjectNotesCardsQuery($count: Int!) {
+//     ...CyioCoreObjectNotesCards_data @arguments(count: $count)
+//   }
+// `;
 
-const CyioCoreObjectNotesCards = createFragmentContainer(
-  CyioCoreObjectNotesCardsContainer,
-  {
-    data: graphql`
-      fragment CyioCoreObjectNotesCards_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-      ) {
-        cyioNotes(limit: $count) {
-          edges {
-            node {
-              id
-              ...CyioCoreObjectOrCyioCoreRelationshipNoteCard_node
-            }
-          }
-        }
-      }
-    `,
-  },
-);
+// const CyioCoreObjectNotesCards = createFragmentContainer(
+//   CyioCoreObjectNotesCardsContainer,
+//   {
+//     data: graphql`
+//       fragment CyioCoreObjectNotesCards_data on Query
+//       @argumentDefinitions(
+//         count: { type: "Int", defaultValue: 25 }
+//       ) {
+//         cyioNotes(limit: $count) {
+//           edges {
+//             node {
+//               id
+//               ...CyioCoreObjectOrCyioCoreRelationshipNoteCard_node
+//             }
+//           }
+//         }
+//       }
+//     `,
+//   },
+// );
 
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(CyioCoreObjectNotesCards);
+)(CyioCoreObjectNotesCardsContainer);

@@ -90,6 +90,7 @@ class NetworkComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
+                  externalReferences={network.external_references}
                   cyioCoreObjectId={network.id}
                 />
               </Grid>
@@ -98,6 +99,7 @@ class NetworkComponent extends Component {
               </Grid>
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
+              notes={network.notes}
               cyioCoreObjectOrCyioCoreRelationshipId={network.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -138,6 +140,31 @@ const Network = createFragmentContainer(NetworkComponent, {
         name
         color
         description
+      }
+      external_references {
+        id
+        source_name
+        description
+        url
+        hashes {
+          value
+        }
+        external_id
+      }
+      notes {
+        id
+        # created
+        # modified
+        entity_type
+        labels {
+          id
+          name
+          color
+          description
+        }
+        abstract
+        content
+        authors
       }
       description
       release_date
