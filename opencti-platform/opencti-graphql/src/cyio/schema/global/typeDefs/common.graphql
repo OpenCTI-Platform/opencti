@@ -63,9 +63,11 @@
 
   "Reference input to add a reference between two different objects"
   input ReferenceAddInput {
-    field_name: String!  # this is the name of the field
+    field_name: String! # this is the name of the field
     from_id: ID!
+    from_type: String   # from __typename or entity_type
     to_id: ID!
+    to_type: String     # from __typename or entity_type
   }
 
   ############## CyioExternalReferences
