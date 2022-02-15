@@ -271,8 +271,8 @@ const LeftBar = ({
             <MenuItem
               disabled="true"
               component={Link}
-              to="dashboard/profile"
-              selected={location.pathname.includes('dashboard/profile')}
+              to="/dashboard/profile"
+              selected={location.pathname.includes('/dashboard/profile')}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
