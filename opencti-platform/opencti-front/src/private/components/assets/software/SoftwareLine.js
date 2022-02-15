@@ -177,6 +177,31 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
         color
         description
       }
+      external_references {
+        id
+        source_name
+        description
+        url
+        hashes {
+          value
+        }
+        external_id
+      }
+      notes {
+        id
+        # created
+        # modified
+        entity_type
+        labels {
+          id
+          name
+          color
+          description
+        }
+        abstract
+        content
+        authors
+      }
       asset_type
       asset_id
       vendor_name

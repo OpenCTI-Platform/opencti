@@ -68,14 +68,6 @@ const cyioExternalReferencePopoverDeletionMutation = graphql`
   }
 `;
 
-const cyioExternalReferenceEditionQuery = graphql`
-  query CyioExternalReferencePopoverEditionQuery($id: ID!) {
-    cyioExternalReference(id: $id) {
-      ...CyioExternalReferenceEdition_externalReference
-    }
-  }
-`;
-
 class CyioExternalReferencePopover extends Component {
   constructor(props) {
     super(props);
@@ -151,7 +143,11 @@ class CyioExternalReferencePopover extends Component {
 
   render() {
     const {
-      classes, t, externalReferenceId, handleRemove,
+      classes,
+      t,
+      externalReferenceId,
+      handleRemove,
+      externalReference,
     } = this.props;
     return (
       <span className={classes.container}>
@@ -196,23 +192,24 @@ class CyioExternalReferencePopover extends Component {
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >
-          <QR
+          {/* <QR
             environment={environmentDarkLight}
             query={cyioExternalReferenceEditionQuery}
             variables={{ id: externalReferenceId }}
             render={({ props }) => {
-              if (props) {
+              console.log('externalReferencePopover', props); */}
+          {/* if (props) {
                 // Done
-                return (
-                  <CyioExternalReferenceEdition
-                    externalReference={props.cyioExternalReference}
-                    handleClose={this.handleCloseUpdate.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
+                return ( */}
+          <CyioExternalReferenceEdition
+            externalReference={externalReference}
+            handleClose={this.handleCloseUpdate.bind(this)}
           />
+          {/* );
+              }
+              return <Loader variant="inElement" />; */}
+          {/* }}
+          /> */}
         </Dialog>
         <Dialog
           open={this.state.displayDelete}
@@ -256,6 +253,7 @@ class CyioExternalReferencePopover extends Component {
 }
 
 CyioExternalReferencePopover.propTypes = {
+  externalReference: PropTypes.object,
   externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

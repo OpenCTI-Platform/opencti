@@ -326,6 +326,31 @@ const NetworkCardFragment = createFragmentContainer(
           color
           description
         }
+        external_references {
+          id
+          source_name
+          description
+          url
+          hashes {
+            value
+          }
+          external_id
+        }
+        notes {
+          id
+          # created
+          # modified
+          entity_type
+          labels {
+            id
+            name
+            color
+            description
+          }
+          abstract
+          content
+          authors
+        }
         # ipv4_address{
         #   ip_address_value
         # }

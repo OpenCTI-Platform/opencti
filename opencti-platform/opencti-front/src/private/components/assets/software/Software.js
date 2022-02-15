@@ -87,13 +87,17 @@ class SoftwareComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <CyioCoreObjectExternalReferences cyioCoreObjectId={software.id} />
+                <CyioCoreObjectExternalReferences
+                  externalReferences={software.external_references}
+                  cyioCoreObjectId={software.id}
+                />
               </Grid>
               <Grid item={true} xs={6}>
                 <CyioCoreObjectLatestHistory cyioCoreObjectId={software.id} />
               </Grid>
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
+              notes={software.notes}
               cyioCoreObjectOrCyioCoreRelationshipId={software.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -131,6 +135,31 @@ const Software = createFragmentContainer(SoftwareComponent, {
         name
         color
         description
+      }
+      external_references {
+        id
+        source_name
+        description
+        url
+        hashes {
+          value
+        }
+        external_id
+      }
+      notes {
+        id
+        # created
+        # modified
+        entity_type
+        labels {
+          id
+          name
+          color
+          description
+        }
+        abstract
+        content
+        authors
       }
       description
       version

@@ -121,7 +121,7 @@ class CyioAddExternalReferences extends Component {
       cyioCoreObjectOrCyioCoreRelationshipReferences,
     } = this.props;
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
-      (n) => n.node.id,
+      (n) => n.id,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
     );
     const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
@@ -130,7 +130,7 @@ class CyioAddExternalReferences extends Component {
     if (alreadyAdded && !onlyCreate) {
       const existingExternalReference = head(
         filter(
-          (n) => n.node.id === externalReference.id,
+          (n) => n.id === externalReference.id,
           cyioCoreObjectOrCyioCoreRelationshipReferences,
         ),
       );
