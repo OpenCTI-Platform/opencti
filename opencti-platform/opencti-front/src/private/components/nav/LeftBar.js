@@ -135,7 +135,7 @@ const LeftBar = ({
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
       <Toolbar />
       <MenuList component="nav"classes={{ root: classes.menuList }}>
-        {/* <MenuItem
+        <MenuItem
           component={Link}
           to="/dashboard"
           selected={location.pathname === '/dashboard'}
@@ -146,7 +146,7 @@ const LeftBar = ({
             <DashboardOutlined />
           </ListItemIcon>
           <ListItemText primary={t('Dashboard')} />
-        </MenuItem> */}
+        </MenuItem>
         <Security needs={[KNOWLEDGE]}>
           <MenuItem
             dense={false}
@@ -172,6 +172,7 @@ const LeftBar = ({
                 <ListItemText primary={t('Assets')} />
               </MenuItem>
               <MenuItem
+               disabled="true"
                 component={Link}
                 to="/dashboard/events"
                 selected={location.pathname.includes('/dashboard/events')}
@@ -182,8 +183,8 @@ const LeftBar = ({
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
                 <ListItemText primary={t('Information Systems')} />
-              </MenuItem>
-            </MenuList>
+              </MenuItem> 
+            </MenuList> 
           <MenuItem
             dense={false}
             classes={{ root: classes.menuItem }}
@@ -196,6 +197,7 @@ const LeftBar = ({
           </MenuItem>
             <MenuList component="nav" disablePadding={true}>
               <MenuItem
+                disabled="true"
                 component={Link}
                 to="/dashboard/threats"
                 selected={location.pathname.includes('/dashboard/threats')}
@@ -238,6 +240,7 @@ const LeftBar = ({
         <Divider />
         <MenuList component="nav" classes={{ root: classes.menuList }}>
             <MenuItem
+              disabled="true"
               component={Link}
               to={toData}
               selected={location.pathname.includes('/dashboard/data')}
@@ -250,6 +253,7 @@ const LeftBar = ({
               <ListItemText primary={t('Data Source')} />
             </MenuItem>
             <MenuItem
+              disabled="true"
               component={Link}
               to="/dashboard/settings"
               selected={location.pathname.includes('/dashboard/setings')}
@@ -261,12 +265,12 @@ const LeftBar = ({
               </ListItemIcon>
               <ListItemText primary={t('Settings')} />
             </MenuItem>
-            </MenuList>
+            </MenuList> 
             <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
             <MenuItem
               component={Link}
-              to="dashboard/profile"
-              selected={location.pathname.includes('dashboard/profile')}
+              to="/dashboard/profile"
+              selected={location.pathname.includes('/dashboard/profile')}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
