@@ -83,12 +83,14 @@ export const labelContextualMutation = graphql`
   mutation LabelCreationContextualMutation($input: CyioLabelAddInput!) {
     createCyioLabel(input: $input) {
       id
+      name
+      color
     }
   }
 `;
 
 const labelValidation = (t) => Yup.object().shape({
-  value: Yup.string().required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
   color: Yup.string().required(t('This field is required')),
 });
 
@@ -117,41 +119,10 @@ class LabelCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    CM(environmentDarkLight, {
-      mutation: labelContextualMutation,
-      variables: {
-        input: values,
-      },
-      setSubmitting,
-      onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        if (this.props.contextual) {
-          this.props.creationCallback(response);
-          this.props.handleClose();
-        } else {
-          this.handleClose();
-        }
-      },
-      onError: (err) => console.log('LabelCreationMutationError', err),
-    });
-    // commitMutation({
-    //   mutation: this.props.contextual ? labelContextualMutation : labelMutation,
+    // CM(environmentDarkLight, {
+    //   mutation: labelContextualMutation,
     //   variables: {
     //     input: values,
-    //   },
-    //   updater: (store) => {
-    //     if (!this.props.contextual) {
-    //       const payload = store.getRootField('labelAdd');
-    //       const newEdge = payload.setLinkedRecord(payload, 'node');
-    //       const container = store.getRoot();
-    //       sharedUpdater(
-    //         store,
-    //         container.getDataID(),
-    //         this.props.paginationOptions,
-    //         newEdge,
-    //       );
-    //     }
     //   },
     //   setSubmitting,
     //   onCompleted: (response) => {
@@ -164,7 +135,39 @@ class LabelCreation extends Component {
     //       this.handleClose();
     //     }
     //   },
+    //   onError: (err) => console.log('LabelCreationMutationError', err),
     // });
+    commitMutation({
+      mutation: this.props.contextual ? labelContextualMutation : labelMutation,
+      variables: {
+        input: values,
+      },
+      updater: (store) => {
+        if (!this.props.contextual) {
+          const payload = store.getRootField('labelAdd');
+          const newEdge = payload.setLinkedRecord(payload, 'node');
+          const container = store.getRoot();
+          sharedUpdater(
+            store,
+            container.getDataID(),
+            this.props.paginationOptions,
+            newEdge,
+          );
+        }
+      },
+      setSubmitting,
+      onCompleted: (response) => {
+        console.log('labelCreationResponse', response);
+        setSubmitting(false);
+        resetForm();
+        if (this.props.contextual) {
+          this.props.creationCallback(response);
+          this.props.handleClose();
+        } else {
+          this.handleClose();
+        }
+      },
+    });
   }
 
   onResetClassic() {
@@ -265,8 +268,9 @@ class LabelCreation extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={{
-            value: inputValue,
+            name: inputValue,
             color: '',
+            description: '',
           }}
           validationSchema={labelValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

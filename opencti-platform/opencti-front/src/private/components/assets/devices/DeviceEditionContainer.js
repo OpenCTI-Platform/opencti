@@ -377,6 +377,7 @@ class DeviceEditionContainer extends Component {
               >
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
+                    externalReferences={device.external_references}
                     cyioCoreObjectId={device?.id}
                   />
                 </Grid>
@@ -385,6 +386,7 @@ class DeviceEditionContainer extends Component {
                 </Grid>
               </Grid>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
+                notes={device.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />
             </>
@@ -453,6 +455,31 @@ const DeviceEditionFragment = createFragmentContainer(
           name
           color
           description
+        }
+        external_references {
+          id
+          source_name
+          description
+          url
+          hashes {
+            value
+          }
+          external_id
+        }
+        notes {
+          id
+          # created
+          # modified
+          entity_type
+          labels {
+            id
+            name
+            color
+            description
+          }
+          abstract
+          content
+          authors
         }
         asset_id
         network_id
