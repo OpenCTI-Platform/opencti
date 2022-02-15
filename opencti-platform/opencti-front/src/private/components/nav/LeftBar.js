@@ -135,7 +135,8 @@ const LeftBar = ({
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
       <Toolbar />
       <MenuList component="nav"classes={{ root: classes.menuList }}>
-        {/* <MenuItem
+        <MenuItem
+          disabled="true"
           component={Link}
           to="/dashboard"
           selected={location.pathname === '/dashboard'}
@@ -146,7 +147,7 @@ const LeftBar = ({
             <DashboardOutlined />
           </ListItemIcon>
           <ListItemText primary={t('Dashboard')} />
-        </MenuItem> */}
+        </MenuItem>
         <Security needs={[KNOWLEDGE]}>
           <MenuItem
             dense={false}
@@ -171,7 +172,8 @@ const LeftBar = ({
                 </ListItemIcon>
                 <ListItemText primary={t('Assets')} />
               </MenuItem>
-             {/* <MenuItem
+              <MenuItem
+               disabled="true"
                 component={Link}
                 to="/dashboard/events"
                 selected={location.pathname.includes('/dashboard/events')}
@@ -182,7 +184,7 @@ const LeftBar = ({
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
                 <ListItemText primary={t('Information Systems')} />
-              </MenuItem> */}
+              </MenuItem> 
             </MenuList> 
           <MenuItem
             dense={false}
@@ -195,7 +197,8 @@ const LeftBar = ({
             <ListItemText primary={t('Activities')} />
           </MenuItem>
             <MenuList component="nav" disablePadding={true}>
-              {/*<MenuItem
+              <MenuItem
+                disabled="true"
                 component={Link}
                 to="/dashboard/threats"
                 selected={location.pathname.includes('/dashboard/threats')}
@@ -206,7 +209,7 @@ const LeftBar = ({
                   <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
                 </ListItemIcon>
                 <ListItemText primary={t('Threats Assessment')} />
-              </MenuItem>*/}
+              </MenuItem>
               <MenuItem
                 component={Link}
                 to="/dashboard/vsac"
@@ -236,8 +239,9 @@ const LeftBar = ({
       </MenuList>
       <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
-      {/*  <MenuList component="nav" classes={{ root: classes.menuList }}>
+        <MenuList component="nav" classes={{ root: classes.menuList }}>
             <MenuItem
+              disabled="true"
               component={Link}
               to={toData}
               selected={location.pathname.includes('/dashboard/data')}
@@ -250,6 +254,7 @@ const LeftBar = ({
               <ListItemText primary={t('Data Source')} />
             </MenuItem>
             <MenuItem
+              disabled="true"
               component={Link}
               to="/dashboard/settings"
               selected={location.pathname.includes('/dashboard/setings')}
@@ -261,9 +266,10 @@ const LeftBar = ({
               </ListItemIcon>
               <ListItemText primary={t('Settings')} />
             </MenuItem>
-            </MenuList> */}
+            </MenuList> 
             <MenuList component="nav" classes={{ root: classes.bottomNavigation }}>
             <MenuItem
+              disabled="true"
               component={Link}
               to="dashboard/profile"
               selected={location.pathname.includes('dashboard/profile')}

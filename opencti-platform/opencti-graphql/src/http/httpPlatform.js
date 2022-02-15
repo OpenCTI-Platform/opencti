@@ -43,7 +43,7 @@ const createApp = async () => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
   });
-  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/'];
+  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://widget.freshworks.com/widgets'];
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
@@ -64,7 +64,7 @@ const createApp = async () => {
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
         objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-        frameSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+        frameSrc: ["'self'", 'data:', 'http://*', 'https://*']
       },
     },
   });
