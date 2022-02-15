@@ -91,7 +91,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
         variables: {
           toId: existingExternalReference.node.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_reference',
+          fieldName: 'external_references',
         },
         updater: (store) => {
           const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
@@ -108,7 +108,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
         variables: {
           toId: externalReference.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_reference',
+          fieldName: 'external_references',
         },
         updater: (store) => {
           const payload = store;

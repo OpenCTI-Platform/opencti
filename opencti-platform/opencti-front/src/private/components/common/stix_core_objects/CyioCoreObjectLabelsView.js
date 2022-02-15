@@ -131,8 +131,8 @@ const CyioCoreObjectLabelsView = (props) => {
       CM(environmentDarkLight, {
         mutation: cyioCoreObjectMutationRelationsAdd,
         variables: {
-          toId: id,
-          fromId: label.id,
+          toId: label.id,
+          fromId: id,
           fieldName: 'labels',
         },
         setSubmitting,

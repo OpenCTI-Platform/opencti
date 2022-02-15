@@ -154,7 +154,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
       variables: {
         toId: externalReferenceEdge.id,
         fromId: this.props.cyioCoreObjectId,
-        fieldName: 'external_reference',
+        fieldName: 'external_references',
       },
       onCompleted: (resp) => {
         this.setState({ removing: false });
