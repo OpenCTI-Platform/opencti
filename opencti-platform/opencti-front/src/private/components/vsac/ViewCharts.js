@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Redirect } from 'react-router-dom';
 import * as R from 'ramda';
 import inject18n from '../../../components/i18n';
 import Button from '@material-ui/core/Button';
@@ -80,12 +80,12 @@ class ViewCharts extends Component {
   constructor(props) {
     super(props);
     const analysesMap = {}
-    this.props.location.state.analyses.forEach((a) => analysesMap[a.id] = a)
+    this.props.location.state?.analyses.forEach((a) => analysesMap[a.id] = a)
     this.state = {
       tabValue: 0,
       anchorEl: false,
       clientId: localStorage.getItem('client_id'),
-      analysis_id: this.props.location.state.analysis_id,
+      analysis_id: (this.props.location.state? this.props.location.state.analysis_id : null),
       analysises: analysesMap,
       severityChartData: {},
       vulnerabilityByYearChartData: {},
@@ -126,7 +126,11 @@ class ViewCharts extends Component {
       });
   }
 
+
   render() {
+
+    if(this.props.location.state == undefined) return <Redirect to="/dashboard/vsac/scans" />;
+
     const {
       tabValue,
       anchorEl,
