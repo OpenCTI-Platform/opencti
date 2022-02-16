@@ -270,6 +270,7 @@ export const selectLabelByIriQuery = (iri, select) => {
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:named>
   WHERE {
+    BIND(<${iri}> AS ?iri)
     ?iri a <http://darklight.ai/ns/common#Label> .
     ${predicates}
   }
@@ -347,6 +348,7 @@ export const selectExternalReferenceByIriQuery = (iri, select) => {
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:named>
   WHERE {
+    BIND(<${iri}> AS ?iri)
     ?iri a <http://darklight.ai/ns/common#ExternalReference> .
     ${predicates}
   }
@@ -424,6 +426,7 @@ export const selectNoteByIriQuery = (iri, select) => {
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:named>
   WHERE {
+    BIND(<${iri}> AS ?iri)
     ?iri a <http://darklight.ai/ns/common#Note> .
     ${predicates}
   }
