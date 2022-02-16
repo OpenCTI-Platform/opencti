@@ -402,9 +402,7 @@ export const locationPredicateMap = {
 
 const assetLocationReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined && item.asset_type !== undefined ) {
-    item.object_type = item.asset_type
-  } else {
+  if ( item.object_type === undefined || item.object_type == null ) {
     item.object_type = 'asset-location';
   }
 
@@ -470,6 +468,7 @@ export const selectLocationByIriQuery = (iri, select) => {
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:named>
   WHERE {
+    BIND(<${iri}> AS ?iri)
     ?iri a <http://darklight.ai/ns/common#CivicLocation> .
     ${predicates}
   }
