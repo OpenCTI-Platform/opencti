@@ -167,7 +167,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
                     gutterBottom={true}
                     className={ classes.tableText }
                   >
-                    {t('Lorem Ipsum')}
+                    {characterizationFacets?.name && t(characterizationFacets?.name)}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>
@@ -176,7 +176,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
                     gutterBottom={true}
                     className={ classes.tableText }
                   >
-                    {t('Lorem Ipsum')}
+                    {characterizationFacets?.value && t(characterizationFacets?.value)}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>
@@ -232,12 +232,32 @@ const RiskAnalysisCharacterization = createFragmentContainer(
               }
             }
           }
-          facets {
-            id
-            risk_state
-            # name            # Characterization Name
-            # value           # Characterization Value
-          }
+          # facets {
+          #   __typename
+          #   id
+          #   risk_state
+          #   source_system
+          #   ... on CustomFacet {
+          #     name
+          #     value
+          #   }
+          #   ... on RiskFacet {
+          #     name
+          #     value
+          #   }
+          #   ... on VulnerabilityFacet {
+          #     name
+          #     value
+          #   }
+          #   ... on Cvss2Facet {
+          #     name
+          #     value
+          #   }
+          #   ... on Cvss3Facet {
+          #     name
+          #     value
+          #   }
+          # }
         }
         links {
           id

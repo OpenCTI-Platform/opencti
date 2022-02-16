@@ -214,6 +214,7 @@ class RequiredResourcesLinesContainer extends Component {
             remediationId={remediationId}
             display={true}
             contextual={true}
+            requiredResourceData={requiredResourceData}
           // stixCoreObjectOrStixCoreRelationshipId={remediationId}
           // stixCoreObjectOrStixCoreRelationshipReferences={
           //   data.riskResponse.external_references.edges
@@ -226,6 +227,7 @@ class RequiredResourcesLinesContainer extends Component {
           {requiredResourcesEdges.map((requiredResource, i) => (
             <RequiredResourceLine
               remediationId={remediationId}
+              requiredResourceData={requiredResourceData}
               key={requiredResource.node.id}
               data={requiredResource}
             />
@@ -321,6 +323,28 @@ const RequiredResourcesLines = createPaginationContainer(
           id
           name
           description
+          links {
+            id
+            # created
+            # modified
+            external_id
+            source_name
+            description
+            url
+            media_type
+          }
+          remarks {
+            id
+            abstract
+            content
+            authors
+            labels {
+              id
+              name
+              color
+              description
+            }
+          }
           required_assets(first: $count)
             @connection(key: "Pagination_required_assets") {
             edges {

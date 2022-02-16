@@ -316,7 +316,7 @@ class RequiredResourceCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display, remediationId,
+      t, classes, inputValue, display, remediationId, requiredResourceData,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -482,11 +482,13 @@ class RequiredResourceCreation extends Component {
                     </Grid>
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
+                        externalReferences={requiredResourceData.links}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        notes={requiredResourceData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         // data={props}
                         marginTop='0px'
@@ -570,6 +572,7 @@ class RequiredResourceCreation extends Component {
 }
 
 RequiredResourceCreation.propTypes = {
+  requiredResourceData: PropTypes.object,
   remediationId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

@@ -75,7 +75,12 @@ class RemediationEntityLineComponent extends Component {
       R.pathOr([], ['tasks', 'edges']),
       R.mergeAll,
     )(node);
-    console.log('remediationEntityLineData', remediationTiming);
+    const remediationSource = R.pipe(
+      R.pathOr([], ['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(node);
     let restricted = false;
     let targetEntity = null;
     if (node.from && node.from.id === entityId) {
@@ -120,7 +125,7 @@ class RemediationEntityLineComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {t('Lorem Ipsum')}
+                      {remediationSource.actor.name && t(remediationSource.actor.name)}
                     </Typography>
                     <Typography color="textSecondary" variant="disabled">
                       {t('Lorem Ipsum Dolor Ist')}
@@ -148,13 +153,13 @@ class RemediationEntityLineComponent extends Component {
                   {/* {node.tasks.edges[0].node.timing.start_date
                   && fldt(node.tasks.edges[0].node.timing.start_date)} */}
                   {remediationTiming?.node?.timing?.start_date
-                  && fldt(remediationTiming?.node?.timing?.start_date)}
+                    && fldt(remediationTiming?.node?.timing?.start_date)}
                 </Typography>
               </div>
               <div className={classes.bodyItem}>
                 <Typography align="left">
                   {remediationTiming?.node?.timing?.end_date
-                  && fldt(remediationTiming?.node?.timing?.end_date)}
+                    && fldt(remediationTiming?.node?.timing?.end_date)}
                   {/* {node.tasks.edges[0].node.timing.end_date
                   && fldt(node.tasks.edges[0].node.timing.end_date)} */}
                 </Typography>

@@ -316,7 +316,7 @@ const RiskTrackingLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.risk.external_reference;
+      return props.data && props.data.risk.risk_log;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

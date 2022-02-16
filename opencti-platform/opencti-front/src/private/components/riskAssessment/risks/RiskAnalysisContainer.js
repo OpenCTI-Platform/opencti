@@ -50,6 +50,28 @@ export const riskAnalysisContainerQuery = graphql`
   query RiskAnalysisContainerQuery($id: ID!) {
     risk(id: $id) {
       id
+      links {
+        id
+        created
+        modified
+        external_id     # external id
+        source_name     # Title
+        description     # description
+        url             # URL
+        media_type      # Media Type
+      }
+      remarks {
+        id
+        abstract
+        content
+        authors
+        labels {
+          id
+          name
+          color
+          description
+        }
+      }
       ...RiskAnalysisCharacterization_risk
     }
   }
@@ -124,7 +146,7 @@ class RiskAnalysisContainerComponent extends Component {
                           {t('Characterization')}
                         </Typography>
                         <div className="clearfix" />
-                        <Paper className={ classes.paper } elevation={2}>
+                        <Paper className={classes.paper} elevation={2}>
                           <List>
                             {Array.from(Array(7), (e, i) => (
                               <ListItem
@@ -186,15 +208,65 @@ class RiskAnalysisContainerComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <CyioCoreObjectExternalReferences
-                  cyioCoreObjectId={risk.id}
+                <QR
+                  environment={environmentDarkLight}
+                  query={riskAnalysisContainerQuery}
+                  variables={{ id: riskId }}
+                  render={({ error, props }) => {
+                    if (props) {
+                      return (
+                        <CyioCoreObjectExternalReferences
+                          externalReferences={props.risk.links}
+                          cyioCoreObjectId={risk.id}
+                        />
+                      );
+                    }
+                    return (
+                      <>
+                        <Typography
+                          variant="h4"
+                          gutterBottom={true}
+                        >
+                          {t('External Reference')}
+                        </Typography>
+                        <div className="clearfix" />
+                        <Paper style={{ height: '100%' }}>
+                        </Paper>
+                      </>
+                    );
+                  }}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
-                <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
-                  marginTop='0px'
+                <QR
+                  environment={environmentDarkLight}
+                  query={riskAnalysisContainerQuery}
+                  variables={{ id: riskId }}
+                  render={({ error, props }) => {
+                    if (props) {
+                      return (
+                        <CyioCoreObjectOrCyioCoreRelationshipNotes
+                          notes={props.risk.remarks}
+                          cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
+                          marginTop='0px'
+                        />
+                      );
+                    }
+                    return (
+                      <>
+                        <Typography
+                          variant="h4"
+                          gutterBottom={true}
+                        >
+                          {t('Notes')}
+                        </Typography>
+                        <div className="clearfix" />
+                        <Paper style={{ height: '100%' }}>
+                        </Paper>
+                      </>
+                    );
+                  }}
                 />
               </Grid>
             </Grid>

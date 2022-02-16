@@ -237,7 +237,10 @@ class RiskTrackingLineContainer extends Component {
       node,
     } = this.props;
     const { expanded, displayUpdate } = this.state;
-    console.log('riskTrackingNode', node);
+    const riskTrackingLoggedBy = R.pipe(
+      R.pathOr([], ['logged_by']),
+      R.mergeAll,
+    )(node);
     // console.log('riskTrackingRiskId', riskId);
     return (
       <>
@@ -347,7 +350,8 @@ class RiskTrackingLineContainer extends Component {
                         <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
                         <div style={{ textAlign: 'left', marginLeft: '10px' }}>
                           <Typography variant="subtitle2">
-                            {t('Lorem Ipsum')}
+                            {/* {t('Lorem Ipsum')} */}
+                            {riskTrackingLoggedBy.name && t(riskTrackingLoggedBy.name)}
                           </Typography>
                           <Typography variant="h3" color="textSecondary">
                             {t('Lorem Ipsum Dolor Ist')}

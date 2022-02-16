@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { compose } from 'ramda';
+import {
+  compose,
+  pipe,
+  map,
+  pathOr,
+  mergeAll,
+} from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import graphql from 'babel-plugin-relay/macro';
@@ -110,14 +116,22 @@ class RiskCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    console.log('RiskCardnode', node);
+    const riskData = pipe(
+      pathOr([], ['related_risks', 'edges']),
+      mergeAll,
+    )(node);
+    const riskRemediation = pipe(
+      pathOr([], ['remediations']),
+      mergeAll,
+    )(riskData.node);
+    console.log('RiskCardnode', riskRemediation);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          style= {{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' } }
+          style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           to={`/dashboard/risk-assessment/risks/${node.id}`}
         >
           {/* <CardHeader
@@ -180,7 +194,7 @@ class RiskCardComponent extends Component {
                 <Typography
                   variant="h3"
                   color="textSecondary"
-                  gutterBottom ={true}>
+                  gutterBottom={true}>
                   {t('Priority')}
                 </Typography>
                 <Typography>
@@ -192,7 +206,7 @@ class RiskCardComponent extends Component {
                 <Typography
                   variant="h3"
                   color="textSecondary"
-                  gutterBottom ={true}>
+                  gutterBottom={true}>
                   {t('Risk')}
                 </Typography>
                 <Typography>
@@ -272,8 +286,7 @@ class RiskCardComponent extends Component {
                   {t('Response')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
-                  {/* {node.fqdn && truncate(t(node.fqdn), 25)} */}
+                  {riskRemediation.response_type && t(riskRemediation.response_type)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
@@ -286,8 +299,7 @@ class RiskCardComponent extends Component {
                   {t('Lifecycle')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
-                  {/* {node.network_id && t(node.network_id)} */}
+                  {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
                 </Typography>
               </Grid>
             </Grid>

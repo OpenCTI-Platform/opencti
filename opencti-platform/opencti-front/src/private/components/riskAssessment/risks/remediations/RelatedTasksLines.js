@@ -222,6 +222,7 @@ class RelatedTasksLinesContainer extends Component {
       t, classes, remediationId, data,
     } = this.props;
     const { expanded } = this.state;
+    const relatedTaskData = data.riskResponse;
     // const externalReferencesEdges = data.riskResponse.external_references.edges;
     // const expandable = externalReferencesEdges.length > 7;
     console.log('RelatedTasksData', data);
@@ -239,6 +240,7 @@ class RelatedTasksLinesContainer extends Component {
         > */}
           <div>
             <RelatedTaskCreation
+              relatedTaskData={relatedTaskData}
               display={true}
               contextual={true}
               remediationId={remediationId}
@@ -252,11 +254,12 @@ class RelatedTasksLinesContainer extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          {relatedTasksEdges.map((relatedTaskData, i) => (
+          {relatedTasksEdges.map((relatedTask, i) => (
             <RelatedTaskLine
               remediationId={remediationId}
-              key={relatedTaskData.id}
-              data={relatedTaskData}
+              key={relatedTask.id}
+              data={relatedTask}
+              relatedTaskData={relatedTaskData}
             />
           ))}
         </Paper>
@@ -348,6 +351,28 @@ const RelatedTasksLines = createPaginationContainer(
       ) {
         riskResponse(id: $id) {
           id
+          links {
+            id
+            # created
+            # modified
+            external_id
+            source_name
+            description
+            url
+            media_type
+          }
+          remarks {
+            id
+            abstract
+            content
+            authors
+            labels {
+              id
+              name
+              color
+              description
+            }
+          }
           tasks(first: $count)
             @connection(key: "Pagination_related_tasks") {
             edges {

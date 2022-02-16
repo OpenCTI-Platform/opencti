@@ -642,13 +642,13 @@ class RiskEditionOverviewComponent extends Component {
                     </Tooltip>
                   </div>
                   <div className="clearfix" />
-                  <ObjectLabelField
+                  {/* <ObjectLabelField
                     variant='outlined'
                     name="labels"
                     style={{ marginTop: 10, width: '100%' }}
                     setFieldValue={setFieldValue}
                   // values={values.objectLabel}
-                  />
+                  /> */}
                 </Grid>
               </Paper>
             </div>

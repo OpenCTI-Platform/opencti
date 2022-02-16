@@ -171,12 +171,12 @@ class RiskOverviewComponent extends Component {
                 gutterBottom={true}
                 style={{ float: 'left' }}
               >
-                {t('Items ID')}
+                {t('POAM ID')}
               </Typography>
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'Items ID',
+                    'POAM ID',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />

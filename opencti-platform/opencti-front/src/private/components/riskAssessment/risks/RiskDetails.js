@@ -94,8 +94,16 @@ class RiskDetailsComponent extends Component {
         impacted_asset: value.node.subjects,
       })),
     )(risk);
-    const riskDetectionSource = R.pathOr([], ['related_risks', 'edges', 0, 'node', 'characterizations', 0, 'origins', 0, 'origin_actors', 0, 'actor'], risk);
-    console.log('relatedRisksEdgesDetails', risk);
+    const riskDetectionSource = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.mergeAll,
+      R.pathOr([], ['node', 'characterizations']),
+      R.mergeAll,
+      R.path(['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(risk);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -286,7 +294,7 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t(riskDetectionSource.name)}
+                {t(riskDetectionSource.actor.name)}
               </div>
               <div>
                 <Typography

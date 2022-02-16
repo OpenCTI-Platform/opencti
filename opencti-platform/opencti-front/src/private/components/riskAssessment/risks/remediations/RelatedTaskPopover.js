@@ -181,7 +181,7 @@ class RelatedTaskPopover extends Component {
 
   render() {
     const {
-      classes, t, externalReferenceId, handleRemove, remediationId,
+      classes, t, externalReferenceId, handleRemove, remediationId, relatedTaskData,
     } = this.props;
     return (
       <span className={classes.container}>
@@ -557,11 +557,13 @@ class RelatedTaskPopover extends Component {
                   <Grid container={true} spacing={3}>
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
+                        externalReferences={relatedTaskData.links}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        notes={relatedTaskData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
                       // data={props}
@@ -636,6 +638,7 @@ class RelatedTaskPopover extends Component {
 }
 
 RelatedTaskPopover.propTypes = {
+  relatedTaskData: PropTypes.object,
   remediationId: PropTypes.string,
   externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,

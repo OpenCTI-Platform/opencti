@@ -170,6 +170,7 @@ class RequiredResourceLineComponent extends Component {
       classes,
       data,
       remediationId,
+      requiredResourceData,
       displayRelation,
       entityId,
     } = this.props;
@@ -182,7 +183,6 @@ class RequiredResourceLineComponent extends Component {
       })),
       mergeAll,
     )(data);
-
     return (
       <div style={{
         display: 'grid',
@@ -278,11 +278,13 @@ class RequiredResourceLineComponent extends Component {
               </Grid>
               <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                 <CyioCoreobjectExternalReferences
+                  externalReferences={requiredResourceData.links}
                   cyioCoreObjectId={remediationId}
                 />
               </Grid>
               <Grid style={{ margin: '30px 0 20px 0' }} xs={12} item={true}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  notes={requiredResourceData.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                   marginTop='0px'
                 // data={props}
@@ -296,6 +298,7 @@ class RequiredResourceLineComponent extends Component {
           <RequiredResourcePopover
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
+            requiredResourceData={requiredResourceData}
           />
         </div>
       </div>
@@ -304,6 +307,7 @@ class RequiredResourceLineComponent extends Component {
 }
 
 RequiredResourceLineComponent.propTypes = {
+  requiredResourceData: PropTypes.object,
   paginationOptions: PropTypes.object,
   remediationId: PropTypes.string,
   dataColumns: PropTypes.object,

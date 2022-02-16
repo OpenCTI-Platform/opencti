@@ -319,7 +319,7 @@ class RelatedTaskCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display, remediationId,
+      t, classes, inputValue, display, remediationId, relatedTaskData,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -636,11 +636,13 @@ class RelatedTaskCreation extends Component {
                   <Grid container={true} spacing={3}>
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
+                        externalReferences={relatedTaskData.links}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        notes={relatedTaskData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
                       // data={props}
@@ -725,6 +727,7 @@ class RelatedTaskCreation extends Component {
 }
 
 RelatedTaskCreation.propTypes = {
+  relatedTaskData: PropTypes.object,
   remediationId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

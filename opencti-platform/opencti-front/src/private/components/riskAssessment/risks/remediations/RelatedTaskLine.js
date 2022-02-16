@@ -171,6 +171,7 @@ class RelatedTaskLine extends Component {
       classes,
       data,
       remediationId,
+      relatedTaskData,
       displayRelation,
       entityId,
     } = this.props;
@@ -329,11 +330,13 @@ class RelatedTaskLine extends Component {
               </Grid>
               <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                 <CyioCoreobjectExternalReferences
+                  externalReferences={relatedTaskData.links}
                   cyioCoreObjectId={remediationId}
                 />
               </Grid>
               <Grid style={{ margin: '50px 0 20px 0' }} xs={12} item={true}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  notes={relatedTaskData.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                   marginTop='0px'
                 // data={props}
@@ -345,6 +348,7 @@ class RelatedTaskLine extends Component {
         </Accordion>
         <div style={{ marginTop: '30px' }}>
           <RelatedTaskPopover
+            relatedTaskData={relatedTaskData}
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
           />
@@ -355,6 +359,7 @@ class RelatedTaskLine extends Component {
 }
 
 RelatedTaskLine.propTypes = {
+  relatedTaskData: PropTypes.object,
   paginationOptions: PropTypes.object,
   remediationId: PropTypes.string,
   dataColumns: PropTypes.object,

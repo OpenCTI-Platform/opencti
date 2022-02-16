@@ -92,12 +92,14 @@ class RiskComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
+                externalReferences={risk.links}
                 cyioCoreObjectId={risk.id}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  notes={risk.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
                   marginTop='0px'
                 />
@@ -132,6 +134,22 @@ const Risk = createFragmentContainer(RiskComponent, {
     fragment Risk_risk on POAMItem {
       id
       name
+      links {
+        id
+        # created
+        # modified
+        external_id     # external id
+        source_name     # Title
+        description     # description
+        url             # URL
+        media_type      # Media Type
+      }
+      remarks {
+        id
+        abstract
+        content
+        authors
+      }
       ...RiskOverview_risk
       ...RiskDetails_risk
     }

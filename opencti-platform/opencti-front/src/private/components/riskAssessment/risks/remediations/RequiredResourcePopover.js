@@ -179,7 +179,13 @@ class RequiredResourcePopover extends Component {
 
   render() {
     const {
-      classes, t, externalReferenceId, handleRemove, inputValue, remediationId,
+      classes,
+      t,
+      externalReferenceId,
+      handleRemove,
+      inputValue,
+      remediationId,
+      requiredResourceData,
     } = this.props;
     return (
       <span className={classes.container}>
@@ -406,11 +412,13 @@ class RequiredResourcePopover extends Component {
                     </Grid>
                     <Grid style={{ marginTop: '5px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
+                        externalReferences={requiredResourceData.links}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        notes={requiredResourceData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop='0px'
                       // data={props}
@@ -485,6 +493,7 @@ class RequiredResourcePopover extends Component {
 }
 
 RequiredResourcePopover.propTypes = {
+  requiredResourceData: PropTypes.object,
   remediationId: PropTypes.string,
   externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,
