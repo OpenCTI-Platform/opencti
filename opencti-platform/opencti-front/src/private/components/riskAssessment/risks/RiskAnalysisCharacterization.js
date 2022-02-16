@@ -56,7 +56,6 @@ class RiskAnalysisCharacterizationComponent extends Component {
     } = this.props;
     const riskAnalysisCharacterization = pathOr([], ['characterizations'], risk);
     // const riskcharacterizationfacets = pathOr([], [], riskAnalysisCharacterization);
-
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -167,7 +166,11 @@ class RiskAnalysisCharacterizationComponent extends Component {
                     gutterBottom={true}
                     className={ classes.tableText }
                   >
-                    {characterizationFacets?.name && t(characterizationFacets?.name)}
+                    {characterizationFacets.cvss2_name
+                    || characterizationFacets.cvss3_name
+                    || characterizationFacets.risk_name
+                    || characterizationFacets.vuln_name
+                    || characterizationFacets.name}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>
@@ -232,32 +235,31 @@ const RiskAnalysisCharacterization = createFragmentContainer(
               }
             }
           }
-          # facets {
-          #   __typename
-          #   id
-          #   risk_state
-          #   source_system
-          #   ... on CustomFacet {
-          #     name
-          #     value
-          #   }
-          #   ... on RiskFacet {
-          #     name
-          #     value
-          #   }
-          #   ... on VulnerabilityFacet {
-          #     name
-          #     value
-          #   }
-          #   ... on Cvss2Facet {
-          #     name
-          #     value
-          #   }
-          #   ... on Cvss3Facet {
-          #     name
-          #     value
-          #   }
-          # }
+          facets {
+            id
+            risk_state
+            source_system
+            ... on CustomFacet {
+              name
+              value
+            }
+            ... on RiskFacet {
+              risk_name: name
+              value
+            }
+            ... on VulnerabilityFacet {
+              vuln_name: name
+              value
+            }
+            ... on Cvss2Facet {
+              cvss2_name: name
+              value
+            }
+            ... on Cvss3Facet {
+              cvss3_name: name
+              value
+            }
+          }
         }
         links {
           id

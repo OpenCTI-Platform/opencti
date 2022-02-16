@@ -359,9 +359,10 @@ class RemediationCreation extends Component {
                 style={{ marginTop: 50 }}
               >
                 <Grid item={true} xs={6}>
-                  <CyioCoreObjectExternalReferences
+                  <CyioCoreObjectAssetCreationExternalReferences />
+                  {/* <CyioCoreObjectExternalReferences
                     cyioCoreObjectId={remediationId}
-                  />
+                  /> */}
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectOrCyioCoreRelationshipNotes

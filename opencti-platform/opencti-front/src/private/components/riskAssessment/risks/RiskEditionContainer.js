@@ -354,12 +354,14 @@ class RiskEditionContainer extends Component {
               >
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
+                  externalReferences={risk.links}
                   cyioCoreObjectId={riskId}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk?.id} /> */}
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
+                    notes={risk.remarks}
                     cyioCoreObjectOrCyioCoreRelationshipId={riskId}
                     marginTop='0px'
                   />
@@ -430,6 +432,28 @@ const RiskEditionFragment = createFragmentContainer(
     risk: graphql`
       fragment RiskEditionContainer_risk on POAMItem {
         id
+        links {
+          id
+          # created
+          # modified
+          external_id     # external id
+          source_name     # Title
+          description     # description
+          url             # URL
+          media_type      # Media Type
+        }
+        remarks {
+          id
+          abstract
+          content
+          authors
+          labels {
+            id
+            name
+            color
+            description
+          }
+        }
         ...RiskEditionOverview_risk
         ...RiskEditionDetails_risk
         # editContext {

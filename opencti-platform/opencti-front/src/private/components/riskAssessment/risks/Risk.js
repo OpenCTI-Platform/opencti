@@ -134,6 +134,12 @@ const Risk = createFragmentContainer(RiskComponent, {
     fragment Risk_risk on POAMItem {
       id
       name
+      labels {
+        id
+        name
+        color
+        description
+      }
       links {
         id
         # created
@@ -149,6 +155,12 @@ const Risk = createFragmentContainer(RiskComponent, {
         abstract
         content
         authors
+        labels {
+          id
+          name
+          color
+          description
+        }
       }
       ...RiskOverview_risk
       ...RiskDetails_risk

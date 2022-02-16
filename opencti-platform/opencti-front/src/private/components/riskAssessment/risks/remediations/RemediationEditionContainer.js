@@ -340,11 +340,13 @@ class RemediationEditionContainer extends Component {
               >
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
+                    externalReferences={risk.links}
                     cyioCoreObjectId={remediationId}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
+                    notes={risk.remarks}
                     cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                     marginTop='0px'
                   />
@@ -421,6 +423,28 @@ const RemediationEditionFragment = createFragmentContainer(
         modified          # Last Modified
         lifecycle         # Lifecycle
         response_type     # Response Type
+        links {
+          id
+          # created
+          # modified
+          external_id
+          source_name
+          description
+          url
+          media_type
+        }
+        remarks {
+          id
+          abstract
+          content
+          authors
+          labels {
+            id
+            name
+            color
+            description
+          }
+        }
         origins {
           id
           origin_actors {
