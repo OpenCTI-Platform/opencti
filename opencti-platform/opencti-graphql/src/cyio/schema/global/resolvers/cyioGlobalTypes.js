@@ -4,22 +4,43 @@ const cyioGlobalTypeResolvers = {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined ) return false;
 
-      let predicate;
-      const fromIri = `<http://darklight.ai/ns/common#${input.from_type}-${input.from_id}>`;
-      const toIri = `<http://darklight.ai/ns/common#${input.to_type}-${input.to_id}>`;
+      let fromType;
+      switch( input.from_type) {
+        case 'ComputingDeviceAsset':
+        case 'computing-device':
+          fromType = 'ComputingDevice';
+          break;
+        case 'NetworkAsset':
+        case 'network':
+          fromType = 'Network';
+          break;
+        case 'SoftwareAsset':
+        case 'software':
+          fromType = 'Software';
+          break;
+        default:
+          fromType = input.from_type;
+      }
+
+      let predicate, toIri;
+      const fromIri = `<http://scap.nist.gov/ns/asset-identification#${fromType}-${input.from_id}>`;
       switch(input.field_name) {
         case 'labels': 
           predicate = `<http://darklight.ai/ns/common#labels>`;
+          toIri = `<http://darklight.ai/ns/common#Label-${input.to_id}>`;
           break;
         case 'external_references':
           predicate = `<http://darklight.ai/ns/common#external_references>`;
+          toIri = `<http://darklight.ai/ns/common#ExternalReference-${input.to_id}>`;
           break;
         case 'notes':
           predicate = `<http://darklight.ai/ns/common#notes>`;
+          toIri = `<http://darklight.ai/ns/common#Note-${input.to_id}>`;
           break;
         default:
           throw new Error(`Unsupported field '${input.field_name}'`)
       }
+      
       const query = `
       INSERT DATA {
         GRAPH ${fromIri} {
@@ -46,22 +67,43 @@ const cyioGlobalTypeResolvers = {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined ) return false;
 
-      let predicate;
-      const fromIri = `<http://darklight.ai/ns/common#${input.from_type}-${input.from_id}>`;
-      const toIri = `<http://darklight.ai/ns/common#${input.to_type}-${input.to_id}>`;
+      let fromType;
+      switch( input.from_type) {
+        case 'ComputingDeviceAsset':
+        case 'computing-device':
+          fromType = 'ComputingDevice';
+          break;
+        case 'NetworkAsset':
+        case 'network':
+          fromType = 'Network';
+          break;
+        case 'SoftwareAsset':
+        case 'software':
+          fromType = 'Software';
+          break;
+        default:
+          fromType = input.from_type;
+      }
+
+      let predicate, toIri;
+      const fromIri = `<http://scap.nist.gov/ns/asset-identification#${fromType}-${input.from_id}>`;
       switch(input.field_name) {
         case 'labels': 
           predicate = `<http://darklight.ai/ns/common#labels>`;
+          toIri = `<http://darklight.ai/ns/common#Label-${input.to_id}>`;
           break;
         case 'external_references':
           predicate = `<http://darklight.ai/ns/common#external_references>`;
+          toIri = `<http://darklight.ai/ns/common#ExternalReference-${input.to_id}>`;
           break;
         case 'notes':
           predicate = `<http://darklight.ai/ns/common#notes>`;
+          toIri = `<http://darklight.ai/ns/common#Note-${input.to_id}>`;
           break;
         default:
           throw new Error(`Unsupported field '${input.field_name}'`)
       }
+
       const query = `
       DELETE DATA {
         GRAPH ${fromIri} {
