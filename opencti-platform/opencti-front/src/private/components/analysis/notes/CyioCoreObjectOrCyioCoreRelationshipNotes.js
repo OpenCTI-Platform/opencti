@@ -6,7 +6,7 @@ import Paper from '@material-ui/core/Paper';
 import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectNotesCards, {
-  cyioCoreObjectNotesCardsQuery,
+// cyioCoreObjectNotesCardsQuery,
 } from './CyioCoreObjectNotesCards';
 import StixCoreRelationshipNotesCards, {
   stixCoreRelationshipNotesCardsQuery,
@@ -20,6 +20,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
       cyioCoreObjectOrCyioCoreRelationshipId,
       isRelationship,
       marginTop,
+      notes,
     } = this.props;
     if (isRelationship) {
       return (
@@ -55,19 +56,19 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
     }
     return (
       <>
-        <QR
+        {/* <QR
           environment={DarkLightEnvironment}
           query={cyioCoreObjectNotesCardsQuery}
           variables={{ count: 5 }}
           render={({ props }) => {
             if (props) {
-              return (
-                <CyioCoreObjectNotesCards
-                  cyioCoreObjectId={cyioCoreObjectOrCyioCoreRelationshipId}
-                  data={props}
-                  marginTop={marginTop}
-                />
-              );
+              return ( */}
+        <CyioCoreObjectNotesCards
+          cyioCoreObjectId={cyioCoreObjectOrCyioCoreRelationshipId}
+          data={notes}
+          marginTop={marginTop}
+        />
+        {/* );
             }
             return (
               <div style={{ height: '100%', marginTop: marginTop || 40 }}>
@@ -82,13 +83,14 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
               </div>
             );
           }}
-        />
+        /> */}
       </>
     );
   }
 }
 
 CyioCoreObjectOrCyioCoreRelationshipNotes.propTypes = {
+  notes: PropTypes.array,
   t: PropTypes.func,
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   isRelationship: PropTypes.bool,

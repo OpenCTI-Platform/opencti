@@ -1,5 +1,7 @@
 /* refactor */
+/* eslint-disable */
 import React, { useState } from 'react';
+import { Redirect } from 'react-router-dom';
 import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -20,10 +22,12 @@ import {
 import Chip from '@material-ui/core/Chip';
 
 const Compare = (props) => {
-  const [getAnalyses] = useState(props.location.state.analyses);
-  const [getScatterPlotData] = useState(props.location.state.scatterPlotData);
+  const [getAnalyses] = useState(props.location.state?.analyses);
+  const [getScatterPlotData] = useState(props.location.state?.scatterPlotData);
 
   const scatter = [];
+
+  if(props.location.state == undefined) return <Redirect to="/dashboard/vsac/scans" />;
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {

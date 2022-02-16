@@ -9,6 +9,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
+import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
 import LabelCreation from '../../settings/labels/LabelCreation';
 
 const styles = () => ({
@@ -44,15 +45,15 @@ class ObjectLabelField extends Component {
     this.setState({
       labelInput: event && event.target.value !== 0 ? event.target.value : '',
     });
-    fetchQuery(labelsSearchQuery, {
+    fetchQuery(cyioLabelsQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
     })
       .toPromise()
       .then((data) => {
         const labels = pipe(
-          pathOr([], ['labels', 'edges']),
+          pathOr([], ['cyioLabels', 'edges']),
           map((n) => ({
-            label: n.node.value,
+            label: n.node.name,
             value: n.node.id,
             color: n.node.color,
           })),

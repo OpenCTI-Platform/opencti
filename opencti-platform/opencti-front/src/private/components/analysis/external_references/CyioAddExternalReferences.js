@@ -121,7 +121,7 @@ class CyioAddExternalReferences extends Component {
       cyioCoreObjectOrCyioCoreRelationshipReferences,
     } = this.props;
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
-      (n) => n.node.id,
+      (n) => n.id,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
     );
     const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
@@ -130,7 +130,7 @@ class CyioAddExternalReferences extends Component {
     if (alreadyAdded && !onlyCreate) {
       const existingExternalReference = head(
         filter(
-          (n) => n.node.id === externalReference.id,
+          (n) => n.id === externalReference.id,
           cyioCoreObjectOrCyioCoreRelationshipReferences,
         ),
       );
@@ -139,7 +139,7 @@ class CyioAddExternalReferences extends Component {
         variables: {
           toId: externalReferenceEdge.node.id,
           fromId: this.props.cyioCoreObjectId,
-          fieldName: 'external_reference',
+          fieldName: 'external_references',
         },
         updater: (store) => {
           const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
@@ -156,7 +156,7 @@ class CyioAddExternalReferences extends Component {
         variables: {
           toId: externalReference.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_reference',
+          fieldName: 'external_references',
         },
         updater: (store) => {
           const payload = store

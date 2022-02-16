@@ -73,7 +73,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
       cyioCoreObjectOrCyioCoreRelationshipReferences,
     } = this.props;
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
-      (n) => n.node.id,
+      (n) => n.id,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
     );
     const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
@@ -82,7 +82,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
     if (alreadyAdded && !onlyCreate) {
       const existingExternalReference = head(
         filter(
-          (n) => n.node.id === externalReference.id,
+          (n) => n.id === externalReference.id,
           cyioCoreObjectOrCyioCoreRelationshipReferences,
         ),
       );
@@ -91,7 +91,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
         variables: {
           toId: existingExternalReference.node.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_reference',
+          fieldName: 'external_references',
         },
         updater: (store) => {
           const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
@@ -108,7 +108,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
         variables: {
           toId: externalReference.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_reference',
+          fieldName: 'external_references',
         },
         updater: (store) => {
           const payload = store;
@@ -132,12 +132,12 @@ class CyioAddExternalReferencesLinesContainer extends Component {
       cyioCoreObjectOrCyioCoreRelationshipReferences,
     } = this.props;
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
-      (n) => n.node.id,
+      (n) => n.id,
       cyioCoreObjectOrCyioCoreRelationshipReferences || []);
     return (
       <div>
         <List className={classes.list}>
-          {data.cyioExternalReferenceList.edges.map((externalReferenceNode) => {
+          {data.cyioExternalReferences.edges.map((externalReferenceNode) => {
             const externalReference = externalReferenceNode.node;
             const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
               externalReference.id,
