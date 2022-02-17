@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { QueryRenderer as QR } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectHistoryLines, {
@@ -19,7 +20,7 @@ class CyioCoreObjectLatestHistory extends Component {
         </Typography>
         <QR
           environment={QueryRendererDarkLight}
-          query={cyioCoreObjectHistoryLinesQuery}
+          // query={cyioCoreObjectHistoryLinesQuery}
           variables={{
             filters: [
               { key: 'entity_id', values: [cyioCoreObjectId] },
@@ -33,7 +34,7 @@ class CyioCoreObjectLatestHistory extends Component {
             orderMode: 'desc',
           }}
           render={({ props }) => {
-            if (props) {
+            if (false) {
               return (
                 <CyioCoreObjectHistoryLines
                   cyioCoreObjectId={cyioCoreObjectId}
@@ -42,7 +43,10 @@ class CyioCoreObjectLatestHistory extends Component {
                 />
               );
             }
-            return <div />;
+            return (
+              <Paper style={{ height: '100%', margin: '10px 0 0 0' }} elevation={2}>
+              </Paper>
+            );
           }}
         />
       </div>

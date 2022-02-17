@@ -30,6 +30,7 @@ import {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
+import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
 const styles = (theme) => ({
   card: {
@@ -281,10 +282,14 @@ class SoftwareCardComponent extends Component {
                gutterBottom ={true}>
                 {t('Label')}
               </Typography>
-              <StixCoreObjectLabels
-                labels={objectLabel}
+              <CyioCoreObjectLabels
+                labels={node.labels}
                 onClick={onLabelClick.bind(this)}
               />
+              {/* <StixCoreObjectLabels
+                labels={objectLabel}
+                onClick={onLabelClick.bind(this)}
+              /> */}
             </div>
           </CardContent>
         </CardActionArea>
@@ -350,6 +355,31 @@ const SoftwareCardFragment = createFragmentContainer(
           name
           color
           description
+        }
+        external_references {
+          id
+          source_name
+          description
+          url
+          hashes {
+            value
+          }
+          external_id
+        }
+        notes {
+          id
+          # created
+          # modified
+          entity_type
+          labels {
+            id
+            name
+            color
+            description
+          }
+          abstract
+          content
+          authors
         }
       }
     `,

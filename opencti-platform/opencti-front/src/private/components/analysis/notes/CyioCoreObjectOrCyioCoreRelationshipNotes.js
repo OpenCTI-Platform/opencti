@@ -6,7 +6,7 @@ import Paper from '@material-ui/core/Paper';
 import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectNotesCards, {
-  cyioCoreObjectNotesCardsQuery,
+// cyioCoreObjectNotesCardsQuery,
 } from './CyioCoreObjectNotesCards';
 import StixCoreRelationshipNotesCards, {
   stixCoreRelationshipNotesCardsQuery,
@@ -20,6 +20,8 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
       cyioCoreObjectOrCyioCoreRelationshipId,
       isRelationship,
       marginTop,
+      height,
+      notes,
     } = this.props;
     if (isRelationship) {
       return (
@@ -55,33 +57,11 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
     }
     return (
       <>
-        <QR
-          environment={DarkLightEnvironment}
-          query={cyioCoreObjectNotesCardsQuery}
-          variables={{ count: 5 }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <CyioCoreObjectNotesCards
-                  cyioCoreObjectId={cyioCoreObjectOrCyioCoreRelationshipId}
-                  data={props}
-                  marginTop={marginTop}
-                />
-              );
-            }
-            return (
-              <div style={{ height: '100%', marginTop: marginTop || 40 }}>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: -20 }}
-                >
-                  {t('Notes')}
-                </Typography>
-                <Paper style={{ marginTop: 50, height: '100px' }} />
-              </div>
-            );
-          }}
+        <CyioCoreObjectNotesCards
+          cyioCoreObjectId={cyioCoreObjectOrCyioCoreRelationshipId}
+          data={notes}
+          height={height}
+          marginTop={marginTop}
         />
       </>
     );
@@ -89,10 +69,12 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
 }
 
 CyioCoreObjectOrCyioCoreRelationshipNotes.propTypes = {
+  notes: PropTypes.array,
   t: PropTypes.func,
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   isRelationship: PropTypes.bool,
   marginTop: PropTypes.number,
+  height: PropTypes.number,
 };
 
 export default inject18n(CyioCoreObjectOrCyioCoreRelationshipNotes);

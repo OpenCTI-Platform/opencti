@@ -18,6 +18,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
+import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -128,11 +129,16 @@ class NetworkLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.labels.width }}
               >
-                <StixCoreObjectLabels
+                <CyioCoreObjectLabels
+                  variant="inList"
+                  labels={node.labels}
+                  onClick={onLabelClick.bind(this)}
+                />
+                {/* <StixCoreObjectLabels
                   variant="inList"
                   labels={objectLabel}
                   onClick={onLabelClick.bind(this)}
-                />
+                /> */}
               </div>
             </div>
           }
@@ -219,6 +225,31 @@ const NetworkLineFragment = createFragmentContainer(
           name
           color
           description
+        }
+        external_references {
+          id
+          source_name
+          description
+          url
+          hashes {
+            value
+          }
+          external_id
+        }
+        notes {
+          id
+          # created
+          # modified
+          entity_type
+          labels {
+            id
+            name
+            color
+            description
+          }
+          abstract
+          content
+          authors
         }
         # created
         # modified

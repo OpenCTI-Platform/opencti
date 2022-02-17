@@ -316,7 +316,7 @@ class NetworkCreation extends Component {
                   <CyioCoreObjectLatestHistory />
                 </Grid>
               </Grid>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes />
+              <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' />
             </>
           )}
         </Formik>

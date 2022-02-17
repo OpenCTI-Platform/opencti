@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import ReactHtmlParser from 'react-html-parser';
-import { withRouter } from 'react-router-dom';
+import { withRouter, Redirect } from 'react-router-dom';
 import * as R from 'ramda';
 import inject18n from '../../../components/i18n';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -98,9 +98,9 @@ class ExploreResults extends Component {
     super(props);
 
     this.state = {
-      client: this.props.location.state.client,
-      analysis: this.props.location.state.analysis,
-      scan: this.props.location.state.scan,
+      client:  (this.props.location.state? this.props.location.state.client : null),
+      analysis: (this.props.location.state? this.props.location.state.analysis : null),
+      scan: (this.props.location.state? this.props.location.state.scan : null),
       hosts: null,
       software: null,
       filteredResultsParams: {},
@@ -123,7 +123,9 @@ class ExploreResults extends Component {
   }
 
   componentDidMount() {
-    this.resetAllData()
+    if(this.state.client){
+      this.resetAllData()
+    }
   }
 
   resetAllData() {
@@ -161,6 +163,9 @@ class ExploreResults extends Component {
   }
 
   render() {
+
+    if(this.props.location.state == undefined) return <Redirect to="/dashboard/vsac/scans" />;
+    
     const { classes } = this.props;
     const {
       client,
@@ -186,6 +191,8 @@ class ExploreResults extends Component {
       generateReportSuccess,
       openDialog,
     } = this.state;
+
+    
 
     const handleFilterResults = (params, name, type) => {
       this.setState({ filteredResultsData: 'loading' });

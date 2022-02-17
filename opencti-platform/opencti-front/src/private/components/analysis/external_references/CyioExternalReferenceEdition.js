@@ -72,7 +72,7 @@ const cyioExternalReferenceMutationFieldPatch = graphql`
       input: $input
       ) {
         id
-        ...CyioExternalReferenceEdition_externalReference
+        # ...CyioExternalReferenceEdition_externalReference
     }
   }
 `;
@@ -98,17 +98,17 @@ const cyioExternalReferenceValidation = (t) => Yup.object().shape({
 });
 
 class CyioExternalReferenceEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.sub = requestSubscription({
-      subscription,
-      variables: { id: props.externalReference.id },
-    });
-  }
+  // constructor(props) {
+  // super(props);
+  // this.sub = requestSubscription({
+  //   subscription,
+  //   variables: { id: props.externalReference.id },
+  // });
+  // }
 
-  componentWillUnmount() {
-    this.sub.dispose();
-  }
+  // componentWillUnmount() {
+  //   this.sub.dispose();
+  // }
 
   handleChangeFocus(name) {
     commitMutation({
@@ -266,26 +266,7 @@ CyioExternalReferenceEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const ExternalReferenceEditionFragment = createFragmentContainer(
-  CyioExternalReferenceEditionContainer,
-  {
-    externalReference: graphql`
-      fragment CyioExternalReferenceEdition_externalReference on CyioExternalReference {
-        id
-        source_name
-        url
-        external_id
-        description
-        # editContext {
-        #   name
-        #   focusOn
-        # }
-      }
-    `,
-  },
-);
-
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(ExternalReferenceEditionFragment);
+)(CyioExternalReferenceEditionContainer);

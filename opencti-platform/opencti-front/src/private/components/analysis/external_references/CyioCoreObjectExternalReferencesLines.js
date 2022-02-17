@@ -46,7 +46,6 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '-4px 0 0 0',
     padding: 0,
     position: 'relative',
   },
@@ -97,15 +96,15 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
     };
   }
 
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(200);
-    });
-  }
+  // componentDidMount() {
+  //   this.subscription = interval$.subscribe(() => {
+  //     this.props.relay.refetchConnection(200);
+  //   });
+  // }
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
+  // componentWillUnmount() {
+  //   this.subscription.unsubscribe();
+  // }
 
   handleToggleExpand() {
     this.setState({ expanded: !this.state.expanded });
@@ -153,9 +152,9 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
     CM(environmentDarkLight, {
       mutation: cyioExternalReferenceMutationRelationDelete,
       variables: {
-        toId: externalReferenceEdge.node.id,
+        toId: externalReferenceEdge.id,
         fromId: this.props.cyioCoreObjectId,
-        fieldName: 'external_reference',
+        fieldName: 'external_references',
       },
       onCompleted: (resp) => {
         this.setState({ removing: false });
@@ -187,116 +186,66 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, data,
+      t, classes, cyioCoreObjectId, externalReference,
     } = this.props;
     const { expanded, displayExternalRefID } = this.state;
-    const externalReferencesEdges = data?.itAsset?.external_references?.edges || [];
-    // const externalReferencesEdges = [data.externalReference];
-    const expandable = externalReferencesEdges.length > 7;
+    // const externalReferencesEdges = externalReference || [];
+    // const externalReferencesEdges = [externalReference.externalReference];
+    // const expandable = externalReferencesEdges.length > 7;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('External references')}
-        </Typography>
-        {/* <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 28 }} />}
-        > */}
-        <CyioAddExternalReferences
-          cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
-          cyioCoreObjectOrCyioCoreRelationshipReferences={
-            data?.itAsset?.external_references?.edges
-            // data.externalReference
-          }
-        />
-        {/* </Security> */}
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          {externalReferencesEdges.length > 0 ? (
-            <List style={{ marginBottom: 0, padding: '12px' }}>
-              {/* {externalReferencesEdges.map( */}
-              {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
-                (externalReferenceEdge) => {
-                  const externalReference = externalReferenceEdge.node;
-                  return (
-                    <div key={externalReference.id}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '90% 10%' }}>
-                        <Accordion onChange={this.handleToggleDetails.bind(this)} style={{ borderBottom: '0', boxShadow: 'none' }}>
-                          <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
-                            sx={{ width: '100%' }}
-                          >
-                            <ListItemText
-                              primary={externalReference.source_name}
-                              secondary={!displayExternalRefID
-                                ? (externalReference.url && truncate(t(externalReference.url), 80))
-                                : (externalReference.id && t(externalReference.id))}
-                            />
-                          </AccordionSummary>
-                          <AccordionDetails>
-                            <div >
-                              <Typography variant="subtitle1" gutterBottom={true}>
-                                {externalReference.description}
-                              </Typography>
-                              <Typography variant="subtitle2" style={{ display: 'flex', color: '#F9B406' }} >
-                                <LinkIcon fontSize="small" style={{ paddingRight: '5px' }} />
-                                {externalReference.url && truncate(
-                                  t(externalReference.url),
-                                  80,
-                                )}
-                              </Typography>
-                            </div>
-                          </AccordionDetails>
-                          {/* </ListItem> */}
-                        </Accordion>
-                        <div style={{ marginTop: '12px' }}>
-                          {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-                          <CyioExternalReferencePopover
-                            externalReferenceId={externalReference.id}
-                            handleRemove={this.handleOpenDialog.bind(
-                              this,
-                              externalReferenceEdge,
-                            )}
-                          />
-                          {/* </Security> */}
-                        </div>
-                      </div>
-                      <Divider variant="middle" light={true} />
-                    </div>
-                  );
-                },
-              )}
-            </List>
-          ) : (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No entities of this type has been found.')}
-              </span>
+      <div>
+        <List style={{ marginBottom: 0, padding: '12px' }}>
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: '90% 10%' }}>
+              <Accordion onChange={this.handleToggleDetails.bind(this)} style={{ borderBottom: '0', boxShadow: 'none' }}>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                  sx={{ width: '100%' }}
+                >
+                  <ListItemText
+                    primary={externalReference.source_name}
+                    secondary={!displayExternalRefID
+                      ? (externalReference.url && truncate(t(externalReference.url), 80))
+                      : (externalReference.id && t(externalReference.id))}
+                  />
+                </AccordionSummary>
+                <AccordionDetails>
+                  <div >
+                    <Typography variant="subtitle1" gutterBottom={true}>
+                      {externalReference.description}
+                    </Typography>
+                    <Typography variant="subtitle2" style={{ display: 'flex', color: '#F9B406' }} >
+                      <LinkIcon fontSize="small" style={{ paddingRight: '5px' }} />
+                      {externalReference.url && truncate(
+                        t(externalReference.url),
+                        80,
+                      )}
+                    </Typography>
+                  </div>
+                </AccordionDetails>
+                {/* </ListItem> */}
+              </Accordion>
+              <div style={{ marginTop: '12px' }}>
+                {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
+                <CyioExternalReferencePopover
+                  externalReference={externalReference}
+                  externalReferenceId={externalReference.id}
+                  handleRemove={this.handleOpenDialog.bind(
+                    this,
+                    externalReference,
+                  )}
+                />
+                {/* </Security> */}
+              </div>
             </div>
-          )}
-          {expandable && (
-            <Button
-              variant="contained"
-              size="small"
-              onClick={this.handleToggleExpand.bind(this)}
-              classes={{ root: classes.buttonExpand }}
-            >
-              {expanded ? (
-                <ExpandLessOutlined fontSize="small" />
-              ) : (
-                <ExpandMoreOutlined fontSize="small" />
-              )}
-            </Button>
-          )}
-        </Paper>
+            <Divider variant="middle" light={true} />
+          </div>
+          {/* );
+                },
+              )} */}
+        </List>
         <Dialog
           open={this.state.displayDialog}
           keepMounted={true}
@@ -355,7 +304,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
 
 CyioCoreObjectExternalReferencesLinesContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
-  data: PropTypes.object,
+  externalReference: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -363,41 +312,7 @@ CyioCoreObjectExternalReferencesLinesContainer.propTypes = {
   relay: PropTypes.object,
 };
 
-export const cyioCoreObjectExternalReferencesLinesQuery = graphql`
-  query CyioCoreObjectExternalReferencesLinesQuery($count: Int!) {
-    ...CyioCoreObjectExternalReferencesLines_data
-      @arguments(count: $count)
-  }
-`;
-
-const CyioCoreObjectExternalReferencesLines = createFragmentContainer(
-  CyioCoreObjectExternalReferencesLinesContainer,
-  {
-    data: graphql`
-      fragment CyioCoreObjectExternalReferencesLines_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-      ) {
-        cyioExternalReferences(limit: $count) {
-          edges {
-            node {
-              id
-              source_name
-              description
-              url
-              hashes {
-                value
-              }
-              external_id
-            }
-          }
-        }
-      }
-    `,
-  },
-);
-
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(CyioCoreObjectExternalReferencesLines);
+)(CyioCoreObjectExternalReferencesLinesContainer);

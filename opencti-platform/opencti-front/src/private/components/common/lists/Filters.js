@@ -225,33 +225,18 @@ class Filters extends Component {
         break;
       case 'labels_or':
         // eslint-disable-next-line no-case-declarations
-        let cyioLabelsQuery = '';
-        // eslint-disable-next-line no-case-declarations
-        let cyioLabelsPath = [];
-        if (this.props.filterEntityType === 'Device') {
-          cyioLabelsQuery = itAssetFiltersDeviceFieldsQuery;
-          cyioLabelsPath = ['computingDeviceAssetList', 'edges'];
-        }
-        if (this.props.filterEntityType === 'Network') {
-          cyioLabelsQuery = itAssetFiltersNetworkFieldsQuery;
-          cyioLabelsPath = ['networkAssetList', 'edges'];
-        }
-        if (this.props.filterEntityType === 'Software') {
-          cyioLabelsQuery = itAssetFiltersSoftwareFieldsQuery;
-          cyioLabelsPath = ['softwareAssetList', 'edges'];
-        }
-        fetchDarklightQuery(cyioLabelsQuery, {
+        fetchDarklightQuery(labelsSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
         })
           .toPromise()
           .then((data) => {
             const cyioLabelEntities = R.pipe(
-              R.pathOr([], cyioLabelsPath),
+              R.pathOr([], ['cyioLabels', 'edges']),
               R.map((n) => ({
-                label: n.node?.labels && t(R.pluck(0, n.node).labels),
-                value: R.pluck(0, n.node)?.labels,
+                label: n.node?.name && t(n.node?.name),
+                value: n.node?.name,
                 type: 'Label',
-                color: R.pluck(0, n.node)?.labels,
+                color: n.node?.color,
               })),
             )(data);
             this.setState({
@@ -388,10 +373,10 @@ class Filters extends Component {
           .toPromise()
           .then((data) => {
             const labelledByEntities = R.pipe(
-              R.pathOr([], ['labels', 'edges']),
+              R.pathOr([], ['cyioLabels', 'edges']),
               R.map((n) => ({
-                label: n.node.value,
-                value: n.node.id,
+                label: n.node.name,
+                value: n.node.name,
                 type: 'Label',
                 color: n.node.color,
               })),
