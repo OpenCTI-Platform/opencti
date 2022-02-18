@@ -14,6 +14,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNoteCard from './CyioCoreObjectOrCyio
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
 import CyioNoteCreation from './CyioNoteCreation';
+import CyioAddNotes from './CyioAddNotes';
 
 const styles = (theme) => ({
   paper: {
@@ -122,11 +123,11 @@ class CyioCoreObjectNotesCardsContainer extends Component {
           {t('Notes')}
         </Typography>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-        <CyioNoteCreation
-          display={true}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
+        <CyioAddNotes
+          cyioCoreObjectOrStixCoreRelationshipId={cyioCoreObjectId}
+          cyioCoreObjectOrStixCoreRelationshipNotes={
+            data
+          }
         />
         {/* </Security> */}
         <div className="clearfix" />

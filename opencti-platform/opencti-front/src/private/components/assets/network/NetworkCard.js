@@ -337,14 +337,17 @@ const NetworkCardFragment = createFragmentContainer(
           external_id
         }
         notes {
+          __typename
           id
           # created
           # modified
           entity_type
           labels {
+            __typename
             id
             name
             color
+            entity_type
             description
           }
           abstract

@@ -5,7 +5,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 // import { ConnectionHandler } from 'relay-runtime';
 import {
-  compose, evolve, path, pluck,
+  compose, union, map, pathOr, pipe, dissoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -16,10 +16,13 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
+import Badge from '@material-ui/core/Badge';
+import Avatar from '@material-ui/core/Avatar';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
+import environmentDarkLight, { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 // import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -27,11 +30,13 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { Label, Information } from 'mdi-material-ui';
 import { dayStartDate } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import TextField from '../../../../components/TextField';
 import { UserContext } from '../../../../utils/Security';
-
+import AutocompleteField from '../../../../components/AutocompleteField';
+import LabelCreation from '../../settings/labels/LabelCreation';
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '452px',
@@ -51,6 +56,10 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
+  },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
   },
   createButtonContextual: {
     marginTop: -15,
@@ -117,7 +126,12 @@ class CyioNoteCreation extends Component {
   static contextType = UserContext;
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = {
+      open: false,
+      stateLabels: [],
+      labelInput: '',
+      openCreate: false,
+    };
   }
 
   // componentDidMount() {
@@ -130,9 +144,40 @@ class CyioNoteCreation extends Component {
     this.setState({ open: true });
   }
 
+  handleLabelOpen() {
+    this.setState({ openCreate: true });
+  }
+
+  handleLabelClose() {
+    this.setState({ openCreate: false });
+  }
+
   handleClose() {
     this.setState({ open: false });
   }
+
+  searchLabels = (event) => {
+    this.setState({
+      labelInput: event && event.target.value !== 0 ? event.target.value : '',
+    });
+    fetchDarklightQuery(cyioLabelsQuery, {
+      search: event && event.target.value !== 0 ? event.target.value : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const transformLabels = pipe(
+          pathOr([], ['cyioLabels', 'edges']),
+          map((n) => ({
+            label: n.node.name,
+            value: n.node.id,
+            color: n.node.color,
+          })),
+        )(data);
+        this.setState({
+          stateLabels: union(this.state.stateLabels, transformLabels),
+        });
+      });
+  };
 
   onSubmit(values, { setSubmitting, resetForm }) {
     // const adaptedValues = evolve(
@@ -143,10 +188,13 @@ class CyioNoteCreation extends Component {
     //   },
     //   values,
     // );
+    const finalValues = pipe(
+      dissoc('labels'),
+    )(values);
     CM(environmentDarkLight, {
       mutation: cyioNoteCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       setSubmitting,
       onCompleted: (response) => {
@@ -323,7 +371,7 @@ class CyioNoteCreation extends Component {
       inputValue,
       display,
     } = this.props;
-    const { me } = this.context
+    const { me } = this.context;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <IconButton
@@ -340,8 +388,9 @@ class CyioNoteCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               abstract: '',
-              content: inputValue,
+              content: '',
               authors: me.name || '',
+              labels: [],
             }}
             validationSchema={cyioNoteValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -355,48 +404,145 @@ class CyioNoteCreation extends Component {
               values,
             }) => (
               <Form style={{ padding: '24px' }}>
-              <div>
-               <Typography variant="h6" classes={{ root: classes.title }}>
-                  {t('New Note')}
-              </Typography>
-              </div>
-              <Grid
-                    container={true}
-                    spacing={3}
-                    classes={{ container: classes.gridContainer }}
-                  >
-                    <Grid item={true} xs={12}>
-                      <Field
-                        component={MarkDownField}
-                        name="content"
-                        fullWidth={true}
-                        multiline={true}
-                        rows="4"
-                        style={{ marginTop: 20 }}
-                      />
-                    </Grid>
-                    <Grid style={{ marginLeft: 'auto' }} item={true} xs={5}>
-                      <div className={classes.buttons}>
-                        <Button
-                          variant="outlined"
-                          onClick={handleReset}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t('Cancel')}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t('Create')}
-                        </Button>
-                      </div>
-                    </Grid>
+                <div>
+                  <Typography variant="h6" classes={{ root: classes.title }}>
+                    {t('Note')}
+                  </Typography>
+                </div>
+                <Grid
+                  container={true}
+                  spacing={3}
+                  classes={{ container: classes.gridContainer }}
+                >
+                  <Grid item={true} xs={12}>
+                    <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: 'left' }}
+                    >
+                      {t('Abstract')}
+                    </Typography>
+                    <Field
+                      component={TextField}
+                      name="abstract"
+                      // label={t('Abstract')}
+                      fullWidth={true}
+                    />
                   </Grid>
+                  <Grid item={true} xs={12}>
+                    <Field
+                      component={MarkDownField}
+                      name="content"
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                    />
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                    <Field
+                      component={AutocompleteField}
+                      name="labels"
+                      multiple={true}
+                      freeSolo={true}
+                      textfieldprops={{
+                        label: t('Labels'),
+                        onFocus: this.searchLabels.bind(this),
+                      }}
+                      noOptionsText={t('No available options')}
+                      options={this.state.stateLabels}
+                      onInputChange={this.searchLabels.bind(this)}
+                      openCreate={this.handleLabelOpen.bind(this)}
+                      renderOption={(option) => (
+                        <React.Fragment>
+                          <div
+                            className={classes.icon}
+                            style={{ color: option.color }}
+                          >
+                            <Label />
+                          </div>
+                          <div className={classes.text}>{option.label}</div>
+                        </React.Fragment>
+                      )}
+                      classes={{ clearIndicator: classes.autoCompleteIndicator }}
+                    />
+                    <LabelCreation
+                      contextual={true}
+                      open={this.state.openCreate}
+                      inputValue={this.state.labelInput}
+                      handleClose={this.handleLabelClose.bind(this)}
+                      creationCallback={(data) => {
+                        setFieldValue(
+                          'new_labels',
+                          append(
+                            {
+                              label: data.createCyioLabel.name,
+                              value: data.createCyioLabel.id,
+                            },
+                            values.new_labels,
+                          ),
+                        );
+                      }}
+                    />
+                  </Grid>
+                  <Grid style={{
+                    marginLeft: 'auto',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '12px 12px 0 12px',
+                  }}
+                    item={true} xs={12}>
+                    <div>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Author')}
+                      </Typography>
+                      <div className="clearfix" />
+                      <div style={{ display: 'flex' }}>
+                        <Badge
+                          overlap="circular"
+                          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                          badgeContent={
+                            <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
+                          }
+                        >
+                          <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                        </Badge>
+                        <div style={{ marginLeft: '20px' }}>
+                          <Typography variant="subtitle1">
+                            {t('Lorem Ipsum')}
+                          </Typography>
+                          <Typography color="textSecondary" variant="disabled">
+                            {t('Lorem Ipsum Dolor Ist')}
+                          </Typography>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={classes.buttons}>
+                      <Button
+                        variant="outlined"
+                        onClick={handleReset}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </div>
+                  </Grid>
+                </Grid>
               </Form>
             )}
           </Formik>
