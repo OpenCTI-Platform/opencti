@@ -6,6 +6,7 @@ export const cyioLabelsQuery = graphql`
     cyioLabels(search: $search) {
       edges {
         node {
+          __typename
           id
           created
           modified

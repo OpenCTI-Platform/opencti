@@ -146,7 +146,8 @@ const CyioCoreObjectLabelsView = (props) => {
           fromId: id,
           fieldName: 'labels',
           from_type: typename,
-          to_type: labelsData[i].typename,
+          to_type: 'CyioLabel',
+          // to_type: labelsData[i].typename,
         },
         setSubmitting,
         onCompleted: (response) => {
