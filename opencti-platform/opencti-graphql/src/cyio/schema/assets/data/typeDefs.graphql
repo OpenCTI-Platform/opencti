@@ -64,7 +64,7 @@
   enum DatumFilter {
     created
     modified
-    labels
+    label_name
     asset_id
   }
 

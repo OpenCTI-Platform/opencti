@@ -17,18 +17,14 @@ import {
 const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, {dbName, dataSources, selectMap})  => {
-      const { filter} = args;
       const selectionList = selectMap.getNode("node");
-      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList);
+      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, undefined, args.filters);
       const reducer = getReducer('SOFTWARE');
       const response = await dataSources.Stardog.queryAll({
               dbName,
               sparqlQuery,
               queryId: "Select Software Assets",
               singularizeSchema
-              // args.first,       // limit
-              // args.offset,      // offset
-              // filter,      // filter
             }
         );
 
@@ -74,7 +70,7 @@ const softwareResolvers = {
             limit-- ;
           }
         }
-        if (edges.length == 0) return []
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,

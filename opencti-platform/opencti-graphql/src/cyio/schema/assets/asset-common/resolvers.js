@@ -24,7 +24,7 @@ import {
 const assetCommonResolvers = {
   Query: {
     assetList: async ( _, args, { dbName, dataSources, selectMap }) => {
-      var sparqlQuery = getSelectSparqlQuery('ASSET', selectMap.getNode("node") );
+      var sparqlQuery = getSelectSparqlQuery('ASSET', selectMap.getNode("node"), undefined, args.filters );
       var reducer = getReducer('ASSET');
       let response;
       try {
@@ -87,6 +87,7 @@ const assetCommonResolvers = {
             limit-- ;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
@@ -145,7 +146,7 @@ const assetCommonResolvers = {
     },
     itAssetList: async ( _, args, {dbName, dataSources, selectMap} ) => {
       const selectList = selectMap.getNode("node");
-      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', selectList );
+      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', selectList, undefined, args.filters );
       var reducer = getReducer('IT-ASSET');
       let response;
       try {
@@ -208,6 +209,7 @@ const assetCommonResolvers = {
             limit-- ;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
@@ -265,7 +267,7 @@ const assetCommonResolvers = {
       }
     },
     assetLocationList: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllLocations(selectMap.getNode("node"));
+      const sparqlQuery = selectAllLocations(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -325,6 +327,7 @@ const assetCommonResolvers = {
             limit--;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,

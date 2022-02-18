@@ -33,7 +33,7 @@ const computingDeviceResolvers = {
   Query: {
     computingDeviceAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
       const selectList = selectMap.getNode("node")
-      const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', selectList);
+      const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', selectList, undefined, args.filters);
       const reducer = getReducer('COMPUTING-DEVICE');
       let response;
       try {
@@ -43,9 +43,6 @@ const computingDeviceResolvers = {
           queryId: "Select Computing Device Asset List",
           singularizeSchema
         });
-        // args.first,       // limit
-        // args.offset,      // offset
-        //args.filter       // filter
       } catch(e){
         console.log(e)
         throw e
@@ -90,6 +87,9 @@ const computingDeviceResolvers = {
             limit--;
           }
         }
+
+        // check if there is data to be returned
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
