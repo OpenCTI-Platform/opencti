@@ -137,9 +137,11 @@ class CyioAddExternalReferences extends Component {
       commitMutation({
         mutation: cyioExternalReferenceMutationRelationDelete,
         variables: {
-          toId: externalReferenceEdge.node.id,
+          toId: externalReference.id,
           fromId: this.props.cyioCoreObjectId,
           fieldName: 'external_references',
+          from_type: externalReference.entity_type,
+          to_type: externalReference.__typename,
         },
         updater: (store) => {
           const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
@@ -157,6 +159,8 @@ class CyioAddExternalReferences extends Component {
           toId: externalReference.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
           fieldName: 'external_references',
+          from_type: externalReference.entity_type,
+          to_type: externalReference.__typename,
         },
         updater: (store) => {
           const payload = store

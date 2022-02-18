@@ -430,15 +430,19 @@ const NetworkEditionFragment = createFragmentContainer(
         }
         version
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
         external_references {
+          __typename
           id
           source_name
           description
+          entity_type
           url
           hashes {
             value
@@ -446,6 +450,7 @@ const NetworkEditionFragment = createFragmentContainer(
           external_id
         }
         notes {
+          __typename
           id
           # created
           # modified

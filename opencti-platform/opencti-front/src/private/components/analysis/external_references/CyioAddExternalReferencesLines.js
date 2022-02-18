@@ -37,8 +37,10 @@ export const cyioExternalReferenceLinesMutationRelationAdd = graphql`
     $fieldName: String!
     $fromId: ID!
     $toId: ID!
+    $from_type: String
+    $to_type: String!
   ) {
-    addReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
+    addReference(input:  {field_name: $fieldName, from_id: $fromId, to_id: $toId, from_type: $from_type, to_type: $to_type})
   }
 `;
 
@@ -47,8 +49,10 @@ export const cyioExternalReferenceMutationRelationDelete = graphql`
     $fieldName: String!
     $fromId: ID!
     $toId: ID!
+    $from_type: String
+    $to_type: String!
   ) {
-    removeReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
+    removeReference(input:  {field_name: $fieldName, from_id: $fromId, to_id: $toId, from_type: $from_type, to_type: $to_type})
     # # externalReferenceEdit(id: $id) {
     #   relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
     #     id
@@ -92,6 +96,8 @@ class CyioAddExternalReferencesLinesContainer extends Component {
           toId: existingExternalReference.node.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
           fieldName: 'external_references',
+          from_type: existingExternalReference.node.entity_type,
+          to_type: existingExternalReference.node.__typename,
         },
         updater: (store) => {
           const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
@@ -109,6 +115,8 @@ class CyioAddExternalReferencesLinesContainer extends Component {
           toId: externalReference.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
           fieldName: 'external_references',
+          from_type: externalReference.entity_type,
+          to_type: externalReference.__typename,
         },
         updater: (store) => {
           const payload = store;
@@ -217,10 +225,12 @@ const CyioAddExternalReferencesLines = createFragmentContainer(
           edges {
             cursor
             node {
+              __typename
               id
               created
               modified
               source_name
+              entity_type
               description
               url
               hashes {
