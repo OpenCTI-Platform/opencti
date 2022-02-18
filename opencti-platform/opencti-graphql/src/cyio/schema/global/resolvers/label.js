@@ -73,6 +73,7 @@ const cyioLabelResolvers = {
             limit--;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,

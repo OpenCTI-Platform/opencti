@@ -1,6 +1,6 @@
 import {buildSelectVariables, optionalizePredicate, parameterizePredicate, generateId, OASIS_SCO_NS} from "../../utils.js";
 
-export function getSelectSparqlQuery( type, select, id, filter, ) {
+export function getSelectSparqlQuery( type, select, id, filters, ) {
   // TODO: [DL] Need to convert this to the utils.buildSelectVariables() method. No more string replacement strategy
   var sparqlQuery;
   
@@ -9,6 +9,12 @@ export function getSelectSparqlQuery( type, select, id, filter, ) {
     select = select.filter(i => i !== 'ipv4_address')
     select = select.filter(i => i !== 'ipv6_address')
     select.push('ip_address')
+
+    if ( filters !== undefined && id === undefined ) {
+      for( const filter of filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
   }
 
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
@@ -107,6 +113,11 @@ export const predicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  label_name: {
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   asset_id: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
     binding: function (iri, value) { return  parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_id");},
@@ -125,6 +136,11 @@ export const predicateMap = {
   locations: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#locations>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "locations");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  location_name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#locations>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "location_name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   asset_type: {

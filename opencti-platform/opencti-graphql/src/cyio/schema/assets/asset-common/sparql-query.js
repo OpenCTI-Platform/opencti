@@ -22,6 +22,11 @@ export const predicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  label_name: {
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   asset_id: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
     binding: function (iri, value) { return  parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_id");},
@@ -40,6 +45,11 @@ export const predicateMap = {
   locations: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#locations>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "locations");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  location_name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#locations>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "location_name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   external_references: {
@@ -141,10 +151,16 @@ const inventoryConstraint = `
 ` ;
 
 
-export function getSelectSparqlQuery( type, select, id, filter, ) {
-  var filterStr = ''
+export function getSelectSparqlQuery( type, select, id, filters, ) {
   var byId = '';
   var sparqlQuery;
+
+  if ( filters !== undefined && id === undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+    }
+  }
+
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ?object_type ${selectionClause}`;
   const selectPortion = `
@@ -163,8 +179,7 @@ WHERE {
           typeConstraint.replace('{assetType}', 'Asset') + 
           byId + 
           predicateBody + 
-          inventoryConstraint + 
-          filterStr + '}';
+          inventoryConstraint + '}';
       break;
     case 'IT-ASSET':
       if (id !== undefined) {
@@ -353,6 +368,16 @@ export const locationPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  labels: {
+    predicate: "<http://darklight.ai/ns/common#labels>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  label_name: {
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   administrative_area: {
     predicate: "<http://darklight.ai/ns/common#administrative_area>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "administrative_area");},
@@ -483,8 +508,14 @@ export const selectLocationByIriQuery = (iri, select) => {
 //   `
 }
 
-export const selectAllLocations = (select) => {
+export const selectAllLocations = (select, filters) => {
   if(select === null) select =Object.keys(locationPredicateMap);
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+    }
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
   return `
   SELECT ${selectionClause} 

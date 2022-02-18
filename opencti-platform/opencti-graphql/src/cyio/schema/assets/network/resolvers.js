@@ -27,7 +27,7 @@ import {
 const networkResolvers = {
   Query: {
     networkAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'));
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args.filters);
       var reducer = getReducer('NETWORK')
       const response = await dataSources.Stardog.queryAll({
           dbName,
@@ -75,6 +75,7 @@ const networkResolvers = {
             limit--;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
