@@ -150,6 +150,7 @@ const CyioCoreObjectLabelsView = (props) => {
           fieldName: 'labels',
           from_type: typename,
           to_type: label.typename,
+          // to_type: labelsData[i].typename,
         },
         setSubmitting,
         onCompleted: (response) => {
