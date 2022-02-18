@@ -18,6 +18,7 @@ import Divider from '@material-ui/core/Divider';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { ConnectionHandler } from 'relay-runtime';
 import ListItem from '@material-ui/core/ListItem';
+import KeyboardArrowDownOutlinedIcon from '@material-ui/icons/KeyboardArrowDownOutlined';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { Add } from '@material-ui/icons';
@@ -140,7 +141,7 @@ class CyioAddExternalReferences extends Component {
           toId: externalReference.id,
           fromId: this.props.cyioCoreObjectId,
           fieldName: 'external_references',
-          from_type: externalReference.entity_type,
+          from_type: this.props.typename,
           to_type: externalReference.__typename,
         },
         updater: (store) => {
@@ -159,7 +160,7 @@ class CyioAddExternalReferences extends Component {
           toId: externalReference.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
           fieldName: 'external_references',
-          from_type: externalReference.entity_type,
+          from_type: this.props.typename,
           to_type: externalReference.__typename,
         },
         updater: (store) => {
@@ -185,6 +186,14 @@ class CyioAddExternalReferences extends Component {
     this.setState({ open: false, search: '' });
   }
 
+  handleOpenSearch() {
+    this.setState({ expanded: true });
+  }
+
+  handleCloseSearch() {
+    this.setState({ expanded: false });
+  }
+
   handleSearch(event) {
     const keyword = event.target.value;
     this.setState({ search: keyword, expanded: keyword ? true : false });
@@ -196,6 +205,7 @@ class CyioAddExternalReferences extends Component {
       classes,
       cyioCoreObjectOrCyioCoreRelationshipId,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
+      typename
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -243,6 +253,13 @@ class CyioAddExternalReferences extends Component {
                         paginationOptions={paginationOptions}
                         onCreate={this.toggleExternalReference.bind(this)}
                       />
+                      <div style={{ marginLeft: '10px' }}>
+                      {
+                        this.state.expanded
+                        ? <KeyboardArrowDownOutlinedIcon onClick={this.handleCloseSearch.bind(this)}  style={{ transform: 'rotate(180deg)', cursor: 'pointer' }} />
+                        : <KeyboardArrowDownOutlinedIcon onClick={this.handleOpenSearch.bind(this)} style={{ cursor: 'pointer' }} />
+                      }
+                      </div>
                     </InputAdornment>
                   ),
                 }} />
@@ -266,6 +283,7 @@ class CyioAddExternalReferences extends Component {
                     if (props) {
                       return (
                         <CyioAddExternalReferencesLines
+                          typename={typename}
                           cyioCoreObjectOrCyioCoreRelationshipId={
                             cyioCoreObjectOrCyioCoreRelationshipId
                           }
@@ -328,6 +346,7 @@ class CyioAddExternalReferences extends Component {
 CyioAddExternalReferences.propTypes = {
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
+  typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

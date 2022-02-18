@@ -349,6 +349,7 @@ class SoftwareEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={software.external_references}
                     cyioCoreObjectId={software.id}
+                    typename={software.__typename}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -417,6 +418,7 @@ const SoftwareEditionFragment = createFragmentContainer(
   {
     software: graphql`
       fragment SoftwareEditionContainer_software on SoftwareAsset {
+        __typename
         id
         name
         asset_id

@@ -96,7 +96,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
           toId: existingExternalReference.node.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
           fieldName: 'external_references',
-          from_type: existingExternalReference.node.entity_type,
+          from_type: this.props.typename,
           to_type: existingExternalReference.node.__typename,
         },
         updater: (store) => {
@@ -115,7 +115,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
           toId: externalReference.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
           fieldName: 'external_references',
-          from_type: externalReference.entity_type,
+          from_type: this.props.typename,
           to_type: externalReference.__typename,
         },
         updater: (store) => {
@@ -195,6 +195,7 @@ CyioAddExternalReferencesLinesContainer.propTypes = {
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
   data: PropTypes.object,
+  typename: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -90,6 +90,7 @@ class SoftwareComponent extends Component {
                 <CyioCoreObjectExternalReferences
                   externalReferences={software.external_references}
                   cyioCoreObjectId={software.id}
+                  typename={software.__typename}
                 />
               </Grid>
               <Grid item={true} xs={6}>
@@ -127,6 +128,7 @@ SoftwareComponent.propTypes = {
 const Software = createFragmentContainer(SoftwareComponent, {
   software: graphql`
     fragment Software_software on SoftwareAsset {
+      __typename
       id
       name
       asset_id

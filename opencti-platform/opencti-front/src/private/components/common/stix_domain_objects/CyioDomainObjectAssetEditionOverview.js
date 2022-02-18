@@ -347,6 +347,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
                 labels={cyioDomainObject.labels}
                 marginTop={20}
                 id={cyioDomainObject?.id}
+                typename={cyioDomainObject.__typename}
               />
             </Grid>
             <Grid item={true} xs={6}>

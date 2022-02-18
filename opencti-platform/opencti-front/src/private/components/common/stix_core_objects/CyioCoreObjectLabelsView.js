@@ -96,7 +96,7 @@ const cyioCoreObjectMutationRelationDelete = graphql`
 
 const CyioCoreObjectLabelsView = (props) => {
   const {
-    classes, labels, t, marginTop, id,
+    classes, labels, t, marginTop, id, typename,
   } = props;
   const { me } = useContext(UserContext);
   const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
@@ -145,7 +145,7 @@ const CyioCoreObjectLabelsView = (props) => {
           toId: label.id,
           fromId: id,
           fieldName: 'labels',
-          from_type: labelsData[i].entityType,
+          from_type: typename,
           to_type: labelsData[i].typename,
         },
         setSubmitting,
@@ -176,14 +176,14 @@ const CyioCoreObjectLabelsView = (props) => {
     // });
   };
 
-  const handleRemoveLabel = (labelId, fromType, toType) => {
+  const handleRemoveLabel = (labelId, fromType) => {
     CM(environmentDarkLight, {
       mutation: cyioCoreObjectMutationRelationDelete,
       variables: {
         toId: labelId,
         fromId: id,
         fieldName: 'labels',
-        from_type: toType,
+        from_type: typename,
         to_type: fromType,
       },
     });
@@ -244,7 +244,7 @@ const CyioCoreObjectLabelsView = (props) => {
                   borderColor: label.color,
                   backgroundColor: hexToRGB(label.color),
                 }}
-                onDelete={() => handleRemoveLabel(label.id, label.__typename, label.entity_type)}
+                onDelete={() => handleRemoveLabel(label.id, label.__typename)}
                 deleteIcon={
                   <CancelOutlined
                     className={classes.deleteIcon}
@@ -366,6 +366,7 @@ const CyioCoreObjectLabelsView = (props) => {
 
 CyioCoreObjectLabelsView.propTypes = {
   classes: PropTypes.object.isRequired,
+  typename: PropTypes.string,
   t: PropTypes.func,
   id: PropTypes.string,
   labels: PropTypes.object,
