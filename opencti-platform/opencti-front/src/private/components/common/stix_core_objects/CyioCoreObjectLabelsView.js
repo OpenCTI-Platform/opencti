@@ -115,6 +115,8 @@ const CyioCoreObjectLabelsView = (props) => {
         const transformLabels = pipe(
           pathOr([], ['cyioLabels', 'edges']),
           map((n) => ({
+            typename: n.node.__typename,
+            entityType: n.node.entity_type,
             label: n.node.name,
             value: n.node.id,
             color: n.node.color,
@@ -126,16 +128,17 @@ const CyioCoreObjectLabelsView = (props) => {
 
   const handleCloseAdd = () => setOpenAdd(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const labelsData = pipe(
-      map((n) => ({
-        typename: n.__typename,
-        entityType: n.entity_type,
-      })),
-    )(labels);
+    // const labelsData = pipe(
+    //   map((n) => ({
+    //     typename: n.__typename,
+    //     entityType: n.entity_type,
+    //   })),
+    // )(labels);
     const labelsValues = pipe(
       pathOr([], ['new_labels']),
       map((n) => ({
         id: n.value,
+        typename: n.typename,
       })),
     )(values);
     labelsValues.map((label, i) => (
@@ -146,7 +149,7 @@ const CyioCoreObjectLabelsView = (props) => {
           fromId: id,
           fieldName: 'labels',
           from_type: typename,
-          to_type: labelsData[i].typename,
+          to_type: label.typename,
         },
         setSubmitting,
         onCompleted: (response) => {
@@ -176,7 +179,7 @@ const CyioCoreObjectLabelsView = (props) => {
     // });
   };
 
-  const handleRemoveLabel = (labelId, fromType) => {
+  const handleRemoveLabel = (labelId, toType) => {
     CM(environmentDarkLight, {
       mutation: cyioCoreObjectMutationRelationDelete,
       variables: {
@@ -184,7 +187,7 @@ const CyioCoreObjectLabelsView = (props) => {
         fromId: id,
         fieldName: 'labels',
         from_type: typename,
-        to_type: fromType,
+        to_type: toType,
       },
     });
   };
