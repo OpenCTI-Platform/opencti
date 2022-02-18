@@ -82,10 +82,12 @@ const cyioExternalReferenceCreationMutation = graphql`
     $input: CyioExternalReferenceAddInput!
   ) {
     createCyioExternalReference(input: $input) {
+      __typename
       id
       source_name
       description
       url
+      entity_type
       external_id
       created
     }

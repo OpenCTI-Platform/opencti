@@ -91,6 +91,7 @@ class DeviceComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
+                  typename={device.__typename}
                   externalReferences={device.external_references}
                   cyioCoreObjectId={device?.id}
                 />
@@ -132,6 +133,7 @@ DeviceComponent.propTypes = {
 const Device = createFragmentContainer(DeviceComponent, {
   device: graphql`
     fragment Device_device on ComputingDeviceAsset {
+      __typename
       id
       name
       asset_id
@@ -143,15 +145,19 @@ const Device = createFragmentContainer(DeviceComponent, {
       serial_number
       release_date
       labels {
+        __typename
         id
         name
         color
+        entity_type
         description
       }
       external_references {
+        __typename
         id
         source_name
         description
+        entity_type
         url
         hashes {
           value
