@@ -22,7 +22,7 @@ export const up = async (next) => {
   logApp.info(`[MIGRATION] Rewriting IDs and types done in ${new Date() - start} ms`);
   const source = `if (ctx._source.entity_type == params.type) {
       ctx._source.entity_type = params.targetType;
-    } 
+    }
     if (ctx._source.relationship_type == params.type) {
       ctx._source.relationship_type = params.targetType;
     }

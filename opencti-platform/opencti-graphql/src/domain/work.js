@@ -231,7 +231,7 @@ export const reportActionImport = async (user, workId, errorData) => {
     let sourceScript = '';
     if (isComplete) {
       params.completed_number = total;
-      sourceScript += `ctx._source['status'] = "complete"; 
+      sourceScript += `ctx._source['status'] = "complete";
       ctx._source['completed_number'] = params.completed_number;
       ctx._source['completed_time'] = params.now;`;
     }
@@ -267,7 +267,7 @@ export const updateProcessedTime = async (user, workId, message, inError = false
   const { isComplete, total } = await isWorkCompleted(workId);
   if (isComplete) {
     params.completed_number = total;
-    source += `ctx._source['status'] = "complete"; 
+    source += `ctx._source['status'] = "complete";
                ctx._source['completed_number'] = params.completed_number;
                ctx._source['completed_time'] = params.processed_time;`;
   }

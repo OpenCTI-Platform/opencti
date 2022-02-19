@@ -104,8 +104,8 @@ export const observableValue = (stixCyberObservable) => {
 // Be careful to align this script with the previous function
 export const runtimeFieldObservableValueScript = () => {
   return `
-    boolean have(def doc, def key) { 
-      doc.containsKey(key) && doc[key + '.keyword'].size()!=0 
+    boolean have(def doc, def key) {
+      doc.containsKey(key) && doc[key + '.keyword'].size()!=0
     }
     def type = doc['entity_type.keyword'].value;
     if (type == 'autonomous-system') {

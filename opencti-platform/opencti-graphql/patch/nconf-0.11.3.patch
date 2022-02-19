@@ -23,14 +23,14 @@ index 195d9a1cbd7561e6394e890056d3a1b7eedddccb..639dcf048266b4cb59c5496d295a23d9
 +nconf.__defineGetter__('Literal', function () {
 +    return require('./nconf/stores/literal').Literal;
 +});
- 
+
 -    nconf.__defineGetter__(name, function () {
 -        return require('./nconf/stores/' + store)[name];
 -    });
 +nconf.__defineGetter__('Memory', function () {
 +    return require('./nconf/stores/memory').Memory;
  });
- 
+
  //
 @@ -36,5 +48,4 @@
  nconf.path          = common.path;

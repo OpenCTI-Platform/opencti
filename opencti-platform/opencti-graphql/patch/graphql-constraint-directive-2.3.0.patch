@@ -22,7 +22,7 @@ index 195d9a1cbd7561e6394e890056d3a1b7eedddcca..639dcf048266b4cb59c5496d295a23d9
 +const ipv6 = require('./ipv6');
 +const uri = require('./uri');
 +const uuid = require('./uuid');
- 
+
 -formats.forEach(function (format) {
 -  fns[format] = require('./' + format)
 -})
@@ -36,5 +36,5 @@ index 195d9a1cbd7561e6394e890056d3a1b7eedddcca..639dcf048266b4cb59c5496d295a23d9
 +  uri,
 +  uuid
 +}
- 
+
  module.exports = fns
