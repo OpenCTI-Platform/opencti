@@ -1,4 +1,3 @@
-import json
 import sys
 
 import plyara
@@ -6,13 +5,8 @@ from parsuricata import parse_rules
 from sigma.parser.collection import SigmaCollectionParser
 from stix2patterns.validator import run_validator
 
-from .lib.snortparser import Parser
-
-
-def return_data(data):
-    print(json.dumps(data))
-    sys.stdout.flush()
-    sys.exit(0)
+from lib.snortparser import Parser
+from lib.utils import return_data
 
 
 def main():  # pylint: disable=too-many-branches
