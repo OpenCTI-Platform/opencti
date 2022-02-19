@@ -6,6 +6,15 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import ErrorNotFound from '../../components/ErrorNotFound';
 
+// Really simple error display
+export const SimpleError = () => (
+    <Alert severity="error">
+      <AlertTitle>Error</AlertTitle>
+      An unknown error occurred. Please contact your administrator or the OpenCTI
+      maintainers.
+    </Alert>
+);
+
 class ErrorBoundaryComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -23,6 +32,7 @@ class ErrorBoundaryComponent extends React.Component {
       const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
       // Access error must be forwarded
       if (includes('ForbiddenAccess', types) || includes('AuthRequired', types)) {
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw this.state.error;
       }
       return this.props.display;
@@ -78,12 +88,3 @@ BoundaryRoute.propTypes = {
 
 // 404
 export const NoMatch = () => <ErrorNotFound />;
-
-// Really simple error display
-export const SimpleError = () => (
-  <Alert severity="error">
-    <AlertTitle>Error</AlertTitle>
-    An unknown error occurred. Please contact your administrator or the OpenCTI
-    maintainers.
-  </Alert>
-);

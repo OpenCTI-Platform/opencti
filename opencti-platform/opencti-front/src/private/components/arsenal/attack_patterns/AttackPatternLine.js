@@ -100,6 +100,7 @@ class AttackPatternLineComponent extends Component {
           <List disablePadding={true}>
             {map(
               (subAttackPattern) => (
+                // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 <AttackPatternLine
                   key={subAttackPattern.id}
                   node={subAttackPattern}

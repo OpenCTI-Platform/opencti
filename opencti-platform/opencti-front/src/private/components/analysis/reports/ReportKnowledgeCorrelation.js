@@ -322,6 +322,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
         if (this.zoom && this.zoom.k && !this.state.mode3D) {
           this.graph.current.zoom(this.zoom.k, 400);
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           const currentContext = this;
           setTimeout(
             () => currentContext.graph
@@ -868,9 +869,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 [...this.selectedNodes]
                   .filter((selNode) => selNode !== node)
                   // eslint-disable-next-line no-shadow
-                  .forEach((node) => ['x', 'y', 'z'].forEach(
+                  .forEach((selNode) => ['x', 'y', 'z'].forEach(
                     // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (node[`f${coord}`] = node[coord] + translate[coord]),
+                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
                   ));
               }
             }}
@@ -880,17 +881,17 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 [...this.selectedNodes]
                   .filter((selNode) => selNode !== node) // don't touch node being dragged
                   // eslint-disable-next-line no-shadow
-                  .forEach((node) => {
+                  .forEach((selNode) => {
                     ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (node[`f${coord}`] = undefined),
+                      (coord) => (selNode[`f${coord}`] = undefined),
                     );
                     // eslint-disable-next-line no-param-reassign
-                    node.fx = node.x;
+                    selNode.fx = selNode.x;
                     // eslint-disable-next-line no-param-reassign
-                    node.fy = node.y;
+                    selNode.fy = selNode.y;
                     // eslint-disable-next-line no-param-reassign
-                    node.fz = node.z;
+                    selNode.fz = selNode.z;
                   });
               }
               // eslint-disable-next-line no-param-reassign
@@ -951,9 +952,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 [...this.selectedNodes]
                   .filter((selNode) => selNode !== node)
                   // eslint-disable-next-line no-shadow
-                  .forEach((node) => ['x', 'y'].forEach(
+                  .forEach((selNode) => ['x', 'y'].forEach(
                     // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (node[`f${coord}`] = node[coord] + translate[coord]),
+                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
                   ));
               }
             }}
@@ -963,15 +964,15 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 [...this.selectedNodes]
                   .filter((selNode) => selNode !== node) // don't touch node being dragged
                   // eslint-disable-next-line no-shadow
-                  .forEach((node) => {
+                  .forEach((selNode) => {
                     ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (node[`f${coord}`] = undefined),
+                      (coord) => (selNode[`f${coord}`] = undefined),
                     );
                     // eslint-disable-next-line no-param-reassign
-                    node.fx = node.x;
+                    selNode.fx = selNode.x;
                     // eslint-disable-next-line no-param-reassign
-                    node.fy = node.y;
+                    selNode.fy = selNode.y;
                   });
               }
               // eslint-disable-next-line no-param-reassign

@@ -183,7 +183,7 @@ export const buildViewParamsFromUrlAndStorage = (
   return finalParams;
 };
 
-export const useViewStorage = ({ storageKey }) => {
+export const useViewStorage = (storageKey) => {
   const history = useHistory();
   const location = useLocation();
   const view = buildViewParamsFromUrlAndStorage(history, location, storageKey);

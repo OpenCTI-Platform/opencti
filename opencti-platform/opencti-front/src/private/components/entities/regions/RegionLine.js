@@ -102,6 +102,7 @@ class RegionLineComponent extends Component {
                 sortByNameCaseInsensitive,
               )(subRegion);
               return (
+              // eslint-disable-next-line @typescript-eslint/no-use-before-define
                 <RegionLine
                   key={subRegion.id}
                   node={subRegion}

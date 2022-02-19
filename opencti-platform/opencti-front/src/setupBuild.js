@@ -1,5 +1,6 @@
 // eslint-disable-next-line
 const fs = require("fs-extra");
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require('path');
 
 // Move build directory to api public directory

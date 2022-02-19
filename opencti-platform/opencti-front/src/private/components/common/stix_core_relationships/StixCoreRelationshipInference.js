@@ -46,6 +46,7 @@ class StixCoreRelationshipInference extends Component {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
       this.graph.current.d3Force('link').distance(80);
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const currentContext = this;
       setTimeout(
         () => currentContext.graph

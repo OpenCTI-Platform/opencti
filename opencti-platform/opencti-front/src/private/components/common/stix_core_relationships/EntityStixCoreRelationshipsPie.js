@@ -90,7 +90,7 @@ class EntityStixCoreRelationshipsPie extends Component {
       t,
       entityId,
       entityType,
-      // eslint-disable-next-line camelcase
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       relationship_type,
       field,
       variant,

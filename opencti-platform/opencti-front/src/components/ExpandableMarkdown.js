@@ -10,7 +10,6 @@ import withTheme from '@mui/styles/withTheme';
 import { truncate } from '../utils/String';
 
 export const MarkDownComponents = (theme) => ({
-  // eslint-disable-next-line react/display-name
   table: ({ node, ...tableProps }) => (
     <table
       style={{
@@ -20,11 +19,9 @@ export const MarkDownComponents = (theme) => ({
       {...tableProps}
     />
   ),
-  // eslint-disable-next-line react/display-name
   tr: ({ node, ...trProps }) => (
     <tr style={{ border: `1px solid ${theme.palette.divider}` }} {...trProps} />
   ),
-  // eslint-disable-next-line react/display-name
   td: ({ node, ...tdProps }) => (
     <td
       style={{
@@ -34,7 +31,6 @@ export const MarkDownComponents = (theme) => ({
       {...tdProps}
     />
   ),
-  // eslint-disable-next-line react/display-name
   th: ({ node, ...tdProps }) => (
     <th
       style={{
