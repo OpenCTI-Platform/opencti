@@ -113,16 +113,18 @@ export const CAPABILITIES = [
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
+  // Check if stardog is alive
   if (await stardogAlive()) {
     logApp.info('[Check] Stardog service is alive');
   } else {
     logApp.info('[Check] Stardog service is not available.');
   }
-  if (await keycloakAlive()) {
-    logApp.info('[Check] Keycloak service is alive');
-  } else {
-    logApp.info('[Check] Keycloak service did not load.');
-  }
+  // Check if keycloak is alive
+  // if (await keycloakAlive()) {
+  //   logApp.info('[Check] Keycloak service is alive');
+  // } else {
+  //   logApp.info('[Check] Keycloak service did not load.');
+  // }
   // Check if elasticsearch is available
   await elIsAlive();
   logApp.info(`[CHECK] ElasticSearch is alive`);

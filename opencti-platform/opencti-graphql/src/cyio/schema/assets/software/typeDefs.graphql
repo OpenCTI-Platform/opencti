@@ -274,7 +274,7 @@
     asset_type
     "Asset ID"
     asset_id
-    "Labels"
+    "Label"
     labels
     "Vendor Name"
     vendor_name
@@ -298,8 +298,10 @@
     name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
     "Asset Type"
     asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
-    "Labels"
-    labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "Label"
+    label_name        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "Location"
+    location_name
     "Vendor Name"
     vendor_name   # Vendor (key:vendor_name, values:["vendor1","vendor2"], operator: "matches", filterMode: "or")
   }

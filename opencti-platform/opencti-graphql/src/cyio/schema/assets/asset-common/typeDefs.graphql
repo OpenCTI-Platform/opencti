@@ -234,21 +234,35 @@
     filterMode: FilterMode
   }
   enum AssetLocationsOrdering {
+    "Creted"
     created
+    "Modified"
     modified
+    "Label"
     labels
+    "City"
     city
+    "Adminstrative Area"
     administrative_area
+    "Country"
     country
+    "Postal Code"
     postal_code
   }
   enum AssetLocationsFilter {
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
+    "City"
     city
+    "Administrative Area"
     administrative_area
+    "County"
     country
+    "Postal Code"
     postal_code
   }
 
@@ -295,16 +309,29 @@
     filterMode: FilterMode
   }
   enum AssetsOrdering {
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
+    "Location"
+    locations
+    "Asset ID"
     asset_id
+    "Name"
     name
   }
   enum AssetsFilter {
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
+    "Location"
+    location_name
+    "Asset ID"
     asset_id
   }
 
@@ -361,32 +388,57 @@
     filterMode: FilterMode
   }
   enum ItAssetsOrdering {
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
+    "Location"
+    locations
+    "Asset ID"
     asset_id
+    "Name"
     name
+    "Asset Tag"
     asset_tag
+    "Asset Type"
     asset_type
-    serial_number
+    "Vendor Name"
     vendor_name
+    "Version"
     version
+    "Release Date"
     release_date
+    "Implementation Point"
     implementation_point
+    "Operational Status"
     operational_status
   }
   enum ItAssetsFilter {
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
+    "Location"
+    location_name
+    "Asset ID"
     asset_id
+    "Asset Tag"
     asset_tag
+    "Asset Type"
     asset_type
-    serial_number
+    "Vendor Name"
     vendor_name
+    "Version"
     version
+    "Release Date"
     release_date
+    "Implementation Point"
     implementation_point
+    "Operational Status"
     operational_status
   }
 
@@ -452,43 +504,75 @@
     filterMode: FilterMode
   }
   enum HardwareAssetsOrdering {
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
+    "Location"
+    locations
+    "Asset ID"
     asset_id
+    "Name"
     name
+    "Asset Tag"
     asset_tag
+    "Asset Type"
     asset_type
-    serial_number
+    "Vendor"
     vendor_name
+    "Version"
     version
+    "Release Date"
     release_date
+    "Implementation Point"
     implementation_point
+    "Operational Status"
     operational_status
+    "CPE Identifier"
     cpe_identifier
+    "Installation ID"
     installation_id
+    "Model"
     model
-    motherboard_id
+    "Baseline Configuration"
     baseline_configuration_name
   }
   enum HardwareAssetsFilter {
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
+    "Location"
+    location_name
+    "Asset ID"
     asset_id
+    "Name"
     name
+    "Asset Tag"
     asset_tag
+    "Asset Type"
     asset_type
-    serial_number
+    "Vendor"
     vendor_name
+    "Version"
     version
+    "Release Date"
     release_date
+    "Implementation Point"
     implementation_point
+    "Operational Status"
     operational_status
+    "CPE Identifier"
     cpe_identifier
+    "Installation ID"
     installation_id
+    "Model"
     model
-    motherboard_id
+    "Baseline Configuration"
     baseline_configuration_name
   }
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import React, { useContext, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -74,8 +75,10 @@ const cyioCoreObjectMutationRelationsAdd = graphql`
     $fieldName: String!
     $fromId: ID!
     $toId: ID!
+    $from_type: String
+    $to_type: String!
   ) {
-    addReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
+    addReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId, from_type: $from_type, to_type: $to_type})
   }
 `;
 
@@ -84,14 +87,16 @@ const cyioCoreObjectMutationRelationDelete = graphql`
     $fieldName: String!
     $fromId: ID!
     $toId: ID!
+    $from_type: String
+    $to_type: String!
   ) {
-    removeReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId})
+    removeReference(input:  {field_name: $fieldName, from_id: $fromId, to_id: $toId, from_type: $from_type, to_type: $to_type})
   }
 `;
 
 const CyioCoreObjectLabelsView = (props) => {
   const {
-    classes, labels, t, marginTop, id,
+    classes, labels, t, marginTop, id, typename,
   } = props;
   const { me } = useContext(UserContext);
   const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
@@ -110,6 +115,8 @@ const CyioCoreObjectLabelsView = (props) => {
         const transformLabels = pipe(
           pathOr([], ['cyioLabels', 'edges']),
           map((n) => ({
+            typename: n.node.__typename,
+            entityType: n.node.entity_type,
             label: n.node.name,
             value: n.node.id,
             color: n.node.color,
@@ -121,19 +128,29 @@ const CyioCoreObjectLabelsView = (props) => {
 
   const handleCloseAdd = () => setOpenAdd(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
+    // const labelsData = pipe(
+    //   map((n) => ({
+    //     typename: n.__typename,
+    //     entityType: n.entity_type,
+    //   })),
+    // )(labels);
     const labelsValues = pipe(
       pathOr([], ['new_labels']),
       map((n) => ({
         id: n.value,
+        typename: n.typename,
       })),
     )(values);
-    map((label) => {
+    labelsValues.map((label, i) => (
       CM(environmentDarkLight, {
         mutation: cyioCoreObjectMutationRelationsAdd,
         variables: {
           toId: label.id,
           fromId: id,
           fieldName: 'labels',
+          from_type: typename,
+          to_type: label.typename,
+          // to_type: labelsData[i].typename,
         },
         setSubmitting,
         onCompleted: (response) => {
@@ -142,8 +159,8 @@ const CyioCoreObjectLabelsView = (props) => {
           handleCloseAdd();
         },
         onError: (err) => console.log('cyioCoreObjectLabelsError', err),
-      });
-    }, labelsValues);
+      })
+    ));
     // commitMutation({
     //   mutation: cyioCoreObjectMutationRelationsAdd,
     //   variables: {
@@ -163,13 +180,15 @@ const CyioCoreObjectLabelsView = (props) => {
     // });
   };
 
-  const handleRemoveLabel = (labelId) => {
+  const handleRemoveLabel = (labelId, toType) => {
     CM(environmentDarkLight, {
       mutation: cyioCoreObjectMutationRelationDelete,
       variables: {
         toId: labelId,
         fromId: id,
         fieldName: 'labels',
+        from_type: typename,
+        to_type: toType,
       },
     });
   };
@@ -182,7 +201,7 @@ const CyioCoreObjectLabelsView = (props) => {
   };
 
   // const labelsNodes = pipe(
-  //   map((n) => n.node),
+  //   labelsValues.((n) => n.node),
   //   sortWith([ascend(prop('value'))]),
   // )(labels.edges);
   const labelsNodes = pipe(
@@ -229,7 +248,7 @@ const CyioCoreObjectLabelsView = (props) => {
                   borderColor: label.color,
                   backgroundColor: hexToRGB(label.color),
                 }}
-                onDelete={() => handleRemoveLabel(label.id)}
+                onDelete={() => handleRemoveLabel(label.id, label.__typename)}
                 deleteIcon={
                   <CancelOutlined
                     className={classes.deleteIcon}
@@ -351,6 +370,7 @@ const CyioCoreObjectLabelsView = (props) => {
 
 CyioCoreObjectLabelsView.propTypes = {
   classes: PropTypes.object.isRequired,
+  typename: PropTypes.string,
   t: PropTypes.func,
   id: PropTypes.string,
   labels: PropTypes.object,

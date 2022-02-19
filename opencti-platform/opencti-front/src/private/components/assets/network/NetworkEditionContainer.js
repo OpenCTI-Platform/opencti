@@ -352,6 +352,7 @@ class NetworkEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={network.external_references}
                     cyioCoreObjectId={network.id}
+                    typename={network.__typename}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -420,6 +421,7 @@ const NetworkEditionFragment = createFragmentContainer(
   {
     network: graphql`
       fragment NetworkEditionContainer_network on NetworkAsset {
+        __typename
         id
         name
         asset_id
@@ -430,15 +432,19 @@ const NetworkEditionFragment = createFragmentContainer(
         }
         version
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
         external_references {
+          __typename
           id
           source_name
           description
+          entity_type
           url
           hashes {
             value
@@ -446,6 +452,7 @@ const NetworkEditionFragment = createFragmentContainer(
           external_id
         }
         notes {
+          __typename
           id
           # created
           # modified
