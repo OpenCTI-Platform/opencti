@@ -9,7 +9,7 @@ except ImportError:
     from dicts import Dicts
 
 
-class Parser(object):
+class Parser:
     """
     this will take an array of lines and parse it and hand
     back a dictionary
@@ -30,7 +30,7 @@ class Parser(object):
         yield self.data
 
     def __getitem__(self, key):
-        if key is "all":
+        if key == "all":
             return self.data
         return self.data[key]
 
@@ -141,10 +141,14 @@ class Parser(object):
             valid = self.__validate_ip(ip)
             if valid:
                 return ip
-            raise ValueError(f"Unvalid ip or variable: {ip}")
+            raise ValueError(f"Invalid IP or variable: {ip}")
+        return None
 
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
     @staticmethod
-    def port(port):  # pylint: disable=too-many-statements
+    def port(port):
         variables = {"any", "$HTTP_PORTS"}
 
         # is the source marked as not
@@ -260,6 +264,8 @@ class Parser(object):
                 if int(port) > 65535 or int(port) < 0:
                     raise ValueError
 
+                return None  # TODO: verify this is intended behavior
+
             except Exception as e:
                 msg = f'Unknown port: "{port}" '
                 raise ValueError(msg) from e
@@ -313,13 +319,18 @@ class Parser(object):
 
         return op_list
 
-    def parse_header(self):
-        """
-        OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', \
-        (True, '$HOME_NET')), ('src_port', (True, 'any')), ('arrow', '->'), \
-        ('destination', (False, '$EXTERNAL_NET')), ('dst_port', (True, 'any'))])
-
-            """
+    def parse_header(self):  # pylint: disable=too-many-statements
+        # OrderedDict(
+        #     [
+        #         ("action", "alert"),
+        #         ("proto", "tcp"),
+        #         ("source", (True, "$HOME_NET")),
+        #         ("src_port", (True, "any")),
+        #         ("arrow", "->"),
+        #         ("destination", (False, "$EXTERNAL_NET")),
+        #         ("dst_port", (True, "any")),
+        #     ]
+        # )
 
         if self.get_header():
             header = self.get_header()
@@ -465,7 +476,8 @@ class Sanitizer:
             value = "".join(end)
         return value
 
-    def depth(self, options):
+    @staticmethod
+    def depth(options):
         depth_idx = [idx for idx in options if "depth" in options[idx]][0]
         dsize_idx = [idx for idx in options if "dsize" in options[idx]][0]
         depth = options[depth_idx].get("depth")[0]
