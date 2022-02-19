@@ -1,13 +1,22 @@
 import json
 import logging
-import sys
 import os
+import sys
 
-from pycti import OpenCTIConnectorHelper, OpenCTIApiClient
+from pycti import OpenCTIApiClient, OpenCTIConnectorHelper
 
 
 class TestLocalSynchronizer:
-    def __init__(self, source_url, source_token, target_url, target_token, consuming_count, start_timestamp, live_stream_id=None):
+    def __init__(
+        self,
+        source_url,
+        source_token,
+        target_url,
+        target_token,
+        consuming_count,
+        start_timestamp,
+        live_stream_id=None,
+    ):
         self.source_url = source_url
         self.source_token = source_token
         self.target_url = target_url
@@ -28,16 +37,20 @@ class TestLocalSynchronizer:
             "log_level": "info",
         }
         self.opencti_source_client = OpenCTIApiClient(source_url, source_token)
-        self.opencti_source_helper = OpenCTIConnectorHelper({
-            "opencti": {"url": self.source_url, "token": self.source_token},
-            "connector": config,
-        })
+        self.opencti_source_helper = OpenCTIConnectorHelper(
+            {
+                "opencti": {"url": self.source_url, "token": self.source_token},
+                "connector": config,
+            }
+        )
         # Target
         self.opencti_target_client = OpenCTIApiClient(target_url, target_token)
-        self.opencti_target_helper = OpenCTIConnectorHelper({
-            "opencti": {"url": self.target_url, "token": self.target_token},
-            "connector": config,
-        })
+        self.opencti_target_helper = OpenCTIConnectorHelper(
+            {
+                "opencti": {"url": self.target_url, "token": self.target_token},
+                "connector": config,
+            }
+        )
 
     def _process_message(self, msg):
         if (
@@ -46,7 +59,7 @@ class TestLocalSynchronizer:
             or msg.event == "merge"
             or msg.event == "delete"
         ):
-            logging.info("Processing event " + msg.id)
+            logging.info(f"Processing event {msg.id}")
             self.count_number += 1
             data = json.loads(msg.data)
             if msg.event == "create":
@@ -76,10 +89,16 @@ class TestLocalSynchronizer:
 
     def sync(self):
         # Reset the connector state if exists
-        self.opencti_source_helper.set_state({"connectorLastEventId": self.start_timestamp})
+        self.opencti_source_helper.set_state(
+            {"connectorLastEventId": self.start_timestamp}
+        )
         # Start to listen the stream from start specified parameter
         self.stream = self.opencti_source_helper.listen_stream(
-            self._process_message, self.source_url, self.source_token, False, self.start_timestamp
+            self._process_message,
+            self.source_url,
+            self.source_token,
+            False,
+            self.start_timestamp,
         )
         self.stream.join()
 
@@ -95,7 +114,13 @@ if __name__ == "__main__":
         live_stream_id = sys.argv[7] if len(sys.argv) > 7 else None
 
         testLocalSynchronizer = TestLocalSynchronizer(
-            source_url, source_token, target_url, target_token, consuming_count, start_timestamp, live_stream_id
+            source_url,
+            source_token,
+            target_url,
+            target_token,
+            consuming_count,
+            start_timestamp,
+            live_stream_id,
         )
         testLocalSynchronizer.sync()
         os._exit(0)

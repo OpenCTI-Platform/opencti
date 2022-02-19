@@ -51,7 +51,7 @@ class Parser(object):
         if action in actions:
             return action
         else:
-            msg = "Invalid action specified %s" % action
+            msg = f"Invalid action specified {action}"
             raise ValueError(msg)
 
     @staticmethod
@@ -61,7 +61,7 @@ class Parser(object):
         if proto.lower() in protos:
             return proto
         else:
-            msg = "Unsupported Protocol %s " % proto
+            msg = f"Unsupported Protocol {proto} "
             raise ValueError(msg)
 
     @staticmethod
@@ -150,7 +150,7 @@ class Parser(object):
             if valid:
                 return ip
             else:
-                raise ValueError("Unvalid ip or variable: %s" % ip)
+                raise ValueError(f"Unvalid ip or variable: {ip}")
 
     @staticmethod
     def port(port):
@@ -191,7 +191,7 @@ class Parser(object):
                     items = item.split(":", 1)
                     message = ""
                     for prt in items:
-                        message = "Port range is malformed %s" % item
+                        message = f"Port range is malformed {item}"
                         prt = prt.lstrip("!")
                         if not prt:
                             open_range = True
@@ -230,9 +230,9 @@ class Parser(object):
                     try:
                         prt = int(item)
                         if prt < 0 or prt > 65535:
-                            raise ValueError("Port is out of range {}".format(item))
+                            raise ValueError(f"Port is out of range {item}")
                     except ValueError:
-                        raise ValueError("Unknown port {}".format(item))
+                        raise ValueError(f"Unknown port {item}")
                 ports.append((port_not, item))
 
             return if_not, ports
@@ -247,7 +247,7 @@ class Parser(object):
                 return if_not, port
 
             if re.search(":", port):
-                message = "Port is out of range %s" % port
+                message = f"Port is out of range {port}"
                 ports = port.split(":")
                 for portl in ports:
                     portl.lstrip("!")
@@ -277,10 +277,10 @@ class Parser(object):
                     raise ValueError
 
             except:
-                msg = 'Unknown port: "%s" ' % port
+                msg = f'Unknown port: "{port}" '
                 raise ValueError(msg)
         else:
-            message = 'Unknown port "%s"' % port
+            message = f'Unknown port "{port}"'
             raise ValueError(message)
 
     def destination(self, dst):
@@ -289,7 +289,7 @@ class Parser(object):
         if dst in destinations:
             return dst
         else:
-            msg = "Invalid destination variable %s" % dst
+            msg = f"Invalid destination variable {dst}"
             raise ValueError(msg)
 
     def get_header(self):
@@ -297,10 +297,7 @@ class Parser(object):
             header = self.rule.split("(", 1)
             return header[0]
         else:
-            msg = (
-                "Error in syntax, check if rule"
-                "has been closed properly %s " % self.rule
-            )
+            msg = f"Error in syntax, check if rulehas been closed properly {self.rule} "
             raise SyntaxError(msg)
 
     @staticmethod
@@ -308,7 +305,7 @@ class Parser(object):
         return string.strip()
 
     def get_options(self):
-        options = "{}".format(self.rule.split("(", 1)[-1].lstrip().rstrip())
+        options = f"{self.rule.split('(', 1)[-1].lstrip().rstrip()}"
         if not options.endswith(")"):
             raise ValueError(
                 "Snort rule options is not closed properly, " "you have a syntax error"
@@ -356,7 +353,7 @@ class Parser(object):
         header_dict = collections.OrderedDict()
         size = len(header)
         if not size == 7 and not size == 1:
-            msg = "Snort rule header is malformed %s" % header
+            msg = f"Snort rule header is malformed {header}"
             raise ValueError(msg)
 
         for item in header:
@@ -451,7 +448,7 @@ class Parser(object):
                 opt = True
                 continue
             if not opt:
-                message = "unrecognized option: %s" % key
+                message = f"unrecognized option: {key}"
                 raise ValueError(message)
         return options
 
@@ -521,21 +518,19 @@ class SerializeRule(object):
         serialised = str()
         for _bool, item in items:
             if isinstance(item, list):
-                serialised = "{},{}".format(
-                    serialised, self.__list_serializer(_bool, item)
-                )
+                serialised = f"{serialised},{self.__list_serializer(_bool, item)}"
             else:
                 if _bool:
-                    serialised = "{},{}".format(serialised, item)
+                    serialised = f"{serialised},{item}"
                 if not _bool:
-                    serialised = "{},!{}".format(serialised, item)
+                    serialised = f"{serialised},!{item}"
 
         serialised_list = serialised.lstrip(",")
 
         if list_bool:
-            serialised = "[{}]".format(serialised_list)
+            serialised = f"[{serialised_list}]"
         else:
-            serialised = "![{}]".format(serialised_list)
+            serialised = f"![{serialised_list}]"
 
         return serialised
 
@@ -556,7 +551,7 @@ class SerializeRule(object):
             header = self.rule["header"]
         for key, value in header.items():
             item = self.serialize_header_item(value)
-            serialised = "{} {}".format(serialised, item)
+            serialised = f"{serialised} {item}"
         return serialised
 
     def serialize_options(self, options: Dict = None) -> str:
@@ -566,16 +561,14 @@ class SerializeRule(object):
         for index, option in options.items():
             key, value = option
             if value:
-                option_value = "{}:{}".format(key, ",".join(value))
+                option_value = f"{key}:{','.join(value)}"
             else:
-                option_value = "{}".format(key)
+                option_value = f"{key}"
             options_list.append(option_value)
 
         _options = "; ".join(str(e) for e in options_list)
-        serialized_options = "({})".format(_options)
+        serialized_options = f"({_options})"
         return serialized_options
 
     def serialize_rule(self):
-        return "{} {}".format(
-            self.serialize_header(), self.serialize_options()
-        ).lstrip()
+        return f"{self.serialize_header()} {self.serialize_options()}".lstrip()
