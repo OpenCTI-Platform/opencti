@@ -51,14 +51,13 @@ import ThreatVulnerabilities from './ThreatVulnerabilities';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     margin: '0 -20px 0 -20px',
   },
   bottomNav: {
     zIndex: 1000,
     padding: '7px 0 0 205px',
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 64,
     overflow: 'hidden',

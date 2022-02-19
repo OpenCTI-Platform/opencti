@@ -1,10 +1,9 @@
 import React from 'react';
-import { compose, includes, dissoc } from 'ramda';
+import { compose, includes, dissoc, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
-import { ApplicationError } from '../../relay/environment';
 import ErrorNotFound from '../../components/ErrorNotFound';
 
 class ErrorBoundaryComponent extends React.Component {
@@ -18,16 +17,13 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   render() {
-    if (this.state.stack) {
-      if (this.state.error instanceof ApplicationError) {
-        const types = this.state.error.data.res.errors.map((e) => e.name);
-        // If auth problem propagate the error.
-        if (
-          includes('ForbiddenAccess', types)
-          || includes('AuthRequired', types)
-        ) {
-          throw this.state.error;
-        }
+    if (this.state.error) {
+      const baseErrors = this.state.error?.res?.errors ?? [];
+      const retroErrors = this.state.error?.data?.res?.errors ?? [];
+      const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
+      // Access error must be forwarded
+      if (includes('ForbiddenAccess', types) || includes('AuthRequired', types)) {
+        throw this.state.error;
       }
       return this.props.display;
     }
