@@ -14,5 +14,5 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "error"
-  },
+  }
 }
