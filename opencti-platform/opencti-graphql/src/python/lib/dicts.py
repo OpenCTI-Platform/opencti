@@ -1,8 +1,9 @@
-from typing import Any
+from typing import Any, Union
 
 
 class Dicts:
-    def classtypes(self, cltype):
+    @staticmethod
+    def classtypes(cltype) -> Union[str, bool]:
         classtypes = {
             "attempted-admin": "Attempted Administrator Privilege Gain",
             "attempted-dos": "Attempted Denial of Service",
