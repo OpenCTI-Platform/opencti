@@ -379,6 +379,7 @@ class DeviceEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={device.external_references}
                     cyioCoreObjectId={device?.id}
+                    typename={device.__typename}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -448,18 +449,23 @@ const DeviceEditionFragment = createFragmentContainer(
   {
     device: graphql`
       fragment DeviceEditionContainer_device on ComputingDeviceAsset {
+        __typename
         id
         name
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
         external_references {
+          __typename
           id
           source_name
           description
+          entity_type
           url
           hashes {
             value

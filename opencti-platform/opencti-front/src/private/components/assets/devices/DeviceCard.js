@@ -326,15 +326,19 @@ const DeviceCardFragment = createFragmentContainer(
         asset_type
         fqdn
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
         external_references {
+          __typename
           id
           source_name
           description
+          entity_type
           url
           hashes {
             value
