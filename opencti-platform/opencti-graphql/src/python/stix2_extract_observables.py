@@ -23,7 +23,7 @@ PATTERN_MAPPING = {
 def return_data(data):
     print(json.dumps(data))
     sys.stdout.flush()
-    exit(0)
+    sys.exit(0)
 
 
 def main():

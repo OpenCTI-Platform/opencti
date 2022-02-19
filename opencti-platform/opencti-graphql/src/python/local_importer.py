@@ -30,4 +30,4 @@ if __name__ == "__main__":
         testLocalImporter.inject()
     except Exception as e:
         logging.exception(str(e))
-        exit(1)
+        sys.exit(1)

@@ -49,4 +49,4 @@ if __name__ == "__main__":
         testLocalExporter.upload()
     except Exception as e:
         logging.exception(str(e))
-        exit(1)
+        sys.exit(1)

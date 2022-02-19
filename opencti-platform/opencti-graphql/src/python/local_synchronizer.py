@@ -126,4 +126,4 @@ if __name__ == "__main__":
         os._exit(0)
     except Exception as e:
         logging.exception(str(e))
-        exit(1)
+        sys.exit(1)

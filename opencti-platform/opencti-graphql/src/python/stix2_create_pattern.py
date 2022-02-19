@@ -1,7 +1,12 @@
 import json
 import sys
 
-from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression, OrBooleanExpression
+from stix2 import (
+    EqualityComparisonExpression,
+    ObjectPath,
+    ObservationExpression,
+    OrBooleanExpression,
+)
 
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],
@@ -35,7 +40,7 @@ PATTERN_MAPPING = {
 def return_data(data):
     print(json.dumps(data))
     sys.stdout.flush()
-    exit(0)
+    sys.exit(0)
 
 
 def generate_part(observable_type, observable_value):
@@ -48,6 +53,7 @@ def generate_part(observable_type, observable_value):
         )
         return EqualityComparisonExpression(lhs, observable_value)
     return None
+
 
 def main():
     if len(sys.argv) <= 2:
