@@ -1,6 +1,0 @@
-[MESSAGES CONTROL]
-disable=missing-docstring,
-        missing-function-docstring,
-        missing-module-docstring,
-        no-self-use,
-        invalid-name,
