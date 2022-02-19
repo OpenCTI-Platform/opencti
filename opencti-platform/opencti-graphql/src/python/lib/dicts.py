@@ -46,8 +46,7 @@ class Dicts:
         }
         if cltype in classtypes:
             return classtypes[cltype]
-        else:
-            return False
+        return False
 
     @staticmethod
     def ip_variables(variable):
@@ -64,8 +63,7 @@ class Dicts:
 
         if variable in variables:
             return variables[variable]
-        else:
-            return False
+        return False
 
     @staticmethod
     def general_options(option: str = None) -> Any:
@@ -110,10 +108,8 @@ class Dicts:
         if option:
             if option in general_options:
                 return option
-            else:
-                return False
-        else:
-            return general_options
+            return False
+        return general_options
 
     @staticmethod
     def payload_detection(option: str = None) -> Any:
@@ -446,10 +442,8 @@ class Dicts:
         if option:
             if option in payload_detection:
                 return option
-            else:
-                return False
-        else:
-            return payload_detection
+            return False
+        return payload_detection
 
     @staticmethod
     def non_payload_options(option: str = None) -> Any:
@@ -548,10 +542,8 @@ class Dicts:
         if option:
             if option in non_payload_detect:
                 return option
-            else:
-                return False
-        else:
-            return non_payload_detect
+            return False
+        return non_payload_detect
 
     @staticmethod
     def post_detect_options(option: str = None) -> Any:
@@ -601,10 +593,8 @@ class Dicts:
         if option:
             if option in post_detect:
                 return option
-            else:
-                return False
-        else:
-            return post_detect
+            return False
+        return post_detect
 
     @staticmethod
     def content_modifiers(option: str = None) -> Any:
@@ -659,10 +649,8 @@ class Dicts:
         if option:
             if option in content_modifiers:
                 return option
-            else:
-                return False
-        else:
-            return content_modifiers
+            return False
+        return content_modifiers
 
     @staticmethod
     def rule_thresholds(option):
@@ -671,10 +659,9 @@ class Dicts:
 
         if option in threshold:
             return option
-        else:
-            return False
+        return False
 
-    def options(self, option):
+    def options(self, option):  # pylint: disable=too-many-return-statements
 
         # TODO: maybe add Snort Default Classifications
         general_options = self.general_options()
@@ -700,10 +687,10 @@ class Dicts:
             return "content_modifier", option
         if option in post_detect:
             return "post_detect", option
+        return None
 
     def get_options(self):
-        options = set()
-        return options.union(
+        return set().union(
             self.general_options(),
             self.payload_detection(),
             self.content_modifiers(),

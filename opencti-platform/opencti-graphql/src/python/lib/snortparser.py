@@ -1,7 +1,7 @@
 import collections
 import ipaddress
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from .dicts import Dicts
@@ -32,8 +32,7 @@ class Parser(object):
     def __getitem__(self, key):
         if key is "all":
             return self.data
-        else:
-            return self.data[key]
+        return self.data[key]
 
     @staticmethod
     def actions(action: str) -> str:
@@ -50,9 +49,8 @@ class Parser(object):
 
         if action in actions:
             return action
-        else:
-            msg = f"Invalid action specified {action}"
-            raise ValueError(msg)
+        msg = f"Invalid action specified {action}"
+        raise ValueError(msg)
 
     @staticmethod
     def proto(proto: str) -> str:
@@ -60,24 +58,18 @@ class Parser(object):
 
         if proto.lower() in protos:
             return proto
-        else:
-            msg = f"Unsupported Protocol {proto} "
-            raise ValueError(msg)
+        msg = f"Unsupported Protocol {proto} "
+        raise ValueError(msg)
 
     @staticmethod
-    def __ip_to_tuple(ip: str) -> Tuple:
+    def __ip_to_tuple(ip: str) -> Tuple[bool, str]:
         if ip.startswith("!"):
             ip = ip.lstrip("!")
             return False, ip
-        else:
-            return True, ip
+        return True, ip
 
-    def __form_ip_list(self, ip_list: str) -> List:
-        ip_list = ip_list.split(",")
-        ips = []
-        for ip in ip_list:
-            ips.append(self.__ip_to_tuple(ip))
-        return ips
+    def __form_ip_list(self, ip_list: str) -> List[Tuple[bool, str]]:
+        return [self.__ip_to_tuple(ip) for ip in ip_list.split(",")]
 
     def __flatten_ip(self, ip):
         list_deny = True
@@ -99,14 +91,14 @@ class Parser(object):
                     nested = self.__flatten_ip(item)
                     _return_ips.append(nested)
                     continue
-                else:
-                    _ip_list = self.__form_ip_list(item)
-                    for _ip in _ip_list:
-                        _return_ips.append(_ip)
+                _ip_list = self.__form_ip_list(item)
+                for _ip in _ip_list:
+                    _return_ips.append(_ip)
             return list_deny, _return_ips
         if _not_nest:
             _ip_list = self.__form_ip_list(ip)
             return list_deny, _ip_list
+        return None
 
     def __validate_ip(self, ips):
         variables = {
@@ -149,11 +141,10 @@ class Parser(object):
             valid = self.__validate_ip(ip)
             if valid:
                 return ip
-            else:
-                raise ValueError(f"Unvalid ip or variable: {ip}")
+            raise ValueError(f"Unvalid ip or variable: {ip}")
 
     @staticmethod
-    def port(port):
+    def port(port):  # pylint: disable=too-many-statements
         variables = {"any", "$HTTP_PORTS"}
 
         # is the source marked as not
@@ -164,15 +155,12 @@ class Parser(object):
             if_not = True
         # is it a list ?
         # if it is, then make it a list from the string
-        """
-        Snort allows for ports marked between
-        square brackets and are used to define lists
-        correct:
-        >> [80:443,!90,8080]
-        >> ![80:443]
-        >> [!80:443]
-        """
-
+        # Snort allows for ports marked between
+        # square brackets and are used to define lists
+        # correct:
+        # >> [80:443,!90,8080]
+        # >> ![80:443]
+        # >> [!80:443]
         if port.startswith("["):
             if port.endswith("]"):
                 port = port[1:-1].split(",")
@@ -199,8 +187,8 @@ class Parser(object):
 
                         try:
                             prt = int(prt)
-                        except:
-                            raise ValueError(message)
+                        except Exception as e:
+                            raise ValueError(message) from e
 
                         if prt < 0 or prt > 65535:
                             raise ValueError(message)
@@ -213,8 +201,8 @@ class Parser(object):
                         try:
                             a = int(items[-1])
                             b = int(items[0])
-                        except:
-                            raise ValueError(message)
+                        except Exception as e:
+                            raise ValueError(message) from e
                         if a - b < 0:
                             raise ValueError(message)
                     not_range = False
@@ -231,18 +219,16 @@ class Parser(object):
                         prt = int(item)
                         if prt < 0 or prt > 65535:
                             raise ValueError(f"Port is out of range {item}")
-                    except ValueError:
-                        raise ValueError(f"Unknown port {item}")
+                    except ValueError as e:
+                        raise ValueError(f"Unknown port {item}") from e
                 ports.append((port_not, item))
 
             return if_not, ports
 
         if isinstance(port, str):
-            """
-            Parsing ports like: :8080, 80:, 80:443
-            and passes all variables ex: $HTTP
-            ranges do not accept denial (!)
-            """
+            # Parsing ports like: :8080, 80:, 80:443
+            # and passes all variables ex: $HTTP
+            # ranges do not accept denial (!)
             if port or port.lower() in variables or re.search(r"^\$+", port):
                 return if_not, port
 
@@ -258,47 +244,44 @@ class Parser(object):
                     try:
                         portl = int(portl)
 
-                    except ValueError:
-                        raise ValueError(message)
+                    except ValueError as e:
+                        raise ValueError(message) from e
                     if portl < 0 or portl > 65535:
                         raise ValueError(message)
 
                 return if_not, port
 
-            """
-            Parsing a single port
-            single port accepts denial.
-            """
+            # Parsing a single port
+            # single port accepts denial.
             try:
-                if not int(port) > 65535 or int(port) < 0:
+                if int(port) <= 65535 or int(port) < 0:
                     return if_not, port
 
                 if int(port) > 65535 or int(port) < 0:
                     raise ValueError
 
-            except:
+            except Exception as e:
                 msg = f'Unknown port: "{port}" '
-                raise ValueError(msg)
+                raise ValueError(msg) from e
         else:
             message = f'Unknown port "{port}"'
             raise ValueError(message)
 
-    def destination(self, dst):
+    @staticmethod
+    def destination(dst):
         destinations = {"->": "to_dst", "<>": "bi_direct"}
 
         if dst in destinations:
             return dst
-        else:
-            msg = f"Invalid destination variable {dst}"
-            raise ValueError(msg)
+        msg = f"Invalid destination variable {dst}"
+        raise ValueError(msg)
 
     def get_header(self):
         if re.match(r"(^[a-z|A-Z].+?)?(\(.+;\)|;\s\))", self.rule.lstrip()):
             header = self.rule.split("(", 1)
             return header[0]
-        else:
-            msg = f"Error in syntax, check if rulehas been closed properly {self.rule} "
-            raise SyntaxError(msg)
+        msg = f"Error in syntax, check if rulehas been closed properly {self.rule} "
+        raise SyntaxError(msg)
 
     @staticmethod
     def remove_leading_spaces(string: str) -> str:
@@ -311,7 +294,7 @@ class Parser(object):
                 "Snort rule options is not closed properly, " "you have a syntax error"
             )
 
-        op_list = list()
+        op_list = []
 
         value = ""
         option = ""
@@ -368,7 +351,7 @@ class Parser(object):
                     header_dict["proto"] = proto
                     continue
                 except Exception as perror:
-                    raise ValueError(perror)
+                    raise ValueError(perror) from perror
 
             if "source" not in header_dict:
                 try:
@@ -376,7 +359,7 @@ class Parser(object):
                     header_dict["source"] = src_ip
                     continue
                 except Exception as serror:
-                    raise ValueError(serror)
+                    raise ValueError(serror) from serror
 
             if "src_port" not in header_dict:
                 src_port = self.port(item)
@@ -410,7 +393,7 @@ class Parser(object):
             if ":" in option_string:
                 option = option_string.split(":", 1)
                 key, value = option
-                if key is not "pcre":
+                if key != "pcre":
                     value = value.split(",")
                 options_dict[index] = (key, value)
             else:
@@ -418,14 +401,13 @@ class Parser(object):
         return options_dict
 
     def validate_options(self, options):
-
-        for index, option in options.items():
+        for _index, option in options.items():
             key, value = option
             if len(value) == 1:
                 content_mod = self.dicts.content_modifiers(value[0])
                 opt = False
                 if content_mod:
-                    # An unfinished feature
+                    # TODO: implement this feature
                     continue
             gen_option = self.dicts.options(key)
             if gen_option:
@@ -453,11 +435,10 @@ class Parser(object):
         return options
 
 
-class Sanitizer(object):
+class Sanitizer:
     def __init__(self):
         self.methods = {
             "pcre": self.pcre,
-            # "depth": self.depth
         }
 
     def sanitize(self, parsed):
@@ -474,16 +455,15 @@ class Sanitizer(object):
         value_string = value[0]
         if re.match(r'^"/.*/[ismxAEGRUBPHMCOIDKYS]+"$', value_string):
             return value
-        else:
-            if not str(value).startswith('"/') and value:
-                start = re.split(r'^"', value)
-                start[0] = '"/'
-                value = "".join(start)
-            if not re.search(r'(\/")$', value):
-                end = re.split(r'"$', value)
-                end[-1] = '/"'
-                value = "".join(end)
-            return value
+        if not str(value).startswith('"/') and value:
+            start = re.split(r'^"', value)
+            start[0] = '"/'
+            value = "".join(start)
+        if not re.search(r'(\/")$', value):
+            end = re.split(r'"$', value)
+            end[-1] = '/"'
+            value = "".join(end)
+        return value
 
     def depth(self, options):
         depth_idx = [idx for idx in options if "depth" in options[idx]][0]
@@ -495,11 +475,10 @@ class Sanitizer(object):
         dsize = dsize.strip(operand[0])
         if int(depth) < int(dsize):
             return dsize
-        else:
-            return depth
+        return depth
 
 
-class SerializeRule(object):
+class SerializeRule:
     def __init__(self, rule):
         self.rule = rule
 
@@ -510,6 +489,7 @@ class SerializeRule(object):
             return self.serialize_header()
         if "options" in key:
             return self.serialize_options()
+        return None
 
     def __str__(self):
         return self.serialize_rule()
@@ -534,7 +514,7 @@ class SerializeRule(object):
 
         return serialised
 
-    def serialize_header_item(self, item: Any) -> str:
+    def serialize_header_item(self, item: Any) -> Optional[str]:
         if isinstance(item, str):
             return item
 
@@ -542,14 +522,15 @@ class SerializeRule(object):
             _bool, item = item
             if isinstance(item, list):
                 return self.__list_serializer(_bool, item)
-            else:
-                return item
+            return item
+        return None  # TODO: verify this is intended behavior
 
     def serialize_header(self, header: Dict = None) -> str:
         serialised = str()
         if not header:
             header = self.rule["header"]
-        for key, value in header.items():
+        assert header is not None
+        for _key, value in header.items():
             item = self.serialize_header_item(value)
             serialised = f"{serialised} {item}"
         return serialised
@@ -558,7 +539,8 @@ class SerializeRule(object):
         options_list = []
         if not options:
             options = self.rule["options"]
-        for index, option in options.items():
+        assert options is not None
+        for _index, option in options.items():
             key, value = option
             if value:
                 option_value = f"{key}:{','.join(value)}"
