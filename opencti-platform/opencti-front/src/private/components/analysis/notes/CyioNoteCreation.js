@@ -22,6 +22,7 @@ import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { commitMutation as CM } from 'react-relay';
 import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import environmentDarkLight, { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 // import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -208,7 +209,7 @@ class CyioNoteCreation extends Component {
     // commitMutation({
     //   mutation: cyioNoteCreationMutation,
     //   variables: {
-    //     input: adaptedValues,
+    //     input: finalValues,
     //   },
     //   updater: (store) => {
     //     const payload = store.getRootField('noteAdd');
@@ -389,7 +390,7 @@ class CyioNoteCreation extends Component {
             initialValues={{
               abstract: '',
               content: '',
-              authors: me.name || '',
+              authors: [],
               labels: [],
             }}
             validationSchema={cyioNoteValidation(t)}
@@ -488,11 +489,11 @@ class CyioNoteCreation extends Component {
                   </Grid>
                   <Grid style={{
                     marginLeft: 'auto',
-                    display: 'flex',
-                    justifyContent: 'space-between',
+                    display: 'grid',
+                    gridTemplateColumns: '48.9% 1fr',
                     padding: '12px 12px 0 12px',
                   }}
-                    item={true} xs={12}>
+                    container={true}>
                     <div>
                       <Typography
                         variant="h3"
@@ -503,25 +504,24 @@ class CyioNoteCreation extends Component {
                         {t('Author')}
                       </Typography>
                       <div className="clearfix" />
-                      <div style={{ display: 'flex' }}>
-                        <Badge
-                          overlap="circular"
-                          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                          badgeContent={
-                            <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                          }
-                        >
-                          <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                        </Badge>
-                        <div style={{ marginLeft: '20px' }}>
-                          <Typography variant="subtitle1">
-                            {t('Lorem Ipsum')}
-                          </Typography>
-                          <Typography color="textSecondary" variant="disabled">
-                            {t('Lorem Ipsum Dolor Ist')}
-                          </Typography>
-                        </div>
-                      </div>
+                      <Grid container={true} spacing={2}>
+                        <Grid item={true} xs={12}>
+                          <Field
+                            component={TextField}
+                            name="authors"
+                            // label={t('Abstract')}
+                            fullWidth={true}
+                          />
+                        </Grid>
+                        {/* <Grid item={true} xs={6}>
+                          <Field
+                            component={TextField}
+                            name="author"
+                            // label={t('Abstract')}
+                            fullWidth={true}
+                          />
+                        </Grid> */}
+                      </Grid>
                     </div>
                     <div className={classes.buttons}>
                       <Button

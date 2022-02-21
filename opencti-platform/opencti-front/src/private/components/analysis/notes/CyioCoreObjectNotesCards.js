@@ -111,7 +111,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 
   render() {
     const {
-      t, cyioCoreObjectId, marginTop, data, height,
+      t, cyioCoreObjectId, marginTop, data, height, typename,
     } = this.props;
     // const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
     const paginationOptions = {
@@ -125,6 +125,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
         {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
         <CyioAddNotes
           cyioCoreObjectOrStixCoreRelationshipId={cyioCoreObjectId}
+          typename={typename}
           cyioCoreObjectOrStixCoreRelationshipNotes={
             data
           }
@@ -156,6 +157,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 CyioCoreObjectNotesCardsContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   marginTop: PropTypes.number,
+  typename: PropTypes.string,
   height: PropTypes.number,
   data: PropTypes.object,
   classes: PropTypes.object,

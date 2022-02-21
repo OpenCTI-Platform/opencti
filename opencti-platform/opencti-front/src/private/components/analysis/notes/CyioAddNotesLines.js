@@ -85,7 +85,7 @@ class CyioAddNotesLinesContainer extends Component {
           fromId: cyioCoreObjectOrStixCoreRelationshipId,
           fieldName: 'notes',
           to_type: note.__typename,
-          from_type: note.entity_type,
+          from_type: this.props.typename,
         },
         updater: (store) => {
           const entity = store.get(cyioCoreObjectOrStixCoreRelationshipId);
@@ -108,7 +108,7 @@ class CyioAddNotesLinesContainer extends Component {
           fromId: cyioCoreObjectOrStixCoreRelationshipId,
           fieldName: 'notes',
           to_type: note.__typename,
-          from_type: note.entity_type,
+          from_type: this.props.typename,
         },
         updater: (store) => {
           const payload = store
@@ -181,6 +181,7 @@ class CyioAddNotesLinesContainer extends Component {
 CyioAddNotesLinesContainer.propTypes = {
   cyioCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
+  typename: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,

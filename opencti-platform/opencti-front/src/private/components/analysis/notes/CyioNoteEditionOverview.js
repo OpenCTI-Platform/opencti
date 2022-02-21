@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -18,6 +20,7 @@ import Grid from '@material-ui/core/Grid';
 import Badge from '@material-ui/core/Badge';
 import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
+import TextField from '../../../../components/TextField';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -231,9 +234,10 @@ class CyioNoteEditionOverviewComponent extends Component {
               <CyioCoreObjectLabelsView
                 name="labels"
                 labels={note.labels}
+                typename={note.__typename}
                 id={note.id}
               />
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '50% 1fr', marginTop: '20px' }}>
                 <div>
                   <Typography
                     variant="h3"
@@ -244,27 +248,14 @@ class CyioNoteEditionOverviewComponent extends Component {
                     {t('Author')}
                   </Typography>
                   <div className="clearfix" />
-                  <div style={{ display: 'flex' }}>
-                    <Badge
-                      overlap="circular"
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                      badgeContent={
-                        <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
-                      }
-                    >
-                      <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                    </Badge>
-                    <div style={{ marginLeft: '20px' }}>
-                      <Typography variant="subtitle1">
-                        {note.authors && t(note.authors)}
-                      </Typography>
-                      <Typography color="textSecondary" variant="disabled">
-                        {t('Lorem Ipsum Dolor Ist')}
-                      </Typography>
-                    </div>
-                  </div>
+                  <Field
+                    component={TextField}
+                    name="authors"
+                    // label={t('Abstract')}
+                    fullWidth={true}
+                  />
                 </div>
-                <div>
+                <div style={{ textAlign: 'right' }}>
                   <Button
                     onClick={handleReset}
                     disabled={isSubmitting}
@@ -308,6 +299,7 @@ const CyioNoteEditionOverview = createFragmentContainer(
   {
     note: graphql`
       fragment CyioNoteEditionOverview_note on CyioNote {
+        __typename
         id
         created
         modified

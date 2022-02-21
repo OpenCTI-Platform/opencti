@@ -80,7 +80,7 @@ class DeviceComponent extends Component {
                 <CyioDomainObjectAssetOverview cyioDomainObject={device} />
               </Grid>
               <Grid item={true} xs={6}>
-                <DeviceDetails device={device} history={history}/>
+                <DeviceDetails device={device} history={history} />
               </Grid>
             </Grid>
             <Grid
@@ -103,6 +103,7 @@ class DeviceComponent extends Component {
               </Grid>
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
+              typename={device.__typename}
               notes={device.notes}
               cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
             />

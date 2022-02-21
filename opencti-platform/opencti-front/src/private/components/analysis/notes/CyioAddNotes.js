@@ -16,6 +16,7 @@ import CardActions from '@material-ui/core/CardActions';
 import TextField from '@material-ui/core/TextField';
 import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
+import KeyboardArrowDownOutlinedIcon from '@material-ui/icons/KeyboardArrowDownOutlined';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
@@ -106,6 +107,14 @@ class CyioAddNotes extends Component {
     this.setState({ open: false, search: '' });
   }
 
+  handleOpenSearch() {
+    this.setState({ expanded: true })
+  }
+
+  handleCloseSearch() {
+    this.setState({ expanded: false })
+  }
+
   handleSearch(event) {
     const keyword = event.target.value;
     this.setState({ search: keyword, expanded: keyword ? true : false });
@@ -116,6 +125,7 @@ class CyioAddNotes extends Component {
     const {
       t,
       classes,
+      typename,
       cyioCoreObjectOrStixCoreRelationshipId,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     } = this.props;
@@ -165,6 +175,13 @@ class CyioAddNotes extends Component {
                           paginationOptions={paginationOptions}
                           // onCreate={this.toggleNotes.bind(this)}
                         />
+                        <div style={{ marginLeft: '10px', marginTop: '-5px' }}>
+                          {
+                            this.state.expanded
+                            ? <KeyboardArrowDownOutlinedIcon onClick={this.handleCloseSearch.bind(this)} style={{ transform: 'rotate(180deg)', cursor: 'pointer' }} />
+                            : <KeyboardArrowDownOutlinedIcon onClick={this.handleOpenSearch.bind(this)} style={{ cursor: 'pointer' }} />
+                          }
+                        </div>
                       </InputAdornment>
                     ),
                   }} />
@@ -195,6 +212,7 @@ class CyioAddNotes extends Component {
                             cyioCoreObjectOrStixCoreRelationshipNotes
                           }
                           data={props}
+                          typename={typename}
                           open={this.state.open}
                           search={this.state.search}
                         />
@@ -249,6 +267,7 @@ class CyioAddNotes extends Component {
 CyioAddNotes.propTypes = {
   cyioCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
+  typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
