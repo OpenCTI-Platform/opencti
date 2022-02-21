@@ -185,6 +185,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
           }}
           action={
             <CyioNotePopover
+              node={node}
               id={node.id}
               entityId={CyioCoreObjectOrCyioCoreRelationshipId}
               handleOpenRemove={this.handleOpenDialog.bind(this)}
