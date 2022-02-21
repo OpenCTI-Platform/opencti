@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -181,8 +182,32 @@ class RelatedTaskPopover extends Component {
 
   render() {
     const {
-      classes, t, externalReferenceId, handleRemove, remediationId, relatedTaskData,
+      classes, t, externalReferenceId, handleRemove, remediationId, relatedTaskData, data,
     } = this.props;
+    const initialValues = R.pipe(
+      R.assoc('id', data?.node.id || ''),
+      R.assoc('name', data?.node.name || ''),
+      R.assoc('description', data?.node.description || ''),
+      R.assoc('task_type', data?.node.task_type || ''),
+      R.assoc('start_date', data?.node.start_date || ''),
+      R.assoc('end_date', data?.node.end_date || ''),
+      R.assoc('associated_activities', data?.node.associated_activities || ''),
+      R.assoc('dependencies', data?.node.dependencies || ''),
+      R.assoc('responsible_parties', data?.node.responsible_parties || ''),
+      R.assoc('target', data?.node.target || ''),
+      R.pick([
+        'id',
+        'name',
+        'description',
+        'task_type',
+        'start_date',
+        'end_date',
+        'associated_activities',
+        'dependencies',
+        'responsible_parties',
+        'target',
+      ]),
+    )(data);
     return (
       <span className={classes.container}>
         <IconButton
@@ -261,12 +286,7 @@ class RelatedTaskPopover extends Component {
           /> */}
           <Formik
             enableReinitialize={true}
-            initialValues={{
-              // source_name: inputValue,
-              external_id: '',
-              url: '',
-              description: '',
-            }}
+            initialValues={initialValues}
           // validationSchema={RelatedTaskValidation(t)}
           // onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
@@ -376,7 +396,7 @@ class RelatedTaskPopover extends Component {
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="tas k_type"
+                          name="task_type"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
@@ -645,6 +665,7 @@ RelatedTaskPopover.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   handleRemove: PropTypes.func,
+  data: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(RelatedTaskPopover);

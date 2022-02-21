@@ -262,7 +262,7 @@ class RiskTrackingLineContainer extends Component {
                         {t('Risk Log Entry Title')}
                       </Typography>
                       <Typography color="textSecondary" variant="h3">
-                        {t('Logged By')} <span className={classes.span}>{t('Start End')}</span>
+                        {t('Logged By')} <span className={classes.span}>{riskTrackingLoggedBy.name}</span>
                       </Typography>
                     </div>
                   </div>
@@ -389,7 +389,9 @@ class RiskTrackingLineContainer extends Component {
           <div>
             <RiskTrackingPopover
               handleRemove={this.handleOpenDialog.bind(this)}
-              handleOpenUpdate={this.handleOpenUpdate.bind(this)} />
+              handleOpenUpdate={this.handleOpenUpdate.bind(this)}
+              node={node}
+            />
           </div>
         </ListItem>
         <Dialog

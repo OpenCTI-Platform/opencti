@@ -74,8 +74,79 @@ class RiskEditionDetailsComponent extends Component {
     const {
       t, classes, risk, context, enableReferences,
     } = this.props;
-    console.log('riskEditionDetails', risk);
+    const relatedRisksEdges = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((value) => ({
+        name: value.node.name,
+        description: value.node.description,
+        statement: value.node.statement,
+        risk_status: value.node.risk_status,
+        deadline: value.node.deadline,
+        false_positive: value.node.false_positive,
+        risk_adjusted: value.node.risk_adjusted,
+        vendor_dependency: value.node.vendor_dependency,
+        impacted_control_id: value.node.impacted_control_id,
+      })),
+      R.mergeAll,
+    )(risk);
+    const relatedObservationsEdges = R.pipe(
+      R.pathOr([], ['related_observations', 'edges']),
+      R.map((value) => ({
+        impacted_component: value.node.impacted_component,
+        impacted_asset: value.node.subjects,
+      })),
+    )(risk);
+    const riskDetectionSource = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.mergeAll,
+      R.pathOr([], ['node', 'characterizations']),
+      R.mergeAll,
+      R.path(['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(risk);
+    const initialValues = R.pipe(
+      R.assoc('id', risk?.id || ''),
+      R.assoc('created', risk?.created || ''),
+      R.assoc('modified', risk?.modified || ''),
+      R.assoc('description', relatedRisksEdges?.description || ''),
+      R.assoc('responsible_parties', risk?.responsible_parties || ''),
+      R.assoc('labels', risk?.labels || []),
+      R.assoc('name', relatedRisksEdges?.name || ''),
+      R.assoc('statement', relatedRisksEdges?.statement || ''),
+      R.assoc('risk_status', relatedRisksEdges?.risk_status || ''),
+      R.assoc('deadline', dateFormat(relatedRisksEdges?.deadline)),
+      R.assoc('detection_source', riskDetectionSource?.detection_source || ''),
+      R.assoc('impacted_control', risk?.impacted_control || ''),
+      R.assoc('false_positive', relatedRisksEdges?.false_positive || ''),
+      R.assoc('operationally_required', relatedRisksEdges?.risk_adjusted || ''),
+      R.assoc('risk_adjusted', relatedRisksEdges?.risk_adjusted || ''),
+      R.assoc('vendor_dependency', relatedRisksEdges?.vendor_dependency || ''),
+      R.pick([
+        'id',
+        'created',
+        'modified',
+        'description',
+        'responsible_parties',
+        'labels',
+        'name',
+        'statement',
+        'risk_status',
+        'deadline',
+        'detection_source',
+        'impacted_control',
+        'false_positive',
+        'operationally_required',
+        'risk_adjusted',
+        'vendor_dependency',
+      ]),
+    )(risk);
     return (
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+      >
       <div>
         <div style={{ height: '100%' }}>
           <Typography variant="h4" gutterBottom={true}>
@@ -717,6 +788,7 @@ class RiskEditionDetailsComponent extends Component {
           )}
         </Formik> */}
       </div>
+      </Formik>
     );
   }
 }
@@ -756,8 +828,10 @@ const RiskEditionDetails = createFragmentContainer(
     risk: graphql`
       fragment RiskEditionDetails_risk on POAMItem {
         id
-        poam_id                   #Item Id
-        name                      #Weakness
+        created
+        modified
+        poam_id     # Item ID
+        name        # Weakness
         description
         labels {
           id
@@ -765,50 +839,78 @@ const RiskEditionDetails = createFragmentContainer(
           color
           description
         }
+        origins {
+          id
+          origin_actors {       # only use if UI support Detection Source
+            actor_type
+            actor {
+              ... on Component {
+                id
+                name
+              }
+              ... on OscalParty {
+                id
+                name
+              }
+            }
+          }
+        }
+        links {
+          id
+          created
+          modified
+          external_id     # external id
+          source_name     # Title
+          description     # description
+          url             # URL
+          media_type      # Media Type
+        }
+        remarks {
+          id
+          abstract
+          content
+          authors
+        }
         related_risks {
           edges {
-            node {
+            node{
               id
+              created
+              modified
               name
               description
               statement
-              risk_status         #Risk Status
+              risk_status       # Risk Status
               deadline
               priority
+              impacted_control_id
               accepted
-              false_positive      #False Positive
-              risk_adjusted       #Operational Required
-              vendor_dependency   #Vendor Dependency
+              false_positive    # False-Positive
+              risk_adjusted     # Operational Required
+              vendor_dependency # Vendor Dependency
               characterizations {
-                id
                 origins {
                   id
                   origin_actors {
                     actor_type
                     actor {
-                      ... on OscalPerson {
+                      ... on Component {
                         id
-                        name      #Detection Source
+                        component_type
+                        name          # Detection Source
+                      }
+                      ... on OscalParty {
+                      id
+                      party_type
+                      name            # Detection Source
                       }
                     }
                   }
                 }
               }
-            }
-          }
-        }
-        related_observations {
-          edges {
-            node {
-              id
-              name                #Impacted Component
-              subjects {
-                subject {
-                  ... on HardwareComponent {
-                    id
-                    name          #Impacted Asset
-                  }
-                }
+              remediations {
+                response_type
+                lifecycle
               }
             }
           }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -29,6 +30,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 // import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
 import Loader from '../../../../components/Loader';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   container: {
@@ -172,7 +174,32 @@ class RiskTrackingPopover extends Component {
       externalReferenceId,
       handleRemove,
       handleOpenUpdate,
+      node,
     } = this.props;
+    const riskTrackingLoggedBy = R.pipe(
+      R.pathOr([], ['logged_by']),
+      R.mergeAll,
+    )(node);
+    const initialValues = R.pipe(
+      R.assoc('entry_type', node?.entry_type || ''),
+      R.assoc('title', node?.name || ''),
+      R.assoc('description', node?.description || ''),
+      R.assoc('event_start', node?.entry_type || ''),
+      R.assoc('event_end', node?.entry_type || ''),
+      // R.assoc('logged_by', riskTrackingLoggedBy?.logged_by.name || ''),
+      R.assoc('status_change', node?.status_change || ''),
+      R.assoc('related_response', node?.related_response || ''),
+      R.pick([
+        'entry_type',
+        'title',
+        'description',
+        'event_start',
+        'event_end',
+        'logged_by',
+        'status_change',
+        'related_response',
+      ]),
+    )(node);
     return (
       <span className={classes.container}>
         <IconButton
@@ -254,22 +281,50 @@ class RiskTrackingPopover extends Component {
           /> */}
           <Formik
             enableReinitialize={true}
-          // initialValues={initialValues}
+          initialValues={initialValues}
           // validationSchema={riskValidation(t)}
           // onSubmit={this.onSubmit.bind(this)}
           >
             <Form>
               <DialogTitle>{t('Risk Log')}</DialogTitle>
               <DialogContent classes={{ root: classes.dialogContent }}>
-                <Grid spacing={3} container={true}>
+              <Grid spacing={3} container={true}>
                   <Grid item={true} xs={6}>
                     <div style={{ marginBottom: '15px' }}>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Entry Type')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                          <Tooltip
+                            title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                          >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          variant='outlined'
+                          name="entry_type"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        />
+                      </div>
+                  </Grid>
+                  <Grid item={true} xs={6}>
+                  <div style={{ marginBottom: '20px' }}>
                       <Typography
                         variant="subtitle2"
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Entry Type')}
+                        {t('Title')}
                       </Typography>
                       <div style={{ float: 'left', margin: '0 0 0 4px' }}>
                         <Tooltip
@@ -280,15 +335,45 @@ class RiskTrackingPopover extends Component {
                       </div>
                       <div className="clearfix" />
                       <Field
-                        component={SelectField}
+                        component={TextField}
                         variant='outlined'
-                        name="entry_type"
                         size='small'
+                        name="title"
                         fullWidth={true}
-                        style={{ height: '38.09px', marginBottom: '3px' }}
-                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        containerstyle={{ width: '100%' }}
                       />
                     </div>
+                  </Grid>
+              </Grid>
+              <Grid container={true} spacing={3}>
+                  <Grid item={true} xs={12}>
+                    <Typography
+                      variant="subtitle2"
+                      gutterBottom={true}
+                      style={{ float: 'left' }}
+                    >
+                      {t('Description')}
+                    </Typography>
+                    <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                      <Tooltip
+                        title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                      >
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    <Field
+                      component={MarkDownField}
+                      name="description"
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      variant='outlined'
+                    />
+                  </Grid>
+                </Grid>
+                <Grid spacing={3} container={true}>
+                  <Grid item={true} xs={6}>
                     <div style={{ marginBottom: '20px' }}>
                       <Typography
                         variant="subtitle2"
@@ -309,7 +394,7 @@ class RiskTrackingPopover extends Component {
                         component={DatePickerField}
                         variant='outlined'
                         size='small'
-                        name="start_date"
+                        name="event_start"
                         fullWidth={true}
                         invalidDateMessage={t(
                           'The value must be a date (YYYY-MM-DD)',
@@ -387,31 +472,6 @@ class RiskTrackingPopover extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Title')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                        <Tooltip
-                          title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        variant='outlined'
-                        size='small'
-                        name="title"
-                        fullWidth={true}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </div>
-                    <div style={{ marginBottom: '20px' }}>
-                      <Typography
-                        variant="subtitle2"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
                         {t('End Date')}
                       </Typography>
                       <div style={{ float: 'left', margin: '0 0 0 4px' }}>
@@ -426,7 +486,7 @@ class RiskTrackingPopover extends Component {
                         component={DatePickerField}
                         variant='outlined'
                         size='small'
-                        name="end_date"
+                        name="event_end"
                         invalidDateMessage={t(
                           'The value must be a date (YYYY-MM-DD)',
                         )}
@@ -461,33 +521,6 @@ class RiskTrackingPopover extends Component {
                         containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                       />
                     </div>
-                  </Grid>
-                </Grid>
-                <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={12}>
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom={true}
-                      style={{ float: 'left' }}
-                    >
-                      {t('Description')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                      <Tooltip
-                        title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                      >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <Field
-                      component={TextField}
-                      name="description"
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      variant='outlined'
-                    />
                   </Grid>
                 </Grid>
               </DialogContent>
@@ -560,6 +593,7 @@ RiskTrackingPopover.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   handleRemove: PropTypes.func,
+  node: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(RiskTrackingPopover);
