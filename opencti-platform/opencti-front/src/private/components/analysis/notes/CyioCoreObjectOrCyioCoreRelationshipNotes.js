@@ -20,6 +20,8 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
       cyioCoreObjectOrCyioCoreRelationshipId,
       isRelationship,
       marginTop,
+      height,
+      typename,
       notes,
     } = this.props;
     if (isRelationship) {
@@ -56,34 +58,13 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
     }
     return (
       <>
-        {/* <QR
-          environment={DarkLightEnvironment}
-          query={cyioCoreObjectNotesCardsQuery}
-          variables={{ count: 5 }}
-          render={({ props }) => {
-            if (props) {
-              return ( */}
         <CyioCoreObjectNotesCards
           cyioCoreObjectId={cyioCoreObjectOrCyioCoreRelationshipId}
           data={notes}
+          height={height}
+          typename={typename}
           marginTop={marginTop}
         />
-        {/* );
-            }
-            return (
-              <div style={{ height: '100%', marginTop: marginTop || 40 }}>
-                <Typography
-                  variant="h4"
-                  gutterBottom={true}
-                  style={{ marginBottom: '8px' }}
-                >
-                  {t('Notes')}
-                </Typography>
-                <Paper elevation={2} style={{ height: '100%' }} />
-              </div>
-            );
-          }}
-        /> */}
       </>
     );
   }
@@ -91,10 +72,12 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
 
 CyioCoreObjectOrCyioCoreRelationshipNotes.propTypes = {
   notes: PropTypes.array,
+  typename: PropTypes.string,
   t: PropTypes.func,
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   isRelationship: PropTypes.bool,
   marginTop: PropTypes.number,
+  height: PropTypes.number,
 };
 
 export default inject18n(CyioCoreObjectOrCyioCoreRelationshipNotes);

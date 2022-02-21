@@ -162,7 +162,7 @@ class CyioNotePopover extends Component {
 
   render() {
     const {
-      classes, t, id, handleOpenRemove,
+      classes, t, id, handleOpenRemove, node,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -186,23 +186,23 @@ class CyioNotePopover extends Component {
           style={{ marginTop: 50, textAlign: 'center' }}
         >
           <MenuItem
-          divider={true}
-          className={classes.menuItem}
-          onClick={this.handleOpenEdit.bind(this)}>
+            divider={true}
+            className={classes.menuItem}
+            onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
           {handleOpenRemove && (
             <MenuItem
-            divider={true}
-            className={classes.menuItem}
-            onClick={this.handleOpenRemove.bind(this, id)}>
+              divider={true}
+              className={classes.menuItem}
+              onClick={this.handleOpenRemove.bind(this, id)}>
               {t('Remove')}
             </MenuItem>
           )}
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem
-            className={classes.menuItem}
-            onClick={this.handleOpenDelete.bind(this)}>
+              className={classes.menuItem}
+              onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
           </Security>
@@ -212,14 +212,14 @@ class CyioNotePopover extends Component {
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >
-            <DialogContent>
-              <Typography className={classes.popoverDialog}>
-                {t('Are you sure you’d like to delete this item?')}
-              </Typography>
-              <DialogContentText>
-                {t('This action can’t be undone')}
-              </DialogContentText>
-            </DialogContent>
+          <DialogContent>
+            <Typography className={classes.popoverDialog}>
+              {t('Are you sure you’d like to delete this item?')}
+            </Typography>
+            <DialogContentText>
+              {t('This action can’t be undone')}
+            </DialogContentText>
+          </DialogContent>
           <DialogActions className={ classes.dialogActions }>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
@@ -248,22 +248,22 @@ class CyioNotePopover extends Component {
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseEdit.bind(this)}
         >
-          <QR
+          {/* <QR
             environment={environmentDarkLight}
             query={cyioNoteEditionQuery}
             variables={{ id }}
             render={({ props }) => {
               if (props) {
-                return (
-                  <CyioNoteEditionContainer
-                    note={props.note}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
+                return ( */}
+          <CyioNoteEditionContainer
+            note={node}
+            handleClose={this.handleCloseEdit.bind(this)}
+          />
+          {/* );
               }
               return <Loader variant="inElement" />;
             }}
-          />
+          /> */}
         </Dialog>
       </div>
     );
@@ -271,6 +271,7 @@ class CyioNotePopover extends Component {
 }
 
 CyioNotePopover.propTypes = {
+  node: PropTypes.object,
   id: PropTypes.string,
   entityId: PropTypes.string,
   classes: PropTypes.object,

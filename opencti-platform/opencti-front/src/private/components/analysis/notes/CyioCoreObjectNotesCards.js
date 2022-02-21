@@ -14,6 +14,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNoteCard from './CyioCoreObjectOrCyio
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
 import CyioNoteCreation from './CyioNoteCreation';
+import CyioAddNotes from './CyioAddNotes';
 
 const styles = (theme) => ({
   paper: {
@@ -113,11 +114,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 
   render() {
     const {
-      t,
-      cyioCoreObjectId,
-      marginTop,
-      classes,
-      data,
+      t, cyioCoreObjectId, marginTop, data, height, typename,
     } = this.props;
     // const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
     const paginationOptions = {
@@ -129,23 +126,30 @@ class CyioCoreObjectNotesCardsContainer extends Component {
           {t('Notes')}
         </Typography>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-        <CyioNoteCreation
-          display={true}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
+        <CyioAddNotes
+          cyioCoreObjectOrStixCoreRelationshipId={cyioCoreObjectId}
+          typename={typename}
+          cyioCoreObjectOrStixCoreRelationshipNotes={
+            data
+          }
         />
         {/* </Security> */}
         <div className="clearfix" />
-        <Paper style={{ height: '100%', paddingTop: '15px' }} >
-          {data.map((note) => (
-            <CyioCoreObjectOrCyioCoreRelationshipNoteCard
-              key={note.id}
-              node={note}
-              cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
-            />
-          ))}
-        </Paper>
+        {
+          data ? (
+            <Paper style={{ height: '100%', paddingTop: '15px' }} >
+              {data.map((note) => (
+                <CyioCoreObjectOrCyioCoreRelationshipNoteCard
+                  key={note.id}
+                  node={note}
+                  cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
+                />
+              ))}
+            </Paper>
+          ) : (
+            <Paper style={{ minHeight: height || 100, height: height || 100 }} />
+          )
+        }
         {/* <div style={{ marginTop: 100 }} /> */}
         <div ref={this.bottomRef} />
       </div>
@@ -156,37 +160,12 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 CyioCoreObjectNotesCardsContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   marginTop: PropTypes.number,
+  typename: PropTypes.string,
+  height: PropTypes.number,
   data: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
-
-// export const cyioCoreObjectNotesCardsQuery = graphql`
-//   query CyioCoreObjectNotesCardsQuery($count: Int!) {
-//     ...CyioCoreObjectNotesCards_data @arguments(count: $count)
-//   }
-// `;
-
-// const CyioCoreObjectNotesCards = createFragmentContainer(
-//   CyioCoreObjectNotesCardsContainer,
-//   {
-//     data: graphql`
-//       fragment CyioCoreObjectNotesCards_data on Query
-//       @argumentDefinitions(
-//         count: { type: "Int", defaultValue: 25 }
-//       ) {
-//         cyioNotes(limit: $count) {
-//           edges {
-//             node {
-//               id
-//               ...CyioCoreObjectOrCyioCoreRelationshipNoteCard_node
-//             }
-//           }
-//         }
-//       }
-//     `,
-//   },
-// );
 
 export default R.compose(
   inject18n,

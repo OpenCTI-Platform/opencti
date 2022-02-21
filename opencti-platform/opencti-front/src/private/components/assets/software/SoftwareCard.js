@@ -351,15 +351,19 @@ const SoftwareCardFragment = createFragmentContainer(
         cpe_identifier
         software_identifier
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
         external_references {
+          __typename
           id
           source_name
           description
+          entity_type
           url
           hashes {
             value
@@ -367,14 +371,17 @@ const SoftwareCardFragment = createFragmentContainer(
           external_id
         }
         notes {
+          __typename
           id
           # created
           # modified
           entity_type
           labels {
+            __typename
             id
             name
             color
+            entity_type
             description
           }
           abstract

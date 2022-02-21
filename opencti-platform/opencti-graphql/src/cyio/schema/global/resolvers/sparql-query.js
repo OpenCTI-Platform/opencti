@@ -225,7 +225,12 @@ export const notePredicateMap = {
   },
   labels: {
     predicate: "<http://darklight.ai/ns/common#labels>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "labels");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  label_name: {
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
@@ -270,14 +275,23 @@ export const selectLabelByIriQuery = (iri, select) => {
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:named>
   WHERE {
+    BIND(<${iri}> AS ?iri)
     ?iri a <http://darklight.ai/ns/common#Label> .
     ${predicates}
   }
   `
 }
 
-export const selectAllLabels = (select) => {
+export const selectAllLabels = (select, filters) => {
   if(select === null) select =Object.keys(labelPredicateMap);
+
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+    }
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(labelPredicateMap, select);
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
@@ -347,14 +361,23 @@ export const selectExternalReferenceByIriQuery = (iri, select) => {
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:named>
   WHERE {
+    BIND(<${iri}> AS ?iri)
     ?iri a <http://darklight.ai/ns/common#ExternalReference> .
     ${predicates}
   }
   `
 }
 
-export const selectAllExternalReferences = (select) => {
+export const selectAllExternalReferences = (select, filters) => {
   if(select === null) select =Object.keys(externalReferencePredicateMap);
+
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+    }
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(externalReferencePredicateMap, select);
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
@@ -424,14 +447,23 @@ export const selectNoteByIriQuery = (iri, select) => {
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:named>
   WHERE {
+    BIND(<${iri}> AS ?iri)
     ?iri a <http://darklight.ai/ns/common#Note> .
     ${predicates}
   }
   `
 }
 
-export const selectAllNotes = (select) => {
+export const selectAllNotes = (select, filters) => {
   if(select === null) select =Object.keys(notePredicateMap);
+
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+    }
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(notePredicateMap, select);
   return `
   SELECT DISTINCT ?iri ${selectionClause} 

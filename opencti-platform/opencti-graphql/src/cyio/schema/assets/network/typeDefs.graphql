@@ -110,7 +110,7 @@
     asset_id
     "Network ID"
     network_id
-    "Labels"
+    "Label"
     labels
   }
 
@@ -122,8 +122,8 @@
     modified      # Modified before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Name"
     name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
-    "Labels"
-    labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "Label"
+    label_name         # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
     "Network ID"
     network_id
     "Is Publicly Accessible"

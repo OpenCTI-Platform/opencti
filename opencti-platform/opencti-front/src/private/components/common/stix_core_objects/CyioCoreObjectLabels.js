@@ -78,7 +78,7 @@ class CyioCoreObjectLabels extends Component {
                 }}
                 onClick={
                   typeof onClick === 'function'
-                    ? onClick.bind(this, 'labelledBy', label.id, label.name)
+                    ? onClick.bind(this, 'label_name', label.name, label.name)
                     : null
                 }
               />
@@ -100,7 +100,7 @@ class CyioCoreObjectLabels extends Component {
             }}
             onClick={
               typeof onClick === 'function'
-                ? onClick.bind(this, 'labelledBy', null, null)
+                ? onClick.bind(this, 'label_name', null, null)
                 : null
             }
           />

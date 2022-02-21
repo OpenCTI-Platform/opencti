@@ -95,6 +95,7 @@ import assetCommonResolvers from '../cyio/schema/assets/asset-common/resolvers.j
 import computingDeviceResolvers from '../cyio/schema/assets/computing-device/resolvers.js';
 import networkResolvers from '../cyio/schema/assets/network/resolvers.js';
 import softwareResolvers from '../cyio/schema/assets/software/resolvers.js';
+import cyioGlobalTypeResolvers from '../cyio/schema/global/resolvers/cyioGlobalTypes.js';
 import cyioExternalReferenceResolvers from '../cyio/schema/global/resolvers/externalReference.js';
 import cyioLabelResolvers from '../cyio/schema/global/resolvers/label.js';
 import cyioNoteResolvers from '../cyio/schema/global/resolvers/note.js';
@@ -206,13 +207,14 @@ const createSchema = () => {
     organizationOrIndividualResolvers,
     stixObjectOrStixRelationshipResolvers,
     // CYIO
+    cyioGlobalTypeResolvers,
+    cyioExternalReferenceResolvers,
+    cyioLabelResolvers,
+    cyioNoteResolvers,
     assetCommonResolvers,
     computingDeviceResolvers,
     networkResolvers,
     softwareResolvers,
-    cyioExternalReferenceResolvers,
-    cyioLabelResolvers,
-    cyioNoteResolvers,
 ]);
 
   // load the OpenCTI and each of the Cyio GraphQL schema files

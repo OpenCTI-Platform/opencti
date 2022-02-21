@@ -2,12 +2,13 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  map, filter, head, compose,
-} from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Dialog from '@material-ui/core/Dialog';
 import Button from '@material-ui/core/Button';
 import InputAdornment from '@material-ui/core/InputAdornment';
@@ -15,24 +16,21 @@ import CardActions from '@material-ui/core/CardActions';
 import TextField from '@material-ui/core/TextField';
 import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import { ConnectionHandler } from 'relay-runtime';
-import ListItem from '@material-ui/core/ListItem';
 import KeyboardArrowDownOutlinedIcon from '@material-ui/icons/KeyboardArrowDownOutlined';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import ListItemText from '@material-ui/core/ListItemText';
-import { Add } from '@material-ui/icons';
+import Typography from '@material-ui/core/Typography';
+import { Add, Close } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
-import CyioExternalReferenceCreation from './CyioExternalReferenceCreation';
-import CyioAddExternalReferencesLines, {
-  cyioAddExternalReferencesLinesQuery,
-  cyioExternalReferenceMutationRelationDelete,
-  cyioExternalReferenceLinesMutationRelationAdd,
-} from './CyioAddExternalReferencesLines';
+import SearchInput from '../../../../components/SearchInput';
+import { QueryRenderer } from '../../../../relay/environment';
+import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
+import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
+import NoteCreation from './NoteCreation';
+import CyioNoteCreation from './CyioNoteCreation';
+import CyioAddNotesLines, { cyioAddNotesLinesQuery } from './CyioAddNotesLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -46,11 +44,6 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-  dialog: {
-    backgroundColor: 'red',
-    overflow: 'hidden',
-    height: '50vh',
-  },
   createButton: {
     float: 'left',
     marginTop: -15,
@@ -60,7 +53,6 @@ const styles = (theme) => ({
   },
   search: {
     float: 'right',
-    marginLeft: 15,
   },
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
@@ -97,85 +89,14 @@ const styles = (theme) => ({
   },
 });
 
-const sharedUpdater = (store, cyioCoreObjectId, newEdge) => {
-  const entity = store.get(cyioCoreObjectId);
-  const conn = ConnectionHandler.getConnection(
-    entity,
-    'Pagination_externalReferences',
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-class CyioAddExternalReferences extends Component {
+class CyioAddNotes extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
       search: '',
       expanded: false,
-    };
-  }
-
-  toggleExternalReference(externalReference, onlyCreate = false) {
-    const {
-      cyioCoreObjectOrCyioCoreRelationshipId,
-      cyioCoreObjectOrCyioCoreRelationshipReferences,
-    } = this.props;
-    const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
-      (n) => n.id,
-      cyioCoreObjectOrCyioCoreRelationshipReferences,
-    );
-    const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
-      externalReference.id,
-    );
-    if (alreadyAdded && !onlyCreate) {
-      const existingExternalReference = head(
-        filter(
-          (n) => n.id === externalReference.id,
-          cyioCoreObjectOrCyioCoreRelationshipReferences,
-        ),
-      );
-      commitMutation({
-        mutation: cyioExternalReferenceMutationRelationDelete,
-        variables: {
-          toId: externalReference.id,
-          fromId: this.props.cyioCoreObjectId,
-          fieldName: 'external_references',
-          from_type: this.props.typename,
-          to_type: externalReference.__typename,
-        },
-        updater: (store) => {
-          const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
-            'Pagination_cyioExternalReferenceList',
-          );
-          ConnectionHandler.deleteNode(conn, externalReference.id);
-        },
-      });
-    } else if (!alreadyAdded) {
-      commitMutation({
-        mutation: cyioExternalReferenceLinesMutationRelationAdd,
-        variables: {
-          toId: externalReference.id,
-          fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_references',
-          from_type: this.props.typename,
-          to_type: externalReference.__typename,
-        },
-        updater: (store) => {
-          const payload = store
-          // .getRootField('externalReferenceEdit')
-          // .getLinkedRecord('relationAdd', { input });
-          const relationId = payload.getValue('toId');
-          // const node = payload.getLinkedRecord('to');
-          const relation = store.get(relationId);
-          payload.setLinkedRecord(node, 'node');
-          payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
-        },
-      });
-    }
+  };
   }
 
   handleOpen() {
@@ -187,25 +108,26 @@ class CyioAddExternalReferences extends Component {
   }
 
   handleOpenSearch() {
-    this.setState({ expanded: true });
+    this.setState({ expanded: true })
   }
 
   handleCloseSearch() {
-    this.setState({ expanded: false });
+    this.setState({ expanded: false })
   }
 
   handleSearch(event) {
     const keyword = event.target.value;
     this.setState({ search: keyword, expanded: keyword ? true : false });
+    // this.setState({ search: keyword });
   }
 
   render() {
     const {
       t,
       classes,
-      cyioCoreObjectOrCyioCoreRelationshipId,
-      cyioCoreObjectOrCyioCoreRelationshipReferences,
-      typename
+      typename,
+      cyioCoreObjectOrStixCoreRelationshipId,
+      cyioCoreObjectOrStixCoreRelationshipNotes,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -237,32 +159,32 @@ class CyioAddExternalReferences extends Component {
             }}
           >
             <div className={classes.dialogMain}>
-              <DialogTitle style={{ padding: 10 }}>{t('Add External References')}</DialogTitle>
+              <DialogTitle style={{ padding: 10 }}>{t('Add Notes')}</DialogTitle>
               {/* <CardHeader title="Add External Refrences"/> */}
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <TextField
-                style={{ width: 495 }}
-                onChange={this.handleSearch.bind(this)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end" >
-                      <CyioExternalReferenceCreation
-                        display={this.state.open}
-                        contextual={true}
-                        inputValue={this.state.search}
-                        paginationOptions={paginationOptions}
-                        onCreate={this.toggleExternalReference.bind(this)}
-                      />
-                      <div style={{ marginLeft: '10px' }}>
-                      {
-                        this.state.expanded
-                        ? <KeyboardArrowDownOutlinedIcon onClick={this.handleCloseSearch.bind(this)}  style={{ transform: 'rotate(180deg)', cursor: 'pointer' }} />
-                        : <KeyboardArrowDownOutlinedIcon onClick={this.handleOpenSearch.bind(this)} style={{ cursor: 'pointer' }} />
-                      }
-                      </div>
-                    </InputAdornment>
-                  ),
-                }} />
+                  style={{ width: 495 }}
+                  onChange={this.handleSearch.bind(this)}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end" >
+                        <CyioNoteCreation
+                          display={true}
+                          contextual={true}
+                          inputValue={this.state.search}
+                          paginationOptions={paginationOptions}
+                          // onCreate={this.toggleNotes.bind(this)}
+                        />
+                        <div style={{ marginLeft: '10px', marginTop: '-5px' }}>
+                          {
+                            this.state.expanded
+                            ? <KeyboardArrowDownOutlinedIcon onClick={this.handleCloseSearch.bind(this)} style={{ transform: 'rotate(180deg)', cursor: 'pointer' }} />
+                            : <KeyboardArrowDownOutlinedIcon onClick={this.handleOpenSearch.bind(this)} style={{ cursor: 'pointer' }} />
+                          }
+                        </div>
+                      </InputAdornment>
+                    ),
+                  }} />
                 <div style={{ float: 'right', marginLeft: '40px' }}>
                   <Button style={{ marginLeft: '10px', marginRight: '10px' }} onClick={this.handleClose.bind(this)} variant="outlined" >{t('Cancel')}</Button>
                   <Button variant="contained" color="primary">{t('Add')}</Button>
@@ -274,7 +196,7 @@ class CyioAddExternalReferences extends Component {
               <div className={classes.collapse}>
                 <QR
                   environment={QueryRendererDarkLight}
-                  query={cyioAddExternalReferencesLinesQuery}
+                  query={cyioAddNotesLinesQuery}
                   variables={{
                     search: this.state.search,
                     count: 4,
@@ -282,16 +204,15 @@ class CyioAddExternalReferences extends Component {
                   render={({ props }) => {
                     if (props) {
                       return (
-                        <CyioAddExternalReferencesLines
-                          typename={typename}
-                          cyioCoreObjectOrCyioCoreRelationshipId={
-                            cyioCoreObjectOrCyioCoreRelationshipId
+                        <CyioAddNotesLines
+                          cyioCoreObjectOrStixCoreRelationshipId={
+                            cyioCoreObjectOrStixCoreRelationshipId
                           }
-                          cyioCoreObjectOrCyioCoreRelationshipReferences={
-                            cyioCoreObjectOrCyioCoreRelationshipReferences
+                          cyioCoreObjectOrStixCoreRelationshipNotes={
+                            cyioCoreObjectOrStixCoreRelationshipNotes
                           }
                           data={props}
-                          paginationOptions={paginationOptions}
+                          typename={typename}
                           open={this.state.open}
                           search={this.state.search}
                         />
@@ -343,12 +264,12 @@ class CyioAddExternalReferences extends Component {
   }
 }
 
-CyioAddExternalReferences.propTypes = {
-  cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
-  cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
+CyioAddNotes.propTypes = {
+  cyioCoreObjectOrStixCoreRelationshipId: PropTypes.string,
+  cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
   typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(CyioAddExternalReferences);
+export default compose(inject18n, withStyles(styles))(CyioAddNotes);

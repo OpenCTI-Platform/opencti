@@ -279,7 +279,7 @@
     created
     "Modified"
     modified
-    "Labels"
+    "Label"
     labels
   }
 
@@ -292,8 +292,8 @@
     created
     "Modified"
     modified
-    "Labels"
-    labels
+    "Label"
+    label_name
   }
 
   input CyioNotesFiltering {

@@ -92,6 +92,7 @@ class NetworkComponent extends Component {
                 <CyioCoreObjectExternalReferences
                   externalReferences={network.external_references}
                   cyioCoreObjectId={network.id}
+                  typename={network.__typename}
                 />
               </Grid>
               <Grid item={true} xs={6}>
@@ -129,6 +130,7 @@ NetworkComponent.propTypes = {
 const Network = createFragmentContainer(NetworkComponent, {
   network: graphql`
     fragment Network_network on NetworkAsset {
+      __typename
       id
       name
       asset_tag
@@ -136,15 +138,19 @@ const Network = createFragmentContainer(NetworkComponent, {
       asset_id
       serial_number
       labels {
+        __typename
         id
         name
         color
+        entity_type
         description
       }
       external_references {
+        __typename
         id
         source_name
         description
+        entity_type
         url
         hashes {
           value
@@ -152,14 +158,17 @@ const Network = createFragmentContainer(NetworkComponent, {
         external_id
       }
       notes {
+        __typename
         id
         # created
         # modified
         entity_type
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
         abstract

@@ -40,6 +40,10 @@ import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
 import TopMenuArtifact from './TopMenuArtifact';
 import TopMenuThreats from './TopMenuThreats';
+import TopMenuVSAC from './TopMenuVSAC';
+//import TopMenuVsacCompare from './TopMenuVsacCompare';
+//import TopMenuVsacExploreResults from './TopMenuVsacExploreResults';
+//import TopMenuVsacViewCharts from './TopMenuVsacViewCharts';
 import TopMenuAssets from './TopMenuAssets';
 import TopMenuRiskAssessment from './TopMenuRiskAssessment';
 import TopMenuRisk from './TopMenuRisk';
@@ -217,6 +221,18 @@ const TopBarMenu = ({
           )}
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
+          )}
+          {(location.pathname === '/dashboard/vsac/scans/exploreresults'
+            || location.pathname.match('/dashboard/vsac/scans/exploreresults')) && (
+            <TopMenuVsacExploreResults />
+          )}
+          {(location.pathname === '/dashboard/vsac/scans/viewcharts'
+            || location.pathname.match('/dashboard/vsac/scans/viewcharts')) && (
+            <TopMenuVsacViewCharts />
+          )}
+          {(location.pathname === '/dashboard/vsac/scans/compare'
+            || location.pathname.match('/dashboard/vsac/scans/compare')) && (
+            <TopMenuVsacCompare />
           )}
           {(location.pathname === '/dashboard/assets'
             || location.pathname.match('/dashboard/assets/[a-z_]+$')) && (

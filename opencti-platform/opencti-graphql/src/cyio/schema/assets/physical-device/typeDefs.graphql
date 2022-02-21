@@ -109,10 +109,10 @@
     name
     asset_type
     asset_id
-    ip_address
-    installed_operating_system
+    ip_address_value
+    installed_os_name
     network_id
-    labels
+    label_name
   }
 
   # Pagination Types

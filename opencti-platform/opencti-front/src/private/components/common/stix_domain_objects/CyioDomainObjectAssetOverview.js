@@ -253,6 +253,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   labels={cyioDomainObject.labels}
                   marginTop={20}
                   id={cyioDomainObject.id}
+                  typename={cyioDomainObject.__typename}
                 />
                 {/* <StixCoreObjectLabels
                   labels={objectLabel}
