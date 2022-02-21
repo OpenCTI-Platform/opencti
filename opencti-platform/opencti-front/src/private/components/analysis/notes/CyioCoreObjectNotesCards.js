@@ -14,6 +14,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNoteCard from './CyioCoreObjectOrCyio
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
 import CyioNoteCreation from './CyioNoteCreation';
+import CyioAddNotes from './CyioAddNotes';
 
 const styles = (theme) => ({
   paper: {
@@ -110,7 +111,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 
   render() {
     const {
-      t, cyioCoreObjectId, marginTop, data, height,
+      t, cyioCoreObjectId, marginTop, data, height, typename,
     } = this.props;
     // const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
     const paginationOptions = {
@@ -122,11 +123,12 @@ class CyioCoreObjectNotesCardsContainer extends Component {
           {t('Notes')}
         </Typography>
         {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-        <CyioNoteCreation
-          display={true}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
+        <CyioAddNotes
+          cyioCoreObjectOrStixCoreRelationshipId={cyioCoreObjectId}
+          typename={typename}
+          cyioCoreObjectOrStixCoreRelationshipNotes={
+            data
+          }
         />
         {/* </Security> */}
         <div className="clearfix" />
@@ -155,6 +157,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 CyioCoreObjectNotesCardsContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   marginTop: PropTypes.number,
+  typename: PropTypes.string,
   height: PropTypes.number,
   data: PropTypes.object,
   classes: PropTypes.object,

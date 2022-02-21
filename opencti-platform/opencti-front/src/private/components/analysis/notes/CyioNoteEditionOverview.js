@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -14,10 +16,16 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+import Badge from '@material-ui/core/Badge';
+import Avatar from '@material-ui/core/Avatar';
+import Typography from '@material-ui/core/Typography';
+import TextField from '../../../../components/TextField';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
+import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 // import { SubscriptionFocus } from '../../../../components/Subscription';
 
 const styles = (theme) => ({
@@ -44,6 +52,7 @@ const styles = (theme) => ({
     right: 30,
   },
   buttonPopover: {
+    marginTop: '25px',
     textTransform: 'capitalize',
   },
 });
@@ -140,6 +149,8 @@ class CyioNoteEditionOverviewComponent extends Component {
         id: this.props.note.id,
         input: [
           { key: 'content', value: values.content },
+          { key: 'authors', value: values.authors },
+          // { key: 'labels', value: values.labels },
           // { key: 'description', value: values.description },
         ],
       },
@@ -173,26 +184,27 @@ class CyioNoteEditionOverviewComponent extends Component {
       note,
       classes,
     } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], note) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], note),
-        value: pathOr(null, ['createdBy', 'id'], note),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(note);
+    // const createdBy = pathOr(null, ['createdBy', 'name'], note) === null
+    //   ? ''
+    //   : {
+    //     label: pathOr(null, ['createdBy', 'name'], note),
+    //     value: pathOr(null, ['createdBy', 'id'], note),
+    //   };
+    // const objectMarking = pipe(
+    //   pathOr([], ['objectMarking', 'edges']),
+    //   map((n) => ({
+    //     label: n.node.definition,
+    //     value: n.node.id,
+    //   })),
+    // )(note);
     const initialValues = pipe(
-      assoc('content', createdBy),
-      assoc('authors', objectMarking),
+      assoc('content', note.content),
+      assoc('authors', note.authors),
+      assoc('labels', note.labels),
       pick([
-        'abstract',
         'content',
         'authors',
+        'labels',
       ]),
     )(note);
     return (
@@ -209,7 +221,7 @@ class CyioNoteEditionOverviewComponent extends Component {
           isSubmitting,
         }) => (
           <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
+            <Form style={{ margin: '20px 0 0px 0' }}>
               <Field
                 component={MarkDownField}
                 name="content"
@@ -217,37 +229,54 @@ class CyioNoteEditionOverviewComponent extends Component {
                 fullWidth={true}
                 multiline={true}
                 rows="4"
-                style={{ marginTop: 20 }}
-                // onFocus={this.handleChangeFocus.bind(this)}
-                // onSubmit={this.handleSubmitField.bind(this)}
-                // helperText={
-                //   <SubscriptionFocus context={context} fieldName="content" />
-                // }
+                style={{ marginTop: 20, marginBottom: 20 }}
               />
-              <div style={{
-                float: 'right',
-                margin: '10px 0 30px 0',
-              }}>
-                <Button
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  variant="outlined"
-                  size="small"
-                  classes={{ root: classes.buttonPopover }}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  onClick={submitForm}
-                  color="primary"
-                  disabled={isSubmitting}
-                  variant="contained"
-                  size="small"
-                  style={{ marginLeft: '15px' }}
-                  classes={{ root: classes.buttonPopover }}
-                >
-                  {t('Update')}
-                </Button>
+              <CyioCoreObjectLabelsView
+                name="labels"
+                labels={note.labels}
+                typename={note.__typename}
+                id={note.id}
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: '50% 1fr', marginTop: '20px' }}>
+                <div>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Author')}
+                  </Typography>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    name="authors"
+                    // label={t('Abstract')}
+                    fullWidth={true}
+                  />
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <Button
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    variant="outlined"
+                    size="small"
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    onClick={submitForm}
+                    color="primary"
+                    disabled={isSubmitting}
+                    variant="contained"
+                    size="small"
+                    style={{ marginLeft: '15px' }}
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Update')}
+                  </Button>
+                </div>
               </div>
             </Form>
           </div>
@@ -270,10 +299,19 @@ const CyioNoteEditionOverview = createFragmentContainer(
   {
     note: graphql`
       fragment CyioNoteEditionOverview_note on CyioNote {
+        __typename
         id
+        created
+        modified
+        abstract
         content
         authors
-        abstract
+        labels {
+            id
+            name
+            color
+            description
+        }
       }
     `,
   },
