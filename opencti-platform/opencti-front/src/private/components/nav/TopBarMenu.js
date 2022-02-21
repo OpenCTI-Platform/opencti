@@ -45,7 +45,7 @@ import TopMenuVSAC from './TopMenuVSAC';
 //import TopMenuVsacCompare from './TopMenuVsacCompare';
 //import TopMenuVsacExploreResults from './TopMenuVsacExploreResults';
 //import TopMenuVsacViewCharts from './TopMenuVsacViewCharts';
-//import TopMenuAssets from './TopMenuAssets';
+import TopMenuAssets from './TopMenuAssets';
 // import TopMenuRisk from './TopMenuRisk';
 // import TopMenuRisksAssessment from './TopMenuRisksAssessment';
 import TopMenuThreatActor from './TopMenuThreatActor';
