@@ -351,6 +351,7 @@ class RelatedTaskLine extends Component {
             relatedTaskData={relatedTaskData}
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
+            data={data}
           />
         </div>
       </div>

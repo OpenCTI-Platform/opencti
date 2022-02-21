@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
@@ -186,7 +187,30 @@ class RequiredResourcePopover extends Component {
       inputValue,
       remediationId,
       requiredResourceData,
+      data,
     } = this.props;
+    const requiredResourceNode = R.pipe(
+      R.pathOr([], ['node', 'subjects']),
+      R.map((value) => ({
+        name: value.subject.name,
+        description: value.subject.description,
+      })),
+      R.mergeAll,
+    )(data);
+    const initialValues = R.pipe(
+      R.assoc('id', requiredResourceNode?.entry_type || ''),
+      R.assoc('name', requiredResourceNode?.name || ''),
+      R.assoc('description', requiredResourceNode?.description || ''),
+      R.assoc('resource', requiredResourceNode?.entry_type || ''),
+      R.assoc('type', requiredResourceNode?.entry_type || ''),
+      R.pick([
+        'id',
+        'name',
+        'description',
+        'resource',
+        'type',
+      ]),
+    )(data);
     return (
       <span className={classes.container}>
         <IconButton
@@ -267,12 +291,7 @@ class RequiredResourcePopover extends Component {
           /> */}
           <Formik
             enableReinitialize={true}
-            initialValues={{
-              source_name: inputValue,
-              external_id: '',
-              url: '',
-              description: '',
-            }}
+            initialValues={initialValues}
           // validationSchema={RequiredAssetValidation(t)}
           // onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
@@ -500,6 +519,7 @@ RequiredResourcePopover.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   handleRemove: PropTypes.func,
+  data: PropTypes.object,
 };
 
 export default compose(inject18n, withStyles(styles))(RequiredResourcePopover);

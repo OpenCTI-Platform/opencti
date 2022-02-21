@@ -299,6 +299,7 @@ class RequiredResourceLineComponent extends Component {
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
             requiredResourceData={requiredResourceData}
+            data={data}
           />
         </div>
       </div>

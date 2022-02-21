@@ -213,7 +213,7 @@ class RiskEditionContainer extends Component {
       R.assoc('id', risk?.id || ''),
       R.assoc('item_id', risk?.item_id || ''),
       R.assoc('description', risk?.description || ''),
-      R.assoc('weakness', risk?.weakness || ''),
+      R.assoc('weakness', risk?.name || ''),
       R.assoc('controls', risk?.controls || ''),
       R.assoc('risk_rating', risk?.risk_rating || ''),
       R.assoc('priority', risk?.priority || ''),
@@ -237,7 +237,7 @@ class RiskEditionContainer extends Component {
         'id',
         // 'item_id',
         'description',
-        // 'weakness',
+        'weakness',
         // 'controls',
         // 'risk_rating',
         'priority',
@@ -289,7 +289,7 @@ class RiskEditionContainer extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="name"
+                    name="weakness"
                     size='small'
                     containerstyle={{ width: '50%' }}
                   />
@@ -432,6 +432,7 @@ const RiskEditionFragment = createFragmentContainer(
     risk: graphql`
       fragment RiskEditionContainer_risk on POAMItem {
         id
+        name        # Weakness
         links {
           id
           # created

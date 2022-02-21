@@ -70,6 +70,7 @@ class RiskEdition extends Component {
       riskId,
       open,
       history,
+      risk,
     } = this.props;
     return (
       <div>
@@ -140,6 +141,7 @@ RiskEdition.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  risk: PropTypes.object,
 };
 
 export default compose(

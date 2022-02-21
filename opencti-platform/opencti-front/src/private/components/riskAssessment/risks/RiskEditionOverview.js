@@ -30,6 +30,7 @@ import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import { dateFormat } from '../../../../utils/Time';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 
 const styles = (theme) => ({
@@ -242,23 +243,43 @@ class RiskEditionOverviewComponent extends Component {
     //     value: n.node.id,
     //   })),
     // )(risk);
+    const riskEdges = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((value) => ({
+        priority: value.node.priority,
+      })),
+      R.mergeAll,
+    )(risk);
+    const relatedRiskData = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((relatedRisk) => ({
+        characterization: relatedRisk.node.characterizations,
+      })),
+      R.mergeAll,
+      R.path(['characterization']),
+      R.mergeAll,
+    )(risk);
 
     const initialValues = R.pipe(
       R.assoc('id', risk?.id || ''),
-      R.assoc('item_id', risk?.item_id || ''),
+      R.assoc('poam_id', risk?.poam_id || ''),
       R.assoc('description', risk?.description || ''),
-      R.assoc('weakness', risk?.weakness || ''),
+      R.assoc('created', dateFormat(risk.created)),
+      R.assoc('modified', dateFormat(risk.modified)),
+      R.assoc('weakness', risk?.name || ''),
       R.assoc('controls', risk?.controls || []),
-      R.assoc('risk_rating', risk?.risk_rating || ''),
-      R.assoc('priority', risk?.priority || 2),
-      R.assoc('impact', risk?.impact || ''),
-      R.assoc('likelihood', risk?.likelihood || ''),
+      R.assoc('risk_rating', relatedRiskData?.risk || ''),
+      R.assoc('priority', riskEdges?.priority || 2),
+      R.assoc('impact', relatedRiskData?.impact || ''),
+      R.assoc('likelihood', relatedRiskData?.likelihood || ''),
       R.assoc('responsible_parties', risk?.responsible_parties || []),
       R.assoc('labels', risk?.labels || []),
       R.pick([
         'id',
-        'item_id',
+        'poam_id',
         'description',
+        'created',
+        'modified',
         'weakness',
         'controls',
         'risk_rating',
@@ -325,7 +346,7 @@ class RiskEditionOverviewComponent extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Item ID')}
+                        {t('POAM ID')}
                       </Typography>
                       <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                         <Tooltip
@@ -341,7 +362,7 @@ class RiskEditionOverviewComponent extends Component {
                         component={TextField}
                         variant='outlined'
                         size='small'
-                        name="idem_id"
+                        name="poam_id"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       />
@@ -792,8 +813,10 @@ const RiskEditionOverview = createFragmentContainer(
     risk: graphql`
       fragment RiskEditionOverview_risk on POAMItem {
         id
-        poam_id                   #Item Id
-        name                      #Weakness
+        created
+        modified
+        poam_id     # Item ID
+        name        # Weakness
         description
         labels {
           id
@@ -801,50 +824,78 @@ const RiskEditionOverview = createFragmentContainer(
           color
           description
         }
+        origins {
+          id
+          origin_actors {       # only use if UI support Detection Source
+            actor_type
+            actor {
+              ... on Component {
+                id
+                name
+              }
+              ... on OscalParty {
+                id
+                name
+              }
+            }
+          }
+        }
+        links {
+          id
+          created
+          modified
+          external_id     # external id
+          source_name     # Title
+          description     # description
+          url             # URL
+          media_type      # Media Type
+        }
+        remarks {
+          id
+          abstract
+          content
+          authors
+        }
         related_risks {
           edges {
-            node {
+            node{
               id
+              created
+              modified
               name
               description
               statement
-              risk_status         #Risk Status
+              risk_status       # Risk Status
               deadline
               priority
+              impacted_control_id
               accepted
-              false_positive      #False Positive
-              risk_adjusted       #Operational Required
-              vendor_dependency   #Vendor Dependency
+              false_positive    # False-Positive
+              risk_adjusted     # Operational Required
+              vendor_dependency # Vendor Dependency
               characterizations {
-                id
                 origins {
                   id
                   origin_actors {
                     actor_type
                     actor {
-                      ... on OscalPerson {
+                      ... on Component {
                         id
-                        name      #Detection Source
+                        component_type
+                        name          # Detection Source
+                      }
+                      ... on OscalParty {
+                      id
+                      party_type
+                      name            # Detection Source
                       }
                     }
                   }
                 }
               }
-            }
-          }
-        }
-        related_observations {
-          edges {
-            node {
-              id
-              name                #Impacted Component
-              subjects {
-                subject {
-                  ... on HardwareComponent {
-                    id
-                    name          #Impacted
-                  }
-                }
+              remediations {
+                response_type
+                lifecycle
               }
             }
           }
