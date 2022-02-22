@@ -19,7 +19,7 @@ import ReportContentFiles, {
   reportContentFilesRefetchQuery,
 } from './ReportContentFiles';
 import {
-  APP_BASE_PATH,
+  // APP_BASE_PATH,
   commitMutation,
   fetchQuery,
   QueryRenderer,
@@ -510,7 +510,7 @@ class ReportContentComponent extends Component {
       currentContent,
       currentFile,
       currentBase64Content,
-      totalPdfPageNumber,
+      // totalPdfPageNumber,
     } = this.state;
     const currentTitle = R.last(currentFile.id.split('/'));
     const currentUrl = `/storage/view/${currentFile.id}`;

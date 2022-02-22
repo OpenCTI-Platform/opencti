@@ -96,13 +96,12 @@
     "relay": "relay-compiler",
     "build": "yarn relay && yarn esbuild",
     "start": "yarn relay && node builder/dev/dev.js",
-    "lint": "cross-env DEBUG=eslint:cli-engine eslint --cache -c .eslintrc.json src",
+    "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
     "control": "yarn audit --groups dependencies --summary",
     "test": "jest --coverage"
   },
   "resolutions": {
-    "node-sass": "7.0.1",
-    "react-virtualized": "git+https://git@github.com/remorses/react-virtualized-fixed-import.git#9.22.3"
+    "node-sass": "7.0.1"
   },
   "packageManager": "yarn@3.1.1"
 }
