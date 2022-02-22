@@ -113,7 +113,7 @@ class RiskAnalysisContainerComponent extends Component {
               cyioDomainObject={risk}
               history={history}
               PopoverComponent={<RiskPopover />}
-              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
