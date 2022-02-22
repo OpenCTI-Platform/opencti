@@ -335,6 +335,7 @@ class RiskEditionOverviewComponent extends Component {
                         name="id"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                   </Grid>
@@ -397,6 +398,7 @@ class RiskEditionOverviewComponent extends Component {
                         name="created"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                   </Grid>
@@ -427,6 +429,7 @@ class RiskEditionOverviewComponent extends Component {
                         name="modified"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                   </Grid>
@@ -515,6 +518,7 @@ class RiskEditionOverviewComponent extends Component {
                         name="risk_rating"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                     <Grid style={{ marginBottom: '15px' }} item={true}>
@@ -640,6 +644,7 @@ class RiskEditionOverviewComponent extends Component {
                         name="likelihood"
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                   </Grid>

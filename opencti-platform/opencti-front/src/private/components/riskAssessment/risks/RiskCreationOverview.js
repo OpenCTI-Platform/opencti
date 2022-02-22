@@ -138,7 +138,7 @@ class RiskCreationOverviewComponent extends Component {
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
-                  {t('Item ID')}
+                  {t('POAM ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip
@@ -154,7 +154,7 @@ class RiskCreationOverviewComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  name="item_id"
+                  name="poam_id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 />

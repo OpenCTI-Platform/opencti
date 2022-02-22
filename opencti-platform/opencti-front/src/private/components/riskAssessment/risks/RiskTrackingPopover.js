@@ -31,6 +31,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 // import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
 import Loader from '../../../../components/Loader';
 import MarkDownField from '../../../../components/MarkDownField';
+import { dateFormat, parse } from '../../../../utils/Time';
 
 const styles = (theme) => ({
   container: {
@@ -184,9 +185,9 @@ class RiskTrackingPopover extends Component {
       R.assoc('entry_type', node?.entry_type || ''),
       R.assoc('title', node?.name || ''),
       R.assoc('description', node?.description || ''),
-      R.assoc('event_start', node?.entry_type || ''),
-      R.assoc('event_end', node?.entry_type || ''),
-      // R.assoc('logged_by', riskTrackingLoggedBy?.logged_by.name || ''),
+      R.assoc('event_start', dateFormat(node?.event_start)),
+      R.assoc('event_end', dateFormat(node?.event_end)),
+      R.assoc('logged_by', riskTrackingLoggedBy?.name || ''),
       R.assoc('status_change', node?.status_change || ''),
       R.assoc('related_response', node?.related_response || ''),
       R.pick([

@@ -173,7 +173,6 @@ class RiskTrackingLineContainer extends Component {
   }
 
   handleClick(e) {
-    console.log('handleClick', e);
     this.setState({
       value: !this.state.value,
     });

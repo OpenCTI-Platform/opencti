@@ -222,8 +222,10 @@ class RiskCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello world',
-            // item_id: '',
+            name: '',
+            // poam_id: '',
+            created: null,
+            modified: null,
             description: '',
             // weakness: '',
             controls: [],
@@ -234,7 +236,7 @@ class RiskCreation extends Component {
             labels: [],
             statement: '',
             risk_status: 'open',
-            deadline: dayStartDate(),
+            deadline: null,
             // impacted_component: '',
             // impacted_assets: '',
             // detection_source: '',

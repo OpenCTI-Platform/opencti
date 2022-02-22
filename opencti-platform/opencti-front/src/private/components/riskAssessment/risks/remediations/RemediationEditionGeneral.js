@@ -155,6 +155,7 @@ class RemediationEditionGeneralOverviewComponent extends Component {
                     'The value must be a date (YYYY-MM-DD)',
                   )}
                   style={{ height: '38.09px' }}
+                  disabled={true}
                 />
               </Grid>
             </Grid>
@@ -181,6 +182,7 @@ class RemediationEditionGeneralOverviewComponent extends Component {
                   name="id"
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
+                  disabled={true}
                 // helperText={
                 //   <SubscriptionFocus fieldName="name" />
                 // }

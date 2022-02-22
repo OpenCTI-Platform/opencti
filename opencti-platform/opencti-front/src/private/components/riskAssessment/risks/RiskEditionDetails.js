@@ -214,6 +214,7 @@ class RiskEditionDetailsComponent extends Component {
                           'The value must be a date (YYYY-MM-DD)',
                         )}
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                   </Grid>
@@ -247,6 +248,7 @@ class RiskEditionDetailsComponent extends Component {
                           'The value must be a date (YYYY-MM-DD)',
                         )}
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                   </Grid>

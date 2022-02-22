@@ -324,6 +324,7 @@ class RequiredResourcePopover extends Component {
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          disabled={true}
                         />
                       </div>
                       <div style={{ marginBottom: '15px' }}>
@@ -427,6 +428,7 @@ class RequiredResourcePopover extends Component {
                         rows="3"
                         variant='outlined'
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '5px' }} xs={12} item={true}>

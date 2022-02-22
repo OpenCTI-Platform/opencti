@@ -28,6 +28,7 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { insertNode } from '../../../../utils/Store';
+import { dateFormat, parse } from '../../../../utils/Time';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -216,6 +217,8 @@ class RiskLogCreation extends Component {
                 external_id: '',
                 url: '',
                 description: '',
+                event_start: null,
+                event_end: null,
               }}
               validationSchema={RiskLogValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -303,7 +306,7 @@ class RiskLogCreation extends Component {
           PaperProps={{
             style: {
               overflowY: 'hidden',
-              height: '570px',
+              height: '100%',
             },
           }}
         >
@@ -314,6 +317,8 @@ class RiskLogCreation extends Component {
               external_id: '',
               url: '',
               description: '',
+              event_start: null,
+              event_end: null,
             }}
             validationSchema={RiskLogValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -325,7 +330,7 @@ class RiskLogCreation extends Component {
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '15px' }}>
+                    <div style={{ marginBottom: '15px' }}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -349,6 +354,63 @@ class RiskLogCreation extends Component {
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                    <div style={{ marginBottom: '15px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          size="small"
+                          style={{ float: 'left' }}
+                        >
+                          {t('Title')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Description')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={TextField}
+                          name="title"
+                          fullWidth={true}
+                          size="small"
+                          variant='outlined'
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12} style={{ marginBottom: '15px' }}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Description')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={MarkDownField}
+                        name="description"
+                        fullWidth={true}
+                        multiline={true}
+                        rows="3"
+                        variant='outlined'
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '15px' }}>
                         <Typography
                           variant="h3"
@@ -366,7 +428,7 @@ class RiskLogCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={DatePickerField}
-                          name="start_date"
+                          name="event_start"
                           fullWidth={true}
                           size="small"
                           invalidDateMessage={t(
@@ -440,31 +502,6 @@ class RiskLogCreation extends Component {
                           variant="h3"
                           color="textSecondary"
                           gutterBottom={true}
-                          size="small"
-                          style={{ float: 'left' }}
-                        >
-                          {t('Title')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={TextField}
-                          name="title"
-                          fullWidth={true}
-                          size="small"
-                          variant='outlined'
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
                           style={{ float: 'left' }}
                         >
                           {t('End Date')}
@@ -477,7 +514,7 @@ class RiskLogCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={DatePickerField}
-                          name="end_date"
+                          name="event_end"
                           fullWidth={true}
                           size="small"
                           invalidDateMessage={t(
@@ -513,33 +550,6 @@ class RiskLogCreation extends Component {
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12} style={{ marginBottom: '15px' }}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Description')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Description')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="description"
-                        fullWidth={true}
-                        multiline={true}
-                        rows="3"
-                        variant='outlined'
-                        containerstyle={{ width: '100%' }}
-                      />
                     </Grid>
                   </Grid>
                 </DialogContent>

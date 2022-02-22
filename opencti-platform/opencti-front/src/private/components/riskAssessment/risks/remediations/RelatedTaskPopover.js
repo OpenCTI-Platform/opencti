@@ -319,6 +319,7 @@ class RelatedTaskPopover extends Component {
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          disabled={true}
                         />
                       </div>
                     </Grid>
@@ -374,6 +375,7 @@ class RelatedTaskPopover extends Component {
                         rows="3"
                         variant='outlined'
                         containerstyle={{ width: '100%' }}
+                        disabled={true}
                       />
                     </Grid>
                   </Grid>
