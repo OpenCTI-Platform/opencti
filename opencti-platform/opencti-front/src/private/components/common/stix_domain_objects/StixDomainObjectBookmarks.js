@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { createPaginationContainer } from 'react-relay';
+import { graphql, createPaginationContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import * as R from 'ramda';

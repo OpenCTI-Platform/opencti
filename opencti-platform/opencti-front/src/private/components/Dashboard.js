@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { head, pathOr, assoc, map, pluck, last } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import { makeStyles, useTheme } from '@mui/styles';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
@@ -31,7 +30,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import Slide from '@mui/material/Slide';
-import { useLazyLoadQuery } from 'react-relay';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import { yearsAgo, dayAgo, now, monthsAgo } from '../../utils/Time';
 import { useFormatter } from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';

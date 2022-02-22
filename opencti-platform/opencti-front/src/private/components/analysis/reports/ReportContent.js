@@ -3,10 +3,9 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
 import pdfMake from 'pdfmake';
-import { pdfjs, Document, Page } from 'react-pdf/dist/esm/entry.webpack';
+// import { pdfjs, Document, Page } from 'react-pdf/dist/esm/entry.webpack';
 import htmlToPdfmake from 'html-to-pdfmake';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import AppBar from '@mui/material/AppBar';
@@ -33,7 +32,7 @@ import RobotoRegular from '../../../../resources/fonts/Roboto-Regular.ttf';
 import RobotoBold from '../../../../resources/fonts/Roboto-Bold.ttf';
 import RobotoItalic from '../../../../resources/fonts/Roboto-Italic.ttf';
 import RobotoBoldItalic from '../../../../resources/fonts/Roboto-BoldItalic.ttf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+// import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReportContentPdfBar from './ReportContentPdfBar';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -41,7 +40,7 @@ import {
 } from '../../../../utils/ListParameters';
 import { truncate } from '../../../../utils/String';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/pdf.worker.js`;
+// pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/pdf.worker.js`;
 
 const styles = (theme) => ({
   container: {
@@ -623,15 +622,6 @@ class ReportContentComponent extends Component {
                 loading={<Loader variant="inElement" />}
                 file={currentUrl}
               >
-                {Array.from(new Array(totalPdfPageNumber), (el, index) => (
-                  <Page
-                    key={`page_${index + 1}`}
-                    className={classes.pdfPage}
-                    pageNumber={index + 1}
-                    height={height}
-                    scale={this.state.pdfViewerZoom}
-                  />
-                ))}
               </Document>
             </div>
           </div>
@@ -654,15 +644,6 @@ class ReportContentComponent extends Component {
                   loading={<Loader variant="inElement" />}
                   file={currentBase64Content}
                 >
-                  {Array.from(new Array(totalPdfPageNumber), (el, index) => (
-                    <Page
-                      key={`page_${index + 1}`}
-                      className={classes.pdfPage}
-                      pageNumber={index + 1}
-                      height={height}
-                      scale={this.state.pdfViewerZoom}
-                    />
-                  ))}
                 </Document>
               </div>
             </div>

@@ -12,7 +12,7 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import { Add, Close } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import Chip from '@mui/material/Chip';
 import Fab from '@mui/material/Fab';

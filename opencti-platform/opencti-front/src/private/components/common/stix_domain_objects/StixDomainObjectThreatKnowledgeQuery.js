@@ -1,4 +1,4 @@
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 
 // eslint-disable-next-line import/prefer-default-export
 export const stixDomainObjectThreatKnowledgeStixRelationshipsQuery = graphql`

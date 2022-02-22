@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import DatePicker from '@mui/lab/DatePicker';
 import Drawer from '@mui/material/Drawer';

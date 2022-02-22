@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
-import { createPaginationContainer } from 'react-relay';
+import { graphql, createPaginationContainer } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';

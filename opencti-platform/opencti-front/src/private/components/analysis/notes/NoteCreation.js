@@ -4,7 +4,7 @@ import { Formik, Form, Field } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import { compose, evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';

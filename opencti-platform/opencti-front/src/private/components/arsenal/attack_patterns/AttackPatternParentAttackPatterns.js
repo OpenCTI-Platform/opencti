@@ -8,8 +8,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import { LockPattern } from 'mdi-material-ui';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 
 class AttackPatternParentAttackPatternsComponent extends Component {

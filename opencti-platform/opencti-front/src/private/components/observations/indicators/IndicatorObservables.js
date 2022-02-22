@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes, filter, append } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';

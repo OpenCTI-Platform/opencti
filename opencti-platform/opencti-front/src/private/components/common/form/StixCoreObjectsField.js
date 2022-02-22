@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { compose, pathOr, pipe, map, union } from 'ramda';
 import { Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';

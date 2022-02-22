@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import { MapOutlined, TableChartOutlined } from '@mui/icons-material';
-import { createRefetchContainer } from 'react-relay';
+import { graphql, createRefetchContainer } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';

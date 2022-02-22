@@ -1,5 +1,5 @@
 import React from 'react';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { QueryRenderer } from '../relay/environment';

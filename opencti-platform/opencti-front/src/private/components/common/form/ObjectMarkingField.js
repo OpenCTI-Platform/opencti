@@ -3,7 +3,7 @@ import { compose, pathOr, pipe, map } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { CenterFocusStrong } from '@mui/icons-material';
 import { Field } from 'formik';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';

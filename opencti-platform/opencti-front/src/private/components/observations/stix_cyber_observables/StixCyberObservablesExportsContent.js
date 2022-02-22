@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
 import Slide from '@mui/material/Slide';
-import { createRefetchContainer } from 'react-relay';
+import { graphql, createRefetchContainer } from 'react-relay';
 import List from '@mui/material/List';
 import { interval } from 'rxjs';
 import ListSubheader from '@mui/material/ListSubheader';

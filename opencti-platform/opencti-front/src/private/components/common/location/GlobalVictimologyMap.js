@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import LocationMiniMapTargets from './LocationMiniMapTargets';
 import { QueryRenderer } from '../../../../relay/environment';

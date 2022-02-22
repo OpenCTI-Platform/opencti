@@ -13,7 +13,7 @@ import {
   prop,
 } from 'ramda';
 import { Form, Formik, Field } from 'formik';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';

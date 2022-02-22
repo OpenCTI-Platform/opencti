@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import {
   assoc,
   compose,

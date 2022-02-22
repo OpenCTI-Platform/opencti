@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../components/i18n';
 import { QueryRenderer } from '../../relay/environment';

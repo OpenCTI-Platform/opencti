@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
+import { graphql, createPaginationContainer } from 'react-relay';
 import { map, filter, head, compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
@@ -8,7 +8,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { CheckCircle, Domain } from '@mui/icons-material';
-import graphql from 'babel-plugin-relay/macro';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';

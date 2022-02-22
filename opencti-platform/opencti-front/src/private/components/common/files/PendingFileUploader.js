@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';

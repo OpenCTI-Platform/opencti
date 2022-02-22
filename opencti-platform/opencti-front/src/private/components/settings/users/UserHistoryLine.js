@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import {
   green,
   pink,
@@ -13,7 +13,6 @@ import {
   indigo,
   red,
 } from '@mui/material/colors';
-import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';

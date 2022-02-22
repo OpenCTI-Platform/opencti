@@ -57,7 +57,6 @@ const subscribeFn = (request, variables) => {
     operationName: request.name,
     variables,
   });
-  // Important: Convert subscriptions-transport-ws observable type to Relay's
   return Observable.from(subscribeObservable);
 };
 

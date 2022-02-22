@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { interval } from 'rxjs';
 import { pathOr } from 'ramda';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createPaginationContainer } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
   StixCyberObservableEntityLine,

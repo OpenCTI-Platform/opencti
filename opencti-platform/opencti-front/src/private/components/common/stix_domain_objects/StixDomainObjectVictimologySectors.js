@@ -23,7 +23,6 @@ import {
   descend,
   propOr,
 } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -33,7 +32,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
 import { Domain, ExpandLess, ExpandMore } from '@mui/icons-material';
-import { createRefetchContainer } from 'react-relay';
+import { graphql, createRefetchContainer } from 'react-relay';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Tooltip from '@mui/material/Tooltip';

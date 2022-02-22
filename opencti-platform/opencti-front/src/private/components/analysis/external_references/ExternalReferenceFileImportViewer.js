@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes } from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createRefetchContainer } from 'react-relay';
 import { interval } from 'rxjs';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';

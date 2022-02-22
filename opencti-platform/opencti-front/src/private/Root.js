@@ -1,7 +1,6 @@
 import React from 'react';
 import * as R from 'ramda';
-import { useLazyLoadQuery } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, useLazyLoadQuery } from 'react-relay';
 import CssBaseline from '@mui/material/CssBaseline';
 import { StyledEngineProvider } from '@mui/material/styles';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';

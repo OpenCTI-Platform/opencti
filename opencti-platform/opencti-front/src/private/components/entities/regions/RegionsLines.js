@@ -15,8 +15,7 @@ import {
   flatten,
   uniqBy,
 } from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createRefetchContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import { RegionLine, RegionLineDummy } from './RegionLine';

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createRefetchContainer } from 'react-relay';
 import { interval } from 'rxjs';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';

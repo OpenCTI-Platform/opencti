@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { compose, pick } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
