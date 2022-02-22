@@ -1,6 +1,7 @@
-from tests.utils import compare_values
+from pytest_cases import fixture, parametrize_with_cases
+
 from tests.cases.entities import EntityTestCases
-from pytest_cases import parametrize_with_cases, fixture
+from tests.utils import compare_values
 
 
 @fixture

@@ -37,7 +37,7 @@ class Opinion:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -183,7 +183,7 @@ class Opinion:
                         }
                         ... on Incident {
                             name
-                        }                
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -252,7 +252,7 @@ class Opinion:
                         hasNextPage
                         hasPreviousPage
                         globalCount
-                    }                    
+                    }
                 }
             }
         """
@@ -334,7 +334,7 @@ class Opinion:
 
     """
         Check if a opinion already contains a STIX entity
-        
+
         :return Boolean
     """
 
@@ -404,7 +404,7 @@ class Opinion:
                         id
                         standard_id
                         entity_type
-                        parent_types                    
+                        parent_types
                     }
                 }
             """

@@ -111,7 +111,7 @@ class OpenCTIApiConnector:
         """
         query = """
             mutation ConnectorDeletionMutation($id: ID!) {
-                deleteConnector(id: $id) 
+                deleteConnector(id: $id)
             }
         """
         return self.api.query(query, {"id": _id})

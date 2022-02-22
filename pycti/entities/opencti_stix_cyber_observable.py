@@ -163,8 +163,8 @@ class StixCyberObservable:
                             size
                         }
                     }
-                }                
-            }        
+                }
+            }
             ... on StixFile {
                 extensions
                 size
@@ -179,7 +179,7 @@ class StixCyberObservable:
                 hashes {
                   algorithm
                   hash
-                }           
+                }
             }
             ... on X509Certificate {
                 is_self_signed
@@ -196,7 +196,7 @@ class StixCyberObservable:
                 hashes {
                   algorithm
                   hash
-                }        
+                }
             }
             ... on IPv4Addr {
                 value
@@ -208,7 +208,7 @@ class StixCyberObservable:
                 value
             }
             ... on Mutex {
-                name            
+                name
             }
             ... on NetworkTraffic {
                 extensions
@@ -365,7 +365,7 @@ class StixCyberObservable:
                         hasNextPage
                         hasPreviousPage
                         globalCount
-                    }                    
+                    }
                 }
             }
         """
@@ -636,7 +636,7 @@ class StixCyberObservable:
                     $createdBy: String,
                     $objectMarking: [String],
                     $objectLabel: [String],
-                    $externalReferences: [String],                    
+                    $externalReferences: [String],
                     $AutonomousSystem: AutonomousSystemAddInput,
                     $Directory: DirectoryAddInput,
                     $DomainName: DomainNameAddInput,
@@ -673,7 +673,7 @@ class StixCyberObservable:
                         createdBy: $createdBy,
                         objectMarking: $objectMarking,
                         objectLabel: $objectLabel,
-                        externalReferences: $externalReferences,             
+                        externalReferences: $externalReferences,
                         AutonomousSystem: $AutonomousSystem,
                         Directory: $Directory,
                         DomainName: $DomainName,
@@ -1798,7 +1798,7 @@ class StixCyberObservable:
         query = """
             mutation StixCyberObservablesExportPush($file: Upload!, $listFilters: String) {
                 stixCyberObservablesExportPush(file: $file, listFilters: $listFilters)
-            } 
+            }
         """
         self.opencti.query(
             query,

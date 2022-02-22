@@ -1,5 +1,6 @@
-from pytest_cases import parametrize_with_cases, fixture
+from pytest_cases import fixture, parametrize_with_cases
 from stix2 import Bundle
+
 from tests.cases.entities import EntityTestCases
 
 

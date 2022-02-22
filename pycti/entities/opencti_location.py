@@ -37,7 +37,7 @@ class Location:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -194,7 +194,7 @@ class Location:
 
     """
         Read a Location object
-        
+
         :param id: the id of the Location
         :param filters: the filters to apply if no id provided
         :return Location object

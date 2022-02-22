@@ -1,15 +1,15 @@
 # coding: utf-8
+import base64
 import datetime
 import io
 import json
 import logging
-import base64
 from typing import Union
 
 import magic
-from pythonjsonlogger import jsonlogger
 import requests
 import urllib3
+from pythonjsonlogger import jsonlogger
 
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_work import OpenCTIApiWork

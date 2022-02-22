@@ -2,6 +2,7 @@
 
 import json
 import os
+
 import magic
 
 
@@ -40,7 +41,7 @@ class StixDomainObject:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -120,7 +121,7 @@ class StixDomainObject:
                     edges {
                         node {
                             id
-                            standard_id                            
+                            standard_id
                             entity_type
                             kill_chain_name
                             phase_name
@@ -151,10 +152,10 @@ class StixDomainObject:
                             }
                             ... on BasicRelationship {
                                 id
-                            } 
+                            }
                         }
                     }
-                }                
+                }
             }
             ... on ObservedData {
                 first_observed
@@ -168,10 +169,10 @@ class StixDomainObject:
                             }
                             ... on BasicRelationship {
                                 id
-                            } 
+                            }
                         }
                     }
-                }                
+                }
             }
             ... on Opinion {
                 explanation
@@ -185,10 +186,10 @@ class StixDomainObject:
                             }
                             ... on BasicRelationship {
                                 id
-                            } 
+                            }
                         }
                     }
-                }                
+                }
             }
             ... on Report {
                 name
@@ -203,7 +204,7 @@ class StixDomainObject:
                             }
                             ... on BasicRelationship {
                                 id
-                            } 
+                            }
                         }
                     }
                 }
@@ -321,7 +322,7 @@ class StixDomainObject:
                     edges {
                         node {
                             id
-                            standard_id                            
+                            standard_id
                             entity_type
                             kill_chain_name
                             phase_name
@@ -495,7 +496,7 @@ class StixDomainObject:
 
     """
         Read a Stix-Domain-Object object
-        
+
         :param id: the id of the Stix-Domain-Object
         :param types: list of Stix Domain Entity types
         :param filters: the filters to apply if no id provided
@@ -650,7 +651,7 @@ class StixDomainObject:
             return None
 
     """
-        Upload a file in this Stix-Domain-Object 
+        Upload a file in this Stix-Domain-Object
 
         :param id: the Stix-Domain-Object id
         :param file_name
@@ -704,7 +705,7 @@ class StixDomainObject:
         query = """
             mutation StixDomainObjectsExportPush($type: String!, $file: Upload!, $listFilters: String) {
                 stixDomainObjectsExportPush(type: $type, file: $file, listFilters: $listFilters)
-            } 
+            }
         """
         self.opencti.query(
             query,
@@ -721,7 +722,7 @@ class StixDomainObject:
                 stixDomainObjectEdit(id: $id) {
                     exportPush(file: $file)
                 }
-            } 
+            }
         """
         self.opencti.query(
             query, {"id": entity_id, "file": (self.file(file_name, data))}
@@ -1224,7 +1225,7 @@ class StixDomainObject:
                                     standard_id
                                     entity_type
                                     spec_version
-                                    
+
                                     name
                                     alias
                                     description
@@ -1282,7 +1283,7 @@ class StixDomainObject:
                                                 id
                                             }
                                         }
-                                    }            
+                                    }
                                     externalReferences {
                                         edges {
                                             node {
@@ -1438,7 +1439,7 @@ class StixDomainObject:
                                                 id
                                             }
                                         }
-                                    }            
+                                    }
                                     externalReferences {
                                         edges {
                                             node {

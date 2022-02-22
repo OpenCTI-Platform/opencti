@@ -37,7 +37,7 @@ class Note:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -147,7 +147,7 @@ class Note:
                         }
                         ... on System {
                             name
-                        }                        
+                        }
                         ... on Indicator {
                             name
                         }
@@ -183,7 +183,7 @@ class Note:
                         }
                         ... on Incident {
                             name
-                        }                
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -252,7 +252,7 @@ class Note:
                         hasNextPage
                         hasPreviousPage
                         globalCount
-                    }                    
+                    }
                 }
             }
         """
@@ -334,7 +334,7 @@ class Note:
 
     """
         Check if a note already contains a STIX entity
-        
+
         :return Boolean
     """
 
@@ -404,7 +404,7 @@ class Note:
                         id
                         standard_id
                         entity_type
-                        parent_types                    
+                        parent_types
                     }
                 }
             """

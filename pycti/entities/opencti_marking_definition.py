@@ -63,7 +63,7 @@ class MarkingDefinition:
                         hasNextPage
                         hasPreviousPage
                         globalCount
-                    }                    
+                    }
                 }
             }
         """

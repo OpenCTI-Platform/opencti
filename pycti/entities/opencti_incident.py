@@ -37,7 +37,7 @@ class Incident:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -191,7 +191,7 @@ class Incident:
 
     """
         Read a Incident object
-        
+
         :param id: the id of the Incident
         :param filters: the filters to apply if no id provided
         :return Incident object
@@ -267,7 +267,7 @@ class Incident:
                         id
                         standard_id
                         entity_type
-                        parent_types               
+                        parent_types
                     }
                }
             """

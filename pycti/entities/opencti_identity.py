@@ -39,7 +39,7 @@ class Identity:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -203,7 +203,7 @@ class Identity:
 
     """
         Read a Identity object
-        
+
         :param id: the id of the Identity
         :param filters: the filters to apply if no id provided
         :return Identity object

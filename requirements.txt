@@ -1,10 +1,10 @@
-requests>=2.25
-PyYAML~=6.0
-setuptools~=60.1.0
 datefinder~=0.7
-stix2~=3.0.1
 pika~=1.2
-sseclient~=0.0.27
-python_json_logger~=2.0.2
 python-magic~=0.4.24; sys_platform == 'linux' or sys_platform == 'darwin'
 python-magic-bin~=0.4.14; sys_platform == 'win32'
+python_json_logger~=2.0.2
+PyYAML~=6.0
+requests>=2.25
+setuptools~=60.1.0
+sseclient~=0.0.27
+stix2~=3.0.1

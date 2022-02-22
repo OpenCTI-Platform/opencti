@@ -1,4 +1,5 @@
 from stix2 import Report
+
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 
