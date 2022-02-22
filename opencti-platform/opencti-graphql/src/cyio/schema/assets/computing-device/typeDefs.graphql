@@ -272,7 +272,7 @@
     installed_operating_system
     "Nework ID"
     network_id
-    "Labels"
+    "Label"
     labels
   }
 
@@ -294,12 +294,14 @@
     name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
     "Asset Type"
     asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
-    "Labels"
-    labels        # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "Label"
+    label_name    # Label (key:label_names, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "Location"
+    location_name
     "IP Address"
-    ip_address
+    ip_address_value
     "Installed Operating System"
-    installed_operating_system
+    installed_os_name
     "Network ID"
     network_id
   }

@@ -20,8 +20,17 @@ const inventoryConstraint = `
 //     }
 // }`;
 
-export function getSelectSparqlQuery(type, select, id, filter, ) {
+export function getSelectSparqlQuery(type, select, id, filters, ) {
   var sparqlQuery;
+
+  if (type === 'NETWORK') {
+    if ( filters !== undefined && id === undefined ) {
+      for( const filter of filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+  }
+
   let { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
   const selectPortion = `
@@ -41,43 +50,14 @@ export function getSelectSparqlQuery(type, select, id, filter, ) {
         ${predicates}
       }
       `
-      // ${selectionClause}
-      // WHERE {
-      //   GRAPH ${iri} {
-      //       ${iri} a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
-      //       ${predicates}
-      //   }
-      // }
-      // `
       break;
     case 'NETWORK':
       iri = id == null ? "?iri" : `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`
-      let filterStr = '';
       let byId = '';
       if (id !== undefined) {
         byId = byIdClause(id);
       }
-      sparqlQuery = selectPortion + typeConstraint + byId + predicates + inventoryConstraint + filterStr + '}';
-
-      // sparqlQuery = `
-      // ${selectionClause}
-      // FROM <tag:stardog:api:context:named>
-      // WHERE {
-      //   ?iri a <http://scap.nist.gov/ns/asset-identification#Network> ;
-      //   ${predicates} 
-      //   ${inventoryConstraint} .
-      //   ${filterStr}
-      // }`
-      // ${selectionClause}
-      // WHERE {
-      //   GRAPH ${iri} {
-      //       ?iri a <http://scap.nist.gov/ns/asset-identification#Network> ;
-      //       ${predicates} 
-      //       ${inventoryConstraint} .
-      //       ${filterStr}
-      //   }
-      // }
-      // `
+      sparqlQuery = selectPortion + typeConstraint + byId + predicates + inventoryConstraint + '}';
       break;
     case 'CONN-NET-IRI':
       sparqlQuery = selectPortion +
@@ -125,6 +105,11 @@ export const predicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
+  label_name: {
+    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   asset_id: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "asset_id")},
@@ -142,8 +127,13 @@ export const predicateMap = {
   },
   locations: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#locations>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "locations")},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "locations");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  location_name: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#locations>/<http://darklight.ai/ns/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "location_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   asset_type: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#asset_type>",

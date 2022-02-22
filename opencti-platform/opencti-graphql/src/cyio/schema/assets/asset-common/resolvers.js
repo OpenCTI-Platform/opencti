@@ -1,5 +1,6 @@
 import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
 import {compareValues, filterValues, updateQuery} from '../../utils.js';
+import { UserInputError } from "apollo-server-express";
 import { 
   getSelectSparqlQuery,
   getReducer,
@@ -11,14 +12,19 @@ import {
   selectLocationQuery,
   selectAllLocations,
   deleteLocationQuery,
-  locationPredicateMap
+  locationPredicateMap,
 } from './sparql-query.js';
-import { UserInputError } from "apollo-server-express";
+import {
+  selectLabelByIriQuery,
+  selectExternalReferenceByIriQuery,
+  selectNoteByIriQuery,
+  getReducer as getGlobalReducer,
+} from '../../global/resolvers/sparql-query.js';
 
 const assetCommonResolvers = {
   Query: {
     assetList: async ( _, args, { dbName, dataSources, selectMap }) => {
-      var sparqlQuery = getSelectSparqlQuery('ASSET', selectMap.getNode("node") );
+      var sparqlQuery = getSelectSparqlQuery('ASSET', selectMap.getNode("node"), undefined, args.filters );
       var reducer = getReducer('ASSET');
       let response;
       try {
@@ -81,6 +87,7 @@ const assetCommonResolvers = {
             limit-- ;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
@@ -139,7 +146,7 @@ const assetCommonResolvers = {
     },
     itAssetList: async ( _, args, {dbName, dataSources, selectMap} ) => {
       const selectList = selectMap.getNode("node");
-      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', selectList );
+      var sparqlQuery = getSelectSparqlQuery('IT-ASSET', selectList, undefined, args.filters );
       var reducer = getReducer('IT-ASSET');
       let response;
       try {
@@ -202,6 +209,7 @@ const assetCommonResolvers = {
             limit-- ;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
@@ -259,7 +267,7 @@ const assetCommonResolvers = {
       }
     },
     assetLocationList: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllLocations(selectMap.getNode("node"));
+      const sparqlQuery = selectAllLocations(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -319,6 +327,7 @@ const assetCommonResolvers = {
             limit--;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
@@ -496,46 +505,165 @@ const assetCommonResolvers = {
     web_site: 'web-site',
     workstation: 'workstation',
   },
-  RegionName: {
-    africa: 'africa',
-    eastern_africa: 'eastern-africa',
-    middle_africa: 'middle-africa',
-    northern_africa: 'northern-africa',
-    southern_africa: 'southern-africa',
-    western_africa: 'western-africa',
-    americas: 'americas',
-    caribbean: 'caribbean',
-    central_america: 'central-america',
-    latin_america_caribbean: 'latin-america-caribbean',
-    northern_america: 'northern-america',
-    south_america: 'south-america',
-    asia: 'asia',
-    central_asia: 'central-asia',
-    eastern_asia: 'eastern-asia',
-    southern_asia: 'southern-asia',
-    south_eastern_asia: 'south-eastern-asia',
-    western_asia: 'western-asia',
-    europe: 'europe',
-    eastern_europe: 'eastern-europe',
-    northern_europe: 'northern-europe',
-    southern_europe: 'southern-europe',
-    western_europe: 'western-europe',
-    oceania: 'oceania',
-    antarctica: 'antarctica',
-    australia_new_zealand: 'australia-new-zealand',
-    melanesia: 'melanesia',
-    micronesia: 'micronesia',
-    polynesia: 'polynesia',
-  },
   Asset: {
     __resolveType: ( item ) => {
       return objectTypeMapping[item.entity_type];
     },
-    locations: ( parent, ) => {
+    locations: async (parent, args, {dbName, dataSources, selectMap}) => {
+      let iriArray = parent.labels_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getReducer("ASSET-LOCATION");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Location')) continue;
+          const sparqlQuery = selectLocationByIriQuery(iri, selectMap.getNode("locations"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Location",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
     },
-    external_references: ( parent, ) => {
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      let iriArray = parent.labels_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getGlobalReducer("LABEL");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Label')) continue;
+          const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode("labels"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Label",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
     },
-    notes: ( parent, ) => {
+    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+      let iriArray = parent.ext_ref_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('ExternalReference')) continue;
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select External Reference",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+      let iriArray = parent.notes_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getGlobalReducer("NOTE");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Note')) continue;
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Note",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
     },
   },
   AssetLocation: {

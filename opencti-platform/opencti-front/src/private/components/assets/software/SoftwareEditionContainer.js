@@ -349,6 +349,7 @@ class SoftwareEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={software.external_references}
                     cyioCoreObjectId={software.id}
+                    typename={software.__typename}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -417,6 +418,7 @@ const SoftwareEditionFragment = createFragmentContainer(
   {
     software: graphql`
       fragment SoftwareEditionContainer_software on SoftwareAsset {
+        __typename
         id
         name
         asset_id
@@ -425,15 +427,19 @@ const SoftwareEditionFragment = createFragmentContainer(
         vendor_name
         asset_tag
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
         external_references {
+          __typename
           id
           source_name
           description
+          entity_type
           url
           hashes {
             value
@@ -441,14 +447,17 @@ const SoftwareEditionFragment = createFragmentContainer(
           external_id
         }
         notes {
+          __typename
           id
           # created
           # modified
           entity_type
           labels {
+            __typename
             id
             name
             color
+            entity_type
             description
           }
           abstract

@@ -71,6 +71,7 @@ class CyioCoreObjectExternalReferences extends Component {
       t,
       classes,
       cyioCoreObjectId,
+      typename,
       externalReferences,
     } = this.props;
     const { expanded } = this.state;
@@ -86,6 +87,7 @@ class CyioCoreObjectExternalReferences extends Component {
             externalReferences
             // externalReference.externalReference
           }
+          typename={typename}
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -132,6 +134,7 @@ class CyioCoreObjectExternalReferences extends Component {
 
 CyioCoreObjectExternalReferences.propTypes = {
   externalReferences: PropTypes.array,
+  typename: PropTypes.string,
   cyioCoreObjectId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,

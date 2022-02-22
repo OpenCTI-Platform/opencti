@@ -1,11 +1,14 @@
 import { assetSingularizeSchema as singularizeSchema } from '../asset-mappings.js';
+import { UserInputError } from "apollo-server-express";
+import { compareValues, filterValues, generateId, DARKLIGHT_NS, updateQuery } from '../../utils.js';
+import { addToInventoryQuery } from "../assetUtil.js";
 import {
   getSelectSparqlQuery,
   getReducer,
   insertQuery,
-  deleteNetworkAssetQuery
+  deleteNetworkAssetQuery,
+  predicateMap,
 } from './sparql-query.js';
-import { compareValues, filterValues, generateId, DARKLIGHT_NS, updateQuery } from '../../utils.js';
 import {
   deleteIpAddressRange,
   deleteIpQuery,
@@ -14,14 +17,17 @@ import {
   insertIPQuery,
   selectIPAddressRange
 } from "../assetQueries.js";
-import { UserInputError } from "apollo-server-express";
-import { addToInventoryQuery } from "../assetUtil.js";
-import { predicateMap } from "./sparql-query.js";
+import {
+  selectLabelByIriQuery,
+  selectExternalReferenceByIriQuery,
+  selectNoteByIriQuery,
+  getReducer as getGlobalReducer,
+} from '../../global/resolvers/sparql-query.js';
 
 const networkResolvers = {
   Query: {
     networkAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'));
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args.filters);
       var reducer = getReducer('NETWORK')
       const response = await dataSources.Stardog.queryAll({
           dbName,
@@ -69,6 +75,7 @@ const networkResolvers = {
             limit--;
           }
         }
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
@@ -307,7 +314,124 @@ const networkResolvers = {
           error_code: (response.body.code ? response.body.code : 'N/A')
         });
       }
-    }
+    },
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      let iriArray = parent.labels_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getGlobalReducer("LABEL");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Label')) continue;
+          const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode("labels"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Label",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+      let iriArray = parent.ext_ref_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('ExternalReference')) continue;
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select External Reference",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
+    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+      let iriArray = parent.notes_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getGlobalReducer("NOTE");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Note')) continue;
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Note",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
   }
 };
 

@@ -307,7 +307,7 @@ class SoftwareCreation extends Component {
                     <CyioCoreObjectLatestHistory />
                   </Grid>
                 </Grid>
-                <CyioCoreObjectOrCyioCoreRelationshipNotes />
+                <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' />
             </>
           )}
         </Formik>

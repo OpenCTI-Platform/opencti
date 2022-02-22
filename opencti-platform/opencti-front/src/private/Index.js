@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
-import TopBar from './components/nav/TopBar';
+import TopBarBreadcrumbs from './components/nav/TopBarBreadcrumbs';
 import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import Search from './components/Search';
@@ -71,7 +71,7 @@ const Index = (me) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
-      <TopBar />
+      <TopBarBreadcrumbs />
       <LeftBar />
       <Message />
       <main className={classes.content} style={{ paddingRight: 24 }}>
