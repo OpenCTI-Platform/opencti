@@ -530,7 +530,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 state = json.loads(self.connector_state)
                 if isinstance(state, Dict) and state:
                     return state
-        except:  # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except  # noqa: E722
             pass
         return None
 

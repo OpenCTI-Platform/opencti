@@ -45,7 +45,7 @@ class ThreatActor:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -124,7 +124,7 @@ class ThreatActor:
             sophistication
             resource_level
             primary_motivation
-            secondary_motivations      
+            secondary_motivations
             personal_motivations
             importFiles {
                 edges {

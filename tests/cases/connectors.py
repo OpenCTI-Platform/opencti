@@ -5,16 +5,16 @@ from typing import Dict
 
 import pika.exceptions
 import yaml
-from stix2 import Vulnerability, Bundle, Report, Identity
+from stix2 import Bundle, Identity, Report, Vulnerability
 
 from pycti import (
-    OpenCTIConnectorHelper,
-    get_config_variable,
     OpenCTIApiClient,
-    SimpleObservable,
+    OpenCTIConnectorHelper,
     OpenCTIStix2Utils,
+    SimpleObservable,
+    get_config_variable,
 )
-from pycti.utils.constants import IdentityTypes, ContainerTypes
+from pycti.utils.constants import ContainerTypes, IdentityTypes
 
 
 class SimpleConnectorTest:

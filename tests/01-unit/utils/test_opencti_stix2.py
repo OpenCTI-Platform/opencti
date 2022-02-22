@@ -1,6 +1,8 @@
 import datetime
-from pycti.utils.opencti_stix2 import OpenCTIStix2
+
 import pytest
+
+from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 
 @pytest.fixture

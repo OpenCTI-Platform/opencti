@@ -33,7 +33,7 @@ Steps to create the smallest reproducible scenario:
 ## Actual Output
 
 { Please describe what actually happened. }
- 
+
 ## Additional information
 
 { Any additional information, including logs or screenshots if you have any. }

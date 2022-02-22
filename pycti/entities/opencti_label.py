@@ -56,7 +56,7 @@ class Label:
                         hasNextPage
                         hasPreviousPage
                         globalCount
-                    }                    
+                    }
                 }
             }
         """

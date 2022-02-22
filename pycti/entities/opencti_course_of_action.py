@@ -37,7 +37,7 @@ class CourseOfAction:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -190,7 +190,7 @@ class CourseOfAction:
 
     """
         Read a Course-Of-Action object
-        
+
         :param id: the id of the Course-Of-Action
         :param filters: the filters to apply if no id provided
         :return Course-Of-Action object

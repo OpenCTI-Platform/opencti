@@ -14,7 +14,7 @@ custom_attributes = """
     id
     name
     published
-    description   
+    description
 """
 
 final_reports = []

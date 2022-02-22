@@ -19,7 +19,7 @@ Thus already a BIG THANK YOU upfront to you for choosing to help with your PR.
 
 <!--
 Please submit the source code in a way, where you could honestly say `This code is finished`.
-If you feel that there are possibilities for improving the code quality, please do so. 
+If you feel that there are possibilities for improving the code quality, please do so.
 By doing this, you are actively helping us to improve the quality of the entire OpenCTI project.
 -->
 

@@ -3,7 +3,8 @@ import time
 from typing import Dict, List
 
 from dateutil.parser import parse
-from pycti import OpenCTIApiConnector, OpenCTIApiClient, OpenCTIApiWork
+
+from pycti import OpenCTIApiClient, OpenCTIApiConnector, OpenCTIApiWork
 
 
 def get_incident_start_date():

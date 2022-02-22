@@ -42,7 +42,7 @@ class StixSightingRelationship:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -166,10 +166,10 @@ class StixSightingRelationship:
                 }
                 ... on Incident {
                     name
-                }           
+                }
                 ... on StixCyberObservable {
                     observable_value
-                }                     
+                }
                 ... on StixCoreRelationship {
                     standard_id
                     spec_version

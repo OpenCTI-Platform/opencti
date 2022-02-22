@@ -1,20 +1,18 @@
 import pika.exceptions
 import pytest
-from pytest_cases import parametrize_with_cases, fixture
+from pytest_cases import fixture, parametrize_with_cases
+
 from pycti import OpenCTIConnector
 from tests.cases.connectors import (
     ExternalImportConnector,
-    SimpleConnectorTest,
-    InternalEnrichmentConnector,
     ExternalImportConnectorTest,
+    InternalEnrichmentConnector,
     InternalEnrichmentConnectorTest,
-    InternalImportConnectorTest,
     InternalImportConnector,
+    InternalImportConnectorTest,
+    SimpleConnectorTest,
 )
-from tests.utils import (
-    get_connector_id,
-    get_new_work_id,
-)
+from tests.utils import get_connector_id, get_new_work_id
 
 
 @fixture

@@ -38,7 +38,7 @@ class StixObjectOrStixRelationship:
                                     color
                                 }
                             }
-                        }                        
+                        }
                     }
                     ... on Organization {
                         x_opencti_organization_type
@@ -106,7 +106,7 @@ class StixObjectOrStixRelationship:
                     edges {
                         node {
                             id
-                            standard_id                            
+                            standard_id
                             entity_type
                             kill_chain_name
                             phase_name
@@ -260,7 +260,7 @@ class StixObjectOrStixRelationship:
                     edges {
                         node {
                             id
-                            standard_id                            
+                            standard_id
                             entity_type
                             kill_chain_name
                             phase_name

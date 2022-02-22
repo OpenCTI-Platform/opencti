@@ -37,7 +37,7 @@ class ObservedData:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -183,7 +183,7 @@ class ObservedData:
                         }
                         ... on Incident {
                             name
-                        }                
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -251,7 +251,7 @@ class ObservedData:
                         hasNextPage
                         hasPreviousPage
                         globalCount
-                    }                    
+                    }
                 }
             }
         """
@@ -311,7 +311,7 @@ class ObservedData:
 
     """
         Check if a observedData already contains a STIX entity
-        
+
         :return Boolean
     """
 
@@ -385,7 +385,7 @@ class ObservedData:
                         id
                         standard_id
                         entity_type
-                        parent_types                     
+                        parent_types
                     }
                 }
             """

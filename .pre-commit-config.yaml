@@ -1,18 +1,28 @@
 ---
 repos:
   - repo: https://github.com/PyCQA/isort
-    rev: 5.8.0
+    rev: 5.10.1
     hooks:
       - id: isort
+        args:
+          - "--profile"
+          - "black"
   - repo: https://github.com/psf/black
-    rev: 20.8b1
+    rev: 22.1.0
     hooks:
       - id: black
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.26.1
+    rev: v1.26.3
     hooks:
       - id: yamllint
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.3.0
+    rev: v4.1.0
     hooks:
+      - id: check-ast
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
       - id: check-yaml
+      - id: end-of-file-fixer
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace

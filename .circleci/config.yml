@@ -1,6 +1,7 @@
+---
 version: 2.1
-orbs: 
-  slack: circleci/slack@4.7.1
+orbs:
+  slack: circleci/slack@4.8.0
 jobs:
   ensure_formatting:
     docker:
@@ -18,11 +19,15 @@ jobs:
           name: confirm black version
           command: black --version
       - run:
+          name: run isort check
+          command: isort --check-only .
+      - run:
           name: run black check
           command: black --check .
       - slack/notify:
+          branch_pattern: master
           event: fail
-          template: basic_fail_1          
+          template: basic_fail_1
   linter:
     docker:
       - image: alpine/flake8
@@ -33,8 +38,9 @@ jobs:
           name: flake8
           command: flake8 --ignore=E,W ~/repo
       - slack/notify:
+          branch_pattern: master
           event: fail
-          template: basic_fail_1          
+          template: basic_fail_1
   tests:
     parameters:
       version:
@@ -54,8 +60,9 @@ jobs:
           name: run pytest
           command: python3 -m pytest --cov=pycti
       - slack/notify:
+          branch_pattern: master
           event: fail
-          template: basic_fail_1             
+          template: basic_fail_1
   build:
     working_directory: ~/opencti-client
     docker:
@@ -64,13 +71,25 @@ jobs:
       - checkout
       - run:
           name: install dependencies
-          command: pip3 install -r requirements.txt --user
+          command: >
+            pip3 install --user -r requirements.txt -r test-requirements.txt
+      - run:
+          name: check version
+          command: |
+            package_version="$(
+                python3 -c 'import pycti; print(pycti.__version__)'
+            )"
+            [ "${CIRCLE_TAG}" = "${package_version}" ] \
+              || printf "Version mismatch: %s is not equal to %s\n" \
+                 "${CIRCLE_TAG}" "${package_version}"
       - run:
           name: build
-          command: python3 setup.py sdist bdist_wheel
+          command: >
+            SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" python3 -m build
       - slack/notify:
+          branch_pattern: master
           event: fail
-          template: basic_fail_1          
+          template: basic_fail_1
       - persist_to_workspace:
           root: ~/opencti-client
           paths:
@@ -94,26 +113,26 @@ jobs:
           command: pip3 install twine
       - run:
           name: init .pypirc
-          command: |
-            echo -e "[pypi]" >> ~/.pypirc
-            echo -e "username = opencti" >> ~/.pypirc
-            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+          command: >
+            printf "[pypi]\nusername = opencti\npassword = %s\n"
+            "${PYPI_PASSWORD}" >> ~/.pypirc
       - run:
           name: upload to pypi
           command: twine upload dist/*
       - slack/notify:
+          branch_pattern: master
           event: fail
-          template: basic_fail_1          
+          template: basic_fail_1
   notify_rolling:
     docker:
-      - image: 'cimg/base:stable'
+      - image: "cimg/base:stable"
     steps:
       - slack/notify:
           event: pass
           template: basic_success_1
   notify:
     docker:
-      - image: 'cimg/base:stable'
+      - image: "cimg/base:stable"
     steps:
       - slack/notify:
           event: pass
@@ -126,17 +145,25 @@ workflows:
       - ensure_formatting:
           filters:
             tags:
-              only: /.*/    
+              only: /.*/
       - linter:
           filters:
             tags:
-              only: /.*/    
+              only: /.*/
+      - tests:
+          name: tests_37
+          filters:
+            tags:
+              only: /.*/
+          version: "3.7"
       - tests:
           name: tests_38
           filters:
             tags:
               only: /.*/
           version: "3.8"
+          requires:
+            - tests_37
       - tests:
           name: tests_39
           filters:
@@ -174,4 +201,4 @@ workflows:
             - build
       - notify:
           requires:
-            - deploy    
+            - deploy

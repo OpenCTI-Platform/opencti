@@ -37,7 +37,7 @@ class IntrusionSet:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -194,7 +194,7 @@ class IntrusionSet:
 
     """
         Read a Intrusion-Set object
-        
+
         :param id: the id of the Intrusion-Set
         :param filters: the filters to apply if no id provided
         :return Intrusion-Set object

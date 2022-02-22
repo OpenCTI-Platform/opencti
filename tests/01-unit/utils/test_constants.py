@@ -1,8 +1,8 @@
 from pycti.utils.constants import (
-    StixCyberObservableTypes,
+    ContainerTypes,
     IdentityTypes,
     LocationTypes,
-    ContainerTypes,
+    StixCyberObservableTypes,
 )
 
 

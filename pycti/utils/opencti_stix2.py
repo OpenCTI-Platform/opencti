@@ -5,7 +5,7 @@ import datetime
 import json
 import os
 import uuid
-from typing import List, Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import datefinder
 import dateutil.parser
@@ -376,18 +376,14 @@ class OpenCTIStix2:
                         )
                 self.mapping_cache[url] = {"id": external_reference_id}
                 external_references_ids.append(external_reference_id)
-                if (
-                    stix_object["type"]
-                    in [
-                        "threat-actor",
-                        "intrusion-set",
-                        "campaign",
-                        "incident",
-                        "malware",
-                        "relationship",
-                    ]
-                    and (types is not None and "external-reference-as-report" in types)
-                ):
+                if stix_object["type"] in [
+                    "threat-actor",
+                    "intrusion-set",
+                    "campaign",
+                    "incident",
+                    "malware",
+                    "relationship",
+                ] and (types is not None and "external-reference-as-report" in types):
                     # Add a corresponding report
                     # Extract date
                     try:

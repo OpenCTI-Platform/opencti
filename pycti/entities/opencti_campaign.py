@@ -37,7 +37,7 @@ class Campaign:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -191,7 +191,7 @@ class Campaign:
 
     """
         Read a Campaign object
-        
+
         :param id: the id of the Campaign
         :param filters: the filters to apply if no id provided
         :return Campaign object

@@ -1,8 +1,10 @@
-from typing import List, Dict, Union
+from typing import Dict, List, Union
+
 from stix2 import TLP_GREEN, TLP_WHITE, AttackPattern
+
 from pycti import OpenCTIStix2Utils
-from pycti.utils.constants import LocationTypes, IdentityTypes, ContainerTypes
-from tests.utils import get_incident_start_date, get_incident_end_date
+from pycti.utils.constants import ContainerTypes, IdentityTypes, LocationTypes
+from tests.utils import get_incident_end_date, get_incident_start_date
 
 
 class EntityTestCases:

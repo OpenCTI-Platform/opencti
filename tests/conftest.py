@@ -1,5 +1,6 @@
 import pytest
 from pytest_cases import fixture
+
 from pycti import (
     OpenCTIApiClient,
     OpenCTIApiConnector,

@@ -1,7 +1,11 @@
-pytest_randomly~=3.8
-black==20.8b1
+black==22.1.0
+build>=0.7
+isort>=5.10
 pre-commit~=2.13
-wheel~=0.36
 pytest~=6.2
-pytest-cov~=2.12
 pytest-cases~=3.6
+pytest-cov~=2.12
+pytest_randomly~=3.8
+types-python-dateutil>=2.8
+types-pytz>=2021.3.5
+wheel~=0.36

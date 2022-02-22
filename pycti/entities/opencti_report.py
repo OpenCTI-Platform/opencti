@@ -39,7 +39,7 @@ class Report:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -186,7 +186,7 @@ class Report:
                         }
                         ... on Incident {
                             name
-                        }                
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -365,7 +365,7 @@ class Report:
 
     """
         Check if a report already contains a thing (Stix Object or Stix Relationship)
-        
+
         :param id: the id of the Report
         :param stixObjectOrStixRelationshipId: the id of the Stix-Entity
         :return Boolean
@@ -438,7 +438,7 @@ class Report:
                         id
                         standard_id
                         entity_type
-                        parent_types            
+                        parent_types
                     }
                 }
             """

@@ -116,7 +116,7 @@ class AttackPattern:
                 edges {
                     node {
                         id
-                        standard_id                            
+                        standard_id
                         entity_type
                         kill_chain_name
                         phase_name
@@ -228,7 +228,7 @@ class AttackPattern:
 
     """
         Read a Attack-Pattern object
-        
+
         :param id: the id of the Attack-Pattern
         :param filters: the filters to apply if no id provided
         :return Attack-Pattern object

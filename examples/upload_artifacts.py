@@ -1,7 +1,9 @@
-from pycti import OpenCTIApiClient
 import argparse
 import os
+
 import magic
+
+from pycti import OpenCTIApiClient
 
 API_URL = "API_URL_HERE"
 API_TOKEN = "API_TOKEN_HERE"
