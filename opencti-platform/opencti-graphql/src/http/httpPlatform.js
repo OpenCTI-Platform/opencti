@@ -46,7 +46,7 @@ const createApp = async () => {
     "'self'",
     "'unsafe-inline'",
     'http://cdn.jsdelivr.net/npm/@apollographql/',
-    'https://widget.freshworks.com/widgets/',
+    'https://widget.freshworks.com/',
   ];
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
