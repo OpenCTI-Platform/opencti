@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
 import express from 'express';
 import * as R from 'ramda';
-import { URL } from 'url';
 // noinspection NodeCoreCodingAssistance
 import { readFileSync } from 'fs';
 // noinspection NodeCoreCodingAssistance
@@ -14,7 +13,7 @@ import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
-import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
+import { authenticateUser, loginFromProvider, userWithOrigin } from '../domain/user';
 import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { initializeSession } from '../database/session';
@@ -28,11 +27,11 @@ const setCookieError = (res, message) => {
   });
 };
 
-// const extractRefererPathFromReq = (req) => {
-//   const refererUrl = new URL(req.headers.referer);
-//   // Keep only the pathname to prevent OPEN REDIRECT CWE-601
-//   return refererUrl.pathname;
-// };
+const extractRefererPathFromReq = (req) => {
+  const refererUrl = new URL(req.headers.referer);
+  // Keep only the pathname to prevent OPEN REDIRECT CWE-601
+  return refererUrl.pathname;
+};
 
 const createApp = async () => {
   const appSessionHandler = initializeSession();
@@ -43,7 +42,12 @@ const createApp = async () => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
   });
-  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/', 'https://widget.freshworks.com/widgets'];
+  const scriptSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    'http://cdn.jsdelivr.net/npm/@apollographql/',
+    'https://widget.freshworks.com/',
+  ];
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
@@ -59,12 +63,13 @@ const createApp = async () => {
           "'unsafe-inline'",
           'http://cdn.jsdelivr.net/npm/@apollographql/',
           'https://fonts.googleapis.com/',
+          'https://widget.freshworks.com/',
         ],
         fontSrc: ["'self'", 'https://fonts.gstatic.com/'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
         objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
-        frameSrc: ["'self'", 'data:', 'http://*', 'https://*']
+        frameSrc: ["'self'", 'data:', 'http://*', 'https://*'],
       },
     },
   });
