@@ -63,6 +63,7 @@ const createApp = async () => {
           "'unsafe-inline'",
           'http://cdn.jsdelivr.net/npm/@apollographql/',
           'https://fonts.googleapis.com/',
+          'https://widget.freshworks.com/',
         ],
         fontSrc: ["'self'", 'https://fonts.gstatic.com/'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
