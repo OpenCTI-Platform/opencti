@@ -11,7 +11,7 @@ export default (
   palette: {
     mode: 'dark',
     primary: { main: primary || '#00b1ff' },
-    secondary: { main: secondary || '#e91e63' },
+    secondary: { main: secondary || '#ec407a' },
     background: {
       default: background || '#0a1929',
       paper: paper || '#001e3c',

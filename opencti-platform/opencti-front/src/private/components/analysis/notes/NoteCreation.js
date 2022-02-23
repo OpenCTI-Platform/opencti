@@ -169,6 +169,7 @@ class NoteCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -217,7 +218,6 @@ class NoteCreation extends Component {
                   />
                   <Field
                     component={TextField}
-                    variant="standard"
                     variant="standard"
                     name="attribute_abstract"
                     label={t('Abstract')}

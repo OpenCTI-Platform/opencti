@@ -164,6 +164,7 @@ class ToolCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >

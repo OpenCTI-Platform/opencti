@@ -186,14 +186,13 @@ class RetentionPopover extends Component {
           <DialogActions>
             <Button
               onClick={this.handleCloseDelete.bind(this)}
-              color="primary"
               disabled={this.state.deleting}
             >
               {t('Cancel')}
             </Button>
             <Button
+              color="secondary"
               onClick={this.submitDelete.bind(this)}
-              color="primary"
               disabled={this.state.deleting}
             >
               {t('Delete')}

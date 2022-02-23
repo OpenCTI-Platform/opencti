@@ -149,6 +149,7 @@ class IntrusionSetCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -246,7 +247,7 @@ class IntrusionSetCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}

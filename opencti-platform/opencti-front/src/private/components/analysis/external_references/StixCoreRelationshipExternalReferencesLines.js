@@ -367,8 +367,8 @@ class StixCoreRelationshipExternalReferencesLinesContainer extends Component {
               {t('Cancel')}
             </Button>
             <Button
+              color="secondary"
               onClick={this.handleRemoval.bind(this)}
-              color="primary"
               disabled={this.state.removing}
             >
               {t('Delete')}

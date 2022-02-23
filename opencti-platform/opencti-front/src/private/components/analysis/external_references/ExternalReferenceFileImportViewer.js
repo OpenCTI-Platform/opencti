@@ -167,18 +167,13 @@ const ExternalReferenceFileImportViewerBase = ({
                   </Field>
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
                     color="primary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

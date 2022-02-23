@@ -138,8 +138,8 @@ class IndicatorObservablePopover extends Component {
               {t('Cancel')}
             </Button>
             <Button
+              color="secondary"
               onClick={this.submitDelete.bind(this)}
-              color="primary"
               disabled={this.state.deleting}
             >
               {t('Remove')}
