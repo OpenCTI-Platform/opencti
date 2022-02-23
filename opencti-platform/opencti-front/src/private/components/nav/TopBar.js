@@ -73,6 +73,7 @@ const styles = (theme) => ({
     zIndex: theme.zIndex.drawer + 1,
     background: 0,
     backgroundColor: theme.palette.background.nav,
+    paddingTop: theme.spacing(0.2),
   },
   flex: {
     flexGrow: 1,
@@ -90,28 +91,20 @@ const styles = (theme) => ({
   },
   barRight: {
     position: 'absolute',
-    right: 5,
-    verticalAlign: 'middle',
+    top: 0,
+    right: 13,
     height: '100%',
   },
-  barContainer: {
+  barRightContainer: {
     float: 'left',
-    verticalAlign: 'middle',
     height: '100%',
+    paddingTop: 12,
   },
   divider: {
     display: 'table-cell',
-    float: 'left',
     height: '100%',
+    float: 'left',
     margin: '0 5px 0 5px',
-  },
-  searchContainer: {
-    display: 'table-cell',
-    float: 'left',
-    marginRight: 5,
-  },
-  button: {
-    float: 'left',
   },
 });
 
@@ -157,7 +150,7 @@ const TopBar = ({
     }
   };
   return (
-    <AppBar position="fixed" className={classes.appBar} elevation={1}>
+    <AppBar position="fixed" className={classes.appBar}>
       <Toolbar>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
@@ -293,11 +286,9 @@ const TopBar = ({
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
         <div className={classes.barRight}>
-          <div className={classes.barContainer}>
-            <Security needs={[KNOWLEDGE]}>
-              <div className={classes.searchContainer}>
-                <SearchInput onSubmit={handleSearch} keyword={keyword} />
-              </div>
+          <Security needs={[KNOWLEDGE]}>
+            <div className={classes.barRightContainer}>
+              <SearchInput onSubmit={handleSearch} keyword={keyword} variant="topBar" />
               <Filters
                 variant="dialog"
                 availableFilterKeys={[
@@ -315,10 +306,10 @@ const TopBar = ({
                 currentFilters={{}}
                 disabled={location.pathname.includes('/dashboard/search')}
               />
-            </Security>
-          </div>
-          <Divider className={classes.divider} orientation="vertical" />
-          <div className={classes.barContainer}>
+            </div>
+            <Divider className={classes.divider} orientation="vertical" />
+          </Security>
+          <div className={classes.barRightContainer}>
             <Security needs={[EXPLORE]}>
               <Tooltip title={t('Custom dashboards')}>
                 <IconButton
@@ -400,7 +391,6 @@ const TopBar = ({
             </IconButton>
             <Menu
               id="menu-appbar"
-              style={{ marginTop: 40, zIndex: 2100 }}
               anchorEl={menuOpen.anchorEl}
               open={menuOpen.open}
               onClose={handleCloseMenu}

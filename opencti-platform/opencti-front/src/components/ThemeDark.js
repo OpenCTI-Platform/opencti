@@ -7,7 +7,6 @@ export default (
   paper = null,
   nav = null,
 ) => ({
-  fontFamily: 'Roboto, sans-serif',
   logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
     mode: 'dark',
@@ -20,6 +19,7 @@ export default (
     },
   },
   typography: {
+    fontFamily: '"IBM Plex Sans", sans-serif',
     body2: {
       fontSize: '0.8rem',
     },

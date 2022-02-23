@@ -1,3 +1,4 @@
+import 'typeface-ibm-plex-sans';
 import 'typeface-roboto';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -9,12 +10,26 @@ import 'react-mde/lib/styles/css/react-mde-all.css';
 import * as serviceWorker from './config/serviceWorker';
 import App from './app';
 import { environment } from './relay/environment';
+import Loader from './components/Loader';
+import ThemeDark from './components/ThemeDark';
 
 const { Suspense } = React;
 
+const Loading = () => (
+  <div
+    style={{
+      width: '100%',
+      height: '100%',
+      backgroundColor: ThemeDark().palette.background.default,
+    }}
+  >
+    <Loader />
+  </div>
+);
+
 ReactDOM.render(
   <RelayEnvironmentProvider environment={environment}>
-    <Suspense fallback={'Loading...'}>
+    <Suspense fallback={<Loading />}>
       <App />
     </Suspense>
   </RelayEnvironmentProvider>,

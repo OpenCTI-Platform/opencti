@@ -2,9 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
-import pdfMake from 'pdfmake';
-// import { pdfjs, Document, Page } from 'react-pdf/dist/esm/entry.webpack';
-import htmlToPdfmake from 'html-to-pdfmake';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
@@ -28,10 +25,6 @@ import Loader from '../../../../components/Loader';
 import { stixDomainObjectsLinesSearchQuery } from '../../common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue, graphRawImages } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
-import RobotoRegular from '../../../../resources/fonts/Roboto-Regular.ttf';
-import RobotoBold from '../../../../resources/fonts/Roboto-Bold.ttf';
-import RobotoItalic from '../../../../resources/fonts/Roboto-Italic.ttf';
-import RobotoBoldItalic from '../../../../resources/fonts/Roboto-BoldItalic.ttf';
 // import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import ReportContentPdfBar from './ReportContentPdfBar';
 import {
@@ -218,44 +211,15 @@ class ReportContentComponent extends Component {
       }`;
       Axios.get(url).then((res) => {
         const content = res.data;
-        if (convertToHtmlPdf) {
-          this.setState(
-            {
-              currentHtmlContent: content,
-              isLoading: false,
-            },
-            () => {
-              this.handleConvertPdf();
-            },
-          );
-        } else {
-          this.setState(
-            {
-              initialContent: content,
-              currentContent: content,
-              isLoading: false,
-            },
-            () => this.state.currentTab === 2
-              && this.state.currentFile.metaData.mimetype === 'text/html'
-              && this.handleConvertPdf(),
-          );
-        }
+        this.setState(
+          {
+            initialContent: content,
+            currentContent: content,
+            isLoading: false,
+          },
+        );
       });
     });
-  }
-
-  componentWillMount() {
-    if (this.props.theme.palette.mode === 'dark') {
-      // eslint-disable-next-line global-require
-      require('../../../../resources/css/suneditor-dark.css');
-      // eslint-disable-next-line global-require
-      require('../../../../resources/css/suneditor-dark-contents.css');
-    } else {
-      // eslint-disable-next-line global-require
-      require('../../../../resources/css/suneditor-light.css');
-      // eslint-disable-next-line global-require
-      require('../../../../resources/css/suneditor-light-contents.css');
-    }
   }
 
   componentDidMount() {
@@ -335,79 +299,6 @@ class ReportContentComponent extends Component {
             }
           },
         );
-      }
-    });
-  }
-
-  handleConvertPdf(download = false) {
-    const convertToHtmlPdf = this.state.currentTab === 2
-      && this.state.currentFile.metaData.mimetype === 'text/markdown';
-    const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
-    const htmlData = convertToHtmlPdf
-      ? (this.state.currentHtmlContent || '')
-        .replaceAll('id="undefined" ', '')
-        .replaceAll(regex, '')
-      : (this.state.currentContent || '')
-        .replaceAll('id="undefined" ', '')
-        .replaceAll(regex, '');
-    const ret = htmlToPdfmake(htmlData, { imagesByReference: true });
-    Promise.all(
-      R.pipe(
-        R.toPairs,
-        R.map((n) => Axios.get(n[1], { responseType: 'arraybuffer' })
-          .then((response) => {
-            if (
-              ['image/jpeg', 'image/png'].includes(
-                response.headers['content-type'],
-              )
-            ) {
-              return {
-                ref: n[0],
-                mime: response.headers['content-type'],
-                data: Buffer.from(response.data, 'binary').toString('base64'),
-              };
-            }
-            return null;
-          })
-          .catch(() => null)),
-      )(ret.images),
-    ).then((result) => {
-      const imagesIndex = R.indexBy(R.prop('ref'), result);
-      const images = R.pipe(
-        R.toPairs,
-        R.map((n) => (imagesIndex[n[0]]
-          ? [
-            n[0],
-            `data:${imagesIndex[n[0]].mime};base64,${
-              imagesIndex[n[0]].data
-            }`,
-          ]
-          : [n[0], 'https://static.thenounproject.com/png/3482632-200.png'])),
-        R.fromPairs,
-      )(ret.images);
-      const pdfData = {
-        content: ret.content,
-        images,
-      };
-      const { protocol, hostname, port } = window.location;
-      const url = `${protocol}//${hostname}:${port || ''}`;
-      const fonts = {
-        Roboto: {
-          normal: url + RobotoRegular,
-          bold: url + RobotoBold,
-          italics: url + RobotoItalic,
-          bolditalics: url + RobotoBoldItalic,
-        },
-      };
-      if (download) {
-        const fragment = this.state.currentFile.id.split('/');
-        const currentName = R.last(fragment);
-        pdfMake.createPdf(pdfData, null, fonts).download(`${currentName}.pdf`);
-      } else {
-        const gen = pdfMake.createPdf(pdfData, null, fonts);
-        gen.getDataUrl((data) => {
-          this.setState({ currentBase64Content: data });
-        });
       }
     });
   }
@@ -620,8 +511,7 @@ class ReportContentComponent extends Component {
                 onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                 loading={<Loader variant="inElement" />}
                 file={currentUrl}
-              >
-              </Document>
+              ></Document>
             </div>
           </div>
         )}
@@ -633,7 +523,6 @@ class ReportContentComponent extends Component {
               <ReportContentPdfBar
                 handleZoomIn={this.handleZoomIn.bind(this)}
                 handleZoomOut={this.handleZoomOut.bind(this)}
-                handleDownload={this.handleConvertPdf.bind(this, true)}
                 currentZoom={this.state.pdfViewerZoom}
               />
               <div className={classes.documentContainer}>
@@ -642,8 +531,7 @@ class ReportContentComponent extends Component {
                   onLoadSuccess={this.onDocumentLoadSuccess.bind(this)}
                   loading={<Loader variant="inElement" />}
                   file={currentBase64Content}
-                >
-                </Document>
+                ></Document>
               </div>
             </div>
         )}

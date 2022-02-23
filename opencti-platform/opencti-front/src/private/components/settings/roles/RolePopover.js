@@ -196,11 +196,11 @@ class RolePopover extends Component {
             <Button
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
-              color="secondary"
             >
               {t('Cancel')}
             </Button>
             <Button
+              color="secondary"
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >

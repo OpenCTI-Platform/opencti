@@ -45,7 +45,7 @@ esbuild.build({
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
         <link rel="shortcut icon" href="%BASE_PATH%/static/favicon.png">
         <script>window.BASE_PATH = "%BASE_PATH%"</script>
-         <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>OpenCTI - Cyber Threat Intelligence Platform</title>
         ${jsImport}
         ${cssImport}

@@ -141,10 +141,10 @@ const Login = ({ classes, theme, settings }) => {
   const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
   const authSSOs = filter((p) => p.type === 'SSO', providers);
   const isAuthButtons = authSSOs.length > 0;
-  let loginHeight = 260;
+  let loginHeight = 280;
   if (isAuthButtons && isAuthForm) {
     loginHeight = 350;
-  } else if (authSSOs) {
+  } else if (isAuthButtons) {
     loginHeight = 150;
   }
   const marginTop = dimension.height / 2 - loginHeight / 2 - 200;

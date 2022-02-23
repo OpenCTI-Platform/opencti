@@ -57,15 +57,12 @@ const styles = (theme) => ({
     margin: '5px 10px 0 10px',
     width: 200,
   },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
   filter: {
     margin: '0 10px 10px 0',
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.paper,
     margin: '0 10px 10px 0',
   },
 });
@@ -722,11 +719,15 @@ class Filters extends Component {
                   autoOk={true}
                   allowKeyboardControl={true}
                   format="YYYY-MM-DD"
-                  inputVariant="outlined"
-                  size="small"
-                  fullWidth={variant === 'dialog'}
                   onChange={this.handleChangeDate.bind(this, filterKey)}
-                  renderInput={(params) => <TextField {...params} />}
+                  renderInput={(params) => (
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      fullWidth={variant === 'dialog'}
+                      {...params}
+                    />
+                  )}
                 />
               </Grid>
             );
@@ -756,16 +757,16 @@ class Filters extends Component {
                     onFocus={this.searchEntities.bind(this, filterKey)}
                   />
                 )}
-                renderOption={(option) => (
-                  <React.Fragment>
-                    <div
-                      className={classes.icon}
-                      style={{ color: option.color }}
-                    >
-                      <ItemIcon type={option.type} />
-                    </div>
-                    <div className={classes.text}>{option.label}</div>
-                  </React.Fragment>
+                renderOption={(props, option) => (
+                    <li {...props}>
+                      <div
+                        className={classes.icon}
+                        style={{ color: option.color }}
+                      >
+                        <ItemIcon type={option.type} />
+                      </div>
+                      <div className={classes.text}>{option.label}</div>
+                    </li>
                 )}
               />
             </Grid>
@@ -904,12 +905,12 @@ class Filters extends Component {
     const { t, classes, disabled } = this.props;
     const { open, filters } = this.state;
     return (
-      <div style={{ float: 'left' }}>
+      <React.Fragment>
         <Tooltip title={t('Advanced search')}>
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
-            size="large"
+            size="medium"
           >
             <ToyBrickSearchOutline fontSize="medium" />
           </IconButton>
@@ -921,7 +922,7 @@ class Filters extends Component {
           maxWidth="md"
         >
           <DialogTitle>{t('Advanced search')}</DialogTitle>
-          <DialogContent>
+          <DialogContent style={{ paddingTop: 10 }}>
             {filters && !R.isEmpty(filters) && (
               <div className={classes.filtersDialog}>
                 {R.map((currentFilter) => {
@@ -936,7 +937,7 @@ class Filters extends Component {
                           <span key={n.value}>
                             {truncate(n.value, 15)}{' '}
                             {R.last(currentFilter[1]).value !== n.value && (
-                              <code>OR</code>
+                              <code style={{ marginRight: 5 }}>OR</code>
                             )}
                           </span>
                         ),
@@ -973,21 +974,18 @@ class Filters extends Component {
           </DialogContent>
           <DialogActions>
             <Button
+              variant="contained"
               onClick={this.handleCloseFilters.bind(this)}
-              classes={{ root: classes.button }}
+              color="secondary"
             >
               {t('Cancel')}
             </Button>
-            <Button
-              color="primary"
-              onClick={this.handleSearch.bind(this)}
-              classes={{ root: classes.button }}
-            >
+            <Button variant="contained" onClick={this.handleSearch.bind(this)}>
               {t('Search')}
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </React.Fragment>
     );
   }
 

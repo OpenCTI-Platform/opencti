@@ -151,14 +151,16 @@ class ThreatActorPopover extends Component {
           </DialogContent>
           <DialogActions>
             <Button
+              variant="contained"
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
+              color="secondary"
             >
               {t('Cancel')}
             </Button>
             <Button
+              variant="contained"
               onClick={this.submitDelete.bind(this)}
-              color="primary"
               disabled={this.state.deleting}
             >
               {t('Delete')}

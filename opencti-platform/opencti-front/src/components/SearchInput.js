@@ -13,6 +13,12 @@ const styles = (theme) => ({
     padding: '0 10px 0 10px',
     backgroundColor: theme.palette.background.paper,
   },
+  searchRootTopBar: {
+    borderRadius: 5,
+    padding: '1px 10px 0 10px',
+    marginRight: 5,
+    backgroundColor: theme.palette.background.paper,
+  },
   searchRootInDrawer: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
@@ -52,6 +58,8 @@ class SearchInput extends Component {
       classRoot = classes.searchRootInDrawer2;
     } else if (variant === 'noAnimation') {
       classRoot = classes.searchRootNoAnimation;
+    } else if (variant === 'topBar') {
+      classRoot = classes.searchRootTopBar;
     }
     return (
       <TextField
