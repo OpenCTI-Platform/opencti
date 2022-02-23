@@ -221,6 +221,7 @@ class UserEditionOverviewComponent extends Component {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="name"
                 label={t('name')}
                 disabled={external}
@@ -233,6 +234,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="user_email"
                 disabled={external}
                 label={t('Email address')}
@@ -246,6 +248,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
@@ -258,6 +261,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
@@ -313,6 +317,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="api_token"
                 disabled={true}
                 label={t('Token')}

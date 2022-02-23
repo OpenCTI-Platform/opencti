@@ -45,7 +45,7 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -71,8 +71,7 @@ const styles = (theme) => ({
     float: 'right',
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -738,6 +737,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
               </div>
               <Field
                 component={TextField}
+                variant="standard"
                 name="number"
                 label={t('Count')}
                 fullWidth={true}

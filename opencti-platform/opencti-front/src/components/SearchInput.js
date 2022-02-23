@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
-import Input from '@mui/material/Input';
+import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import { Search } from '@mui/icons-material';
 import { compose } from 'ramda';
@@ -54,10 +54,12 @@ class SearchInput extends Component {
       classRoot = classes.searchRootNoAnimation;
     }
     return (
-      <Input
+      <TextField
         fullWidth={fullWidth}
         name="keyword"
         defaultValue={keyword}
+        variant="outlined"
+        size="small"
         placeholder={`${t('Search')}...`}
         onChange={(event) => {
           const { value } = event.target;
@@ -71,22 +73,23 @@ class SearchInput extends Component {
             onSubmit(value);
           }
         }}
-        startAdornment={
-          <InputAdornment position="start">
-            <Search />
-          </InputAdornment>
-        }
-        classes={{
-          root: classRoot,
-          input:
-            // eslint-disable-next-line no-nested-ternary
-            variant === 'small'
-              ? classes.searchInputSmall
-              : variant !== 'noAnimation'
-                ? classes.searchInput
-                : classes.searchInputNoAnimation,
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Search />
+            </InputAdornment>
+          ),
+          classes: {
+            root: classRoot,
+            input:
+              // eslint-disable-next-line no-nested-ternary
+              variant === 'small'
+                ? classes.searchInputSmall
+                : variant !== 'noAnimation'
+                  ? classes.searchInput
+                  : classes.searchInputNoAnimation,
+          },
         }}
-        disableUnderline={true}
         autoComplete="off"
       />
     );

@@ -30,7 +30,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -56,8 +55,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -216,12 +214,14 @@ class ExternalReferenceCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="source_name2"
                     label={t('Source name')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="external_id"
                     label={t('External ID')}
                     fullWidth={true}
@@ -229,6 +229,7 @@ class ExternalReferenceCreation extends Component {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="url"
                     label={t('URL')}
                     fullWidth={true}
@@ -318,12 +319,14 @@ class ExternalReferenceCreation extends Component {
                 <DialogContent>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="external_id"
                     label={t('External ID')}
                     fullWidth={true}
@@ -331,6 +334,7 @@ class ExternalReferenceCreation extends Component {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="url"
                     label={t('URL')}
                     fullWidth={true}

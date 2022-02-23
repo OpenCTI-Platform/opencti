@@ -21,8 +21,7 @@ import { statusCreationStatusTemplatesQuery } from './StatusCreation';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {

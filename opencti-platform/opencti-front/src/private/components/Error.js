@@ -8,11 +8,11 @@ import ErrorNotFound from '../../components/ErrorNotFound';
 
 // Really simple error display
 export const SimpleError = () => (
-    <Alert severity="error">
-      <AlertTitle>Error</AlertTitle>
-      An unknown error occurred. Please contact your administrator or the OpenCTI
-      maintainers.
-    </Alert>
+  <Alert severity="error">
+    <AlertTitle>Error</AlertTitle>
+    An unknown error occurred. Please contact your administrator or the OpenCTI
+    maintainers.
+  </Alert>
 );
 
 class ErrorBoundaryComponent extends React.Component {
@@ -31,7 +31,10 @@ class ErrorBoundaryComponent extends React.Component {
       const retroErrors = this.state.error?.data?.res?.errors ?? [];
       const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
       // Access error must be forwarded
-      if (includes('ForbiddenAccess', types) || includes('AuthRequired', types)) {
+      if (
+        includes('ForbiddenAccess', types)
+        || includes('AuthRequired', types)
+      ) {
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw this.state.error;
       }

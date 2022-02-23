@@ -21,7 +21,6 @@ const styles = (theme) => ({
     padding: '0 0 20px 0',
     overflowX: 'hidden',
     zIndex: 1200,
-    backgroundColor: theme.palette.navAlt.background,
   },
   toolbar: theme.mixins.toolbar,
 });

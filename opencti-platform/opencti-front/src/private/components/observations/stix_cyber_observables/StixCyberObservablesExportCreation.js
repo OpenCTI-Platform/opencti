@@ -50,7 +50,6 @@ const styles = (theme) => ({
     width: 250,
     padding: '0 0 20px 0',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,

@@ -26,14 +26,13 @@ const styles = (theme) => ({
     padding: '0 0 20px 0',
     position: 'fixed',
     zIndex: 1100,
-    backgroundColor: theme.palette.navAlt.background,
   },
   drawerPaperExports: {
     minHeight: '100vh',
     width: 250,
     right: 310,
     padding: '0 0 20px 0',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.leavingScreen,

@@ -141,6 +141,7 @@ const ProfileOverviewComponent = (props) => {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="name"
                     disabled={external}
                     label={t('Name')}
@@ -149,6 +150,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="user_email"
                     disabled={true}
                     label={t('Email address')}
@@ -158,6 +160,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="firstname"
                     label={t('Firstname')}
                     fullWidth={true}
@@ -166,6 +169,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="lastname"
                     label={t('Lastname')}
                     fullWidth={true}
@@ -209,6 +213,7 @@ const ProfileOverviewComponent = (props) => {
                   </Field>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

@@ -87,7 +87,7 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -95,8 +95,7 @@ const styles = (theme) => ({
     padding: 0,
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -1095,6 +1094,7 @@ class ToolBar extends Component {
         <Drawer
           open={this.state.displayUpdate}
           anchor="right"
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >

@@ -29,7 +29,7 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -226,6 +226,7 @@ class SystemEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               disabled={external}
               label={t('Name')}
@@ -252,6 +253,7 @@ class SystemEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
+              variant="standard"
               name="contact_information"
               label={t('Contact information')}
               fullWidth={true}

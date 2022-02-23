@@ -192,6 +192,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
                 <Form style={{ width: '100%' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}

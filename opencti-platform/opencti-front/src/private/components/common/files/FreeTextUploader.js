@@ -159,6 +159,7 @@ class FreeTextUploader extends Component {
                 <DialogContent>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="content"
                     label={t('Content')}
                     fullWidth={true}

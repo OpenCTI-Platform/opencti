@@ -38,7 +38,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -58,8 +57,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -240,6 +238,7 @@ class ObservedDataCreation extends Component {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="number_observed"
                     type="number"
                     label={t('Number observed')}
@@ -356,6 +355,7 @@ class ObservedDataCreation extends Component {
                   </Field>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="explanation"
                     label={t('Explanation')}
                     fullWidth={true}

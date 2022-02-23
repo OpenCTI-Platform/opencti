@@ -26,8 +26,7 @@ import { defaultValue } from '../../../utils/Graph';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 0px 20px 60px',
   },
   closeButton: {
@@ -201,6 +200,7 @@ const UserSubscriptionEditionContainer = (props) => {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="name"
                 label={t('Name')}
                 fullWidth={true}

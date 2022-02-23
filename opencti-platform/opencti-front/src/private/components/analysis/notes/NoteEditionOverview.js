@@ -31,7 +31,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -235,6 +234,7 @@ class NoteEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="attribute_abstract"
                 label={t('Abstract')}
                 fullWidth={true}

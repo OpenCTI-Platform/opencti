@@ -21,7 +21,7 @@ const styles = (theme) => ({
     width: 250,
     padding: '0 0 20px 0',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
+
     zIndex: 1100,
   },
   drawerPaperExports: {
@@ -29,7 +29,7 @@ const styles = (theme) => ({
     width: 250,
     right: 310,
     padding: '0 0 20px 0',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.leavingScreen,

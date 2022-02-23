@@ -161,6 +161,7 @@ class RolePopover extends Component {
         <Drawer
           open={this.state.displayUpdate}
           anchor="right"
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >

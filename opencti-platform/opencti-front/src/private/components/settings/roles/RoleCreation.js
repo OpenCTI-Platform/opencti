@@ -41,6 +41,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -166,14 +167,14 @@ class RoleCreation extends Component {
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
-              {({ submitForm, handleReset, isSubmitting }) => (
+              {({ submitForm, handleReset, isSubmitting, isValid }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    variant="standard"
                   />
                   <Field
                     component={MarkDownField}
@@ -190,6 +191,7 @@ class RoleCreation extends Component {
                       onClick={handleReset}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
+                      color="secondary"
                     >
                       {t('Cancel')}
                     </Button>
@@ -197,7 +199,7 @@ class RoleCreation extends Component {
                       variant="contained"
                       color="primary"
                       onClick={submitForm}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || !isValid}
                       classes={{ root: classes.button }}
                     >
                       {t('Create')}

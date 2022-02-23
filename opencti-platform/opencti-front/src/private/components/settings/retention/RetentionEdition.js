@@ -20,8 +20,7 @@ import { adaptFieldValue, truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 0px 20px 60px',
   },
   closeButton: {
@@ -185,12 +184,14 @@ const RetentionEditionContainer = (props) => {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="name"
                 label={t('Name')}
                 fullWidth={true}
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="max_retention"
                 label={t('Maximum retention days')}
                 onChange={() => setVerified(false)}

@@ -204,6 +204,7 @@ class WorkspaceHeader extends Component {
                 <Form style={{ float: 'right' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="new_tag"
                     autoFocus={true}
                     placeholder={t('New tag')}

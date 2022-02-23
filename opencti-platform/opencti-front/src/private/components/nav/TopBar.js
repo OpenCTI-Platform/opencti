@@ -95,9 +95,9 @@ const styles = (theme) => ({
     height: '100%',
   },
   barContainer: {
-    display: 'table-cell',
     float: 'left',
-    paddingTop: 10,
+    verticalAlign: 'middle',
+    height: '100%',
   },
   divider: {
     display: 'table-cell',
@@ -109,10 +109,8 @@ const styles = (theme) => ({
     display: 'table-cell',
     float: 'left',
     marginRight: 5,
-    paddingTop: 9,
   },
   button: {
-    display: 'table-cell',
     float: 'left',
   },
 });
@@ -340,8 +338,7 @@ const TopBar = ({
                       ? 'secondary'
                       : 'inherit'
                   }
-                  classes={{ root: classes.button }}
-                  size="large"
+                  size="medium"
                 >
                   <InsertChartOutlined fontSize="medium" />
                 </IconButton>
@@ -364,8 +361,7 @@ const TopBar = ({
                       ? 'secondary'
                       : 'inherit'
                   }
-                  classes={{ root: classes.button }}
-                  size="large"
+                  size="medium"
                 >
                   <ExploreOutlined fontSize="medium" />
                 </IconButton>
@@ -386,8 +382,7 @@ const TopBar = ({
                       ? 'secondary'
                       : 'inherit'
                   }
-                  classes={{ root: classes.button }}
-                  size="large"
+                  size="medium"
                 >
                   <UploadOutline fontSize="medium" />
                 </IconButton>

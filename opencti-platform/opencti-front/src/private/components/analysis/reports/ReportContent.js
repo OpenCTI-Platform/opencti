@@ -54,7 +54,6 @@ const styles = (theme) => ({
     width: '100%',
     height: 50,
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.navAlt.background,
     color: theme.palette.text.primary,
     borderBottom: '1px solid #5c5c5c',
   },

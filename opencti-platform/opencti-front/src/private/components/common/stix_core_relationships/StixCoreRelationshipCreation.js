@@ -34,7 +34,7 @@ const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-    backgroundColor: theme.palette.navAlt.background,
+
     padding: 0,
   },
   createButton: {
@@ -51,8 +51,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {

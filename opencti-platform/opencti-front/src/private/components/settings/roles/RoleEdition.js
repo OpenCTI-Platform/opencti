@@ -14,6 +14,7 @@ import RoleEditionOverview from './RoleEditionOverview';
 const styles = (theme) => ({
   header: {
     padding: '20px 20px 20px 60px',
+    backgroundColor: theme.palette.background.paper,
   },
   closeButton: {
     position: 'absolute',
@@ -28,11 +29,6 @@ const styles = (theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    borderBottom: '1px solid #5c5c5c',
   },
   title: {
     float: 'left',

@@ -40,8 +40,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -363,6 +362,7 @@ class StixDomainObjectEditionContainer extends Component {
                 {'name' in stixDomainObject && (
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
@@ -382,6 +382,7 @@ class StixDomainObjectEditionContainer extends Component {
                 {'aliases' in stixDomainObject && (
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="aliases"
                     label={t('Aliases separated by commas')}
                     fullWidth={true}
@@ -399,6 +400,7 @@ class StixDomainObjectEditionContainer extends Component {
                 {'x_opencti_aliases' in stixDomainObject && (
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="x_opencti_aliases"
                     label={t('Aliases separated by commas')}
                     fullWidth={true}

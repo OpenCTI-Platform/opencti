@@ -40,7 +40,7 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -352,6 +352,7 @@ class IndicatorEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -373,6 +374,7 @@ class IndicatorEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
+              variant="standard"
               name="pattern"
               label={t('Indicator pattern')}
               fullWidth={true}
@@ -445,6 +447,7 @@ class IndicatorEditionOverviewComponent extends Component {
             </Field>
             <Field
               component={TextField}
+              variant="standard"
               name="x_opencti_score"
               label={t('Score')}
               type="number"

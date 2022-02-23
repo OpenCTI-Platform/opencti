@@ -74,6 +74,7 @@ class UserEditionPasswordComponent extends Component {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="password"
                 label={t('Password')}
                 type="password"
@@ -81,6 +82,7 @@ class UserEditionPasswordComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="confirmation"
                 label={t('Confirmation')}
                 type="password"
