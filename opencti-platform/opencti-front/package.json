@@ -103,7 +103,8 @@
     "test": "jest --coverage"
   },
   "resolutions": {
-    "node-sass": "7.0.1"
+    "node-sass": "7.0.1",
+    "react-virtualized": "patch:react-virtualized@9.22.3#./patch/react-virtualized-9.22.3.patch"
   },
   "packageManager": "yarn@3.1.1"
 }

@@ -12,11 +12,11 @@ module.exports.RelayPlugin = {
                     const imports = [];
                     contents = contents.replaceAll(/\sgraphql`([\s\S]*?)`/gm, (match, query) => {
                         const formatted = print(parse(query));
+                        const graphLineExtra = formatted.split("\n").map(() => "\n").join(""); // Need for debug alignment
                         const name = /(fragment|mutation|query|subscription) (\w+)/.exec(formatted)[2];
                         const id = `graphql__${crypto.randomBytes(10).toString('hex')}`;
-                        const importFile = `import ${id} from "./__generated__/${name}.graphql";`;
-                        imports.push(importFile);
-                        return id;
+                        imports.push(`import ${id} from "./__generated__/${name}.graphql";`);
+                        return id + graphLineExtra;
                     });
                     contents = imports.join('\n') + contents;
                 }

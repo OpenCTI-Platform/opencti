@@ -29,11 +29,10 @@ esbuild.build({
     },
     assetNames: "media/[name]-[hash]",
     target: ['chrome58'],
-    minify: true,
+    minify: false,
     keepNames: true,
     sourcemap: true,
     sourceRoot: 'src',
-    sourcesContent: false,
     outdir: 'builder/dev/build',
     incremental: true,
 }).then((builder) => {

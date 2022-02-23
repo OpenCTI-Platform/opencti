@@ -11256,6 +11256,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-virtualized@patch:react-virtualized@9.22.3#./patch/react-virtualized-9.22.3.patch::locator=opencti-front%40workspace%3A.":
+  version: 9.22.3
+  resolution: "react-virtualized@patch:react-virtualized@npm%3A9.22.3#./patch/react-virtualized-9.22.3.patch::version=9.22.3&hash=db3299&locator=opencti-front%40workspace%3A."
+  dependencies:
+    "@babel/runtime": ^7.7.2
+    clsx: ^1.0.4
+    dom-helpers: ^5.1.3
+    loose-envify: ^1.4.0
+    prop-types: ^15.7.2
+    react-lifecycles-compat: ^3.0.4
+  peerDependencies:
+    react: ^15.3.0 || ^16.0.0-alpha
+    react-dom: ^15.3.0 || ^16.0.0-alpha
+  checksum: 4cacce423b731a7267131a7897127d82d6a6106dbcdf1458de0878c2e77fbc265539dd8b69a0f737aedd0991e3ede3672e6929c5bb6dc614c58350e71857b55d
+  languageName: node
+  linkType: hard
+
 "react@npm:17.0.2":
   version: 17.0.2
   resolution: "react@npm:17.0.2"
