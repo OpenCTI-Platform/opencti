@@ -98,6 +98,7 @@ class SoftwareComponent extends Component {
               </Grid>
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
+              typename={software.__typename}
               notes={software.notes}
               cyioCoreObjectOrCyioCoreRelationshipId={software.id}
             />

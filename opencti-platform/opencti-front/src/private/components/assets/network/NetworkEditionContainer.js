@@ -360,6 +360,7 @@ class NetworkEditionContainer extends Component {
                 </Grid>
               </Grid>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
+                typename={network.__typename}
                 notes={network.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={network.id}
               />

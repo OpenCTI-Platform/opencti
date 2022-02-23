@@ -101,6 +101,7 @@ class NetworkComponent extends Component {
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
               notes={network.notes}
+              typename={network.__typename}
               cyioCoreObjectOrCyioCoreRelationshipId={network.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>

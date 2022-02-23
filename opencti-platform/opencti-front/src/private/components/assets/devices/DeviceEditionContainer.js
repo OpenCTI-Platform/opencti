@@ -387,6 +387,7 @@ class DeviceEditionContainer extends Component {
                 </Grid>
               </Grid>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
+                typename={device.__typename}
                 notes={device.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />
