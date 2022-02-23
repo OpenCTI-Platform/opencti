@@ -1,7 +1,6 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createPaginationContainer } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AttributeLine, AttributeLineDummy } from './AttributeLine';
 

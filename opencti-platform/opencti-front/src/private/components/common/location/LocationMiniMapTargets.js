@@ -15,7 +15,6 @@ import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
-import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
 import { UserContext } from '../../../../utils/Security';
 
@@ -95,7 +94,7 @@ const LocationMiniMapTargets = (props) => {
               : settings.platform_map_tile_server_dark
           }
         />
-        <GeoJSON data={countries} style={getStyle} />
+        <GeoJSON data="" style={getStyle} />
         {locatedCities.map((city) => {
           const position = [city.latitude, city.longitude];
           return (

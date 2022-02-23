@@ -14,7 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../relay/environment';
 import Security, { EXPLORE } from '../../utils/Security';
 import inject18n from '../../components/i18n';

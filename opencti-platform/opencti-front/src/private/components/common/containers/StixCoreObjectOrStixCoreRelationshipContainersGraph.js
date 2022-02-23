@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createRefetchContainer } from 'react-relay';
 import * as R from 'ramda';
 import { Subject, timer } from 'rxjs';
 import withTheme from '@mui/styles/withTheme';

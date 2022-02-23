@@ -70,7 +70,7 @@ const createApp = async (app) => {
           'http://cdn.jsdelivr.net/npm/@apollographql/',
           'https://fonts.googleapis.com/',
         ],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com/'],
+        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
         objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
@@ -101,15 +101,9 @@ const createApp = async (app) => {
       })
     );
   }
-  // -- Generated CSS with correct base path
-  app.get(`${basePath}/static/css/*`, (req, res) => {
-    const cssFileName = R.last(req.url.split('/'));
-    const data = readFileSync(path.join(__dirname, `../../public/static/css/${sanitize(cssFileName)}`), 'utf8');
-    const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
-    res.header('Content-Type', 'text/css');
-    res.send(withBasePath);
-  });
+
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
+  app.use(`${basePath}/media`, express.static(path.join(__dirname, '../../public/static/media')));
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));

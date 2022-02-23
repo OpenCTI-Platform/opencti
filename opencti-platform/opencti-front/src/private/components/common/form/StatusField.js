@@ -4,7 +4,7 @@ import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import Avatar from '@mui/material/Avatar';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';

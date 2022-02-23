@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
 import AppBar from '@mui/material/AppBar';
 import Tabs from '@mui/material/Tabs';

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { assoc, compose, map } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';

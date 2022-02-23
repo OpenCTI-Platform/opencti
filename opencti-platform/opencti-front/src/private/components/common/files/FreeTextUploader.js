@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';

@@ -10,7 +10,8 @@ config/development.json# See https://help.github.com/articles/ignoring-files/ fo
 /coverage
 
 # production
-/build
+/builder/dev/build
+/builder/prod/build
 
 # misc
 .DS_Store

@@ -13,7 +13,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { Close, FlagOutlined, LocalPlayOutlined } from '@mui/icons-material';
 import { compose, pipe, pluck, assoc } from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';

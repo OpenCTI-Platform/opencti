@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createRefetchContainer } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import {

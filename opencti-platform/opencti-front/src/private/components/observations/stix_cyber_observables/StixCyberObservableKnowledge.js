@@ -1,7 +1,6 @@
 import React from 'react';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';

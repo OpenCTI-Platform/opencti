@@ -21,10 +21,5 @@
     "max-classes-per-file": ["error", 2],
     "no-unused-vars": ["warn"],
     "object-curly-newline": "off"
-  },
-  "settings": {
-    "react": {
-      "version": "15.0"
-    }
   }
 }

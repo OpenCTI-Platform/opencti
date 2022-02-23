@@ -3,7 +3,7 @@ import withStyles from '@mui/styles/withStyles';
 import { Form, Formik, Field } from 'formik';
 import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import * as Yup from 'yup';

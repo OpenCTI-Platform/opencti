@@ -10,8 +10,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import { LocalPlayOutlined } from '@mui/icons-material';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 

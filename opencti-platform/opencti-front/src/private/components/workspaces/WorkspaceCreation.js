@@ -10,7 +10,7 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import { compose, assoc } from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';

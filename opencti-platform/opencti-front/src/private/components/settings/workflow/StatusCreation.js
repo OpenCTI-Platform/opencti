@@ -7,7 +7,7 @@ import Fab from '@mui/material/Fab';
 import { Add } from '@mui/icons-material';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';

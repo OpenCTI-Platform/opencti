@@ -1,8 +1,7 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { compose, pathOr, propOr } from 'ramda';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
