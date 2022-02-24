@@ -102,7 +102,7 @@ class TestLocalSynchronizer:
 
 if __name__ == "__main__":
     try:
-        testLocalSynchronizer = TestLocalSynchronizer(
+        TestLocalSynchronizer(
             source_url=sys.argv[1],
             source_token=sys.argv[2],
             target_url=sys.argv[3],
@@ -110,8 +110,7 @@ if __name__ == "__main__":
             consuming_count=int(sys.argv[5]),
             start_timestamp=sys.argv[6],
             live_stream_id=sys.argv[7] if len(sys.argv) > 7 else None,
-        )
-        testLocalSynchronizer.sync()
+        ).sync()
         os._exit(0)  # pylint: disable=protected-access
     except Exception as e:  # pylint: disable=broad-except
         logging.exception(str(e))
