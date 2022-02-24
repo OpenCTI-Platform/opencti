@@ -17,3 +17,30 @@ process.on('SIGTERM', async () => {
   logApp.info('[OPENCTI] All modules have been stopped, exiting process');
   process.exit(0);
 });
+
+const stopProcess = async () => {
+  let exitCode = 1;
+  try {
+    await shutdownModules();
+    exitCode = 0;
+  } catch (e) {
+    logApp.error('[OPENCTI] OpenCTI stop error', { error: e });
+  } finally {
+    logApp.info(`[OPENCTI] OpenCTI stopped`);
+    process.exit(exitCode);
+  }
+};
+
+let stopping = false;
+['SIGTERM', 'SIGINT', 'message'].forEach((signal) => {
+  process.on(signal, (message) => {
+    if (signal !== 'message' || message === 'shutdown') {
+      if (!stopping) {
+        stopping = true;
+        logApp.info(`[OPENCTI] Shutdown ${signal} signal received, stopping OpenCTI`);
+        // noinspection JSIgnoredPromiseFromCall
+        stopProcess();
+      }
+    }
+  });
+});

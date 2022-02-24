@@ -344,13 +344,6 @@ const initRuleManager = () => {
       scheduler = setIntervalAsync(async () => {
         await ruleHandler();
       }, SCHEDULE_TIME);
-      // Handle hot module replacement resource dispose
-      if (module.hot) {
-        module.hot.dispose(async () => {
-          await shutdown();
-          logApp.info(`[RULE] Hot reload dispose`);
-        });
-      }
     },
     shutdown,
   };

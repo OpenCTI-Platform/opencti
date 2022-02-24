@@ -1,14 +1,13 @@
 module.exports = {
   testEnvironment: 'node',
-  setupFilesAfterEnv: ['./jest.setup.js'],
-  testRegex: 'tests/.*-test.js$',
+  setupFilesAfterEnv: ['./jest/jest.setup.js'],
+  testRegex: ['src/.*\\.test\\.(js|ts)$', 'tests/.*-test\\.(js|ts)$'],
   transform: {
-    '\\.js$': ['babel-jest'],
-    '\\.(ts)$': 'ts-jest',
+    '\\.(js|ts)$': 'esbuild-jest',
     '\\.graphql$': 'jest-transform-graphql',
   },
   reporters: ['default', ['jest-junit', { outputDirectory: './test-results/jest/', outputName: 'results.xml' }]],
-  collectCoverageFrom: ['src/**/*.js'],
+  collectCoverageFrom: ['src/**/*.js', 'src/**/*.ts'],
   coveragePathIgnorePatterns: [
     '/node_modules/',
     '/src/migrations',

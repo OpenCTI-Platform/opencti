@@ -126,12 +126,6 @@ const initHttpServer = () => {
   return {
     start: async () => {
       server = await listenServer();
-      // Handle hot module replacement resource dispose
-      if (module.hot) {
-        module.hot.dispose(async () => {
-          await stopServer(server);
-        });
-      }
     },
     shutdown: async () => {
       if (server) {

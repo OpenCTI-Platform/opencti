@@ -57,12 +57,6 @@ const initExpiredManager = () => {
       scheduler = setIntervalAsync(async () => {
         await expireHandler();
       }, SCHEDULE_TIME);
-      // Handle hot module replacement resource dispose
-      if (module.hot) {
-        module.hot.dispose(async () => {
-          await clearIntervalAsync(scheduler);
-        });
-      }
     },
     shutdown: async () => {
       if (scheduler) {

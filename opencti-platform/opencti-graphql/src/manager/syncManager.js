@@ -379,13 +379,6 @@ const initSyncManager = () => {
       scheduler = setIntervalAsync(async () => {
         await syncManagerHandler();
       }, WAIT_TIME_ACTION);
-      // Handle hot module replacement resource dispose
-      if (module.hot) {
-        module.hot.dispose(async () => {
-          await shutdown();
-          logApp.info(`[OPENCTI-MODULE] Sync hot reload dispose`);
-        });
-      }
     },
     shutdown,
   };

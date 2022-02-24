@@ -143,7 +143,7 @@ nconf.add('argv', {
 const { timestamp } = format;
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = (relativePath) => path.join(currentPath, relativePath);
-const environment = nconf.get('env') || nconf.get('node_env') || DEFAULT_ENV;
+const environment = nconf.get('env') || nconf.get('node_env') || process.env.NODE_ENV || DEFAULT_ENV;
 const resolveEnvFile = (env) => path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');

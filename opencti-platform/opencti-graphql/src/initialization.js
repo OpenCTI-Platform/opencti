@@ -14,7 +14,7 @@ import { addCapability, addRole } from './domain/grant';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { cachePurge, lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
-import applyMigration, { lastAvailableMigrationTime } from './database/migration';
+import { applyMigration, lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
