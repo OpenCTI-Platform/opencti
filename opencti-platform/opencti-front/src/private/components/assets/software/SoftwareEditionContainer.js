@@ -204,7 +204,7 @@ class SoftwareEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, software,
+      t, classes, handleClose, software, refreshQuery,
     } = this.props;
     const { editContext } = software;
     const initialValues = R.pipe(
@@ -323,6 +323,7 @@ class SoftwareEditionContainer extends Component {
               /> */}
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={software}
+                      refreshQuery={refreshQuery}
                       assetType="Software"
                       // enableReferences={this.props.enableReferences}
                       // context={editContext}
@@ -348,6 +349,7 @@ class SoftwareEditionContainer extends Component {
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
                     externalReferences={software.external_references}
+                    refreshQuery={refreshQuery}
                     cyioCoreObjectId={software.id}
                     typename={software.__typename}
                   />
@@ -358,6 +360,7 @@ class SoftwareEditionContainer extends Component {
               </Grid>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={software.__typename}
+                refreshQuery={refreshQuery}
                 notes={software.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={software.id}
               />
@@ -409,6 +412,7 @@ class SoftwareEditionContainer extends Component {
 SoftwareEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   software: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

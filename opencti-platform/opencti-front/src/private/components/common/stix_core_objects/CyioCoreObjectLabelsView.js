@@ -1,4 +1,5 @@
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable */
+/* refactor */
 import React, { useContext, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -96,7 +97,7 @@ const cyioCoreObjectMutationRelationDelete = graphql`
 
 const CyioCoreObjectLabelsView = (props) => {
   const {
-    classes, labels, t, marginTop, id, typename,
+    classes, labels, t, marginTop, id, typename, refreshQuery,
   } = props;
   const { me } = useContext(UserContext);
   const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
@@ -157,6 +158,7 @@ const CyioCoreObjectLabelsView = (props) => {
           setSubmitting(false);
           resetForm();
           handleCloseAdd();
+          refreshQuery();
         },
         onError: (err) => console.log('cyioCoreObjectLabelsError', err),
       })
@@ -190,6 +192,9 @@ const CyioCoreObjectLabelsView = (props) => {
         from_type: typename,
         to_type: toType,
       },
+      onCompleted: () => {
+        refreshQuery();
+      }
     });
   };
 
@@ -373,7 +378,8 @@ CyioCoreObjectLabelsView.propTypes = {
   typename: PropTypes.string,
   t: PropTypes.func,
   id: PropTypes.string,
-  labels: PropTypes.object,
+  labels: PropTypes.array,
+  refreshQuery: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(CyioCoreObjectLabelsView);

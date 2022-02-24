@@ -55,6 +55,7 @@ class SoftwareComponent extends Component {
       software,
       history,
       location,
+      refreshQuery,
     } = this.props;
     return (
       <>
@@ -74,7 +75,7 @@ class SoftwareComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={6}>
-                <CyioDomainObjectAssetOverview cyioDomainObject={software} />
+                <CyioDomainObjectAssetOverview refreshQuery={refreshQuery} cyioDomainObject={software} />
               </Grid>
               <Grid item={true} xs={6}>
                 <SoftwareDetails software={software} />
@@ -90,6 +91,7 @@ class SoftwareComponent extends Component {
                 <CyioCoreObjectExternalReferences
                   externalReferences={software.external_references}
                   cyioCoreObjectId={software.id}
+                  refreshQuery={refreshQuery}
                   typename={software.__typename}
                 />
               </Grid>
@@ -99,6 +101,7 @@ class SoftwareComponent extends Component {
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
               typename={software.__typename}
+              refreshQuery={refreshQuery}
               notes={software.notes}
               cyioCoreObjectOrCyioCoreRelationshipId={software.id}
             />
@@ -123,6 +126,7 @@ class SoftwareComponent extends Component {
 SoftwareComponent.propTypes = {
   software: PropTypes.object,
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   t: PropTypes.func,
 };
 

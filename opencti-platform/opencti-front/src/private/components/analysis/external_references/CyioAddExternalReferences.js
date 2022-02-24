@@ -136,6 +136,7 @@ class CyioAddExternalReferences extends Component {
           onCompleted: (response) => {
             this.handleClose();
             this.setState({ totalExternalReference: [] });
+            this.props.refreshQuery();
           },
           // updater: (store) => {
           //   const payload = store
@@ -171,10 +172,10 @@ class CyioAddExternalReferences extends Component {
         //   payload.setLinkedRecord(relation, 'relation');
         //   sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
         // },
-        // onCompleted: (response) => {
-        //   this.handleClose();
-        //   this.setState({ totalExternalReference : [] });
-        // },
+        onCompleted: (response) => {
+          this.setState({ totalExternalReference : [] });
+          this.props.refreshQuery();
+        },
       });
     }
   }
@@ -353,6 +354,7 @@ class CyioAddExternalReferences extends Component {
 CyioAddExternalReferences.propTypes = {
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
+  refreshQuery: PropTypes.func,
   typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

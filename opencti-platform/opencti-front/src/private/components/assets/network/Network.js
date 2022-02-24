@@ -55,6 +55,7 @@ class NetworkComponent extends Component {
       network,
       history,
       location,
+      refreshQuery,
     } = this.props;
     return (
       <>
@@ -75,7 +76,7 @@ class NetworkComponent extends Component {
             >
               <>
                 <Grid item={true} xs={6}>
-                  <CyioDomainObjectAssetOverview cyioDomainObject={network} />
+                  <CyioDomainObjectAssetOverview refreshQuery={refreshQuery} cyioDomainObject={network} />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <NetworkDetails network={network} />
@@ -92,6 +93,7 @@ class NetworkComponent extends Component {
                 <CyioCoreObjectExternalReferences
                   externalReferences={network.external_references}
                   cyioCoreObjectId={network.id}
+                  refreshQuery={refreshQuery}
                   typename={network.__typename}
                 />
               </Grid>
@@ -101,6 +103,7 @@ class NetworkComponent extends Component {
             </Grid>
             <CyioCoreObjectOrCyioCoreRelationshipNotes
               notes={network.notes}
+              refreshQuery={refreshQuery}
               typename={network.__typename}
               cyioCoreObjectOrCyioCoreRelationshipId={network.id}
             />
@@ -126,6 +129,7 @@ NetworkComponent.propTypes = {
   network: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  refreshQery: PropTypes.func,
 };
 
 const Network = createFragmentContainer(NetworkComponent, {

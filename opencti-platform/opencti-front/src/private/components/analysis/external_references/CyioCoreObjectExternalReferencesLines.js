@@ -161,6 +161,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
       onCompleted: (resp) => {
         this.setState({ removing: false });
         this.handleCloseDialog();
+        this.props.refreshQuery();
       },
       // onError: (err) => console.log('ExtRefRemoveDarkLightMutationError', err),
     });
@@ -307,6 +308,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
 CyioCoreObjectExternalReferencesLinesContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   externalReference: PropTypes.object,
+  refreshQuery: PropTypes.func,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,

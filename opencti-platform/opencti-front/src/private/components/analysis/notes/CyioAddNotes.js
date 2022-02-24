@@ -128,6 +128,7 @@ class CyioAddNotes extends Component {
           onCompleted: (response) => {
             this.handleClose();
             this.setState({ totalNotes: [] });
+            this.props.refreshQuery();
           },
           // updater: (store) => {
           //   const payload = store
@@ -152,10 +153,10 @@ class CyioAddNotes extends Component {
           to_type: createNote.__typename,
           from_type: this.props.typename,
         },
-        // onCompleted: (response) => {
-        //   this.handleClose();
-        //   this.setState({ totalNotes: [] });
-        // },
+        onCompleted: (response) => {
+          this.setState({ totalNotes: [] });
+          this.props.refreshQuery();
+        },
         // updater: (store) => {
         //   const payload = store
         //     .getRootField('noteEdit')
@@ -344,6 +345,7 @@ class CyioAddNotes extends Component {
 CyioAddNotes.propTypes = {
   cyioCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
+  refreshQuery: PropTypes.func,
   typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -101,7 +101,7 @@ class RootSoftware extends Component {
           environment={QueryRendererDarkLight}
           query={softwareQuery}
           variables={{ id: softwareId }}
-          render={({ error, props }) => {
+          render={({ error, props, retry }) => {
             if (props) {
               if (props.softwareAsset) {
                 return (
@@ -110,7 +110,7 @@ class RootSoftware extends Component {
                       exact
                       path="/dashboard/assets/software/:softwareId"
                       render={(routeProps) => (
-                        <Software {...routeProps} software={props.softwareAsset} />
+                        <Software {...routeProps} refreshQuery={retry} software={props.softwareAsset} />
                       )}
                     />
                   </Switch>

@@ -57,6 +57,7 @@ class DeviceComponent extends Component {
       classes,
       device,
       history,
+      refreshQuery,
       location,
     } = this.props;
     return (
@@ -77,7 +78,7 @@ class DeviceComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={6}>
-                <CyioDomainObjectAssetOverview cyioDomainObject={device} />
+                <CyioDomainObjectAssetOverview refreshQuery={refreshQuery} cyioDomainObject={device} />
               </Grid>
               <Grid item={true} xs={6}>
                 <DeviceDetails device={device} history={history} />
@@ -94,6 +95,7 @@ class DeviceComponent extends Component {
                   typename={device.__typename}
                   externalReferences={device.external_references}
                   cyioCoreObjectId={device?.id}
+                  refreshQuery={refreshQuery}
                 />
               </Grid>
               <Grid item={true} xs={6}>
@@ -105,6 +107,7 @@ class DeviceComponent extends Component {
             <CyioCoreObjectOrCyioCoreRelationshipNotes
               typename={device.__typename}
               notes={device.notes}
+              refreshQuery={refreshQuery}
               cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -129,6 +132,7 @@ DeviceComponent.propTypes = {
   device: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  refreshQuery: PropTypes.func,
 };
 
 const Device = createFragmentContainer(DeviceComponent, {
