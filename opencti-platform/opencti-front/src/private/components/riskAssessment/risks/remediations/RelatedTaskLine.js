@@ -4,6 +4,8 @@ import {
   compose,
   pipe,
   map,
+  mergeAll,
+  path,
   pathOr,
 } from 'ramda';
 import { Link } from 'react-router-dom';
@@ -176,6 +178,15 @@ class RelatedTaskLine extends Component {
       entityId,
     } = this.props;
     const { expanded } = this.state;
+    const taskDependency = pipe(
+      pathOr([], ['node', 'task_dependencies', 'edges']),
+      mergeAll,
+    )(data);
+    const responsibleRoles = pipe(
+      pathOr([], ['node', 'responsible_roles']),
+      mergeAll,
+      path(['role']),
+    )(data);
     console.log('RelatedTaskDataCurrent', data);
     return (
       <div style={{
@@ -194,12 +205,29 @@ class RelatedTaskLine extends Component {
             {this.state.value ? '' : (
               <CardContent className={classes.cardContent}>
                 <FlagIcon fontSize='large' color="disabled" />
-                <div style={{ marginLeft: '10px' }}>
-                  <Typography align="left" color="textSecondary" variant="h3">
-                    {data.node.name && t(data.node.name)}
-                  </Typography>
-                  <Typography align="left" variant="subtitle1">{data.node.description && t(data.node.description)}</Typography>
-                </div>
+                <Grid container={true} style={{ marginLeft: '10px' }}>
+                  <Grid item={true} xs={12}>
+                    <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
+                      {data.node.name && t(data.node.name)}
+                    </Typography>
+                  </Grid>
+                  <Grid style={{ display: 'flex' }} item={true} xs={6}>
+                    <Typography align="left" color="textSecondary" variant="h3">
+                      {t('Start Date: ')}
+                    </Typography>
+                    <Typography align="left" color="textSecondary" variant="h3">
+                      {data.node.timing?.start_date || data.node.timing?.on_date}
+                    </Typography>
+                  </Grid>
+                  <Grid style={{ display: 'flex' }} item={true} xs={6}>
+                    <Typography align="left" color="textSecondary" variant="h3">
+                      {t('End Date: ')}
+                    </Typography>
+                    <Typography align="left" color="textSecondary" variant="h3">
+                      {data.node.timing?.end_date && t(data.node.timing?.end_date)}
+                    </Typography>
+                  </Grid>
+                </Grid>
               </CardContent>
             )
             }
@@ -247,7 +275,7 @@ class RelatedTaskLine extends Component {
                     <div className={classes.cardContent}>
                       <FlagIcon fontSize='large' color="disabled" />
                       <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
-                        {t('Lorem Ipsum')}
+                        {data.node.task_type && t(data.node.task_type)}
                       </Typography>
                     </div>
                   </div>
@@ -256,15 +284,16 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Start Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {t('21 June 2021')}
+                      {/* {t('21 June 2021')} */}
+                      {data.node.timing?.start_date || data.node.timing?.on_date}
                     </Typography>
                   </div>
                 </Grid>
                 <Grid item={true} xs={6} className={classes.cardContent} style={{ marginBottom: '15px' }}>
                   <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Tasks')}</Typography>
+                    <Typography align="left" color="textSecondary" variant="h3">{t('Related Tasks')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {t('Lorem Ipsum')}
+                      {t('Hello world')}
                     </Typography>
                   </div>
                 </Grid>
@@ -273,7 +302,9 @@ class RelatedTaskLine extends Component {
                 <Grid className={classes.cardContent} style={{ marginBottom: '20px' }}>
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Dependency')}</Typography>
-                    <Typography align="left" variant="subtitle1">{t('Lorem Ipsum Dolor Sit Amet')}</Typography>
+                    <Typography align="left" variant="subtitle1">
+                      {taskDependency.node?.name || t(taskDependency.node?.name)}
+                    </Typography>
                   </div>
                 </Grid>
                 <Grid item={true} xs={6} style={{
@@ -283,27 +314,35 @@ class RelatedTaskLine extends Component {
                 }}>
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('End Date')}</Typography>
-                    <Typography align="left" variant="subtitle1">{t('11 June 2021')}</Typography>
+                    <Typography align="left" variant="subtitle1">
+                      {data.node.timing?.end_date && t(data.node.timing?.end_date)}
+                    </Typography>
                   </div>
                 </Grid>
-                <Grid item={true} xs={12} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <Grid className={classes.cardContent} style={{ marginBottom: '20px' }}>
                   <div style={{ marginLeft: '18px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
-                    <div className={classes.cardContent}>
-                      <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                      <div style={{ marginLeft: '10px' }}>
-                        <Typography variant="subtitle1">
-                          {t('Lorem Ipsum')}
-                        </Typography>
-                        {t('Lorem Ipsum')}
-                      </div>
-                    </div>
+                    <Typography align="left" color="textSecondary" variant="h3">{t('Associated Activities')}</Typography>
+                    <Typography align="left" variant="subtitle1">{t('Lorem Ipsum')}</Typography>
                   </div>
                 </Grid>
               </Grid>
 
             </Grid>
             <Grid container={true}>
+              <Grid item={true} xs={12} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <div style={{ marginLeft: '18px' }}>
+                  <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
+                  <div className={classes.cardContent}>
+                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                    <div style={{ marginLeft: '10px' }}>
+                      <Typography variant="subtitle1">
+                        {responsibleRoles.name && t(responsibleRoles.name)}
+                      </Typography>
+                      {responsibleRoles.role_identifier && t(responsibleRoles.role_identifier)}
+                    </div>
+                  </div>
+                </div>
+              </Grid>
               <Grid item={true} xs={12} style={{ marginBottom: '10px' }}>
                 <Typography
                   color="textSecondary"

@@ -75,6 +75,8 @@ class RiskDetailsComponent extends Component {
     const relatedRisksEdges = R.pipe(
       R.pathOr([], ['related_risks', 'edges']),
       R.map((value) => ({
+        created: value.node.created,
+        modified: value.node.modified,
         name: value.node.name,
         description: value.node.description,
         statement: value.node.statement,
@@ -155,7 +157,7 @@ class RiskDetailsComponent extends Component {
               </div>
               <div className="clearfix" />
               {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {risk.created && t(risk.created)}
+              {relatedRisksEdges.created && t(relatedRisksEdges.created)}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography
@@ -177,7 +179,7 @@ class RiskDetailsComponent extends Component {
               </div>
               <div className="clearfix" />
               {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {risk.modified && t(risk.modified)}
+              {relatedRisksEdges.modified && t(relatedRisksEdges.modified)}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -270,7 +272,12 @@ class RiskDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  style={{ cursor: 'default', marginBottom: '5px' }}
+                  style={{
+                    cursor: 'default',
+                    marginBottom: '5px',
+                    border: '1px solid #075AD3',
+                    background: '#075AD333',
+                  }}
                 >
                   {relatedRisksEdges.risk_status && t(relatedRisksEdges.risk_status)}
                 </Button>
@@ -546,6 +553,31 @@ const RiskDetails = createFragmentContainer(
                       name            # Detection Source
                       }
                     }
+                  }
+                }
+                facets {
+                  id
+                  risk_state
+                  source_system
+                  ... on CustomFacet {
+                    name
+                    value
+                  }
+                  ... on RiskFacet {
+                    risk_name: name
+                    value
+                  }
+                  ... on VulnerabilityFacet {
+                    vuln_name: name
+                    value
+                  }
+                  ... on Cvss2Facet {
+                    cvss2_name: name
+                    value
+                  }
+                  ... on Cvss3Facet {
+                    cvss3_name: name
+                    value
                   }
                 }
               }

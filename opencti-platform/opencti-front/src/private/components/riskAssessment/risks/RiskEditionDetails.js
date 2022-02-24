@@ -77,6 +77,8 @@ class RiskEditionDetailsComponent extends Component {
     const relatedRisksEdges = R.pipe(
       R.pathOr([], ['related_risks', 'edges']),
       R.map((value) => ({
+        created: value.node.created,
+        modified: value.node.modified,
         name: value.node.name,
         description: value.node.description,
         statement: value.node.statement,
@@ -108,8 +110,8 @@ class RiskEditionDetailsComponent extends Component {
     )(risk);
     const initialValues = R.pipe(
       R.assoc('id', risk?.id || ''),
-      R.assoc('created', risk?.created || ''),
-      R.assoc('modified', risk?.modified || ''),
+      R.assoc('riskCreated', relatedRisksEdges?.created || ''),
+      R.assoc('riskModified', relatedRisksEdges?.modified || ''),
       R.assoc('description', relatedRisksEdges?.description || ''),
       R.assoc('responsible_parties', risk?.responsible_parties || ''),
       R.assoc('labels', risk?.labels || []),
@@ -125,8 +127,8 @@ class RiskEditionDetailsComponent extends Component {
       R.assoc('vendor_dependency', relatedRisksEdges?.vendor_dependency || ''),
       R.pick([
         'id',
-        'created',
-        'modified',
+        'riskCreated',
+        'riskModified',
         'description',
         'responsible_parties',
         'labels',
@@ -208,7 +210,7 @@ class RiskEditionDetailsComponent extends Component {
                         component={DatePickerField}
                         variant='outlined'
                         size='small'
-                        name="created"
+                        name="riskCreated"
                         fullWidth={true}
                         invalidDateMessage={t(
                           'The value must be a date (YYYY-MM-DD)',
@@ -242,7 +244,7 @@ class RiskEditionDetailsComponent extends Component {
                         component={DatePickerField}
                         variant='outlined'
                         size='small'
-                        name="modified"
+                        name="riskModified"
                         fullWidth={true}
                         invalidDateMessage={t(
                           'The value must be a date (YYYY-MM-DD)',
@@ -907,6 +909,31 @@ const RiskEditionDetails = createFragmentContainer(
                       name            # Detection Source
                       }
                     }
+                  }
+                }
+                facets {
+                  id
+                  risk_state
+                  source_system
+                  ... on CustomFacet {
+                    name
+                    value
+                  }
+                  ... on RiskFacet {
+                    risk_name: name
+                    value
+                  }
+                  ... on VulnerabilityFacet {
+                    vuln_name: name
+                    value
+                  }
+                  ... on Cvss2Facet {
+                    cvss2_name: name
+                    value
+                  }
+                  ... on Cvss3Facet {
+                    cvss3_name: name
+                    value
                   }
                 }
               }

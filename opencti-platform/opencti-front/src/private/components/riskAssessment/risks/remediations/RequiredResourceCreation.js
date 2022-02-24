@@ -338,10 +338,10 @@ class RequiredResourceCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              source_name: inputValue,
-              external_id: '',
-              url: '',
+              name: 'Hello World',
+              resource: [],
               description: '',
+              resource_type: [],
             }}
             validationSchema={RequiredResourceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}

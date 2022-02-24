@@ -341,10 +341,16 @@ class RelatedTaskCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              source_name: inputValue,
-              external_id: '',
-              url: '',
+              id: '',
+              name: '',
               description: '',
+              associated_activities: [],
+              related_tasks: '',
+              task_type: [],
+              start_date: null,
+              end_date: null,
+              dependencies: '',
+              responsible_parties: [],
             }}
             validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -447,7 +453,7 @@ class RelatedTaskCreation extends Component {
                         >
                           {t('Task Type')}
                         </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
                           <Tooltip title={t('Description')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
@@ -455,7 +461,7 @@ class RelatedTaskCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="tas k_type"
+                          name="task_type"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
@@ -465,23 +471,24 @@ class RelatedTaskCreation extends Component {
                     </Grid>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Dependency')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('Dependency')}
+                          </Typography>
+                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Description')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
+                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
                         </div>
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="dependency"
+                          name="dependencies"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -555,23 +562,24 @@ class RelatedTaskCreation extends Component {
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t(' Related Tasks')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 3px 5px' }}>
-                          <Tooltip title={t('Description')} >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t(' Related Tasks')}
+                          </Typography>
+                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Related Tasks')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
+                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
                         </div>
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="tasks"
+                          name="related_tasks"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -581,23 +589,24 @@ class RelatedTaskCreation extends Component {
                     </Grid>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Associated Activities ')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Associated Activities')} >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('Associated Activities ')}
+                          </Typography>
+                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Associated Activities')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
+                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
                         </div>
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="task_type"
+                          name="associated_activities"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}

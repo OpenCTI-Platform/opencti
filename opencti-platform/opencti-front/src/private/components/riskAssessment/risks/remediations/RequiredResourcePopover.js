@@ -194,21 +194,23 @@ class RequiredResourcePopover extends Component {
       R.map((value) => ({
         name: value.subject.name,
         description: value.subject.description,
+        resource_type: value.subject.party_type,
+        resource: value.subject.asset_type,
       })),
       R.mergeAll,
     )(data);
     const initialValues = R.pipe(
-      R.assoc('id', requiredResourceNode?.entry_type || ''),
+      R.assoc('id', data.node.id || ''),
       R.assoc('name', requiredResourceNode?.name || ''),
       R.assoc('description', requiredResourceNode?.description || ''),
-      R.assoc('resource', requiredResourceNode?.entry_type || ''),
-      R.assoc('type', requiredResourceNode?.entry_type || ''),
+      R.assoc('resource_type', requiredResourceNode.resource_type || ''),
+      R.assoc('resource', requiredResourceNode.resource || ''),
       R.pick([
         'id',
         'name',
         'description',
         'resource',
-        'type',
+        'resource_type',
       ]),
     )(data);
     return (

@@ -1,7 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { compose } from 'ramda';
+import {
+  compose,
+  pathOr,
+  mergeAll,
+  path,
+  pipe,
+} from 'ramda';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -28,6 +34,7 @@ import DatePickerField from '../../../../../components/DatePickerField';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
+import { dateFormat } from '../../../../../utils/Time';
 import SelectField from '../../../../../components/SelectField';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import CyioExternalReferenceEdition from '../../../analysis/external_references/CyioExternalReferenceEdition';
@@ -184,28 +191,37 @@ class RelatedTaskPopover extends Component {
     const {
       classes, t, externalReferenceId, handleRemove, remediationId, relatedTaskData, data,
     } = this.props;
+    const taskDependency = pipe(
+      pathOr([], ['node', 'task_dependencies', 'edges']),
+      mergeAll,
+    )(data);
+    const responsibleRoles = pipe(
+      pathOr([], ['node', 'responsible_roles']),
+      mergeAll,
+      path(['role']),
+    )(data);
     const initialValues = R.pipe(
       R.assoc('id', data?.node.id || ''),
       R.assoc('name', data?.node.name || ''),
       R.assoc('description', data?.node.description || ''),
       R.assoc('task_type', data?.node.task_type || ''),
-      R.assoc('start_date', data?.node.start_date || ''),
-      R.assoc('end_date', data?.node.end_date || ''),
-      R.assoc('associated_activities', data?.node.associated_activities || ''),
-      R.assoc('dependencies', data?.node.dependencies || ''),
-      R.assoc('responsible_parties', data?.node.responsible_parties || ''),
-      R.assoc('target', data?.node.target || ''),
+      R.assoc('start_date', dateFormat(data.node.timing?.start_date) || dateFormat(data.node.timing?.on_date)),
+      R.assoc('end_date', dateFormat(data?.node.timing?.end_date)),
+      R.assoc('related_tasks', ''),
+      R.assoc('associated_activities', ''),
+      R.assoc('dependencies', taskDependency.node?.name || ''),
+      R.assoc('responsible_parties', responsibleRoles.role_identifier || ''),
       R.pick([
         'id',
         'name',
         'description',
+        'associated_activities',
+        'related_tasks',
         'task_type',
         'start_date',
         'end_date',
-        'associated_activities',
         'dependencies',
         'responsible_parties',
-        'target',
       ]),
     )(data);
     return (
@@ -295,7 +311,7 @@ class RelatedTaskPopover extends Component {
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Related Task')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
-                <Grid container={true} spacing={3}>
+                  <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
                         <Typography
@@ -390,7 +406,7 @@ class RelatedTaskPopover extends Component {
                         >
                           {t('Task Type')}
                         </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
                           <Tooltip title={t('Description')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
@@ -408,23 +424,24 @@ class RelatedTaskPopover extends Component {
                     </Grid>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Dependency')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('Dependency')}
+                          </Typography>
+                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Description')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
+                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
                         </div>
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="dependency"
+                          name="dependencies"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -498,23 +515,24 @@ class RelatedTaskPopover extends Component {
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t(' Related Tasks')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 3px 5px' }}>
-                          <Tooltip title={t('Description')} >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('Related Tasks')}
+                          </Typography>
+                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Description')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
+                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
                         </div>
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="tasks"
+                          name="related_tasks"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -524,23 +542,24 @@ class RelatedTaskPopover extends Component {
                     </Grid>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Associated Activities ')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Associated Activities')} >
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('Associated Activities ')}
+                          </Typography>
+                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Associated Activities')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
+                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
                         </div>
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="task_type"
+                          name="associated_activities"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
