@@ -897,6 +897,31 @@ const RiskEditionOverview = createFragmentContainer(
                     }
                   }
                 }
+                facets {
+                  id
+                  risk_state
+                  source_system
+                  ... on CustomFacet {
+                    name
+                    value
+                  }
+                  ... on RiskFacet {
+                    risk_name: name
+                    value
+                  }
+                  ... on VulnerabilityFacet {
+                    vuln_name: name
+                    value
+                  }
+                  ... on Cvss2Facet {
+                    cvss2_name: name
+                    value
+                  }
+                  ... on Cvss3Facet {
+                    cvss3_name: name
+                    value
+                  }
+                }
               }
               remediations {
                 response_type

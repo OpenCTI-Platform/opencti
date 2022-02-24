@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -17,6 +19,7 @@ import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemMarking from '../../../../components/ItemMarking';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import CyioCoreObjectLabelsView from '../../common/stix_core_objects/CyioCoreObjectLabelsView';
 
 const styles = (theme) => ({
   paper: {
@@ -79,8 +82,11 @@ class RiskOverviewComponent extends Component {
       R.path(['characterization']),
       R.mergeAll,
     )(risk);
+    const riskFacets = R.pipe(
+      R.pathOr([], ['facets']),
+      R.mergeAll,
+    )(relatedRiskData);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
-    console.log('riskOverviewData', relatedRiskData);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -303,7 +309,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {relatedRiskData.risk && t(relatedRiskData.risk)}
+                {riskFacets.risk_name && t(riskFacets.risk_name)}
               </div>
               <div style={{ marginTop: '25px' }}>
                 <Typography
@@ -324,7 +330,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {relatedRiskData.impact && t(relatedRiskData.impact)}
+                {riskFacets.name && t(riskFacets.name)}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -348,7 +354,7 @@ class RiskOverviewComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 <Chip key={risk.id} classes={{ root: classes.chip }} label={t('Lorem Ipsum Dono Ist Sei')} color="primary" />
-                <br/>
+                <br />
                 <Chip key={risk.id} classes={{ root: classes.chip }} label={t('Lorem Ipsum Dono Ist Sei')} color="primary" />
                 {/* <ItemCreator creator={risk.creator} /> */}
               </div>
@@ -393,33 +399,17 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {relatedRiskData.likelihood && t(relatedRiskData.likelihood)}
+                {t('Hello world')}
               </div>
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Label')}
-              </Typography>
-              <div style={{ float: 'left', margin: '0 0 0 5px' }}>
-                <Tooltip
-                  title={t(
-                    'Label',
-                  )}
-                >
-                  <Information fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              <StixCoreObjectLabels
-                labels={objectLabel}
+              <CyioCoreObjectLabelsView
+                labels={risk.labels}
                 marginTop={20}
+                id={risk.id}
+                typename={risk.__typename}
               />
             </Grid>
           </Grid>
@@ -441,6 +431,7 @@ const RiskOverview = createFragmentContainer(
   {
     risk: graphql`
       fragment RiskOverview_risk on POAMItem {
+        __typename
         id
         created
         modified
@@ -448,9 +439,11 @@ const RiskOverview = createFragmentContainer(
         name        # Weakness
         description
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
         origins {
@@ -470,9 +463,11 @@ const RiskOverview = createFragmentContainer(
           }
         }
         links {
+          __typename
           id
           created
           modified
+          entity_type
           external_id     # external id
           source_name     # Title
           description     # description
@@ -480,6 +475,7 @@ const RiskOverview = createFragmentContainer(
           media_type      # Media Type
         }
         remarks {
+          __typename
           id
           abstract
           content
@@ -519,6 +515,31 @@ const RiskOverview = createFragmentContainer(
                       name            # Detection Source
                       }
                     }
+                  }
+                }
+                facets {
+                  id
+                  risk_state
+                  source_system
+                  ... on CustomFacet {
+                    name
+                    value
+                  }
+                  ... on RiskFacet {
+                    risk_name: name
+                    value
+                  }
+                  ... on VulnerabilityFacet {
+                    vuln_name: name
+                    value
+                  }
+                  ... on Cvss2Facet {
+                    cvss2_name: name
+                    value
+                  }
+                  ... on Cvss3Facet {
+                    cvss3_name: name
+                    value
                   }
                 }
               }

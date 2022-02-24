@@ -180,6 +180,8 @@ class RequiredResourceLineComponent extends Component {
       map((value) => ({
         name: value.subject.name,
         description: value.subject.description,
+        resource_type: value.subject.party_type,
+        resource: value.subject.asset_type,
       })),
       mergeAll,
     )(data);
@@ -202,8 +204,12 @@ class RequiredResourceLineComponent extends Component {
               <CardContent style={{ display: 'flex', alignItems: 'center' }}>
                 <GroupIcon fontSize='large' color="disabled" />
                 <div style={{ marginLeft: '10px' }}>
-                  <Typography align="left" color="textSecondary" variant="h3">{requiredResourceNode.name && t(requiredResourceNode.name)}</Typography>
-                  <Typography align="left" variant="subtitle1">{t('https://loreipsumdolorsitametloreipsumdolorsitamet.com')}</Typography>
+                  <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
+                    {requiredResourceNode.name && t(requiredResourceNode.name)}
+                  </Typography>
+                  <Typography align="left" variant="subtitle1">
+                    {requiredResourceNode.description && t(requiredResourceNode.description)}
+                  </Typography>
                 </div>
               </CardContent>
             )
@@ -224,9 +230,10 @@ class RequiredResourceLineComponent extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Resource Type')}</Typography>
                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <GroupIcon fontSize='large' color="disabled" />
+                      <GroupIcon fontSize='large' color="textSecondary" />
                       <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
-                        {t('Lorem Ipsum')}
+                        {requiredResourceNode.resource_type
+                        && t(requiredResourceNode.resource_type)}
                       </Typography>
                     </div>
                   </div>
@@ -238,14 +245,16 @@ class RequiredResourceLineComponent extends Component {
                     <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {/* {t('Lorem Ipsum')} */}
-                      {requiredResourceNode.name && t(requiredResourceNode.name)}
+                      {data.node.id && t(data.node.id)}
                     </Typography>
                   </div>
                 </Grid>
                 <Grid style={{ display: 'flex', alignItems: 'center' }}>
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Resource')}</Typography>
-                    <Typography align="left" variant="subtitle1">{t('Lorem Ipsum')}</Typography>
+                    <Typography align="left" variant="subtitle1">
+                      {requiredResourceNode.resource && t(requiredResourceNode.resource)}
+                    </Typography>
                   </div>
                 </Grid>
               </Grid>
@@ -271,7 +280,7 @@ class RequiredResourceLineComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {t('Hello World')}
+                      {requiredResourceNode.description && t(requiredResourceNode.description)}
                     </div>
                   </div>
                 </div>
