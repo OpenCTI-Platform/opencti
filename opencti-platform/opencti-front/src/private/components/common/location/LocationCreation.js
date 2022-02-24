@@ -247,7 +247,7 @@ class LocationCreation extends Component {
   }
 
   renderContextual() {
-    const { t, classes, inputValue, open, onlyAuthors } = this.props;
+    const { t, inputValue, open, onlyAuthors } = this.props;
     return (
       <div>
         <Formik
