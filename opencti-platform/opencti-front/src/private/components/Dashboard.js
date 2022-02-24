@@ -31,7 +31,7 @@ import {
 } from 'recharts';
 import Slide from '@mui/material/Slide';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { yearsAgo, dayAgo, now, monthsAgo } from '../../utils/Time';
+import { yearsAgo, dayAgo, monthsAgo } from '../../utils/Time';
 import { useFormatter } from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
 import Loader from '../../components/Loader';
@@ -344,7 +344,7 @@ const IngestedEntitiesGraph = () => {
       $field: String!
       $operation: StatsOperation!
       $startDate: DateTime!
-      $endDate: DateTime!
+      $endDate: DateTime
       $interval: String!
     ) {
       stixDomainObjectsTimeSeries(
@@ -363,7 +363,6 @@ const IngestedEntitiesGraph = () => {
     field: 'created_at',
     operation: 'count',
     startDate: yearsAgo(1),
-    endDate: now(),
     interval: 'month',
   });
   return (
@@ -465,7 +464,6 @@ const TargetedCountries = ({ timeField }) => {
       relationship_type: 'targets',
       toTypes: ['Country'],
       startDate: monthsAgo(3),
-      endDate: now(),
       dateAttribute: timeField === 'functional' ? 'start_time' : 'created_at',
       limit: 20,
     },
@@ -811,7 +809,6 @@ const DefaultDashboard = ({ timeField }) => {
             title={t('Top 10 active entities (3 last months)')}
             field="internal_id"
             startDate={monthsAgo(3)}
-            endDate={now()}
             dateAttribute={
               timeField === 'functional' ? 'start_time' : 'created_at'
             }

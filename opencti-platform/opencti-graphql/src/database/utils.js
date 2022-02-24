@@ -13,7 +13,7 @@ import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
-import { observableValue } from '../utils/format';
+import { now, observableValue } from '../utils/format';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 
@@ -115,7 +115,7 @@ export const isEmptyField = (field) => !isNotEmptyField(field);
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment.parseZone(startDate);
-  const endDateParsed = moment.parseZone(endDate);
+  const endDateParsed = moment.parseZone(endDate ?? now());
   let dateFormat;
 
   switch (interval) {

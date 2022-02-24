@@ -1191,7 +1191,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
       range: {
         [field]: {
           gte: start,
-          lte: end,
+          lte: end ?? now(),
         },
       },
     },

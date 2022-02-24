@@ -9140,7 +9140,7 @@ export type QueryStixDomainObjectsNumberArgs = {
 
 export type QueryStixDomainObjectsTimeSeriesArgs = {
   authorId?: InputMaybe<Scalars['String']>;
-  endDate: Scalars['DateTime'];
+  endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
   interval: Scalars['String'];
   operation: StatsOperation;
@@ -19175,7 +19175,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixDomainObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsDistributionArgs, 'field' | 'operation' | 'relationship_type'>>;
   stixDomainObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsExportFilesArgs, 'type'>>;
   stixDomainObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixDomainObjectsNumberArgs>>;
-  stixDomainObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
+  stixDomainObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixMetaRelationship?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<QueryStixMetaRelationshipArgs>>;
   stixMetaRelationships?: Resolver<Maybe<ResolversTypes['StixMetaRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixMetaRelationshipsArgs>>;
   stixMetaRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixMetaRelationshipsDistributionArgs, 'field' | 'operation'>>;

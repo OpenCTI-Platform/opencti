@@ -8741,7 +8741,7 @@ type Query {
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
-    endDate: DateTime!
+    endDate: DateTime
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
