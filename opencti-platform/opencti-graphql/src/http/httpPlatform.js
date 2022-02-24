@@ -101,8 +101,8 @@ const createApp = async (app) => {
     );
   }
 
-  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../../public/static')));
-  app.use(`${basePath}/media`, express.static(path.join(__dirname, '../../../public/static/media')));
+  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
+  app.use(`${basePath}/media`, express.static(path.join(__dirname, '../public/static/media')));
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));
@@ -252,7 +252,7 @@ const createApp = async (app) => {
 
   // Other routes - Render index.html
   app.get('*', (req, res) => {
-    const data = readFileSync(`${__dirname}/../../../public/index.html`, 'utf8');
+    const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
     const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');

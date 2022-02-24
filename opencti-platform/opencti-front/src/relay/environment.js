@@ -41,17 +41,15 @@ const isEmptyPath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
 const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
-// Subscription
+// Create Network
+let subscriptionClient;
 const loc = window.location;
 const isSecure = loc.protocol === 'https:' ? 's' : '';
-const subscriptionClient = new SubscriptionClient(
-  `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`,
-  {
-    reconnect: true,
-  },
-);
-
+const subscriptionUrl = `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`;
 const subscribeFn = (request, variables) => {
+  if (!subscriptionClient) { // Lazy creation of the subscription client to connect only after auth
+    subscriptionClient = new SubscriptionClient(subscriptionUrl, { reconnect: true });
+  }
   const subscribeObservable = subscriptionClient.request({
     query: request.text,
     operationName: request.name,
@@ -59,25 +57,10 @@ const subscribeFn = (request, variables) => {
   });
   return Observable.from(subscribeObservable);
 };
-
-const network = new RelayNetworkLayer(
-  [
-    urlMiddleware({
-      url: `${APP_BASE_PATH}/graphql`,
-      credentials: 'same-origin',
-    }),
-    uploadMiddleware(),
-  ],
-  { subscribeFn },
-);
-
+const fetchMiddleware = urlMiddleware({ url: `${APP_BASE_PATH}/graphql`, credentials: 'same-origin' });
+const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], { subscribeFn });
 const store = new Store(new RecordSource());
-// Activate the read from store then network
-// store.holdGC();
-export const environment = new Environment({
-  network,
-  store,
-});
+export const environment = new Environment({ network, store });
 
 // Components
 export class QueryRenderer extends Component {
