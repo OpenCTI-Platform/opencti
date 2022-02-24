@@ -1,0 +1,36 @@
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+no_implicit_optional = true
+no_implicit_reexport = true
+show_error_context = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pika",
+    "pika.adapters.blocking_connection",
+    "pycti",
+    "pycti.connector.opencti_connector_helper",
+]
+ignore_missing_imports = true
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+    "invalid-name",
+    "missing-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+    "no-self-use",
+]

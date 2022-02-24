@@ -2068,12 +2068,12 @@ export const elUpdateAttributeValue = async (key, previousValue, value) => {
   const isMultiple = isMultipleAttribute(key);
   const source = !isMultiple
     ? 'ctx._source[params.key] = params.value'
-    : `def index = 0; 
-       for (att in ctx._source[params.key]) { 
-        if(att == params.previousValue) { 
-          ctx._source[params.key][index] = params.value; 
-        } 
-        index++; 
+    : `def index = 0;
+       for (att in ctx._source[params.key]) {
+        if(att == params.previousValue) {
+          ctx._source[params.key][index] = params.value;
+        }
+        index++;
        }`;
   const query = { match_phrase: { [`${key}.keyword`]: previousValue } };
   const params = {
@@ -2106,13 +2106,13 @@ export const elUpdateRelationConnections = async (elements) => {
 };
 export const elUpdateEntityConnections = async (elements) => {
   if (elements.length > 0) {
-    const source = `if (ctx._source[params.key] == null) { 
+    const source = `if (ctx._source[params.key] == null) {
       ctx._source[params.key] = [params.to];
     } else if (params.from == null) {
       ctx._source[params.key].addAll(params.to);
     } else {
       def values = [params.to];
-      for (current in ctx._source[params.key]) { 
+      for (current in ctx._source[params.key]) {
         if (current != params.from) { values.add(current); }
       }
       ctx._source[params.key] = values;

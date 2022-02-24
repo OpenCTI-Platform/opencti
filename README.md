@@ -115,4 +115,3 @@ In order to provide OpenCTI users with cartography features, the platform uses a
 By using this server, you authorize Luatix to collect this information. Otherwise, you are free to deploy your own OpenStreetMap server and modify the platform configuration accordingly.
 
 If you have started using the Luatix server and change your mind, you have the right to access, limit, rectify, erase and receive your data. To exercise your rights, please send your request to gdpr@opencti.io.
-

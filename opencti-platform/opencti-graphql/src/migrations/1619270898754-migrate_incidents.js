@@ -45,7 +45,7 @@ export const up = async (next) => {
   logApp.info(`[MIGRATION] Rewriting IDs and types done in ${new Date() - start} ms`);
   const source = `if (ctx._source.fromType == params.type) {
       ctx._source.fromType = params.target;
-    } 
+    }
     if (ctx._source.toType == params.type) {
       ctx._source.toType = params.target;
     }

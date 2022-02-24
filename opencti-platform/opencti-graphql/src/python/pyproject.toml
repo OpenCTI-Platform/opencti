@@ -1,0 +1,13 @@
+[tool.isort]
+profile = "black"
+
+[tool.pylint.FORMAT]
+max-line-length = 88
+
+[tool.pylint."MESSAGE_CONTROL"]
+disable = [
+    "invalid-name",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+]

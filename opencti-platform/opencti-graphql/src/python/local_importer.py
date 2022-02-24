@@ -5,7 +5,7 @@ import sys
 from pycti.api.opencti_api_client import OpenCTIApiClient
 
 
-class TestLocalImporter:
+class TestLocalImporter:  # pylint: disable=too-few-public-methods
     def __init__(self, api_url, api_token, config_file_path):
         self.api_url = api_url
         self.api_token = api_token
@@ -20,14 +20,15 @@ class TestLocalImporter:
 
 if __name__ == "__main__":
     try:
-        api_url = sys.argv[1]
-        api_token = sys.argv[2]
-        file_path = sys.argv[3]
-        config_file_path = (
-            os.path.dirname(os.path.abspath(__file__)) + "/../../" + file_path
-        )
-        testLocalImporter = TestLocalImporter(api_url, api_token, config_file_path)
-        testLocalImporter.inject()
-    except Exception as e:
+        TestLocalImporter(
+            api_url=sys.argv[1],
+            api_token=sys.argv[2],
+            config_file_path=os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "../..",
+                sys.argv[3].lstrip(os.path.sep),
+            ),
+        ).inject()
+    except Exception as e:  # pylint: disable=broad-except
         logging.exception(str(e))
-        exit(1)
+        sys.exit(1)

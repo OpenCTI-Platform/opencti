@@ -1,7 +1,14 @@
-import json
 import sys
 
-from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression, OrBooleanExpression
+from stix2 import (
+    EqualityComparisonExpression,
+    ObjectPath,
+    ObservationExpression,
+    OrBooleanExpression,
+)
+
+from lib.messages import MISSING_ARGUMENT
+from lib.utils import return_data
 
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],
@@ -32,12 +39,6 @@ PATTERN_MAPPING = {
 }
 
 
-def return_data(data):
-    print(json.dumps(data))
-    sys.stdout.flush()
-    exit(0)
-
-
 def generate_part(observable_type, observable_value):
     if observable_type in PATTERN_MAPPING:
         lhs = ObjectPath(
@@ -49,11 +50,10 @@ def generate_part(observable_type, observable_value):
         return EqualityComparisonExpression(lhs, observable_value)
     return None
 
+
 def main():
     if len(sys.argv) <= 2:
-        return_data(
-            {"status": "error", "message": "Missing argument to the Python script"}
-        )
+        return_data(MISSING_ARGUMENT)
 
     if sys.argv[1] == "check":
         return_data({"status": "success"})

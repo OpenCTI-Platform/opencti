@@ -121,7 +121,7 @@ export const header = (
             * {
                 font-family: 'Arial';
             }
-            body 
+            body
                 margin: 0;
                 padding: 0;
                 background-color: #f6f6f6;
@@ -160,7 +160,7 @@ export const header = (
                                             entitiesNames && entitiesNames.length > 0
                                               ? `<br><i>Scope:</i> ${entitiesNames}`
                                               : ''
-                                          }                                         
+                                          }
                                       </td>
                                   </tr>
                               </table>
@@ -182,9 +182,9 @@ export const footer = `
                                   <tr>
                                       <td style="width:340px; padding:0 20px 0 0;">
                                           OpenCTI, the open source threat intelligence platform<br>
-                                          <a style="color:#000000; text-decoration:underline;" href="https://www.opencti.io">www.opencti.io</a> 
+                                          <a style="color:#000000; text-decoration:underline;" href="https://www.opencti.io">www.opencti.io</a>
                                           | <a style="color:#000000; text-decoration:underline;" href="mailto:contact@opencti.io">contact@opencti.io</a>
-                                      </td>    
+                                      </td>
                                   </tr>
                                   <tr>
                                       <td style="padding:20px 0 0 0;" colspan="2">Copyright &copy; 2021 OpenCTI.</td>
@@ -290,7 +290,7 @@ export const relationshipToHtml = (url, entry) => {
                 </td>
             </tr>
         </table>
-        <hr style="margin:15pt 0 10pt 0; color: #f6f6f6; border-top: #f6f6f6 1px solid; background: #f6f6f6">    
+        <hr style="margin:15pt 0 10pt 0; color: #f6f6f6; border-top: #f6f6f6 1px solid; background: #f6f6f6">
   `;
 };
 
