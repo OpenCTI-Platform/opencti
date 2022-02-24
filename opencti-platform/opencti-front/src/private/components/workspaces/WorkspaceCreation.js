@@ -202,7 +202,7 @@ class WorkspaceCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}

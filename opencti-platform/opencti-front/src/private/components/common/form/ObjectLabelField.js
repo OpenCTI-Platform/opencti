@@ -71,6 +71,7 @@ class ObjectLabelField extends Component {
           name={name}
           multiple={true}
           textfieldprops={{
+            variant: 'standard',
             label: t('Labels'),
             helperText: helpertext,
             onFocus: this.searchLabels.bind(this),
@@ -79,13 +80,13 @@ class ObjectLabelField extends Component {
           options={this.state.labels}
           onInputChange={this.searchLabels.bind(this)}
           openCreate={this.handleOpenLabelCreation.bind(this)}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon} style={{ color: option.color }}>
                 <Label />
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />

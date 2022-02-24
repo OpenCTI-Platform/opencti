@@ -1226,6 +1226,7 @@ class PendingFileContentComponent extends Component {
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="connector_id"
                     label={t('Connector')}
                     fullWidth={true}
@@ -1249,15 +1250,13 @@ class PendingFileContentComponent extends Component {
                   <Button
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

@@ -177,6 +177,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="theme"
                     label={t('Theme')}
                     fullWidth={true}
@@ -193,6 +194,7 @@ const ProfileOverviewComponent = (props) => {
                   </Field>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="language"
                     label={t('Language')}
                     fullWidth={true}
@@ -311,6 +313,7 @@ const ProfileOverviewComponent = (props) => {
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
                       component={TextField}
+                      variant="standard"
                       name="password"
                       label={t('Password')}
                       type="password"
@@ -318,6 +321,7 @@ const ProfileOverviewComponent = (props) => {
                     />
                     <Field
                       component={TextField}
+                      variant="standard"
                       name="confirmation"
                       label={t('Confirmation')}
                       type="password"

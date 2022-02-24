@@ -191,13 +191,12 @@ class RoleCreation extends Component {
                       onClick={handleReset}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
-                      color="secondary"
                     >
                       {t('Cancel')}
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting || !isValid}
                       classes={{ root: classes.button }}

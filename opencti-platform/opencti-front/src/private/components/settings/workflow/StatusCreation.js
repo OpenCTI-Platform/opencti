@@ -174,6 +174,7 @@ class StatusCreation extends Component {
                         return (
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="template_id"
                             label={t('Name')}
                             fullWidth={true}

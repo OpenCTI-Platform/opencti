@@ -254,6 +254,7 @@ const StixCoreObjectLabelsView = (props) => {
                   name="new_labels"
                   multiple={true}
                   textfieldprops={{
+                    variant: 'standard',
                     label: t('Labels'),
                     onFocus: searchLabels,
                   }}

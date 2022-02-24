@@ -112,6 +112,7 @@ class CreatedByField extends Component {
           name={name}
           disabled={disabled}
           textfieldprops={{
+            variant: 'standard',
             label: t('Author'),
             helperText: helpertext,
             onFocus: this.searchIdentities.bind(this),
@@ -121,13 +122,13 @@ class CreatedByField extends Component {
           onInputChange={this.handleSearch.bind(this)}
           openCreate={this.handleOpenIdentityCreation.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon}>
                 <ItemIcon type={option.type} />
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />

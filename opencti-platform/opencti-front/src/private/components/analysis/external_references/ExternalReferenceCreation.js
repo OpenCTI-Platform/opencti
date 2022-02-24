@@ -366,7 +366,7 @@ class ExternalReferenceCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

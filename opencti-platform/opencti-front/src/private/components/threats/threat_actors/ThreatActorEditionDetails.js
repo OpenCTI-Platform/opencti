@@ -249,6 +249,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                 />
                 <Field
                   component={SelectField}
+                  variant="standard"
                   name="sophistication"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -330,6 +331,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="goals"
                   label={t('Goals (1 / line)')}
                   fullWidth={true}

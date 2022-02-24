@@ -120,7 +120,7 @@ class ContainerStixCoreObjectPopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
+          style={{ marginTop: 3 }}
           size="large"
         >
           <MoreVert />

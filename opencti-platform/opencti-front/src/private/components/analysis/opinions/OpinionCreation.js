@@ -207,6 +207,7 @@ class OpinionCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="opinion"
                     label={t('Opinion')}
                     fullWidth={true}
@@ -258,7 +259,7 @@ class OpinionCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -313,6 +314,7 @@ class OpinionCreation extends Component {
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="opinion"
                     label={t('Opinion')}
                     fullWidth={true}
@@ -358,7 +360,7 @@ class OpinionCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

@@ -312,6 +312,7 @@ class StixDomainObjectCreation extends Component {
     return (
       <Field
         component={SelectField}
+        variant="standard"
         name="type"
         label={t('Entity type')}
         fullWidth={true}
@@ -471,6 +472,7 @@ class StixDomainObjectCreation extends Component {
                   {!includes(values.type, typesWithoutAliases) && (
                     <Field
                       component={TextField}
+                      variant="standard"
                       name={
                         includes(values.type, typesWithOpenCTIAliases)
                           ? 'x_opencti_aliases'
@@ -485,6 +487,7 @@ class StixDomainObjectCreation extends Component {
                     <div>
                       <Field
                         component={SelectField}
+                        variant="standard"
                         name="pattern_type"
                         label={t('Pattern type')}
                         fullWidth={true}
@@ -500,6 +503,7 @@ class StixDomainObjectCreation extends Component {
                       </Field>
                       <Field
                         component={TextField}
+                        variant="standard"
                         name="pattern"
                         label={t('Pattern')}
                         fullWidth={true}
@@ -551,7 +555,7 @@ class StixDomainObjectCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -659,6 +663,7 @@ class StixDomainObjectCreation extends Component {
                   {!includes(values.type, typesWithoutAliases) && (
                     <Field
                       component={TextField}
+                      variant="standard"
                       name={
                         includes(values.type, typesWithOpenCTIAliases)
                           ? 'x_opencti_aliases'
@@ -673,6 +678,7 @@ class StixDomainObjectCreation extends Component {
                     <div>
                       <Field
                         component={SelectField}
+                        variant="standard"
                         name="pattern_type"
                         label={t('Pattern type')}
                         fullWidth={true}
@@ -688,6 +694,7 @@ class StixDomainObjectCreation extends Component {
                       </Field>
                       <Field
                         component={TextField}
+                        variant="standard"
                         name="pattern"
                         label={t('Pattern')}
                         fullWidth={true}
@@ -736,7 +743,7 @@ class StixDomainObjectCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

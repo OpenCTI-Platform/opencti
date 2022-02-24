@@ -300,6 +300,7 @@ class ReportEditionOverviewComponent extends Component {
                       <Form style={{ margin: '20px 0 20px 0' }}>
                         <Field
                           component={TextField}
+                          variant="standard"
                           name="name"
                           label={t('Name')}
                           fullWidth={true}
@@ -314,6 +315,7 @@ class ReportEditionOverviewComponent extends Component {
                         />
                         <Field
                           component={SelectField}
+                          variant="standard"
                           name="report_types"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}

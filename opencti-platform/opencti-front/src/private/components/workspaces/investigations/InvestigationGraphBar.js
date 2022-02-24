@@ -870,6 +870,7 @@ class InvestigationGraphBar extends Component {
                         <DialogContent>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="entity_type"
                             label={t('Entity types')}
                             fullWidth={true}
@@ -914,6 +915,7 @@ class InvestigationGraphBar extends Component {
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="relationship_type"
                             label={t('Relationship type')}
                             fullWidth={true}
@@ -940,6 +942,7 @@ class InvestigationGraphBar extends Component {
                           </Field>
                           <Field
                             component={TextField}
+                            variant="standard"
                             name="limit"
                             label={t('Limit')}
                             type="number"

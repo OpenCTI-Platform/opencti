@@ -298,6 +298,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
                       component={TextField}
+                      variant="standard"
                       name="x_opencti_score"
                       label={t('Score')}
                       fullWidth={true}
@@ -334,6 +335,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           <div key={attribute.value}>
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="hashes_MD5"
                               label={t('hash_md5')}
                               fullWidth={true}
@@ -349,6 +351,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             />
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="hashes_SHA-1"
                               label={t('hash_sha-1')}
                               fullWidth={true}
@@ -364,6 +367,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             />
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="hashes_SHA-256"
                               label={t('hash_sha-256')}
                               fullWidth={true}
@@ -379,6 +383,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             />
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="hashes.SHA-512"
                               label={t('hash_sha-512')}
                               fullWidth={true}
@@ -422,6 +427,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                         return (
                           <Field
                             component={TextField}
+                            variant="standard"
                             key={attribute.value}
                             name={attribute.value}
                             label={attribute.value}
@@ -454,6 +460,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                       return (
                         <Field
                           component={TextField}
+                          variant="standard"
                           key={attribute.value}
                           name={attribute.value}
                           label={attribute.value}

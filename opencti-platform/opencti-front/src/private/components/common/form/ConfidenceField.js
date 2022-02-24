@@ -22,6 +22,7 @@ class ConfidenceField extends Component {
       return (
         <Field
           component={SelectField}
+          variant="standard"
           name={name}
           onFocus={onFocus}
           onChange={onChange}
@@ -44,6 +45,7 @@ class ConfidenceField extends Component {
     return (
       <Field
         component={SelectField}
+        variant="standard"
         name={name}
         label={label}
         fullWidth={true}

@@ -124,7 +124,6 @@ class UserSubscriptionPopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
           disabled={disabled}
           size="large"
         >

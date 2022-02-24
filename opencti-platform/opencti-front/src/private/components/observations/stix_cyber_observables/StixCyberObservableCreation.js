@@ -535,6 +535,7 @@ class StixCyberObservableCreation extends Component {
                     <div>
                       <Field
                         component={TextField}
+                        variant="standard"
                         name="x_opencti_score"
                         label={t('Score')}
                         fullWidth={true}
@@ -555,6 +556,7 @@ class StixCyberObservableCreation extends Component {
                             <div key={attribute.value}>
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="hashes_MD5"
                                 label="hash_md5"
                                 fullWidth={true}
@@ -562,6 +564,7 @@ class StixCyberObservableCreation extends Component {
                               />
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="hashes_SHA-1"
                                 label="hash_sha-1"
                                 fullWidth={true}
@@ -569,6 +572,7 @@ class StixCyberObservableCreation extends Component {
                               />
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="hashes_SHA-256"
                                 label="hash_sha-256"
                                 fullWidth={true}
@@ -596,6 +600,7 @@ class StixCyberObservableCreation extends Component {
                           return (
                             <Field
                               component={TextField}
+                              variant="standard"
                               key={attribute.value}
                               name={attribute.value}
                               label={attribute.value}
@@ -620,6 +625,7 @@ class StixCyberObservableCreation extends Component {
                         return (
                           <Field
                             component={TextField}
+                            variant="standard"
                             key={attribute.value}
                             name={attribute.value}
                             label={attribute.value}
@@ -668,7 +674,7 @@ class StixCyberObservableCreation extends Component {
                       </Button>
                       <Button
                         variant="contained"
-                        color="primary"
+                        color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}

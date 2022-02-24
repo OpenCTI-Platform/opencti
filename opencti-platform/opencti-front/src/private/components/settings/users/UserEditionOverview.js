@@ -273,6 +273,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={SelectField}
+                variant="standard"
                 name="language"
                 label={t('Language')}
                 fullWidth={true}
@@ -295,6 +296,7 @@ class UserEditionOverviewComponent extends Component {
                 multiple={true}
                 noOptionsText={t('No available options')}
                 textfieldprops={{
+                  variant: 'standard',
                   label: t('Roles'),
                   helperText: (
                     <SubscriptionFocus context={context} fieldName="roles" />

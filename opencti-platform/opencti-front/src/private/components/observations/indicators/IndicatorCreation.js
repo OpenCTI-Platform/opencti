@@ -254,6 +254,7 @@ class IndicatorCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="pattern_type"
                     label={t('Pattern type')}
                     fullWidth={true}
@@ -305,6 +306,7 @@ class IndicatorCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="x_mitre_platforms"
                     multiple={true}
                     label={t('Platforms')}
@@ -368,7 +370,7 @@ class IndicatorCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}

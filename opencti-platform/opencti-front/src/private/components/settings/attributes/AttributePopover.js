@@ -68,7 +68,6 @@ class AttributePopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
           size="large"
         >
           <MoreVertOutlined />

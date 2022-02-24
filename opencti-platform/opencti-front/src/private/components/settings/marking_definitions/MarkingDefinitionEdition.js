@@ -167,6 +167,7 @@ class MarkingDefinitionEditionContainer extends Component {
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="definition_type"
                   label={t('Type')}
                   fullWidth={true}
@@ -181,6 +182,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="definition"
                   label={t('Definition')}
                   fullWidth={true}
@@ -211,6 +213,7 @@ class MarkingDefinitionEditionContainer extends Component {
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="x_opencti_order"
                   label={t('Order')}
                   fullWidth={true}

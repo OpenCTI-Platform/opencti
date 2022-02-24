@@ -126,6 +126,7 @@ class StatusEditionContainer extends Component {
                       return (
                         <Field
                           component={SelectField}
+                          variant="standard"
                           name="template_id"
                           onChange={this.handleSubmitField.bind(this)}
                           label={t('Name')}
@@ -148,6 +149,7 @@ class StatusEditionContainer extends Component {
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="order"
                   label={t('Order')}
                   fullWidth={true}

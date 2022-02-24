@@ -202,12 +202,14 @@ const TaxiiCollectionCreation = (props) => {
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="description"
                   label={t('Description')}
                   fullWidth={true}
@@ -289,7 +291,7 @@ const TaxiiCollectionCreation = (props) => {
                   </Button>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={R.isEmpty(filters) || isSubmitting}
                     classes={{ root: classes.button }}

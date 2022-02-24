@@ -265,7 +265,7 @@ class NoteCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -366,7 +366,7 @@ class NoteCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

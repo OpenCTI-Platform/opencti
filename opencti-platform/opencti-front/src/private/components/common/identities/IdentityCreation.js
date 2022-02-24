@@ -202,6 +202,7 @@ class IdentityCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
@@ -245,7 +246,7 @@ class IdentityCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -314,6 +315,7 @@ class IdentityCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
@@ -357,15 +359,13 @@ class IdentityCreation extends Component {
                   <Button
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

@@ -406,6 +406,7 @@ const StixCoreRelationshipEditionContainer = ({
             <Form style={{ margin: '20px 0 20px 0' }}>
               <ConfidenceField
                 component={SelectField}
+                variant="standard"
                 name="confidence"
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}

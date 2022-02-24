@@ -70,7 +70,7 @@ const styles = (theme) => ({
   bottomNav: {
     zIndex: 1100,
     padding: '0 0 0 180px',
-    backgroundColor: theme.palette.navBottom.background,
+    backgroundColor: theme.palette.background.nav,
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -78,7 +78,7 @@ const styles = (theme) => ({
   bottomNavWithPadding: {
     zIndex: 1100,
     padding: '0 230px 0 180px',
-    backgroundColor: theme.palette.navBottom.background,
+    backgroundColor: theme.palette.background.nav,
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -609,6 +609,7 @@ class ToolBar extends Component {
             renderInput={(params) => (
               <TextField
                 {...params}
+                variant="standard"
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchMarkingDefinitions.bind(this, i)}
@@ -620,13 +621,13 @@ class ToolBar extends Component {
             onInputChange={this.searchMarkingDefinitions.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(option) => (
-              <React.Fragment>
+            renderOption={(props, option) => (
+              <li {...props}>
                 <div className={classes.icon} style={{ color: option.color }}>
                   <CenterFocusStrong />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </React.Fragment>
+              </li>
             )}
           />
         );
@@ -644,6 +645,7 @@ class ToolBar extends Component {
             renderInput={(params) => (
               <TextField
                 {...params}
+                variant="standard"
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchLabels.bind(this, i)}
@@ -655,13 +657,13 @@ class ToolBar extends Component {
             onInputChange={this.searchLabels.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(option) => (
-              <React.Fragment>
+            renderOption={(props, option) => (
+              <li {...props}>
                 <div className={classes.icon} style={{ color: option.color }}>
                   <Label />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </React.Fragment>
+              </li>
             )}
           />
         );
@@ -678,6 +680,7 @@ class ToolBar extends Component {
             renderInput={(params) => (
               <TextField
                 {...params}
+                variant="standard"
                 label={t('Values')}
                 fullWidth={true}
                 onFocus={this.searchIdentities.bind(this, i)}
@@ -689,13 +692,13 @@ class ToolBar extends Component {
             onInputChange={this.searchIdentities.bind(this, i)}
             inputValue={actionsInputs[i]?.inputValue || ''}
             onChange={this.handleChangeActionInputValues.bind(this, i)}
-            renderOption={(option) => (
-              <React.Fragment>
+            renderOption={(props, option) => (
+              <li {...props}>
                 <div className={classes.icon}>
                   <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
-              </React.Fragment>
+              </li>
             )}
           />
         );
@@ -719,6 +722,7 @@ class ToolBar extends Component {
       default:
         return (
           <TextField
+            variant="standard"
             disabled={disabled}
             label={t('Values')}
             fullWidth={true}

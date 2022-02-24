@@ -34,6 +34,7 @@ class TypesField extends Component {
             return (
               <Field
                 component={SelectField}
+                variant="standard"
                 name={name}
                 label={label}
                 fullWidth={true}

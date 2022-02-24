@@ -117,7 +117,7 @@ class UserPopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
+          style={{ marginTop: 4 }}
           size="large"
         >
           <MoreVert />

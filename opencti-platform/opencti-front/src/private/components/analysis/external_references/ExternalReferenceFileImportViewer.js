@@ -142,6 +142,7 @@ const ExternalReferenceFileImportViewerBase = ({
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="connector_id"
                     label={t('Connector')}
                     fullWidth={true}
@@ -171,7 +172,7 @@ const ExternalReferenceFileImportViewerBase = ({
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

@@ -58,6 +58,7 @@ const ColorPickerField = (props) => {
   return (
     <div>
       <MuiTextField
+        variant="standard"
         {...fieldToTextField(props)}
         ref={anchorEl}
         onChange={internalOnChange}

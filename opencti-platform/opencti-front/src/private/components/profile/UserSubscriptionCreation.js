@@ -368,6 +368,7 @@ class UserSubscriptionCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="cron"
                     label={t('Periodicity')}
                     fullWidth={true}
@@ -518,7 +519,7 @@ class UserSubscriptionCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}

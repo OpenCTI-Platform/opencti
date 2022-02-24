@@ -330,6 +330,7 @@ class OrganizationEditionOverviewComponent extends Component {
             />
             <Field
               component={SelectField}
+              variant="standard"
               name="x_opencti_organization_type"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -355,6 +356,7 @@ class OrganizationEditionOverviewComponent extends Component {
             </Field>
             <Field
               component={SelectField}
+              variant="standard"
               name="x_opencti_reliability"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}

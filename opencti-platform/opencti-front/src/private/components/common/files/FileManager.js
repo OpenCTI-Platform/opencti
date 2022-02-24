@@ -251,6 +251,7 @@ const FileManager = ({
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="connector_id"
                     label={t('Connector')}
                     fullWidth={true}
@@ -279,15 +280,13 @@ const FileManager = ({
                   <Button
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>
@@ -327,6 +326,7 @@ const FileManager = ({
                         <DialogContent>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
@@ -344,6 +344,7 @@ const FileManager = ({
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}
@@ -358,6 +359,7 @@ const FileManager = ({
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}

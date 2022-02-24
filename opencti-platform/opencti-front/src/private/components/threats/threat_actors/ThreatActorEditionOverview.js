@@ -317,6 +317,7 @@ class ThreatActorEditionOverviewComponent extends Component {
             />
             <Field
               component={SelectField}
+              variant="standard"
               name="threat_actor_types"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}

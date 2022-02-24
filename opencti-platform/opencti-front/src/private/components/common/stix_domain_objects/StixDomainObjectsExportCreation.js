@@ -220,6 +220,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                         <DialogContent>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
@@ -237,6 +238,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}
@@ -268,15 +270,13 @@ class StixDomainObjectsExportCreationComponent extends Component {
                   <Button
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

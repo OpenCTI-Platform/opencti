@@ -153,6 +153,7 @@ class LabelEditionContainer extends Component {
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="value"
                   label={t('Value')}
                   fullWidth={true}

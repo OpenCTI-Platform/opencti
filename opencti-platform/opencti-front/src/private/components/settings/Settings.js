@@ -243,12 +243,12 @@ class Settings extends Component {
                             <Form style={{ marginTop: 20 }}>
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="platform_title"
                                 label={t('Name')}
                                 fullWidth={true}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
-                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -258,13 +258,13 @@ class Settings extends Component {
                               />
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="platform_email"
                                 label={t('Sender email address')}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
-                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -274,6 +274,7 @@ class Settings extends Component {
                               />
                               <Field
                                 component={SelectField}
+                                variant="standard"
                                 name="platform_theme"
                                 label={t('Theme')}
                                 fullWidth={true}
@@ -283,7 +284,6 @@ class Settings extends Component {
                                 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onChange={this.handleSubmitField.bind(this, id)}
-                                variant="standard"
                                 helpertext={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -296,6 +296,7 @@ class Settings extends Component {
                               </Field>
                               <Field
                                 component={SelectField}
+                                variant="standard"
                                 name="platform_language"
                                 label={t('Language')}
                                 fullWidth={true}
@@ -305,7 +306,6 @@ class Settings extends Component {
                                 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onChange={this.handleSubmitField.bind(this, id)}
-                                variant="standard"
                                 helpertext={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -439,6 +439,7 @@ class Settings extends Component {
                               />
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="platform_theme_dark_logo"
                                 label={t('[Theme dark] Logo URL')}
                                 placeholder={t('Default')}
@@ -449,7 +450,6 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
-                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -459,6 +459,7 @@ class Settings extends Component {
                               />
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="platform_theme_dark_logo_login"
                                 label={t(
                                   '[Theme dark] Logo URL for login page',
@@ -471,7 +472,6 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
-                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -521,6 +521,7 @@ class Settings extends Component {
                               />
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="platform_theme_light_logo"
                                 label={t('[Theme light] Logo URL')}
                                 placeholder={t('Default')}
@@ -531,7 +532,6 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
-                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}
@@ -541,6 +541,7 @@ class Settings extends Component {
                               />
                               <Field
                                 component={TextField}
+                                variant="standard"
                                 name="platform_theme_light_logo_login"
                                 label={t(
                                   '[Theme light] Logo URL for login page',
@@ -553,7 +554,6 @@ class Settings extends Component {
                                 style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
-                                variant="standard"
                                 helperText={
                                   <SubscriptionFocus
                                     context={editContext}

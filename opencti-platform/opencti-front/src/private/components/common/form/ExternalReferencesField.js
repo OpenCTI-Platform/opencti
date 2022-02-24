@@ -115,6 +115,7 @@ class ExternalReferencesField extends Component {
           name={name}
           multiple={true}
           textfieldprops={{
+            variant: 'standard',
             label: t('External references'),
             helperText: helpertext,
             onFocus: this.searchExternalReferences.bind(this),
@@ -124,13 +125,13 @@ class ExternalReferencesField extends Component {
           onInputChange={this.searchExternalReferences.bind(this)}
           openCreate={this.handleOpenExternalReferenceCreation.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon} style={{ color: option.color }}>
                 <LanguageOutlined />
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />

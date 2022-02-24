@@ -207,6 +207,7 @@ class ThreatActorCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="threat_actor_types"
                     label={t('Threat actor types')}
                     fullWidth={true}

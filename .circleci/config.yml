@@ -537,20 +537,20 @@ workflows:
             branches:
               only:
                 - master
-      #- deploy_demo:
-      #    requires:
-      #      - build_platform
-      #    filters:
-      #      branches:
-      #        only:
-      #          - master                
-      #- deploy_reference:
-      #    requires:
-      #      - build_platform
-      #    filters:
-      #      branches:
-      #        only:
-      #         - master
+      - deploy_demo:
+          requires:
+            - build_platform
+          filters:
+            branches:
+              only:
+                - master                
+      - deploy_reference:
+          requires:
+            - build_platform
+          filters:
+            branches:
+              only:
+               - master
       - deploy_testing:
           requires:
             - build_platform

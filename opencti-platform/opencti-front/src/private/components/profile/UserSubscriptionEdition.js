@@ -207,6 +207,7 @@ const UserSubscriptionEditionContainer = (props) => {
               />
               <Field
                 component={SelectField}
+                variant="standard"
                 name="cron"
                 label={t('Periodicity')}
                 fullWidth={true}

@@ -222,7 +222,7 @@ class LabelCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -282,16 +282,14 @@ class LabelCreation extends Component {
                     variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Cancel')}
                   </Button>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

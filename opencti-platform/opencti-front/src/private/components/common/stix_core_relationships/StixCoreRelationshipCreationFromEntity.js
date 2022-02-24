@@ -752,6 +752,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
               </div>
               <Field
                 component={SelectField}
+                variant="standard"
                 name="relationship_type"
                 label={t('Relationship type')}
                 fullWidth={true}
@@ -838,7 +839,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 </Button>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}

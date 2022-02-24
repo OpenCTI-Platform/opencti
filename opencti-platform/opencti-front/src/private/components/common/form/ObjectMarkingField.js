@@ -77,6 +77,7 @@ class ObjectMarkingField extends Component {
         multiple={true}
         disabled={disabled}
         textfieldprops={{
+          variant: 'standard',
           label: t('Marking'),
           helperText: helpertext,
           onFocus: this.searchMarkingDefinitions.bind(this),
@@ -85,13 +86,13 @@ class ObjectMarkingField extends Component {
         options={this.state.markingDefinitions}
         onInputChange={this.searchMarkingDefinitions.bind(this)}
         onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-        renderOption={(option) => (
-          <React.Fragment>
+        renderOption={(props, option) => (
+          <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <CenterFocusStrong />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </React.Fragment>
+          </li>
         )}
       />
     );

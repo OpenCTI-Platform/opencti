@@ -145,6 +145,7 @@ class AttackPatternEditionDetailsComponent extends Component {
             />
             <Field
               component={SelectField}
+              variant="standard"
               name="x_mitre_platforms"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
@@ -166,6 +167,7 @@ class AttackPatternEditionDetailsComponent extends Component {
             </Field>
             <Field
               component={SelectField}
+              variant="standard"
               name="x_mitre_permissions_required"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}

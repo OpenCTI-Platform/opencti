@@ -425,6 +425,7 @@ class IndicatorEditionOverviewComponent extends Component {
             />
             <Field
               component={SelectField}
+              variant="standard"
               name="x_mitre_platforms"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}

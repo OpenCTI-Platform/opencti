@@ -1,35 +1,35 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
-import MoreVert from '@mui/icons-material/MoreVert';
-import { ConnectionHandler } from 'relay-runtime';
-import inject18n from '../../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import Loader from '../../../../components/Loader';
-import RoleEdition from './RoleEdition';
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import { compose } from "ramda";
+import { graphql } from "react-relay";
+import withStyles from "@mui/styles/withStyles";
+import Drawer from "@mui/material/Drawer";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import Slide from "@mui/material/Slide";
+import MoreVert from "@mui/icons-material/MoreVert";
+import { ConnectionHandler } from "relay-runtime";
+import inject18n from "../../../../components/i18n";
+import { commitMutation, QueryRenderer } from "../../../../relay/environment";
+import Loader from "../../../../components/Loader";
+import RoleEdition from "./RoleEdition";
 
 const styles = (theme) => ({
   container: {
     margin: 0,
   },
   drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
+    minHeight: "100vh",
+    width: "50%",
+    position: "fixed",
+    overflow: "auto",
+    transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
@@ -40,7 +40,7 @@ const styles = (theme) => ({
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
-Transition.displayName = 'TransitionSlide';
+Transition.displayName = "TransitionSlide";
 
 const rolePopoverCleanContext = graphql`
   mutation RolePopoverCleanContextMutation($id: ID!) {
@@ -118,14 +118,14 @@ class RolePopover extends Component {
       },
       updater: (store) => {
         const container = store.getRoot();
-        const payload = store.getRootField('roleEdit');
+        const payload = store.getRootField("roleEdit");
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_roles',
-          this.props.paginationOptions,
+          "Pagination_roles",
+          this.props.paginationOptions
         );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
+        ConnectionHandler.deleteNode(conn, payload.getValue("delete"));
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -141,7 +141,6 @@ class RolePopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
           size="large"
         >
           <MoreVert />
@@ -152,10 +151,10 @@ class RolePopover extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
+            {t("Update")}
           </MenuItem>
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-            {t('Delete')}
+            {t("Delete")}
           </MenuItem>
         </Menu>
         <Drawer
@@ -189,7 +188,7 @@ class RolePopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this role?')}
+              {t("Do you want to delete this role?")}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -197,14 +196,14 @@ class RolePopover extends Component {
               onClick={this.handleCloseDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Cancel')}
+              {t("Cancel")}
             </Button>
             <Button
               color="secondary"
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Delete')}
+              {t("Delete")}
             </Button>
           </DialogActions>
         </Dialog>

@@ -256,14 +256,13 @@ class StixCyberObservableIndicatorsComponent extends Component {
             <DialogActions>
               <Button
                 onClick={this.handleClosePromoteStix.bind(this)}
-                color="primary"
                 disabled={this.state.promotingStix}
               >
                 {t('Cancel')}
               </Button>
               <Button
                 onClick={this.submitPromoteStix.bind(this)}
-                color="primary"
+                color="secondary"
                 disabled={this.state.promotingStix}
               >
                 {t('Create')}

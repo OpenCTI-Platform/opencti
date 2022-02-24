@@ -153,11 +153,9 @@ export default (
             transition: 'borderBottom .3s',
             '&:hover': {
               borderBottom: '2px solid #ffffff !important',
-              marginBottom: '-1px !important',
             },
             '&:focus': {
               borderBottom: `2px solid #${primary || '00b1ff'} !important`,
-              marginBottom: '-1px !important',
             },
           },
           '.react-grid-placeholder': {

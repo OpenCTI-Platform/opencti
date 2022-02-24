@@ -128,6 +128,7 @@ class StatusField extends Component {
           style={style}
           name={name}
           textfieldprops={{
+            variant: 'standard',
             label: t('Status'),
             helperText: helpertext,
             onFocus: this.searchStatuses.bind(this),
@@ -136,8 +137,8 @@ class StatusField extends Component {
           options={this.state.statuses}
           onInputChange={this.handleSearch.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon}>
                 <Avatar
                   variant="square"
@@ -151,7 +152,7 @@ class StatusField extends Component {
                 </Avatar>
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />

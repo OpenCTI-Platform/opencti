@@ -284,7 +284,7 @@ class ObservedDataCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -339,6 +339,7 @@ class ObservedDataCreation extends Component {
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="observedData"
                     label={t('ObservedData')}
                     fullWidth={true}
@@ -385,7 +386,7 @@ class ObservedDataCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

@@ -66,6 +66,7 @@ class KillChainPhasesField extends Component {
         name={name}
         multiple={true}
         textfieldprops={{
+          variant: 'standard',
           label: t('Kill chain phases'),
           helperText: helpertext,
           onFocus: this.searchKillChainPhases.bind(this),
@@ -74,13 +75,13 @@ class KillChainPhasesField extends Component {
         options={this.state.killChainPhases}
         onInputChange={this.searchKillChainPhases.bind(this)}
         onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-        renderOption={(option) => (
-          <React.Fragment>
+        renderOption={(props, option) => (
+          <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
               <Launch />
             </div>
             <div className={classes.text}>{option.label}</div>
-          </React.Fragment>
+          </li>
         )}
       />
     );

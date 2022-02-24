@@ -226,6 +226,7 @@ class OrganizationCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="x_opencti_organization_type"
                     label={t('Organization type')}
                     fullWidth={true}
@@ -239,6 +240,7 @@ class OrganizationCreation extends Component {
                   </Field>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="x_opencti_reliability"
                     label={t('Reliability')}
                     fullWidth={true}
@@ -283,7 +285,7 @@ class OrganizationCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}

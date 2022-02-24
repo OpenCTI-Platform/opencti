@@ -225,6 +225,7 @@ class ReportCreation extends Component {
                           <Form style={{ margin: '20px 0 20px 0' }}>
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="name"
                               label={t('Name')}
                               fullWidth={true}
@@ -241,6 +242,7 @@ class ReportCreation extends Component {
                             />
                             <Field
                               component={SelectField}
+                              variant="standard"
                               name="report_types"
                               label={t('Report type')}
                               fullWidth={true}
@@ -302,7 +304,7 @@ class ReportCreation extends Component {
                               </Button>
                               <Button
                                 variant="contained"
-                                color="primary"
+                                color="secondary"
                                 onClick={submitForm}
                                 disabled={isSubmitting}
                                 classes={{ root: classes.button }}

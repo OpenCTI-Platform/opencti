@@ -237,12 +237,14 @@ const RetentionCreation = (props) => {
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="max_retention"
                   label={t('Maximum retention days')}
                   fullWidth={true}
@@ -334,7 +336,7 @@ const RetentionCreation = (props) => {
                   </Button>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={!verified || isSubmitting}
                     classes={{ root: classes.button }}
