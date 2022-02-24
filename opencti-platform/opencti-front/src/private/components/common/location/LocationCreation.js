@@ -157,6 +157,7 @@ class LocationCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
@@ -322,10 +323,7 @@ class LocationCreation extends Component {
                   </Field>
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button

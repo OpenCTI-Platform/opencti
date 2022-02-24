@@ -796,7 +796,7 @@ class Filters extends Component {
           <IconButton
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
-            style={{ float: 'left' }}
+            style={{ float: 'left', marginTop: 3 }}
             size="large"
           >
             <FilterListOutlined />

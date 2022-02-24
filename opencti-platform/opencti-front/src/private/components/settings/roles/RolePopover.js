@@ -161,6 +161,7 @@ class RolePopover extends Component {
           open={this.state.displayUpdate}
           anchor="right"
           sx={{ zIndex: 1202 }}
+          elevation={1}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >
@@ -182,6 +183,7 @@ class RolePopover extends Component {
         </Drawer>
         <Dialog
           open={this.state.displayDelete}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}

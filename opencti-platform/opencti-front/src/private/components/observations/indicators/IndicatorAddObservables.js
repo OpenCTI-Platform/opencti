@@ -104,6 +104,8 @@ class IndicatorAddObservables extends Component {
           open={this.state.open}
           keepMounted={true}
           anchor="right"
+          sx={{ zIndex: 1202 }}
+          elevation={1}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >

@@ -40,6 +40,8 @@ class StixDomainObjectsExports extends Component {
         variant="persistent"
         open={open}
         anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleToggle.bind(this)}
       >

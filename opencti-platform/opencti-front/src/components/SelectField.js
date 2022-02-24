@@ -59,6 +59,7 @@ const SelectField = (props) => {
         onBlur={internalOnBlur}
       />
       <FormHelperText
+        variant={props.variant}
         style={{
           display:
             (meta.touched && !isNil(meta.error))

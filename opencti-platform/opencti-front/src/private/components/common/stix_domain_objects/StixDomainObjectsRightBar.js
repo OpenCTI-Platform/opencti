@@ -61,6 +61,8 @@ class StixDomainObjectsRightBar extends Component {
       <Drawer
         variant="permanent"
         anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{
           paper: openExports ? classes.drawerPaperExports : classes.drawerPaper,
         }}

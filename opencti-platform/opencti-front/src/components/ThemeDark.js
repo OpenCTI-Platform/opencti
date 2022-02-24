@@ -116,23 +116,25 @@ export default (
           },
           pre: {
             color: '#ffffff !important',
-            background: '#01478DFF !important',
+            background: `${primaryAccent || '#01478dff'} !important`,
           },
           code: {
             color: '#ffffff !important',
-            background: '#01478DFF !important',
+            background: `${primaryAccent || '#01478dff'} !important`,
           },
           '.react-mde': {
             border: '0 !important',
           },
-          '.error .react-mde': {
+          '.error .react-mde textarea': {
             border: '0 !important',
             borderBottom: '2px solid #f44336 !important',
-            marginBottom: '-1px !important',
             '&:hover': {
               border: '0 !important',
               borderBottom: '2px solid #f44336 !important',
-              marginBottom: '-1px !important',
+            },
+            '&:focus': {
+              border: '0 !important',
+              borderBottom: '2px solid #f44336 !important',
             },
           },
           '.mde-header': {

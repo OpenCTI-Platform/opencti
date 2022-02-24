@@ -57,6 +57,8 @@ class StixSightingRelationshipEdition extends Component {
       <Drawer
         open={open}
         anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose.bind(this)}
       >

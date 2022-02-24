@@ -212,6 +212,8 @@ const RetentionCreation = (props) => {
       <Drawer
         open={open}
         anchor="right"
+        sx={{ zIndex: 1202 }}
+        elevation={1}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >

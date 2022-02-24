@@ -903,6 +903,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         <Drawer
           open={open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: this.props.classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >

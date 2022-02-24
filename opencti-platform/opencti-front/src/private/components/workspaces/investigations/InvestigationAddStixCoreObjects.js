@@ -289,6 +289,8 @@ class InvestigationAddStixCoreObjects extends Component {
           open={this.state.open}
           keepMounted={true}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >

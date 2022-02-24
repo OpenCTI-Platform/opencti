@@ -69,7 +69,7 @@ class SectorLineComponent extends Component {
           to={`/dashboard/entities/sectors/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <DomainOutlined fontSize={isSubSector ? 'small' : 'default'} />
+            <DomainOutlined fontSize={isSubSector ? 'small' : 'medium'} />
           </ListItemIcon>
           <ListItemText
             primary={

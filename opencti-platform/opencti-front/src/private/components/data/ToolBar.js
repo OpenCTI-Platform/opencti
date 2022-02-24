@@ -1098,6 +1098,7 @@ class ToolBar extends Component {
         <Drawer
           open={this.state.displayUpdate}
           anchor="right"
+          elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
@@ -1185,6 +1186,8 @@ class ToolBar extends Component {
         <Drawer
           open={this.state.displayMerge}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseMerge.bind(this)}
         >

@@ -147,6 +147,7 @@ class KillChainPhasePopover extends Component {
           open={this.state.displayUpdate}
           anchor="right"
           sx={{ zIndex: 1202 }}
+          elevation={1}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >

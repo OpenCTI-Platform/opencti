@@ -33,6 +33,8 @@ class StixCyberObservablesExports extends Component {
         variant="persistent"
         open={open}
         anchor="right"
+        sx={{ zIndex: 1202 }}
+        elevation={1}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleToggle.bind(this)}
       >

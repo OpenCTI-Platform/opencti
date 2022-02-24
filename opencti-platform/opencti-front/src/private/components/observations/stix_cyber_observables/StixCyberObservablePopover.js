@@ -166,6 +166,8 @@ class StixCyberObservablePopover extends Component {
         <Drawer
           open={this.state.displayEdit}
           anchor="right"
+          sx={{ zIndex: 1202 }}
+          elevation={1}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseEdit.bind(this)}
         >

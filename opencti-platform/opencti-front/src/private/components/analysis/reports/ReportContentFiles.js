@@ -78,6 +78,8 @@ class ReportContentFilesComponent extends Component {
       <Drawer
         variant="permanent"
         anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
       >
         <div className={classes.toolbar} />
