@@ -996,7 +996,7 @@ export const elBatchIds = async (user, ids) => {
 
 // field can be "entity_type" or "internal_id"
 export const elAggregationRelationsCount = async (user, type, opts) => {
-  const { startDate: start, endDate: end, toTypes = [], dateAttribute = 'created_at' } = opts;
+  const { startDate: start, endDate: end = now(), toTypes = [], dateAttribute = 'created_at' } = opts;
   const { fromId = null, field = null, isTo = false, noDirection = false } = opts;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);

@@ -209,20 +209,14 @@ const TotalRelationshipsCard = ({ title, options, Icon }) => {
   const classes = useStyles();
   const { t, n } = useFormatter();
   const dashboardStixCoreRelationshipsNumberQuery = graphql`
-    query DashboardStixCoreRelationshipsNumberQuery(
-      $type: String
-      $endDate: DateTime
-    ) {
+    query DashboardStixCoreRelationshipsNumberQuery($type: String$endDate: DateTime) {
       stixCoreRelationshipsNumber(type: $type, endDate: $endDate) {
         total
         count
       }
     }
   `;
-  const data = useLazyLoadQuery(
-    dashboardStixCoreRelationshipsNumberQuery,
-    options,
-  );
+  const data = useLazyLoadQuery(dashboardStixCoreRelationshipsNumberQuery, options);
   const { total } = data.stixCoreRelationshipsNumber;
   const difference = total - data.stixCoreRelationshipsNumber.count;
   return (
@@ -253,28 +247,21 @@ const TotalObservablesCard = ({ title, options, Icon }) => {
       }
     }
   `;
-  const data = useLazyLoadQuery(
-    dashboardStixCyberObservablesNumberQuery,
-    options,
-  );
+  const data = useLazyLoadQuery(dashboardStixCyberObservablesNumberQuery, options);
   const { total } = data.stixCyberObservablesNumber;
   const difference = total - data.stixCyberObservablesNumber.count;
   return (
     <CardContent>
       <div className={classes.title}>{t(title)}</div>
       <div className={classes.number}>{n(total)}</div>
-      <ItemNumberDifference
-        difference={difference}
-        description={t('24 hours')}
-      />
+      <ItemNumberDifference difference={difference} description={t('24 hours')}/>
       <div className={classes.icon}>
         <Icon color="inherit" fontSize="large" />
       </div>
     </CardContent>
   );
 };
-const TopLabelsCard = () => {
-  const classes = useStyles();
+const TopLabelsCard = ({ classes }) => {
   const { n } = useFormatter();
   const dashboardStixMetaRelationshipsDistributionQuery = graphql`
     query DashboardStixMetaRelationshipsDistributionQuery(
@@ -311,18 +298,15 @@ const TopLabelsCard = () => {
       }
     }
   `;
-  const data = useLazyLoadQuery(
-    dashboardStixMetaRelationshipsDistributionQuery,
-    {
-      field: 'internal_id',
-      operation: 'count',
-      relationship_type: 'object-label',
-      toTypes: ['Label'],
-      startDate: monthsAgo(3),
-      endDate: now(),
-      limit: 9,
-    },
-  );
+  const queryOptions = {
+    field: 'internal_id',
+    operation: 'count',
+    relationship_type: 'object-label',
+    toTypes: ['Label'],
+    startDate: monthsAgo(3),
+    limit: 9,
+  };
+  const data = useLazyLoadQuery(dashboardStixMetaRelationshipsDistributionQuery, queryOptions);
   const distribution = data.stixMetaRelationshipsDistribution;
   if (distribution.length === 0) {
     return <NoTableElement />;
@@ -735,19 +719,13 @@ const DefaultDashboard = ({ timeField }) => {
   const classes = useStyles();
   const theme = useTheme();
   return (
-    <Security
-      needs={[KNOWLEDGE]}
+    <Security needs={[KNOWLEDGE]}
       placeholder={t(
         'You do not have any access to the knowledge of this OpenCTI instance.',
-      )}
-    >
+      )}>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
+          <Card classes={{ root: classes.card }} style={{ height: 110 }} variant="outlined">
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalEntitiesCard
                 title={'Total entities'}
@@ -759,11 +737,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item={true} xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
+          <Card classes={{ root: classes.card }} style={{ height: 110 }} variant="outlined">
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalRelationshipsCard
                 title={'Total relationships'}
@@ -775,11 +749,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item={true} xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
+          <Card classes={{ root: classes.card }} style={{ height: 110 }} variant="outlined">
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalEntitiesCard
                 title={'Total reports'}
@@ -791,11 +761,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
         <Grid item={true} xs={3}>
-          <Card
-            classes={{ root: classes.card }}
-            style={{ height: 110 }}
-            variant="outlined"
-          >
+          <Card classes={{ root: classes.card }} style={{ height: 110 }} variant="outlined">
             <Suspense fallback={<Loader variant="inElement" />}>
               <TotalObservablesCard
                 title={'Total observables'}
@@ -812,25 +778,17 @@ const DefaultDashboard = ({ timeField }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t('Top Labels (3 last months)')}
           </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 300 }}
-          >
-            <Suspense fallback={<Loader variant="inElement" />}>
-              <TopLabelsCard classes={classes} />
-            </Suspense>
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ height: 300 }}>
+              <Suspense fallback={<Loader variant="inElement" />}>
+                <TopLabelsCard classes={classes} />
+              </Suspense>
           </Paper>
         </Grid>
         <Grid item={true} xs={8}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Ingested entities')}
           </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 300 }}
-          >
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ height: 300 }}>
             <Suspense fallback={<Loader variant="inElement" />}>
               <IngestedEntitiesGraph classes={classes} theme={theme} />
             </Suspense>
@@ -863,20 +821,12 @@ const DefaultDashboard = ({ timeField }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t('Targeted countries (3 last months)')}
           </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 400 }}
-          >
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ height: 400 }}>
             {/* eslint-disable-next-line max-len */}
             <Suspense
               fallback={
-                <LocationMiniMapTargets
-                  center={[48.8566969, 2.3514616]}
-                  zoom={2}
-                />
-              }
-            >
+                <LocationMiniMapTargets center={[48.8566969, 2.3514616]} zoom={2}/>
+              }>
               <TargetedCountries timeField={timeField} />
             </Suspense>
           </Paper>
@@ -887,11 +837,7 @@ const DefaultDashboard = ({ timeField }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t('Last ingested analysis (creation date in the platform)')}
           </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 420 }}
-          >
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ height: 420 }}>
             <Suspense fallback={<Loader variant="inElement" />}>
               <LastIngestedAnalysis classes={classes} theme={theme} />
             </Suspense>
@@ -901,11 +847,7 @@ const DefaultDashboard = ({ timeField }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t('Observables distribution')}
           </Typography>
-          <Paper
-            classes={{ root: classes.paper }}
-            variant="outlined"
-            style={{ height: 420 }}
-          >
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ height: 420 }}>
             <Suspense fallback={<Loader variant="inElement" />}>
               <ObservablesDistribution classes={classes} theme={theme} />
             </Suspense>
@@ -918,12 +860,10 @@ const DefaultDashboard = ({ timeField }) => {
 const CustomDashboard = ({ dashboard, timeField }) => {
   const { t } = useFormatter();
   return (
-    <Security
-      needs={[EXPLORE]}
+    <Security needs={[EXPLORE]}
       placeholder={t(
         'You do not have any access to the explore part of this OpenCTI instance.',
-      )}
-    >
+      )}>
       <Suspense fallback={<Loader />}>
         <WorkspaceDashboard dashboard={dashboard} timeField={timeField} />
       </Suspense>
