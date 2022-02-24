@@ -41,13 +41,12 @@ class TestLocalExporter:
 
 if __name__ == "__main__":
     try:
-        testLocalExporter = TestLocalExporter(
+        TestLocalExporter(
             api_url=sys.argv[1],
             api_token=sys.argv[2],
             entity_id=sys.argv[3],
             file_name=sys.argv[4],
-        )
-        testLocalExporter.upload()
+        ).upload()
     except Exception as e:  # pylint: disable=broad-except
         logging.exception(str(e))
         sys.exit(1)
