@@ -20,7 +20,7 @@ class TestLocalImporter:  # pylint: disable=too-few-public-methods
 
 if __name__ == "__main__":
     try:
-        testLocalImporter = TestLocalImporter(
+        TestLocalImporter(
             api_url=sys.argv[1],
             api_token=sys.argv[2],
             config_file_path=os.path.join(
@@ -28,8 +28,7 @@ if __name__ == "__main__":
                 "../..",
                 sys.argv[3].lstrip(os.path.sep),
             ),
-        )
-        testLocalImporter.inject()
+        ).inject()
     except Exception as e:  # pylint: disable=broad-except
         logging.exception(str(e))
         sys.exit(1)
