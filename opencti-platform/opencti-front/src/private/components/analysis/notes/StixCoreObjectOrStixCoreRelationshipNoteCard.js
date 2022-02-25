@@ -153,7 +153,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       <Card classes={{ root: classes.card }} variant="outlined">
         <CardHeader
           style={{
-            padding: '10px 10px 0 15px',
+            padding: '15px 10px 10px 15px',
             borderBottom: `1px solid ${theme.palette.divider}`,
           }}
           action={
@@ -168,6 +168,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             <div>
               <div
                 style={{
+                  paddingTop: 2,
                   float: 'left',
                   fontDecoration: 'none',
                   textTransform: 'none',

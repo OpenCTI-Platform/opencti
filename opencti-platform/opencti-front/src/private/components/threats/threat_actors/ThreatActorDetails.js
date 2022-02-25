@@ -26,7 +26,7 @@ const styles = (theme) => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.accent,
     borderRadius: 5,
     color: '#ffffff',
     textTransform: 'uppercase',

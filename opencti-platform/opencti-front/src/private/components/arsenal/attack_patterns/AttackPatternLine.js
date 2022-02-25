@@ -68,7 +68,7 @@ class AttackPatternLineComponent extends Component {
           to={`/dashboard/arsenal/attack_patterns/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <LockPattern fontSize={isSubAttackPattern ? 'small' : 'default'} />
+            <LockPattern fontSize={isSubAttackPattern ? 'small' : 'medium'} />
           </ListItemIcon>
           <ListItemText
             primary={

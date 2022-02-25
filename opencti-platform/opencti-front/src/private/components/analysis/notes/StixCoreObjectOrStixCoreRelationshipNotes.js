@@ -65,7 +65,7 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
             );
           }
           return (
-            <div style={{ height: '100%', marginTop: 100 }}>
+            <div style={{ height: '100%', marginTop: marginTop || 50 }}>
               <Typography
                 variant="h4"
                 gutterBottom={true}

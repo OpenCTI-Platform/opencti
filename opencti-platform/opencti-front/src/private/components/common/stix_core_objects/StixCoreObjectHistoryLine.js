@@ -10,7 +10,7 @@ import {
   deepPurple,
   yellow,
   indigo,
-  teal, red
+  teal, red,
 } from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -22,7 +22,7 @@ import {
   LinkOutlined,
   LinkOffOutlined,
   HelpOutlined,
-  LanguageOutlined, DeleteOutlined
+  LanguageOutlined, DeleteOutlined,
 } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -306,7 +306,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Badge>
         </div>
         <div className={classes.content}>
-          <Paper classes={{ root: classes.paper }}>
+          <Paper classes={{ root: classes.paper }} elevation={1}>
             <div className={classes.date}>{nsdt(node.timestamp)}</div>
             <Tooltip
               classes={{ tooltip: classes.tooltip }}

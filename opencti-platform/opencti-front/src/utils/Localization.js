@@ -104,7 +104,7 @@ const i18n = {
       'Do you want to delete this attribute?':
         'Souhaitez-vous supprimer cet attribut ?',
       'Do you want to remove this external reference?':
-        'Souhaitez-vous supprimer cette référence externe ?',
+        'Souhaitez-vous retirer cette référence externe ?',
       'Do you want to remove this note?':
         'Souhaitez-vous supprimer cette note ?',
       'Do you want to remove this report?':

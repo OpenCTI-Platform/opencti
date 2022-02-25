@@ -47,7 +47,7 @@ const styles = (theme) => ({
   },
   createButton: {
     float: 'left',
-    margin: '-15px 0 0 10px',
+    marginTop: -15,
   },
 });
 
@@ -127,7 +127,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
     const { open } = this.state;
     const notes = R.pathOr([], ['stixCoreObject', 'notes', 'edges'], data);
     return (
-      <div style={{ marginTop: marginTop || 40 }}>
+      <div style={{ marginTop: marginTop || 50 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes about this entity')}
         </Typography>
@@ -157,7 +157,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
           );
         })}
         <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
+          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
           variant="outlined"

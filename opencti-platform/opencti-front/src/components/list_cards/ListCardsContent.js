@@ -112,7 +112,6 @@ class ListCardsContent extends Component {
       onLabelClick,
     } = this.props;
     const finalStyle = { ...style, width: style.width + 10 };
-    console.log(finalStyle);
     const bookmarksIds = R.map((n) => n.node.id, bookmarkList || []);
     const index = rowIndex * numberOfCardsPerLine + columnIndex;
     const className = classes.defaultCard;

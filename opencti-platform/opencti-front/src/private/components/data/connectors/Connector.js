@@ -72,7 +72,7 @@ const styles = (theme) => ({
     height: 30,
     float: 'left',
     margin: '0 10px 10px 0',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.accent,
     color: '#ffffff',
   },
   number: {

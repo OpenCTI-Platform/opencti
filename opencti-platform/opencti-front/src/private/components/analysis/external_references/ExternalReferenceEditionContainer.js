@@ -12,6 +12,7 @@ import ExternalReferenceEditionOverview from './ExternalReferenceEditionOverview
 
 const styles = (theme) => ({
   header: {
+    backgroundColor: theme.palette.background.paper,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
