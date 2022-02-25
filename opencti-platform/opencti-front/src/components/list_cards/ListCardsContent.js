@@ -111,12 +111,14 @@ class ListCardsContent extends Component {
       initialLoading,
       onLabelClick,
     } = this.props;
+    const finalStyle = { ...style, width: style.width + 10 };
+    console.log(finalStyle);
     const bookmarksIds = R.map((n) => n.node.id, bookmarkList || []);
     const index = rowIndex * numberOfCardsPerLine + columnIndex;
     const className = classes.defaultCard;
     if (initialLoading || !this._isCellLoaded({ index })) {
       return (
-        <div className={className} key={key} style={style}>
+        <div className={className} key={key} style={finalStyle}>
           {React.cloneElement(DummyCardComponent)}
         </div>
       );
@@ -124,14 +126,14 @@ class ListCardsContent extends Component {
     const edge = dataList[index];
     if (!edge) {
       return (
-        <div key={key} style={style}>
+        <div key={key} style={finalStyle}>
           &nbsp;
         </div>
       );
     }
     const { node } = edge;
     return (
-      <div className={className} key={key} style={style}>
+      <div className={className} key={key} style={finalStyle}>
         {React.cloneElement(CardComponent, {
           node,
           bookmarksIds,

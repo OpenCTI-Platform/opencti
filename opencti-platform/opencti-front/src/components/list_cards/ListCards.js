@@ -10,12 +10,13 @@ import MenuItem from '@mui/material/MenuItem';
 import {
   ArrowDownward,
   ArrowUpward,
-  TableChartOutlined,
-  DashboardOutlined,
+  ViewModuleOutlined,
+  ViewListOutlined,
+  FileDownloadOutlined,
 } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import { FileExportOutline } from 'mdi-material-ui';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -216,41 +217,39 @@ class ListCards extends Component {
                 {t('entitie(s)')}
               </div>
             )}
-            {typeof handleChangeView === 'function' && (
-              <Tooltip title={t('Cards view')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'cards')}
-                  size="large"
-                >
-                  <DashboardOutlined />
-                </IconButton>
-              </Tooltip>
+            {(typeof handleChangeView === 'function'
+              || typeof handleToggleExports === 'function') && (
+              <ToggleButtonGroup
+                size="small"
+                color="secondary"
+                value="cards"
+                exclusive={true}
+                onChange={(_, value) => {
+                  if (value && value === 'export') {
+                    handleToggleExports();
+                  } else if (value) {
+                    handleChangeView(value);
+                  }
+                }}
+                style={{ margin: '7px 0 0 5px' }}
+              >
+                {typeof handleChangeView === 'function' && (
+                  <ToggleButton value="cards" aria-label="cards">
+                    <ViewModuleOutlined />
+                  </ToggleButton>
+                )}
+                <ToggleButton value="lines" aria-label="lines">
+                  <ViewListOutlined color="primary" />
+                </ToggleButton>
+                {typeof handleToggleExports === 'function' && (
+                  <ToggleButton value="export" aria-label="export">
+                    <FileDownloadOutlined
+                      color={openExports ? 'secondary' : 'primary'}
+                    />
+                  </ToggleButton>
+                )}
+              </ToggleButtonGroup>
             )}
-            {typeof handleChangeView === 'function' && (
-              <Tooltip title={t('Lines view')}>
-                <IconButton
-                  color="primary"
-                  onClick={handleChangeView.bind(this, 'lines')}
-                  size="large"
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
-            )}
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              {typeof handleToggleExports === 'function' && (
-                <Tooltip title={t('Exports panel')}>
-                  <IconButton
-                    color={openExports ? 'secondary' : 'primary'}
-                    onClick={handleToggleExports.bind(this)}
-                    size="large"
-                  >
-                    <FileExportOutline />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Security>
           </div>
         </div>
         <div className="clearfix" />

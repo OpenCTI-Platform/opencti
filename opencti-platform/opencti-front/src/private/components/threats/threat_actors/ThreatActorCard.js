@@ -54,12 +54,15 @@ const styles = (theme) => ({
     paddingTop: 0,
   },
   description: {
-    height: 70,
+    height: 61,
+    display: '-webkit-box',
+    '-webkit-box-orient': 'vertical',
+    '-webkit-line-clamp': 2,
     overflow: 'hidden',
   },
   objectLabel: {
     height: 45,
-    paddingTop: 7,
+    paddingTop: 15,
   },
   contentDummy: {
     width: '100%',

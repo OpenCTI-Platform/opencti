@@ -34,7 +34,7 @@ import { truncate } from '../../../../utils/String';
 
 // pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/pdf.worker.js`;
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     width: '100%',
     height: '100%',

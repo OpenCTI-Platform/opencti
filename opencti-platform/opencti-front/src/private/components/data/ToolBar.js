@@ -70,7 +70,6 @@ const styles = (theme) => ({
   bottomNav: {
     zIndex: 1100,
     padding: '0 0 0 180px',
-    backgroundColor: theme.palette.background.nav,
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -78,7 +77,6 @@ const styles = (theme) => ({
   bottomNavWithPadding: {
     zIndex: 1100,
     padding: '0 230px 0 180px',
-    backgroundColor: theme.palette.background.nav,
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -87,7 +85,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -801,6 +798,7 @@ class ToolBar extends Component {
             : classes.bottomNav,
         }}
         open={isOpen}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
         <Toolbar style={{ minHeight: 54 }}>
           <Typography

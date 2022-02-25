@@ -52,10 +52,10 @@ const styles = () => ({
     float: 'left',
     width: 40,
     height: 40,
-    marginRight: 20,
+    margin: '5px 10px 0 0',
   },
   content: {
-    height: 50,
+    height: 40,
     width: 'auto',
     overflow: 'hidden',
   },
@@ -67,7 +67,7 @@ const styles = () => ({
   paper: {
     width: '100%',
     height: '100%',
-    padding: 15,
+    padding: '8px 15px 0 15px',
   },
   description: {
     height: '100%',
@@ -79,6 +79,7 @@ const styles = () => ({
     float: 'right',
     textAlign: 'right',
     width: 180,
+    paddingTop: 2,
   },
 });
 
@@ -101,30 +102,32 @@ class UserHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOutlined />
+            <LinkOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'delete') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepPurple[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOffOutlined />
+            <LinkOffOutlined fontSize="small" />
           </Avatar>
         );
       }
@@ -132,103 +135,110 @@ class UserHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <AddOutlined />
+            <AddOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'merge') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: teal[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <Merge />
+            <Merge fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <EditOutlined />
+            <EditOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <EditOutlined />
+            <EditOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: indigo[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkVariantPlus />
+            <LinkVariantPlus fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepOrange[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkVariantRemove />
+            <LinkVariantRemove fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'delete') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: red[500],
               color: '#ffffff',
             }}
           >
-            <DeleteOutlined />
+            <DeleteOutlined fontSize="small" />
           </Avatar>
         );
       }
@@ -236,14 +246,13 @@ class UserHistoryLineComponent extends Component {
     return (
       <Avatar
         style={{
-          marginTop: 5,
           backgroundColor: yellow[800],
           color: '#ffffff',
           cursor: commit ? 'pointer' : 'auto',
         }}
         onClick={() => commit && this.handleOpen()}
       >
-        <HelpOutlined />
+        <HelpOutlined fontSize="small" />
       </Avatar>
     );
   }
@@ -256,7 +265,7 @@ class UserHistoryLineComponent extends Component {
           {this.renderIcon(node.event_type, false, node.context_data?.message)}
         </div>
         <div className={classes.content}>
-          <Paper classes={{ root: classes.paper }}>
+          <Paper classes={{ root: classes.paper }} elevation={1}>
             <div className={classes.date}>{nsdt(node.timestamp)}</div>
             <Tooltip
               classes={{ tooltip: classes.tooltip }}

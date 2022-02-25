@@ -7,16 +7,16 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import IconButton from '@mui/material/IconButton';
 import {
   ArrowDropDown,
   ArrowDropUp,
-  DashboardOutlined,
-  TableChartOutlined,
+  ViewListOutlined,
+  ViewModuleOutlined,
+  FileDownloadOutlined,
 } from '@mui/icons-material';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
-import { FileExportOutline } from 'mdi-material-ui';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
 import SearchInput from '../SearchInput';
@@ -147,7 +147,6 @@ class ListLines extends Component {
       handleSearch,
       handleChangeView,
       disableCards,
-      enableDuplicates,
       handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
@@ -246,57 +245,44 @@ class ListLines extends Component {
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
             {numberOfElements && (
-              <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
+              <div style={{ float: 'left', padding: '16px 5px 0 0' }}>
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                 {t('entitie(s)')}
               </div>
             )}
-            {typeof handleChangeView === 'function' && !disableCards && (
-              <Tooltip title={t('Cards view')}>
-                <IconButton
-                  color="primary"
-                  onClick={handleChangeView.bind(this, 'cards')}
-                  size="large"
-                >
-                  <DashboardOutlined />
-                </IconButton>
-              </Tooltip>
+            {(typeof handleChangeView === 'function'
+              || typeof handleToggleExports === 'function') && (
+              <ToggleButtonGroup
+                size="small"
+                color="secondary"
+                value="lines"
+                exclusive={true}
+                onChange={(_, value) => {
+                  if (value && value === 'export') {
+                    handleToggleExports();
+                  } else if (value) {
+                    handleChangeView(value);
+                  }
+                }}
+                style={{ margin: '7px 0 0 5px' }}
+              >
+                {typeof handleChangeView === 'function' && !disableCards && (
+                  <ToggleButton value="cards" aria-label="cards">
+                    <ViewModuleOutlined color="primary" />
+                  </ToggleButton>
+                )}
+                <ToggleButton value="lines" aria-label="lines">
+                  <ViewListOutlined />
+                </ToggleButton>
+                {typeof handleToggleExports === 'function' && (
+                  <ToggleButton value="export" aria-label="export">
+                    <FileDownloadOutlined
+                      color={openExports ? 'secondary' : 'primary'}
+                    />
+                  </ToggleButton>
+                )}
+              </ToggleButtonGroup>
             )}
-            {typeof handleChangeView === 'function' && (
-              <Tooltip title={t('Lines view')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'lines')}
-                  size="large"
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
-            )}
-            {typeof handleChangeView === 'function' && enableDuplicates && (
-              <Tooltip title={t('Detect duplicates')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'duplicates')}
-                  size="large"
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
-            )}
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              {typeof handleToggleExports === 'function' && (
-                <Tooltip title={t('Exports panel')}>
-                  <IconButton
-                    color={openExports ? 'secondary' : 'primary'}
-                    onClick={handleToggleExports.bind(this)}
-                    size="large"
-                  >
-                    <FileExportOutline />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Security>
           </div>
         </div>
         <div className="clearfix" />
@@ -421,7 +407,6 @@ ListLines.propTypes = {
   handleSort: PropTypes.func,
   handleChangeView: PropTypes.func,
   disableCards: PropTypes.bool,
-  enableDuplicates: PropTypes.bool,
   handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,

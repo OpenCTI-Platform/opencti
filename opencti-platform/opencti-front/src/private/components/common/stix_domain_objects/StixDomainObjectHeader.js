@@ -286,6 +286,7 @@ class StixDomainObjectHeader extends Component {
             </InputLabel>
             <FormControl classes={{ root: classes.viewAsField }}>
               <Select
+                size="small"
                 name="view-as"
                 value={viewAs}
                 onChange={onViewAs.bind(this)}

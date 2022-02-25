@@ -31,13 +31,6 @@ pre {
   font-weight: 400;
 }
 
-code {
-  font-family: Consolas, monaco, monospace;
-  padding: 3px;
-  font-size: 12px;
-  font-weight: 400;
-}
-
 span.raw {
   white-space: pre-line;
 }

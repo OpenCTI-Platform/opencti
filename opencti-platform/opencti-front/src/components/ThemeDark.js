@@ -120,8 +120,12 @@ export default (
             background: `${primaryAccent || '#01478dff'} !important`,
           },
           code: {
+            fontFamily: 'Consolas, monaco, monospace',
             color: '#ffffff !important',
             background: `${primaryAccent || '#01478dff'} !important`,
+            padding: 3,
+            fontSize: 12,
+            fontWeight: 400,
           },
           '.react-mde': {
             border: '0 !important',

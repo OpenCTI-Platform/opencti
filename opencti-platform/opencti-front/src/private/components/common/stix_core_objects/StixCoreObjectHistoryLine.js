@@ -10,7 +10,7 @@ import {
   deepPurple,
   yellow,
   indigo,
-  teal,
+  teal, red
 } from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -22,7 +22,7 @@ import {
   LinkOutlined,
   LinkOffOutlined,
   HelpOutlined,
-  LanguageOutlined,
+  LanguageOutlined, DeleteOutlined
 } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -47,7 +47,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     marginBottom: 20,
   },
@@ -58,19 +58,16 @@ const styles = (theme) => ({
     top: 50,
     left: 20,
     width: 1,
+    height: 18,
   },
   avatar: {
     float: 'left',
     width: 40,
     height: 40,
-    marginRight: 20,
-  },
-  avatarReference: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
+    margin: '5px 10px 0 0',
   },
   content: {
+    height: 40,
     width: 'auto',
     overflow: 'hidden',
   },
@@ -82,8 +79,7 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.line,
-    padding: 15,
+    padding: '8px 15px 0 15px',
   },
   description: {
     height: '100%',
@@ -95,6 +91,7 @@ const styles = (theme) => ({
     float: 'right',
     textAlign: 'right',
     width: 180,
+    paddingTop: 2,
   },
 });
 
@@ -134,8 +131,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -149,8 +147,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'delete') {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepPurple[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -165,8 +164,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -180,8 +180,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'merge') {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: teal[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -195,8 +196,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -210,8 +212,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -225,8 +228,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: indigo[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -240,8 +244,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepOrange[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -252,11 +257,24 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
+      if (eventType === 'delete') {
+        return (
+          <Avatar
+            sx={{
+              width: 30,
+              height: 30,
+              backgroundColor: red[500],
+              color: '#ffffff',
+            }}
+          >
+            <DeleteOutlined fontSize="small" />
+          </Avatar>
+        );
+      }
     }
     return (
       <Avatar
         style={{
-          marginTop: 2,
           backgroundColor: yellow[800],
           color: '#ffffff',
           cursor: commit ? 'pointer' : 'auto',
