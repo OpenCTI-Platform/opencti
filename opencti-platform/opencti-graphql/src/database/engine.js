@@ -1514,20 +1514,24 @@ export const elPaginate = async (user, indexName, options = {}) => {
     };
     must = R.append(bool, must);
   }
+  // Handle orders
   if (isNotEmptyField(orderBy)) {
-    const orderCriterias = Array.isArray(orderBy) ? orderBy : [orderBy];
-    // const order = {};
-    for (let index = 0; index < orderCriterias.length; index += 1) {
-      const orderCrit = orderCriterias[index];
-      const isDateOrNumber = dateAttributes.includes(orderCrit) || numericOrBooleanAttributes.includes(orderCrit);
-      const orderKeyword = isDateOrNumber ? orderCrit : `${orderCrit}.keyword`;
+    const orderCriterion = Array.isArray(orderBy) ? orderBy : [orderBy];
+    for (let index = 0; index < orderCriterion.length; index += 1) {
+      const orderCriteria = orderCriterion[index];
+      const isDateOrNumber = dateAttributes.includes(orderCriteria) || numericOrBooleanAttributes.includes(orderCriteria);
+      const orderKeyword = isDateOrNumber ? orderCriteria : `${orderCriteria}.keyword`;
       const order = { [orderKeyword]: orderMode };
       ordering = R.append(order, ordering);
       must = R.append({ exists: { field: orderKeyword } }, must);
     }
+    // Add standard_id if not specify to ensure ordering uniqueness
+    if (!orderCriterion.includes('standard_id')) {
+      ordering.push({ 'standard_id.keyword': 'asc' });
+    }
   } else if (search !== null && search.length > 0) {
     ordering.push({ _score: 'desc' });
-  } else {
+  } else { // If not ordering criteria, order by standard_id
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
   // Build runtime mappings
