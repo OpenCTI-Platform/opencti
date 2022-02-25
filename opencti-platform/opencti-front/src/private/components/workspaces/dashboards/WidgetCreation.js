@@ -287,7 +287,7 @@ class WidgetCreation extends Component {
         style={{ marginTop: 20, marginBottom: 20 }}
       >
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'all')}
               style={{ height: '100%' }}
@@ -305,7 +305,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'sectors')}
               style={{ height: '100%' }}
@@ -321,7 +321,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'countries')}
               style={{ height: '100%' }}
@@ -339,7 +339,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'intrusion-sets')}
               style={{ height: '100%' }}
@@ -357,7 +357,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'malwares')}
               style={{ height: '100%' }}
@@ -375,7 +375,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'vulnerabilities')}
               style={{ height: '100%' }}
@@ -393,7 +393,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'reports')}
               style={{ height: '100%' }}
@@ -411,7 +411,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'indicators')}
               style={{ height: '100%' }}
@@ -429,7 +429,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(
                 this,
@@ -450,7 +450,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(
                 this,
@@ -483,7 +483,7 @@ class WidgetCreation extends Component {
         style={{ marginTop: 20, marginBottom: 20 }}
       >
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'all')}
               style={{ height: '100%' }}
@@ -501,7 +501,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'sectors')}
               style={{ height: '100%' }}
@@ -517,7 +517,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'countries')}
               style={{ height: '100%' }}
@@ -535,7 +535,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'vulnerabilities')}
               style={{ height: '100%' }}
@@ -553,7 +553,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'campaigns')}
               style={{ height: '100%' }}
@@ -571,7 +571,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'indicators')}
               style={{ height: '100%' }}
@@ -589,7 +589,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'reports')}
               style={{ height: '100%' }}
@@ -619,7 +619,7 @@ class WidgetCreation extends Component {
         style={{ marginTop: 20, marginBottom: 20 }}
       >
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'all')}
               style={{ height: '100%' }}
@@ -637,7 +637,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'intrusion-sets')}
               style={{ height: '100%' }}
@@ -655,7 +655,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'malwares')}
               style={{ height: '100%' }}
@@ -673,7 +673,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'campaigns')}
               style={{ height: '100%' }}
@@ -691,7 +691,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'incidents')}
               style={{ height: '100%' }}
@@ -709,7 +709,7 @@ class WidgetCreation extends Component {
           </Card>
         </Grid>
         <Grid item={true} xs="4">
-          <Card elevation={3} className={classes.card2}>
+          <Card variant="outlined" className={classes.card2}>
             <CardActionArea
               onClick={this.handleSelectDataType.bind(this, 'reports')}
               style={{ height: '100%' }}
@@ -741,7 +741,7 @@ class WidgetCreation extends Component {
       >
         {visualizationTypes.map((visualizationType) => (
           <Grid key={visualizationType.key} item={true} xs="4">
-            <Card elevation={3} className={classes.card3}>
+            <Card variant="outlined" className={classes.card3}>
               <CardActionArea
                 onClick={this.handleSelectVisualizationType.bind(
                   this,
@@ -778,7 +778,7 @@ class WidgetCreation extends Component {
             style={{ marginTop: 20, marginBottom: 20 }}
           >
             <Grid item={true} xs="4">
-              <Card elevation={3} className={classes.card}>
+              <Card variant="outlined" className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'global')}
                   style={{ height: '100%' }}
@@ -803,7 +803,7 @@ class WidgetCreation extends Component {
               </Card>
             </Grid>
             <Grid item={true} xs="4">
-              <Card elevation={3} className={classes.card}>
+              <Card variant="outlined" className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'threat')}
                   style={{ height: '100%' }}
@@ -828,7 +828,7 @@ class WidgetCreation extends Component {
               </Card>
             </Grid>
             <Grid item={true} xs="4">
-              <Card elevation={3} className={classes.card}>
+              <Card variant="outlined" className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'entity')}
                   style={{ height: '100%' }}

@@ -15,6 +15,7 @@ FROM base AS graphql-builder
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
 COPY opencti-graphql/.yarn ./.yarn
+COPY opencti-graphql/patch ./patch
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn run webpack --mode production

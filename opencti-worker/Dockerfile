@@ -7,14 +7,14 @@ FROM "${PARENT_IMAGE}" as base
 RUN apk --no-cache add libmagic libffi-dev \
     && pip3 install --no-cache-dir --upgrade pip \
 
-WORKDIR /opt/opencti-worker
-
 # build step including required compilation tools
 FROM base as builder
 
 ARG OPENCTI_VERSION="master"
 
 COPY src /opt/opencti-worker
+
+WORKDIR /opt/opencti-worker
 
 RUN apk --no-cache add git build-base \
     && pip3 install --no-cache-dir --upgrade --requirement requirements.txt \
