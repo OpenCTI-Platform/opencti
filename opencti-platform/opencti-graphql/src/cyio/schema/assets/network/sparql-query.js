@@ -110,6 +110,16 @@ export const predicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  notes: {
+    predicate: "<http://darklight.ai/ns/common#notes>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "notes");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  external_references: {
+    predicate: "<http://darklight.ai/ns/common#external_references>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "external_references");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   asset_id: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "asset_id")},
