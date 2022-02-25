@@ -98,7 +98,20 @@ const styles = (theme) => ({
 export const cyioNoteCreationMutation = graphql`
   mutation CyioNoteCreationMutation($input: CyioNoteAddInput!) {
     createCyioNote(input: $input) {
+      __typename
       id
+      entity_type
+      labels {
+        __typename
+        id
+        name
+        color
+        entity_type
+        description
+      }
+      abstract
+      content
+      authors
       # ...NoteLine_node
     }
   }
@@ -199,10 +212,13 @@ class CyioNoteCreation extends Component {
       },
       setSubmitting,
       onCompleted: (response) => {
-        console.log('NoteCreationDarkLightMutationResp', response);
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        if (this.props.onCreate) {
+          this.props.onCreate(response.createCyioNote, true);
+        }
+        this.props.onExpand();
       },
       onError: (err) => console.log('NoteCreationDarkLightMutationError', err),
     });
@@ -568,6 +584,8 @@ CyioNoteCreation.propTypes = {
   contextual: PropTypes.bool,
   display: PropTypes.bool,
   inputValue: PropTypes.string,
+  onCreate: PropTypes.func,
+  onExpand: PropTypes.func,
 };
 
 export default compose(

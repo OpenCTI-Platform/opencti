@@ -71,6 +71,7 @@ class CyioCoreObjectExternalReferences extends Component {
       t,
       classes,
       cyioCoreObjectId,
+      refreshQuery,
       typename,
       externalReferences,
     } = this.props;
@@ -87,6 +88,7 @@ class CyioCoreObjectExternalReferences extends Component {
             externalReferences
             // externalReference.externalReference
           }
+          refreshQuery={refreshQuery}
           typename={typename}
         />
         <div className="clearfix" />
@@ -96,6 +98,7 @@ class CyioCoreObjectExternalReferences extends Component {
               <CyioCoreObjectExternalReferencesLines
                 key={externalReference.id}
                 cyioCoreObjectId={cyioCoreObjectId}
+                refreshQuery={refreshQuery}
                 externalReference={externalReference}
               />
             ))
@@ -136,6 +139,7 @@ CyioCoreObjectExternalReferences.propTypes = {
   externalReferences: PropTypes.array,
   typename: PropTypes.string,
   cyioCoreObjectId: PropTypes.string,
+  refreshQuery: PropTypes.func,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,

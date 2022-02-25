@@ -96,6 +96,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
       context,
       values,
       assetType,
+      refreshQuery,
       onSubmit,
       setFieldValue,
       enableReferences,
@@ -346,6 +347,7 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
               <CyioCoreObjectLabelsView
                 labels={cyioDomainObject.labels}
                 marginTop={20}
+                refreshQuery={refreshQuery}
                 id={cyioDomainObject?.id}
                 typename={cyioDomainObject.__typename}
               />
@@ -442,6 +444,7 @@ CyioDomainObjectAssetEditionOverviewComponent.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   assetType: PropTypes.string,
+  refreshQuery: PropTypes.func,
   cyioDomainObject: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

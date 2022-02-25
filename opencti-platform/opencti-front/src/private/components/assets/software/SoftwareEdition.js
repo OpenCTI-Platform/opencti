@@ -80,7 +80,7 @@ class SoftwareEdition extends Component {
           environment={environmentDarkLight}
           query={softwareEditionQuery}
           variables={{ id: softwareId }}
-          render={({ props }) => {
+          render={({ props, retry }) => {
             if (props) {
               return (
                 <SoftwareEditionContainer
@@ -89,6 +89,7 @@ class SoftwareEdition extends Component {
                   //   'Software',
                   // )}
                   history={history}
+                  refreshQuery={retry}
                   handleClose={this.handleClose.bind(this)}
                 />
               );

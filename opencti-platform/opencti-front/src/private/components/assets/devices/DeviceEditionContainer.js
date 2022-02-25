@@ -188,7 +188,7 @@ class DeviceEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, device,
+      t, classes, handleClose, device, refreshQuery,
     } = this.props;
     const installedHardwares = R.pipe(
       R.pathOr([], ['installed_hardware']),
@@ -351,6 +351,7 @@ class DeviceEditionContainer extends Component {
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={device}
                       assetType="Device"
+                      refreshQuery={refreshQuery}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}
@@ -380,6 +381,7 @@ class DeviceEditionContainer extends Component {
                     externalReferences={device.external_references}
                     cyioCoreObjectId={device?.id}
                     typename={device.__typename}
+                    refreshQuery={refreshQuery}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -387,6 +389,8 @@ class DeviceEditionContainer extends Component {
                 </Grid>
               </Grid>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
+                typename={device.__typename}
+                refreshQuery={refreshQuery}
                 notes={device.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />
@@ -439,6 +443,7 @@ DeviceEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
   device: PropTypes.object,
+  refreshQuery: PropTypes.func,
   enableReferences: PropTypes.bool,
   theme: PropTypes.object,
   t: PropTypes.func,

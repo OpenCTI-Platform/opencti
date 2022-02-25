@@ -65,13 +65,20 @@ const sharedUpdater = (store, cyioCoreObjectId, newEdge) => {
   const entity = store.get(cyioCoreObjectId);
   const conn = ConnectionHandler.getConnection(
     entity,
-    'Pagination_externalReferences',
+    // 'Pagination_externalReferences',
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
 class CyioAddExternalReferencesLinesContainer extends Component {
-  toggleExternalReference(externalReference, onlyCreate = false) {
+  constructor(props) {
+    super(props);
+    this.state = {
+      addExternalReference: [],
+    };
+  }
+
+  toggleExternalReference(externalReference, event) {
     const {
       cyioCoreObjectOrCyioCoreRelationshipId,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
@@ -83,54 +90,13 @@ class CyioAddExternalReferencesLinesContainer extends Component {
     const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
       externalReference.id,
     );
-    if (alreadyAdded && !onlyCreate) {
-      const existingExternalReference = head(
-        filter(
-          (n) => n.id === externalReference.id,
-          cyioCoreObjectOrCyioCoreRelationshipReferences,
-        ),
-      );
-      commitMutation({
-        mutation: cyioExternalReferenceMutationRelationDelete,
-        variables: {
-          toId: existingExternalReference.node.id,
-          fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_references',
-          from_type: this.props.typename,
-          to_type: existingExternalReference.node.__typename,
-        },
-        updater: (store) => {
-          const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
-            'Pagination_cyioExternalReferenceList',
-          );
-          ConnectionHandler.deleteNode(conn, externalReference.id);
-        },
-      });
-    } else if (!alreadyAdded) {
-      commitMutation({
-        mutation: cyioExternalReferenceLinesMutationRelationAdd,
-        variables: {
-          toId: externalReference.id,
-          fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_references',
-          from_type: this.props.typename,
-          to_type: externalReference.__typename,
-        },
-        updater: (store) => {
-          const payload = store;
-          // .getRootField('externalReferenceEdit')
-          // .getLinkedRecord('relationAdd', { input });
-          const relationId = payload.getValue('toId');
-          // const node = payload.getLinkedRecord('to');
-          const relation = store.get(relationId);
-          // payload.setLinkedRecord(node, 'node');
-          payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
-        },
-      });
+    if (event.target.checked && !alreadyAdded) {
+      this.state.addExternalReference.push(externalReference);
     }
+    else {
+      this.state.addExternalReference = this.state.addExternalReference.filter((value) => value.id !== externalReference.id)
+    }
+    this.props.handleDataCollect(this.state.addExternalReference);
   }
 
   render() {
@@ -142,10 +108,11 @@ class CyioAddExternalReferencesLinesContainer extends Component {
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
       (n) => n.id,
       cyioCoreObjectOrCyioCoreRelationshipReferences || []);
+    const filteredValue = filter((value) => (value.node.source_name.toLowerCase()).includes(this.props.search), data.cyioExternalReferences.edges);
     return (
       <div>
         <List className={classes.list}>
-          {data.cyioExternalReferences.edges.map((externalReferenceNode) => {
+          {filteredValue.map((externalReferenceNode) => {
             const externalReference = externalReferenceNode.node;
             const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
               externalReference.id,
@@ -157,19 +124,21 @@ class CyioAddExternalReferencesLinesContainer extends Component {
               <ListItem
                 key={externalReference.id}
                 classes={{ root: classes.menuItem }}
+                disabled={alreadyAdded ? true : false}
                 divider={true}
                 button={true}
-                onClick={this.toggleExternalReference.bind(
-                  this,
-                  externalReference,
-                  false,
-                )}
               >
                 <ListItemIcon>
                   {alreadyAdded ? (
-                    <Checkbox classes={{ root: classes.icon }} />
+                    <Checkbox checked classes={{ root: classes.icon }} />
                   ) : (
-                    <Checkbox classes={{ root: classes.icon }} />
+                    <Checkbox
+                      onChange={this.toggleExternalReference.bind(
+                        this,
+                        externalReference,
+                      )}
+                      classes={{ root: classes.icon }}
+                    />
                   )}
                 </ListItemIcon>
                 <ListItemText
@@ -198,6 +167,7 @@ CyioAddExternalReferencesLinesContainer.propTypes = {
   typename: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
+  handleDataCollect: PropTypes.func,
   t: PropTypes.func,
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,

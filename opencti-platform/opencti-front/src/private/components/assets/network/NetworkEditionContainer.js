@@ -213,7 +213,7 @@ class NetworkEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, network,
+      t, classes, handleClose, network, refreshQuery,
     } = this.props;
     // const { editContext } = network;
     const initialValues = R.pipe(
@@ -326,6 +326,7 @@ class NetworkEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <CyioDomainObjectAssetEditionOverview
                       cyioDomainObject={network}
+                      refreshQuery={refreshQuery}
                       assetType="Network"
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
@@ -352,6 +353,7 @@ class NetworkEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={network.external_references}
                     cyioCoreObjectId={network.id}
+                    refreshQuery={refreshQuery}
                     typename={network.__typename}
                   />
                 </Grid>
@@ -360,6 +362,8 @@ class NetworkEditionContainer extends Component {
                 </Grid>
               </Grid>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
+                typename={network.__typename}
+                refreshQuery={refreshQuery}
                 notes={network.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={network.id}
               />
@@ -410,6 +414,7 @@ class NetworkEditionContainer extends Component {
 
 NetworkEditionContainer.propTypes = {
   handleClose: PropTypes.func,
+  refreshQuery: PropTypes.func,
   classes: PropTypes.object,
   network: PropTypes.object,
   theme: PropTypes.object,

@@ -61,7 +61,13 @@ const sharedUpdater = (store, entityId, newEdge) => {
 };
 
 class CyioAddNotesLinesContainer extends Component {
-  toggleNote(note) {
+  constructor(props) {
+    super(props);
+    this.state = {
+      addNotes: [],
+    };
+  }
+  toggleNote(note, event) {
     const {
       cyioCoreObjectOrStixCoreRelationshipId,
       cyioCoreObjectOrStixCoreRelationshipNotes,
@@ -71,58 +77,13 @@ class CyioAddNotesLinesContainer extends Component {
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
     const alreadyAdded = entityNotesIds.includes(note.id);
-    if (alreadyAdded) {
-      const existingNote = head(
-        filter(
-          (n) => n.node.id === note.id,
-          cyioCoreObjectOrStixCoreRelationshipNotes,
-        ),
-      );
-      commitMutation({
-        mutation: cyioNoteMutationRelationDelete,
-        variables: {
-          toId: existingNote.node.id,
-          fromId: cyioCoreObjectOrStixCoreRelationshipId,
-          fieldName: 'notes',
-          to_type: note.__typename,
-          from_type: this.props.typename,
-        },
-        updater: (store) => {
-          const entity = store.get(cyioCoreObjectOrStixCoreRelationshipId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
-            'Pagination_notes',
-          );
-          ConnectionHandler.deleteNode(conn, note.id);
-        },
-      });
-    } else {
-      const input = {
-        toId: cyioCoreObjectOrStixCoreRelationshipId,
-        relationship_type: 'object',
-      };
-      commitMutation({
-        mutation: cyioNoteLinesMutationRelationAdd,
-        variables: {
-          toId: note.id,
-          fromId: cyioCoreObjectOrStixCoreRelationshipId,
-          fieldName: 'notes',
-          to_type: note.__typename,
-          from_type: this.props.typename,
-        },
-        updater: (store) => {
-          const payload = store
-            .getRootField('noteEdit')
-            .getLinkedRecord('relationAdd', { input });
-          const relationId = payload.getValue('id');
-          const node = payload.getLinkedRecord('from');
-          const relation = store.get(relationId);
-          payload.setLinkedRecord(node, 'node');
-          payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, cyioCoreObjectOrStixCoreRelationshipId, payload);
-        },
-      });
+    if (event.target.checked && !alreadyAdded) {
+      this.state.addNotes.push(note);
     }
+    else {
+      this.state.addNotes = this.state.addNotes.filter((value) => value.id !== note.id)
+    }
+    this.props.handleDataCollect(this.state.addNotes);
   }
 
   render() {
@@ -131,10 +92,10 @@ class CyioAddNotesLinesContainer extends Component {
       (n) => n.node.id,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
-    console.log('cyioAddNotesLines', data);
+    const filteredValue = filter((value) => (value.node.abstract.toLowerCase()).includes(this.props.search), data.cyioNotes.edges);
     return (
       <List>
-        {data.cyioNotes.edges.map((noteNode) => {
+        {filteredValue.map((noteNode) => {
           const note = noteNode.node;
           const alreadyAdded = entityNotesIds.includes(note.id);
           const noteId = note.external_id ? `(${note.external_id})` : '';
@@ -142,15 +103,21 @@ class CyioAddNotesLinesContainer extends Component {
             <ListItem
               key={note.id}
               classes={{ root: classes.menuItem }}
+              disabled={alreadyAdded ? true : false}
               divider={true}
               button={true}
-              onClick={this.toggleNote.bind(this, note)}
             >
               <ListItemIcon>
                 {alreadyAdded ? (
-                  <Checkbox classes={{ root: classes.icon }} />
+                  <Checkbox Checked classes={{ root: classes.icon }} />
                 ) : (
-                  <Checkbox classes={{ root: classes.icon }} />
+                  <Checkbox
+                    onChange={this.toggleNote.bind(
+                      this,
+                      note,
+                    )}
+                    classes={{ root: classes.icon }}
+                  />
                 )}
               </ListItemIcon>
               <ListItemText
@@ -185,7 +152,9 @@ CyioAddNotesLinesContainer.propTypes = {
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
+  handleDataCollect: PropTypes.func,
   t: PropTypes.func,
+  search: PropTypes.string,
   fld: PropTypes.func,
 };
 

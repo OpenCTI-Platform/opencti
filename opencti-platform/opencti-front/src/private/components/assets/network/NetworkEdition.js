@@ -69,14 +69,14 @@ class NetworkEdition extends Component {
   }
 
   render() {
-    const { classes, networkId, history } = this.props;
+    const { classes, networkId, history, refreshQuery } = this.props;
     return (
       <div>
         <QR
           environment={environmentDarkLight}
           query={networkEditionQuery}
           variables={{ id: networkId }}
-          render={({ props }) => {
+          render={({ props, retry }) => {
             if (props) {
               return (
                 <NetworkEditionContainer
@@ -85,6 +85,7 @@ class NetworkEdition extends Component {
                   //   'Network',
                   // )}
                   history={history}
+                  refreshQuery={retry}
                   handleClose={this.handleClose.bind(this)}
                 />
               );
