@@ -182,7 +182,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
     } = this.props;
     if (variant === 'explore') {
       return (
-        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
+        <Paper classes={{ root: classes.paperExplore }} variant="outlined">
           <Typography
             variant="h4"
             gutterBottom={true}
@@ -211,7 +211,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           {this.renderContent()}
         </Paper>
       </div>

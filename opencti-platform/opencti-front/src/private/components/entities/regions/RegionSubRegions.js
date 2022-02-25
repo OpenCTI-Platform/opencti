@@ -46,7 +46,7 @@ class RegionSubRegionsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Subregions')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List>
             {region.subRegions.edges.map((subRegionEdge) => {
               const subRegion = subRegionEdge.node;

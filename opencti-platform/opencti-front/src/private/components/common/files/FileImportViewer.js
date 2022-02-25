@@ -62,7 +62,7 @@ const FileImportViewerBase = ({
           />
         </div>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           {edges.length ? (
             <List>
               {edges.map((file) => (

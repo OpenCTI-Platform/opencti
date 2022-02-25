@@ -53,6 +53,7 @@ const styles = (theme) => ({
   },
   sortField: {
     float: 'left',
+    marginTop: 2,
   },
   sortFieldLabel: {
     margin: '10px 15px 0 0',
@@ -61,7 +62,7 @@ const styles = (theme) => ({
   },
   sortIcon: {
     float: 'left',
-    margin: '-5px 0 0 15px',
+    margin: '-3px 0 0 15px',
   },
   filters: {
     float: 'left',
@@ -122,14 +123,12 @@ class ListCards extends Component {
               keyword={keyword}
             />
           </div>
-          {availableFilterKeys && availableFilterKeys.length > 0 ? (
+          {availableFilterKeys && availableFilterKeys.length > 0 && (
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
               currentFilters={filters}
             />
-          ) : (
-            ''
           )}
           <InputLabel
             classes={{ root: classes.sortFieldLabel }}
@@ -144,6 +143,7 @@ class ListCards extends Component {
             <Select
               name="sort-by"
               value={sortBy}
+              size="small"
               onChange={this.sortBy.bind(this)}
               inputProps={{
                 name: 'sort-by',
@@ -210,15 +210,13 @@ class ListCards extends Component {
         </div>
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
-            {numberOfElements ? (
+            {numberOfElements && (
               <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                 {t('entitie(s)')}
               </div>
-            ) : (
-              ''
             )}
-            {typeof handleChangeView === 'function' ? (
+            {typeof handleChangeView === 'function' && (
               <Tooltip title={t('Cards view')}>
                 <IconButton
                   color="secondary"
@@ -228,10 +226,8 @@ class ListCards extends Component {
                   <DashboardOutlined />
                 </IconButton>
               </Tooltip>
-            ) : (
-              ''
             )}
-            {typeof handleChangeView === 'function' ? (
+            {typeof handleChangeView === 'function' && (
               <Tooltip title={t('Lines view')}>
                 <IconButton
                   color="primary"
@@ -241,11 +237,9 @@ class ListCards extends Component {
                   <TableChartOutlined />
                 </IconButton>
               </Tooltip>
-            ) : (
-              ''
             )}
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              {typeof handleToggleExports === 'function' ? (
+              {typeof handleToggleExports === 'function' && (
                 <Tooltip title={t('Exports panel')}>
                   <IconButton
                     color={openExports ? 'secondary' : 'primary'}
@@ -255,8 +249,6 @@ class ListCards extends Component {
                     <FileExportOutline />
                   </IconButton>
                 </Tooltip>
-              ) : (
-                ''
               )}
             </Security>
           </div>

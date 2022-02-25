@@ -160,8 +160,9 @@ class StixCoreObjectNotesCardsContainer extends Component {
           style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
+          variant="outlined"
         >
-          <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
+          <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;

@@ -93,7 +93,7 @@ class IntrusionSetCardComponent extends Component {
   render() {
     const { t, fsd, classes, node, bookmarksIds, onLabelClick } = this.props;
     return (
-      <Card classes={{ root: classes.card }} raised={true} elevation={3}>
+      <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
@@ -195,7 +195,7 @@ class IntrusionSetCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Card classes={{ root: classes.cardDummy }} raised={true} elevation={3}>
+      <Card classes={{ root: classes.cardDummy }} variant="outlined">
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}

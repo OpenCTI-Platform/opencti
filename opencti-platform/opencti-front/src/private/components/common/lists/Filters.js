@@ -33,7 +33,7 @@ import { statusFieldStatusesSearchQuery } from '../form/StatusField';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '-8px 0 0 -5px',
+    margin: '-3px 0 0 -5px',
   },
   filtersDialog: {
     margin: '0 0 20px 0',
@@ -758,15 +758,15 @@ class Filters extends Component {
                   />
                 )}
                 renderOption={(props, option) => (
-                    <li {...props}>
-                      <div
-                        className={classes.icon}
-                        style={{ color: option.color }}
-                      >
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </li>
+                  <li {...props}>
+                    <div
+                      className={classes.icon}
+                      style={{ color: option.color }}
+                    >
+                      <ItemIcon type={option.type} />
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </li>
                 )}
               />
             </Grid>
@@ -796,7 +796,7 @@ class Filters extends Component {
           <IconButton
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
-            style={{ float: 'left', marginTop: 3 }}
+            style={{ float: 'left' }}
             size="large"
           >
             <FilterListOutlined />
@@ -847,13 +847,13 @@ class Filters extends Component {
                   onFocus={this.searchEntities.bind(this, filterKey)}
                 />
               )}
-              renderOption={(option) => (
-                <React.Fragment>
+              renderOption={(props, option) => (
+                <li {...props}>
                   <div className={classes.icon} style={{ color: option.color }}>
                     <ItemIcon type={option.type} />
                   </div>
                   <div className={classes.text}>{option.label}</div>
-                </React.Fragment>
+                </li>
               )}
             />
           ))}

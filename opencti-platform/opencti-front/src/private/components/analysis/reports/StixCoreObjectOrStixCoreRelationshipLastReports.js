@@ -131,7 +131,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
             ? t('Latest reports written by this entity')
             : t('Latest reports about this entity')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <QueryRenderer
             query={stixCoreObjectOrStixCoreRelationshipLastReportsQuery}
             variables={{

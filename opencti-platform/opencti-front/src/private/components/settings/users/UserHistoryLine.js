@@ -35,12 +35,11 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     marginBottom: 20,
   },
   line: {
-    backgroundColor: theme.palette.background.paperLight,
     content: ' ',
     display: 'block',
     position: 'absolute',
@@ -68,8 +67,7 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.paperLight,
-    padding: '17px 15px 15px 15px',
+    padding: 15,
   },
   description: {
     height: '100%',

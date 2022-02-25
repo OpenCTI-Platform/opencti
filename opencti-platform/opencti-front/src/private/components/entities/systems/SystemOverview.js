@@ -30,7 +30,7 @@ class SystemOverviewComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>

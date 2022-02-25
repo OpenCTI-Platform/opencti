@@ -149,7 +149,7 @@ class StixCoreObjectReportsChart extends Component {
           />
         </div>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <QueryRenderer
             query={stixCoreObjectReportsChartReportsTimeSeriesQuery}
             variables={reportsTimeSeriesVariables}

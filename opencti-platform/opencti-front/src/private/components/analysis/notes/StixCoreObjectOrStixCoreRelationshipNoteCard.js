@@ -147,7 +147,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       }`;
     }
     return (
-      <Card classes={{ root: classes.card }} raised={false}>
+      <Card classes={{ root: classes.card }} variant="outlined">
         <CardHeader
           style={{
             padding: '10px 10px 0 15px',
@@ -158,6 +158,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
               id={node.id}
               entityId={stixCoreObjectOrStixCoreRelationshipId}
               handleOpenRemove={this.handleOpenDialog.bind(this)}
+              size="small"
             />
           }
           title={

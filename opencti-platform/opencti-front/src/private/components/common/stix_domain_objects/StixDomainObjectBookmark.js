@@ -134,7 +134,7 @@ class StixDomainObjectBookmarkComponent extends Component {
     const { t, fsd, classes, node } = this.props;
     const link = resolveLink(node.entity_type);
     return (
-      <Card classes={{ root: classes.card }} raised={true} elevation={3}>
+      <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
@@ -282,7 +282,7 @@ class StixDomainObjectBookmarkDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Card classes={{ root: classes.Dummy }} raised={true} elevation={3}>
+      <Card classes={{ root: classes.Dummy }} variant="outlined">
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}

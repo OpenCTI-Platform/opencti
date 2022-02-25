@@ -21,7 +21,7 @@ class UserHistoryLinesComponent extends Component {
     const { t, classes, data, isRelationLog } = this.props;
     const logs = pathOr([], ['logs', 'edges'], data);
     return (
-      <Paper classes={{ root: classes.paperHistory }} elevation={2}>
+      <Paper classes={{ root: classes.paperHistory }} variant="outlined">
         {logs.length > 0 ? (
           logs.map((logEdge) => {
             const log = logEdge.node;

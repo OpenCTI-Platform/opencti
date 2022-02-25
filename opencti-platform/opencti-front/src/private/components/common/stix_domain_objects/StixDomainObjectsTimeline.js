@@ -241,7 +241,7 @@ class StixDomainObjectsTimeline extends Component {
           {title || t('StixDomainObjects timeline')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

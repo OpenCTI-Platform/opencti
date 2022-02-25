@@ -27,7 +27,7 @@ import Security, {
 
 const styles = (theme) => ({
   container: {
-    margin: 0,
+    marginTop: 0,
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -128,14 +128,13 @@ class NotePopover extends Component {
   }
 
   render() {
-    const { classes, t, id, handleOpenRemove } = this.props;
+    const { classes, t, id, handleOpenRemove, size } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
+          size={size || 'large'}
         >
           <MoreVert />
         </IconButton>
@@ -220,6 +219,7 @@ NotePopover.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   handleOpenRemove: PropTypes.func,
+  size: PropTypes.string,
 };
 
 export default compose(inject18n, withRouter, withStyles(styles))(NotePopover);

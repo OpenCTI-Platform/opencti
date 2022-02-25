@@ -150,7 +150,7 @@ class ConnectorWorksComponent extends Component {
         {works.length === 0 && (
           <Paper
             classes={{ root: classes.paper }}
-            elevation={2}
+            variant="outlined"
             style={{ marginBottom: 20 }}
           >
             <div
@@ -183,7 +183,7 @@ class ConnectorWorksComponent extends Component {
             <Paper
               key={work.id}
               classes={{ root: classes.paper }}
-              elevation={2}
+              variant="outlined"
               style={{ marginBottom: 20 }}
             >
               <Grid container={true} spacing={3}>

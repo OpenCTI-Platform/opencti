@@ -32,61 +32,61 @@ steps:
       - sleep 160
       - yarn test
 
-      - name: api-coverage
-        image: plugins/codecov
-        settings:
-          token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
-          paths:
-            - opencti-platform/opencti-graphql/coverage
+  - name: api-coverage
+    image: plugins/codecov
+    settings:
+      token: e5c6fb05-76f7-4985-86cf-ff843d5d103e
+      paths:
+        - opencti-platform/opencti-graphql/coverage
 
-      - name: frontend-tests
-        image: nikolaik/python-nodejs:python3.9-nodejs16-alpine
-        commands:
-          - cd opencti-platform/opencti-front
-          - yarn install
-          - yarn build
-          - yarn lint
-          - yarn test
+  - name: frontend-tests
+    image: nikolaik/python-nodejs:python3.9-nodejs16-alpine
+    commands:
+      - cd opencti-platform/opencti-front
+      - yarn install
+      - yarn build
+      - yarn lint
+      - yarn test
 
-      - name: build-circleci
-        image: curlimages/curl
-        commands:
-          - curl -X POST --data "branch=master" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
-        environment:
-          CIRCLECI_TOKEN:
-            from_secret: circleci_token
-        when:
-          branch:
-            - master
-          event:
-            exclude:
-              - pull_request
-              - tag
+  - name: build-circleci
+    image: curlimages/curl
+    commands:
+      - curl -X POST --data "branch=master" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
+    environment:
+      CIRCLECI_TOKEN:
+        from_secret: circleci_token
+    when:
+      branch:
+        - master
+      event:
+        exclude:
+          - pull_request
+          - tag
 
-      - name: build-circleci-release
-        image: curlimages/curl
-        commands:
-          - curl -X POST --data "tag=$DRONE_TAG" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
-        environment:
-          CIRCLECI_TOKEN:
-            from_secret: circleci_token
-        when:
-          event:
-            - tag
+  - name: build-circleci-release
+    image: curlimages/curl
+    commands:
+      - curl -X POST --data "tag=$DRONE_TAG" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
+    environment:
+      CIRCLECI_TOKEN:
+        from_secret: circleci_token
+    when:
+      event:
+        - tag
 
-      - name: slack
-        image: plugins/slack
-        settings:
-          webhook:
-            from_secret: slack_webhook
-          username: drone
-          icon_url: https://avatars.githubusercontent.com/oa/1284929
-          channel: notifications
-        when:
-          status: [success, failure]
-          event:
-            exclude:
-              - pull_request
+  - name: slack
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      username: drone
+      icon_url: https://avatars.githubusercontent.com/oa/1284929
+      channel: notifications
+    when:
+      status: [success, failure]
+      event:
+        exclude:
+          - pull_request
 
 services:
   - name: redis

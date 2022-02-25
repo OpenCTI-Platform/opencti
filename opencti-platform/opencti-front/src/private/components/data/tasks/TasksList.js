@@ -163,7 +163,7 @@ class TasksListComponent extends Component {
         {tasks.length === 0 && (
           <Paper
             classes={{ root: classes.paper }}
-            elevation={2}
+            variant="outlined"
             style={{ marginBottom: 20 }}
           >
             <div
@@ -206,7 +206,7 @@ class TasksListComponent extends Component {
             <Paper
               key={task.id}
               classes={{ root: classes.paper }}
-              elevation={2}
+              variant="outlined"
               style={{ marginBottom: 20 }}
             >
               <Grid container={true} spacing={3}>

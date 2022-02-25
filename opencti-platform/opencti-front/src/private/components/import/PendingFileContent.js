@@ -769,7 +769,7 @@ class PendingFileContentComponent extends Component {
               <Typography variant="h4" gutterBottom={true}>
                 {t('File information')}
               </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
@@ -846,7 +846,7 @@ class PendingFileContentComponent extends Component {
               <Typography variant="h4" gutterBottom={true}>
                 {t('Bundle details')}
               </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 <div style={{ height: 300 }}>
                   <ResponsiveContainer height="100%" width="100%">
                     <PieChart
@@ -888,7 +888,7 @@ class PendingFileContentComponent extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
           {t('Bundle content')}
         </Typography>
-        <Paper classes={{ root: classes.paperList }} elevation={2}>
+        <Paper classes={{ root: classes.paperList }} variant="outlined">
           <List classes={{ root: classes.linesContainer }}>
             <ListItem
               classes={{ root: classes.itemHead }}

@@ -187,7 +187,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
           </Menu>
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List style={{ marginTop: -10 }}>
             {indicators.map((indicator) => (
               <ListItem

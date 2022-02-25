@@ -156,7 +156,7 @@ const Login = ({ classes, theme, settings }) => {
         className={classes.logo}
       />
       {loginMessage && loginMessage.length > 0 && (
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Markdown>{loginMessage}</Markdown>
         </Paper>
       )}

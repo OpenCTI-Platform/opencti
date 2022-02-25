@@ -262,7 +262,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
             </Typography>
             <Paper
               classes={{ root: classes.paper }}
-              elevation={2}
+              variant="outlined"
               style={{ height: 300 }}
             >
               <QueryRenderer

@@ -212,7 +212,7 @@ class ImportContentComponent extends Component {
                 <FreeTextUploader onUploadSuccess={() => relay.refetch()} />
               </div>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 {importFilesEdges.length ? (
                   <List>
                     {importFilesEdges.map((file) => (
@@ -250,7 +250,7 @@ class ImportContentComponent extends Component {
             </Typography>
             <Paper
               classes={{ root: classes.paper }}
-              elevation={2}
+              variant="outlined"
               style={{ marginTop: 15 }}
             >
               {connectors.length ? (
@@ -317,7 +317,7 @@ class ImportContentComponent extends Component {
               <div className="clearfix" />
               <Paper
                 classes={{ root: classes.paper }}
-                elevation={2}
+                variant="outlined"
                 style={{ marginTop: 15 }}
               >
                 {pendingFilesEdges.length ? (

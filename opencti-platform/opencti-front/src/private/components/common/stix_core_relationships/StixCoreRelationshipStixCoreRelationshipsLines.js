@@ -62,7 +62,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
           paginationOptions={paginationOptions}
         />
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List classes={{ root: classes.list }}>
             {data.stixCoreRelationships.edges.map(
               (stixCoreRelationshipEdge) => {

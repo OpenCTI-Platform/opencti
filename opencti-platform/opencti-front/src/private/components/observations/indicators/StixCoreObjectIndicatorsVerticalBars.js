@@ -184,7 +184,7 @@ class IndicatorsVerticalBars extends Component {
           {title || t('Indicators history')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

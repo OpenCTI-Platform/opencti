@@ -450,7 +450,7 @@ class ReportContentComponent extends Component {
         {this.state.currentTab === 0 && !isFileHtml && (
           <Paper
             classes={{ root: classes.editorContainer }}
-            elevation={2}
+            variant="outlined"
             style={{ minHeight: height, fontSize: '120%' }}
           >
             {isLoading ? <Loader variant="inElement" /> : <div />}
@@ -459,7 +459,7 @@ class ReportContentComponent extends Component {
         {this.state.currentTab === 0 && isFileHtml && (
           <Paper
             classes={{ root: classes.editorContainer }}
-            elevation={2}
+            variant="outlined"
             style={{ minHeight: height, fontSize: '120%' }}
           >
             {isLoading ? (
@@ -474,7 +474,7 @@ class ReportContentComponent extends Component {
         {this.state.currentTab === 1 && (
           <Paper
             classes={{ root: classes.editorContainer }}
-            elevation={2}
+            variant="outlined"
             style={{ minHeight: height }}
           >
             {isLoading ? (

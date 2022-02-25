@@ -94,7 +94,7 @@ class StixSightingRelationshipInference extends Component {
     return (
       <Paper
         classes={{ root: classes.paper }}
-        elevation={2}
+        variant="outlined"
         key={inference.rule.id}
       >
         <Typography variant="h3" gutterBottom={true}>

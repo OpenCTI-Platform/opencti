@@ -74,7 +74,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
         />
       </Security>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} elevation={2}>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
         <ListLines
           dataColumns={dataColumns}
           secondaryAction={true}

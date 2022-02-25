@@ -182,7 +182,7 @@ class CampaignsVerticalBars extends Component {
           {title || t('Campaigns history')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

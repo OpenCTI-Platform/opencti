@@ -120,7 +120,7 @@ class SectorTargetedOrganizations extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Last targeted organizations in this sector')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <QueryRenderer
             query={sectorTargetedOrganizationsQuery}
             variables={{ id: sectorId }}

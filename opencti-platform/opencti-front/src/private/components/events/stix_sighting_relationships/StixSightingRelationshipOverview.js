@@ -292,7 +292,7 @@ class StixSightingRelationshipContainer extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -373,7 +373,7 @@ class StixSightingRelationshipContainer extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>

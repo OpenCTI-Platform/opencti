@@ -91,7 +91,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
         <Typography variant="h4" gutterBottom={true}>
           {t('Latest created relationships')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <QueryRenderer
             query={
               simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery

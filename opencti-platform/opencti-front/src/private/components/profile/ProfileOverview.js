@@ -127,7 +127,7 @@ const ProfileOverviewComponent = (props) => {
     <div>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} elevation={2}>
+          <Paper classes={{ root: classes.panel }} variant="outlined">
             <Typography variant="h1" gutterBottom={true}>
               {t('Profile')} {external && `(${t('external')})`}
             </Typography>
@@ -229,7 +229,7 @@ const ProfileOverviewComponent = (props) => {
           </Paper>
         </Grid>
         <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} elevation={2}>
+          <Paper classes={{ root: classes.panel }} variant="outlined">
             <Typography variant="h1" gutterBottom={true}>
               {t('Subscriptions & digests')}
             </Typography>
@@ -299,7 +299,7 @@ const ProfileOverviewComponent = (props) => {
         </Grid>
         <Grid item={true} xs={6}>
           {!external && (
-            <Paper classes={{ root: classes.panel }} elevation={2}>
+            <Paper classes={{ root: classes.panel }} variant="outlined">
               <Typography variant="h1" gutterBottom={true}>
                 {t('Password')}
               </Typography>
@@ -347,7 +347,7 @@ const ProfileOverviewComponent = (props) => {
           )}
         </Grid>
         <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} elevation={2}>
+          <Paper classes={{ root: classes.panel }} variant="outlined">
             <Typography variant="h1" gutterBottom={true}>
               {t('API access')}
             </Typography>

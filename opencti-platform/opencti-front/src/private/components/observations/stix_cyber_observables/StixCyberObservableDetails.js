@@ -46,7 +46,7 @@ class StixCyberObservableDetailsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
             {file && (
               <Grid item={true} xs={6}>

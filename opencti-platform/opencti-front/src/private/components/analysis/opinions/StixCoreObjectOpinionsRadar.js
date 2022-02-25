@@ -241,7 +241,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
                 left: 0,
               }}
             >
-              <PolarGrid stroke={theme.palette.navAlt.backgroundHeader} />
+              <PolarGrid stroke={theme.palette.background.default} />
               <PolarAngleAxis
                 dataKey="label"
                 tick={(innerProps) => this.tickFormatter(innerProps)}
@@ -408,7 +408,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
         {variant === 'inLine' || variant === 'inEntity' ? (
           this.renderContent()
         ) : (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         )}

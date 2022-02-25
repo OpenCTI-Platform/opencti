@@ -46,7 +46,7 @@ class RegionParentRegionsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Parent regions')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List>
             {region.parentRegions.edges.map((parentRegionEdge) => {
               const parentRegion = parentRegionEdge.node;

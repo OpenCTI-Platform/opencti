@@ -689,7 +689,7 @@ class DashboardComponent extends Component {
                   key={widget.id}
                   data-grid={widget.layout}
                   classes={{ root: classes.paper }}
-                  elevation={2}
+                  variant="outlined"
                 >
                   {widget.perspective === 'global'
                     && this.renderGlobalVisualization(widget, manifest.config)}
@@ -731,7 +731,7 @@ class DashboardComponent extends Component {
                 key={widget.id}
                 data-grid={widget.layout}
                 classes={{ root: classes.paper }}
-                elevation={2}
+                variant="outlined"
               >
                 {!noToolbar && (
                   <WidgetPopover

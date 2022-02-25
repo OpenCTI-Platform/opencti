@@ -40,7 +40,7 @@ class ExternalReferenceStixCoreObjectsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Linked objects')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List classes={{ root: classes.list }}>
             {stixCoreObjects.map((stixCoreObject) => (
               <ListItem
