@@ -135,6 +135,7 @@ class ReportPopover extends Component {
         </Menu>
         <Dialog
           open={this.state.displayDelete}
+          PaperProps={{ elevation: 1 }}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >

@@ -4,7 +4,7 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
-import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import IconButton from '@mui/material/IconButton';
@@ -32,12 +32,6 @@ const styles = (theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
-  },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    color: theme.palette.text.primary,
-    borderBottom: '1px solid #5c5c5c',
   },
   title: {
     float: 'left',
@@ -75,7 +69,7 @@ class AttackPatternEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <AppBar position="static" elevation={0} className={classes.appBar}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               value={this.state.currentTab}
               onChange={this.handleChangeTab.bind(this)}
@@ -83,7 +77,7 @@ class AttackPatternEditionContainer extends Component {
               <Tab label={t('Overview')} />
               <Tab label={t('Details')} />
             </Tabs>
-          </AppBar>
+          </Box>
           {this.state.currentTab === 0 && (
             <AttackPatternEditionOverview
               attackPattern={attackPattern}

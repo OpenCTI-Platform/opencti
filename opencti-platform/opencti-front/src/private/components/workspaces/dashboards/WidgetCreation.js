@@ -902,6 +902,7 @@ class WidgetCreation extends Component {
         </Fab>
         <Dialog
           open={this.state.open}
+          PaperProps={{ elevation: 1 }}
           TransitionComponent={Transition}
           onClose={this.handleClose.bind(this)}
           fullWidth={true}

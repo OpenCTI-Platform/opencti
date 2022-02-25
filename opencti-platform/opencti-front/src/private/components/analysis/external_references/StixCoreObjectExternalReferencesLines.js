@@ -357,6 +357,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
           )}
         </Paper>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayDialog}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -384,6 +385,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayExternalLink}
           keepMounted={true}
           TransitionComponent={Transition}

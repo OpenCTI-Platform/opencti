@@ -752,6 +752,7 @@ class StixCyberObservableCreation extends Component {
         )}
         <Dialog
           open={speeddial ? this.props.open : this.state.open}
+          PaperProps={{ elevation: 1 }}
           onClose={
             speeddial
               ? this.props.handleClose.bind(this)

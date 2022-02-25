@@ -329,7 +329,11 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
           >
             <ThumbsUpDownOutlined fontSize="small" />
           </IconButton>
-          <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+          <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={this.state.open}
+            onClose={this.handleClose.bind(this)}
+          >
             <QueryRenderer
               query={stixCoreObjectOpinionsRadarMyOpinionQuery}
               variables={{ id: stixCoreObjectId }}

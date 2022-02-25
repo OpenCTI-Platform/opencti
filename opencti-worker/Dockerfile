@@ -1,5 +1,5 @@
 # upstream image
-ARG PARENT_IMAGE="docker.io/python:3.10.2-alpine3.15"
+ARG PARENT_IMAGE="python:3.10.2-alpine3.15"
 
 # common packages
 FROM "${PARENT_IMAGE}" as base

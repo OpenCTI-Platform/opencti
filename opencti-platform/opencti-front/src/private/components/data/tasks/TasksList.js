@@ -420,6 +420,7 @@ class TasksListComponent extends Component {
           );
         })}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayMessages}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -458,6 +459,7 @@ class TasksListComponent extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayErrors}
           keepMounted={true}
           TransitionComponent={Transition}

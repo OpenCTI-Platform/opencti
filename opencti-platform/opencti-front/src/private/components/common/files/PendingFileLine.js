@@ -205,6 +205,7 @@ class PendingFileLineComponent extends Component {
         </ListItem>
         <FileWork file={file} />
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={displayDelete}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}

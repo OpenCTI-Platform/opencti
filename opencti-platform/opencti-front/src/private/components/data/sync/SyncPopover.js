@@ -263,6 +263,7 @@ class SyncPopover extends Component {
           />
         </Drawer>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -290,6 +291,7 @@ class SyncPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayStart}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -317,6 +319,7 @@ class SyncPopover extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayStop}
           keepMounted={true}
           TransitionComponent={Transition}

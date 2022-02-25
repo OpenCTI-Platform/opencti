@@ -121,6 +121,7 @@ class IndicatorObservablePopover extends Component {
         </Menu>
         <Dialog
           open={this.state.displayDelete}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}

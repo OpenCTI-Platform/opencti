@@ -5,8 +5,7 @@ import Axios from 'axios';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
+import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -41,13 +40,6 @@ const styles = (theme) => ({
     height: '100%',
     margin: '20px 0 0 0',
     padding: '0 260px 90px 0',
-  },
-  appBar: {
-    width: '100%',
-    height: 50,
-    zIndex: theme.zIndex.drawer + 1,
-    color: theme.palette.text.primary,
-    borderBottom: '1px solid #5c5c5c',
   },
   tabs: {
     position: 'absolute',
@@ -211,13 +203,11 @@ class ReportContentComponent extends Component {
       }`;
       Axios.get(url).then((res) => {
         const content = res.data;
-        this.setState(
-          {
-            initialContent: content,
-            currentContent: content,
-            isLoading: false,
-          },
-        );
+        this.setState({
+          initialContent: content,
+          currentContent: content,
+          isLoading: false,
+        });
       });
     });
   }
@@ -428,25 +418,23 @@ class ReportContentComponent extends Component {
             return <div />;
           }}
         />
-        <AppBar position="static" elevation={0} className={classes.appBar}>
-          <Toolbar style={{ minHeight: 50 }}>
-            <span style={{ fontSize: 14, color: 'inherit', fontWeight: 400 }}>
-              {truncate(currentTitle, 100)}
-            </span>
-            <Tabs
-              value={currentTab}
-              onChange={this.handleChangeTab.bind(this)}
-              className={classes.tabs}
-            >
-              <Tab label={t('Rich editor')} disabled={isFilePdf} />
-              <Tab
-                label={t('Markdown source')}
-                disabled={isFilePdf || isFileHtml}
-              />
-              <Tab label={t('PDF viewer')} />
-            </Tabs>
-          </Toolbar>
-        </AppBar>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <span style={{ fontSize: 14, color: 'inherit', fontWeight: 400 }}>
+            {truncate(currentTitle, 100)}
+          </span>
+          <Tabs
+            value={currentTab}
+            onChange={this.handleChangeTab.bind(this)}
+            className={classes.tabs}
+          >
+            <Tab label={t('Rich editor')} disabled={isFilePdf} />
+            <Tab
+              label={t('Markdown source')}
+              disabled={isFilePdf || isFileHtml}
+            />
+            <Tab label={t('PDF viewer')} />
+          </Tabs>
+        </Box>
         {this.state.currentTab === 0 && !isFileHtml && (
           <Paper
             classes={{ root: classes.editorContainer }}

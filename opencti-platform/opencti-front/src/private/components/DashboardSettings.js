@@ -83,6 +83,7 @@ class DashboardSettings extends Component {
         </IconButton>
         <Dialog
           open={open}
+          PaperProps={{ elevation: 1 }}
           TransitionComponent={Transition}
           onClose={this.handleClose.bind(this)}
           maxWidth="xs"

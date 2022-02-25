@@ -793,6 +793,7 @@ class ReportKnowledgeGraphBar extends Component {
                 <Dialog
                   open={this.state.displayRemove}
                   keepMounted={true}
+                  PaperProps={{ elevation: 1 }}
                   TransitionComponent={Transition}
                   onClose={this.handleCloseRemove.bind(this)}
                 >

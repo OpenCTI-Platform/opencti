@@ -409,6 +409,7 @@ class StixDomainObjectHeader extends Component {
         )}
         <div className="clearfix" />
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.openAliases}
           TransitionComponent={Transition}
           onClose={this.handleToggleOpenAliases.bind(this)}

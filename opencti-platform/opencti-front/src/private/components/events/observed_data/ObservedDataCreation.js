@@ -314,7 +314,11 @@ class ObservedDataCreation extends Component {
         >
           <Add />
         </Fab>
-        <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+        >
           <Formik
             enableReinitialize={true}
             initialValues={{

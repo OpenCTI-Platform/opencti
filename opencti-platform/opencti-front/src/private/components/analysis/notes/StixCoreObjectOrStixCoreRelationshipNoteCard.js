@@ -247,6 +247,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
         </CardContent>
         <Dialog
           open={this.state.displayDialog}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDialog.bind(this)}

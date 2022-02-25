@@ -364,6 +364,7 @@ class ImportContentComponent extends Component {
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
                   open={fileToImport}
+                  PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   onClose={this.handleCloseImport.bind(this)}
                   fullWidth={true}
@@ -427,6 +428,7 @@ class ImportContentComponent extends Component {
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
                   open={fileToValidate}
+                  PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   onClose={this.handleCloseValidate.bind(this)}
                   fullWidth={true}

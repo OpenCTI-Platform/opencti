@@ -109,6 +109,7 @@ class StatusEditionContainer extends Component {
           <Form>
             <Dialog
               open={open}
+              PaperProps={{ elevation: 1 }}
               onClose={handleClose.bind(this)}
               fullWidth={true}
             >

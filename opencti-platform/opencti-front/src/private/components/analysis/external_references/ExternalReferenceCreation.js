@@ -295,6 +295,7 @@ class ExternalReferenceCreation extends Component {
           </Fab>
         )}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={!handleClose ? this.state.open : open}
           onClose={this.handleClose.bind(this)}
         >

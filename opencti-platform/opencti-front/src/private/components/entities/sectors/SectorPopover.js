@@ -133,6 +133,7 @@ class SectorPopover extends Component {
           </Security>
         </Menu>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}

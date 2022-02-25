@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import Drawer from '@mui/material/Drawer';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
 import {
   DomainOutlined,
   LocalPlayOutlined,
@@ -26,16 +26,17 @@ import {
 } from '../../../../utils/ListParameters';
 import EntityStixCoreRelationships from '../stix_core_relationships/EntityStixCoreRelationships';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     marginTop: 15,
   },
-  bottomNav: {
-    zIndex: 1000,
-    padding: '0 200px 0 205px',
-    backgroundColor: theme.palette.navBottom.background,
+  appBar: {
+    top: 'auto',
+    bottom: 0,
+    padding: '0 200px 0 180px',
     display: 'flex',
-    height: 50,
+    zIndex: 1000,
+    height: 64,
   },
 });
 
@@ -87,47 +88,39 @@ class StixDomainObjectVictimology extends Component {
     };
     return (
       <div className={classes.container} id="container">
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Grid container={true} spacing={1}>
-            <Grid item={true} xs="auto">
-              <Tooltip title={t('Sectors and organizations')}>
-                <IconButton
-                  color={type === 'sectors' ? 'secondary' : 'primary'}
-                  onClick={this.handleChangeType.bind(this, 'sectors')}
-                  size="large"
-                >
-                  <DomainOutlined />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-            <Grid item={true} xs="auto">
-              <Tooltip title={t('Regions, countries and cities')}>
-                <IconButton
-                  color={type === 'regions' ? 'secondary' : 'primary'}
-                  onClick={this.handleChangeType.bind(this, 'regions')}
-                  size="large"
-                >
-                  <LocalPlayOutlined />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-            <Grid item={true} xs="auto">
-              <Tooltip title={t('Individuals')}>
-                <IconButton
-                  color={type === 'individuals' ? 'secondary' : 'primary'}
-                  onClick={this.handleChangeType.bind(this, 'individuals')}
-                  size="large"
-                >
-                  <GroupOutlined />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-          </Grid>
-        </Drawer>
+        <AppBar position="fixed" className={classes.appBar} elevation={1}>
+          <Toolbar>
+            <Tooltip title={t('Sectors and organizations')}>
+              <IconButton
+                color={type === 'sectors' ? 'secondary' : 'primary'}
+                onClick={this.handleChangeType.bind(this, 'sectors')}
+                size="large"
+              >
+                <DomainOutlined />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title={t('Regions, countries and cities')}>
+              <IconButton
+                color={type === 'regions' ? 'secondary' : 'primary'}
+                onClick={this.handleChangeType.bind(this, 'regions')}
+                size="large"
+              >
+                <LocalPlayOutlined />
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title={t('Individuals')}>
+              <IconButton
+                color={type === 'individuals' ? 'secondary' : 'primary'}
+                onClick={this.handleChangeType.bind(this, 'individuals')}
+                size="large"
+              >
+                <GroupOutlined />
+              </IconButton>
+            </Tooltip>
+          </Toolbar>
+        </AppBar>
         {type === 'sectors' && (
           <QueryRenderer
             query={stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery}

@@ -143,6 +143,7 @@ class StixCoreRelationshipFromAndToPopover extends Component {
           </MenuItem>
         </Menu>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}

@@ -136,6 +136,7 @@ class CourseOfActionPopover extends Component {
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
+          PaperProps={{ elevation: 1 }}
           onClose={this.handleCloseDelete.bind(this)}
         >
           <DialogContent>

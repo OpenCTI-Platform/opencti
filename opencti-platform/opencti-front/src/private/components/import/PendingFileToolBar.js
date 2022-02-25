@@ -147,6 +147,7 @@ class PendingFileToolBar extends Component {
         </Toolbar>
         <Dialog
           open={displayDelete}
+          PaperProps={{ elevation: 1 }}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}
         >

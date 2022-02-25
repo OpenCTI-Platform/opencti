@@ -242,6 +242,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
           </List>
           <Dialog
             open={this.state.displayPromoteStix}
+            PaperProps={{ elevation: 1 }}
             keepMounted={true}
             TransitionComponent={Transition}
             onClose={this.handleClosePromoteStix.bind(this)}

@@ -275,6 +275,7 @@ class StixDomainObjectOverview extends Component {
           </Grid>
         </Paper>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.openStixIds}
           TransitionComponent={Transition}
           onClose={this.handleToggleOpenStixIds.bind(this)}

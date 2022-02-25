@@ -265,6 +265,7 @@ class LocationCreation extends Component {
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={open}
                 onClose={this.handleClose.bind(this)}
                 fullWidth={true}

@@ -117,7 +117,7 @@ class UserPopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 4 }}
+          style={{ marginTop: 3 }}
           size="large"
         >
           <MoreVert />
@@ -163,6 +163,7 @@ class UserPopover extends Component {
         </Drawer>
         <Dialog
           open={this.state.displayDelete}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDelete.bind(this)}

@@ -60,6 +60,7 @@ class CommitMessage extends Component {
           </Button>
         )}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={typeof handleClose !== 'function' ? this.state.open : open}
           onClose={handleClose || this.handleClose.bind(this)}
           fullWidth={true}

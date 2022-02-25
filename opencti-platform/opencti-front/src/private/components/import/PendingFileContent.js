@@ -1218,6 +1218,7 @@ class PendingFileContentComponent extends Component {
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={dataToValidate}
+                PaperProps={{ elevation: 1 }}
                 keepMounted={true}
                 onClose={this.handleCloseValidate.bind(this)}
                 fullWidth={true}
@@ -1267,6 +1268,7 @@ class PendingFileContentComponent extends Component {
         </Formik>
         <Dialog
           open={displayJson}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           onClick={this.handleCloseJson.bind(this)}
           fullWidth={true}

@@ -220,6 +220,7 @@ class SessionsListComponent extends Component {
         </List>
         <Dialog
           open={this.state.displayKillSession}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseKillSession.bind(this)}

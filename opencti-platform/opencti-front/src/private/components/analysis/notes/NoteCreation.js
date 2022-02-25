@@ -295,7 +295,11 @@ class NoteCreation extends Component {
         >
           <Add />
         </Fab>
-        <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+        <Dialog
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+          PaperProps={{ elevation: 1 }}
+        >
           <Formik
             enableReinitialize={true}
             initialValues={{

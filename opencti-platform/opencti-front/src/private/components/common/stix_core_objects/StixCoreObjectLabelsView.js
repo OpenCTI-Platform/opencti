@@ -241,6 +241,7 @@ const StixCoreObjectLabelsView = (props) => {
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Dialog
+            PaperProps={{ elevation: 1 }}
             open={openAdd}
             TransitionComponent={Transition}
             onClose={handleCloseAdd}

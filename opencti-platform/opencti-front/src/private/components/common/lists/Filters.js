@@ -916,6 +916,7 @@ class Filters extends Component {
           </IconButton>
         </Tooltip>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={open}
           onClose={this.handleCloseFilters.bind(this)}
           fullWidth={true}

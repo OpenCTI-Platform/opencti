@@ -324,6 +324,7 @@ class RulesListComponent extends Component {
         </Grid>
         <Dialog
           open={this.state.displayEnable}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseEnable.bind(this)}
@@ -351,6 +352,7 @@ class RulesListComponent extends Component {
         </Dialog>
         <Dialog
           open={this.state.displayDisable}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDisable.bind(this)}

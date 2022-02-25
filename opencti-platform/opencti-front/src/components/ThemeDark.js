@@ -16,6 +16,7 @@ export default (
       default: background || '#0a1929',
       paper: paper || '#001e3c',
       nav: nav || '#071a2e',
+      accent: primaryAccent || '#01478dff',
     },
   },
   typography: {

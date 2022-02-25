@@ -884,6 +884,7 @@ class ToolBar extends Component {
           </Security>
         </Toolbar>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayTask}
           keepMounted={true}
           TransitionComponent={Transition}

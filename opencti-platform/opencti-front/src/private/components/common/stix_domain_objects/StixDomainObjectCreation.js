@@ -641,6 +641,7 @@ class StixDomainObjectCreation extends Component {
           }) => (
             <Form>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={speeddial ? this.props.open : this.state.open}
                 onClose={
                   speeddial

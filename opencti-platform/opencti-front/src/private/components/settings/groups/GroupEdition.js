@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { Close } from '@mui/icons-material';
@@ -34,12 +34,6 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    color: theme.palette.text.primary,
-    borderBottom: '1px solid #5c5c5c',
-  },
   title: {
     float: 'left',
   },
@@ -66,13 +60,13 @@ const GroupEdition = ({ t, classes, handleClose, group }) => {
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
-        <AppBar position="static" elevation={0} className={classes.appBar}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
             <Tab label={t('Overview')} />
             <Tab label={t('Permissions')} />
             <Tab label={t('Members')} />
           </Tabs>
-        </AppBar>
+        </Box>
         {currentTab === 0 && (
           <GroupEditionOverview group={group} context={editContext} />
         )}

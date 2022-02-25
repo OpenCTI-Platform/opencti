@@ -260,6 +260,7 @@ class ExportButtons extends Component {
           </Tooltip>
         )}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={exporting}
           keepMounted={true}
           fullScreen={true}

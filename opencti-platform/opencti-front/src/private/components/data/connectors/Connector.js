@@ -368,6 +368,7 @@ class ConnectorComponent extends Component {
           </Grid>
         </Grid>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -395,6 +396,7 @@ class ConnectorComponent extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayResetState}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -422,6 +424,7 @@ class ConnectorComponent extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayClearWorks}
           keepMounted={true}
           TransitionComponent={Transition}

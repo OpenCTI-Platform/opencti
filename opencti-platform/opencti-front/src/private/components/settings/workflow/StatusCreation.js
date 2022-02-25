@@ -157,6 +157,7 @@ class StatusCreation extends Component {
             <Form>
               <Dialog
                 open={this.state.open}
+                PaperProps={{ elevation: 1 }}
                 onClose={this.handleClose.bind(this)}
                 fullWidth={true}
               >

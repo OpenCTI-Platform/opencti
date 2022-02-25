@@ -824,6 +824,7 @@ class InvestigationGraphBar extends Component {
                 </Tooltip>
                 <Dialog
                   open={this.state.displayRemove}
+                  PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   TransitionComponent={Transition}
                   onClose={this.handleCloseRemove.bind(this)}
@@ -851,6 +852,7 @@ class InvestigationGraphBar extends Component {
                   </DialogActions>
                 </Dialog>
                 <Dialog
+                  PaperProps={{ elevation: 1 }}
                   open={openExpandElements}
                   onClose={this.handleCloseExpandElements.bind(this)}
                 >

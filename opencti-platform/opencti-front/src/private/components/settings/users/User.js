@@ -514,6 +514,7 @@ class UserComponent extends Component {
         </Drawer>
         <Dialog
           open={this.state.displayKillSession}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseKillSession.bind(this)}
@@ -542,6 +543,7 @@ class UserComponent extends Component {
         </Dialog>
         <Dialog
           open={this.state.displayKillSessions}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseKillSessions.bind(this)}
