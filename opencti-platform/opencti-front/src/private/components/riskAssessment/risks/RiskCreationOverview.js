@@ -126,6 +126,7 @@ class RiskCreationOverviewComponent extends Component {
                   size='small'
                   name="id"
                   fullWidth={true}
+                  disabled={true}
                   containerstyle={{ width: '100%' }}
                 />
               </Grid>
@@ -362,7 +363,7 @@ class RiskCreationOverviewComponent extends Component {
                 <Field
                   component={SelectField}
                   variant='outlined'
-                  name="ports"
+                  name="controls"
                   size='small'
                   fullWidth={true}
                   style={{ height: '38.09px', marginBottom: '3px' }}
@@ -371,7 +372,7 @@ class RiskCreationOverviewComponent extends Component {
                 <Field
                   component={SelectField}
                   variant='outlined'
-                  name="ports"
+                  name="controls"
                   size='small'
                   fullWidth={true}
                   style={{ height: '38.09px' }}
