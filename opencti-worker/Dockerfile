@@ -17,7 +17,7 @@ ARG OPENCTI_VERSION="master"
 COPY src /opt/opencti-worker
 
 RUN apk --no-cache add git build-base \
-    && pip3 install --no-cache-dir --upgrade --requirement requirements.txt
+    && pip3 install --no-cache-dir --upgrade --requirement requirements.txt \
     && pip3 install \
         --no-cache-dir \
         --upgrade \
