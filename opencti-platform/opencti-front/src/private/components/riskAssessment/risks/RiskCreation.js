@@ -156,12 +156,58 @@ class RiskCreation extends Component {
       },
       values,
     );
+    const relatedRisks = {
+      created: values.riskDetailsCreated,
+      modified: values.riskDetailsModified,
+      name: values.riskDetailsDescription,
+      description: values.description,
+      statement: values.statement,
+      risk_status: values.risk_status,
+      deadline: values.deadline,
+      false_positive: values.false_positive,
+      risk_adjusted: values.risk_adjusted,
+      vendor_dependency: values.vendor_dependency,
+      impacted_control_id: values.impacted_control_id,
+      characterizations: {
+        facets: {
+          name: {
+            risk_rating: values.risk_rating,
+            impact: values.impact,
+            likelihood: values.likelihood,
+          },
+        },
+        origins: {
+          origin_actors: {
+            actor: {
+              detection_source: values.detection_source,
+            },
+          },
+        },
+      },
+      // remediations: {
+      //   response_type: values.response_type,
+      //   lifecycle: values.lifecycle,
+      // }
+    };
     const finalValues = R.pipe(
       R.dissoc('controls'),
       R.assoc('name', values.name),
-      // assoc('createdBy', values.createdBy?.value),
-      // assoc('objectMarking', pluck('value', values.objectMarking)),
-      // assoc('objectLabel', pluck('value', values.objectLabel)),
+      R.assoc('related_risks', relatedRisks),
+      R.dissoc('riskDetailsCreated'),
+      R.dissoc('riskDetailsModified'),
+      R.dissoc('riskDetailsDescription'),
+      R.dissoc('detection_source'),
+      R.dissoc('risk_rating'),
+      R.dissoc('impace'),
+      R.dissoc('likelihood'),
+      R.dissoc('description'),
+      R.dissoc('statement'),
+      R.dissoc('deadline'),
+      R.dissoc('risk_status'),
+      R.dissoc('false_positive'),
+      R.dissoc('risk_adjusted'),
+      R.dissoc('vendor_dependency'),
+      R.dissoc('impacted_control_id'),
     )(adaptedValues);
     console.log('RiskCreationFinal', finalValues);
     CM(environmentDarkLight, {
@@ -223,26 +269,28 @@ class RiskCreation extends Component {
         <Formik
           initialValues={{
             name: '',
-            // poam_id: '',
+            poam_id: '',
             created: null,
             modified: null,
             description: '',
-            // weakness: '',
+            weakness: '',
             controls: [],
-            // risk_rating: '',
+            risk_rating: '',
             priority: 1,
-            // impact: '',
-            // likelihood: '',
+            impact: '',
+            likelihood: '',
             labels: [],
+            riskDetailsCreated: null,
+            riskDetailsModified: null,
+            riskDetailsDescription: '',
             statement: '',
             risk_status: 'open',
             deadline: null,
-            // impacted_component: '',
-            // impacted_assets: '',
-            // detection_source: '',
-            // impacted_control: '',
+            impacted_assets: '',
+            detection_source: '',
+            impacted_control: '',
             false_positive: 'approved',
-            // operationally_required: '',
+            operationally_required: '',
             risk_adjusted: 'pending',
             vendor_dependency: 'pending',
           }}
@@ -307,7 +355,7 @@ class RiskCreation extends Component {
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <RiskCreationDetails setFieldValue={setFieldValue} />
+                    <RiskCreationDetails values={values} setFieldValue={setFieldValue} />
                   </Grid>
                 </Grid>
               </Form>

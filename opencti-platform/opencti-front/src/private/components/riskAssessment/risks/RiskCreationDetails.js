@@ -170,7 +170,7 @@ class RiskCreationDetailsComponent extends Component {
                   component={DatePickerField}
                   variant='outlined'
                   size='small'
-                  name="created"
+                  name="riskDetailsCreated"
                   fullWidth={true}
                   invalidDateMessage={t(
                     'The value must be a date (YYYY-MM-DD)',
@@ -203,7 +203,7 @@ class RiskCreationDetailsComponent extends Component {
                   component={DatePickerField}
                   variant='outlined'
                   size='small'
-                  name="modified"
+                  name="riskDetailsModified"
                   fullWidth={true}
                   invalidDateMessage={t(
                     'The value must be a date (YYYY-MM-DD)',
@@ -235,7 +235,7 @@ class RiskCreationDetailsComponent extends Component {
               <div className="clearfix" />
               <Field
                 component={TextField}
-                name="Description"
+                name="riskDetailsDescription"
                 fullWidth={true}
                 multiline={true}
                 rows="4"

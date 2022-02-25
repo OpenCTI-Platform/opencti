@@ -136,6 +136,19 @@ class RiskEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const relatedRisks = {
+      created: values.riskDetailsCreated,
+      modified: values.riskDetailsModified,
+      name: values.riskDetailsDescription,
+      description: values.description,
+      statement: values.statement,
+      risk_status: values.risk_status,
+      deadline: values.deadline,
+      false_positive: values.false_positive,
+      risk_adjusted: values.risk_adjusted,
+      vendor_dependency: values.vendor_dependency,
+      impacted_control_id: values.impacted_control_id,
+    }
     const adaptedValues = R.evolve(
       {
         deadline: () => parse(values.deadline).format(),
@@ -144,6 +157,18 @@ class RiskEditionContainer extends Component {
     );
     const finalValues = R.pipe(
       R.toPairs,
+      R.assoc('related_risks', relatedRisks),
+      R.dissoc('riskDetailsCreated'),
+      R.dissoc('riskDetailsModified'),
+      R.dissoc('riskDetailsDescription'),
+      R.dissoc('description'),
+      R.dissoc('statement'),
+      R.dissoc('deadline'),
+      R.dissoc('risk_status'),
+      R.dissoc('false_positive'),
+      R.dissoc('risk_adjusted'),
+      R.dissoc('vendor_dependency'),
+      R.dissoc('impacted_control_id'),
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
@@ -209,52 +234,106 @@ class RiskEditionContainer extends Component {
       risk,
     } = this.props;
     console.log('RiskEditionPropsData', risk);
+    const relatedRisksEdges = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((value) => ({
+        created: value.node.created,
+        modified: value.node.modified,
+        name: value.node.name,
+        description: value.node.description,
+        statement: value.node.statement,
+        risk_status: value.node.risk_status,
+        deadline: value.node.deadline,
+        false_positive: value.node.false_positive,
+        risk_adjusted: value.node.risk_adjusted,
+        vendor_dependency: value.node.vendor_dependency,
+        impacted_control_id: value.node.impacted_control_id,
+      })),
+      R.mergeAll,
+    )(risk);
+    const relatedObservationsEdges = R.pipe(
+      R.pathOr([], ['related_observations', 'edges']),
+      R.map((value) => ({
+        impacted_component: value.node.impacted_component,
+        impacted_asset: value.node.subjects,
+      })),
+    )(risk);
+    const riskDetectionSource = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.mergeAll,
+      R.pathOr([], ['node', 'characterizations']),
+      R.mergeAll,
+      R.path(['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(risk);
+    const riskEdges = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((value) => ({
+        priority: value.node.priority,
+      })),
+      R.mergeAll,
+    )(risk);
+    const relatedRiskData = R.pipe(
+      R.pathOr([], ['related_risks', 'edges']),
+      R.map((relatedRisk) => ({
+        characterization: relatedRisk.node.characterizations,
+      })),
+      R.mergeAll,
+      R.path(['characterization']),
+      R.mergeAll,
+    )(risk);
     const initialValues = R.pipe(
       R.assoc('id', risk?.id || ''),
-      R.assoc('item_id', risk?.item_id || ''),
+      R.assoc('poam_id', risk?.poam_id || ''),
+      R.assoc('created', dateFormat(risk.created)),
+      R.assoc('modified', dateFormat(risk.modified)),
       R.assoc('description', risk?.description || ''),
       R.assoc('weakness', risk?.name || ''),
       R.assoc('controls', risk?.controls || ''),
-      R.assoc('risk_rating', risk?.risk_rating || ''),
-      R.assoc('priority', risk?.priority || ''),
-      R.assoc('impact', risk?.impact || ''),
-      R.assoc('likelihood', risk?.likelihood || ''),
-      R.assoc('responsible_parties', risk?.responsible_parties || ''),
-      R.assoc('labels', risk?.labels || []),
-      R.assoc('name', risk?.name || ''),
-      R.assoc('statement', risk?.statement || ''),
-      R.assoc('risk_status', risk?.risk_status || ''),
-      R.assoc('deadline', dateFormat(risk?.deadline)),
-      R.assoc('impacted_component', risk?.impacted_component || ''),
-      R.assoc('impacted_assets', risk?.impacted_assets || ''),
-      R.assoc('detection_source', risk?.detection_source || ''),
-      R.assoc('impacted_control', risk?.impacted_control || ''),
-      R.assoc('false_positive', risk?.false_positive || ''),
+      R.assoc('risk_rating', relatedRiskData?.risk || ''),
+      R.assoc('priority', riskEdges?.priority || ''),
+      R.assoc('impact', relatedRiskData?.impact || ''),
+      R.assoc('likelihood', relatedRiskData?.likelihood || ''),
+      R.assoc('name', relatedRisksEdges.name || ''),
+      R.assoc('riskDetailsCreated', dateFormat(relatedRisksEdges.created)),
+      R.assoc('riskDetailsModified', dateFormat(relatedRisksEdges.modified)),
+      R.assoc('riskDetailsDescription', relatedRisksEdges.description || ''),
+      R.assoc('statement', relatedRisksEdges.statement || ''),
+      R.assoc('risk_status', relatedRisksEdges.risk_status || ''),
+      R.assoc('deadline', dateFormat(relatedRisksEdges?.deadline)),
+      R.assoc('detection_source', riskDetectionSource?.actor.name || ''),
+      R.assoc('impacted_control', relatedRisksEdges?.impacted_control_id || ''),
+      R.assoc('false_positive', relatedRisksEdges?.false_positive || ''),
       R.assoc('operationally_required', risk?.operationally_required || ''),
-      R.assoc('risk_adjusted', risk?.risk_adjusted || ''),
-      R.assoc('vendor_dependency', risk?.vendor_dependency || ''),
+      R.assoc('risk_adjusted', relatedRisksEdges?.risk_adjusted || ''),
+      R.assoc('vendor_dependency', relatedRisksEdges?.vendor_dependency || ''),
       R.pick([
         'id',
-        // 'item_id',
+        'poam_id',
+        'created',
+        'modified',
         'description',
         'weakness',
-        // 'controls',
-        // 'risk_rating',
+        'controls',
+        'risk_rating',
         'priority',
-        // 'impact',
-        // 'likelihood',
-        // 'responsible_parties',
+        'impact',
+        'likelihood',
         'labels',
         'name',
+        'riskDetailsCreated',
+        'riskDetailsModified',
+        'riskDetailsDescription',
         'statement',
         'risk_status',
         'deadline',
-        // 'impacted_component',
-        // 'impacted_assets',
-        // 'detection_source',
-        // 'impacted_control',
+        'impacted_assets',
+        'detection_source',
+        'impacted_control',
         'false_positive',
-        // 'operationally_required',
+        'operationally_required',
         'risk_adjusted',
         'vendor_dependency',
       ]),
@@ -331,6 +410,7 @@ class RiskEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <RiskEditionOverview
                       risk={risk}
+                      values={values}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}
@@ -339,6 +419,7 @@ class RiskEditionContainer extends Component {
                   <Grid item={true} xs={6}>
                     <RiskEditionDetails
                       risk={risk}
+                      values={values}
                     // enableReferences={this.props.enableReferences}
                     // context={editContext}
                     // handleClose={handleClose.bind(this)}
@@ -354,8 +435,8 @@ class RiskEditionContainer extends Component {
               >
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
-                  externalReferences={risk.links}
-                  cyioCoreObjectId={riskId}
+                    externalReferences={risk.links}
+                    cyioCoreObjectId={riskId}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -432,11 +513,37 @@ const RiskEditionFragment = createFragmentContainer(
     risk: graphql`
       fragment RiskEditionContainer_risk on POAMItem {
         id
+        created
+        modified
+        poam_id     # Item ID
         name        # Weakness
+        description
+        labels {
+          id
+          name
+          color
+          description
+        }
+        origins {
+          id
+          origin_actors {       # only use if UI support Detection Source
+            actor_type
+            actor {
+              ... on Component {
+                id
+                name
+              }
+              ... on OscalParty {
+                id
+                name
+              }
+            }
+          }
+        }
         links {
           id
-          # created
-          # modified
+          created
+          modified
           external_id     # external id
           source_name     # Title
           description     # description
@@ -448,19 +555,76 @@ const RiskEditionFragment = createFragmentContainer(
           abstract
           content
           authors
-          labels {
-            id
-            name
-            color
-            description
+        }
+        related_risks {
+          edges {
+            node{
+              id
+              created
+              modified
+              name
+              description
+              statement
+              risk_status       # Risk Status
+              deadline
+              priority
+              impacted_control_id
+              accepted
+              false_positive    # False-Positive
+              risk_adjusted     # Operational Required
+              vendor_dependency # Vendor Dependency
+              characterizations {
+                origins {
+                  id
+                  origin_actors {
+                    actor_type
+                    actor {
+                      ... on Component {
+                        id
+                        component_type
+                        name          # Detection Source
+                      }
+                      ... on OscalParty {
+                      id
+                      party_type
+                      name            # Detection Source
+                      }
+                    }
+                  }
+                }
+                facets {
+                  id
+                  risk_state
+                  source_system
+                  ... on CustomFacet {
+                    name
+                    value
+                  }
+                  ... on RiskFacet {
+                    risk_name: name
+                    value
+                  }
+                  ... on VulnerabilityFacet {
+                    vuln_name: name
+                    value
+                  }
+                  ... on Cvss2Facet {
+                    cvss2_name: name
+                    value
+                  }
+                  ... on Cvss3Facet {
+                    cvss3_name: name
+                    value
+                  }
+                }
+              }
+              remediations {
+                response_type
+                lifecycle
+              }
+            }
           }
         }
-        ...RiskEditionOverview_risk
-        ...RiskEditionDetails_risk
-        # editContext {
-        #   name
-        #   focusOn
-        # }
       }
     `,
   },
