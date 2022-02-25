@@ -41,7 +41,9 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 
-export const findAll = async (user, args) => listRelations(user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
+export const findAll = async (user, args) => {
+  return listRelations(user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
+};
 
 export const findById = (user, stixCoreRelationshipId) => {
   return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
