@@ -47,8 +47,7 @@ const isEventGranted = (event, user) => {
   // - User have the bypass capabilities
   const clientMarkings = R.flatten(R.map((m) => [m.standard_id, m.internal_id], user.allowed_marking));
   const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-  const isUserHaveAccess =
-    (event.markings || []).length === 0 || event.markings.every((m) => clientMarkings.includes(m));
+  const isUserHaveAccess = (event.markings || []).length === 0 || event.markings.every((m) => clientMarkings.includes(m));
   const isBypass = isBypassUser(user);
   const isGrantedForData = isMarkingObject || isUserHaveAccess;
   return isBypass || isGrantedForData;

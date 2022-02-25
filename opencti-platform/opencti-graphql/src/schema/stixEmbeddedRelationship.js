@@ -36,14 +36,11 @@ export const FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION = R.mergeAll(
   Object.keys(STIX_EMBEDDED_RELATION_TO_FIELD).map((k) => ({ [STIX_EMBEDDED_RELATION_TO_FIELD[k]]: k }))
 );
 
-export const isStixEmbeddedRelationship = (type) =>
-  isStixMetaRelationship(type) || isStixCyberObservableRelationship(type);
+export const isStixEmbeddedRelationship = (type) => isStixMetaRelationship(type) || isStixCyberObservableRelationship(type);
 
-export const isSingleStixEmbeddedRelationship = (type) =>
-  isSingleStixMetaRelationship(type) || isSingleStixCyberObservableRelationship(type);
+export const isSingleStixEmbeddedRelationship = (type) => isSingleStixMetaRelationship(type) || isSingleStixCyberObservableRelationship(type);
 
-export const isSingleStixEmbeddedRelationshipInput = (input) =>
-  isSingleStixMetaRelationshipInput(input) || isSingleStixCyberObservableRelationshipInput(input);
+export const isSingleStixEmbeddedRelationshipInput = (input) => isSingleStixMetaRelationshipInput(input) || isSingleStixCyberObservableRelationshipInput(input);
 
 export const instanceMetaRefsExtractor = (data) => {
   return [...META_STIX_ATTRIBUTES].map((key) => data[key] || []).flat();

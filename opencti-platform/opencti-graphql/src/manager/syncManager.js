@@ -231,9 +231,7 @@ const syncManagerInstance = (syncId) => {
         element = await addVulnerability(user, input);
       } else if (type === ENTITY_TYPE_INCIDENT) {
         element = await addIncident(user, input);
-      }
-      // Stix meta
-      else if (type === ENTITY_TYPE_LABEL) {
+      } else if (type === ENTITY_TYPE_LABEL) {
         element = await addLabel(user, input);
       } else if (type === ENTITY_TYPE_EXTERNAL_REFERENCE) {
         element = await addExternalReference(user, input);
@@ -308,7 +306,6 @@ const initSyncManager = () => {
     const syncs = await listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], { connectionFormat: false });
     // region Handle management of existing synchronizer
     for (let index = 0; index < syncs.length; index += 1) {
-      // eslint-disable-next-line prettier/prettier
       const { id, running } = syncs[index];
       const syncInstance = syncManagers.get(id);
       if (syncInstance) {

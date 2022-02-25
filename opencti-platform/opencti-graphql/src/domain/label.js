@@ -47,14 +47,10 @@ export const labelEditField = async (user, labelId, input, opts = {}) => {
 
 export const labelCleanContext = async (user, labelId) => {
   await delEditContext(user, labelId);
-  return loadById(user, labelId, ENTITY_TYPE_LABEL).then((label) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user)
-  );
+  return loadById(user, labelId, ENTITY_TYPE_LABEL).then((label) => notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user));
 };
 
 export const labelEditContext = async (user, labelId, input) => {
   await setEditContext(user, labelId, input);
-  return loadById(user, labelId, ENTITY_TYPE_LABEL).then((label) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user)
-  );
+  return loadById(user, labelId, ENTITY_TYPE_LABEL).then((label) => notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user));
 };

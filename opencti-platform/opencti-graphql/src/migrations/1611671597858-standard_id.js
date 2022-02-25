@@ -9,7 +9,7 @@ import { SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Rewriting standard ids for Attack pattern and Course of action`);
+  logApp.info('[MIGRATION] Rewriting standard ids for Attack pattern and Course of action');
   const bulkOperations = [];
   const callback = (attacks) => {
     const op = attacks

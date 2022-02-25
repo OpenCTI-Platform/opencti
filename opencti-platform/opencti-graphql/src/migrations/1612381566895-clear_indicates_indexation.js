@@ -10,7 +10,7 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Cleaning indicates for all entities and relationships`);
+  logApp.info('[MIGRATION] Cleaning indicates for all entities and relationships');
   const bulkOperations = [];
   const callback = (entities) => {
     const op = entities

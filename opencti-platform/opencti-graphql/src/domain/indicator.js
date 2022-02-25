@@ -96,18 +96,16 @@ const computeValidUntil = async (user, indicator) => {
       })
     );
     const killChainPhasesNames = R.map((n) => n.phase_name, killChainPhases);
-    isKillChainPhaseDelivery =
-      R.includes('initial-access', killChainPhasesNames) || R.includes('execution', killChainPhasesNames)
-        ? 'yes'
-        : 'no';
+    isKillChainPhaseDelivery = R.includes('initial-access', killChainPhasesNames) || R.includes('execution', killChainPhasesNames)
+      ? 'yes'
+      : 'no';
   }
   // compute with delivery and marking definition
   const ttlPattern = `${markingDefinition}-${isKillChainPhaseDelivery}`;
   let ttl = OpenCTITimeToLive.default[ttlPattern];
-  const mainObservableType =
-    indicator.x_opencti_main_observable_type && indicator.x_opencti_main_observable_type.includes('File')
-      ? 'File'
-      : indicator.x_opencti_main_observable_type;
+  const mainObservableType = indicator.x_opencti_main_observable_type && indicator.x_opencti_main_observable_type.includes('File')
+    ? 'File'
+    : indicator.x_opencti_main_observable_type;
   if (mainObservableType && R.has(indicator.x_opencti_main_observable_type, OpenCTITimeToLive)) {
     ttl = OpenCTITimeToLive[indicator.x_opencti_main_observable_type][ttlPattern];
   }
@@ -125,8 +123,8 @@ export const findAll = (user, args) => {
 
 export const addIndicator = async (user, indicator) => {
   if (
-    indicator.x_opencti_main_observable_type !== 'Unknown' &&
-    !isStixCyberObservable(indicator.x_opencti_main_observable_type)
+    indicator.x_opencti_main_observable_type !== 'Unknown'
+    && !isStixCyberObservable(indicator.x_opencti_main_observable_type)
   ) {
     throw FunctionalError(`Observable type ${indicator.x_opencti_main_observable_type} is not supported.`);
   }

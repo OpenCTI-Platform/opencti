@@ -37,7 +37,6 @@ export const createStreamCollection = async (user, input) => {
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
   // Create groups relations
   const relBuilder = (g) => ({ fromId: g, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
-  // eslint-disable-next-line prettier/prettier
   await createRelations(
     user,
     relatedGroups.map((g) => relBuilder(g))
@@ -71,13 +70,13 @@ export const streamCollectionDelete = async (user, collectionId) => {
 };
 export const streamCollectionCleanContext = async (user, collectionId) => {
   await delEditContext(user, collectionId);
-  return loadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user)
-  );
+  return loadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
+  });
 };
 export const streamCollectionEditContext = async (user, collectionId, input) => {
   await setEditContext(user, collectionId, input);
-  return loadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user)
-  );
+  return loadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
+  });
 };

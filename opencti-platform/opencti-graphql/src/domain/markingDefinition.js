@@ -37,8 +37,7 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
 };
 
-export const markingDefinitionDelete = (user, markingDefinitionId) =>
-  deleteElementById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+export const markingDefinitionDelete = (user, markingDefinitionId) => deleteElementById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 
 export const markingDefinitionEditField = async (user, markingDefinitionId, input, opts = {}) => {
   const { element } = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, opts);
@@ -47,14 +46,14 @@ export const markingDefinitionEditField = async (user, markingDefinitionId, inpu
 
 export const markingDefinitionCleanContext = async (user, markingDefinitionId) => {
   await delEditContext(user, markingDefinitionId);
-  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
-  );
+  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
+  });
 };
 
 export const markingDefinitionEditContext = async (user, markingDefinitionId, input) => {
   await setEditContext(user, markingDefinitionId, input);
-  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
-  );
+  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
+  });
 };

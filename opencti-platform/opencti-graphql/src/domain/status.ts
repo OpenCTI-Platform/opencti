@@ -15,7 +15,6 @@ import type {
   EditInput,
 } from '../generated/graphql';
 import { OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
-import type { StatusInput, StatusTemplateInput, AuthUser } from '../utils/definitions';
 
 export const findTemplateById = (user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return loadById(user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;

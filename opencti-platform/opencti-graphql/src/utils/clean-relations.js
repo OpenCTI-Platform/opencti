@@ -33,7 +33,7 @@ const computeMissingRelationsForType = async (relationType) => {
     const query = {
       index: READ_RELATIONSHIPS_INDICES,
       ignore_throttled: ES_IGNORE_THROTTLED,
-      _source_includes: ['internal_id', 'entity_type', `connections`],
+      _source_includes: ['internal_id', 'entity_type', 'connections'],
       track_total_hits: true,
       body,
     };
@@ -50,13 +50,13 @@ const computeMissingRelationsForType = async (relationType) => {
       counter += hits.length;
       const connectionIds = R.uniq(R.flatten(hits.map((h) => h._source.connections.map((c) => c.internal_id))));
       const findTerms = connectionIds.map((c) => {
-        return { term: { [`internal_id.keyword`]: c } };
+        return { term: { 'internal_id.keyword': c } };
       });
       const findQuery = {
         index: READ_DATA_INDICES,
         ignore_throttled: ES_IGNORE_THROTTLED,
         size: 2000,
-        _source_includes: `internal_id`,
+        _source_includes: 'internal_id',
         body: {
           query: {
             bool: {

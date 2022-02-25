@@ -76,5 +76,4 @@ export const uploadImport = async (user, file) => {
   return up;
 };
 
-export const uploadPending = async (user, file, entityId = null) =>
-  upload(user, 'import/pending', file, entityId ? { entity_id: entityId } : {});
+export const uploadPending = async (user, file, entityId = null) => upload(user, 'import/pending', file, entityId ? { entity_id: entityId } : {});

@@ -11,7 +11,6 @@ import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { RULE_PREFIX } from '../schema/general';
-import { getRule } from './rule';
 
 export const MAX_TASK_ELEMENTS = 500;
 
@@ -103,9 +102,8 @@ const checkActionValidity = (user, actions) => {
   }
 };
 
-export const createRuleTask = async (user, input) => {
+export const createRuleTask = async (user, ruleDefinition, input) => {
   const { rule, enable } = input;
-  const ruleDefinition = await getRule(rule);
   const { scan } = ruleDefinition;
   const opts = enable ? buildFilters(scan) : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
   const queryData = await elPaginate(user, READ_DATA_INDICES, { ...opts, first: 1 });

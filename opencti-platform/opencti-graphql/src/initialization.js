@@ -117,24 +117,24 @@ export const CAPABILITIES = [
 export const checkSystemDependencies = async () => {
   // Check if elasticsearch is available
   await searchEngineInit();
-  logApp.info(`[CHECK] Search engine is alive`);
+  logApp.info('[CHECK] Search engine is alive');
   // Check if minio is here
   await isStorageAlive();
-  logApp.info(`[CHECK] Minio is alive`);
+  logApp.info('[CHECK] Minio is alive');
   // Check if RabbitMQ is here and create the logs exchange/queue
   await rabbitMQIsAlive();
-  logApp.info(`[CHECK] RabbitMQ is alive`);
+  logApp.info('[CHECK] RabbitMQ is alive');
   // Check if redis is here
   await redisIsAlive();
-  logApp.info(`[CHECK] Redis is alive`);
+  logApp.info('[CHECK] Redis is alive');
   if (booleanConf('subscription_scheduler:enabled', true)) {
     // Check if SMTP is here
     await smtpIsAlive();
-    logApp.info(`[CHECK] SMTP is alive`);
+    logApp.info('[CHECK] SMTP is alive');
   }
   // Check if Python is available
   await checkPythonStix2();
-  logApp.info(`[CHECK] Python3 is available`);
+  logApp.info('[CHECK] Python3 is available');
   return true;
 };
 
@@ -147,7 +147,7 @@ const initializeSchema = async () => {
   }
   // Create default indexes
   await elCreateIndexes();
-  logApp.info(`[INIT] Search engine indexes loaded`);
+  logApp.info('[INIT] Search engine indexes loaded');
   return true;
 };
 
@@ -169,7 +169,7 @@ const alignMigrationLastRun = async () => {
   const timeAvailableMigrationTimestamp = lastAvailableMigrationTime();
   if (lastRunStamp > timeAvailableMigrationTimestamp) {
     // Reset the last run to apply migration.
-    const patch = { lastRun: `1608026400000-init` };
+    const patch = { lastRun: '1608026400000-init' };
     await patchAttribute(SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, patch);
   }
 };
@@ -320,7 +320,7 @@ export const createBasicRolesAndCapabilities = async () => {
 };
 
 const initializeDefaultValues = async (withMarkings = true) => {
-  logApp.info(`[INIT] Initialization of settings and basic elements`);
+  logApp.info('[INIT] Initialization of settings and basic elements');
   // Create default elements
   await addSettings(SYSTEM_USER, {
     platform_title: 'Cyber threat intelligence platform',
@@ -337,7 +337,7 @@ const initializeDefaultValues = async (withMarkings = true) => {
 
 const initializeData = async (withMarkings = true) => {
   await initializeDefaultValues(withMarkings);
-  logApp.info(`[INIT] Platform default initialized`);
+  logApp.info('[INIT] Platform default initialized');
   return true;
 };
 
@@ -370,10 +370,10 @@ const platformInit = async (withMarkings = true) => {
     await checkSystemDependencies();
     await cachePurge();
     lock = await lockResource([PLATFORM_LOCK_ID]);
-    logApp.info(`[INIT] Starting platform initialization`);
+    logApp.info('[INIT] Starting platform initialization');
     const alreadyExists = await isExistingPlatform();
     if (!alreadyExists) {
-      logApp.info(`[INIT] New platform detected, initialization...`);
+      logApp.info('[INIT] New platform detected, initialization...');
       await initializeSchema();
       await initializeMigration();
       await initializeData(withMarkings);
@@ -387,17 +387,17 @@ const platformInit = async (withMarkings = true) => {
     }
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.error(`[OPENCTI] Platform cant get the lock for initialization`);
+      logApp.error('[OPENCTI] Platform cant get the lock for initialization');
     } else {
       const isApolloError = e instanceof ApolloError;
       const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
-      logApp.error(`[OPENCTI] Platform initialization fail`, { error });
+      logApp.error('[OPENCTI] Platform initialization fail', { error });
     }
     throw e;
   } finally {
     if (lock) {
       await lock.unlock();
-      logApp.info(`[INIT] Platform initialization done`);
+      logApp.info('[INIT] Platform initialization done');
     }
   }
   return true;

@@ -57,10 +57,8 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    importFiles: (entity, { first }, { user }) =>
-      filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
-    exportFiles: (entity, { first }, { user }) =>
-      filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
+    importFiles: (entity, { first }, { user }) => filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
+    exportFiles: (entity, { first }, { user }) => filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
     status: (entity, _, { user }) => (entity.status_id ? findStatusById(user, entity.status_id) : null),
     workflowEnabled: async (entity, _, { user }) => {
       const statusesEdges = await getTypeStatuses(user, entity.entity_type);
@@ -70,14 +68,12 @@ const stixDomainObjectResolvers = {
   Mutation: {
     stixDomainObjectEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) =>
-        stixDomainObjectEditField(user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
       relationsAdd: ({ input }) => stixDomainObjectAddRelations(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
       importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
       exportAsk: (args) => stixDomainObjectExportAsk(user, R.assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, id, file),
@@ -85,8 +81,7 @@ const stixDomainObjectResolvers = {
     stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),
     stixDomainObjectAdd: (_, { input }, { user }) => addStixDomainObject(user, input),
     stixDomainObjectsExportAsk: (_, args, { user }) => stixDomainObjectsExportAsk(user, args),
-    stixDomainObjectsExportPush: (_, { type, file, listFilters }, { user }) =>
-      stixDomainObjectsExportPush(user, type, file, listFilters),
+    stixDomainObjectsExportPush: (_, { type, file, listFilters }, { user }) => stixDomainObjectsExportPush(user, type, file, listFilters),
   },
   Subscription: {
     stixDomainObject: {

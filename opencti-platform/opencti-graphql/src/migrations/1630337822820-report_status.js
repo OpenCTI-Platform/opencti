@@ -9,7 +9,7 @@ import { createStatus, createStatusTemplate } from '../domain/status';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Creating the report workflow statuses`);
+  logApp.info('[MIGRATION] Creating the report workflow statuses');
   const statusNew = await createStatusTemplate(SYSTEM_USER, {
     name: 'NEW',
     color: '#ff9800',
@@ -70,7 +70,7 @@ export const up = async (next) => {
     },
     true
   );
-  logApp.info(`[MIGRATION] Migrate and clean current reports`);
+  logApp.info('[MIGRATION] Migrate and clean current reports');
   const bulkOperations = [];
   const callback = (reports) => {
     const op = reports

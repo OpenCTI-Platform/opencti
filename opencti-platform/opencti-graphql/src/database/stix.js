@@ -174,13 +174,13 @@ export const stixDataConverter = (data, args = {}) => {
     finalData = R.pipe(R.dissoc('fromId'), R.dissoc('fromRole'), R.dissoc('fromType'))(finalData);
     if (isSighting) {
       finalData = R.pipe(
-        R.assoc(`x_opencti_sighting_of_ref`, data.fromId),
-        R.assoc(`x_opencti_sighting_of_type`, data.fromType)
+        R.assoc('x_opencti_sighting_of_ref', data.fromId),
+        R.assoc('x_opencti_sighting_of_type', data.fromType)
       )(finalData);
     } else {
       finalData = R.pipe(
-        R.assoc(`x_opencti_source_ref`, data.fromId),
-        R.assoc(`x_opencti_source_type`, data.fromType)
+        R.assoc('x_opencti_source_ref', data.fromId),
+        R.assoc('x_opencti_source_type', data.fromType)
       )(finalData);
     }
   }
@@ -190,14 +190,14 @@ export const stixDataConverter = (data, args = {}) => {
       finalData = R.pipe(
         R.dissoc('source_ref'),
         R.assoc('sighting_of_ref', data.from.standard_id),
-        R.assoc(`x_opencti_sighting_of_ref`, data.from.internal_id),
-        R.assoc(`x_opencti_sighting_of_type`, data.from.entity_type)
+        R.assoc('x_opencti_sighting_of_ref', data.from.internal_id),
+        R.assoc('x_opencti_sighting_of_type', data.from.entity_type)
       )(finalData);
     } else {
       finalData = R.pipe(
         R.assoc('source_ref', data.from.standard_id),
-        R.assoc(`x_opencti_source_ref`, data.from.internal_id),
-        R.assoc(`x_opencti_source_type`, data.from.entity_type)
+        R.assoc('x_opencti_source_ref', data.from.internal_id),
+        R.assoc('x_opencti_source_type', data.from.entity_type)
       )(finalData);
     }
   }
@@ -205,13 +205,13 @@ export const stixDataConverter = (data, args = {}) => {
     finalData = R.pipe(R.dissoc('toId'), R.dissoc('toRole'), R.dissoc('toType'))(finalData);
     if (isSighting) {
       finalData = R.pipe(
-        R.assoc(`x_opencti_where_sighted_refs`, [data.toId]),
-        R.assoc(`x_opencti_where_sighted_types`, [data.toType])
+        R.assoc('x_opencti_where_sighted_refs', [data.toId]),
+        R.assoc('x_opencti_where_sighted_types', [data.toType])
       )(finalData);
     } else {
       finalData = R.pipe(
-        R.assoc(`x_opencti_target_ref`, data.toId),
-        R.assoc(`x_opencti_target_type`, data.toType)
+        R.assoc('x_opencti_target_ref', data.toId),
+        R.assoc('x_opencti_target_type', data.toType)
       )(finalData);
     }
   }
@@ -221,14 +221,14 @@ export const stixDataConverter = (data, args = {}) => {
       finalData = R.pipe(
         R.dissoc('target_ref'),
         R.assoc('where_sighted_refs', [data.to.standard_id]),
-        R.assoc(`x_opencti_where_sighted_refs`, [data.to.internal_id]),
-        R.assoc(`x_opencti_where_sighted_types`, [data.to.entity_type])
+        R.assoc('x_opencti_where_sighted_refs', [data.to.internal_id]),
+        R.assoc('x_opencti_where_sighted_types', [data.to.entity_type])
       )(finalData);
     } else {
       finalData = R.pipe(
         R.assoc('target_ref', data.to.standard_id),
-        R.assoc(`x_opencti_target_ref`, data.to.internal_id),
-        R.assoc(`x_opencti_target_type`, data.to.entity_type)
+        R.assoc('x_opencti_target_ref', data.to.internal_id),
+        R.assoc('x_opencti_target_type', data.to.entity_type)
       )(finalData);
     }
   }
@@ -324,12 +324,12 @@ export const stixDataConverter = (data, args = {}) => {
         const stixCyberObservable = Array.isArray(cyberInput) ? R.head(cyberInput) : cyberInput;
         const stixCyberObservableRef = patchGeneration
           ? [
-              {
-                value: stixCyberObservable.standard_id,
-                reference: observableValue(stixCyberObservable),
-                x_opencti_id: stixCyberObservable.internal_id,
-              },
-            ]
+            {
+              value: stixCyberObservable.standard_id,
+              reference: observableValue(stixCyberObservable),
+              x_opencti_id: stixCyberObservable.internal_id,
+            },
+          ]
           : stixCyberObservable.standard_id;
         finalData = R.pipe(
           R.dissoc(stixCyberObservableRelationshipInput),
@@ -338,10 +338,9 @@ export const stixDataConverter = (data, args = {}) => {
       } else {
         const stixCyberObservable = Array.isArray(cyberInput) ? cyberInput : [cyberInput];
         const stixCyberObservables = R.map(
-          (m) =>
-            patchGeneration
-              ? { value: m.standard_id, reference: observableValue(m), x_opencti_id: m.internal_id }
-              : m.standard_id,
+          (m) => (patchGeneration
+            ? { value: m.standard_id, reference: observableValue(m), x_opencti_id: m.internal_id }
+            : m.standard_id),
           stixCyberObservable
         );
         finalData = R.pipe(
@@ -434,11 +433,7 @@ export const extractFieldInputDefinition = (entityType) => {
     const schemaFields = def.fields.map((f) => f.name.value);
     return [...baseFields, ...schemaFields];
   }
-  // eslint-disable-next-line prettier/prettier
-  const formattedType = `${entityType
-    .split('-')
-    .map((e) => pascalize(e))
-    .join('')}AddInput`;
+  const formattedType = `${entityType.split('-').map((e) => pascalize(e)).join('')}AddInput`;
   const def = R.find((e) => e.name.value === formattedType, typeDefs.definitions);
   if (def) {
     return def.fields.map((f) => f.name.value);
@@ -453,13 +448,12 @@ export const buildInputDataFromStix = (stix) => {
   const entries = Object.entries(stix);
   for (let index = 0; index < entries.length; index += 1) {
     const [key] = entries[index];
-    let translatedKey =
-      RELATIONSHIP_CORE_REFS_TO_FIELDS[key] ||
-      SIGHTING_RELATIONSHIP_REFS_TO_FIELDS[key] ||
-      STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[key] ||
-      STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key] ||
-      CONTAINER_REFS_TO_FIELDS[key] ||
-      key;
+    let translatedKey = RELATIONSHIP_CORE_REFS_TO_FIELDS[key]
+      || SIGHTING_RELATIONSHIP_REFS_TO_FIELDS[key]
+      || STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[key]
+      || STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]
+      || CONTAINER_REFS_TO_FIELDS[key]
+      || key;
     if (!compatibleTypes.includes(translatedKey) && compatibleTypes.includes(`attribute_${translatedKey}`)) {
       translatedKey = `attribute_${translatedKey}`;
     }
@@ -815,16 +809,16 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
   }
   if (isStixCyberObservable(toType)) {
     if (
-      R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, R.keys(stixCoreRelationshipsMapping)) &&
-      R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`])
+      R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, R.keys(stixCoreRelationshipsMapping))
+      && R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`])
     ) {
       return true;
     }
   }
   if (isStixCyberObservable(fromType)) {
     if (
-      R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, R.keys(stixCoreRelationshipsMapping)) &&
-      R.includes(relationshipType, stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`])
+      R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, R.keys(stixCoreRelationshipsMapping))
+      && R.includes(relationshipType, stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`])
     ) {
       return true;
     }

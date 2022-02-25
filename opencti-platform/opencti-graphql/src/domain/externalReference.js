@@ -125,14 +125,14 @@ export const externalReferenceEditField = async (user, externalReferenceId, inpu
 
 export const externalReferenceCleanContext = async (user, externalReferenceId) => {
   await delEditContext(user, externalReferenceId);
-  return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user)
-  );
+  return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
+  });
 };
 
 export const externalReferenceEditContext = async (user, externalReferenceId, input) => {
   await setEditContext(user, externalReferenceId, input);
-  return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user)
-  );
+  return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
+  });
 };

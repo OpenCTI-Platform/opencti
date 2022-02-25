@@ -25,11 +25,11 @@ export const initializeAdminUser = async () => {
   const adminPassword = conf.get('app:admin:password');
   const adminToken = conf.get('app:admin:token');
   if (
-    empty(adminEmail) ||
-    empty(adminPassword) ||
-    empty(adminToken) ||
-    adminPassword === DEFAULT_CONF_VALUE ||
-    adminToken === DEFAULT_CONF_VALUE
+    empty(adminEmail)
+    || empty(adminPassword)
+    || empty(adminToken)
+    || adminPassword === DEFAULT_CONF_VALUE
+    || adminToken === DEFAULT_CONF_VALUE
   ) {
     throw ConfigurationError('You need to configure the environment vars');
   } else {
@@ -43,7 +43,7 @@ export const initializeAdminUser = async () => {
     // Initialize the admin account
     // noinspection JSIgnoredPromiseFromCall
     await initAdmin(adminEmail, adminPassword, adminToken);
-    logApp.info(`[INIT] admin user initialized`);
+    logApp.info('[INIT] admin user initialized');
   }
 };
 
@@ -134,7 +134,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     // FORM Strategies
     if (strategy === STRATEGY_LOCAL) {
       const localStrategy = new LocalStrategy({}, (username, password, done) => {
-        logApp.debug(`[LOCAL] Successfully logged`, { username });
+        logApp.debug('[LOCAL] Successfully logged', { username });
         return login(username, password)
           .then((info) => {
             return done(null, info);
@@ -152,7 +152,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
       const ldapOptions = { server: mappedConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
-        logApp.debug(`[LDAP] Successfully logged`, { user });
+        logApp.debug('[LDAP] Successfully logged', { user });
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
         const firstname = user[mappedConfig.firstname_attribute] || '';
@@ -181,7 +181,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const groupsToAssociate = computeGroupsMapping();
         // endregion
         if (!userMail) {
-          logApp.warn(`[LDAP] Configuration error, cant map mail and username`, { user, userMail, userName });
+          logApp.warn('[LDAP] Configuration error, cant map mail and username', { user, userMail, userName });
           done({ message: 'Configuration error, ask your administrator' });
         } else if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
           logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
@@ -246,7 +246,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const openIdScope = `openid email profile ${R.uniq(additionalScope).join(' ')}`;
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
-          logApp.debug(`[OPENID] Successfully logged`, { userinfo });
+          logApp.debug('[OPENID] Successfully logged', { userinfo });
           // region roles mapping
           const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
           const computeRolesMapping = () => {
@@ -298,7 +298,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         facebookOptions,
         (req, accessToken, refreshToken, profile, done) => {
           const data = profile._json;
-          logApp.debug(`[FACEBOOK] Successfully logged`, { profile: data });
+          logApp.debug('[FACEBOOK] Successfully logged', { profile: data });
           const { email } = data;
           providerLoginHandler({ email, name: data.first_name }, [], [], done);
         }
@@ -312,7 +312,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const specificConfig = { scope: ['email', 'profile'] };
       const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const googleStrategy = new GoogleStrategy(googleOptions, (req, token, tokenSecret, profile, done) => {
-        logApp.debug(`[GOOGLE] Successfully logged`, { profile });
+        logApp.debug('[GOOGLE] Successfully logged', { profile });
         const email = R.head(profile.emails).value;
         const name = profile.displayName;
         let authorized = true;
@@ -335,7 +335,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const scope = organizations.length > 0 ? 'user:email,read:org' : 'user:email';
       const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
       const githubStrategy = new GithubStrategy(githubOptions, async (req, token, tokenSecret, profile, done) => {
-        logApp.debug(`[GITHUB] Successfully logged`, { profile });
+        logApp.debug('[GITHUB] Successfully logged', { profile });
         let authorized = true;
         if (organizations.length > 0) {
           const github = new GitHub({ token });
@@ -365,7 +365,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const auth0Strategy = new Auth0Strategy(
         auth0Options,
         (req, accessToken, refreshToken, extraParams, profile, done) => {
-          logApp.debug(`[AUTH0] Successfully logged`, { profile });
+          logApp.debug('[AUTH0] Successfully logged', { profile });
           const email = R.head(profile.emails).value;
           const name = profile.displayName;
           providerLoginHandler({ email, name }, [], [], done);

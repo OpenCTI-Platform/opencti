@@ -91,9 +91,7 @@ export const completeConnector = (connector) => {
 };
 
 export const connectors = (user) => {
-  return listEntities(user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false }).then((elements) =>
-    map((conn) => completeConnector(conn), elements)
-  );
+  return listEntities(user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false }).then((elements) => map((conn) => completeConnector(conn), elements));
 };
 
 export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
@@ -103,15 +101,13 @@ export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAu
     filter((c) => (onlyAlive ? c.active === true : true)),
     filter((c) => (onlyAuto ? c.auto === true : true)),
     filter((c) => (onlyContextual ? c.only_contextual === true : true)),
-    // eslint-disable-next-line prettier/prettier
-    filter((c) =>
-      scope && c.connector_scope && c.connector_scope.length > 0
-        ? includes(
-            scope.toLowerCase(),
-            map((s) => s.toLowerCase(), c.connector_scope)
-          )
-        : true
-    )
+
+    filter((c) => (scope && c.connector_scope && c.connector_scope.length > 0
+      ? includes(
+        scope.toLowerCase(),
+        map((s) => s.toLowerCase(), c.connector_scope)
+      )
+      : true))
   )(connects);
 };
 // endregion

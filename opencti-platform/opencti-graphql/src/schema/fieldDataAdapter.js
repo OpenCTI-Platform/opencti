@@ -207,19 +207,19 @@ export const complexAttributeToApiFormat = (dataKey, instance) => {
 
 export const isUpdatedAtObject = (type) => {
   return (
-    isDatedInternalObject(type) ||
-    isStixMetaObject(type) ||
-    isStixCoreObject(type) ||
-    isStixCoreRelationship(type) ||
-    isStixSightingRelationship(type)
+    isDatedInternalObject(type)
+    || isStixMetaObject(type)
+    || isStixCoreObject(type)
+    || isStixCoreRelationship(type)
+    || isStixSightingRelationship(type)
   );
 };
 
 export const isModifiedObject = (type) => {
   return (
-    isStixMetaObject(type) ||
-    isStixDomainObject(type) ||
-    isStixCoreRelationship(type) ||
-    isStixSightingRelationship(type)
+    isStixMetaObject(type)
+    || isStixDomainObject(type)
+    || isStixCoreRelationship(type)
+    || isStixSightingRelationship(type)
   );
 };

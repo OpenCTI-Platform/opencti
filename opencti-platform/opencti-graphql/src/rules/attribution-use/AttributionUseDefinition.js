@@ -2,9 +2,8 @@ import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../schema/stixCoreRela
 
 const id = 'attribution_use';
 const name = 'Usage via attribution';
-const description =
-  'If **entity A** `uses` **entity B** and **entity A** is ' +
-  '`attributed-to` **entity C**, then **entity C** `uses` **entity B**.';
+const description = 'If **entity A** `uses` **entity B** and **entity A** is '
+  + '`attributed-to` **entity C**, then **entity C** `uses` **entity B**.';
 
 // For rescan
 const scan = { types: [RELATION_ATTRIBUTED_TO] };

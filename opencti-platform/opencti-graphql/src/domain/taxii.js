@@ -43,15 +43,15 @@ export const taxiiCollectionDelete = async (user, collectionId) => {
 };
 export const taxiiCollectionCleanContext = async (user, collectionId) => {
   await delEditContext(user, collectionId);
-  return loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION).then((collectionToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collectionToReturn, user)
-  );
+  return loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION).then((collectionToReturn) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
+  });
 };
 export const taxiiCollectionEditContext = async (user, collectionId, input) => {
   await setEditContext(user, collectionId, input);
-  return loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION).then((collectionToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collectionToReturn, user)
-  );
+  return loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION).then((collectionToReturn) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
+  });
 };
 
 // Taxii rest API

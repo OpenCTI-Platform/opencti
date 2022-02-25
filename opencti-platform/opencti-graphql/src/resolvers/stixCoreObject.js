@@ -66,21 +66,16 @@ const stixCoreObjectResolvers = {
     notes: (stixCoreObject, _, { user }) => notesLoader.load(stixCoreObject.id, user),
     opinions: (stixCoreObject, _, { user }) => opinionsLoader.load(stixCoreObject.id, user),
     jobs: (stixCoreObject, args, { user }) => worksForSource(user, stixCoreObject.id, args),
-    connectors: (stixCoreObject, { onlyAlive = false }, { user }) =>
-      connectorsForEnrichment(user, stixCoreObject.entity_type, onlyAlive),
-    importFiles: (stixCoreObject, { first }, { user }) =>
-      filesListing(user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`),
-    pendingFiles: (stixCoreObject, { first }, { user }) =>
-      filesListing(user, first, 'import/pending/', stixCoreObject.id),
-    exportFiles: (stixCoreObject, { first }, { user }) =>
-      filesListing(user, first, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}/`),
+    connectors: (stixCoreObject, { onlyAlive = false }, { user }) => connectorsForEnrichment(user, stixCoreObject.entity_type, onlyAlive),
+    importFiles: (stixCoreObject, { first }, { user }) => filesListing(user, first, `import/${stixCoreObject.entity_type}/${stixCoreObject.id}/`),
+    pendingFiles: (stixCoreObject, { first }, { user }) => filesListing(user, first, 'import/pending/', stixCoreObject.id),
+    exportFiles: (stixCoreObject, { first }, { user }) => filesListing(user, first, `export/${stixCoreObject.entity_type}/${stixCoreObject.id}/`),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, { user }) => ({
       relationAdd: ({ input }) => stixCoreObjectAddRelation(user, id, input),
       relationsAdd: ({ input }) => stixCoreObjectAddRelations(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        stixCoreObjectDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreObjectDeleteRelation(user, id, toId, relationshipType),
       merge: ({ stixCoreObjectsIds }) => stixCoreObjectMerge(user, id, stixCoreObjectsIds),
       askEnrichment: ({ connectorId }) => stixCoreObjectAskEnrichment(user, id, connectorId),
       importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),

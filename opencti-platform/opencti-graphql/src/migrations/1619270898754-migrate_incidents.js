@@ -10,7 +10,7 @@ import { SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Rewriting IDs and types of Incidents`);
+  logApp.info('[MIGRATION] Rewriting IDs and types of Incidents');
   const bulkOperations = [];
   const callback = (entities) => {
     const op = entities
@@ -60,7 +60,7 @@ export const up = async (next) => {
       }
       connection.types = values;
   }`;
-  logApp.info(`[MIGRATION] Migrating all relationships connections`);
+  logApp.info('[MIGRATION] Migrating all relationships connections');
   const startMigrateRelationships = new Date().getTime();
   await searchClient()
     .updateByQuery({

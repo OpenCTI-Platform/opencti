@@ -48,12 +48,11 @@ export const containersObjectsOfObject = async (user, { id, types, filters = [],
   });
   const containersObjectsRelationshipsEdges = await Promise.all(
     R.map(
-      (n) =>
-        listRelations(user, RELATION_OBJECT, {
-          first: 1000,
-          fromId: n.node.id,
-          toTypes: types,
-        }),
+      (n) => listRelations(user, RELATION_OBJECT, {
+        first: 1000,
+        fromId: n.node.id,
+        toTypes: types,
+      }),
       containers.edges
     )
   );

@@ -2,9 +2,8 @@ import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 
 const id = 'part_part';
 const name = 'Part of via Part of';
-const description =
-  'If **entity A** is `part-of` **entity B** and **entity B** ' +
-  'is `part-of` **entity C**, then **entity A** is `part-of` **entity C**.';
+const description = 'If **entity A** is `part-of` **entity B** and **entity B** '
+  + 'is `part-of` **entity C**, then **entity A** is `part-of` **entity C**.';
 
 // For rescan
 const scan = { types: [RELATION_PART_OF] };

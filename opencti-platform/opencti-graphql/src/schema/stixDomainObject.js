@@ -61,8 +61,7 @@ export const CONTAINER_REFS_TO_FIELDS = {
 };
 
 schemaTypes.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
-export const isStixDomainObjectContainer = (type) =>
-  R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
+export const isStixDomainObjectContainer = (type) => R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
 
 const STIX_DOMAIN_OBJECT_IDENTITIES = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -71,8 +70,7 @@ const STIX_DOMAIN_OBJECT_IDENTITIES = [
   ENTITY_TYPE_IDENTITY_SYSTEM,
 ];
 schemaTypes.register(ENTITY_TYPE_IDENTITY, STIX_DOMAIN_OBJECT_IDENTITIES);
-export const isStixDomainObjectIdentity = (type) =>
-  R.includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
+export const isStixDomainObjectIdentity = (type) => R.includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
 
 const STIX_DOMAIN_OBJECT_LOCATIONS = [
   ENTITY_TYPE_LOCATION_CITY,
@@ -81,8 +79,7 @@ const STIX_DOMAIN_OBJECT_LOCATIONS = [
   ENTITY_TYPE_LOCATION_POSITION,
 ];
 schemaTypes.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATIONS);
-export const isStixDomainObjectLocation = (type) =>
-  R.includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
+export const isStixDomainObjectLocation = (type) => R.includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
 
 const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -110,12 +107,11 @@ const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_INCIDENT,
 ];
 schemaTypes.register(ABSTRACT_STIX_DOMAIN_OBJECT, STIX_DOMAIN_OBJECTS);
-export const isStixDomainObject = (type) =>
-  R.includes(type, STIX_DOMAIN_OBJECTS) ||
-  isStixDomainObjectIdentity(type) ||
-  isStixDomainObjectLocation(type) ||
-  isStixDomainObjectContainer(type) ||
-  type === ABSTRACT_STIX_DOMAIN_OBJECT;
+export const isStixDomainObject = (type) => R.includes(type, STIX_DOMAIN_OBJECTS)
+  || isStixDomainObjectIdentity(type)
+  || isStixDomainObjectLocation(type)
+  || isStixDomainObjectContainer(type)
+  || type === ABSTRACT_STIX_DOMAIN_OBJECT;
 
 const STIX_DOMAIN_OBJECT_ALIASED = [
   ENTITY_TYPE_COURSE_OF_ACTION,
@@ -128,8 +124,7 @@ const STIX_DOMAIN_OBJECT_ALIASED = [
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_INCIDENT,
 ];
-export const isStixObjectAliased = (type) =>
-  R.includes(type, STIX_DOMAIN_OBJECT_ALIASED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
+export const isStixObjectAliased = (type) => R.includes(type, STIX_DOMAIN_OBJECT_ALIASED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
 export const resolveAliasesField = (type) => {
   if (type === ENTITY_TYPE_COURSE_OF_ACTION || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
     return ATTRIBUTE_ALIASES_OPENCTI;

@@ -152,7 +152,7 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
       .catch((e) => {
         throw DatabaseError('Error searching for works to delete', { error: e });
       });
-    // eslint-disable-next-line prettier/prettier
+
     const {
       hits,
       total: { value: valTotal },
@@ -237,7 +237,7 @@ export const reportActionImport = async (user, workId, errorData) => {
     }
     if (errorData) {
       const { error, source } = errorData;
-      sourceScript += `ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); `;
+      sourceScript += 'ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); ';
       params.source = source;
       params.error = error;
     }
@@ -253,7 +253,7 @@ export const updateReceivedTime = async (user, workId, message) => {
   let source = 'ctx._source.status = "progress";';
   source += 'ctx._source["received_time"] = params.received_time;';
   if (isNotEmptyField(message)) {
-    source += `ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); `;
+    source += 'ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); ';
   }
   await elUpdate(INDEX_HISTORY, workId, {
     script: { source, lang: 'painless', params },
@@ -273,9 +273,9 @@ export const updateProcessedTime = async (user, workId, message, inError = false
   }
   if (isNotEmptyField(message)) {
     if (inError) {
-      source += `ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); `;
+      source += 'ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); ';
     } else {
-      source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
+      source += 'ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); ';
     }
   }
   await elUpdate(INDEX_HISTORY, workId, {

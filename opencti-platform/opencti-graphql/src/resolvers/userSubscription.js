@@ -16,10 +16,9 @@ const userSubscriptionResolvers = {
   },
   UserSubscription: {
     user: (current, _, { user }) => internalLoadById(user, current.user_id),
-    entities: (current, _, { user }) =>
-      current.entities_ids && current.entities_ids.length > 0
-        ? Promise.all(current.entities_ids.map((e) => internalLoadById(user, e)))
-        : null,
+    entities: (current, _, { user }) => (current.entities_ids && current.entities_ids.length > 0
+      ? Promise.all(current.entities_ids.map((e) => internalLoadById(user, e)))
+      : null),
   },
   Mutation: {
     userSubscriptionAdd: (_, { input }, { user }) => createUserSubscription(user, input),

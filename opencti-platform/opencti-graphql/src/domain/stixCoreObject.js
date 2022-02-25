@@ -126,9 +126,7 @@ export const stixCoreObjectAddRelations = async (user, stixCoreObjectId, input) 
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user)
-  );
+  return loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user));
 };
 
 export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId, relationshipType) => {

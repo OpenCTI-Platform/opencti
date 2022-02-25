@@ -10,9 +10,8 @@ import {
 
 const id = 'observable_related';
 const name = 'Related via observable';
-const description =
-  'If **observable A** is `related-to` **entity B** and **observable A** ' +
-  'is `related-to` **entity C**, then **entity B** is `related-to` **entity C**.';
+const description = 'If **observable A** is `related-to` **entity B** and **observable A** '
+  + 'is `related-to` **entity C**, then **entity B** is `related-to` **entity C**.';
 
 // For rescan
 const scan = {

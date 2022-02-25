@@ -87,8 +87,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_RESOLVES_TO,
 ];
 schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
-export const isStixCoreRelationship = (type) =>
-  R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
+export const isStixCoreRelationship = (type) => R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 // endregion
 
 export const stixCoreRelationshipsAttributes = [
@@ -121,7 +120,6 @@ export const stixCoreRelationshipsAttributes = [
   'status_id',
 ];
 R.map(
-  (stixCoreRelationshipType) =>
-    schemaTypes.registerAttributes(stixCoreRelationshipType, stixCoreRelationshipsAttributes),
+  (stixCoreRelationshipType) => schemaTypes.registerAttributes(stixCoreRelationshipType, stixCoreRelationshipsAttributes),
   STIX_CORE_RELATIONSHIPS
 );

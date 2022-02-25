@@ -78,10 +78,8 @@ const STIX_CYBER_OBSERVABLES = [
 ];
 schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 
-export const isStixCyberObservableHashedObservable = (type) =>
-  R.includes(type, STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES);
-export const isStixCyberObservable = (type) =>
-  R.includes(type, STIX_CYBER_OBSERVABLES) || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
+export const isStixCyberObservableHashedObservable = (type) => R.includes(type, STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES);
+export const isStixCyberObservable = (type) => R.includes(type, STIX_CYBER_OBSERVABLES) || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
 
 export const stixCyberObservableOptions = {
   StixCyberObservablesFilter: {

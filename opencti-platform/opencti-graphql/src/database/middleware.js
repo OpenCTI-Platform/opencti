@@ -425,7 +425,7 @@ const buildRelationsFilter = (relationshipTypes, args) => {
     const { relation, id, relationId } = relationFilter;
     finalFilters.push({ key: buildRefRelationKey(relation), values: [id] });
     if (relationId) {
-      finalFilters.push({ key: `internal_id`, values: [relationId] });
+      finalFilters.push({ key: 'internal_id', values: [relationId] });
     }
   }
   const nestedElement = [];
@@ -534,7 +534,7 @@ export const internalLoadById = (user, id, args = {}) => {
 };
 export const loadById = async (user, id, type, args = {}) => {
   if (R.isNil(type) || R.isEmpty(type)) {
-    throw FunctionalError(`You need to specify a type when loading a element`);
+    throw FunctionalError('You need to specify a type when loading a element');
   }
   const loadArgs = R.assoc('type', type, args);
   return internalLoadById(user, id, loadArgs);
@@ -545,10 +545,10 @@ export const connectionLoaders = async (user, instance) => {
     const toPromise = internalLoadById(user, instance.toId);
     const [from, to] = await Promise.all([fromPromise, toPromise]);
     if (!from) {
-      throw FunctionalError(`Inconsistent relation to update (from)`, { id: instance.id, from: instance.fromId });
+      throw FunctionalError('Inconsistent relation to update (from)', { id: instance.id, from: instance.fromId });
     }
     if (!to) {
-      throw FunctionalError(`Inconsistent relation to update (to)`, { id: instance.id, to: instance.toId });
+      throw FunctionalError('Inconsistent relation to update (to)', { id: instance.id, to: instance.toId });
     }
     return R.mergeRight(instance, { from, to });
   }
@@ -662,12 +662,7 @@ export const convertDataToRawStix = async (user, id) => {
 const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', parent_types: [] };
 const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
-  // eslint-disable-next-line prettier/prettier
-  const resolveLabels = await elFindByIds(
-    user,
-    data.map((d) => d.label),
-    { toMap: true }
-  );
+  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), { toMap: true });
   return R.map((n) => {
     const resolved = resolveLabels[n.label];
     const resolvedData = resolved || restrictedAggElement;
@@ -769,11 +764,7 @@ const inputResolveRefs = async (user, input, type) => {
       cleanedInput[src] = null;
     }
   }
-  // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(
-    user,
-    fetchingIds.map((i) => i.id)
-  );
+  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -1055,7 +1046,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // Pre-checks
   const sourceIds = R.map((e) => e.internal_id, sourceEntities);
   if (R.includes(targetEntity.internal_id, sourceIds)) {
-    throw FunctionalError(`Cannot merge an entity on itself`, {
+    throw FunctionalError('Cannot merge an entity on itself', {
       dest: targetEntity.internal_id,
       source: sourceIds,
     });
@@ -1064,7 +1055,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const sourceTypes = R.map((s) => s.entity_type, sourceEntities);
   const isWorkingOnSameType = sourceTypes.every((v) => v === targetType);
   if (!isWorkingOnSameType) {
-    throw FunctionalError(`Cannot merge entities of different types`, {
+    throw FunctionalError('Cannot merge entities of different types', {
       dest: targetType,
       source: sourceTypes,
     });
@@ -1198,7 +1189,6 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
   const entries = Object.entries(updatesByEntity);
   let currentEntUpdateCount = 0;
-  // eslint-disable-next-line prettier/prettier
   const updateBulkEntities = entries
     .filter(([, values]) => values.length === 1)
     .map(([, values]) => values)
@@ -1212,7 +1202,6 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await Promise.map(groupsOfEntityUpdate, concurrentEntitiesUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Take care of multi update
   const updateMultiEntities = entries.filter(([, values]) => values.length > 1);
-  // eslint-disable-next-line prettier/prettier
   await Promise.map(
     updateMultiEntities,
     async ([id, values]) => {
@@ -1327,7 +1316,7 @@ const computeParticipants = (entities) => {
 export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts = {}) => {
   // Pre-checks
   if (R.includes(targetEntityId, sourceEntityIds)) {
-    throw FunctionalError(`Cannot merge entities, same ID detected in source and destination`, {
+    throw FunctionalError('Cannot merge entities, same ID detected in source and destination', {
       targetEntityId,
       sourceEntityIds,
     });
@@ -1354,9 +1343,7 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
-    return loadById(user, target.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
-      notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user)
-    );
+    return loadById(user, target.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) => notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user));
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -1562,7 +1549,7 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
     if (input.key === VALID_UNTIL) {
       const untilDate = R.head(input.value);
       const untilDateTime = utcDate(untilDate).toDate();
-      // eslint-disable-next-line prettier/prettier
+
       const revokedInput = { key: REVOKED, value: [untilDateTime < utcDate().toDate()] };
       const revokedIn = innerUpdateAttribute(instance, revokedInput);
       if (revokedIn.length > 0) {
@@ -1630,14 +1617,14 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   // Load the element to update
   const instance = await loadByIdWithMetaRels(user, id, { type });
   if (!instance) {
-    throw FunctionalError(`Cant find element to update`, { id, type });
+    throw FunctionalError('Cant find element to update', { id, type });
   }
   const instanceMergeWithInputs = mergeInstanceWithUpdateInputs(instance, inputs);
   const enforceReferences = conf.get('app:enforce_references') || [];
   const keys = R.map((t) => t.key, attributes);
   if (
-    enforceReferences.includes(instance.entity_type) ||
-    (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(instance.entity_type))
+    enforceReferences.includes(instance.entity_type)
+    || (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(instance.entity_type))
   ) {
     const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
     if (!isNoReferenceKey && isEmptyField(opts.references)) {
@@ -1656,7 +1643,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       const existingEntities = await internalFindByIds(user, aliasesIds, { type: instance.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== instance.id, existingEntities);
       if (differentEntities.length > 0) {
-        throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+        throw FunctionalError('This update will produce a duplicate', { id: instance.id, type });
       }
     }
   }
@@ -1708,13 +1695,13 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
         );
         const haveExtraKeys = noneStandardKeys.length > 0;
         if (haveExtraKeys) {
-          throw UnsupportedError(`This update can produce a merge, only one update action supported`);
+          throw UnsupportedError('This update can produce a merge, only one update action supported');
         }
         // Everything ok, let merge
         const target = existingEntities.shift();
         const sources = [instanceMergeWithInputs, ...existingEntities];
         hashMergeValidation([target, ...sources]);
-        // eslint-disable-next-line prettier/prettier
+
         const merged = await mergeEntities(
           user,
           target.internal_id,
@@ -1726,7 +1713,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
         return { element: merged };
       }
       // noinspection ExceptionCaughtLocallyJS
-      throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+      throw FunctionalError('This update will produce a duplicate', { id: instance.id, type });
     }
     // noinspection UnnecessaryLocalVariableJS
     const data = updateAttributeRaw(instance, attributes, opts);
@@ -2514,7 +2501,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
   if (fromId === toId) {
     /* istanbul ignore next */
     const errorData = { from: input.fromId, relationshipType };
-    throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(user, input, relationshipType);
@@ -2528,7 +2515,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
       // TODO
     }
     const errorData = { from: input.fromId, to: input.toId, relationshipType };
-    throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   // Check consistency
   checkRelationConsistency(relationshipType, from, to);
@@ -2862,7 +2849,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
           const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
           hashMergeValidation([target, ...sources]);
-          // eslint-disable-next-line prettier/prettier
+
           await mergeEntities(
             user,
             target.internal_id,
@@ -2877,9 +2864,8 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           // If a STIX ID has been passed in the creation
           if (resolvedInput.stix_id) {
             // Find the entity corresponding to this STIX ID
-            // eslint-disable-next-line prettier/prettier
-            const stixIdFinder = (e) =>
-              e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
+
+            const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
             const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
             // If the entity exists by the stix id and not the same as the previously founded.
             if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
@@ -3013,7 +2999,7 @@ const deleteElements = async (user, elements, opts = {}) => {
 export const deleteElementById = async (user, elementId, type, opts = {}) => {
   if (R.isNil(type)) {
     /* istanbul ignore next */
-    throw FunctionalError(`You need to specify a type when deleting an entity`);
+    throw FunctionalError('You need to specify a type when deleting an entity');
   }
   // Check consistency
   const element = await loadByIdWithMetaRels(user, elementId, { type });
@@ -3082,7 +3068,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
 export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   /* istanbul ignore if */
   if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
-    throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
+    throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
   }
   const fromThing = await internalLoadById(user, fromId, opts);
   const toThing = await internalLoadById(user, toId, opts);

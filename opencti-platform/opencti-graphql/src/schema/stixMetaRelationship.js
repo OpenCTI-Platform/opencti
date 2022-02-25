@@ -75,10 +75,8 @@ schemaTypes.register(ABSTRACT_STIX_META_RELATIONSHIP, STIX_META_RELATIONSHIPS);
 export const isSingleStixMetaRelationship = (type) => R.includes(type, [RELATION_CREATED_BY]);
 export const isSingleStixMetaRelationshipInput = (input) => R.includes(input, [INPUT_CREATED_BY]);
 
-export const isStixMetaRelationship = (type) =>
-  R.includes(type, STIX_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
-export const isStixInternalMetaRelationship = (type) =>
-  R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
+export const isStixMetaRelationship = (type) => R.includes(type, STIX_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
+export const isStixInternalMetaRelationship = (type) => R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 
 export const stixMetaRelationshipsAttributes = [
   'internal_id',
@@ -99,12 +97,10 @@ export const stixMetaRelationshipsAttributes = [
   'relationship_type',
 ];
 R.map(
-  (stixMetaRelationshipType) =>
-    schemaTypes.registerAttributes(stixMetaRelationshipType, stixMetaRelationshipsAttributes),
+  (stixMetaRelationshipType) => schemaTypes.registerAttributes(stixMetaRelationshipType, stixMetaRelationshipsAttributes),
   STIX_META_RELATIONSHIPS
 );
 R.map(
-  (stixInternalMetaRelationshipType) =>
-    schemaTypes.registerAttributes(stixInternalMetaRelationshipType, stixMetaRelationshipsAttributes),
+  (stixInternalMetaRelationshipType) => schemaTypes.registerAttributes(stixInternalMetaRelationshipType, stixMetaRelationshipsAttributes),
   STIX_INTERNAL_META_RELATIONSHIPS
 );

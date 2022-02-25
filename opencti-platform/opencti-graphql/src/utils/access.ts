@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import type { Request } from 'express';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { baseUrl, basePath } from '../config/conf';
-import type { AuthUser, BaseElement } from './definitions';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
@@ -26,7 +25,10 @@ export const getBaseUrl = (req: Request): string => {
   return basePath;
 };
 
-export const filterElementsAccordingToUser = (user: AuthUser, elements: Array<BaseElement>): Array<BaseElement> => {
+export const filterElementsAccordingToUser = (
+  user: AuthUser,
+  elements: Array<StixCoreObject>
+): Array<StixCoreObject> => {
   const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {

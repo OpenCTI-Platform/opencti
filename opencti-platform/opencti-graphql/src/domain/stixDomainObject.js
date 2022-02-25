@@ -50,8 +50,7 @@ export const findAll = async (user, args) => {
   return listEntities(user, types, args);
 };
 
-export const findById = async (user, stixDomainObjectId) =>
-  loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+export const findById = async (user, stixDomainObjectId) => loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
 
 // region time series
 export const reportsTimeSeries = (user, stixDomainObjectId, args) => {
@@ -179,9 +178,7 @@ export const stixDomainObjectAddRelations = async (user, stixDomainObjectId, inp
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((entity) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, entity, user)
-  );
+  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, entity, user));
 };
 
 export const stixDomainObjectDeleteRelation = async (user, stixDomainObjectId, toId, relationshipType) => {
@@ -214,15 +211,15 @@ export const stixDomainObjectEditField = async (user, stixObjectId, input, opts 
 // region context
 export const stixDomainObjectCleanContext = async (user, stixDomainObjectId) => {
   await delEditContext(user, stixDomainObjectId);
-  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user)
-  );
+  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user);
+  });
 };
 
 export const stixDomainObjectEditContext = async (user, stixDomainObjectId, input) => {
   await setEditContext(user, stixDomainObjectId, input);
-  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user)
-  );
+  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user);
+  });
 };
 // endregion

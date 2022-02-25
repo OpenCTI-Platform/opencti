@@ -3,14 +3,14 @@ import { createInferredRelation, deleteInferredRuleElement, internalLoadById } f
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocalizationOfTargetsDefinition';
-import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rules';
+import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { computeAverage } from '../../database/utils';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
   const applyUpsert = async (data) => {
     const events = [];
-    const { xx_opencti_id: createdId, object_marking_refs: markings } = data;
+    const { x_opencti_id: createdId, object_marking_refs: markings } = data;
     const { x_opencti_source_ref: sourceRef, x_opencti_target_ref: targetRef } = data;
     const { confidence: createdConfidence, start_time: startTime, stop_time: stopTime } = data;
     const creationRange = buildPeriodFromDates(startTime, stopTime);
@@ -49,4 +49,4 @@ const ruleLocalizationOfTargetsBuilder = () => {
 };
 const RuleLocalizationOfTargets = ruleLocalizationOfTargetsBuilder();
 
-RULES_DECLARATION.push(RuleLocalizationOfTargets);
+export default RuleLocalizationOfTargets;

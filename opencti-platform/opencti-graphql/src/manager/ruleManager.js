@@ -2,7 +2,7 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { buildDeleteEvent, buildEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
-import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
+import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   connectionLoaders,
   createEntity,
@@ -19,19 +19,79 @@ import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
-import { getActivatedRules, getRule } from '../domain/rule';
-import { RULE_MANAGER_USER, RULES_DECLARATION } from '../rules/rules';
+import { RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { extractFieldsOfPatch, rebuildInstanceBeforePatch } from '../utils/patch';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { listEntities } from '../database/repository';
+import { SYSTEM_USER } from '../utils/access';
+// Import all rules
+import AttributedToAttributedRule from '../rules/attributed-to-attributed/AttributedToAttributedRule';
+import AttributionTargetsRule from '../rules/attribution-targets/AttributionTargetsRule';
+import AttributionUseRule from '../rules/attribution-use/AttributionUseRule';
+import RuleLocalizationOfTargets from '../rules/localization-of-targets/LocalizationOfTargetsRule';
+import LocatedAtLocatedRule from '../rules/located-at-located/LocatedAtLocatedRule';
+import LocationTargetsRule from '../rules/location-targets/LocationTargetsRule';
+import RuleObservableRelatedObservable from '../rules/observable-related/ObservableRelatedRule';
+import PartOfPartRule from '../rules/part-of-part/PartOfPartRule';
+import PartOfTargetsRule from '../rules/part-of-targets/PartOfTargetsRule';
+import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRule';
+import RuleSightingIncident from '../rules/sighting-incident/SightingIncidentRule';
+import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule';
 
 let activatedRules = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 500;
 const SCHEDULE_TIME = 10000;
+
+// region rules registration
+export const RULES_DECLARATION = [
+  AttributedToAttributedRule,
+  AttributionTargetsRule,
+  AttributionUseRule,
+  RuleLocalizationOfTargets,
+  LocatedAtLocatedRule,
+  LocationTargetsRule,
+  RuleObservableRelatedObservable,
+  RuleObserveSighting,
+  PartOfPartRule,
+  PartOfTargetsRule,
+  RuleSightingIncident,
+];
+if (DEV_MODE) {
+  RULES_DECLARATION.push(RelatedToRelatedRule);
+}
+const ruleBehaviors = RULES_DECLARATION.map((d) => d.behaviors ?? []).flat();
+for (let index = 0; index < ruleBehaviors.length; index += 1) {
+  const ruleBehavior = ruleBehaviors[index];
+  RULES_ATTRIBUTES_BEHAVIOR.register(ruleBehavior);
+}
+// endregion
+
+// region loaders
+export const getRules = async () => {
+  const args = { connectionFormat: false };
+  const rules = await listEntities(SYSTEM_USER, [ENTITY_TYPE_RULE], args);
+  return RULES_DECLARATION.map((d) => {
+    const esRule = R.find((e) => e.internal_id === d.id)(rules);
+    const isActivated = isNotEmptyField(esRule) && esRule.active;
+    return { ...d, activated: isActivated };
+  });
+};
+
+export const getActivatedRules = async () => {
+  const rules = await getRules();
+  return rules.filter((r) => r.activated);
+};
+
+export const getRule = async (id) => {
+  const rules = await getRules();
+  return R.find((e) => e.id === id)(rules);
+};
+// endregion
 
 export const getManagerInfo = async (user) => {
   const ruleStatus = await internalLoadById(user, RULE_ENGINE_ID);
@@ -54,7 +114,7 @@ export const setRuleActivation = async (user, ruleId, active) => {
     ];
     const tasks = await findAll(user, { filters: tasksFilters, connectionFormat: false });
     await Promise.all(tasks.map((t) => deleteTask(user, t.id)));
-    await createRuleTask(user, { rule: ruleId, enable: active });
+    await createRuleTask(user, resolvedRule, { rule: ruleId, enable: active });
   }
   return getRule(ruleId);
 };
@@ -120,6 +180,7 @@ const isAttributesImpactDependencies = (rules, instance) => {
   const patchedAttributes = Object.entries(instance).map(([k]) => k);
   return patchedAttributes.some((f) => rulesAttributes.includes(f));
 };
+
 const isMatchRuleFilters = (rule, element, matchUpdateFields = false) => {
   // Handle types filtering
   const scopeFilters = rule.scopes ?? [];
@@ -174,7 +235,6 @@ export const rulesApplyDerivedEvents = async (eventId, derivedEvents, forRules =
 
 const applyCleanupOnDependencyIds = async (eventId, deletionIds) => {
   const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
-  // eslint-disable-next-line no-use-before-define,prettier/prettier
   const callback = (elements) => {
     // eslint-disable-next-line no-use-before-define
     return rulesCleanHandler(eventId, elements, RULES_DECLARATION, deletionIds);

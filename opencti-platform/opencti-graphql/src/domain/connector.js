@@ -115,15 +115,11 @@ export const syncDelete = async (user, syncId) => {
 };
 export const syncCleanContext = async (user, syncId) => {
   await delEditContext(user, syncId);
-  return loadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user)
-  );
+  return loadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user));
 };
 export const syncEditContext = async (user, syncId, input) => {
   await setEditContext(user, syncId, input);
-  return loadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user)
-  );
+  return loadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user));
 };
 // endregion
 

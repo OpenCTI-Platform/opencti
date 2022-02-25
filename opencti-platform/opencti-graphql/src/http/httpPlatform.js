@@ -262,7 +262,7 @@ const createApp = async (app) => {
 
   // Error handling
   app.use((err, req, res, next) => {
-    logApp.error(`[EXPRESS] Error http call`, { error: err, referer: req.headers.referer });
+    logApp.error('[EXPRESS] Error http call', { error: err, referer: req.headers.referer });
     res.redirect('/');
     next();
   });

@@ -7,7 +7,7 @@ import { DatabaseError } from '../config/errors';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Rewriting resolves-to relationships`);
+  logApp.info('[MIGRATION] Rewriting resolves-to relationships');
   const bulkOperations = [];
   // Old type
   // Apply operations.
@@ -34,7 +34,7 @@ export const up = async (next) => {
         connection.role = params.targetRoleTo;
       }
   }`;
-  logApp.info(`[MIGRATION] Migrating all relationships connections`);
+  logApp.info('[MIGRATION] Migrating all relationships connections');
   const startMigrateRelationships = new Date().getTime();
   await searchClient()
     .updateByQuery({

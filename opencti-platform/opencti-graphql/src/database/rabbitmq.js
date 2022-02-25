@@ -65,19 +65,18 @@ const amqpExecute = (execute) => {
 
 export const send = (exchangeName, routingKey, message) => {
   return amqpExecute(
-    (channel) =>
-      new Promise((resolve, reject) => {
-        channel.publish(
-          exchangeName,
-          routingKey,
-          Buffer.from(message),
-          { deliveryMode: 2 }, // Make message persistent
-          (err, ok) => {
-            if (err) reject(err);
-            resolve(ok);
-          }
-        );
-      })
+    (channel) => new Promise((resolve, reject) => {
+      channel.publish(
+        exchangeName,
+        routingKey,
+        Buffer.from(message),
+        { deliveryMode: 2 }, // Make message persistent
+        (err, ok) => {
+          if (err) reject(err);
+          resolve(ok);
+        }
+      );
+    })
   );
 };
 
@@ -133,33 +132,28 @@ export const registerConnectorQueues = async (id, name, type, scope) => {
   await amqpExecute((channel) => channel.assertExchange(WORKER_EXCHANGE, 'direct', { durable: true }));
   // 02. Ensure listen queue exists
   const listenQueue = `listen_${id}`;
-  await amqpExecute((channel) =>
-    channel.assertQueue(listenQueue, {
-      exclusive: false,
-      durable: true,
-      autoDelete: false,
-      arguments: {
-        name,
-        config: { id, type, scope },
-      },
-    })
-  );
+  await amqpExecute((channel) => channel.assertQueue(listenQueue, {
+    exclusive: false,
+    durable: true,
+    autoDelete: false,
+    arguments: {
+      name,
+      config: { id, type, scope },
+    },
+  }));
   // 03. bind queue for the each connector scope
-  // eslint-disable-next-line prettier/prettier
   await amqpExecute((c) => c.bindQueue(listenQueue, CONNECTOR_EXCHANGE, listenRouting(id)));
   // 04. Create stix push queue
   const pushQueue = `push_${id}`;
-  await amqpExecute((channel) =>
-    channel.assertQueue(pushQueue, {
-      exclusive: false,
-      durable: true,
-      autoDelete: false,
-      arguments: {
-        name,
-        config: { id, type, scope },
-      },
-    })
-  );
+  await amqpExecute((channel) => channel.assertQueue(pushQueue, {
+    exclusive: false,
+    durable: true,
+    autoDelete: false,
+    arguments: {
+      name,
+      config: { id, type, scope },
+    },
+  }));
   // 05. Bind push queue to direct default exchange
   await amqpExecute((channel) => channel.bindQueue(pushQueue, WORKER_EXCHANGE, pushRouting(id)));
   return connectorConfig(id);
@@ -173,11 +167,9 @@ export const unregisterConnector = async (id) => {
 
 export const rabbitMQIsAlive = async () => {
   // 01. Ensure exchange exists
-  await amqpExecute((channel) =>
-    channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', {
-      durable: true,
-    })
-  ).catch(
+  await amqpExecute((channel) => channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', {
+    durable: true,
+  })).catch(
     /* istanbul ignore next */ (e) => {
       throw DatabaseError('RabbitMQ seems down', { error: e.message });
     }

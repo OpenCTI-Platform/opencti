@@ -4,10 +4,9 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 
 const id = 'sighting_incident';
 const name = 'Sighting incidents';
-const description =
-  'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
-  '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
-  '`targets` **identity B**.';
+const description = 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in '
+  + '**identity B**, then create **Incident C** `related-to` **indicator A** and '
+  + '`targets` **identity B**.';
 
 // For rescan
 const scan = {
@@ -19,7 +18,7 @@ const scan = {
 // For live
 const scopes = [
   {
-    // eslint-disable-next-line prettier/prettier
+
     filters: {
       types: [STIX_SIGHTING_RELATIONSHIP],
       fromTypes: [ENTITY_TYPE_INDICATOR],

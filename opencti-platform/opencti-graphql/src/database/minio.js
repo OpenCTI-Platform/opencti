@@ -53,7 +53,7 @@ export const downloadFile = (id) => {
   try {
     return minioClient.getObject(bucketName, id);
   } catch (err) {
-    logApp.info(`[OPENCTI] Cannot retrieve file on MinIO`, { error: err });
+    logApp.info('[OPENCTI] Cannot retrieve file on MinIO', { error: err });
     return null;
   }
 };

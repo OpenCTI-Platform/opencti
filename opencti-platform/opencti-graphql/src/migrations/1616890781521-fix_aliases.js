@@ -18,7 +18,7 @@ const generateAliases = (aliases, additionalFields = {}) => {
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Rewriting i_aliases_ids for Locations and Identities`);
+  logApp.info('[MIGRATION] Rewriting i_aliases_ids for Locations and Identities');
   const bulkOperations = [];
   const callback = (entities) => {
     const op = entities

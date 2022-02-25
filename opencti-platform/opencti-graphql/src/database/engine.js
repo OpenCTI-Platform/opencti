@@ -243,7 +243,6 @@ export const elIndexExists = async (indexName) => {
   return existIndex.body === true;
 };
 const elCreateIndexTemplate = async () => {
-  // eslint-disable-next-line prettier/prettier
   await el.cluster
     .putComponentTemplate({
       name: `${ES_INDEX_PREFIX}-core-settings`,
@@ -271,7 +270,6 @@ const elCreateIndexTemplate = async () => {
     .catch((e) => {
       throw DatabaseError('Error creating opencti component', { error: e });
     });
-  // eslint-disable-next-line prettier/prettier
   await el.indices
     .putIndexTemplate({
       name: `${ES_INDEX_PREFIX}-index-template`,
@@ -449,7 +447,7 @@ export const elDeleteIndexes = async (indexesToDelete) => {
       return el.indices.delete({ index }).catch((err) => {
         /* istanbul ignore next */
         if (err.meta.body && err.meta.body.error.type !== 'index_not_found_exception') {
-          logApp.error(`[SEARCH ENGINE] Delete indices fail`, { error: err });
+          logApp.error('[SEARCH ENGINE] Delete indices fail', { error: err });
         }
       });
     })
@@ -608,7 +606,7 @@ export const elCount = (user, indexName, options = {}) => {
             path: 'connections',
             query: {
               bool: {
-                must: [{ match_phrase: { [`connections.internal_id.keyword`]: fromId } }],
+                must: [{ match_phrase: { 'connections.internal_id.keyword': fromId } }],
               },
             },
           },
@@ -650,7 +648,7 @@ export const elCount = (user, indexName, options = {}) => {
       },
     },
   };
-  logApp.debug(`[SEARCH ENGINE] countEntities`, { query });
+  logApp.debug('[SEARCH ENGINE] countEntities', { query });
   return el
     .count(query)
     .then((data) => {
@@ -725,7 +723,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
       },
     },
   };
-  logApp.debug(`[SEARCH ENGINE] aggregationCount`, { query });
+  logApp.debug('[SEARCH ENGINE] aggregationCount', { query });
   return el
     .search(query)
     .then((data) => {
@@ -755,7 +753,7 @@ const elBuildRelation = (type, connection) => {
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
   if (!fromConnection || !toConnection) {
-    throw DatabaseError(`[ELASTIC] Something fail in reconstruction of the relation`, concept.internal_id);
+    throw DatabaseError('[ELASTIC] Something fail in reconstruction of the relation', concept.internal_id);
   }
   const from = elBuildRelation('from', fromConnection);
   from.source_ref = `${convertEntityTypeToStixType(from.fromType)}--temporary`;
@@ -964,7 +962,7 @@ export const elFindByIds = async (user, ids, opts = {}) => {
           },
         },
       };
-      logApp.debug(`[SEARCH ENGINE] elInternalLoadById`, { query });
+      logApp.debug('[SEARCH ENGINE] elInternalLoadById', { query });
       const data = await el.search(query).catch((err) => {
         throw DatabaseError('Error loading ids', { error: err, query });
       });
@@ -1001,7 +999,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
-  const roleFilter = { query_string: { query: !isTo ? `*_to` : `*_from`, fields: [`connections.role`] } };
+  const roleFilter = { query_string: { query: !isTo ? '*_to' : '*_from', fields: ['connections.role'] } };
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
@@ -1017,7 +1015,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
         path: 'connections',
         query: {
           bool: {
-            must: [{ match_phrase: { [`connections.internal_id`]: fromId } }],
+            must: [{ match_phrase: { 'connections.internal_id': fromId } }],
           },
         },
       },
@@ -1085,7 +1083,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
                 genres: {
                   terms: {
                     size: MAX_AGGREGATION_SIZE,
-                    field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
+                    field: field === 'internal_id' ? 'connections.internal_id.keyword' : 'connections.types.keyword',
                   },
                   aggs: {
                     parent: {
@@ -1108,7 +1106,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       },
     },
   };
-  logApp.debug(`[SEARCH ENGINE] aggregationRelationsCount`, { query });
+  logApp.debug('[SEARCH ENGINE] aggregationRelationsCount', { query });
   return el
     .search(query)
     .then(async (data) => {
@@ -1264,7 +1262,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
       },
     },
   };
-  logApp.debug(`[SEARCH ENGINE] histogramCount`, { query });
+  logApp.debug('[SEARCH ENGINE] histogramCount', { query });
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
@@ -1281,7 +1279,7 @@ const BASE_SEARCH_CONNECTIONS = [
   // Pounds for connections search
   `connections.${ATTRIBUTE_NAME}^5`,
   // Add all other attributes
-  `connections.*`,
+  'connections.*',
 ];
 const BASE_SEARCH_ATTRIBUTES = [
   // Pounds for attributes search
@@ -1579,7 +1577,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     track_total_hits: true,
     body,
   };
-  logApp.debug(`[SEARCH ENGINE] paginate`, { query });
+  logApp.debug('[SEARCH ENGINE] paginate', { query });
   return el
     .search(query)
     .then((data) => {
@@ -1601,7 +1599,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
         )(err.meta.body.error.root_cause);
         // If uncontrolled error, log and propagate
         if (numberOfCauses > invalidMappingCauses.length) {
-          logApp.error(`[SEARCH ENGINE] Paginate fail`, { error: err, query });
+          logApp.error('[SEARCH ENGINE] Paginate fail', { error: err, query });
           throw err;
         } else {
           return connectionFormat ? buildPagination(0, null, [], 0) : [];
@@ -1839,7 +1837,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
       if (isFromCleanup && fromIndex) {
         let source = `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`;
         if (isStixMetaRelationship(relation.entity_type)) {
-          source += `ctx._source['updated_at'] = params.updated_at;`;
+          source += 'ctx._source[\'updated_at\'] = params.updated_at;';
         }
         const script = {
           source,
@@ -2040,7 +2038,7 @@ export const elIndexElements = async (elements) => {
       if (isStixMetaRelationship(t.relation)) {
         const fromUpdate = R.filter((e) => e.side === 'from', t.elements).length > 0;
         if (fromUpdate) {
-          script += `; ctx._source['updated_at'] = params.updated_at`;
+          script += '; ctx._source[\'updated_at\'] = params.updated_at';
         }
       }
       return script;
@@ -2092,9 +2090,8 @@ export const elUpdateAttributeValue = async (key, previousValue, value) => {
 };
 export const elUpdateRelationConnections = async (elements) => {
   if (elements.length > 0) {
-    const source =
-      'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
-      'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+    const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
+      + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
     const bodyUpdate = elements.flatMap((doc) => [
       { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
       { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
@@ -2140,9 +2137,8 @@ export const elUpdateEntityConnections = async (elements) => {
 };
 
 export const elUpdateConnectionsOfElement = async (documentId, documentBody) => {
-  const source =
-    'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
-    'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+  const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
+    + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
   return el
     .updateByQuery({
       index: READ_RELATIONSHIPS_INDICES,
@@ -2154,7 +2150,7 @@ export const elUpdateConnectionsOfElement = async (documentId, documentBody) => 
             path: 'connections',
             query: {
               bool: {
-                must: [{ match_phrase: { [`connections.internal_id.keyword`]: documentId } }],
+                must: [{ match_phrase: { 'connections.internal_id.keyword': documentId } }],
               },
             },
           },

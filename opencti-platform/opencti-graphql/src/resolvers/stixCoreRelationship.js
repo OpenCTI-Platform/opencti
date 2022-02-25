@@ -76,17 +76,14 @@ const stixCoreRelationshipResolvers = {
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, { user }) => ({
       delete: () => stixCoreRelationshipDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) =>
-        stixCoreRelationshipEditField(user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) => stixCoreRelationshipEditField(user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixCoreRelationshipEditContext(user, id, input),
       contextClean: () => stixCoreRelationshipCleanContext(user, id),
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        stixCoreRelationshipDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
     stixCoreRelationshipAdd: (_, { input }, { user }) => addStixCoreRelationship(user, input),
-    stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, { user }) =>
-      stixCoreRelationshipDeleteByFromAndTo(user, fromId, toId, relationshipType),
+    stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, { user }) => stixCoreRelationshipDeleteByFromAndTo(user, fromId, toId, relationshipType),
   },
   Subscription: {
     stixCoreRelationship: {

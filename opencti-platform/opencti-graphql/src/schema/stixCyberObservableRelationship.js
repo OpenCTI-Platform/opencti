@@ -257,10 +257,8 @@ export const singleStixCyberObservableRelationships = [
   RELATION_PARENT,
   RELATION_BODY_MULTIPART,
 ];
-export const isSingleStixCyberObservableRelationship = (type) =>
-  R.includes(type, singleStixCyberObservableRelationships);
-export const isSingleStixCyberObservableRelationshipInput = (input) =>
-  R.includes(input, SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS);
+export const isSingleStixCyberObservableRelationship = (type) => R.includes(type, singleStixCyberObservableRelationships);
+export const isSingleStixCyberObservableRelationshipInput = (input) => R.includes(input, SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS);
 
 export const stixCyberObservableRelationshipsAttributes = [
   'internal_id',
@@ -289,7 +287,6 @@ export const stixCyberObservableRelationshipsAttributes = [
   'i_stop_time_year',
 ];
 R.map(
-  (stixCyberObservableRelationshipType) =>
-    schemaTypes.registerAttributes(stixCyberObservableRelationshipType, stixCyberObservableRelationshipsAttributes),
+  (stixCyberObservableRelationshipType) => schemaTypes.registerAttributes(stixCyberObservableRelationshipType, stixCyberObservableRelationshipsAttributes),
   STIX_CYBER_OBSERVABLE_RELATIONSHIPS
 );

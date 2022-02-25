@@ -245,16 +245,12 @@ export const roleDelete = async (user, roleId) => {
 
 export const roleCleanContext = async (user, roleId) => {
   await delEditContext(user, roleId);
-  return loadById(user, roleId, ENTITY_TYPE_ROLE).then((role) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user)
-  );
+  return loadById(user, roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
 };
 
 export const roleEditContext = async (user, roleId, input) => {
   await setEditContext(user, roleId, input);
-  return loadById(user, roleId, ENTITY_TYPE_ROLE).then((role) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user)
-  );
+  return loadById(user, roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
 };
 
 const assignRoleToUser = async (user, userId, roleName) => {
@@ -371,10 +367,9 @@ export const deleteBookmark = async (user, id) => {
 
 export const bookmarks = async (user, types) => {
   const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
-  const bookmarkList =
-    types && types.length > 0
-      ? R.filter((n) => R.includes(n.type, types), currentUser.bookmarks || [])
-      : currentUser.bookmarks || [];
+  const bookmarkList = types && types.length > 0
+    ? R.filter((n) => R.includes(n.type, types), currentUser.bookmarks || [])
+    : currentUser.bookmarks || [];
   const filteredBookmarks = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const bookmark of bookmarkList) {
@@ -671,15 +666,11 @@ export const initAdmin = async (email, password, tokenValue) => {
 // region context
 export const userCleanContext = async (user, userId) => {
   await delEditContext(user, userId);
-  return loadById(user, userId, ENTITY_TYPE_USER).then((userToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user)
-  );
+  return loadById(user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
 };
 
 export const userEditContext = async (user, userId, input) => {
   await setEditContext(user, userId, input);
-  return loadById(user, userId, ENTITY_TYPE_USER).then((userToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user)
-  );
+  return loadById(user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
 };
 // endregion

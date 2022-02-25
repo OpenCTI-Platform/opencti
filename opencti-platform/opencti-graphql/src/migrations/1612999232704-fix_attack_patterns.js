@@ -8,7 +8,7 @@ import { SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Cleaning aliases and STIX IDs of Attack Patterns`);
+  logApp.info('[MIGRATION] Cleaning aliases and STIX IDs of Attack Patterns');
   const bulkOperations = [];
   const callback = (attacks) => {
     const op = attacks

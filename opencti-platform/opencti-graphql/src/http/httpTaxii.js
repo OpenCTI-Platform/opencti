@@ -54,7 +54,7 @@ const initTaxiiApi = (app) => {
       const discovery = {
         title: 'OpenCTI TAXII Server',
         description: 'This TAXII Server exposes OpenCTI data through taxii protocol',
-        default: `/root`,
+        default: '/root',
         api_roots: [`${getBaseUrl(req)}/taxii2/root`],
       };
       res.json(discovery);

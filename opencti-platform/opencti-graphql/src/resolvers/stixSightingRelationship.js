@@ -45,11 +45,10 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationship: (_, { id }, { user }) => findById(user, id),
     stixSightingRelationships: (_, args, { user }) => findAll(user, args),
     stixSightingRelationshipsTimeSeries: (_, args, { user }) => timeSeriesRelations(user, args),
-    stixSightingRelationshipsDistribution: (_, args, { user }) =>
-      distributionRelations(
-        user,
-        R.pipe(R.assoc('relationship_type', 'stix-sighting-relationship'), R.assoc('isTo', true))(args)
-      ),
+    stixSightingRelationshipsDistribution: (_, args, { user }) => distributionRelations(
+      user,
+      R.pipe(R.assoc('relationship_type', 'stix-sighting-relationship'), R.assoc('isTo', true))(args)
+    ),
     stixSightingRelationshipsNumber: (_, args, { user }) => stixSightingRelationshipsNumber(user, args),
   },
   StixSightingRelationshipsFilter: {
@@ -83,8 +82,7 @@ const stixSightingRelationshipResolvers = {
       contextPatch: ({ input }) => stixSightingRelationshipEditContext(user, id, input),
       contextClean: () => stixSightingRelationshipCleanContext(user, id),
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        stixSightingRelationshipDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixSightingRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
     stixSightingRelationshipAdd: (_, { input }, { user }) => addStixSightingRelationship(user, input),
   },

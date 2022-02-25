@@ -4,7 +4,7 @@ import { startModules, shutdownModules } from './modules';
 
 // eslint-disable-next-line import/prefer-default-export
 export const boot = async () => {
-  logApp.info(`[OPENCTI] Starting platform`);
+  logApp.info('[OPENCTI] Starting platform');
   // Init the platform default
   await platformInit();
   // Init the modules
@@ -26,7 +26,7 @@ const stopProcess = async () => {
   } catch (e) {
     logApp.error('[OPENCTI] OpenCTI stop error', { error: e });
   } finally {
-    logApp.info(`[OPENCTI] OpenCTI stopped`);
+    logApp.info('[OPENCTI] OpenCTI stopped');
     process.exit(exitCode);
   }
 };

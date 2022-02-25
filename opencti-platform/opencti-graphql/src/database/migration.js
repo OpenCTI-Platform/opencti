@@ -104,7 +104,7 @@ export const applyMigration = () => {
       if (migrationToApply.length > 0) {
         logApp.info(`[MIGRATION] ${migrationToApply.length} migrations will be executed`);
       } else {
-        logApp.info(`[MIGRATION] Platform already up to date, nothing to migrate`);
+        logApp.info('[MIGRATION] Platform already up to date, nothing to migrate');
       }
       for (let index = 0; index < migrationToApply.length; index += 1) {
         const migSet = migrationToApply[index];
