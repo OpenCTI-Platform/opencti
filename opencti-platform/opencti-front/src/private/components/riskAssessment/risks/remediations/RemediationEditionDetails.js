@@ -72,9 +72,8 @@ class RemediationEditionDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, risk, context, enableReferences,
+      t, classes, risk, context, enableReferences, remediation,
     } = this.props;
-    console.log('RemediationEditionDetails', risk);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>

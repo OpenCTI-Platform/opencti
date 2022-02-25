@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
@@ -142,42 +144,41 @@ class RemediationCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('remediationCreationValues', values);
-    const adaptedValues = R.evolve(
-      {
-        created: () => parse(values.created).format(),
-        modified: () => parse(values.modified).format(),
-      },
-      values,
-    );
-    const finalValues = R.pipe(
-      R.assoc('task_type', values.task_type),
-    )(adaptedValues);
-    console.log('RemdiationCreationFinal', finalValues);
-    CM(environmentDarkLight, {
-      mutation: remediationCreationMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
-      variables: {
-        input: finalValues,
-      },
-      setSubmitting,
-      onCompleted: (data) => {
-        setSubmitting(false);
-        resetForm();
-        console.log('remediationCreationComplete', data);
-        this.handleClose();
-        this.props.history.push('/dashboard/risk-assessment/risks');
-      },
-      onError: (err) => console.log('RemediationCreationDarkLightMutationError', err),
-    });
+    // const adaptedValues = R.evolve(
+    //   {
+    //     created: () => parse(values.created).format(),
+    //     modified: () => parse(values.modified).format(),
+    //   },
+    //   values,
+    // );
+    // const finalValues = R.pipe(
+    //   R.assoc('task_type', values.task_type),
+    // )(adaptedValues);
+    // console.log('RemdiationCreationFinal', finalValues);
+    // CM(environmentDarkLight, {
+    //   mutation: remediationCreationMutation,
+    //   // const adaptedValues = evolve(
+    //   //   {
+    //   //     published: () => parse(values.published).format(),
+    //   //     createdBy: path(['value']),
+    //   //     objectMarking: pluck('value'),
+    //   //     objectLabel: pluck('value'),
+    //   //   },
+    //   //   values,
+    //   // );
+    //   variables: {
+    //     input: finalValues,
+    //   },
+    //   setSubmitting,
+    //   onCompleted: (data) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     console.log('remediationCreationComplete', data);
+    //     this.handleClose();
+    //     this.props.history.push('/dashboard/risk-assessment/risks');
+    //   },
+    //   onError: (err) => console.log('RemediationCreationDarkLightMutationError', err),
+    // });
     // commitMutation({
     //   mutation: remediationCreationMutation,
     //   variables: {
@@ -224,15 +225,14 @@ class RemediationCreation extends Component {
         <Formik
           initialValues={{
             name: '',
-            // source: [],
-            // modified: dayStartDate(),
-            // created: dayStartDate(),
-            task_type: 'action',
-            // lifecycle: '',
-            // response_type: '',
+            created: null,
+            modified: null,
             description: '',
+            source: '',
+            lifecycle: '',
+            response_type: '',
           }}
-          validationSchema={remediationValidation(t)}
+          // validationSchema={remediationValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
@@ -330,7 +330,10 @@ class RemediationCreation extends Component {
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <RemediationCreationDetails setFieldValue={setFieldValue} />
+                    <RemediationCreationDetails
+                      setFieldValue={setFieldValue}
+                      values={values}
+                    />
                   </Grid>
                 </Grid>
               </Form>

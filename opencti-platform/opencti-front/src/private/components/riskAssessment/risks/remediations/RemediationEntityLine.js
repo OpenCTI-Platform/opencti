@@ -56,6 +56,12 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
 });
 
 class RemediationEntityLineComponent extends Component {
@@ -139,12 +145,22 @@ class RemediationEntityLineComponent extends Component {
                 </Typography>
               </div>
               <div className={classes.bodyItem}>
-                <Button variant='outlined' size="small" color='primary'>
+              <Button
+                  variant='outlined'
+                  size="small"
+                  color='default'
+                  className={ classes.statusButton }
+                >
                   {node.response_type && t(node.response_type)}
                 </Button>
               </div>
               <div className={classes.bodyItem}>
-                <Button variant='outlined' size="small" color='secondary'>
+                <Button
+                  variant='outlined'
+                  size="small"
+                  color='default'
+                  className={ classes.statusButton }
+                >
                   {node.lifecycle && t(node.lifecycle)}
                 </Button>
               </div>

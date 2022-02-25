@@ -137,6 +137,7 @@ class RemediationEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+
     const adaptedValues = R.evolve(
       {
         modified: () => parse(values.modified).format(),
@@ -210,25 +211,27 @@ class RemediationEditionContainer extends Component {
       handleClose,
       remediationId,
       risk,
+      remediation,
     } = this.props;
+    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
       R.assoc('id', risk?.id || ''),
       R.assoc('description', risk?.description || ''),
       R.assoc('name', risk?.name || ''),
-      // R.assoc('source', risk?.source || []),
+      R.assoc('source', remediationOriginData?.name || []),
       R.assoc('modified', dateFormat(risk?.modified)),
       R.assoc('created', dateFormat(risk?.created)),
-      // R.assoc('lifecycle', risk?.lifecycle || []),
-      R.assoc('responsible_type', risk?.responsible_type || ''),
+      R.assoc('lifecycle', remediation?.lifecycle || []),
+      R.assoc('responsible_type', remediation?.responsible_type || ''),
       R.pick([
         'id',
         'name',
         'description',
-        // 'source',
+        'source',
         'modified',
         'created',
-        // 'lifecycle',
-        // 'response_type',
+        'lifecycle',
+        'response_type',
       ]),
     )(risk);
     console.log('RiskEditionPropsData', risk);
@@ -237,7 +240,7 @@ class RemediationEditionContainer extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={initialValues}
-          validationSchema={riskValidation(t)}
+          // validationSchema={riskValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
@@ -313,7 +316,7 @@ class RemediationEditionContainer extends Component {
                     />
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <RemediationEditionDetails risk={risk} />
+                    <RemediationEditionDetails remediation={remediation} />
                   </Grid>
                 </Grid>
               </Form>
@@ -409,6 +412,7 @@ RemediationEditionContainer.propTypes = {
   enableReferences: PropTypes.bool,
   theme: PropTypes.object,
   t: PropTypes.func,
+  remediation: PropTypes.object,
 };
 
 const RemediationEditionFragment = createFragmentContainer(

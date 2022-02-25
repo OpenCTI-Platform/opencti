@@ -63,6 +63,12 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
 });
 
 class RemediationGeneralDetailsComponent extends Component {
@@ -147,7 +153,7 @@ class RemediationGeneralDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  style={{ cursor: 'default', marginBottom: '5px' }}
+                  className={ classes.statusButton }
                 >
                   {remediation.response_type && t(remediation.response_type)}
                 </Button>
@@ -167,7 +173,7 @@ class RemediationGeneralDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  style={{ cursor: 'default', marginBottom: '5px' }}
+                  className={ classes.statusButton }
                 >
                   {remediation.lifecycle && t(remediation.lifecycle)}
                 </Button>

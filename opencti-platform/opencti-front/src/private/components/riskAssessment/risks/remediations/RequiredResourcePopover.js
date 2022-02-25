@@ -2,7 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
-import { compose } from 'ramda';
+import {
+  compose,
+  dissoc,
+  assoc,
+  pipe,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -140,6 +145,20 @@ class RequiredResourcePopover extends Component {
 
   handleCloseDelete() {
     this.setState({ displayDelete: false });
+  }
+
+  onSubmit(values, { setSubmitting, resetForm }) {
+    this.setState({
+      subjects: [{
+        subject_type: values.resource_type,
+        subject: values.resource,
+      }],
+    });
+    const finalValues = pipe(
+      dissoc('resource_type'),
+      dissoc('resource'),
+      assoc('subjects', this.state.subjects),
+    )(values);
   }
 
   submitDelete() {
@@ -295,7 +314,7 @@ class RequiredResourcePopover extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
           // validationSchema={RequiredAssetValidation(t)}
-          // onSubmit={this.onSubmit.bind(this)}
+          onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -351,7 +370,17 @@ class RequiredResourcePopover extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -402,7 +431,17 @@ class RequiredResourcePopover extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                   </Grid>

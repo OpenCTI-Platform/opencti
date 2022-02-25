@@ -61,6 +61,12 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
 });
 
 class RiskDetailsComponent extends Component {
@@ -272,12 +278,7 @@ class RiskDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  style={{
-                    cursor: 'default',
-                    marginBottom: '5px',
-                    border: '1px solid #075AD3',
-                    background: '#075AD333',
-                  }}
+                  className={ classes.statusButton }
                 >
                   {relatedRisksEdges.risk_status && t(relatedRisksEdges.risk_status)}
                 </Button>
@@ -325,7 +326,7 @@ class RiskDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  style={{ cursor: 'default', marginBottom: '5px' }}
+                  className={ classes.statusButton }
                 >
                   {relatedRisksEdges.false_positive && t(relatedRisksEdges.false_positive)}
                 </Button>
@@ -352,7 +353,7 @@ class RiskDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  style={{ cursor: 'default', marginBottom: '5px' }}
+                  className={ classes.statusButton }
                 >
                   {relatedRisksEdges.risk_adjusted && t(relatedRisksEdges.risk_adjusted)}
                 </Button>
@@ -423,7 +424,7 @@ class RiskDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  style={{ cursor: 'default', marginBottom: '5px' }}
+                  className={ classes.statusButton }
                 >
                   {relatedRisksEdges.risk_adjusted && t(relatedRisksEdges.risk_adjusted)}
                 </Button>
@@ -450,7 +451,7 @@ class RiskDetailsComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  style={{ cursor: 'default', marginBottom: '5px' }}
+                  className={ classes.statusButton }
                 >
                   {relatedRisksEdges.vendor_dependency && t(relatedRisksEdges.vendor_dependency)}
                 </Button>

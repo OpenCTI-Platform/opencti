@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { compose } from 'ramda';
+import {
+  compose,
+  dissoc,
+  assoc,
+  pipe,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -10,6 +15,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogActions from '@material-ui/core/DialogActions';
+import MenuItem from '@material-ui/core/MenuItem';
 import AddIcon from '@material-ui/icons/Add';
 import Typography from '@material-ui/core/Typography';
 import { Information } from 'mdi-material-ui';
@@ -125,10 +131,10 @@ const RequiredResourceCreationMutation = graphql`
 `;
 
 const RequiredResourceValidation = (t) => Yup.object().shape({
-  source_name: Yup.string().required(t('This field is required')),
-  external_id: Yup.string(),
-  url: Yup.string().url(t('The value must be an URL')),
-  description: Yup.string(),
+  // source_name: Yup.string().required(t('This field is required')),
+  // external_id: Yup.string(),
+  // url: Yup.string().url(t('The value must be an URL')),
+  // description: Yup.string(),
 });
 
 class RequiredResourceCreation extends Component {
@@ -137,6 +143,10 @@ class RequiredResourceCreation extends Component {
     this.state = {
       open: false,
       close: false,
+      subjects: [{
+        subject_type: '',
+        subject: '',
+      }],
     };
   }
 
@@ -160,28 +170,40 @@ class RequiredResourceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    CM(environmentDarkLight, {
-      mutation: RequiredResourceCreationMutation,
-      variables: {
-        input: values,
-      },
-      // updater: (store) => insertNode(
-      //   store,
-      //   'Pagination_externalReferences',
-      //   this.props.paginationOptions,
-      //   'externalReferenceAdd',
-      // ),
-      setSubmitting,
-      onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        if (this.props.onCreate) {
-          this.props.onCreate(response.externalReferenceAdd, true);
-        }
-      },
-      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+    console.log('RequiredResourceCreation', values);
+    this.setState({
+      subjects: [{
+        subject_type: values.resource_type,
+        subject: values.resource,
+      }],
     });
+    const finalValues = pipe(
+      dissoc('resource_type'),
+      dissoc('resource'),
+      assoc('subjects', this.state.subjects),
+    )(values);
+    // CM(environmentDarkLight, {
+    //   mutation: RequiredResourceCreationMutation,
+    //   variables: {
+    //     input: values,
+    //   },
+    //   // updater: (store) => insertNode(
+    //   //   store,
+    //   //   'Pagination_externalReferences',
+    //   //   this.props.paginationOptions,
+    //   //   'externalReferenceAdd',
+    //   // ),
+    //   setSubmitting,
+    //   onCompleted: (response) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //     if (this.props.onCreate) {
+    //       this.props.onCreate(response.externalReferenceAdd, true);
+    //     }
+    //   },
+    //   onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+    // });
     // commitMutation({
     //   mutation: RequiredResourceCreationMutation,
     //   variables: {
@@ -246,12 +268,12 @@ class RequiredResourceCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                source_name: '',
-                external_id: '',
-                url: '',
+                name: '',
                 description: '',
+                resource_type: '',
+                resource: '',
               }}
-              validationSchema={RequiredResourceValidation(t)}
+              // validationSchema={RequiredResourceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -302,7 +324,7 @@ class RequiredResourceCreation extends Component {
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
                     >
-                      {t('Create')}
+                      {t('Submit')}
                     </Button>
                   </div>
                 </Form>
@@ -343,7 +365,7 @@ class RequiredResourceCreation extends Component {
               description: '',
               resource_type: [],
             }}
-            validationSchema={RequiredResourceValidation(t)}
+            // validationSchema={RequiredResourceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -399,7 +421,17 @@ class RequiredResourceCreation extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -450,7 +482,17 @@ class RequiredResourceCreation extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                   </Grid>

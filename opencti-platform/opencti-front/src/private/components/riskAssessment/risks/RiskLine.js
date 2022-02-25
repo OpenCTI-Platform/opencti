@@ -59,6 +59,12 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
 });
 
 class RiskLineComponent extends Component {
@@ -144,8 +150,8 @@ class RiskLineComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  color="success"
-                  style={{ cursor: 'default' }}
+                  color="default"
+                  className={ classes.statusButton }
                 >
                   {riskData.node.risk_status && t(riskData.node.risk_status)}
                 </Button>
@@ -157,8 +163,8 @@ class RiskLineComponent extends Component {
                 <Button
                   variant="outlined"
                   size="small"
-                  color="primary"
-                  style={{ cursor: 'default' }}
+                  color="default"
+                  className={ classes.statusButton }
                 >
                 {riskRemediation.response_type && t(riskRemediation.response_type)}
                 </Button>
@@ -170,8 +176,8 @@ class RiskLineComponent extends Component {
               <Button
                   variant="outlined"
                   size="small"
-                  color="error"
-                  style={{ cursor: 'default' }}
+                  color="default"
+                  className={ classes.statusButton }
                 >
                 {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
                 </Button>

@@ -281,7 +281,7 @@ class RiskTrackingLogEditionComponent extends Component {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={riskValidation(t)}
+        // validationSchema={riskValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >
         {({

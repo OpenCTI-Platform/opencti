@@ -46,7 +46,7 @@ import RiskTrackingPopover from './RiskTrackingPopover';
 import RiskLogCreation from './RiskLogCreation';
 import RiskTrackingLine from './RiskTrackingLine';
 
-const interval$ = interval(FIVE_SECONDS);
+// const interval$ = interval(FIVE_SECONDS);
 
 const styles = (theme) => ({
   paper: {
@@ -141,15 +141,15 @@ class RiskTrackingLinesContainer extends Component {
     };
   }
 
-  componentDidMount() {
-    this.subscription = interval$.subscribe(() => {
-      this.props.relay.refetchConnection(200);
-    });
-  }
+  // componentDidMount() {
+  //   this.subscription = interval$.subscribe(() => {
+  //     this.props.relay.refetchConnection(200);
+  //   });
+  // }
 
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
-  }
+  // componentWillUnmount() {
+  //   this.subscription.unsubscribe();
+  // }
 
   handleToggleExpand() {
     this.setState({ expanded: !this.state.expanded });

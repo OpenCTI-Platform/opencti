@@ -125,6 +125,12 @@ const styles = (theme) => ({
   span: {
     color: theme.palette.background.nav,
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -364,7 +370,10 @@ class RiskTrackingLineContainer extends Component {
                       <Typography align="left" variant="h3" color="textSecondary">
                         {t('Status Change')}
                       </Typography>
-                      <Button color="primary" variant="outlined">
+                      <Button
+                        variant="outlined"
+                        className={ classes.statusButton }
+                      >
                         {node.status_change && t(node.status_change)}
                       </Button>
                     </div>

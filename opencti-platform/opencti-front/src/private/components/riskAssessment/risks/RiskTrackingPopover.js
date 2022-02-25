@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  compose,
+  dissoc,
+  assoc,
+  pipe,
+} from 'ramda';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
@@ -130,6 +135,18 @@ class RiskTrackingPopover extends Component {
 
   handleCloseDelete() {
     this.setState({ displayDelete: false });
+  }
+
+  onSubmit(values, { setSubmitting, resetForm }) {
+    this.setState({
+      related_responses: [{
+        related_response: values.related_response,
+      }],
+    });
+    const finalValues = pipe(
+      dissoc('related_response'),
+      assoc('related_responses', this.state.related_responses),
+    )(values);
   }
 
   submitDelete() {
@@ -282,10 +299,11 @@ class RiskTrackingPopover extends Component {
           /> */}
           <Formik
             enableReinitialize={true}
-          initialValues={initialValues}
+            initialValues={initialValues}
           // validationSchema={riskValidation(t)}
-          // onSubmit={this.onSubmit.bind(this)}
+            onSubmit={this.onSubmit.bind(this)}
           >
+          {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
               <DialogTitle>{t('Risk Log')}</DialogTitle>
               <DialogContent classes={{ root: classes.dialogContent }}>
@@ -315,7 +333,17 @@ class RiskTrackingPopover extends Component {
                           fullWidth={true}
                           style={{ height: '38.09px', marginBottom: '3px' }}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                   </Grid>
                   <Grid item={true} xs={6}>
@@ -456,7 +484,7 @@ class RiskTrackingPopover extends Component {
                       </div>
                       <div className="clearfix" />
                       <Field
-                        component={SelectField}
+                        component={TextField}
                         variant='outlined'
                         name="related_response"
                         size='small'
@@ -520,7 +548,17 @@ class RiskTrackingPopover extends Component {
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                      />
+                      >
+                         <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                      </Field>
                     </div>
                   </Grid>
                 </Grid>
@@ -538,13 +576,14 @@ class RiskTrackingPopover extends Component {
                   variant="contained"
                   color="primary"
                   classes={{ root: classes.buttonPopover }}
-                // onClick={submitForm}
-                // disabled={isSubmitting}
+                  onClick={submitForm}
+                  disabled={isSubmitting}
                 >
                   {t('Update')}
                 </Button>
               </DialogActions>
             </Form>
+          )}
           </Formik>
         </Dialog>
         <Dialog
