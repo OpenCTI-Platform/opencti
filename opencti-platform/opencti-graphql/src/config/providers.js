@@ -240,9 +240,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         // region additional scopes
         const additionalScope = [];
         const rolesScope = mappedConfig.roles_management?.roles_scope;
-        if (rolesScope) additionalScope.push(rolesScope);
+        if (rolesScope) {
+          additionalScope.push(rolesScope);
+        }
         const groupsScope = mappedConfig.groups_management?.groups_scope;
-        if (groupsScope) additionalScope.push(groupsScope);
+        if (groupsScope) {
+          additionalScope.push(groupsScope);
+        }
         // endregion
         const openIdScope = `openid email profile ${R.uniq(additionalScope).join(' ')}`;
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
@@ -255,23 +259,26 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const rolesPath = mappedConfig.roles_management?.roles_path || ['roles'];
             const rolesMapping = mappedConfig.roles_management?.roles_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
+            logApp.debug(`[OPENID] Roles mapping on decoded ${token}`, { decoded: decodedUser });
             const availableRoles = R.flatten(rolesPath.map((path) => R.path(path.split('.'), decodedUser) || []));
             const rolesMapper = genConfigMapper(rolesMapping);
             return availableRoles.map((a) => rolesMapper[a]).filter((r) => isNotEmptyField(r));
           };
-          const rolesToAssociate = computeRolesMapping();
+          const rolesToAssociate = isRoleBaseAccess ? computeRolesMapping() : [];
           // endregion
           // region groups mapping
+          const isGroupMapping = isNotEmptyField(mappedConfig.groups_management);
           const computeGroupsMapping = () => {
             const token = mappedConfig.groups_management?.token_reference || 'access_token';
             const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
             const groupsMapping = mappedConfig.groups_management?.groups_mapping || [];
             const decodedUser = jwtDecode(tokenset[token]);
+            logApp.debug(`[OPENID] Groups mapping on decoded ${token}`, { decoded: decodedUser });
             const availableGroups = R.flatten(groupsPath.map((path) => R.path(path.split('.'), decodedUser) || []));
             const groupsMapper = genConfigMapper(groupsMapping);
             return availableGroups.map((a) => groupsMapper[a]).filter((r) => isNotEmptyField(r));
           };
-          const groupsToAssociate = computeGroupsMapping();
+          const groupsToAssociate = isGroupMapping ? computeGroupsMapping() : [];
           // endregion
           if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
             const nameAttribute = mappedConfig?.name_attribute ?? 'name';
