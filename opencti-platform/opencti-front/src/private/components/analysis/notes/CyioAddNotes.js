@@ -22,15 +22,15 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Add, Close } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { QueryRenderer as QR } from 'react-relay';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
 import NoteCreation from './NoteCreation';
 import CyioNoteCreation from './CyioNoteCreation';
-import CyioAddNotesLines, { cyioAddNotesLinesQuery } from './CyioAddNotesLines';
+import CyioAddNotesLines, { cyioAddNotesLinesQuery, cyioNoteLinesMutationRelationAdd } from './CyioAddNotesLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -96,29 +96,105 @@ class CyioAddNotes extends Component {
       open: false,
       search: '',
       expanded: false,
-  };
+      totalNotes: [],
+    };
+  }
+
+  toggleNote(createNote) {
+    const {
+      cyioCoreObjectOrStixCoreRelationshipId,
+      cyioCoreObjectOrStixCoreRelationshipNotes,
+    } = this.props;
+    // const entityNotesIds = map(
+    //   (n) => n.node.id,
+    //   cyioCoreObjectOrStixCoreRelationshipNotes,
+    // );
+    // const alreadyAdded = entityNotesIds.includes(note.id);
+    // const input = {
+    //   toId: cyioCoreObjectOrStixCoreRelationshipId,
+    //   relationship_type: 'object',
+    // };
+    if (this.state.totalNotes.length > 0) {
+      this.state.totalNotes.map((note) => (
+        CM(environmentDarkLight, {
+          mutation: cyioNoteLinesMutationRelationAdd,
+          variables: {
+            toId: note.id,
+            fromId: cyioCoreObjectOrStixCoreRelationshipId,
+            fieldName: 'notes',
+            to_type: note.__typename,
+            from_type: this.props.typename,
+          },
+          onCompleted: (response) => {
+            this.handleClose();
+            this.setState({ totalNotes: [] });
+            this.props.refreshQuery();
+          },
+          // updater: (store) => {
+          //   const payload = store
+          //     .getRootField('noteEdit')
+          //     .getLinkedRecord('relationAdd', { input });
+          //   const relationId = payload.getValue('id');
+          //   const node = payload.getLinkedRecord('from');
+          //   const relation = store.get(relationId);
+          //   payload.setLinkedRecord(node, 'node');
+          //   payload.setLinkedRecord(relation, 'relation');
+          //   sharedUpdater(store, cyioCoreObjectOrStixCoreRelationshipId, payload);
+          // },
+        })
+      ));
+    } else {
+      CM(environmentDarkLight, {
+        mutation: cyioNoteLinesMutationRelationAdd,
+        variables: {
+          toId: createNote.id,
+          fromId: cyioCoreObjectOrStixCoreRelationshipId,
+          fieldName: 'notes',
+          to_type: createNote.__typename,
+          from_type: this.props.typename,
+        },
+        onCompleted: (response) => {
+          this.setState({ totalNotes: [] });
+          this.props.refreshQuery();
+        },
+        // updater: (store) => {
+        //   const payload = store
+        //     .getRootField('noteEdit')
+        //     .getLinkedRecord('relationAdd', { input });
+        //   const relationId = payload.getValue('id');
+        //   const node = payload.getLinkedRecord('from');
+        //   const relation = store.get(relationId);
+        //   payload.setLinkedRecord(node, 'node');
+        //   payload.setLinkedRecord(relation, 'relation');
+        //   sharedUpdater(store, cyioCoreObjectOrStixCoreRelationshipId, payload);
+        // },
+      });
+    }
   }
 
   handleOpen() {
-    this.setState({ open: true });
+    this.setState({ open: true, expanded: false });
   }
 
   handleClose() {
-    this.setState({ open: false, search: '' });
+    this.setState({ open: false, search: '', expanded: false });
+  }
+
+  handleDataCollect(dataCollect) {
+    this.setState({ totalNotes: [...dataCollect] });
   }
 
   handleOpenSearch() {
-    this.setState({ expanded: true })
+    this.setState({ expanded: true });
   }
 
   handleCloseSearch() {
-    this.setState({ expanded: false })
+    this.setState({ expanded: false });
   }
 
   handleSearch(event) {
     const keyword = event.target.value;
     this.setState({ search: keyword, expanded: keyword ? true : false });
-    // this.setState({ search: keyword });
   }
 
   render() {
@@ -172,14 +248,15 @@ class CyioAddNotes extends Component {
                           display={true}
                           contextual={true}
                           inputValue={this.state.search}
+                          onExpand={this.handleCloseSearch.bind(this)}
                           paginationOptions={paginationOptions}
-                          // onCreate={this.toggleNotes.bind(this)}
+                          onCreate={this.toggleNote.bind(this)}
                         />
-                        <div style={{ marginLeft: '10px', marginTop: '-5px' }}>
+                        <div style={{ marginLeft: '10px', marginTop: '-10px' }}>
                           {
                             this.state.expanded
-                            ? <KeyboardArrowDownOutlinedIcon onClick={this.handleCloseSearch.bind(this)} style={{ transform: 'rotate(180deg)', cursor: 'pointer' }} />
-                            : <KeyboardArrowDownOutlinedIcon onClick={this.handleOpenSearch.bind(this)} style={{ cursor: 'pointer' }} />
+                              ? <KeyboardArrowDownOutlinedIcon onClick={this.handleCloseSearch.bind(this)} style={{ transform: 'rotate(180deg)', cursor: 'pointer' }} />
+                              : <KeyboardArrowDownOutlinedIcon onClick={this.handleOpenSearch.bind(this)} style={{ cursor: 'pointer' }} />
                           }
                         </div>
                       </InputAdornment>
@@ -187,7 +264,7 @@ class CyioAddNotes extends Component {
                   }} />
                 <div style={{ float: 'right', marginLeft: '40px' }}>
                   <Button style={{ marginLeft: '10px', marginRight: '10px' }} onClick={this.handleClose.bind(this)} variant="outlined" >{t('Cancel')}</Button>
-                  <Button variant="contained" color="primary">{t('Add')}</Button>
+                  <Button variant="contained" color="primary" onClick={this.toggleNote.bind(this)}>{t('Add')}</Button>
                 </div>
                 <Divider light={true} />
               </CardActions>
@@ -195,7 +272,7 @@ class CyioAddNotes extends Component {
             <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
               <div className={classes.collapse}>
                 <QR
-                  environment={QueryRendererDarkLight}
+                  environment={environmentDarkLight}
                   query={cyioAddNotesLinesQuery}
                   variables={{
                     search: this.state.search,
@@ -212,6 +289,7 @@ class CyioAddNotes extends Component {
                             cyioCoreObjectOrStixCoreRelationshipNotes
                           }
                           data={props}
+                          handleDataCollect={this.handleDataCollect.bind(this)}
                           typename={typename}
                           open={this.state.open}
                           search={this.state.search}
@@ -267,6 +345,7 @@ class CyioAddNotes extends Component {
 CyioAddNotes.propTypes = {
   cyioCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
+  refreshQuery: PropTypes.func,
   typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

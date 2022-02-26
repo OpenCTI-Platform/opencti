@@ -3,41 +3,30 @@
   extend type Query {
     # OSCAL Location
     oscalLocation(id: ID!): OscalLocation
-    oscalLocationList(
-      first: Int
+    oscalLocations(
+      limit: Int
       offset: Int
-      orderedBy: OscalLocationsOrdering
+      orderedBy: OscalLocationOrdering
       orderMode: OrderingMode
-      filters: [OscalLocationsFiltering]
+      filters: [OscalLocationFiltering]
       filterMode: FilterMode
       search: String
     ): OscalLocationConnection
-    # OSCAL Organization
-    oscalOrganization(id: ID!): OscalOrganization
-    oscalOrganizationList(
-      first: Int
-      offset: Int
-      orderedBy: OscalOrganizationsOrdering
-      orderMode: OrderingMode
-      filters: [OscalOrganizationsFiltering]
-      filterMode: FilterMode
-      search: String
-    ): OscalOrganizationConnection
     # OSCAL Party
     oscalParty(id: ID!): OscalParty
-    oscalPartyList(
-      first: Int
+    oscalParties(
+      limit: Int
       offset: Int
-      orderedBy: OscalPartiesOrdering
+      orderedBy: OscalPartyOrdering
       orderMode: OrderingMode
-      filters: [OscalPartiesFiltering]
+      filters: [OscalPartyFiltering]
       filterMode: FilterMode
       search: String
     ): OscalPartyConnection
     # OSCAL Relationship
     oscalRelationship(id: ID!): OscalRelationship
-    oscalRelationshipList(
-      first: Int
+    oscalRelationships(
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -47,8 +36,8 @@
     ): OscalRelationshipConnection
     # OSCAL Resource
     oscalResource(id: ID!): OscalResource
-    oscalResourceList(
-      first: Int
+    oscalResources(
+      limit: Int
       offset: Int
       orderedBy: OscalResourcesOrdering
       orderMode: OrderingMode
@@ -58,19 +47,19 @@
     ): OscalResourceConnection
     # OSCAL Responsible Party
     oscalResponsibleParty(id: ID!): OscalResponsibleParty
-    oscalResponsiblePartyList(
-      first: Int
+    oscalResponsibleParties(
+      limit: Int
       offset: Int
-      orderedBy: OscalResponsiblePartiesOrdering
+      orderedBy: OscalResponsiblePartyOrdering
       orderMode: OrderingMode
-      filters: [OscalResponsiblePartiesFiltering]
+      filters: [OscalResponsiblePartyFiltering]
       filterMode: FilterMode
       search: String
     ): OscalResponsiblePartyConnection
     # OSCAL Role
     oscalRole(id: ID!): OscalRole
-    oscalRoleList(
-      first: Int
+    oscalRoles(
+      limit: Int
       offset: Int
       orderedBy: OscalRolesOrdering
       orderMode: OrderingMode
@@ -80,8 +69,8 @@
     ): OscalRoleConnection
     # OSCAL User
     oscalUser(id: ID!): OscalUser
-    oscalUserList(
-      first: Int
+    oscalUsers(
+      limit: Int
       offset: Int
       orderedBy: OscalUsersOrdering
       orderMode: OrderingMode
@@ -105,14 +94,10 @@
     createOscalLocation(input: OscalLocationAddInput): OscalLocation
     deleteOscalLocation(id: ID!): String!
     editOscalLocation( id: ID!, input: [EditInput]!, commitMessage: String): OscalLocation
-    # OSCAL Organization
-    createOscalOrganization(input: OscalOrganizationAddInput): OscalOrganization
-    deleteOscalOrganization(id: ID!): String!
-    editOscalOrganization( id: ID!, input: [EditInput]!, commitMessage: String): OscalOrganization
-    # OSCAL Person
-    createOscalPerson(input: OscalPersonAddInput): OscalPerson
-    deleteOscalPerson(id: ID!): String!
-    editOscalPerson( id: ID!, input: [EditInput]!, commitMessage: String): OscalPerson
+    # OSCAL Party
+    createOscalParty(input: OscalPartyAddInput): OscalParty
+    deleteOscalParty(id: ID!): String!
+    editOscalParty( id: ID!, input: [EditInput]!, commitMessage: String): OscalParty
     # OSCAL Relationship
     createOscalRelationship(input: OscalRelationshipAddInput): OscalRelationship
     deleteOscalRelationship(id: ID!): String!
@@ -144,7 +129,6 @@
     "Identifies one or more functions performed for a given authorized privilege by this user class."
     functions_performed: [String!]
   }
-
   input AuthorizedPrivilegeAddInput {
     "Identifies a human readable name for the privilege."
     name: String!
@@ -163,7 +147,6 @@
     "Identifies the content that is base64 encoded."
     value: String
   }
-
   input Base64ContentAddInput {
     filename: String
     media_type: String
@@ -177,7 +160,6 @@
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     links: [CyioExternalReference]
   }
-
   input CitationAddInput {
     "Identifies a line of citation text."
     text: String!
@@ -210,7 +192,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -234,15 +216,15 @@
     "Identifies references to previous versions of this document."
     document_ids: [ID]
     "Identifies one or more references to a function assumed or expected to be assumed by a party in a specific situation."
-    roles( first: Int ): OscalRoleConnection
+    roles( limit: Int ): OscalRoleConnection
     "Identifies one or more references to a location."
-    locations( first: Int ): OscalLocationConnection
+    locations( limit: Int ): OscalLocationConnection
     "Identifies one or more references to a responsible entity which is either a person or an organization."
-    parties( first: Int ): OscalPartyConnection
+    parties( limit: Int ): OscalPartyConnection
     "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties( first: Int ): OscalResponsiblePartyConnection
+    responsible_parties( limit: Int ): OscalResponsiblePartyConnection
     # Back-matter
-    resources( first: Int ): OscalResourceConnection
+    resources( limit: Int ): OscalResourceConnection
   }
 
   "Defines the identifying information about an OSCAL object."
@@ -256,7 +238,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -291,7 +273,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -318,7 +300,6 @@
     "Identifies one or more uniform resource locator (URL) for a web site or Internet presence associated with the location."
     urls: [URL]
   }
-
   input OscalLocationAddInput {
     # CyioLocation
     name: String!
@@ -331,149 +312,56 @@
     telephone_numbers: [TelephoneNumberAddInput]
     urls: [URL]
   }
-
-    # Pagination Types
-    type OscalLocationConnection {
+  # Ordering
+  enum OscalLocationOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    labels
+  }
+  # Filtering Types
+  enum OscalLocationFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
+  }
+  input OscalLocationFiltering {
+    key: OscalLocationFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  # Pagination Types
+  type OscalLocationConnection {
     pageInfo: PageInfo!
     edges: [OscalLocationEdge]
-  }
+    }
   type OscalLocationEdge {
     cursor: String!
     node: OscalLocation!
   }
-
-  # Filtering Types
-  enum OscalLocationsOrdering {
-    created
-    modified
-    labels
+  # Object-specific Enumerations
+  "Characterizes the kind of location."
+  enum OscalLocationType {
+    "A location that contains computing assets."
+    data_center
   }
-  enum OscalLocationsFilter {
-    created
-    modified
-    labels
-  }
-  input OscalLocationsFiltering {
-    key: OscalLocationsFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
+  "Characterizes the purpose of the location."
+  enum OscalLocationClass {
+    "The location is a data-center used for normal operations."
+    primary
+    "The location is a data-center used for fail-over or backup operations."
+    alternate
   }
 
-  "Defines identifying information about an OSCAL Organization"
-  type OscalOrganization implements BasicObject & LifecycleObject & OscalObject & CyioIdentity & OscalParty {
-    # BasicObject
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the parent types of this object."
-    parent_types: [String]!
-    # LifecycleObject
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
-    # OscalObject
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-    "Identifies one or more relationships to other entities."
-    relationships(
-      first: Int
-      offset: Int
-      orderedBy: OscalRelationshipsOrdering
-      orderMode: OrderingMode
-      filters: [OscalRelationshipsFiltering]
-      filterMode: FilterMode
-      search: String 
-    ): OscalRelationshipConnection
-    # CyioIdentity
-    "Identifies the name given to the party."
-    name: String!
-    "Identifies a brief description of the Party."
-    description: String
-    # OscalParty
-    "Identifies the kind of party the object describes."
-    party_type: PartyType!
-    "Identifies a short common name, abbreviation, or acronym for the party."
-    short_name: String
-    "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids: [CyioExternalReference]
-    "Identifies a postal addresses for the location."
-    address: CivicAddress
-    "Identifies one or more email addresses for the location."
-    email_addresses: [EmailAddress]
-    "Identifies one or more telephone numbers used to contact the the location."
-    telephone_numbers: [TelephoneNumber]
-    "Identifies one or more references to a location."
-    locations: [OscalLocation]
-    "Identifies that the party object is a member of the organization."
-    member_of_organizations: [OscalOrganization]
-    "Identifies a mail stop associated with the party."
-    mail_stop: String
-    "Identifies the name or number of the party's office."
-    office: String
-  }
-
-  input OscalOrganizationAddInput {
-    # CyioIdentity
-    "Identifies the name given to the party."
-    name: String!
-    "Identifies a brief description of the Party."
-    description: String
-    # OscalParty
-    "Identifies the kind of party the object describes."
-    party_type: PartyType!
-    "Identifies a short common name, abbreviation, or acronym for the party."
-    short_name: String
-    "Identifies a postal addresses for the location."
-    address: CivicAddressAddInput
-    "Identifies one or more email addresses for the location."
-    email_addresses: [EmailAddress]
-    "Identifies one or more telephone numbers used to contact the the location."
-    telephone_numbers: [TelephoneNumberAddInput]
-    "Identifies a mail stop associated with the party."
-    mail_stop: String
-    "Identifies the name or number of the party's office."
-    office: String
-  }
-
-  # Pagination Types
-  type OscalOrganizationConnection {
-    pageInfo: PageInfo!
-    edges: [OscalOrganizationEdge]
-  }
-  type OscalOrganizationEdge {
-    cursor: String!
-    node: OscalOrganization!
-  }
-
-  # Filtering Types
-  enum OscalOrganizationsOrdering {
-    created
-    modified
-    labels
-  }
-  enum OscalOrganizationsFilter {
-    created
-    modified
-    labels
-  }
-  input OscalOrganizationsFiltering {
-    key: OscalOrganizationsFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
 
   "Defines identifying information about a Party in OSCAL"
-  interface OscalParty {
+  type OscalParty {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -497,7 +385,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -518,21 +406,22 @@
     "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
     external_ids: [CyioExternalReference]
     "Identifies a postal addresses for the location."
-    address: CivicAddress
+    addresses: [CivicAddress]
     "Identifies one or more email addresses for the location."
     email_addresses: [EmailAddress]
     "Identifies one or more telephone numbers used to contact the the location."
     telephone_numbers: [TelephoneNumber]
     "Identifies one or more references to a location."
     locations: [OscalLocation]
-    "Identifies that the party object is a member of the organization."
-    member_of_organizations: [OscalOrganization]
     "Identifies a mail stop associated with the party."
     mail_stop: String
     "Identifies the  name or number of the party's office."
     office: String
+    "Identifies that the party object is a member of this organization."
+    member_of_organizations: [OscalParty]
+    "Identifes the formal job title of this person"
+    job_title: String
   }
-
   input OscalPartyAddInput {
     "Identifies the name given to the party."
     name: String!
@@ -546,21 +435,50 @@
       "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
     external_ids: [CyioExternalReferenceAddInput]
     "Identifies a postal addresses for the location."
-    address: CivicAddressAddInput
+    addresses: [CivicAddressAddInput]
     "Identifies one or more email addresses for the location."
     email_addresses: [EmailAddress]
     "Identifies one or more telephone numbers used to contact the the location."
     telephone_numbers: [TelephoneNumberAddInput]
     "Identifies one or more references to a location."
-    locations: [OscalLocationAddInput]
-    "Identifies that the party object is a member of the organization."
-    member_of_organizations: [OscalOrganizationAddInput]
+    locations: [ID]
     "Identifies a mail stop associated with the party."
     mail_stop: String
     "Identifies the  name or number of the party's office."
     office: String
-}
-
+    "Identifies that the party object is a member of the organization."
+    member_of_organizations: [ID]
+    "Identifes the formal job title of this person"
+    job_title: String
+  }
+  # Ordering Type
+  enum OscalPartyOrdering {
+    "Party Type"
+    party_type
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    labels
+  }
+  # Filtering Types
+  enum OscalPartyFilter {
+    "Party Type"
+    party_type
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
+  }
+  input OscalPartyFiltering {
+    key: OscalPartyFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
   # Pagination Types
   type OscalPartyConnection {
     pageInfo: PageInfo!
@@ -570,140 +488,14 @@
     cursor: String!
     node: OscalParty!
   }
-
-  # Filtering Types
-  enum OscalPartiesOrdering {
-    created
-    modified
-    labels
+  # Object-specific Enumerations
+  "Characterizes the type of the party."
+  enum PartyType {
+    "Indicates the party is a person"
+    person
+    "Indicates the party is an organization"
+    organization
   }
-  enum OscalPartiesFilter {
-    created
-    modified
-    labels
-  }
-  input OscalPartiesFiltering {
-    key: OscalPartiesFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
-
-  "Defines identifying information about a Person in OSCAL"
-  type OscalPerson implements BasicObject & LifecycleObject & OscalObject & CyioIdentity & OscalParty {
-    # BasicObject
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the parent types of this object."
-    parent_types: [String]!
-    # LifecycleObject
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
-    # OscalObject
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-    "Identifies one or more relationships to other entities."
-    relationships(
-      first: Int
-      offset: Int
-      orderedBy: OscalRelationshipsOrdering
-      orderMode: OrderingMode
-      filters: [OscalRelationshipsFiltering]
-      filterMode: FilterMode
-      search: String 
-    ): OscalRelationshipConnection
-    # CyioIdentity
-    "Identifies the name given to the party."
-    name: String!
-    "Identifies a brief description of the Party."
-    description: String
-    # OscalParty
-    "Identifies the kind of party the object describes."
-    party_type: PartyType!
-    "Identifies a short common name, abbreviation, or acronym for the party."
-    short_name: String
-    "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids: [CyioExternalReference]
-    "Identifies a postal addresses for the location."
-    address: CivicAddress
-    "Identifies one or more email addresses for the location."
-    email_addresses: [EmailAddress]
-    "Identifies one or more telephone numbers used to contact the the location."
-    telephone_numbers: [TelephoneNumber]
-    "Identifies one or more references to a location."
-    locations: [OscalLocation]
-    "Identifies that the party object is a member of the organization."
-    member_of_organizations: [OscalOrganization]
-    "Identifies a mail stop associated with the party."
-    mail_stop: String
-    "Identifies the name or number of the party's office."
-    office: String
-    "Identifies the formal job title of a person."
-    job_title: String
-  }
-
-  input OscalPersonAddInput {
-    # CyioIdentity
-    "Identifies the name given to the party."
-    name: String!
-    "Identifies a brief description of the Party."
-    description: String
-    # OscalParty
-    "Identifies the kind of party the object describes."
-    party_type: PartyType!
-    "Identifies a short common name, abbreviation, or acronym for the party."
-    short_name: String
-    "Identifies a postal addresses for the location."
-    address: CivicAddressAddInput
-    "Identifies one or more email addresses for the location."
-    email_addresses: [EmailAddress]
-    "Identifies one or more telephone numbers used to contact the the location."
-    telephone_numbers: [TelephoneNumberAddInput]
-    mail_stop: String
-    "Identifies the name or number of the party's office."
-    office: String
-    "Identifies the formal job title of a person."
-    job_title: String
-  }
-
-  # Pagination Types
-  type OscalPersonConnection {
-    pageInfo: PageInfo!
-    edges: [OscalPersonEdge]
-  }
-  type OscalPersonEdge {
-    cursor: String!
-    node: OscalPerson!
-  }
-
-  # Filtering Types
-  enum OscalPersonOrdering {
-    created
-    modified
-    labels
-  }
-  enum OscalPersonsFilter {
-    created
-    modified
-    labels
-  }
-  input OscalPersonsFiltering {
-    key: OscalPersonsFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
-  
 
   "Defines identifying information about a relationship in OSCAL"
   type OscalRelationship {
@@ -744,7 +536,6 @@
     "Identifies the level of confidence in the assertion."
     confidence: PositiveInt
   }
-
   input OscalRelationshipAddInput {
     # OscalRelationship
     "Identifies the type of the relationship"
@@ -762,7 +553,21 @@
     "Identifies the level of confidence in the assertion."
     confidence: PositiveInt
   }
-
+  # Ordering
+  enum OscalRelationshipsOrdering {
+    "Relationship Type"
+    relationship_type
+    "Created"
+    created
+    "Modified"
+    modified
+    "Confidence"
+    confidence
+    "Valid From"
+    valid_from
+    "Valid To"
+    valid_until
+  }
   # Filtering
   input OscalRelationshipsFiltering {
     key: OscalRelationshipsFilter!
@@ -770,29 +575,23 @@
     operator: String
     filterMode: FilterMode
   }
-
-  enum OscalRelationshipsOrdering {
-    relationship_type
-    created
-    modified
-    confidence
-    valid_from
-    valid_until
-  }
   enum OscalRelationshipsFilter {
+    "Source"
     source
+    "Target"
     target
+    "Created"
     created
+    "Modified"
     modified
+    "Confidence"
     confidence
   }
-
   # Pagination
   type OscalRelationshipConnection {
     pageInfo: PageInfo!
     edges: [OscalRelationshipEdge]
   }
-
   type OscalRelationshipEdge {
     cursor: String!
     node: OscalRelationship!
@@ -824,7 +623,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -852,7 +651,6 @@
     "Identifies the base64 encoded content."
     base64: Base64Content
   }
-
   input OscalResourceAddInput {
     # Resource
     "Identifies the type of resource represented."
@@ -872,7 +670,23 @@
     "Identifies the base64 encoded content."
     base64: Base64ContentAddInput
   }
-
+  # Ordering
+  enum OscalResourcesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Resource Type"
+    resource_type
+    "Version"
+    version
+    "Published"
+    published
+    "Name"
+    name
+    "Label"
+    labels
+  }
   # Filtering
   input OscalResourcesFiltering {
     key: OscalResourcesFilter!
@@ -880,377 +694,32 @@
     operator: String
     filterMode: FilterMode
   }
-
-  enum OscalResourcesOrdering {
-    created
-    modified
-    resource_type
-    version
-    published
-    name
-  }
   enum OscalResourcesFilter {
+    "Created"
     created
+    "Modified"
     modified
+    "Resource Type"
     resource_type
+    "Version"
     version
+    "Published"
     published
+    "Name"
     name
+    "Label"
+    label_name
   }
-
   # Pagination
   type OscalResourceConnection {
     pageInfo: PageInfo!
     edges: [OscalResourceEdge]
   }
-
   type OscalResourceEdge {
     cursor: String!
     node: OscalResource!
   }
-
-  "Defines identifying information about a Responsible Party in OSCAL"
-  type OscalResponsibleParty implements OscalObject {
-    # BasicObject
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the parent types of this object."
-    parent_types: [String]!
-    # CoreObject
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-    # OscalObject
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-    "Identifies one or more relationships to other entities."
-    relationships(
-      first: Int
-      offset: Int
-      orderedBy: OscalRelationshipsOrdering
-      orderMode: OrderingMode
-      filters: [OscalRelationshipsFiltering]
-      filterMode: FilterMode
-      search: String 
-    ): OscalRelationshipConnection
-    # ResponsibleParty
-    "Identifies a reference to the role that the party is responsible for."
-    role: OscalRole!
-    "Identifies one or more references to the parties that are responsible for performing the associated role."
-    parties: [OscalParty]
-  }
-
-  input OscalResponsiblePartyAddInput {
-    # ResponsibleParty
-    "Identifies a reference to the role that the party is responsible for."
-    role: OscalRoleAddInput!
-    "Identifies one or more references to the organization that are responsible for performing the associated role."
-    organization: [OscalOrganizationAddInput]
-    "Identifies one or more references to the person that are responsible for performing the associated role."
-    person: [OscalPersonAddInput]
-  }
-
-  # Filtering
-  input OscalResponsiblePartiesFiltering {
-    key: OscalResponsiblePartiesFilter!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-  }
-
-  enum OscalResponsiblePartiesOrdering {
-    created
-    modified
-    labels
-  }
-  enum OscalResponsiblePartiesFilter {
-    created
-    modified
-    labels
-  }
-
-  # Pagination
-  type OscalResponsiblePartyConnection {
-    pageInfo: PageInfo!
-    edges: [OscalResponsiblePartyEdge]
-  }
-
-  type OscalResponsiblePartyEdge {
-    cursor: String!
-    node: OscalResponsibleParty!
-  }
-
-  "Defines identifying information about a function assumed or expected to be assumed by a party in a specific situation."
-  type OscalRole implements BasicObject & LifecycleObject & OscalObject {
-    # BasicObject
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the parent types of this object."
-    parent_types: [String]!
-    # CoreObject
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-    # OscalObject
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-    "Identifies one or more relationships to other entities."
-    relationships(
-      first: Int
-      offset: Int
-      orderedBy: OscalRelationshipsOrdering
-      orderMode: OrderingMode
-      filters: [OscalRelationshipsFiltering]
-      filterMode: FilterMode
-      search: String 
-    ): OscalRelationshipConnection
-    # OscalRole
-    "Identifies the unique identifier for a specific role instance."
-    role_identifier: RoleType!
-    "Identifies the name given to the role."
-    name: String!
-    "Identifies a short common name, abbreviation, or acronym for the role."
-    short_name: String
-    "Identifies a summary of the role's purpose and associated responsibilities."
-    description: String
-  }
-
-  input OscalRoleAddInput {
-    # OscalRole
-    "Identifies the unique identifier for a specific role instance."
-    role_identifier: RoleType!
-    "Identifies the name given to the role."
-    name: String!
-    "Identifies a short common name, abbreviation, or acronym for the role."
-    short_name: String
-    "Identifies a summary of the role's purpose and associated responsibilities."
-    description: String
-  }
-
-  # Filtering
-  input OscalRolesFiltering {
-    key: OscalRolesFilter!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-  }
-
-  enum OscalRolesOrdering {
-    created
-    modified
-    labels
-  }
-  enum OscalRolesFilter {
-    created
-    modified
-    labels
-  }
-
-  # Pagination
-  type OscalRoleConnection {
-    pageInfo: PageInfo!
-    edges: [OscalRoleEdge]
-  }
-
-  type OscalRoleEdge {
-    cursor: String!
-    node: OscalRole!
-  }
-
-  "Defines identifying information about a type of user that interacts with the system based on an associated role."
-  type OscalUser implements BasicObject & LifecycleObject  & OscalObject {
-    # BasicObject
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the parent types of this object."
-    parent_types: [String]!
-    # CoreObject
-    "Indicates the date and time at which the object was originally created."
-    created: Timestamp
-    "Indicates the date and time that this particular version of the object was last modified."
-    modified: Timestamp
-    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-    labels: [CyioLabel]
-    # OscalObject
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-    "Identifies one or more relationships to other entities."
-    relationships(
-      first: Int
-      offset: Int
-      orderedBy: OscalRelationshipsOrdering
-      orderMode: OrderingMode
-      filters: [OscalRelationshipsFiltering]
-      filterMode: FilterMode
-      search: String 
-    ): OscalRelationshipConnection
-    # OSCAL SystemAsset User
-    "Identifies type of user, such as internal, external, or general-public."
-    user_type: UserType
-    "Identifies a name given to the user, which may be used by a tool for display and navigation."
-    name: String
-    "Identifies a short common name, abbreviation, or acronym for the user."
-    short_name: String
-    "Identifies a summary of the user's purpose within the system."
-    description: String
-    "Identifies one or more references to the roles served by the user."
-    roles: [OscalRole]
-    "Identifies a specific system privilege held by the user, along with an associated description and/or rationale for the privilege."
-    authorized_privileges: [AuthorizedPrivilege!]
-    "Identifies the user's privilege level within the system, such as privileged, non-privileged, no-logical-access."
-    privilege_level: PrivilegeLevel!
-  }
-
-  input OscalUserAddInput {
-    # OSCAL User
-    "Identifies type of user, such as internal, external, or general-public."
-    user_type: UserType
-    "Identifies a name given to the user, which may be used by a tool for display and navigation."
-    name: String
-    "Identifies a short common name, abbreviation, or acronym for the user."
-    short_name: String
-    "Identifies a summary of the user's purpose within the system."
-    description: String
-    "Identifies a specific system privilege held by the user, along with an associated description and/or rationale for the privilege."
-    authorized_privileges: [AuthorizedPrivilegeAddInput]
-    "Identifies the user's privilege level within the system, such as privileged, non-privileged, no-logical-access."
-    privilege_level: PrivilegeLevel!
-  }
-
-  # Filtering
-  input OscalUsersFiltering {
-    key: OscalUsersFilter!
-    values: [String]
-    operator: String
-    filterMode: FilterMode
-  }
-
-  enum OscalUsersOrdering {
-    created
-    modified
-    labels
-    user_type
-    privilege_level
-  }
-  enum OscalUsersFilter {
-    created
-    modified
-    labels
-    user_type
-    privilege_level
-  }
-
-  # Pagination
-  type OscalUserConnection {
-    pageInfo: PageInfo!
-    edges: [OscalUserEdge]
-  }
-
-  type OscalUserEdge {
-    cursor: String!
-    node: OscalUser!
-  }
-
-
-  "Defines identifying information about a Revision"
-  type Revision {
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the name given to the document."
-    name: String!
-    "Identifies the date and time the document was published."
-    published: Timestamp
-    "Identifies the date and time the document as last modified."
-    last_modified: Timestamp
-    "Identifies the current version of the document."
-    version: String
-    "Identifies the OSCAL model version the document was authored against."
-    oscal_version: String
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-    "Identifies one or more relationships to other entities."
-    relationships(
-      first: Int
-      offset: Int
-      orderedBy: OscalRelationshipsOrdering
-      orderMode: OrderingMode
-      filters: [OscalRelationshipsFiltering]
-      filterMode: FilterMode
-      search: String 
-    ): OscalRelationshipConnection
-  }
-
-  input RevisionAddInput {
-    "Identifies the name given to the document."
-    name: String!
-    "Identifies the date and time the document was published."
-    published: Timestamp
-    "Identifies the date and time the document as last modified."
-    last_modified: Timestamp
-    "Identifies the current version of the document."
-    version: String
-    "Identifies the OSCAL model version the document was authored against."
-    oscal_version: String
-  }
-
-  "Characterizes the kind of location."
-  enum OscalLocationType {
-    "A location that contains computing assets."
-    data_center
-  }
-
-  "Characterizes the purpose of the location."
-  enum OscalLocationClass {
-    "The location is a data-center used for normal operations."
-    primary
-    "The location is a data-center used for fail-over or backup operations."
-    alternate
-  }
-
-  "Characterizes the type of the party."
-  enum PartyType {
-    "Indicates the party is a person"
-    person
-    "Indicates the party is an organization"
-    organization
-  }
-
-  "Characterizes the type level of privileges"
-  enum PrivilegeLevel {
-    "This role has elevated access to the system, such as a group or system administrator."
-    privileged
-    "This role has typical user-level access to the system without elevated access."
-    non_privileged
-    "This role has no access to the system, such as a manager who approves access as part of a process."
-    no_logical_access
-  }
-
+  # Object-specific Enumerations
   "Characterizes the type of resource."
   enum ResourceType {
     "Indicates the resource is an organization's logo."
@@ -1303,6 +772,159 @@
     agreement
   }
 
+
+  "Defines identifying information about a Responsible Party in OSCAL"
+  type OscalResponsibleParty {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+    # ResponsibleParty
+    "Identifies a reference to the role that the party is responsible for."
+    role: OscalRole!
+    "Identifies one or more references to the parties that are responsible for performing the associated role."
+    parties: [OscalParty!]!
+  }
+  input OscalResponsiblePartyAddInput {
+    # ResponsibleParty
+    "Identifies a reference to the role that the party is responsible for."
+    role: ID!
+    "Identifies one or more references to the parties that are responsible for performing the associated role."
+    parties: [ID!]!
+  }
+  # Ordering
+  enum OscalResponsiblePartyOrdering {
+    "Label"
+    labels
+  }
+  # Filtering
+  input OscalResponsiblePartyFiltering {
+    key: OscalResponsiblePartyFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+  }
+  enum OscalResponsiblePartyFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
+    "Role Identifier"
+    role_identifier
+  }
+  # Pagination
+  type OscalResponsiblePartyConnection {
+    pageInfo: PageInfo!
+    edges: [OscalResponsiblePartyEdge]
+  }
+  type OscalResponsiblePartyEdge {
+    cursor: String!
+    node: OscalResponsibleParty!
+  }
+
+
+  "Defines identifying information about a function assumed or expected to be assumed by a party in a specific situation."
+  type OscalRole implements BasicObject & LifecycleObject & OscalObject {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: Timestamp
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: Timestamp
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+    "Identifies one or more relationships to other entities."
+    relationships(
+      limit: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # OscalRole
+    "Identifies the unique identifier for a specific role instance."
+    role_identifier: RoleType!
+    "Identifies the name given to the role."
+    name: String!
+    "Identifies a short common name, abbreviation, or acronym for the role."
+    short_name: String
+    "Identifies a summary of the role's purpose and associated responsibilities."
+    description: String
+  }
+  input OscalRoleAddInput {
+    # OscalRole
+    "Identifies the unique identifier for a specific role instance."
+    role_identifier: RoleType!
+    "Identifies the name given to the role."
+    name: String!
+    "Identifies a short common name, abbreviation, or acronym for the role."
+    short_name: String
+    "Identifies a summary of the role's purpose and associated responsibilities."
+    description: String
+  }
+  # Ordering
+  enum OscalRolesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    labels
+  }
+  # Filtering
+  input OscalRolesFiltering {
+    key: OscalRolesFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+  }
+  enum OscalRolesFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
+  }
+  # Pagination
+  type OscalRoleConnection {
+    pageInfo: PageInfo!
+    edges: [OscalRoleEdge]
+  }
+  type OscalRoleEdge {
+    cursor: String!
+    node: OscalRole!
+  }
+  # Object-specific Enumerations
   "Defines the identifier for a specific role."
   enum RoleType {
     "Accountable for ensuring the asset is managed in accordance with organizational policies and procedures."
@@ -1325,6 +947,113 @@
     provider
   }
 
+
+  "Defines identifying information about a type of user that interacts with the system based on an associated role."
+  type OscalUser implements BasicObject & LifecycleObject  & OscalObject {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: Timestamp
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: Timestamp
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+    "Identifies one or more relationships to other entities."
+    relationships(
+      limit: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # OSCAL SystemAsset User
+    "Identifies type of user, such as internal, external, or general-public."
+    user_type: UserType
+    "Identifies a name given to the user, which may be used by a tool for display and navigation."
+    name: String
+    "Identifies a short common name, abbreviation, or acronym for the user."
+    short_name: String
+    "Identifies a summary of the user's purpose within the system."
+    description: String
+    "Identifies one or more references to the roles served by the user."
+    roles: [OscalRole]
+    "Identifies a specific system privilege held by the user, along with an associated description and/or rationale for the privilege."
+    authorized_privileges: [AuthorizedPrivilege!]
+    "Identifies the user's privilege level within the system, such as privileged, non-privileged, no-logical-access."
+    privilege_level: PrivilegeLevel!
+  }
+  input OscalUserAddInput {
+    # OSCAL User
+    "Identifies type of user, such as internal, external, or general-public."
+    user_type: UserType
+    "Identifies a name given to the user, which may be used by a tool for display and navigation."
+    name: String
+    "Identifies a short common name, abbreviation, or acronym for the user."
+    short_name: String
+    "Identifies a summary of the user's purpose within the system."
+    description: String
+    "Identifies a specific system privilege held by the user, along with an associated description and/or rationale for the privilege."
+    authorized_privileges: [AuthorizedPrivilegeAddInput]
+    "Identifies the user's privilege level within the system, such as privileged, non-privileged, no-logical-access."
+    privilege_level: PrivilegeLevel!
+  }
+  # Ordering
+  enum OscalUsersOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    labels
+    "User Type"
+    user_type
+    "Prvilege Level"
+    privilege_level
+  }
+  # Filtering
+  input OscalUsersFiltering {
+    key: OscalUsersFilter!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+  }
+  enum OscalUsersFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
+    "User Type"
+    user_type
+    "Privilege Level"
+    privilege_level
+  }
+  # Pagination
+  type OscalUserConnection {
+    pageInfo: PageInfo!
+    edges: [OscalUserEdge]
+  }
+  type OscalUserEdge {
+    cursor: String!
+    node: OscalUser!
+  }
+  # Object-specific Enumerations
   "Defines the set of types of users"
   enum UserType {
     "Identifies a user account for a person or entity that is part of the organization who owns or operates the system."
@@ -1334,4 +1063,61 @@
     "Identifies a user of the system considered to be outside."
     general_public
   }
+  "Characterizes the type level of privileges"
+  enum PrivilegeLevel {
+    "This role has elevated access to the system, such as a group or system administrator."
+    privileged
+    "This role has typical user-level access to the system without elevated access."
+    non_privileged
+    "This role has no access to the system, such as a manager who approves access as part of a process."
+    no_logical_access
+  }
+
+
+  "Defines identifying information about a Revision"
+  type Revision {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the name given to the document."
+    name: String!
+    "Identifies the date and time the document was published."
+    published: Timestamp
+    "Identifies the date and time the document as last modified."
+    last_modified: Timestamp
+    "Identifies the current version of the document."
+    version: String
+    "Identifies the OSCAL model version the document was authored against."
+    oscal_version: String
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+    "Identifies one or more relationships to other entities."
+    relationships(
+      limit: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+  }
+  input RevisionAddInput {
+    "Identifies the name given to the document."
+    name: String!
+    "Identifies the date and time the document was published."
+    published: Timestamp
+    "Identifies the date and time the document as last modified."
+    last_modified: Timestamp
+    "Identifies the current version of the document."
+    version: String
+    "Identifies the OSCAL model version the document was authored against."
+    oscal_version: String
+  }
+
+
+
+
+
 

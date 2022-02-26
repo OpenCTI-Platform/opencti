@@ -64,7 +64,7 @@ const styles = (theme) => ({
 class CyioDomainObjectAssetOverview extends Component {
   render() {
     const {
-      t, fldt, classes, cyioDomainObject, withoutMarking, withPattern,
+      t, fldt, classes, cyioDomainObject, withoutMarking, withPattern, refreshQuery,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     // const otherCyioIds = cyioDomainObject?.x_opencti_cyio_ids || [];
@@ -252,6 +252,7 @@ class CyioDomainObjectAssetOverview extends Component {
                 <CyioCoreObjectLabelsView
                   labels={cyioDomainObject.labels}
                   marginTop={20}
+                  refreshQuery={refreshQuery}
                   id={cyioDomainObject.id}
                   typename={cyioDomainObject.__typename}
                 />
@@ -324,6 +325,7 @@ class CyioDomainObjectAssetOverview extends Component {
 CyioDomainObjectAssetOverview.propTypes = {
   cyioDomainObject: PropTypes.object,
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   t: PropTypes.func,
   fldt: PropTypes.func,
   withoutMarking: PropTypes.bool,

@@ -123,7 +123,7 @@ class RootNetwork extends Component {
           environment={QueryRendererDarkLight}
           query={networkQuery}
           variables={{ id: networkId }}
-          render={({ error, props }) => {
+          render={({ error, props, retry }) => {
             if (props) {
               if (props.networkAsset) {
                 return (
@@ -134,6 +134,7 @@ class RootNetwork extends Component {
                       render={(routeProps) => (
                         <Network
                           {...routeProps}
+                          refreshQuery={retry}
                           network={props.networkAsset}
                         />
                       )}

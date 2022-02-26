@@ -103,7 +103,7 @@ class RootDevice extends Component {
           environment={QueryRendererDarkLight}
           query={deviceQuery}
           variables={{ id: deviceId }}
-          render={({ error, props }) => {
+          render={({ error, props, retry }) => {
             if (props) {
               if (props.computingDeviceAsset) {
                 return (
@@ -114,6 +114,7 @@ class RootDevice extends Component {
                       render={(routeProps) => (
                         <Device
                           {...routeProps}
+                          refreshQuery={retry}
                           device={props.computingDeviceAsset}
                         />
                       )}

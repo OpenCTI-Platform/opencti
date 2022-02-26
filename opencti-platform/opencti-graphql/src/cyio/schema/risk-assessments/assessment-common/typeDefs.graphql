@@ -1,24 +1,75 @@
   # declares the query entry-points for this type
   extend type Query {
-    # Characterizations
-    characterization(id: ID!): Characterization
-    # Facet
-    facet(id: ID!): Facet
-    # Log Entry
-    logEntry(id: ID!): LogEntry
-    logEntryList( 
-      first: Int
+    # Activity
+    activity(id: ID!): Activity
+    activities( 
+      limit: Int
       offset: Int
-      orderedBy: LogEntriesOrdering
+      orderedBy: ActivityOrdering
       orderMode: OrderingMode
-      filters: [LogEntriesFiltering]
+      filters: [ActivityFiltering]
       filterMode: FilterMode
       search: String
-    ): LogEntryConnection
+    ): ActivityConnection
+    # Actor
+    actor(id: ID!): Actor
+    actors( 
+      limit: Int
+      offset: Int
+      orderedBy: ActorOrdering
+      orderMode: OrderingMode
+      filters: [ActorFiltering]
+      filterMode: FilterMode
+      search: String
+    ): ActorConnection
+    # Characterizations
+    characterization(id: ID!): Characterization
+    characterizations( 
+      limit: Int
+      offset: Int
+      orderedBy: CharacterizationOrdering
+      orderMode: OrderingMode
+      filters: [CharacterizationFiltering]
+      filterMode: FilterMode
+      search: String
+    ): CharacterizationConnection
+    # Evidence
+    evidence(id: ID!): Evidence
+    evidenceList( 
+      limit: Int
+      offset: Int
+      orderedBy: EvidenceOrdering
+      orderMode: OrderingMode
+      filters: [EvidenceFiltering]
+      filterMode: FilterMode
+      search: String
+    ): EvidenceConnection
+    # Facet
+    facet(id: ID!): Facet
+    facets( 
+      limit: Int
+      offset: Int
+      orderedBy: FacetOrdering
+      orderMode: OrderingMode
+      filters: [FacetFiltering]
+      filterMode: FilterMode
+      search: String
+    ): FacetConnection
+    # Assessment Log Entry
+    assessmentLogEntry(id: ID!): AssessmentLogEntry
+    assessmentLogEntries( 
+      limit: Int
+      offset: Int
+      orderedBy: AssessmentLogEntriesOrdering
+      orderMode: OrderingMode
+      filters: [AssessmentLogEntriesFiltering]
+      filterMode: FilterMode
+      search: String
+    ): AssessmentLogEntryConnection
     # Observation
     observation(id: ID!): Observation
-    observationList( 
-      first: Int
+    observations( 
+      limit: Int
       offset: Int
       orderedBy: ObservationsOrdering
       orderMode: OrderingMode
@@ -28,32 +79,41 @@
     ): ObservationConnection
     # Origin
     origin(id: ID!): Origin
-    # Remediation Task
-    remediationTask(id: ID!): RemediationTask
-    remediationTaskList( 
-      first: Int
+    origins( 
+      limit: Int
       offset: Int
-      orderedBy: RemediationTasksOrdering
+      orderedBy: OriginOrdering
       orderMode: OrderingMode
-      filters: [RemediationTasksFiltering]
+      filters: [OriginFiltering]
       filterMode: FilterMode
       search: String
-    ): RemediationTaskConnection
+    ): OriginConnection
+    # Oscal Task
+    oscalTask(id: ID!): OscalTask
+    oscalTasks( 
+      limit: Int
+      offset: Int
+      orderedBy: OscalTaskOrdering
+      orderMode: OrderingMode
+      filters: [OscalTaskFiltering]
+      filterMode: FilterMode
+      search: String
+    ): OscalTaskConnection
     # Required Asset
     requiredAsset(id: ID!): RequiredAsset
-    requiredAssetList( 
-      first: Int
+    requiredAssets( 
+      limit: Int
       offset: Int
-      orderedBy: RequiredAssetsOrdering
+      orderedBy: RequiredAssetOrdering
       orderMode: OrderingMode
-      filters: [RequiredAssetsFiltering]
+      filters: [RequiredAssetFiltering]
       filterMode: FilterMode
       search: String
     ): RequiredAssetConnection
     # Risk 
     risk(id: ID!): Risk
-    riskList( 
-      first: Int
+    risks( 
+      limit: Int
       offset: Int
       orderedBy: RisksOrdering
       orderMode: OrderingMode
@@ -63,8 +123,8 @@
     ): RiskConnection
     # Risk Response
     riskResponse(id: ID!): RiskResponse
-    riskResponseList( 
-      first: Int
+    riskResponses( 
+      limit: Int
       offset: Int
       orderedBy: RiskResponsesOrdering
       orderMode: OrderingMode
@@ -72,35 +132,79 @@
       filterMode: FilterMode
       search: String
     ): RiskResponseConnection
+    # Risk Log Entry
+    riskLogEntry(id: ID!): RiskLogEntry
+    riskLogEntries( 
+      limit: Int
+      offset: Int
+      orderedBy: RiskLogEntriesOrdering
+      orderMode: OrderingMode
+      filters: [RiskLogEntriesFiltering]
+      filterMode: FilterMode
+      search: String
+    ): RiskLogEntryConnection
     # Subject
     subject(id: ID!): Subject
+    subjects( 
+      limit: Int
+      offset: Int
+      orderedBy: SubjectOrdering
+      orderMode: OrderingMode
+      filters: [SubjectFiltering]
+      filterMode: FilterMode
+      search: String
+    ): SubjectConnection
   }
 
   # declares the mutation entry-points for this type
   extend type Mutation {
+    # Activity
+    createActivity(input: ActivityAddInput): Activity
+    deleteActivity(id: ID!): String!
+    editActivity(id: ID!, input: [EditInput]!, commitMessage: String): Activity
     # Actor
     createActor(input: ActorAddInput): Actor
     deleteActor(id: ID!): String!
     editActor(id: ID!, input: [EditInput]!, commitMessage: String): Actor
+    # RiskLog Entry
+    createAssessmentLogEntry(resultId: ID, input: AssessmentLogEntryAddInput): AssessmentLogEntry
+    deleteAssessmentLogEntry(resultId: ID, id: ID!): String!
+    editAssessmentLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): AssessmentLogEntry
+# Characterization
+    createCharacterization(riskId: ID, input: CharacterizationAddInput): Characterization
+    deleteCharacterization(riskId: ID, id: ID!): String!
+    editCharacterization(id: ID!, input: [EditInput]!, commitMessage: String): Characterization
+    # Evidence
+    createEvidence( observartionId: ID, input: EvidenceAddInput): Evidence
+    deleteEvidence( observationId: ID, id: ID!): String!
+    editEvidence(id: ID!, input: [EditInput]!, commitMessage: String): Evidence
     # Facet
-    createFacet(input: CustomFacetAddInput): Facet
-    deleteFacet(id: ID!): String!
+    createFacet(characterizationId: ID, input: FacetAddInput): Facet
+    deleteFacet(characterizationId: ID, id: ID!): String!
     editFacet(id: ID!, input: [EditInput]!, commitMessage: String): Facet
-    # Log Entry
-    createLogEntry(input: LogEntryAddInput): LogEntry
-    deleteLogEntry(id: ID!): String!
-    editLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): LogEntry
-    # Remediation Task
-    createRemediationTask(input: RemediationTaskAddInput): RemediationTask
-    deleteRemediationTask(id: ID!): String!
-    editRemediation(id: ID!, input: [EditInput]!, commitMessage: String): RemediationTask
+    # Observation
+    createObservation(input: ObservationAddInput): Observation
+    deleteObservation(id: ID!): String!
+    editObservation(id: ID!, input: [EditInput]!, commitMessage: String): Observation
+    # Oscal Task
+    createOscalTask(input: OscalTaskAddInput): OscalTask
+    deleteOscalTask(id: ID!): String!
+    editOscalTask(id: ID!, input: [EditInput]!, commitMessage: String): OscalTask
+    # RequiredAsset
+    createRequiredAsset(remediationId: ID, input: RequiredAssetAddInput): RequiredAsset
+    deleteRequiredAsset(remediationId: ID, id: ID!): String!
+    editRequiredAsset(id: ID!, input: [EditInput]!, commitMessage: String): RequiredAsset
+    # RiskLog Entry
+    createRiskLogEntry(riskId: ID, input: RiskLogEntryAddInput): RiskLogEntry
+    deleteRiskLogEntry(riskId: ID, id: ID!): String!
+    editRiskLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): RiskLogEntry
     # Risk 
     createRisk(input: RiskAddInput): Risk
     deleteRisk(id: ID!): String!
     editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk
     # Risk Response
-    createRiskResponse(input: RiskResponseAddInput): RiskResponse
-    deleteRiskResponse(id: ID!): String!
+    createRiskResponse(riskId: ID, input: RiskResponseAddInput): RiskResponse
+    deleteRiskResponse(riskId: ID, id: ID!): String!
     editRiskResponse(id: ID!, input: [EditInput]!, commitMessage: String): RiskResponse
     # Subject
     createSubject(input: SubjectAddInput): Subject
@@ -135,7 +239,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -148,12 +252,54 @@
     name: String!
     "Identifies a human-readable description of the activity."
     description: String!
+    "Identifies that assessment method used."
+    methods: [MethodTypes!]!
     # "Identifies one or more steps related to an activity."
     # steps: [Step]
     # "Identifies the optional set of controls and control objectives that are assessed or remediated by this activity."
     # related_controls: [ControlReview]
     "Identifies the person or organization responsible for performing a specific role related to the task."
     responsible_roles: [OscalResponsibleParty]
+  }
+  input ActivityAddInput {
+    "Identifies the name for the Activity."
+    name: String!
+    "Identifies a human-readable description of the activity."
+    description: String!
+    "Identifies that assessment method used."
+    methods: [MethodTypes!]!
+    # "Identifies the optional set of controls and control objectives that are assessed or remediated by this activity."
+    # related_controls: [ControlReview]
+    # "Identifies the person or organization responsible for performing a specific role related to the task."
+    # responsible_roles: [OscalResponsibleParty]
+  }
+  # Ordering Types
+  enum ActivityOrdering {
+    "Name"
+    name
+    "Method"
+    method
+  }
+  input ActivityFiltering {
+    key: ActivityFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  enum ActivityFilter {
+    "Name"
+    name
+    "Method"
+    method
+  }
+  # Pagination Types
+  type ActivityConnection {
+    pageInfo: PageInfo!
+    edges: [ActivityEdge]
+  }
+  type ActivityEdge {
+    cursor: String!
+    node: Activity!
   }
 
 ## Actor
@@ -162,6 +308,8 @@
   type Actor {
     "Uniquely identifies this object."
     id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Identifies the kind of actor"
     actor_type: ActorType!
     "Identifies a reference to the tool or person based on the associated type."
@@ -171,47 +319,51 @@
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     links: [CyioExternalReference]
   }
-
   input ActorAddInput {
     "Identifies the kind of actor"
     actor_type: ActorType!
+    "Identifies a reference to the tool or person based on the associated type."
+    actor_id: ID!
     "For a party, this can optionally be used to specify the role the actor was performing."
     role: OscalRoleAddInput
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     links: [CyioExternalReferenceAddInput]
   }
-
+  # Ordering Types
+  enum ActorOrdering {
+    "Actor Type"
+    actor_type
+  }
+  # Filtering Types
+  input ActorFiltering {
+    key: ActorFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  enum ActorFilter {
+    "Actor Type"
+    actor_type
+  }
   # Pagination Types
   type ActorConnection {
     pageInfo: PageInfo!
     edges: [ActorEdge]
   }
-
   type ActorEdge {
     cursor: String!
     node: Actor!
   }
 
-  # Filtering Types
-  input ActorsFiltering {
-    key: ActorsFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
-
-  enum ActorsOrdering {
-    actor_type
-  }
-
-  enum ActorsFilter {
-    actor_type
-  }
 
 ## AssessmentSubject
 #
   "Defines the identifying information about the system elements being assessed, such as components, inventory items, and locations. In the assessment plan, this identifies a planned assessment subject. In the assessment results this is an actual assessment subject, and reflects any changes from the plan. exactly what will be the focus of this assessment. Any subjects not identified in this way are out-of-scope."
   type AssessmentSubject {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Indicates the type of assessment subject, such as a component, inventory, item, location, or party represented by this selection statement."
     subject_type: SubjectType!
     "Identifies a human-readable description of the collection of subjects being included in this assessment."
@@ -232,16 +384,27 @@
 #
   "Defines identifying information about an activity to be performed as part of a task."
   type AssociatedActivity {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Identifies a references to an activity defined in the list of activities."
     activity: Activity
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
     links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
     "Identifies the person or organization responsible for performing a specific role related to the task."
     responsible_roles: [OscalResponsibleParty]
     "Identifies an include/exclude pair starts with processing the include, then removing matching entries in the exclude."
     subject: [AssessmentSubject]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
+  }
+  input AssociatedActivityAddInput {
+    activity_id: ID!
+    # "Identifies the person or organization responsible for performing a specific role related to the task."
+    # responsible_roles: [OscalResponsiblePartyAddInput]
+    # "Identifies an include/exclude pair starts with processing the include, then removing matching entries in the exclude."
+    # subject: [AssessmentSubjectAddInput]
   }
 
 ## Characterization
@@ -250,6 +413,8 @@
   type Characterization {
     "Uniquely identifies this object."
     id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Indicates the date and time at which the object was originally created."
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
@@ -264,34 +429,40 @@
     "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
     facets: [Facet]
   }
-
+  input CharacterizationAddInput {
+    "Identifies a reference to tool that performed the detection."
+    origins: [OriginAddInput]
+    "Identifies one or more individual characteristic that is part of a larger set produced by the same actor."
+    facets: [FacetAddInput]
+  }
+  # Ordering Types
+  enum CharacterizationOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+  }
+  # Filtering Types
+  input CharacterizationFiltering {
+    key: CharacterizationFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  enum CharacterizationFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+  }
   # Pagination Types
   type CharacterizationConnection {
     pageInfo: PageInfo!
     edges: [CharacterizationEdge]
   }
-
   type CharacterizationEdge {
     cursor: String!
     node: Characterization!
-  }
-
-  # Filtering Types
-  input CharacterizationsFiltering {
-    key: CharacterizationsFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
-
-  enum CharacterizationsOrdering {
-    created
-    modified
-  }
-
-  enum CharacterizationsFilter {
-    created
-    modified
   }
 
 ## DateRangeTiming
@@ -303,7 +474,6 @@
     "identifies the specific date that the task must occur on or before."
     end_date: Timestamp!
   }
-
   input DateRangeTimingAddInput {
     "Identifies the specified date that the task must occur on or after."
     start_date: Timestamp
@@ -315,6 +485,14 @@
 #
   "Defines identifying information about evidence relevant to this observation."
   type Evidence {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Indicates the date and time at which the object was originally created."
+    created: Timestamp
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: Timestamp
     "Identifies a resolvable URL reference to the relevant evidence."
     href: URL
     "Identifies a human-readable description of the evidence."
@@ -324,181 +502,198 @@
     "Identifies one or more references to additional commentary on the Model."
     remarks: [CyioNote]
   }
-
-## Facet
-#
-  "Defines the basic interface of a facet."
-  interface Facet {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
-    source_system: URL!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
+  input EvidenceAddInput {
+    "Identifies a resolvable URL reference to the relevant evidence."
+    href: URL
+    "Identifies a human-readable description of the evidence."
+    description: String
   }
-
-  "Defines identifying information about a custom facet."
-  type CustomFacet implements Facet {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: String!
-    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
-    source_system: URL!
-    "Indicates the value of the facet."
-    value: String!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
+  # Ordering Types
+  enum EvidenceOrdering {
+    "Entity Type"
+    entity_type
   }
-
-  input CustomFacetAddInput {
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: String!
-    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
-    source_system: URL!
-    "Indicates the value of the facet."
-    value: String!
-  }
-
-  "Defines an OSCAL Risk Facet"
-  type RiskFacet implements Facet {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: RiskFacetName!
-    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
-    source_system: URL!
-    "Indicates the value of the facet."
-    value: String!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-  }
-
-  input RiskFacetAddInput {
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: RiskFacetName!
-    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
-    source_system: URL!
-    "Indicates the value of the facet."
-    value: String!    
-  }
-
-  "Defines a Vulnerability Facet"
-  type VulnerabilityFacet implements Facet {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: VulnerabilityFacetName!
-    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
-    source_system: URL!
-    "Indicates the value of the facet."
-    value: String!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-  }
-
-  input VulnerabilityFacetAddInput {
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: VulnerabilityFacetName!
-    "Indicates the value of the facet."
-    value: String!    
-  }
-
-  "Defines a CVSS 2.0 Facet"
-  type Cvss2Facet implements Facet {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: Cvss2FacetName!
-    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
-    source_system: URL!
-    "Indicates the value of the facet."
-    value: String!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-  }
-
-  input Cvss2FacetAddInput {
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: Cvss2FacetName!
-    "Indicates the value of the facet."
-    value: String!
-  }
-
-  "Defines a CVSS 3.* Facet"
-  type Cvss3Facet implements Facet {
-    "Uniquely identifies this object."
-    id: ID!
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: Cvss3FacetName!
-    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
-    source_system: URL!
-    "Indicates the value of the facet."
-    value: String!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReference]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNote]
-  }
-
-  input Cvss3FacetAddInput {
-    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
-    risk_state: RiskState!
-    "Identifies the name of the risk metric within the specified system."
-    name: Cvss3FacetName!
-    "Indicates the value of the facet."
-    value: String!
-  }
-
   # Filtering Types
-  input FacetsFiltering {
-    key: FacetsFilter!
+  input EvidenceFiltering {
+    key: EvidenceFilter!
     values: [String]!
     operator: String
     filterMode: FilterMode
   }
-
-  enum FacetsOrdering {
-    risk_state
-    name
-    source_system
+  enum EvidenceFilter {
+    "Entity Type"
+    entity_type
+  }
+  # Pagination Types
+  type EvidenceConnection {
+    pageInfo: PageInfo!
+    edges: [EvidenceEdge]
+  }
+  type EvidenceEdge {
+    cursor: String!
+    node: Evidence!
   }
 
-  enum FacetsFilter {
-    risk_state
-    name
-    source_system
+## Facet
+#
+  "Defines the basic interface of a facet."
+  type Facet {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+    source_system: URL!
+    "Identifies the name of the metric within the specified system."
+    facet_name: String!
+    "Indicates the value of the facet."
+    facet_value: String!
   }
+  input FacetAddInput {
+    "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+    risk_state: RiskState!
+    "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+    source_system: URL!
+    "Identifies the name of the metric within the specified system."
+    facet_name: String!
+    "Indicates the value of the facet."
+    facet_value: String!
+  }
+  # Ordering Types
+  enum FacetOrdering {
+    "Risk State"
+    risk_state
+    "Source System"
+    source_system
+    "Facet Name"
+    facet_name
+  }
+  # Filtering Types
+  input FacetFiltering {
+    key: FacetFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  enum FacetFilter {
+    "Risk State"
+    risk_state
+    "Source System"
+    source_system
+    "Facet Name"
+    facet_name
+  }
+  # Pagination Types
+  type FacetConnection {
+    pageInfo: PageInfo!
+    edges: [FacetEdge]
+  }
+  type FacetEdge {
+    cursor: String!
+    node: Facet!
+  }
+
+  # "Defines identifying information about a custom facet."
+  # type CustomFacet implements Facet {
+  #   "Uniquely identifies this object."
+  #   id: ID!
+  #   "Identifies the type of the Object."
+  #   entity_type: String!
+  #   "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  #   links: [CyioExternalReference]
+  #   "Identifies one or more references to additional commentary on the Model."
+  #   remarks: [CyioNote]
+  #   "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+  #   risk_state: RiskState!
+  #   "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+  #   source_system: URL!
+  #   "Identifies the name of the risk metric within the specified system."
+  #   facet_name: String!
+  #   "Indicates the value of the facet."
+  #   facet_value: String!
+  # }
+  # "Defines an OSCAL Risk Facet"
+  # type OscalFacet implements Facet {
+  #   "Uniquely identifies this object."
+  #   id: ID!
+  #   "Identifies the type of the Object."
+  #   entity_type: String!
+  #   "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  #   links: [CyioExternalReference]
+  #   "Identifies one or more references to additional commentary on the Model."
+  #   remarks: [CyioNote]
+  #   "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+  #   risk_state: RiskState!
+  #   "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+  #   source_system: URL!
+  #   "Identifies the name of the risk metric within the specified system."
+  #   facet_name: OscalFacetName!
+  #   "Indicates the value of the facet."
+  #   facet_value: String!
+  # }
+  # "Defines a Vulnerability Facet"
+  # type VulnerabilityFacet implements Facet {
+  #   "Uniquely identifies this object."
+  #   id: ID!
+  #   "Identifies the type of the Object."
+  #   entity_type: String!
+  #   "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  #   links: [CyioExternalReference]
+  #   "Identifies one or more references to additional commentary on the Model."
+  #   remarks: [CyioNote]
+  #   "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+  #   risk_state: RiskState!
+  #   "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+  #   source_system: URL!
+  #   "Identifies the name of the risk metric within the specified system."
+  #   facet_name: VulnerabilityFacetName!
+  #   "Indicates the value of the facet."
+  #   facet_value: String!
+  # }
+  # "Defines a CVSS 2.0 Facet"
+  # type Cvss2Facet implements Facet {
+  #   "Uniquely identifies this object."
+  #   id: ID!
+  #   "Identifies the type of the Object."
+  #   entity_type: String!
+  #   "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  #   links: [CyioExternalReference]
+  #   "Identifies one or more references to additional commentary on the Model."
+  #   remarks: [CyioNote]
+  #   "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+  #   risk_state: RiskState!
+  #   "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+  #   source_system: URL!
+  #   "Identifies the name of the risk metric within the specified system."
+  #   facet_name: Cvss2FacetName!
+  #   "Indicates the value of the facet."
+  #   facet_value: String!
+  # }
+  # "Defines a CVSS 3.* Facet"
+  # type Cvss3Facet implements Facet {
+  #   "Uniquely identifies this object."
+  #   id: ID!
+  #   "Identifies the type of the Object."
+  #   entity_type: String!
+  #   "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  #   links: [CyioExternalReference]
+  #   "Identifies one or more references to additional commentary on the Model."
+  #   remarks: [CyioNote]
+  #   "Indicates if the facet is 'initial' as first identified, or 'adjusted' indicating that the value has be changed after some adjustments have been made (e.g., to identify residual risk)."
+  #   risk_state: RiskState!
+  #   "Specifies the naming system under which this risk metric is organized, which allows for the same names to be used in different systems controlled by different parties."
+  #   source_system: URL!
+  #   "Identifies the name of the risk metric within the specified system."
+  #   facet_name: Cvss3FacetName!
+  #   "Indicates the value of the facet."
+  #   facet_value: String!
+  # }
 
 ## Finding Target
 #
@@ -526,10 +721,10 @@
     remarks: [CyioNote]
   }
 
-## Log Entry
+## LogEntry
 #
-  "Defines identifying information about a risk log entry of all risk-related tasks taken."
-  type LogEntry implements BasicObject & LifecycleObject & OscalObject {
+"Defines an abstract interface for identifying information about a log entry for actions taken."
+interface LogEntry {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -553,7 +748,152 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # LogEntry
+    "Identifies the name for the risk log entry."
+    name: String!
+    "Identifies a human-readable description of of what was done regarding the risk."
+    description: String!
+    "Identifies the start date and time of the event."
+    event_start: Timestamp
+    "Identifies the end date and time of the event. If the event is a point in time, the start and end will be the same date and time."
+    event_end: Timestamp
+    "Used to indicate who created a log entry in what role."
+    logged_by: [PartyOrComponent]
+}
+
+## Assessment Log Entry
+#
+  "Defines identifying information about a log entry of all assessment-related actions taken."
+  type AssessmentLogEntry implements BasicObject & LifecycleObject & OscalObject & LogEntry {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: Timestamp
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: Timestamp
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
+    # OscalObject
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+    "Identifies one or more relationships to other entities."
+    relationships(
+      limit: Int
+      offset: Int
+      orderedBy: OscalRelationshipsOrdering
+      orderMode: OrderingMode
+      filters: [OscalRelationshipsFiltering]
+      filterMode: FilterMode
+      search: String 
+    ): OscalRelationshipConnection
+    # LogEntry
+    "Identifies the name for the risk log entry."
+    name: String!
+    "Identifies a human-readable description of of what was done regarding the risk."
+    description: String!
+    "Identifies the start date and time of the event."
+    event_start: Timestamp
+    "Identifies the end date and time of the event. If the event is a point in time, the start and end will be the same date and time."
+    event_end: Timestamp
+    "Used to indicate who created a log entry in what role."
+    logged_by: [PartyOrComponent]
+    "Identifies one or more task for which the containing object is a consequence of."
+    related_tasks: [OscalTask]
+  }
+  "Defines identifying information about a log entry of all assessment-related actions taken."
+  input AssessmentLogEntryAddInput  {
+    # Entry
+    "Identifies the name for the risk log entry."
+    name: String!
+    "Identifies a human-readable description of of what was done regarding the risk."
+    description: String!
+    "Identifies the start date and time of the event."
+    event_start: Timestamp
+    "Identifies the end date and time of the event. If the event is a point in time, the start and end will be the same date and time."
+    event_end: Timestamp
+    "Used to indicate the party that created a log entry in what role."
+    logged_by: [OscalPartyAddInput]
+  }
+  # Ordering Type
+  enum AssessmentLogEntriesOrdering {
+    "Event Start"
+    event_start
+    "Event End"
+    event_end
+    "Label"
+    labels
+  }
+  # Pagination Types
+  type AssessmentLogEntryConnection {
+    pageInfo: PageInfo!
+    edges: [AssessmentLogEntryEdge]
+  }
+  type AssessmentLogEntryEdge {
+    cursor: String!
+    node: AssessmentLogEntry!
+  }
+  # Filtering Types
+  input AssessmentLogEntriesFiltering {
+    key: AssessmentLogEntriesFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  enum AssessmentLogEntriesFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
+  }
+
+## Risk Log Entry
+#
+  "Defines identifying information about a log entry of all risk-related tasks taken."
+  type RiskLogEntry implements BasicObject & LifecycleObject & OscalObject & LogEntry {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    "Indicates the date and time at which the object was originally created."
+    created: Timestamp
+    "Indicates the date and time that this particular version of the object was last modified."
+    modified: Timestamp
+    # OscalObject
+    "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
+    labels: [CyioLabel]
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [CyioExternalReference]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [CyioNote]
+    "Identifies one or more relationships to other entities."
+    relationships(
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -579,9 +919,8 @@
     "Identifies an individual risk response that this log entry is for."
     related_responses: [RiskResponse]
   }
-
-  "Defines identifying information about a risk log entry of all risk-related tasks taken."
-  input LogEntryAddInput  {
+  "Defines identifying information about a log entry of all risk-related tasks taken."
+  input RiskLogEntryAddInput  {
     # Entry
     "Identifies the type of remediation tracking entry."
     entry_type: [EntryType!]!
@@ -593,44 +932,47 @@
     event_start: Timestamp
     "Identifies the end date and time of the event. If the event is a point in time, the start and end will be the same date and time."
     event_end: Timestamp
-    "Used to indicate the person created a log entry in what role."
-    logged_by_person: [OscalPersonAddInput]
-    "Used to indicate the organization created a log entry in what role."
-    logged_by_organization: [OscalOrganizationAddInput]
+    "Used to indicate the party that created a log entry in what role."
+    logged_by: [OscalPartyAddInput]
     "Identifies a change in risk status made resulting from the task described by this risk log entry. This allows the risk's status history to be captured as a sequence of risk log entries."
     status_change: RiskStatus
+    "Identifies a reference individual risk response that this log entry is for."
+    related_responses: [ID]
   }
-
-  # Pagination Types
-  type LogEntryConnection {
-    pageInfo: PageInfo!
-    edges: [LogEntryEdge]
+  # Ordering Type
+  enum RiskLogEntriesOrdering {
+    "Event Start"
+    event_start
+    "Event End"
+    event_end
+    "Label"
+    labels
+    "Entry Type"
+    entry_type
   }
-
-  type LogEntryEdge {
-    cursor: String!
-    node: LogEntry!
-  }
-
   # Filtering Types
-  input LogEntriesFiltering {
-    key: LogEntriesFilter!
+  input RiskLogEntriesFiltering {
+    key: RiskLogEntriesFilter!
     values: [String]!
     operator: String
     filterMode: FilterMode
   }
-
-  enum LogEntriesOrdering {
-    event_start
-    event_end
-    labels
-    entry_type
-  }
-
-  enum LogEntriesFilter {
+  enum RiskLogEntriesFilter {
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
+  }
+  # Pagination Types
+  type RiskLogEntryConnection {
+    pageInfo: PageInfo!
+    edges: [RiskLogEntryEdge]
+  }
+  type RiskLogEntryEdge {
+    cursor: String!
+    node: RiskLogEntry!
   }
 
 ## Mitigating Factor
@@ -660,7 +1002,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -670,7 +1012,7 @@
     ): OscalRelationshipConnection
     # Mitigating Factor
     # "Identifies a reference to an implementation statement in the SSP."
-    # implementation_statement: ImplementationStatement
+    # implementation: ImplementationStatement
     "Identifies a human-readable description of this mitigating factor."
     description: String
     "Identifies a reference to one or more subjects of the observations.  The subject indicates what was observed, who was interviewed, or what was tested or inspected."
@@ -684,10 +1026,10 @@
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
@@ -704,7 +1046,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -718,7 +1060,7 @@
     "Identifies a human-readable description of the assessment observation."
     description: String!
     "Identifies how the observation was made."
-    methods: MethodTypes!
+    methods: [MethodTypes!]!
     "Identifies the nature of the observation. More than one may be used to further qualify and enable filtering."
     observation_types: [ObservationType]
     "Identifies one or more sources of the finding, such as a tool, interviewed person, or activity."
@@ -732,18 +1074,45 @@
     "Identifies Date/time identifying when the finding information is out-of-date and no longer valid. Typically used with continuous assessment scenarios."
     expires: Timestamp
   }
-
-  # Pagination Types
-  type ObservationConnection {
-    pageInfo: PageInfo!
-    edges: [ObservationEdge]
+  input ObservationAddInput {
+    "Identifies the name for the observation."
+    name: String!
+    "Identifies a human-readable description of the assessment observation."
+    description: String!
+    "Identifies how the observation was made."
+    methods: [MethodTypes!]!
+    "Identifies the nature of the observation. More than one may be used to further qualify and enable filtering."
+    observation_types: [ObservationType]
+    "Identifies one or more sources of the finding, such as a tool, interviewed person, or activity."
+    origins: [OriginAddInput]
+    "Identifies a reference to one or more subjects of the observations.  The subject indicates what was observed, who was interviewed, or what was tested or inspected."
+    subjects: [SubjectAddInput]
+    "Identifies relevant evidence collected as part of this observation."
+    relevant_evidence: [EvidenceAddInput]
+    "Identifies a Date/time stamp identifying when the finding information was collected."
+    collected: Timestamp
+    "Identifies Date/time identifying when the finding information is out-of-date and no longer valid. Typically used with continuous assessment scenarios."
+    expires: Timestamp
   }
-
-  type ObservationEdge {
-    cursor: String!
-    node: Observation!
+  # Ordering Type
+  enum ObservationsOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    labels
+    "Name"
+    name
+    "Observation Method"
+    methods
+    "Obsevation Type"
+    observation_types
+    "Collection Date"
+    collected
+    "Expiration Date"
+    expires
   }
-
   # Filtering Types
   input ObservationsFiltering {
     key: ObservationsFilter!
@@ -751,26 +1120,30 @@
     operator: String
     filterMode: FilterMode
   }
-
-  enum ObservationsOrdering {
+  enum ObservationsFilter {
+    "Created"
     created
+    "Modified"
     modified
-    labels
-    name
-    methods
-    observation_types
+    "Label"
+    label_name
+    "Observation Method"
+    method
+    "Observation Type"
+    observation_type
+    "Collection Date"
     collected
+    "Expiration Date"
     expires
   }
-
-  enum ObservationsFilter {
-    created
-    modified
-    labels
-    method
-    observation_types
-    collected
-    expires
+  # Pagination Types
+  type ObservationConnection {
+    pageInfo: PageInfo!
+    edges: [ObservationEdge]
+  }
+  type ObservationEdge {
+    cursor: String!
+    node: Observation!
   }
 
 ## OnDateTiming
@@ -780,7 +1153,6 @@
     "Identifies the date that the task must occur on."
     on_date: Timestamp
   }
-
   input OnDateTimingAddInput {
     on_date: Timestamp
   }
@@ -791,55 +1163,62 @@
   type Origin {
     "Uniquely identifies this object."
     id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Identifies one or more actors that produces an observation, a finding, or a risk. One or more actor type can be used to specify a person that is using a tool."
     origin_actors: [Actor!]!
     "Identifies one or more task for which the containing object is a consequence of."
-    related_tasks(first: Int): RemediationTaskConnection
+    related_tasks: [OscalTask]
   }
-
-  # input OriginAddInput {
-  # }
-
+  input OriginAddInput {
+    origin_actors: [ActorAddInput!]!
+    related_tasks: [OscalTaskAddInput]
+  }
   # Filtering Types
-  input OriginsFiltering {
-    key: OriginsFilter!
+  input OriginFiltering {
+    key: OriginFilter!
     values: [String]!
     operator: String
     filterMode: FilterMode
   }
-
-  enum OriginsOrdering {
+  enum OriginOrdering {
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
+    "Name"
     name
-    methods
-    observation_types
-    collected
-    expires
   }
-
-  enum OriginsFilter {
+  enum OriginFilter {
+    "Created"
     created
+    "Moodified"
     modified
-    labels
-    method
-    observation_types
-    collected
-    expires
+    "Label"
+    label_name
+  }
+  # Pagination Types
+  type OriginConnection {
+    pageInfo: PageInfo!
+    edges: [OriginEdge]
+  }
+  type OriginEdge {
+    cursor: String!
+    node: Origin!
   }
 
-## Remediation Task
-#
-  "Defines identifying information about a scheduled event or milestone, which may be associated with a series of assessment actions."
-  type RemediationTask implements BasicObject & LifecycleObject & OscalObject {
+## Task
+"Defines an abstract interface for identifying information about a scheduled event or milestone, which may be associated with a series of assessment actions."
+type OscalTask implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
     "Identifies the type of the Object."
     entity_type: String!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
     # CoreObject
@@ -856,7 +1235,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -864,7 +1243,7 @@
       filterMode: FilterMode
       search: String 
     ): OscalRelationshipConnection
-    # RemediationTask
+    # Task
     "Identifies the type of task."
     task_type: TaskType!
     "Identifies the name for the task."
@@ -874,63 +1253,63 @@
     "Identifies the timing under which the task is intended to occur."
     timing: EventTiming
     "Identifies that the task is dependent on another task."
-    task_dependencies(first: Int): RemediationTaskConnection
+    task_dependencies: [OscalTask]
     # ""
-    # tasks(first: Int): RemediationTaskConnector
+    # tasks: [Task]
     "Identifies an individual activity to be performed as part of a task."
     associated_activities: [AssociatedActivity]
     "Identifies a reference to one or more subjects that the task is performed against: component, inventory item, party, users"
     subjects: [AssessmentSubject]
     "Identifies the person or organization responsible for performing a specific role related to the task."
     responsible_roles: [OscalResponsibleParty]
-  }
+}
+input OscalTaskAddInput {
+  task_type: TaskType!
+  name: String!
+  description: String!
+  task_dependencies: [ID]
+  associated_activities: [ID]
+  # subjects: [AssessmentSubject]
+  responsible_roles: [ID]
+}
+# Ordering Types
+enum OscalTaskOrdering {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Task Type"
+  task_type
+  "Name"
+  name
+}
+# Filtering Types
+input OscalTaskFiltering {
+  key: OscalTaskFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+enum OscalTaskFilter {
+  "Created"
+  created
+  "Modified"
+  modified
+  "Task Type"
+  task_type
+  "Name"
+  name
+}
+# Pagination types
+type OscalTaskConnection {
+  pageInfo: PageInfo!
+  edges: [OscalTaskEdge]
+}
+type OscalTaskEdge {
+  cursor: String!
+  node: OscalTask!
+}
 
-  input RemediationTaskAddInput {
-    # RemediationTask
-    "Identifies the type of task."
-    task_type: TaskType!
-    "Identifies the name for the task."
-    name: String!
-    "Identifies a human-readable description of the task."
-    description: String!
-    "Identifies the date range under which the task is intended to occur."
-    timing_date_range: DateRangeTimingAddInput
-    "Identifies the date under which the task is intended to occur."
-    timing_on_date: OnDateTimingAddInput
-  }
-
-  # Pagination Types
-  type RemediationTaskConnection {
-    pageInfo: PageInfo!
-    edges: [RemediationTaskEdge]
-  }
-
-  type RemediationTaskEdge {
-    cursor: String!
-    node: RemediationTask!
-  }
-
-  # Filtering Types
-  input RemediationTasksFiltering {
-    key: RemediationTaskFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
-
-  enum RemediationTasksOrdering {
-    created
-    modified
-    task_type
-    name
-  }
-
-  enum RemediationTaskFilter {
-    created
-    modified
-    task_type
-    name
-  }
 
 ## RequiredAsset
 #
@@ -959,7 +1338,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -975,47 +1354,53 @@
     "Identifies a human-readable description of the required asset."
     description: String!
   }
-
   input RequiredAssetAddInput {
     # Required Asset
     "Identifies the name of the required asset."
     name: String!
     "Identifies a human-readable description of the required asset."
     description: String!
+    "Identifies a reference to one or more subjects, in the form of a party or tool required to achieve the remediation."
+    subjects: [SubjectAddInput]
   }
-
-  # Pagination Types
-  type RequiredAssetConnection {
-    pageInfo: PageInfo!
-    edges: [RequiredAssetEdge]
+  # Ordering Type
+  enum RequiredAssetOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    labels
+    "Name"
+    name
   }
-
-  type RequiredAssetEdge {
-    cursor: String!
-    node: RequiredAsset!
-  }
-
   # Filtering Types
-  input RequiredAssetsFiltering {
+  input RequiredAssetFiltering {
     key: RequiredAssetFilter!
     values: [String]!
     operator: String
     filterMode: FilterMode
   }
-
-  enum RequiredAssetsOrdering {
-    created
-    modified
-    labels
-    name
-  }
-
   enum RequiredAssetFilter {
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
+    "Name"
     name
   }
+  # Pagination Types
+  type RequiredAssetConnection {
+    pageInfo: PageInfo!
+    edges: [RequiredAssetEdge]
+  }
+  type RequiredAssetEdge {
+    cursor: String!
+    node: RequiredAsset!
+  }
+
 
   "Defines identifying information about a Risk"
   type Risk implements BasicObject & LifecycleObject & OscalObject {
@@ -1042,7 +1427,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1072,9 +1457,9 @@
     "Identifies either recommended or an actual plan for addressing the risk."
     remediations: [RiskResponse]
     "log of all risk-related tasks taken."
-    risk_log(first: Int): LogEntryConnection
+    risk_log(limit: Int): RiskLogEntryConnection
     "Relates the finding to a set of referenced observations that were used to determine the risk.  This would be the Component in which the risk exists and the InventoryItem(s) in which theComponent is installed"
-    related_observations(first: Int): ObservationConnection
+    related_observations(limit: Int): ObservationConnection
     "Identifies that the risk has been confirmed to be a false positive."
     false_positive: RiskAssertionState
     "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
@@ -1088,7 +1473,6 @@
     "Identifies a control impacted by this risk."
     impacted_control_id: String
   }
-
   input RiskAddInput {
     "Identifies the name for the risk."
     name: String!
@@ -1113,18 +1497,21 @@
     "Identifies a control impacted by this risk."
     impacted_control_id: String
   }
-
-  # Pagination Types
-  type RiskConnection {
-    pageInfo: PageInfo!
-    edges: [RiskEdge]
+  # Risk Ordering
+  enum RisksOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    labels
+    "Name"
+    name
+    "Risk Status"
+    risk_status
+    "Deadline"
+    deadline
   }
-
-  type RiskEdge {
-    cursor: String!
-    node: Risk!
-  }
-
   # Filtering Types
   input RisksFiltering {
     key: RisksFilter!
@@ -1132,23 +1519,28 @@
     operator: String
     filterMode: FilterMode
   }
-
-  enum RisksOrdering {
-    created
-    modified
-    labels
-    name
-    risk_status
-    deadline
-  }
-
   enum RisksFilter {
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
+    "Risk Status"
     risk_status
+    "Deadline"
     deadline
   }
+  # Pagination Types
+  type RiskConnection {
+    pageInfo: PageInfo!
+    edges: [RiskEdge]
+  }
+  type RiskEdge {
+    cursor: String!
+    node: Risk!
+  }
+
 
 ## Risk Response
 #
@@ -1177,7 +1569,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1197,11 +1589,10 @@
     "Identifies one or more sources of individuals and/or tools that generated this recommended or planned response."
     origins: [Origin]
     "Identifies an asset required to achieve remediation."
-    required_assets(first: Int): RequiredAssetConnection
+    required_assets: [RequiredAsset]
     "Identifies one or more scheduled events or milestones, which may be associated with a series of assessment actions."
-    tasks(first: Int): RemediationTaskConnection
+    tasks: [OscalTask]
   }
-
   input RiskResponseAddInput {
     # Risk Response
     "Identifies the type of response to the risk"
@@ -1213,7 +1604,17 @@
     "Identifies a human-readable description of the response plan."
     description: String!
   }
-
+  # Ordering Types
+  enum RiskResponsesOrdering {
+    "Response Type"
+    response_type
+    "Response Lifecycle"
+    lifecycle
+    "Name"
+    name
+    "Source System"
+    source_system
+  }
   # Filtering Types
   input RiskResponsesFiltering {
     key: RiskResponseFilter!
@@ -1221,32 +1622,25 @@
     operator: String
     filterMode: FilterMode
   }
-
-  enum RiskResponsesOrdering {
-    response_type
-    lifecycle
-    name
-    source_system
-  }
-
   enum RiskResponseFilter {
+    "Response Type"
     response_type
+    "Response Lifecycle"
     lifecycle
+    "Name"
     name
+    "Source System"
     source_system
   }
-
-    # Pagination Types
-    type RiskResponseConnection {
+  # Pagination Types
+  type RiskResponseConnection {
     pageInfo: PageInfo!
     edges: [RiskResponseEdge]
   }
-
   type RiskResponseEdge {
     cursor: String!
     node: RiskResponse!
   }
-
 
 ## Subject
 #
@@ -1254,10 +1648,12 @@
   type Subject {
     "Uniquely identifies this object."
     id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Indicates the type of subject"
     subject_type: SubjectType!
     "Identifies a reference to a component, inventory-item, location, party, user, or resource."
-    subject: SubjectTarget
+    subject_ref: SubjectTarget
     "Identifies the name for the referenced subject."
     name: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
@@ -1265,35 +1661,44 @@
     "Identifies one or more references to additional commentary on the Model."
     remarks: [CyioNote]
   }
-
   input SubjectAddInput {
-    "Indicates the type of subject"
-    subject_type: SubjectType!
     "Identifies the name for the referenced subject."
     name: String!
-    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-    links: [CyioExternalReferenceAddInput]
-    "Identifies one or more references to additional commentary on the Model."
-    remarks: [CyioNoteAddInput]
+    "Indicates the type of subject"
+    subject_type: SubjectType!
+    "Identifies a reference to a component, inventory-item, location, party, user, or resource."
+    subject_ref: ID!
   }
-
+  # Ordering Types
+  enum SubjectOrdering {
+    "Subject Type"
+    subject_type
+    "Name"
+    name
+  }
   # Filtering Types
-  input SubjectsFiltering {
+  input SubjectFiltering {
     key: SubjectFilter!
     values: [String]!
     operator: String
     filterMode: FilterMode
   }
-
-  enum SubjectsOrdering {
-    subject_type
-    name
-  }
-
   enum SubjectFilter {
+    "Subject Type"
     subject_type
+    "Name"
     name
   }
+  # Pagination Types
+  type SubjectConnection {
+    pageInfo: PageInfo!
+    edges: [SubjectEdge]
+  }
+  type SubjectEdge {
+    cursor: String!
+    node: Subject!
+  }
+
 
 ## Threat Reference
 #
@@ -1311,14 +1716,11 @@
 ## Unions
 #
   union EventTiming = DateRangeTiming | OnDateTiming
-  union PartyTypes = OscalPerson | OscalOrganization
   # union StatementOrObjects = ControlStatement | ControlObjective
-  union PartyOrComponent = OscalPerson | OscalOrganization 
-          | HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent
+  union PartyOrComponent = OscalParty | HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent
   union SubjectTarget = HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent  
           | Hardware | ComputingDevice | Appliance | NetworkDevice | Firewall | Router | Switch
-          | OscalLocation | OscalPerson | OscalOrganization 
-          | OscalUser | OscalResource
+          | OscalLocation | OscalParty | OscalUser | OscalResource
 
 ## Enumerations
 #
@@ -1370,7 +1772,7 @@
     not_defined
   }
 
-  "Defines the states of a risk identification"
+  "Defines the states of a Facet identification"
   enum RiskState {
     "As first identified."
     initial
@@ -1556,6 +1958,22 @@
     resource
   }
 
+  "Defines the set of facet source systems"
+  enum FacetSourceSystem {
+    "http://csrc.nist.gov/oscal"
+    Oscal
+    "http://fedramp.gov"
+    FedRAMP
+    "http://cve.mitre.org"
+    Cve
+    "http://www.first.org/cvss/2.0"
+    Cvss2_0
+    "http://www.first.org/cvss/3.0"
+    Cvss3_0
+    "http://www.first.org/cvss/3.1"
+    Cvss3_1
+  }
+
   "Defines the set of risk severity level"
   enum VulnerabilitySeverity {
     "Vulnerability is exposed and exploitable, and its exploitation could result in severe impacts."
@@ -1572,7 +1990,7 @@
 
 
 "Defines the set of OSCAL/FedRAMP Facet names"
-enum RiskFacetName {
+enum OscalFacetName {
   "Likelihood"
   likelihood
   "Impact rating"
