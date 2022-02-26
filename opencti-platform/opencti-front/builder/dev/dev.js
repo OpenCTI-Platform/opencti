@@ -61,6 +61,8 @@ esbuild.build({
             }),
         );
     });
+    app.use(createProxyMiddleware('/stream', {target: 'http://localhost:4000', changeOrigin: true, ws: false}));
+    app.use(createProxyMiddleware('/taxii2', {target: 'http://localhost:4000', changeOrigin: true, ws: false}));
     app.use(createProxyMiddleware('/graphql', {target: 'http://localhost:4000', changeOrigin: true, ws: true}));
     app.use(createProxyMiddleware('/auth/**', {target: 'http://localhost:4000', changeOrigin: true, ws: true}));
     app.use(compression({}));
