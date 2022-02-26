@@ -2,6 +2,8 @@ import React from 'react';
 import DatePicker from '@mui/lab/DatePicker';
 import TextField from '@mui/material/TextField';
 import { fieldToDatePicker } from 'formik-mui-lab';
+import { useField } from 'formik';
+import * as R from 'ramda';
 import { parse } from '../utils/Time';
 
 const DatePickerField = (props) => {
@@ -11,7 +13,10 @@ const DatePickerField = (props) => {
     onChange,
     onFocus,
     onSubmit,
+    invalidDateMessage,
+    TextFieldProps,
   } = props;
+  const [field, meta] = useField(name);
   const internalOnAccept = React.useCallback(
     (date) => {
       setTouched(true);
@@ -35,16 +40,13 @@ const DatePickerField = (props) => {
       onFocus(name);
     }
   }, [onFocus, name]);
-  const internalOnBlur = React.useCallback(
-    (event) => {
-      setTouched(true);
-      const { value } = event.target;
-      if (typeof onSubmit === 'function') {
-        onSubmit(name, value ? parse(value).toISOString() : '');
-      }
-    },
-    [setTouched, onSubmit, name],
-  );
+  const internalOnBlur = React.useCallback(() => {
+    setTouched(true);
+    const { value } = field;
+    if (typeof onSubmit === 'function') {
+      onSubmit(name, value ? parse(value).toISOString() : '');
+    }
+  }, [setTouched, onSubmit, name]);
   return (
     <DatePicker
       {...fieldToDatePicker(props)}
@@ -52,12 +54,20 @@ const DatePickerField = (props) => {
       disableToolbar={false}
       autoOk={true}
       allowKeyboardControl={true}
-      format="YYYY-MM-DD"
       onAccept={internalOnAccept}
       onChange={internalOnChange}
-      onFocus={internalOnFocus}
-      onBlur={internalOnBlur}
-      renderInput={(params) => <TextField {...params} />}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          onFocus={internalOnFocus}
+          onBlur={internalOnBlur}
+          error={!R.isNil(meta.error)}
+          helperText={
+            (!R.isNil(meta.error) && invalidDateMessage)
+            || TextFieldProps.helperText
+          }
+        />
+      )}
     />
   );
 };

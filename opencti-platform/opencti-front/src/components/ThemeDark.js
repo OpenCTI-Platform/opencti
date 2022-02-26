@@ -148,12 +148,16 @@ export default (
             color: '#ffffff !important',
           },
           '.mde-header-item button': {
+            fontFamily: '"IBM Plex Sans", sans-serif',
             color: '#ffffff !important',
           },
           '.mde-tabs button': {
+            fontFamily: '"IBM Plex Sans", sans-serif',
             color: '#ffffff !important',
           },
           '.mde-textarea-wrapper textarea': {
+            fontFamily: '"IBM Plex Sans", sans-serif',
+            fontSize: 13,
             color: '#ffffff',
             background: 'transparent',
             borderBottom: '1px solid #b9bfc1 !important',

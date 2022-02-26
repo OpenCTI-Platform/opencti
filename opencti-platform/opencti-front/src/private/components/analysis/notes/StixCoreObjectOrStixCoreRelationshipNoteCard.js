@@ -270,7 +270,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             </Button>
             <Button
               onClick={this.handleRemoval.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.removing}
             >
               {t('Delete')}

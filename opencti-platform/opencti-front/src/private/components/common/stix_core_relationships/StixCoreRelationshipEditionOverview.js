@@ -414,39 +414,48 @@ const StixCoreRelationshipEditionContainer = ({
                 fullWidth={true}
                 containerstyle={{ width: '100%' }}
                 editContext={editContext}
-                variant="edit"
               />
               <Field
                 component={DatePickerField}
                 name="start_time"
-                label={t('Start time')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t(
+                  'The value must be a date (mm/dd/yyyy)',
+                )}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="start_time"
-                  />
-                }
+                TextFieldProps={{
+                  label: t('Start time'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  helperText: (
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="start_time"
+                    />
+                  ),
+                }}
               />
               <Field
                 component={DatePickerField}
                 name="stop_time"
-                label={t('Stop time')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t(
+                  'The value must be a date (mm/dd/yyyy)',
+                )}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="stop_time"
-                  />
-                }
+                TextFieldProps={{
+                  label: t('Stop time'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  helperText: (
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="stop_time"
+                    />
+                  ),
+                }}
               />
               <Field
                 component={MarkDownField}

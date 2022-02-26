@@ -25,7 +25,7 @@ class StixCoreRelationshipLatestHistory extends Component {
                 values: ['create', 'update', 'merge'],
               },
             ],
-            first: 6,
+            first: 7,
             orderBy: 'timestamp',
             orderMode: 'desc',
           }}

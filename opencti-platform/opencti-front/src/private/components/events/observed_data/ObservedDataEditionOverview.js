@@ -274,33 +274,42 @@ class ObservedDataEditionOverviewComponent extends Component {
               <Field
                 component={DatePickerField}
                 name="first_observed"
-                label={t('First observed')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
+                invalidDateMessage={t(
+                  'The value must be a date (mm/dd/yyyy)',
+                )}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="first_observed"
-                  />
-                }
+                TextFieldProps={{
+                  label: t('First observed'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  helperText: (
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="first_observed"
+                    />
+                  ),
+                }}
               />
               <Field
                 component={DatePickerField}
                 name="last_observed"
-                label={t('Last observed')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t(
+                  'The value must be a date (mm/dd/yyyy)',
+                )}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="last_observed"
-                  />
-                }
+                TextFieldProps={{
+                  label: t('Last observed'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  helperText: (
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="last_observed"
+                    />
+                  ),
+                }}
               />
               <Field
                 component={TextField}

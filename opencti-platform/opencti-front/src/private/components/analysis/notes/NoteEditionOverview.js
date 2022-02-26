@@ -105,7 +105,7 @@ const noteValidation = (t) => Yup.object().shape({
   attribute_abstract: Yup.string().nullable(),
   content: Yup.string().required(t('This field is required')),
   created: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a date (mm/dd/yyyy)'))
     .required(t('This field is required')),
   confidence: Yup.number(),
 });
@@ -222,14 +222,17 @@ class NoteEditionOverviewComponent extends Component {
               <Field
                 component={DatePickerField}
                 name="created"
-                label={t('Date')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="created" />
-                }
+                TextFieldProps={{
+                  label: t('Publication date'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  helperText: (
+                    <SubscriptionFocus context={context} fieldName="created" />
+                  ),
+                }}
               />
               <Field
                 component={TextField}
@@ -313,6 +316,7 @@ const NoteEditionOverview = createFragmentContainer(
     note: graphql`
       fragment NoteEditionOverview_note on Note {
         id
+        created
         attribute_abstract
         content
         confidence

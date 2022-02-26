@@ -211,11 +211,14 @@ class NoteCreation extends Component {
                   <Field
                     component={DatePickerField}
                     name="created"
-                    label={t('Date')}
                     invalidDateMessage={t(
-                      'The value must be a date (YYYY-MM-DD)',
+                      'The value must be a date (mm/dd/yyyy)',
                     )}
-                    fullWidth={true}
+                    TextFieldProps={{
+                      label: t('Publication date'),
+                      variant: 'standard',
+                      fullWidth: true,
+                    }}
                   />
                   <Field
                     component={TextField}
@@ -327,11 +330,14 @@ class NoteCreation extends Component {
                   <Field
                     component={DatePickerField}
                     name="created"
-                    label={t('Date')}
                     invalidDateMessage={t(
-                      'The value must be a date (YYYY-MM-DD)',
+                      'The value must be a date (mm/dd/yyyy)',
                     )}
-                    fullWidth={true}
+                    TextFieldProps={{
+                      label: t('Publication date'),
+                      variant: 'standard',
+                      fullWidth: true,
+                    }}
                   />
                   <Field
                     component={TextField}

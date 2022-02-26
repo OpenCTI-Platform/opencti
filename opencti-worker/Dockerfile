@@ -1,14 +1,12 @@
-# upstream image
-ARG PARENT_IMAGE="python:3.10.2-alpine3.15"
+FROM python:3.10.2-alpine3.15 AS base
 
-# common packages
-FROM "${PARENT_IMAGE}" as base
+FROM base AS deps-builder
 
 RUN apk --no-cache add libmagic libffi-dev \
-    && pip3 install --no-cache-dir --upgrade pip \
+    && pip3 install --no-cache-dir --upgrade pip
 
 # build step including required compilation tools
-FROM base as builder
+FROM base AS builder
 
 ARG OPENCTI_VERSION="master"
 
@@ -25,7 +23,7 @@ RUN apk --no-cache add git build-base \
         "git+https://github.com/OpenCTI-Platform/client-python@${OPENCTI_VERSION}"
 
 # final image with restricted privileges
-FROM base
+FROM base AS app
 
 COPY --from=builder /opt/opencti-worker /opt/opencti-worker
 COPY --from=builder /usr/local /usr/

@@ -6,7 +6,7 @@ import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { isNil } from 'ramda';
+import * as R from 'ramda';
 import inject18n from './i18n';
 
 const MarkDownField = (props) => {
@@ -42,7 +42,7 @@ const MarkDownField = (props) => {
   return (
     <div
       style={style}
-      className={!isNil(meta.error) ? 'error' : 'main'}
+      className={!R.isNil(meta.error) ? 'error' : 'main'}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
@@ -71,7 +71,7 @@ const MarkDownField = (props) => {
           pasteDropSelect: t('Paste'),
         }}
       />
-      {!isNil(meta.error) && (
+      {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}
     </div>

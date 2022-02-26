@@ -176,27 +176,43 @@ class IntrusionSetEditionDetailsComponent extends Component {
             <Field
               component={DatePickerField}
               name="first_seen"
-              label={t('First seen')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
+              invalidDateMessage={t(
+                'The value must be a date (mm/dd/yyyy)',
+              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="first_seen" />
-              }
+              TextFieldProps={{
+                label: t('First seen'),
+                variant: 'standard',
+                fullWidth: true,
+                helperText: (
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="first_seen"
+                  />
+                ),
+              }}
             />
             <Field
               component={DatePickerField}
               name="last_seen"
-              label={t('Last seen')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+              invalidDateMessage={t(
+                'The value must be a date (mm/dd/yyyy)',
+              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="last_seen" />
-              }
+              TextFieldProps={{
+                label: t('Last seen'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="last_seen"
+                  />
+                ),
+              }}
             />
             <OpenVocabField
               label={t('Resource level')}

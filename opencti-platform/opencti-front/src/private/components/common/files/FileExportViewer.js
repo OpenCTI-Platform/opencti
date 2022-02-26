@@ -46,7 +46,7 @@ const FileExportViewerBase = ({
     };
   });
   return (
-    <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+    <Grid item={true} xs={6} style={{ marginTop: 40 }}>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Exported files')}

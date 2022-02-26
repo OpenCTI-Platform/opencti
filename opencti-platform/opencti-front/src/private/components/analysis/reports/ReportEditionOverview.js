@@ -349,20 +349,23 @@ class ReportEditionOverviewComponent extends Component {
                         <Field
                           component={DatePickerField}
                           name="published"
-                          label={t('Publication date')}
                           invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
+                            'The value must be a date (mm/dd/yyyy)',
                           )}
-                          fullWidth={true}
-                          style={{ marginTop: 20 }}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="published"
-                            />
-                          }
+                          TextFieldProps={{
+                            label: t('Publication date'),
+                            variant: 'standard',
+                            fullWidth: true,
+                            style: { marginTop: 20 },
+                            helperText: (
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName="published"
+                              />
+                            ),
+                          }}
                         />
                         <Field
                           component={MarkDownField}

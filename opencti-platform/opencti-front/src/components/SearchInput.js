@@ -22,10 +22,12 @@ const styles = (theme) => ({
   searchRootInDrawer: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
+    height: 30,
   },
   searchRootInDrawer2: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
+    height: 30,
   },
   searchRootNoAnimation: {
     borderRadius: 5,
@@ -84,7 +86,7 @@ class SearchInput extends Component {
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Search />
+              <Search fontSize="small" />
             </InputAdornment>
           ),
           classes: {

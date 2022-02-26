@@ -389,28 +389,44 @@ class IndicatorEditionOverviewComponent extends Component {
             <Field
               component={DatePickerField}
               name="valid_from"
-              label={t('Valid from')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+              invalidDateMessage={t(
+                'The value must be a date (mm/dd/yyyy)',
+              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="valid_from" />
-              }
+              TextFieldProps={{
+                label: t('Valid from'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="valid_from"
+                  />
+                ),
+              }}
             />
             <Field
               component={DatePickerField}
               name="valid_until"
-              label={t('Valid until')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+              invalidDateMessage={t(
+                'The value must be a date (mm/dd/yyyy)',
+              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="valid_until" />
-              }
+              TextFieldProps={{
+                label: t('Valid until'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="valid_until"
+                  />
+                ),
+              }}
             />
             <OpenVocabField
               label={t('Indicator types')}

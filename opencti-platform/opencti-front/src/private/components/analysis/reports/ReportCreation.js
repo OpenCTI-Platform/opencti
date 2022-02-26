@@ -234,12 +234,15 @@ class ReportCreation extends Component {
                             <Field
                               component={DatePickerField}
                               name="published"
-                              label={t('Publication date')}
                               invalidDateMessage={t(
-                                'The value must be a date (YYYY-MM-DD)',
+                                'The value must be a date (mm/dd/yyyy)',
                               )}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
+                              TextFieldProps={{
+                                label: t('Publication date'),
+                                variant: 'standard',
+                                fullWidth: true,
+                                style: { marginTop: 20 },
+                              }}
                             />
                             <Field
                               component={SelectField}

@@ -406,20 +406,23 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             component={DatePickerField}
                             key={attribute.value}
                             name={attribute.value}
-                            label={attribute.value}
                             invalidDateMessage={t(
-                              'The value must be a date (YYYY-MM-DD)',
+                              'The value must be a date (mm/dd/yyyy)',
                             )}
-                            fullWidth={true}
-                            style={{ marginTop: 20 }}
                             onFocus={this.handleChangeFocus.bind(this)}
                             onSubmit={this.handleSubmitField.bind(this)}
-                            helperText={
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName={attribute.value}
-                              />
-                            }
+                            TextFieldProps={{
+                              label: attribute.value,
+                              variant: 'standard',
+                              fullWidth: true,
+                              style: { marginTop: 20 },
+                              helperText: (
+                                <SubscriptionFocus
+                                  context={context}
+                                  fieldName={attribute.value}
+                                />
+                              ),
+                            }}
                           />
                         );
                       }

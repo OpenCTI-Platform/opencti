@@ -18,6 +18,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
+import { SubscriptionFocus } from '../../../../components/Subscription';
 
 const styles = (theme) => ({
   header: {
@@ -154,6 +155,7 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
       stixCyberObservableRelationship,
       stixDomainObject,
     } = this.props;
+    const { editContext } = stixCyberObservableRelationship;
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -207,25 +209,43 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
                 <Field
                   component={DatePickerField}
                   name="start_time"
-                  label={t('Start time')}
                   invalidDateMessage={t(
-                    'The value must be a date (YYYY-MM-DD)',
+                    'The value must be a date (mm/dd/yyyy)',
                   )}
-                  fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
+                  TextFieldProps={{
+                    label: t('Start time'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    helperText: (
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="start_time"
+                      />
+                    ),
+                  }}
                 />
                 <Field
                   component={DatePickerField}
                   name="stop_time"
-                  label={t('Stop time')}
                   invalidDateMessage={t(
-                    'The value must be a date (YYYY-MM-DD)',
+                    'The value must be a date (mm/dd/yyyy)',
                   )}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
+                  TextFieldProps={{
+                    label: t('Stop time'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                    helperText: (
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="stop_time"
+                      />
+                    ),
+                  }}
                 />
               </Form>
             )}

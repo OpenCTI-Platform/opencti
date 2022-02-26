@@ -8,7 +8,7 @@ import { Google, KeyOutline, Facebook, Github } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@mui/material/Paper';
 import { APP_BASE_PATH } from '../../relay/environment';
-import logo from '../../resources/images/logo_opencti.png';
+import logo from '../../resources/images/logo.png';
 import LoginForm from './LoginForm';
 
 const styles = (theme) => ({

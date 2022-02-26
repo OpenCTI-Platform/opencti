@@ -288,22 +288,28 @@ class IndicatorCreation extends Component {
                   <Field
                     component={DatePickerField}
                     name="valid_from"
-                    label={t('Valid from')}
                     invalidDateMessage={t(
-                      'The value must be a date (YYYY-MM-DD)',
+                      'The value must be a date (mm/dd/yyyy)',
                     )}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    TextFieldProps={{
+                      label: t('Valid from'),
+                      variant: 'standard',
+                      fullWidth: true,
+                      style: { marginTop: 20 },
+                    }}
                   />
                   <Field
                     component={DatePickerField}
                     name="valid_until"
-                    label={t('Valid until')}
                     invalidDateMessage={t(
-                      'The value must be a date (YYYY-MM-DD)',
+                      'The value must be a date (mm/dd/yyyy)',
                     )}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
+                    TextFieldProps={{
+                      label: t('Valid until'),
+                      variant: 'standard',
+                      fullWidth: true,
+                      style: { marginTop: 20 },
+                    }}
                   />
                   <Field
                     component={SelectField}

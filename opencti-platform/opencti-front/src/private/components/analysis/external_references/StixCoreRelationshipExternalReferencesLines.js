@@ -63,14 +63,14 @@ const styles = (theme) => ({
   },
   buttonExpand: {
     position: 'absolute',
-    bottom: 2,
+    bottom: 0,
     width: '100%',
     height: 25,
-    backgroundColor: 'rgba(255, 255, 255, .2)',
+    backgroundColor: 'rgba(255, 255, 255, .1)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, .5)',
+      backgroundColor: 'rgba(255, 255, 255, .2)',
     },
   },
 });

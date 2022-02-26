@@ -9,9 +9,9 @@ export default (
 ) => ({
   logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: { main: primary || '#007fff' },
-    secondary: { main: secondary || '#ec407a' },
+    secondary: { main: secondary || '#d81b60' },
     background: {
       default: background || '#ffffff',
       paper: paper || '#f3f6f9',
@@ -76,7 +76,7 @@ export default (
         body: {
           scrollbarColor: '#6b6b6b #2b2b2b',
           '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
-            backgroundColor: paper || '#001e3c',
+            backgroundColor: paper || '#f3f6f9',
           },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 8,
@@ -103,7 +103,7 @@ export default (
             WebkitFontSmoothing: 'auto',
           },
           a: {
-            color: primary || '#00b1ff',
+            color: primary || '#007fff',
           },
           'input:-webkit-autofill': {
             WebkitAnimation: 'autofill 0s forwards',
@@ -154,6 +154,8 @@ export default (
             color: '#ffffff !important',
           },
           '.mde-textarea-wrapper textarea': {
+            fontFamily: '"IBM Plex Sans", sans-serif',
+            fontSize: 12,
             color: '#ffffff',
             background: 'transparent',
             borderBottom: '1px solid #b9bfc1 !important',

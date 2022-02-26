@@ -79,7 +79,7 @@ const styles = (theme) => ({
     flexGrow: 1,
   },
   logoContainer: {
-    marginLeft: -10,
+    margin: '2px 0 0 -10px',
   },
   logo: {
     cursor: 'pointer',
@@ -87,7 +87,7 @@ const styles = (theme) => ({
   },
   menuContainer: {
     float: 'left',
-    marginLeft: 40,
+    marginLeft: 30,
   },
   barRight: {
     position: 'absolute',
@@ -327,7 +327,7 @@ const TopBar = ({
                       '/dashboard/workspaces/dashboards',
                     )
                       ? 'secondary'
-                      : 'inherit'
+                      : 'default'
                   }
                   size="medium"
                 >
@@ -350,7 +350,7 @@ const TopBar = ({
                       '/dashboard/workspaces/investigations',
                     )
                       ? 'secondary'
-                      : 'inherit'
+                      : 'default'
                   }
                   size="medium"
                 >
@@ -371,7 +371,7 @@ const TopBar = ({
                   color={
                     location.pathname.includes('/dashboard/import')
                       ? 'secondary'
-                      : 'inherit'
+                      : 'default'
                   }
                   size="medium"
                 >
@@ -385,7 +385,6 @@ const TopBar = ({
               aria-owns={menuOpen.open ? 'menu-appbar' : null}
               aria-haspopup="true"
               onClick={handleOpenMenu}
-              color="inherit"
             >
               <AccountCircleOutlined fontSize="medium" />
             </IconButton>

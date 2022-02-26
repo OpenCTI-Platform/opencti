@@ -58,7 +58,7 @@ const AppIntlProvider = (props) => {
     >
       <LocalizationProvider
         dateAdapter={AdapterDateFns}
-        locale={localeMap[locale]}
+        locale={localeMap[lang]}
       >
         {children}
       </LocalizationProvider>

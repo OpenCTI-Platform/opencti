@@ -106,7 +106,7 @@ const i18n = {
       'Do you want to remove this external reference?':
         'Souhaitez-vous retirer cette référence externe ?',
       'Do you want to remove this note?':
-        'Souhaitez-vous supprimer cette note ?',
+        'Souhaitez-vous retirer cette note ?',
       'Do you want to remove this report?':
         'Souhaitez-vous supprimer ce rapport ?',
       'Do you want to remove these elements from this report?':
@@ -255,8 +255,8 @@ const i18n = {
       'The value must be an email address':
         'La valeur doit être une adresse email',
       'The value must be an URL': 'La valeur doit être une URL',
-      'The value must be a date (YYYY-MM-DD)':
-        'La valeur doit être une date (AAAA-MM-JJ)',
+      'The value must be a date (mm/dd/yyyy)':
+        'La valeur doit être une date (dd/mm/aaaaa)',
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'No description of this usage': 'Aucune description de cet usage',
@@ -1563,7 +1563,7 @@ const i18n = {
       'The value must be a number': '该值必须是一个数字',
       'The value must be an email address': '该值必须是一个邮件地址',
       'The value must be an URL': '该值必须是一个URL',
-      'The value must be a date (YYYY-MM-DD)': '该值必须是一个日期(YYYY-MM-DD)',
+      'The value must be a date (mm/dd/yyyy)': '该值必须是一个日期(mm/dd/yyyy)',
       'The values do not match': '该值不匹配',
       'No available options': '没有可用的选项',
       'No description of this usage': '没有关于此用法的描述',

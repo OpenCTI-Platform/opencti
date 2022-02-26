@@ -587,12 +587,15 @@ class StixCyberObservableCreation extends Component {
                               component={DatePickerField}
                               key={attribute.value}
                               name={attribute.value}
-                              label={attribute.value}
                               invalidDateMessage={t(
-                                'The value must be a date (YYYY-MM-DD)',
+                                'The value must be a date (mm/dd/yyyy)',
                               )}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
+                              TextFieldProps={{
+                                label: attribute.value,
+                                variant: 'standard',
+                                fullWidth: true,
+                                style: { marginTop: 20 },
+                              }}
                             />
                           );
                         }

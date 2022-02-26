@@ -366,35 +366,45 @@ const StixSightingRelationshipEditionContainer = ({
               <Field
                 component={DatePickerField}
                 name="first_seen"
-                label={t('First seen')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t(
+                  'The value must be a date (mm/dd/yyyy)',
+                )}
                 onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="first_seen"
-                  />
-                }
+                onChange={handleSubmitField}
+                TextFieldProps={{
+                  label: t('First seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  helperText: (
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="first_seen"
+                    />
+                  ),
+                }}
                 disabled={inferred}
               />
               <Field
                 component={DatePickerField}
                 name="last_seen"
-                label={t('Last seen')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t(
+                  'The value must be a date (mm/dd/yyyy)',
+                )}
                 onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="last_seen"
-                  />
-                }
+                onChange={handleSubmitField}
+                TextFieldProps={{
+                  label: t('Last seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  helperText: (
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="last_seen"
+                    />
+                  ),
+                }}
                 disabled={inferred}
               />
               <Field
