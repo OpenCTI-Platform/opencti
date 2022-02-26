@@ -74,6 +74,7 @@ const configurationMapping = {
   signing_cert: 'signingCert',
   signature_algorithm: 'signatureAlgorithm',
   digest_algorithm: 'digestAlgorithm',
+  want_assertions_signed: 'wantAssertionsSigned',
   // OpenID Client - everything is already in snake case
 };
 const configRemapping = (config) => {
