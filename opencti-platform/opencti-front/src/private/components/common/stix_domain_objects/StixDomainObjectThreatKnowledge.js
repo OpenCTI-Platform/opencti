@@ -289,7 +289,7 @@ class StixDomainObjectThreatKnowledge extends Component {
     return (
       <div>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -333,7 +333,7 @@ class StixDomainObjectThreatKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -388,7 +388,7 @@ class StixDomainObjectThreatKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
               variant="outlined"
               classes={{ root: classes.card }}
@@ -432,15 +432,15 @@ class StixDomainObjectThreatKnowledge extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+        <Grid container={true} spacing={3} style={{ marginTop: -10 }}>
+          <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
             <StixCoreObjectReportsHorizontalBars
               stixCoreObjectId={stixDomainObjectId}
               field="created-by.internal_id"
               title={t('Distribution of sources')}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+          <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
             <StixCoreObjectStixCoreRelationshipsCloud
               stixCoreObjectId={stixDomainObjectId}
               stixCoreObjectType="Stix-Domain-Object"
@@ -473,59 +473,64 @@ class StixDomainObjectThreatKnowledge extends Component {
               handleAddFilter={this.handleAddFilter.bind(this)}
               currentFilters={filters}
               allEntityTypes={true}
-            />{' '}
-            &nbsp;&nbsp;
-            {R.map((currentFilter) => {
-              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const values = (
-                <span>
-                  {R.map(
-                    (o) => (
-                      <span key={o.value}>
-                        {o.value && o.value.length > 0
-                          ? truncate(o.value, 15)
-                          : t('No label')}{' '}
-                        {R.last(currentFilter[1]).value !== o.value && (
-                          <code>OR</code>
-                        )}{' '}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span key={label}>
-                  <Chip
-                    key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={this.handleRemoveFilter.bind(
-                      this,
-                      currentFilter[0],
-                    )}
-                  />
-                  {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
-                    <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
-                    />
-                  )}
-                </span>
-              );
-            }, R.toPairs(filters))}
+              variant=""
+            />
             <IconButton
               color="primary"
               onClick={this.handleOpenTimeField.bind(this)}
-              style={{ float: 'left', marginTop: -7 }}
+              style={{ float: 'left', marginTop: -5 }}
               size="large"
             >
               <SettingsOutlined />
             </IconButton>
+            <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
+              {R.map((currentFilter) => {
+                const label = `${truncate(
+                  t(`filter_${currentFilter[0]}`),
+                  20,
+                )}`;
+                const values = (
+                  <span>
+                    {R.map(
+                      (o) => (
+                        <span key={o.value}>
+                          {o.value && o.value.length > 0
+                            ? truncate(o.value, 15)
+                            : t('No label')}{' '}
+                          {R.last(currentFilter[1]).value !== o.value && (
+                            <code>OR</code>
+                          )}{' '}
+                        </span>
+                      ),
+                      currentFilter[1],
+                    )}
+                  </span>
+                );
+                return (
+                  <span key={label}>
+                    <Chip
+                      key={currentFilter[0]}
+                      classes={{ root: classes.filter }}
+                      label={
+                        <div>
+                          <strong>{label}</strong>: {values}
+                        </div>
+                      }
+                      onDelete={this.handleRemoveFilter.bind(
+                        this,
+                        currentFilter[0],
+                      )}
+                    />
+                    {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
+                      <Chip
+                        classes={{ root: classes.operator }}
+                        label={t('AND')}
+                      />
+                    )}
+                  </span>
+                );
+              }, R.toPairs(filters))}
+            </div>
             <Popover
               classes={{ paper: classes.container }}
               open={openTimeField}
@@ -539,10 +544,14 @@ class StixDomainObjectThreatKnowledge extends Component {
                 vertical: 'top',
                 horizontal: 'center',
               }}
+              elevation={1}
             >
               <FormControl style={{ width: '100%' }}>
-                <InputLabel id="timeField">{t('Date reference')}</InputLabel>
+                <InputLabel id="timeField" variant="standard">
+                  {t('Date reference')}
+                </InputLabel>
                 <Select
+                  variant="standard"
                   labelId="timeField"
                   value={timeField === null ? '' : timeField}
                   onChange={this.handleChangeTimeField.bind(this)}

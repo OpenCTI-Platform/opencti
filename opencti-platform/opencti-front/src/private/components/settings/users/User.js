@@ -256,7 +256,7 @@ class UserComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Basic information')}
             </Typography>
@@ -289,7 +289,7 @@ class UserComponent extends Component {
               </Grid>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Permissions')}
             </Typography>

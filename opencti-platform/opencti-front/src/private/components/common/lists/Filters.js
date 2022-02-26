@@ -815,6 +815,7 @@ class Filters extends Component {
             vertical: 'top',
             horizontal: 'center',
           }}
+          elevation={1}
         >
           {this.renderFilters()}
         </Popover>

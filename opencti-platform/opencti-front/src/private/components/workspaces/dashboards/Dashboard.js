@@ -12,6 +12,7 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
 import {
   daysAgo,
   monthsAgo,
@@ -518,6 +519,7 @@ class DashboardComponent extends Component {
                         {t('Date reference')}
                       </InputLabel>
                       <Select
+                        variant="standard"
                         labelId="timeField"
                         value={relativeDate === null ? '' : relativeDate}
                         onChange={this.handleTimeFieldChange.bind(this)}
@@ -538,6 +540,7 @@ class DashboardComponent extends Component {
                         {t('Relative time')}
                       </InputLabel>
                       <Select
+                        variant="standard"
                         labelId="relative"
                         value={relativeDate === null ? '' : relativeDate}
                         onChange={this.handleDateChange.bind(
@@ -561,27 +564,40 @@ class DashboardComponent extends Component {
                     <DatePicker
                       value={R.propOr(null, 'startDate', manifest.config)}
                       disableToolbar={true}
-                      format="YYYY-MM-DD"
                       autoOk={true}
                       label={t('Start date')}
                       clearable={true}
                       disableFuture={true}
                       disabled={true}
                       onChange={this.handleDateChange.bind(this, 'startDate')}
-                      style={{ marginRight: 20 }}
+                      renderInput={(params) => (
+                        <TextField
+                          style={{ marginRight: 20 }}
+                          variant="standard"
+                          size="small"
+                          {...params}
+                        />
+                      )}
                     />
                   </Grid>
                   <Grid item={true} xs="auto">
                     <DatePicker
                       value={R.propOr(null, 'endDate', manifest.config)}
                       disableToolbar={true}
-                      format="YYYY-MM-DD"
                       autoOk={true}
                       label={t('End date')}
                       clearable={true}
                       disabled={true}
                       disableFuture={true}
                       onChange={this.handleDateChange.bind(this, 'endDate')}
+                      renderInput={(params) => (
+                        <TextField
+                          style={{ marginRight: 20 }}
+                          variant="standard"
+                          size="small"
+                          {...params}
+                        />
+                      )}
                     />
                   </Grid>
                 </Grid>
@@ -594,6 +610,7 @@ class DashboardComponent extends Component {
                       {t('Date reference')}
                     </InputLabel>
                     <Select
+                      variant="standard"
                       labelId="timeField"
                       value={timeField === null ? '' : timeField}
                       onChange={this.handleTimeFieldChange.bind(this)}
@@ -611,6 +628,7 @@ class DashboardComponent extends Component {
                   <FormControl style={{ width: 194, marginRight: 20 }}>
                     <InputLabel id="relative">{t('Relative time')}</InputLabel>
                     <Select
+                      variant="standard"
                       labelId="relative"
                       value={relativeDate === null ? '' : relativeDate}
                       onChange={this.handleDateChange.bind(
@@ -631,27 +649,34 @@ class DashboardComponent extends Component {
                   <DatePicker
                     value={R.propOr(null, 'startDate', manifest.config)}
                     disableToolbar={true}
-                    format="YYYY-MM-DD"
                     autoOk={true}
                     label={t('Start date')}
                     clearable={true}
                     disableFuture={true}
                     disabled={relativeDate !== null}
                     onChange={this.handleDateChange.bind(this, 'startDate')}
-                    style={{ marginRight: 20 }}
+                    renderInput={(params) => (
+                      <TextField
+                        style={{ marginRight: 20 }}
+                        variant="standard"
+                        size="small"
+                        {...params}
+                      />
+                    )}
                   />
                 </Grid>
                 <Grid item={true} xs="auto">
                   <DatePicker
                     value={R.propOr(null, 'endDate', manifest.config)}
-                    disableToolbar={true}
-                    format="YYYY-MM-DD"
                     autoOk={true}
                     label={t('End date')}
                     clearable={true}
                     disabled={relativeDate !== null}
                     disableFuture={true}
                     onChange={this.handleDateChange.bind(this, 'endDate')}
+                    renderInput={(params) => (
+                      <TextField variant="standard" size="small" {...params} />
+                    )}
                   />
                 </Grid>
               </Grid>

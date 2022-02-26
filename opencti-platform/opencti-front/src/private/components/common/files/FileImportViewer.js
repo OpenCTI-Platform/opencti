@@ -46,7 +46,7 @@ const FileImportViewerBase = ({
     };
   });
   return (
-    <Grid item={true} xs={6}>
+    <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Uploaded files')}

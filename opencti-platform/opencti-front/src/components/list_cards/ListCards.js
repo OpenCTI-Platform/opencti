@@ -67,7 +67,7 @@ const styles = (theme) => ({
   },
   filters: {
     float: 'left',
-    margin: '2px 0 0 15px',
+    margin: '5px 0 0 15px',
   },
   filter: {
     marginRight: 10,

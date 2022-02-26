@@ -288,7 +288,7 @@ class StixSightingRelationshipContainer extends Component {
         </Link>
         <div className="clearfix" style={{ height: 20 }} />
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
             </Typography>
@@ -369,7 +369,7 @@ class StixSightingRelationshipContainer extends Component {
               </Grid>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>

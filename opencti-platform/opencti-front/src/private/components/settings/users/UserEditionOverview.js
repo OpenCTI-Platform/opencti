@@ -306,13 +306,13 @@ class UserEditionOverviewComponent extends Component {
                 options={this.state.roles}
                 onInputChange={this.searchRoles.bind(this)}
                 onChange={this.handleChangeRole.bind(this)}
-                renderOption={(option) => (
-                  <React.Fragment>
+                renderOption={(props, option) => (
+                  <li {...props}>
                     <div className={classes.icon}>
                       <Security />
                     </div>
                     <div className={classes.text}>{option.label}</div>
-                  </React.Fragment>
+                  </li>
                 )}
                 style={{ marginTop: 20, width: '100%' }}
               />

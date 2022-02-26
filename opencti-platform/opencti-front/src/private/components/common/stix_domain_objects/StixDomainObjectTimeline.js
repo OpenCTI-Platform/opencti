@@ -49,7 +49,7 @@ class StixDomainObjectTimelineComponent extends Component {
     return (
       <div style={{ marginBottom: 90 }}>
         <div id="container">
-          <Timeline align="alternate">
+          <Timeline position="alternate">
             {stixRelationships.map((stixRelationship) => {
               const link = `${entityLink}/relations/${stixRelationship.id}`;
               return (
@@ -76,7 +76,7 @@ class StixDomainObjectTimelineComponent extends Component {
                     <TimelineConnector />
                   </TimelineSeparator>
                   <TimelineContent>
-                    <Paper elevation={3} className={classes.paper}>
+                    <Paper variant="outlined" className={classes.paper}>
                       <Typography variant="h2">
                         {defaultValue(stixRelationship.targetEntity)}
                       </Typography>

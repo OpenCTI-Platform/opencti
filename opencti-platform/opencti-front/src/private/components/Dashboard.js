@@ -804,7 +804,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Card>
         </Grid>
       </Grid>
-      <Grid container={true} spacing={3}>
+      <Grid container={true} spacing={3} style={{ marginTop: -15 }}>
         <Grid item={true} xs={4}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Top Labels (3 last months)')}
@@ -834,7 +834,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Paper>
         </Grid>
       </Grid>
-      <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
+      <Grid container={true} spacing={3} style={{ marginTop: 5 }}>
         <Grid item={true} xs={6}>
           <StixCoreRelationshipsHorizontalBars
             height={400}
@@ -877,7 +877,7 @@ const DefaultDashboard = ({ timeField }) => {
           </Paper>
         </Grid>
       </Grid>
-      <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
+      <Grid container={true} spacing={3} style={{ marginTop: 5 }}>
         <Grid item={true} xs={8}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Last ingested analysis (creation date in the platform)')}

@@ -37,10 +37,10 @@ class ExternalReferenceComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <ExternalReferenceOverview externalReference={externalReference} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <ExternalReferenceDetails externalReference={externalReference} />
           </Grid>
         </Grid>

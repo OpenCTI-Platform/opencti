@@ -160,7 +160,7 @@ class StixDomainObjectsTimeline extends Component {
             const stixDomainObjectsEdges = props.stixDomainObjects.edges;
             return (
               <div id="container" className={classes.container}>
-                <Timeline align="alternate">
+                <Timeline position="alternate">
                   {stixDomainObjectsEdges.map((stixDomainObjectEdge) => {
                     const stixDomainObject = stixDomainObjectEdge.node;
                     const link = `${resolveLink(
@@ -182,7 +182,7 @@ class StixDomainObjectsTimeline extends Component {
                           <TimelineConnector />
                         </TimelineSeparator>
                         <TimelineContent>
-                          <Paper elevation={3} className={classes.paper}>
+                          <Paper variant="outlined" className={classes.paper}>
                             <Typography variant="h2">
                               {defaultValue(stixDomainObject)}
                             </Typography>
