@@ -46,6 +46,8 @@ esbuild.build({
                 console.log(`[HOT RELOAD] Rebuild done in ${time} ms, updating frontend`);
                 clients.forEach((res) => res.write("data: update\n\n"));
                 clients.length = 0;
+            }).catch((error) => {
+                console.error(error);
             });
         });
     // Start a dev web server
