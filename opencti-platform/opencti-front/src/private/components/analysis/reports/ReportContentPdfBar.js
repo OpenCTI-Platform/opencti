@@ -14,10 +14,9 @@ import Slide from '@mui/material/Slide';
 import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 
-const styles = (theme) => ({
+const styles = () => ({
   bottomNav: {
     zIndex: 1000,
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -43,6 +42,7 @@ class ReportContentPdfBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
+        elevation={3}
       >
         <div
           style={{

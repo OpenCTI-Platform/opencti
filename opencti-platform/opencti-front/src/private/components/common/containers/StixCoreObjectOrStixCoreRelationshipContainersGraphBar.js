@@ -47,10 +47,9 @@ import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
 
-const styles = (theme) => ({
+const styles = () => ({
   bottomNav: {
     zIndex: 1000,
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -185,6 +184,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
           anchor="bottom"
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
+          elevation={3}
         >
           <div
             style={{
@@ -426,6 +426,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
+        elevation={3}
       >
         <div
           style={{

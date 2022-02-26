@@ -32,6 +32,7 @@ import {
   commitMutation,
   MESSAGING$,
 } from '../../../../relay/environment';
+import { toB64 } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -131,10 +132,7 @@ class PendingFileLineComponent extends Component {
           button={true}
           component={isOutdated ? null : Link}
           disabled={isProgress}
-          to={`/dashboard/import/pending/${Buffer.from(
-            file.id,
-            'binary',
-          ).toString('base64')}`}
+          to={`/dashboard/import/pending/${toB64(file.id)}`}
         >
           <ListItemIcon>
             {isProgress && (

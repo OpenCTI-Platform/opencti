@@ -20,9 +20,6 @@ const styles = (theme) => ({
   container: {
     padding: '20px 0 0 0',
   },
-  expansionPanel: {
-    backgroundColor: theme.palette.action.expansion,
-  },
   heading: {
     fontSize: theme.typography.pxToRem(15),
     flexBasis: '33.33%',
@@ -103,7 +100,7 @@ class StixSightingRelationshipCreationFromEntityLinesContainer extends Component
                   stixDomainObjectsTypes.length,
                 )}
                 onChange={this.handleChangePanel.bind(this, type)}
-                classes={{ root: classes.expansionPanel }}
+                elevation={3}
                 style={{
                   marginBottom:
                     increment === stixDomainObjectsTypes.length

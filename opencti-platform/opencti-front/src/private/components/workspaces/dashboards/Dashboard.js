@@ -47,6 +47,7 @@ import GlobalActivityReports from './GlobalActivityReports';
 import GlobalActivityIndicators from './GlobalActivityIndicators';
 import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
 import ThreatVulnerabilities from './ThreatVulnerabilities';
+import { fromB64, toB64 } from '../../../../utils/String';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -79,9 +80,7 @@ class DashboardComponent extends Component {
 
   saveManifest(manifest) {
     const { workspace } = this.props;
-    const newManifest = Buffer.from(JSON.stringify(manifest)).toString(
-      'base64',
-    );
+    const newManifest = toB64(JSON.stringify(manifest));
     if (workspace.manifest !== newManifest) {
       commitMutation({
         mutation: workspaceMutationFieldPatch,
@@ -100,9 +99,7 @@ class DashboardComponent extends Component {
     const { workspace } = this.props;
     let manifest = { widgets: {}, config: {} };
     if (workspace.manifest && workspace.manifest.length > 0) {
-      manifest = JSON.parse(
-        Buffer.from(workspace.manifest, 'base64').toString('ascii'),
-      );
+      manifest = JSON.parse(fromB64(workspace.manifest));
     }
     return manifest;
   }
@@ -509,6 +506,7 @@ class DashboardComponent extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
+            elevation={3}
           >
             <Security
               needs={[EXPLORE_EXUPDATE]}

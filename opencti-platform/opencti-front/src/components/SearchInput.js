@@ -24,10 +24,11 @@ const styles = (theme) => ({
     padding: '0 10px 0 10px',
     height: 30,
   },
-  searchRootInDrawer2: {
+  searchRootThin: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
     height: 30,
+    backgroundColor: theme.palette.background.paper,
   },
   searchRootNoAnimation: {
     borderRadius: 5,
@@ -56,12 +57,12 @@ class SearchInput extends Component {
     let classRoot = classes.searchRoot;
     if (variant === 'inDrawer') {
       classRoot = classes.searchRootInDrawer;
-    } else if (variant === 'inDrawer2') {
-      classRoot = classes.searchRootInDrawer2;
     } else if (variant === 'noAnimation') {
       classRoot = classes.searchRootNoAnimation;
     } else if (variant === 'topBar') {
       classRoot = classes.searchRootTopBar;
+    } else if (variant === 'thin') {
+      classRoot = classes.searchRootThin;
     }
     return (
       <TextField
@@ -93,7 +94,7 @@ class SearchInput extends Component {
             root: classRoot,
             input:
               // eslint-disable-next-line no-nested-ternary
-              variant === 'small'
+              variant === 'small' || variant === 'thin'
                 ? classes.searchInputSmall
                 : variant !== 'noAnimation'
                   ? classes.searchInput

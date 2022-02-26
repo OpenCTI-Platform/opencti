@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import { QueryRenderer } from '../../../relay/environment';
 import PendingFileContent from './PendingFileContent';
 import Loader from '../../../components/Loader';
+import { fromB64 } from '../../../utils/String';
 
 const pendingFileQuery = graphql`
   query PendingFileQuery($id: String!) {
@@ -41,7 +42,7 @@ class PendingFile extends Component {
         params: { fileId },
       },
     } = this.props;
-    const decodedFileId = Buffer.from(fileId, 'base64').toString('binary');
+    const decodedFileId = fromB64(fileId);
     return (
       <QueryRenderer
         query={pendingFileQuery}

@@ -19,9 +19,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
-  expansionPanel: {
-    backgroundColor: theme.palette.action.expansion,
-  },
   heading: {
     fontSize: theme.typography.pxToRem(15),
     flexBasis: '33.33%',
@@ -90,7 +87,7 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
               stixCyberObservablesTypes.length,
             )}
             onChange={this.handleChangePanel.bind(this, type)}
-            classes={{ root: classes.expansionPanel }}
+            elevation={3}
           >
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>

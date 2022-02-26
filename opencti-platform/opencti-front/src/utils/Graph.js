@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import SpriteText from 'three-spritetext';
-import { truncate } from './String';
+import { fromB64, toB64, truncate } from './String';
 import KillChainPhase from '../resources/images/entities/kill-chain-phase.svg';
 import MarkingDefinition from '../resources/images/entities/marking-definition.svg';
 import Label from '../resources/images/entities/label.svg';
@@ -217,13 +217,11 @@ export const graphRawImages = {
   'X-OpenCTI-Text': StixCyberObservable,
 };
 
-export const encodeGraphData = (graphData) => Buffer.from(JSON.stringify(graphData), 'ascii').toString('base64');
+export const encodeGraphData = (graphData) => toB64(JSON.stringify(graphData));
 
 export const decodeGraphData = (encodedGraphData) => {
   if (encodedGraphData) {
-    const decodedGraphData = JSON.parse(
-      Buffer.from(encodedGraphData, 'base64').toString('ascii'),
-    );
+    const decodedGraphData = JSON.parse(fromB64(encodedGraphData));
     if (typeof decodedGraphData === 'object') {
       return decodedGraphData;
     }

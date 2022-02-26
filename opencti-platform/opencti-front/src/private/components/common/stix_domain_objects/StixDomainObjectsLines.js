@@ -24,9 +24,6 @@ const styles = (theme) => ({
   container: {
     padding: '0 0 20px 0',
   },
-  expansionPanel: {
-    backgroundColor: theme.palette.background.paper,
-  },
   itemIcon: {
     color: theme.palette.primary.main,
   },
@@ -104,7 +101,7 @@ class StixDomainObjectsContainer extends Component {
                 stixDomainObjectsTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
-              classes={{ root: classes.expansionPanel }}
+              elevation={3}
             >
               <AccordionSummary
                 expandIcon={<ExpandMore />}

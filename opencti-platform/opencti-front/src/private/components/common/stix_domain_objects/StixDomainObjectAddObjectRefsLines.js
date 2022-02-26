@@ -20,9 +20,6 @@ const styles = (theme) => ({
   container: {
     padding: '20px 0 20px 0',
   },
-  expansionPanel: {
-    backgroundColor: theme.palette.action.expansion,
-  },
   heading: {
     fontSize: theme.typography.pxToRem(15),
     flexBasis: '33.33%',
@@ -115,7 +112,7 @@ class StixDomainObjectAddObjectRefsLinesContainer extends Component {
                 stixDomainObjectsTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
-              classes={{ root: classes.expansionPanel }}
+              elevation={3}
             >
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography className={classes.heading}>

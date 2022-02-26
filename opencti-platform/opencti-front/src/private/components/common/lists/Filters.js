@@ -660,12 +660,13 @@ class Filters extends Component {
     }
   }
 
-  handleChangeDate(filterKey, date, value) {
-    if (date && value && date.toISOString()) {
+  handleChangeDate(filterKey, date) {
+    const { nsd } = this.props;
+    if (date && date.toISOString()) {
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(filterKey, date.toISOString(), value);
+        this.handleAddFilter(filterKey, date.toISOString(), nsd(date));
       } else {
-        this.props.handleAddFilter(filterKey, date.toISOString(), value);
+        this.props.handleAddFilter(filterKey, date.toISOString(), nsd(date));
       }
     }
   }
@@ -718,7 +719,6 @@ class Filters extends Component {
                   disableToolbar={false}
                   autoOk={true}
                   allowKeyboardControl={true}
-                  format="YYYY-MM-DD"
                   onChange={this.handleChangeDate.bind(this, filterKey)}
                   renderInput={(params) => (
                     <TextField
@@ -974,14 +974,10 @@ class Filters extends Component {
             {this.renderFilters()}
           </DialogContent>
           <DialogActions>
-            <Button
-              variant="contained"
-              onClick={this.handleCloseFilters.bind(this)}
-              color="secondary"
-            >
+            <Button onClick={this.handleCloseFilters.bind(this)}>
               {t('Cancel')}
             </Button>
-            <Button variant="contained" onClick={this.handleSearch.bind(this)}>
+            <Button color="secondary" onClick={this.handleSearch.bind(this)}>
               {t('Search')}
             </Button>
           </DialogActions>
@@ -1002,6 +998,7 @@ Filters.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  nsd: PropTypes.func,
   availableFilterKeys: PropTypes.array,
   handleAddFilter: PropTypes.func,
   currentFilters: PropTypes.object,

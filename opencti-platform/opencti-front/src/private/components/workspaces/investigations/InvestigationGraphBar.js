@@ -64,10 +64,9 @@ import { dateFormat } from '../../../../utils/Time';
 import { parseDomain } from '../../../../utils/Graph';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 
-const styles = (theme) => ({
+const styles = () => ({
   bottomNav: {
     zIndex: 1000,
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -350,6 +349,7 @@ class InvestigationGraphBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
+        elevation={3}
       >
         <div
           style={{

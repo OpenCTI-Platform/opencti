@@ -53,7 +53,7 @@ class StixCoreObjectHistory extends Component {
           </Typography>
           <div style={{ float: 'right' }}>
             <SearchInput
-              variant="small"
+              variant="thin"
               onSubmit={this.handleSearchEntity.bind(this)}
               keyword={entitySearchTerm}
             />
@@ -99,7 +99,7 @@ class StixCoreObjectHistory extends Component {
             </Typography>
             <div style={{ float: 'right' }}>
               <SearchInput
-                variant="small"
+                variant="thin"
                 onSubmit={this.handleSearchRelations.bind(this)}
                 keyword={entitySearchTerm}
               />

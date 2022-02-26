@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes, pipe, assoc, propOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
+import Drawer from '@mui/material/Drawer';
+import Grid from '@mui/material/Grid';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -26,13 +26,10 @@ import EntityStixCoreRelationshipsLinesAll, {
 } from './EntityStixCoreRelationshipsLinesAll';
 
 const styles = (theme) => ({
-  appBar: {
-    top: 'auto',
-    bottom: 0,
-    padding: '0 200px 0 180px',
-    display: 'flex',
+  bottomNav: {
     zIndex: 1000,
-    height: 64,
+    padding: '10px 200px 10px 205px',
+    display: 'flex',
   },
   container: {
     marginTop: 15,
@@ -148,100 +145,117 @@ class EntityStixCoreRelationships extends Component {
       || targetStixDomainObjectTypes.includes('Location');
     const displayRelationshipTypes = relationshipTypes.length > 1;
     return (
-      <AppBar position="fixed" className={classes.appBar} elevation={1}>
-        <Toolbar>
+      <Drawer
+        anchor="bottom"
+        variant="permanent"
+        classes={{ paper: classes.bottomNav }}
+        elevation={3}
+      >
+        <Grid container={true} spacing={1}>
           {displayTypes && (
-            <Select
-              size="small"
-              value={selectedEntityType}
-              open={openEntityType}
-              onClose={this.handleCloseEntityType.bind(this)}
-              onOpen={this.handleOpenEntityType.bind(this)}
-              onChange={this.handleChangeEntities.bind(this)}
-            >
-              <MenuItem value="All">{t('All entities')}</MenuItem>
-              {includes('Attack-Pattern', targetStixDomainObjectTypes) && (
-                <MenuItem value="Attack-Pattern">
-                  {t('Attack pattern')}
-                </MenuItem>
-              )}
-              {includes('Campaign', targetStixDomainObjectTypes) && (
-                <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-              )}
-              {includes('Note', targetStixDomainObjectTypes) && (
-                <MenuItem value="Note">{t('Note')}</MenuItem>
-              )}
-              {includes('Observed-Data', targetStixDomainObjectTypes) && (
-                <MenuItem value="Observed-Data">{t('Observed data')}</MenuItem>
-              )}
-              {includes('Opinion', targetStixDomainObjectTypes) && (
-                <MenuItem value="Opinion">{t('Opinion')}</MenuItem>
-              )}
-              {includes('Report', targetStixDomainObjectTypes) && (
-                <MenuItem value="Report">{t('Report')}</MenuItem>
-              )}
-              {includes('Course-Of-Action', targetStixDomainObjectTypes) && (
-                <MenuItem value="Course-Of-Action">
-                  {t('Course of action')}
-                </MenuItem>
-              )}
-              {targetStixDomainObjectTypes.some((r) => ['System', 'Identity'].includes(r)) && <MenuItem value="System">{t('System')}</MenuItem>}
-              {targetStixDomainObjectTypes.some((r) => ['Individual', 'Identity'].includes(r)) && <MenuItem value="Individual">{t('Individual')}</MenuItem>}
-              {targetStixDomainObjectTypes.some((r) => ['Organization', 'Identity'].includes(r)) && (
-                <MenuItem value="Organization">{t('Organization')}</MenuItem>
-              )}
-              {targetStixDomainObjectTypes.some((r) => ['Sector', 'Identity'].includes(r)) && <MenuItem value="Sector">{t('Sector')}</MenuItem>}
-              {targetStixDomainObjectTypes.includes('Indicator') && (
-                <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
-              )}
-              {targetStixDomainObjectTypes.includes('Infrastructure') && (
-                <MenuItem value="Infrastructure">
-                  {t('Infrastructure')}
-                </MenuItem>
-              )}
-              {targetStixDomainObjectTypes.includes('Intrusion-Set') && (
-                <MenuItem value="Intrusion-Set">{t('Intrusion set')}</MenuItem>
-              )}
-              {targetStixDomainObjectTypes.some((r) => ['City', 'Location'].includes(r)) && <MenuItem value="City">{t('City')}</MenuItem>}
-              {targetStixDomainObjectTypes.some((r) => ['Country', 'Location'].includes(r)) && <MenuItem value="Country">{t('Country')}</MenuItem>}
-              {targetStixDomainObjectTypes.some((r) => ['Region', 'Location'].includes(r)) && <MenuItem value="Region">{t('Region')}</MenuItem>}
-              {targetStixDomainObjectTypes.some((r) => ['Region', 'Position'].includes(r)) && <MenuItem value="Position">{t('Position')}</MenuItem>}
-              {targetStixDomainObjectTypes.includes('Malware') && (
-                <MenuItem value="Malware">{t('Malware')}</MenuItem>
-              )}
-              {targetStixDomainObjectTypes.includes('Threat-Actor') && (
-                <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>
-              )}
-              {targetStixDomainObjectTypes.includes('Tool') && (
-                <MenuItem value="Tool">{t('Tool')}</MenuItem>
-              )}
-              {targetStixDomainObjectTypes.includes('Vulnerability') && (
-                <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>
-              )}
-              {targetStixDomainObjectTypes.includes('Incident') && (
-                <MenuItem value="Incident">{t('Incident')}</MenuItem>
-              )}
-            </Select>
+            <Grid item={true} xs="auto">
+              <Select
+                size="small"
+                value={selectedEntityType}
+                open={openEntityType}
+                onClose={this.handleCloseEntityType.bind(this)}
+                onOpen={this.handleOpenEntityType.bind(this)}
+                onChange={this.handleChangeEntities.bind(this)}
+              >
+                <MenuItem value="All">{t('All entities')}</MenuItem>
+                {includes('Attack-Pattern', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Attack-Pattern">
+                    {t('Attack pattern')}
+                  </MenuItem>
+                )}
+                {includes('Campaign', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+                )}
+                {includes('Note', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Note">{t('Note')}</MenuItem>
+                )}
+                {includes('Observed-Data', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Observed-Data">
+                    {t('Observed data')}
+                  </MenuItem>
+                )}
+                {includes('Opinion', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Opinion">{t('Opinion')}</MenuItem>
+                )}
+                {includes('Report', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Report">{t('Report')}</MenuItem>
+                )}
+                {includes('Course-Of-Action', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Course-Of-Action">
+                    {t('Course of action')}
+                  </MenuItem>
+                )}
+                {targetStixDomainObjectTypes.some((r) => ['System', 'Identity'].includes(r)) && <MenuItem value="System">{t('System')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Individual', 'Identity'].includes(r)) && <MenuItem value="Individual">{t('Individual')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Organization', 'Identity'].includes(r)) && (
+                  <MenuItem value="Organization">{t('Organization')}</MenuItem>
+                )}
+                {targetStixDomainObjectTypes.some((r) => ['Sector', 'Identity'].includes(r)) && <MenuItem value="Sector">{t('Sector')}</MenuItem>}
+                {targetStixDomainObjectTypes.includes('Indicator') && (
+                  <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
+                )}
+                {targetStixDomainObjectTypes.includes('Infrastructure') && (
+                  <MenuItem value="Infrastructure">
+                    {t('Infrastructure')}
+                  </MenuItem>
+                )}
+                {targetStixDomainObjectTypes.includes('Intrusion-Set') && (
+                  <MenuItem value="Intrusion-Set">
+                    {t('Intrusion set')}
+                  </MenuItem>
+                )}
+                {targetStixDomainObjectTypes.some((r) => ['City', 'Location'].includes(r)) && <MenuItem value="City">{t('City')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Country', 'Location'].includes(r)) && <MenuItem value="Country">{t('Country')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Region', 'Location'].includes(r)) && <MenuItem value="Region">{t('Region')}</MenuItem>}
+                {targetStixDomainObjectTypes.some((r) => ['Region', 'Position'].includes(r)) && <MenuItem value="Position">{t('Position')}</MenuItem>}
+                {targetStixDomainObjectTypes.includes('Malware') && (
+                  <MenuItem value="Malware">{t('Malware')}</MenuItem>
+                )}
+                {targetStixDomainObjectTypes.includes('Threat-Actor') && (
+                  <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>
+                )}
+                {targetStixDomainObjectTypes.includes('Tool') && (
+                  <MenuItem value="Tool">{t('Tool')}</MenuItem>
+                )}
+                {targetStixDomainObjectTypes.includes('Vulnerability') && (
+                  <MenuItem value="Vulnerability">
+                    {t('Vulnerability')}
+                  </MenuItem>
+                )}
+                {targetStixDomainObjectTypes.includes('Incident') && (
+                  <MenuItem value="Incident">{t('Incident')}</MenuItem>
+                )}
+              </Select>
+            </Grid>
           )}
           {displayRelationshipTypes && (
-            <Select
-              size="small"
-              value={selectedRelationshipType}
-              open={openRelationshipType}
-              onClose={this.handleCloseRelationshipType.bind(this)}
-              onOpen={this.handleOpenRelationshipType.bind(this)}
-              onChange={this.handleChangeRelationshipType.bind(this)}
-            >
-              <MenuItem value="All">{t('All types of relationship')}</MenuItem>
-              {relationshipTypes.map((relationshipType) => (
-                <MenuItem key={relationshipType} value={relationshipType}>
-                  {t(`relationship_${relationshipType}`)}
+            <Grid item={true} xs="auto">
+              <Select
+                size="small"
+                value={selectedRelationshipType}
+                open={openRelationshipType}
+                onClose={this.handleCloseRelationshipType.bind(this)}
+                onOpen={this.handleOpenRelationshipType.bind(this)}
+                onChange={this.handleChangeRelationshipType.bind(this)}
+              >
+                <MenuItem value="All">
+                  {t('All types of relationship')}
                 </MenuItem>
-              ))}
-            </Select>
+                {relationshipTypes.map((relationshipType) => (
+                  <MenuItem key={relationshipType} value={relationshipType}>
+                    {t(`relationship_${relationshipType}`)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
           )}
-        </Toolbar>
-      </AppBar>
+        </Grid>
+      </Drawer>
     );
   }
 

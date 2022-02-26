@@ -91,7 +91,7 @@ class StixCyberObservableKnowledgeEntities extends Component {
         handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
-        searchVariant="inDrawer2"
+        searchVariant="inDrawer"
       >
         <QueryRenderer
           query={stixCyberObservableEntitiesLinesQuery}

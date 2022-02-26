@@ -45,7 +45,7 @@ const styles = () => ({
     marginBottom: 20,
   },
   historyContainer: {
-    marginTop: 40,
+    marginTop: 50,
   },
   paper: {
     height: '100%',

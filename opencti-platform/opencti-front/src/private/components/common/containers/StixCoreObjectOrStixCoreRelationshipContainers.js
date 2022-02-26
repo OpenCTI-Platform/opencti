@@ -43,7 +43,6 @@ const styles = (theme) => ({
   },
   bottomNav: {
     zIndex: 1000,
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -474,6 +473,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
+            elevation={3}
           >
             <div
               style={{

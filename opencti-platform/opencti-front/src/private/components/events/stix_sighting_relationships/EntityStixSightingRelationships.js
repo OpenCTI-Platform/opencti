@@ -23,7 +23,6 @@ const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
     padding: '10px 200px 10px 205px',
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
   },
   chips: {
@@ -176,6 +175,7 @@ class EntityStixSightingRelationships extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
+            elevation={3}
           >
             <Grid container={true} spacing={1}>
               <Grid item={true} xs="auto">

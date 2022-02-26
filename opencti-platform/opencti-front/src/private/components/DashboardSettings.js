@@ -129,11 +129,12 @@ class DashboardSettings extends Component {
                     return (
                       <div>
                         <FormControl style={{ width: '100%' }}>
-                          <InputLabel id="timeField">
+                          <InputLabel id="timeField" variant="standard">
                             {t('Date reference')}
                           </InputLabel>
                           <Select
                             labelId="timeField"
+                            variant="standard"
                             value={timeField === null ? '' : timeField}
                             onChange={handleChangeTimeField.bind(this)}
                             fullWidth={true}
@@ -147,11 +148,12 @@ class DashboardSettings extends Component {
                           </Select>
                         </FormControl>
                         <FormControl style={{ width: '100%', marginTop: 20 }}>
-                          <InputLabel id="timeField">
+                          <InputLabel id="timeField" variant="standard">
                             {t('Custom dashboard')}
                           </InputLabel>
                           <Select
                             labelId="dashboard"
+                            variant="standard"
                             value={dashboard === null ? '' : dashboard}
                             onChange={handleChangeDashboard.bind(this)}
                             fullWidth={true}
