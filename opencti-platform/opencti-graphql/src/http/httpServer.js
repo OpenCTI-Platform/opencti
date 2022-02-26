@@ -34,7 +34,9 @@ const createHttpServer = async () => {
     const cert = readFileSync(CERT_KEY_CERT);
     const ca = CA_CERTS.map((path) => readFileSync(path));
     const requestCert = isStrategyActivated(STRATEGY_CERT);
-    httpServer = https.createServer({ key, cert, requestCert, rejectUnauthorized, ca }, app);
+    const passphrase = conf.get('app:https_cert:passphrase');
+    const options = { key, cert, passphrase, requestCert, rejectUnauthorized, ca };
+    httpServer = https.createServer(options, app);
   } else {
     httpServer = http.createServer(app);
   }
