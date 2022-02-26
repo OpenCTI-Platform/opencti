@@ -15,7 +15,7 @@ test('should hashes have collisions', () => {
 
 test('should hashes have complex collisions', () => {
   const instanceOne = { hashes: { MD5: 'md5', 'SHA-1': 'SHA' } };
-  const instanceTwo = { hashes: { MD5: 'md5', 'SHA-1': 'SHA' } };
+  const instanceTwo = { hashes: { MD5: 'md5', 'SHA-1': 'SHA2' } };
   const merge = () => hashMergeValidation([instanceOne, instanceTwo]);
   expect(merge).toThrow();
 });
