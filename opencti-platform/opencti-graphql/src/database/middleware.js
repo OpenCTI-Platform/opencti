@@ -216,6 +216,7 @@ import { askEnrich } from '../domain/enrichment';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
+const FUZZY_HASH_ALGORITHMS = ['SSDEEP', 'SDHASH', 'TLSH', 'LZJD'];
 // endregion
 
 // region Loader common
@@ -960,15 +961,17 @@ const listEntitiesByHashes = (user, type, hashes) => {
   if (isEmptyField(hashes)) {
     return [];
   }
+  // Search hashes must filter the fuzzy hashes
   const searchHashes = Object.entries(hashes)
-    .map(([, s]) => s)
-    .filter((s) => isNotEmptyField(s));
+    .filter(([hashKey]) => !FUZZY_HASH_ALGORITHMS.includes(hashKey.toUpperCase()))
+    .map(([, hashValue]) => hashValue)
+    .filter((hashValue) => isNotEmptyField(hashValue));
   return listEntities(user, [type], {
     filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
     connectionFormat: false,
   });
 };
-const hashMergeValidation = (instances) => {
+export const hashMergeValidation = (instances) => {
   // region Specific check for observables with hashes
   // If multiple results start by checking the possible merge validity
   const allHashes = instances.map((h) => h.hashes).filter((e) => isNotEmptyField(e));
