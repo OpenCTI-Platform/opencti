@@ -17,16 +17,6 @@ import {
   GraphOutline,
   HexagonMultipleOutline,
 } from 'mdi-material-ui';
-import {
-  BarChart,
-  Cell,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
 import Chart from 'react-apexcharts';
 import Slide from '@mui/material/Slide';
 import { graphql, useLazyLoadQuery } from 'react-relay';
@@ -37,7 +27,7 @@ import Loader from '../../components/Loader';
 import Security, { EXPLORE, KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
-import { hexToRGB, itemColor } from '../../utils/Colors';
+import { hexToRGB } from '../../utils/Colors';
 import { truncate } from '../../utils/String';
 import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
@@ -48,11 +38,7 @@ import DashboardView from './workspaces/dashboards/Dashboard';
 import { useViewStorage } from '../../utils/ListParameters';
 import TopBar from './nav/TopBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
-import {
-  areaChartOptions,
-  distributionChartOptions,
-  polarAreaChartOptions,
-} from '../../utils/Charts';
+import { areaChartOptions, polarAreaChartOptions } from '../../utils/Charts';
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
