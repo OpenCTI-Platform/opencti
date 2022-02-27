@@ -337,6 +337,10 @@ export const openVocabularies = {
       description: 'Specifies the Ruby programming language.',
     },
     {
+      key: 'rust',
+      description: 'Specifies the Rust programming language.',
+    },
+    {
       key: 'scala',
       description: 'Specifies the Scala programming language.',
     },
