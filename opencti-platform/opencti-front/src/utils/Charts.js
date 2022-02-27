@@ -44,11 +44,11 @@ export const areaChartOptions = (
   fill: {
     type: 'gradient',
     gradient: {
-      shade: theme.palette.mode === 'dark' ? 'light' : 'dark',
+      shade: theme.palette.mode,
       shadeIntensity: 1,
-      opacityFrom: 0.6,
-      opacityTo: 0.1,
-      stops: [0, 100],
+      opacityFrom: 0.7,
+      opacityTo: 0.4,
+      gradientToColors: [theme.palette.background.default, theme.palette.primary.main],
     },
   },
   xaxis: {
