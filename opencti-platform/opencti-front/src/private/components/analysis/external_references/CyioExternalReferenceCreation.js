@@ -135,6 +135,7 @@ class CyioExternalReferenceCreation extends Component {
         if (this.props.onCreate) {
           this.props.onCreate(response.createCyioExternalReference, true);
         }
+        this.props.onExpand();
       },
       // onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
     });
@@ -378,6 +379,7 @@ CyioExternalReferenceCreation.propTypes = {
   display: PropTypes.bool,
   inputValue: PropTypes.string,
   onCreate: PropTypes.func,
+  onExpand: PropTypes.func,
 };
 
 export default compose(

@@ -111,7 +111,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 
   render() {
     const {
-      t, cyioCoreObjectId, marginTop, data, height, typename,
+      t, cyioCoreObjectId, marginTop, data, height, typename, refreshQuery,
     } = this.props;
     // const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
     const paginationOptions = {
@@ -126,6 +126,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
         <CyioAddNotes
           cyioCoreObjectOrStixCoreRelationshipId={cyioCoreObjectId}
           typename={typename}
+          refreshQuery={refreshQuery}
           cyioCoreObjectOrStixCoreRelationshipNotes={
             data
           }
@@ -138,6 +139,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
               {data.map((note) => (
                 <CyioCoreObjectOrCyioCoreRelationshipNoteCard
                   key={note.id}
+                  refreshQuery={refreshQuery}
                   node={note}
                   cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
                 />
@@ -158,6 +160,7 @@ CyioCoreObjectNotesCardsContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   marginTop: PropTypes.number,
   typename: PropTypes.string,
+  refreshQuery: PropTypes.func,
   height: PropTypes.number,
   data: PropTypes.object,
   classes: PropTypes.object,
