@@ -2,7 +2,7 @@
   extend type Query {
     component(id: ID!): Component
     componentList( 
-        first: Int
+        limit: Int
         offset: Int
         orderedBy: ComponentsOrdering
         orderMode: OrderingMode
@@ -12,7 +12,7 @@
       ): ComponentConnection
     hardwareComponent(id: ID!): HardwareComponent
     hardwareComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: HardwareComponentsOrdering
       orderMode: OrderingMode
@@ -22,7 +22,7 @@
     ): HardwareComponentConnection
     networkComponent(id: ID!): NetworkComponent
     networkComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: NetworkComponentsOrdering
       orderMode: OrderingMode
@@ -32,7 +32,7 @@
     ): NetworkComponentConnection
     serviceComponent(id: ID!): ServiceComponent
     serviceComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: ServiceComponentsOrdering
       orderMode: OrderingMode
@@ -42,7 +42,7 @@
     ): ServiceComponentConnection
     softwareComponent(id: ID!): SoftwareComponent
     softwareComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: SoftwareComponentsOrdering
       orderMode: OrderingMode
@@ -52,7 +52,7 @@
     ): SoftwareComponentConnection
     systemComponent(id: ID!): SystemComponent
     systemComponentList( 
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: SystemComponentsOrdering
       orderMode: OrderingMode
@@ -111,7 +111,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -237,18 +237,28 @@
     filterMode: FilterMode
   }
   enum ComponentsOrdering {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
   }
   enum ComponentsFilter {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
   }
 
 #####   Hardware Component 
@@ -278,7 +288,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -420,19 +430,29 @@
   }
 
   enum HardwareComponentsOrdering {
+    "Conmponent Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
   }
 
   enum HardwareComponentsFilter {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
   }
 
 
@@ -462,7 +482,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -603,22 +623,36 @@
   }
 
   enum NetworkComponentsOrdering {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
+    "Network Name"
     network_name
+    "Network ID"
     network_id
   }
 
   enum NetworkComponentsFilter {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_nane
+    "Network Name"
     network_name
+    "Network ID"
     network_id
   }
 
@@ -649,7 +683,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -786,19 +820,29 @@
   }
 
   enum ServiceComponentsOrdering {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
   }
 
   enum ServiceComponentsFilter {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
   }
 
 
@@ -829,7 +873,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -981,19 +1025,29 @@
   }
 
   enum SoftwareComponentsOrdering {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
   }
 
   enum SoftwareComponentsFilter {
+    "Component Type"
     component_type
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
   }
 
 
@@ -1024,7 +1078,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1157,17 +1211,25 @@
   }
 
   enum SystemComponentsOrdering {
+    "Component Type"
     component_type
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
   }
 
   enum SystemComponentsFilter {
+    "Component Type"
     component_type
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
   }
 
   union ComponentTypes = HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent

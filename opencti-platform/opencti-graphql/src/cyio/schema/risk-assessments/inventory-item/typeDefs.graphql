@@ -2,7 +2,7 @@
   extend type Query {
     inventoryItem(id: ID!): InventoryItem
     inventoryItemList( 
-          first: Int
+          limit: Int
           offset: Int
           orderedBy: InventoryItemsOrdering
           orderMode: OrderingMode
@@ -47,7 +47,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -177,17 +177,25 @@
   }
 
   enum InventoryItemsOrdering {
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
+    "Label"
     labels
   }
 
   enum InventoryItemFilter {
+    "Asset Type"
     asset_type
+    "Created"
     created
+    "Modified"
     modified
-    labels
+    "Label"
+    label_name
   }
 
 #####   Appliance
@@ -217,7 +225,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -305,7 +313,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -393,7 +401,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -481,7 +489,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -569,7 +577,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -657,7 +665,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -745,7 +753,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      first: Int
+      limit: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode

@@ -23,10 +23,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { Add } from '@material-ui/icons';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { QueryRenderer as QR } from 'react-relay';
-import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import CyioExternalReferenceCreation from './CyioExternalReferenceCreation';
 import CyioAddExternalReferencesLines, {
   cyioAddExternalReferencesLinesQuery,
@@ -113,77 +113,83 @@ class CyioAddExternalReferences extends Component {
       open: false,
       search: '',
       expanded: false,
+      totalExternalReference: [],
     };
   }
 
-  toggleExternalReference(externalReference, onlyCreate = false) {
+  toggleExternalReference(createExternalRef) {
     const {
       cyioCoreObjectOrCyioCoreRelationshipId,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
     } = this.props;
-    const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
-      (n) => n.id,
-      cyioCoreObjectOrCyioCoreRelationshipReferences,
-    );
-    const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
-      externalReference.id,
-    );
-    if (alreadyAdded && !onlyCreate) {
-      const existingExternalReference = head(
-        filter(
-          (n) => n.id === externalReference.id,
-          cyioCoreObjectOrCyioCoreRelationshipReferences,
-        ),
-      );
-      commitMutation({
-        mutation: cyioExternalReferenceMutationRelationDelete,
-        variables: {
-          toId: externalReference.id,
-          fromId: this.props.cyioCoreObjectId,
-          fieldName: 'external_references',
-          from_type: this.props.typename,
-          to_type: externalReference.__typename,
-        },
-        updater: (store) => {
-          const entity = store.get(cyioCoreObjectOrCyioCoreRelationshipId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
-            'Pagination_cyioExternalReferenceList',
-          );
-          ConnectionHandler.deleteNode(conn, externalReference.id);
-        },
-      });
-    } else if (!alreadyAdded) {
-      commitMutation({
+    if (this.state.totalExternalReference.length > 0) {
+      this.state.totalExternalReference.map((externalReference) => (
+        CM(environmentDarkLight, {
+          mutation: cyioExternalReferenceLinesMutationRelationAdd,
+          variables: {
+            toId: externalReference.id,
+            fromId: cyioCoreObjectOrCyioCoreRelationshipId,
+            fieldName: 'external_references',
+            from_type: this.props.typename,
+            to_type: externalReference.__typename,
+          },
+          onCompleted: (response) => {
+            this.handleClose();
+            this.setState({ totalExternalReference: [] });
+            this.props.refreshQuery();
+          },
+          // updater: (store) => {
+          //   const payload = store
+          //   // .getRootField('externalReferenceEdit')
+          //   // .getLinkedRecord('relationAdd', { input });
+          //   const relationId = payload.getValue('toId');
+          //   // const node = payload.getLinkedRecord('to');
+          //   const relation = store.get(relationId);
+          //   payload.setLinkedRecord(node, 'node');
+          //   payload.setLinkedRecord(relation, 'relation');
+          //   sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
+          // },
+        })
+      ));
+    } else {
+      CM(environmentDarkLight, {
         mutation: cyioExternalReferenceLinesMutationRelationAdd,
         variables: {
-          toId: externalReference.id,
+          toId: createExternalRef.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
           fieldName: 'external_references',
           from_type: this.props.typename,
-          to_type: externalReference.__typename,
+          to_type: createExternalRef.__typename,
         },
-        updater: (store) => {
-          const payload = store
-          // .getRootField('externalReferenceEdit')
-          // .getLinkedRecord('relationAdd', { input });
-          const relationId = payload.getValue('toId');
-          // const node = payload.getLinkedRecord('to');
-          const relation = store.get(relationId);
-          payload.setLinkedRecord(node, 'node');
-          payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
+        // updater: (store) => {
+        //   const payload = store
+        //   // .getRootField('externalReferenceEdit')
+        //   // .getLinkedRecord('relationAdd', { input });
+        //   const relationId = payload.getValue('toId');
+        //   // const node = payload.getLinkedRecord('to');
+        //   const relation = store.get(relationId);
+        //   payload.setLinkedRecord(node, 'node');
+        //   payload.setLinkedRecord(relation, 'relation');
+        //   sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
+        // },
+        onCompleted: (response) => {
+          this.setState({ totalExternalReference : [] });
+          this.props.refreshQuery();
         },
       });
     }
   }
 
   handleOpen() {
-    this.setState({ open: true });
+    this.setState({ open: true, expanded: false });
   }
 
   handleClose() {
-    this.setState({ open: false, search: '' });
+    this.setState({ open: false, search: '', expanded: false });
+  }
+
+  handleDataCollect(dataCollect) {
+    this.setState({ totalExternalReference: [...dataCollect] });
   }
 
   handleOpenSearch() {
@@ -205,7 +211,7 @@ class CyioAddExternalReferences extends Component {
       classes,
       cyioCoreObjectOrCyioCoreRelationshipId,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
-      typename
+      typename,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -241,31 +247,32 @@ class CyioAddExternalReferences extends Component {
               {/* <CardHeader title="Add External Refrences"/> */}
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <TextField
-                style={{ width: 495 }}
-                onChange={this.handleSearch.bind(this)}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end" >
-                      <CyioExternalReferenceCreation
-                        display={this.state.open}
-                        contextual={true}
-                        inputValue={this.state.search}
-                        paginationOptions={paginationOptions}
-                        onCreate={this.toggleExternalReference.bind(this)}
-                      />
-                      <div style={{ marginLeft: '10px' }}>
-                      {
-                        this.state.expanded
-                        ? <KeyboardArrowDownOutlinedIcon onClick={this.handleCloseSearch.bind(this)}  style={{ transform: 'rotate(180deg)', cursor: 'pointer' }} />
-                        : <KeyboardArrowDownOutlinedIcon onClick={this.handleOpenSearch.bind(this)} style={{ cursor: 'pointer' }} />
-                      }
-                      </div>
-                    </InputAdornment>
-                  ),
-                }} />
+                  style={{ width: 495 }}
+                  onChange={this.handleSearch.bind(this)}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end" >
+                        <CyioExternalReferenceCreation
+                          display={this.state.open}
+                          contextual={true}
+                          inputValue={this.state.search}
+                          onExpand={this.handleCloseSearch.bind(this)}
+                          paginationOptions={paginationOptions}
+                          onCreate={this.toggleExternalReference.bind(this)}
+                        />
+                        <div style={{ marginLeft: '10px' }}>
+                          {
+                            this.state.expanded
+                              ? <KeyboardArrowDownOutlinedIcon onClick={this.handleCloseSearch.bind(this)} style={{ transform: 'rotate(180deg)', cursor: 'pointer' }} />
+                              : <KeyboardArrowDownOutlinedIcon onClick={this.handleOpenSearch.bind(this)} style={{ cursor: 'pointer' }} />
+                          }
+                        </div>
+                      </InputAdornment>
+                    ),
+                  }} />
                 <div style={{ float: 'right', marginLeft: '40px' }}>
                   <Button style={{ marginLeft: '10px', marginRight: '10px' }} onClick={this.handleClose.bind(this)} variant="outlined" >{t('Cancel')}</Button>
-                  <Button variant="contained" color="primary">{t('Add')}</Button>
+                  <Button variant="contained" color="primary" onClick={this.toggleExternalReference.bind(this)}>{t('Add')}</Button>
                 </div>
                 <Divider light={true} />
               </CardActions>
@@ -273,7 +280,7 @@ class CyioAddExternalReferences extends Component {
             <Collapse sx={{ maxWidth: '500px', borderRadius: 0 }} in={this.state.expanded} timeout="auto" unmountOnExit>
               <div className={classes.collapse}>
                 <QR
-                  environment={QueryRendererDarkLight}
+                  environment={environmentDarkLight}
                   query={cyioAddExternalReferencesLinesQuery}
                   variables={{
                     search: this.state.search,
@@ -291,6 +298,7 @@ class CyioAddExternalReferences extends Component {
                             cyioCoreObjectOrCyioCoreRelationshipReferences
                           }
                           data={props}
+                          handleDataCollect={this.handleDataCollect.bind(this)}
                           paginationOptions={paginationOptions}
                           open={this.state.open}
                           search={this.state.search}
@@ -346,6 +354,7 @@ class CyioAddExternalReferences extends Component {
 CyioAddExternalReferences.propTypes = {
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
+  refreshQuery: PropTypes.func,
   typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

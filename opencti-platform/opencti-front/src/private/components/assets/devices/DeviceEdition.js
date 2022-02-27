@@ -72,6 +72,7 @@ class DeviceEdition extends Component {
     const {
       classes,
       deviceId,
+      refreshQuery,
       open,
       history,
     } = this.props;
@@ -81,7 +82,7 @@ class DeviceEdition extends Component {
           environment={environmentDarkLight}
           query={deviceEditionQuery}
           variables={{ id: deviceId }}
-          render={({ error, props }) => {
+          render={({ error, props, retry }) => {
             if (props) {
               return (
                 <DeviceEditionContainer
@@ -90,6 +91,7 @@ class DeviceEdition extends Component {
                   //   'Device',
                   // )}
                   history={history}
+                  refreshQuery={retry}
                   handleClose={this.handleClose.bind(this)}
                 />
               );
