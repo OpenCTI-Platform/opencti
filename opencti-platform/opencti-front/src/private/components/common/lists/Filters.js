@@ -600,6 +600,8 @@ class Filters extends Component {
           'Incident',
           'Stix-Cyber-Observable',
           'Stix-Core-Relationship',
+          'StixFile',
+          'IPv4-Addr',
           'indicates',
           'targets',
           'uses',

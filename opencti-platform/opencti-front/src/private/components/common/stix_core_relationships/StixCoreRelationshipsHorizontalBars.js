@@ -1,17 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, assoc } from 'ramda';
+import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import {
-  BarChart,
-  XAxis,
-  YAxis,
-  Cell,
-  CartesianGrid,
-  Bar,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
+import Chart from 'react-apexcharts';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -20,7 +11,8 @@ import Typography from '@mui/material/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { truncate } from '../../../../utils/String';
+import { distributionChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -142,8 +134,6 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-const tickFormatter = (title) => truncate(title.replace(/\[(.*?)\]/gi, ''), 100);
-
 class StixCoreRelationshipsHorizontalBars extends Component {
   renderContent() {
     const {
@@ -178,72 +168,24 @@ class StixCoreRelationshipsHorizontalBars extends Component {
             && props.stixCoreRelationshipsDistribution
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
-            const data = map(
-              (n) => assoc(
-                'label',
-                `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`,
-                n,
-              ),
-              props.stixCoreRelationshipsDistribution,
-            );
+            const data = props.stixCoreRelationshipsDistribution.map((n) => ({
+              x: n.entity.name,
+              y: n.value,
+              fillColor: itemColor(n.entity.entity_type),
+            }));
+            const graphData = [{ name: t('Number of relationships'), data }];
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  layout="vertical"
-                  data={data}
-                  margin={{
-                    top: 20,
-                    right: 20,
-                    bottom: 20,
-                    left: 12,
-                  }}
-                >
-                  <XAxis
-                    type="number"
-                    dataKey="value"
-                    stroke={theme.palette.text.primary}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    stroke={theme.palette.text.primary}
-                    dataKey="label"
-                    type="category"
-                    angle={-30}
-                    textAnchor="end"
-                    tickFormatter={tickFormatter}
-                  />
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
-                  />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                  />
-                  <Bar
-                    fill={theme.palette.primary.main}
-                    dataKey="value"
-                    barSize={15}
-                  >
-                    {props.stixCoreRelationshipsDistribution.map(
-                      (entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={itemColor(entry.entity.entity_type)}
-                        />
-                      ),
-                    )}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={distributionChartOptions(
+                  theme,
+                  true,
+                  simpleNumberFormat,
+                )}
+                series={graphData}
+                type="bar"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
@@ -313,7 +255,7 @@ StixCoreRelationshipsHorizontalBars.propTypes = {
   variant: PropTypes.string,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withTheme,
   withStyles(styles),

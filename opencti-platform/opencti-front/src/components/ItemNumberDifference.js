@@ -9,7 +9,7 @@ import inject18n from './i18n';
 const styles = (theme) => ({
   diff: {
     float: 'left',
-    margin: '21px 0 0 10px',
+    margin: '23px 0 0 10px',
     padding: '2px 5px 2px 5px',
     fontSize: 12,
   },

@@ -26,6 +26,11 @@ export const numberFormat = (number, digits = 2) => {
   };
 };
 
+export const simpleNumberFormat = (number, digits = 2) => {
+  const formatted = numberFormat(number, digits);
+  return `${formatted.number} ${formatted.symbol}`;
+};
+
 export const bytesFormat = (number, digits = 2) => {
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
   const sizes = [' Bytes', 'KB', 'MB', 'GB', 'TB'];

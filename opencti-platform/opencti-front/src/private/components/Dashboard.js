@@ -19,16 +19,15 @@ import {
 } from 'mdi-material-ui';
 import {
   BarChart,
-  AreaChart,
   Cell,
   Bar,
-  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import Chart from 'react-apexcharts';
 import Slide from '@mui/material/Slide';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { yearsAgo, dayAgo, monthsAgo } from '../../utils/Time';
@@ -42,13 +41,18 @@ import { hexToRGB, itemColor } from '../../utils/Colors';
 import { truncate } from '../../utils/String';
 import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
-import { computeLevel } from '../../utils/Number';
+import { computeLevel, simpleNumberFormat } from '../../utils/Number';
 import ItemMarkings from '../../components/ItemMarkings';
 import DashboardView from './workspaces/dashboards/Dashboard';
 
 import { useViewStorage } from '../../utils/ListParameters';
 import TopBar from './nav/TopBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
+import {
+  areaChartOptions,
+  distributionChartOptions,
+  polarAreaChartOptions,
+} from '../../utils/Charts';
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
@@ -68,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
   paper: {
     margin: '10px 0 0 0',
     padding: 0,
-    borderRadius: 6,
+    overflow: 'hidden',
   },
   item: {
     height: 50,
@@ -106,7 +110,8 @@ const useStyles = makeStyles((theme) => ({
   },
   graphContainer: {
     width: '100%',
-    padding: '20px 20px 0 0',
+    padding: 0,
+    overflow: 'hidden',
   },
   labelsCloud: {
     width: '100%',
@@ -336,7 +341,7 @@ const TopLabelsCard = ({ classes }) => {
               style={{
                 color: line.entity.color,
                 borderColor: line.entity.color,
-                backgroundColor: hexToRGB(line.entity.color),
+                backgroundColor: hexToRGB(line.entity.color, 0.2),
               }}
             >
               <div className={classes.labelNumber}>{n(line.value)}</div>
@@ -353,7 +358,7 @@ const TopLabelsCard = ({ classes }) => {
 const IngestedEntitiesGraph = () => {
   const classes = useStyles();
   const theme = useTheme();
-  const { mtd, fsd } = useFormatter();
+  const { md, t } = useFormatter();
   const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
     query DashboardStixDomainObjectsTimeSeriesQuery(
       $field: String!
@@ -380,53 +385,30 @@ const IngestedEntitiesGraph = () => {
     startDate: yearsAgo(1),
     interval: 'month',
   });
+  const chartData = data.stixDomainObjectsTimeSeries.map((entry) => ({
+    x: new Date(entry.date),
+    y: entry.value,
+  }));
   return (
     <div className={classes.graphContainer}>
-      <ResponsiveContainer height={270} width="100%">
-        <AreaChart
-          data={data.stixDomainObjectsTimeSeries}
-          margin={{
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: -10,
-          }}
-        >
-          <CartesianGrid
-            strokeDasharray="2 2"
-            stroke={theme.palette.action.grid}
-          />
-          <XAxis
-            dataKey="date"
-            stroke={theme.palette.text.primary}
-            interval={0}
-            textAnchor="end"
-            tickFormatter={mtd}
-          />
-          <YAxis stroke={theme.palette.text.primary} />
-          <Tooltip
-            cursor={{
-              fill: 'rgba(0, 0, 0, 0.2)',
-              stroke: 'rgba(0, 0, 0, 0.2)',
-              strokeWidth: 2,
-            }}
-            contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              fontSize: 12,
-              borderRadius: 10,
-            }}
-            labelFormatter={fsd}
-          />
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke={theme.palette.primary.main}
-            strokeWidth={2}
-            fill={theme.palette.primary.main}
-            fillOpacity={0.1}
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <Chart
+        options={areaChartOptions(
+          theme,
+          true,
+          md,
+          simpleNumberFormat,
+          'dataPoints',
+        )}
+        series={[
+          {
+            name: t('Ingested entities'),
+            data: chartData,
+          },
+        ]}
+        type="area"
+        width="100%"
+        height={280}
+      />
     </div>
   );
 };
@@ -633,7 +615,6 @@ const ObservablesDistribution = () => {
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
-  const tickFormatter = (title) => truncate(t(`entity_${title}`), 10);
   const dashboardStixCyberObservablesDistributionQuery = graphql`
     query DashboardStixCyberObservablesDistributionQuery(
       $field: String!
@@ -649,55 +630,22 @@ const ObservablesDistribution = () => {
     dashboardStixCyberObservablesDistributionQuery,
     { field: 'entity_type', operation: 'count' },
   );
-  const distribution = data.stixCyberObservablesDistribution;
+  const distribution = data.stixCyberObservablesDistribution.map(
+    (n) => n.value,
+  );
   if (distribution.length === 0) {
     return <NoTableElement />;
   }
+  const labels = data.stixCyberObservablesDistribution.map((n) => t(`entity_${n.label}`));
   return (
     <div className={classes.graphContainer}>
-      <ResponsiveContainer height={420} width="100%">
-        <BarChart
-          layout="vertical"
-          data={distribution}
-          margin={{ top: 0, right: 0, bottom: 20, left: 0 }}
-        >
-          <XAxis
-            type="number"
-            dataKey="value"
-            stroke={theme.palette.text.primary}
-            allowDecimals={false}
-          />
-          <YAxis
-            stroke={theme.palette.text.primary}
-            dataKey="label"
-            type="category"
-            angle={-30}
-            textAnchor="end"
-            tickFormatter={tickFormatter}
-          />
-          <CartesianGrid
-            strokeDasharray="2 2"
-            stroke={theme.palette.action.grid}
-          />
-          <Tooltip
-            cursor={{
-              fill: 'rgba(0, 0, 0, 0.2)',
-              stroke: 'rgba(0, 0, 0, 0.2)',
-              strokeWidth: 2,
-            }}
-            contentStyle={{
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              fontSize: 12,
-              borderRadius: 10,
-            }}
-          />
-          <Bar fill={theme.palette.primary.main} dataKey="value" barSize={15}>
-            {distribution.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={itemColor(entry.label)} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <Chart
+        options={polarAreaChartOptions(theme, labels, simpleNumberFormat)}
+        series={distribution}
+        type="polarArea"
+        width="100%"
+        height={420}
+      />
     </div>
   );
 };
