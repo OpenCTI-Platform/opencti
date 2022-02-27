@@ -9,6 +9,15 @@ const {RelayPlugin} = require("../plugin/esbuild-relay");
 
 const basePath = "";
 const clients = [];
+const debounce = (func, timeout = 500) => {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            func.apply(this, args);
+        }, timeout);
+    };
+}
 
 // Start with an initial build
 esbuild.build({
@@ -38,9 +47,9 @@ esbuild.build({
 }).then((builder) => {
     // Listen change for hot recompile
     chokidar.watch("src/**/*.{js,jsx,ts,tsx}", {awaitWriteFinish: true, ignoreInitial: true})
-        .on("all", (eventName, path) => {
+        .on("all", debounce(() => {
             const start = new Date().getTime();
-            console.log(`[HOT RELOAD] Update of ${path} ${eventName} detected`);
+            console.log(`[HOT RELOAD] Update of front detected`);
             return builder.rebuild().then(() => {
                 const time = new Date().getTime() - start;
                 console.log(`[HOT RELOAD] Rebuild done in ${time} ms, updating frontend`);
@@ -49,7 +58,7 @@ esbuild.build({
             }).catch((error) => {
                 console.error(error);
             });
-        });
+        }));
     // Start a dev web server
     const app = express();
     app.set('trust proxy', 1);
