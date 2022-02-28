@@ -288,7 +288,7 @@ class AttackPattern:
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
+        description = kwargs.get("description", None)
         aliases = kwargs.get("aliases", None)
         x_mitre_platforms = kwargs.get("x_mitre_platforms", None)
         x_mitre_permissions_required = kwargs.get("x_mitre_permissions_required", None)
@@ -298,7 +298,7 @@ class AttackPattern:
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
 
-        if name is not None and description is not None:
+        if name is not None:
             self.opencti.log("info", "Creating Attack-Pattern {" + name + "}.")
             query = """
                 mutation AttackPatternAdd($input: AttackPatternAddInput) {
