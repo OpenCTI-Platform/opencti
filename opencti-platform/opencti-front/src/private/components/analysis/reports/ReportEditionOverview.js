@@ -275,7 +275,7 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('status_id', status),
       R.assoc(
         'report_types',
-        report.report_types.map((n) => ({ label: n, value: n })),
+        (report.report_types || []).map((n) => ({ label: n, value: n })),
       ),
       R.pick([
         'name',
