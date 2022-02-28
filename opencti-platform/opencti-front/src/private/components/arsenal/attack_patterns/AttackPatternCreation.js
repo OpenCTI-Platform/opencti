@@ -89,10 +89,7 @@ const attackPatternMutation = graphql`
 const attackPatternValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   x_mitre_id: Yup.string().nullable(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
+  description: Yup.string().nullable(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {

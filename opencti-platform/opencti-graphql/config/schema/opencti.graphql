@@ -1805,7 +1805,7 @@ input AttackPatternAddInput {
   stix_id: String
   x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   aliases: [String]
   revoked: Boolean
   lang: String

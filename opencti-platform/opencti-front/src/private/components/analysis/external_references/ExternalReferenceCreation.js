@@ -92,8 +92,9 @@ const externalReferenceCreationMutation = graphql`
 const externalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string().nullable(),
-  url: Yup.string().url(t('The value must be an URL')),
+  url: Yup.string().url(t('The value must be an URL')).nullable(),
   description: Yup.string().nullable(),
+  file: Yup.object().nullable(),
 });
 
 class ExternalReferenceCreation extends Component {
@@ -111,10 +112,11 @@ class ExternalReferenceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => insertNode(
         store,
@@ -139,10 +141,11 @@ class ExternalReferenceCreation extends Component {
   }
 
   onSubmitContextual(values, { setSubmitting, setErrors, resetForm }) {
+    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -218,7 +221,7 @@ class ExternalReferenceCreation extends Component {
                   <Field
                     component={TextField}
                     variant="standard"
-                    name="source_name2"
+                    name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
@@ -245,13 +248,19 @@ class ExternalReferenceCreation extends Component {
                     fullWidth={true}
                     multiline={true}
                     rows="4"
-                    style={{ marginTop: 20, marginBottom: 20 }}
+                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={SimpleFileUpload}
-                    fullWidth={true}
                     name="file"
                     label={t('Associated file')}
+                    FormControlProps={{ style: { marginTop: 20 } }}
+                    InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                    InputProps={{
+                      fullWidth: true,
+                      variant: 'standard',
+                    }}
+                    fullWidth={true}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -355,10 +364,13 @@ class ExternalReferenceCreation extends Component {
                   />
                   <Field
                     component={SimpleFileUpload}
-                    InputProps={{ fullWidth: true }}
+                    FormControlProps={{ style: { marginTop: 20 } }}
+                    InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                    InputProps={{
+                      fullWidth: true,
+                      variant: 'standard',
+                    }}
                     fullWidth={true}
-                    name="file"
-                    label={t('Associated file')}
                   />
                 </DialogContent>
                 <DialogActions>
