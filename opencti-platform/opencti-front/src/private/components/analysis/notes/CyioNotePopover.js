@@ -15,13 +15,12 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 // import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 // import { noteEditionQuery } from './NoteEdition';
-import CyioNoteEditionContainer, { cyioNoteEditionQuery } from './CyioNoteEditionContainer';
-import Loader from '../../../../components/Loader';
+import CyioNoteEditionContainer from './CyioNoteEditionContainer';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
 } from '../../../../utils/Security';

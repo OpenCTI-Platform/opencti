@@ -9,7 +9,6 @@ import {
   pipe,
   union,
   append,
-  filter,
   sortWith,
   ascend,
   prop,
@@ -31,7 +30,7 @@ import { Add, CancelOutlined } from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import { Label, Information } from 'mdi-material-ui';
 import environmentDarkLight, { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+// import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
 import SelectField from '../../../../components/SelectField';
@@ -100,7 +99,7 @@ const CyioCoreObjectLabelsView = (props) => {
     classes, labels, t, marginTop, id, typename, refreshQuery,
   } = props;
   const { me } = useContext(UserContext);
-  const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
+  // const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
   const [openAdd, setOpenAdd] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
   const [stateLabels, setStateLabels] = useState([]);
@@ -142,7 +141,7 @@ const CyioCoreObjectLabelsView = (props) => {
         typename: n.typename,
       })),
     )(values);
-    labelsValues.map((label, i) => (
+    labelsValues.map((label) => (
       CM(environmentDarkLight, {
         mutation: cyioCoreObjectMutationRelationsAdd,
         variables: {

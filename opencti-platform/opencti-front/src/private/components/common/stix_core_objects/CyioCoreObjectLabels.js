@@ -65,7 +65,7 @@ class CyioCoreObjectLabels extends Component {
       <div className={classes.objectLabel}>
         {labelsNodes.length > 0 ? (
           map(
-            (label, id) => (
+            (label) => (
               <Chip
                 key={label.id}
                 variant="outlined"

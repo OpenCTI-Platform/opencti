@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-  compose, pathOr, pipe, map, union, append,
+  compose, pathOr, pipe, map, union,
 } from 'ramda';
 import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
@@ -8,9 +8,8 @@ import { Label } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import { labelsSearchQuery } from '../../settings/LabelsQuery';
+// import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
-import LabelCreation from '../../settings/labels/LabelCreation';
 
 const styles = () => ({
   icon: {
@@ -70,8 +69,6 @@ class ObjectLabelField extends Component {
       name,
       style,
       classes,
-      setFieldValue,
-      values,
       variant,
       helpertext,
     } = this.props;

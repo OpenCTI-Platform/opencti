@@ -24,13 +24,11 @@ import Slide from '@material-ui/core/Slide';
 import IconButton from '@material-ui/core/IconButton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 // import { commitMutation } from '../../../../relay/environment';
-import { noteMutationRelationDelete } from './AddNotesLines';
 import CyioNotePopover from './CyioNotePopover';
 import { resolveLink } from '../../../../utils/Entity';
 
@@ -168,7 +166,6 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
       theme,
       CyioCoreObjectOrCyioCoreRelationshipId,
     } = this.props;
-    const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     let authorName = null;
     let authorLink = null;
     if (node.createdBy) {

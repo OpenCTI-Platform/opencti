@@ -8,12 +8,11 @@ import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import * as Yup from 'yup';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
-  requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -53,14 +52,14 @@ const styles = (theme) => ({
   },
 });
 
-const subscription = graphql`
-  subscription CyioExternalReferenceEditionSubscription($id: ID!) {
-    externalReference(id: $id) {
-      id
-      # ...CyioExternalReferenceEdition_externalReference
-    }
-  }
-`;
+// const subscription = graphql`
+//   subscription CyioExternalReferenceEditionSubscription($id: ID!) {
+//     externalReference(id: $id) {
+//       id
+//       # ...CyioExternalReferenceEdition_externalReference
+//     }
+//   }
+// `;
 
 const cyioExternalReferenceMutationFieldPatch = graphql`
   mutation CyioExternalReferenceEditionFieldPatchMutation(

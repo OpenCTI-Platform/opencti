@@ -132,6 +132,7 @@ class DeviceEditionContainer extends Component {
       R.dissoc('locations'),
       R.dissoc('protocols'),
       R.dissoc('port_number'),
+      R.dissoc('responsible_parties'),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
@@ -216,8 +217,8 @@ class DeviceEditionContainer extends Component {
       R.assoc('vendor_name', device?.vendor_name || ''),
       R.assoc('serial_number', device?.serial_number || ''),
       R.assoc('release_date', dateFormat(device?.release_date)),
-      R.assoc('installed_hardware', installedHardwares),
-      R.assoc('installed_software', installedSoftware),
+      R.assoc('installed_hardware', installedHardwares || []),
+      R.assoc('installed_software', installedSoftware || []),
       R.assoc('installed_operating_system', device?.installed_operating_system?.id || ''),
       R.assoc('operational_status', device?.operational_status),
       R.assoc('installation_id', device?.installation_id || ''),
@@ -240,6 +241,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('fqdn', device?.fqdn || ''),
       R.assoc('ipv4_address', R.pluck('ip_address_value', device?.ipv4_address || [])),
       R.assoc('ipv6_address', R.pluck('ip_address_value', device?.ipv6_address || [])),
+      R.assoc('responsible_parties', ''),
       R.pick([
         'id',
         'asset_id',
@@ -276,6 +278,7 @@ class DeviceEditionContainer extends Component {
         'is_scanned',
         'is_virtual',
         'is_publicly_accessible',
+        'resposnible_parties',
         'uri',
       ]),
     )(device);
