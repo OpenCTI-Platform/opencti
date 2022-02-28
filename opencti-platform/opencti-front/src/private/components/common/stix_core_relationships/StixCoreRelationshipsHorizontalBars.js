@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { distributionChartOptions } from '../../../../utils/Charts';
+import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
@@ -173,15 +173,15 @@ class StixCoreRelationshipsHorizontalBars extends Component {
               y: n.value,
               fillColor: itemColor(n.entity.entity_type),
             }));
-            const graphData = [{ name: t('Number of relationships'), data }];
+            const chartData = [{ name: t('Number of relationships'), data }];
             return (
               <Chart
-                options={distributionChartOptions(
+                options={horizontalBarsChartOptions(
                   theme,
                   true,
                   simpleNumberFormat,
                 )}
-                series={graphData}
+                series={chartData}
                 type="bar"
                 width="100%"
                 height="100%"
@@ -225,7 +225,13 @@ class StixCoreRelationshipsHorizontalBars extends Component {
     const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
+          }}
+        >
           {title || t('StixCoreRelationships distribution')}
         </Typography>
         {variant !== 'inLine' ? (

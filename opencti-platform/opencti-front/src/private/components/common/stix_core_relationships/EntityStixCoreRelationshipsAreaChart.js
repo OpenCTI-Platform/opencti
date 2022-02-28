@@ -2,22 +2,17 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import {
-  AreaChart,
-  ResponsiveContainer,
-  CartesianGrid,
-  Area,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import { areaChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -78,10 +73,10 @@ class EntityStixCoreRelationshipsAreaChart extends Component {
   renderContent() {
     const {
       t,
+      fsd,
       entityId,
       toTypes,
       relationshipType,
-      md,
       field,
       startDate,
       endDate,
@@ -108,37 +103,31 @@ class EntityStixCoreRelationshipsAreaChart extends Component {
         variables={stixCoreRelationshipsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.stixCoreRelationshipsTimeSeries) {
+            const chartData = props.stixCoreRelationshipsTimeSeries.map(
+              (entry) => ({
+                x: new Date(entry.date),
+                y: entry.value,
+              }),
+            );
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <AreaChart
-                  data={props.stixCoreRelationshipsTimeSeries}
-                  margin={{
-                    top: 20,
-                    right: 50,
-                    bottom: 20,
-                    left: -10,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke={theme.palette.text.primary}
-                    interval={interval}
-                    angle={-45}
-                    textAnchor="end"
-                    tickFormatter={md}
-                  />
-                  <YAxis stroke={theme.palette.text.primary} />
-                  <Area
-                    type="monotone"
-                    stroke={theme.palette.primary.main}
-                    dataKey="value"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <Chart
+                options={areaChartOptions(
+                  theme,
+                  true,
+                  fsd,
+                  simpleNumberFormat,
+                  undefined,
+                )}
+                series={[
+                  {
+                    name: t('Number of relationships'),
+                    data: chartData,
+                  },
+                ]}
+                type="area"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {

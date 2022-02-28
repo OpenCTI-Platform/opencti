@@ -67,7 +67,7 @@ class GlobalVictimologyMap extends Component {
         <Typography
           variant="h4"
           gutterBottom={true}
-          style={{ marginBottom: 10 }}
+          style={{ margin: '-10px 0 10px -7px' }}
         >
           {title || t('Victimology map')}
         </Typography>

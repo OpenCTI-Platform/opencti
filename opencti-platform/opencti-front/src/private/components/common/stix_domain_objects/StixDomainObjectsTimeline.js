@@ -26,9 +26,10 @@ const styles = (theme) => ({
   container: {
     width: '100%',
     height: '100%',
+    overflow: 'auto',
   },
   paper: {
-    padding: 15,
+    padding: 0,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -53,6 +54,7 @@ const stixDomainObjectsTimelineQuery = graphql`
     ) {
       edges {
         node {
+          id
           entity_type
           created
           modified
@@ -237,7 +239,13 @@ class StixDomainObjectsTimeline extends Component {
     const { t, classes, title, variant } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '-10px 0 5px -7px' : '0 0 10px 0',
+          }}
+        >
           {title || t('StixDomainObjects timeline')}
         </Typography>
         {variant !== 'inLine' ? (

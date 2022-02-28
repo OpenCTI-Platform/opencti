@@ -34,7 +34,6 @@ import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import { computeLevel, simpleNumberFormat } from '../../utils/Number';
 import ItemMarkings from '../../components/ItemMarkings';
 import DashboardView from './workspaces/dashboards/Dashboard';
-
 import { useViewStorage } from '../../utils/ListParameters';
 import TopBar from './nav/TopBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
@@ -326,8 +325,7 @@ const TopLabelsCard = ({ classes }) => {
               className={classes.label}
               style={{
                 color: line.entity.color,
-                borderColor: line.entity.color,
-                backgroundColor: hexToRGB(line.entity.color, 0.2),
+                backgroundColor: hexToRGB(line.entity.color, 0.3),
               }}
             >
               <div className={classes.labelNumber}>{n(line.value)}</div>

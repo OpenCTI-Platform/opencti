@@ -122,7 +122,7 @@ class EntityStixCoreRelationshipsVerticalBars extends Component {
                 >
                   <CartesianGrid
                     strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
+                    stroke={theme.palette.background.default}
                   />
                   <XAxis
                     dataKey="date"

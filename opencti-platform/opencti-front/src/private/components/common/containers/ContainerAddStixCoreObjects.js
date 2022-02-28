@@ -68,7 +68,7 @@ const styles = (theme) => ({
     float: 'right',
   },
   header: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -547,8 +547,9 @@ class ContainerAddStixCoreObjects extends Component {
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
               size="large"
+              color="primary"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             {(ContainerAddStixCoreObjects.isTypeDomainObject(
               paginationOptions.types,

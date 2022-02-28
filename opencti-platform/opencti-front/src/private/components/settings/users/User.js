@@ -19,15 +19,6 @@ import {
 } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import {
-  AreaChart,
-  ResponsiveContainer,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from 'recharts';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -40,6 +31,7 @@ import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
+import Chart from 'react-apexcharts';
 import inject18n from '../../../../components/i18n';
 import UserEdition from './UserEdition';
 import UserPopover, { userEditionQuery } from './UserPopover';
@@ -48,6 +40,8 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import { FIVE_SECONDS, now, timestamp, yearsAgo } from '../../../../utils/Time';
 import UserHistory from './UserHistory';
+import { areaChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -230,7 +224,7 @@ class UserComponent extends Component {
   }
 
   render() {
-    const { classes, theme, user, t, mtd, fsd, nsdt } = this.props;
+    const { classes, theme, user, t, fsd, nsdt } = this.props;
     const orderedSessions = R.sort(
       (a, b) => timestamp(a.created) - timestamp(b.created),
       user.sessions,
@@ -423,54 +417,29 @@ class UserComponent extends Component {
                 }}
                 render={({ props }) => {
                   if (props && props.logsTimeSeries) {
+                    const chartData = props.logsTimeSeries.map((entry) => ({
+                      x: new Date(entry.date),
+                      y: entry.value,
+                    }));
                     return (
-                      <div className={classes.graphContainer}>
-                        <ResponsiveContainer height={270} width="100%">
-                          <AreaChart
-                            data={props.logsTimeSeries}
-                            margin={{
-                              top: 0,
-                              right: 0,
-                              bottom: 0,
-                              left: -10,
-                            }}
-                          >
-                            <CartesianGrid
-                              strokeDasharray="2 2"
-                              stroke={theme.palette.action.grid}
-                            />
-                            <XAxis
-                              dataKey="date"
-                              stroke={theme.palette.text.primary}
-                              interval={0}
-                              textAnchor="end"
-                              tickFormatter={mtd}
-                            />
-                            <YAxis stroke={theme.palette.text.primary} />
-                            <Tooltip
-                              cursor={{
-                                fill: 'rgba(0, 0, 0, 0.2)',
-                                stroke: 'rgba(0, 0, 0, 0.2)',
-                                strokeWidth: 2,
-                              }}
-                              contentStyle={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                fontSize: 12,
-                                borderRadius: 10,
-                              }}
-                              labelFormatter={fsd}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="value"
-                              stroke={theme.palette.primary.main}
-                              strokeWidth={2}
-                              fill={theme.palette.primary.main}
-                              fillOpacity={0.1}
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
+                      <Chart
+                        options={areaChartOptions(
+                          theme,
+                          true,
+                          fsd,
+                          simpleNumberFormat,
+                          undefined,
+                        )}
+                        series={[
+                          {
+                            name: t('Number of relationships'),
+                            data: chartData,
+                          },
+                        ]}
+                        type="area"
+                        width="100%"
+                        height="100%"
+                      />
                     );
                   }
                   return <Loader variant="inElement" />;

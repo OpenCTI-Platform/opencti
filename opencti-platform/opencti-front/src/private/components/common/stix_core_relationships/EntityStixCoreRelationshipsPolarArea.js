@@ -1,53 +1,54 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, assoc } from 'ramda';
+import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import TableContainer from '@mui/material/TableContainer';
-import Table from '@mui/material/Table';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import TableCell from '@mui/material/TableCell';
-import TableBody from '@mui/material/TableBody';
-import inject18n from '../../../../components/i18n';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
-import ItemIcon from '../../../../components/ItemIcon';
+import inject18n from '../../../../components/i18n';
+import { polarAreaChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
     height: '100%',
     margin: '10px 0 0 0',
-    padding: 0,
     borderRadius: 6,
+  },
+  updateButton: {
+    float: 'right',
+    margin: '7px 10px 0 0',
   },
 });
 
-const entityStixCoreRelationshipsListDistributionQuery = graphql`
-  query EntityStixCoreRelationshipsListDistributionQuery(
+const entityStixCoreRelationshipsPolarAreaStixCoreRelationshipDistributionQuery = graphql`
+  query EntityStixCoreRelationshipsPolarAreaStixCoreRelationshipDistributionQuery(
     $fromId: String
-    $relationship_type: String!
     $toTypes: [String]
-    $isTo: Boolean
-    $field: String!
-    $operation: StatsOperation!
+    $relationship_type: String
     $limit: Int
     $startDate: DateTime
     $endDate: DateTime
+    $field: String!
+    $dateAttribute: String
+    $operation: StatsOperation!
+    $isTo: Boolean
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
-      relationship_type: $relationship_type
       toTypes: $toTypes
-      isTo: $isTo
-      field: $field
-      operation: $operation
+      relationship_type: $relationship_type
       limit: $limit
       startDate: $startDate
       endDate: $endDate
+      field: $field
+      dateAttribute: $dateAttribute
+      operation: $operation
+      isTo: $isTo
     ) {
       label
       value
@@ -136,32 +137,38 @@ const entityStixCoreRelationshipsListDistributionQuery = graphql`
   }
 `;
 
-class EntityStixCoreRelationshipsList extends Component {
+class EntityStixCoreRelationshipsPolarArea extends Component {
   renderContent() {
     const {
       t,
-      stixCoreObjectId,
-      relationshipType,
+      entityId,
       toTypes,
+      relationshipType,
       field,
-      isTo,
+      dateAttribute,
       startDate,
       endDate,
+      isTo,
+      theme,
+      variant,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      fromId: stixCoreObjectId,
-      relationship_type: relationshipType,
+      fromId: entityId,
       toTypes,
-      field: field || 'entity_type',
-      operation: 'count',
+      startDate: startDate || null,
+      endDate: endDate || null,
+      relationship_type: relationshipType,
+      field,
+      dateAttribute,
       limit: 10,
+      operation: 'count',
       isTo: isTo || false,
-      startDate,
-      endDate,
     };
     return (
       <QueryRenderer
-        query={entityStixCoreRelationshipsListDistributionQuery}
+        query={
+          entityStixCoreRelationshipsPolarAreaStixCoreRelationshipDistributionQuery
+        }
         variables={stixCoreRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
@@ -171,51 +178,36 @@ class EntityStixCoreRelationshipsList extends Component {
           ) {
             let data = props.stixCoreRelationshipsDistribution;
             if (field === 'internal_id') {
-              data = map(
-                (n) => assoc(
+              data = R.map(
+                (n) => R.assoc(
                   'label',
-                  `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`,
+                  `${
+                    toTypes.length > 1
+                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${
+                        n.entity.name
+                      }`
+                      : `${n.entity.name}`
+                  }`,
                   n,
                 ),
                 props.stixCoreRelationshipsDistribution,
               );
             }
+            const chartData = data.map((n) => n.value);
+            const labels = data.map((n) => (field === 'entity_type' ? t(`entity_${n.label}`) : n.label));
             return (
-              <TableContainer component={Paper}>
-                <Table size="small" style={{ width: '100%' }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell style={{ width: 50 }} align="center">
-                        {' '}
-                        #{' '}
-                      </TableCell>
-                      <TableCell>{t('Entity')}</TableCell>
-                      <TableCell align="right">{t('Number')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {data.map((row) => (
-                      <TableRow key={row.label}>
-                        <TableCell align="center" style={{ width: 50 }}>
-                          <ItemIcon
-                            type={
-                              field === 'internal_id'
-                                ? row.entity.entity_type
-                                : 'Stix-Cyber-Observable'
-                            }
-                          />
-                        </TableCell>
-                        <TableCell align="left">
-                          {field === 'internal_id'
-                            ? row.entity.name
-                            : row.label}
-                        </TableCell>
-                        <TableCell align="right">{row.value}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Chart
+                options={polarAreaChartOptions(
+                  theme,
+                  labels,
+                  simpleNumberFormat,
+                  variant === 'inEntity' ? 'left' : 'right',
+                )}
+                series={chartData}
+                type="polarArea"
+                width="100%"
+                height={420}
+              />
             );
           }
           if (props) {
@@ -252,47 +244,49 @@ class EntityStixCoreRelationshipsList extends Component {
   }
 
   render() {
-    const { t, classes, title, variant } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
-      <div style={{ height: '100%' }}>
+      <div style={{ height: height || '100%' }}>
         <Typography
-          variant="h4"
+          variant={variant === 'inEntity' ? 'h3' : 'h4'}
           gutterBottom={true}
           style={{
             margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
           }}
         >
-          {title || t('StixDomainObjects distribution')}
+          {title || t('Distribution of entities')}
         </Typography>
-        {variant !== 'inLine' ? (
+        {variant === 'inLine' || variant === 'inEntity' ? (
+          this.renderContent()
+        ) : (
           <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
-        ) : (
-          this.renderContent()
         )}
       </div>
     );
   }
 }
 
-EntityStixCoreRelationshipsList.propTypes = {
-  stixCoreObjectId: PropTypes.string,
-  relationshipType: PropTypes.string,
-  toTypes: PropTypes.array,
+EntityStixCoreRelationshipsPolarArea.propTypes = {
   title: PropTypes.string,
+  variant: PropTypes.string,
+  entityId: PropTypes.string,
+  relationshipType: PropTypes.string,
+  entityType: PropTypes.string,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
+  dateAttribute: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  fld: PropTypes.func,
   isTo: PropTypes.bool,
-  variant: PropTypes.string,
-  startDate: PropTypes.string,
-  endDate: PropTypes.string,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(EntityStixCoreRelationshipsList);
+)(EntityStixCoreRelationshipsPolarArea);

@@ -57,7 +57,7 @@ export default (
       textTransform: 'uppercase',
       fontSize: 12,
       fontWeight: 500,
-      color: '#6c6c6c',
+      color: '#505050',
     },
     h5: {
       fontWeight: 400,
@@ -68,6 +68,7 @@ export default (
     h6: {
       fontWeight: 400,
       fontSize: 18,
+      color: primary || '#007fff',
     },
   },
   components: {
@@ -166,7 +167,7 @@ export default (
             },
           },
           '.react-grid-placeholder': {
-            backgroundColor: 'rgba(0, 188, 212, 0.8) !important',
+            backgroundColor: `${accent || '#c0dfff'} !important`,
           },
           '.react_time_range__track': {
             backgroundColor: 'rgba(1, 226, 255, 0.1) !important',

@@ -68,6 +68,7 @@ export default (
     h6: {
       fontWeight: 400,
       fontSize: 18,
+      color: primary || '#00b1ff',
     },
   },
   components: {
@@ -170,7 +171,7 @@ export default (
             },
           },
           '.react-grid-placeholder': {
-            backgroundColor: 'rgba(0, 188, 212, 0.8) !important',
+            backgroundColor: `${accent || '#01478d'} !important`,
           },
           '.react_time_range__track': {
             backgroundColor: 'rgba(1, 226, 255, 0.1) !important',

@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, assoc } from 'ramda';
+import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import { ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
+import { donutChartOptions } from '../../../../utils/Charts';
 
 const styles = () => ({
   paper: {
@@ -133,63 +133,6 @@ const stixCoreRelationshipsDonutsDistributionQuery = graphql`
 `;
 
 class StixCoreRelationshipsDonut extends Component {
-  constructor(props) {
-    super(props);
-    this.renderLabel = this.renderLabel.bind(this);
-    this.renderSimpleLabel = this.renderSimpleLabel.bind(this);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  renderSimpleLabel(props) {
-    return props.value;
-  }
-
-  renderLabel(props) {
-    const { theme } = this.props;
-    const RADIAN = Math.PI / 180;
-    const { cx, cy, midAngle, outerRadius, fill, payload, percent, value } = props;
-    const sin = Math.sin(-RADIAN * midAngle);
-    const cos = Math.cos(-RADIAN * midAngle);
-    const sx = cx + (outerRadius + 10) * cos;
-    const sy = cy + (outerRadius + 10) * sin;
-    const mx = cx + (outerRadius + 30) * cos;
-    const my = cy + (outerRadius + 30) * sin;
-    const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-    const ey = my;
-    const textAnchor = cos >= 0 ? 'start' : 'end';
-
-    return (
-      <g>
-        <path
-          d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-          stroke={fill}
-          fill="none"
-        />
-        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-        <text
-          x={ex + (cos >= 0 ? 1 : -1) * 12}
-          y={ey}
-          textAnchor={textAnchor}
-          fill={theme.palette.text.primary}
-          style={{ fontSize: 12 }}
-        >
-          {' '}
-          {payload.label} ({value})
-        </text>
-        <text
-          x={ex + (cos >= 0 ? 1 : -1) * 12}
-          y={ey}
-          dy={18}
-          textAnchor={textAnchor}
-          fill="#999999"
-          style={{ fontSize: 12 }}
-        >
-          {` ${(percent * 100).toFixed(2)}%`}
-        </text>
-      </g>
-    );
-  }
-
   renderContent() {
     const {
       t,
@@ -199,7 +142,6 @@ class StixCoreRelationshipsDonut extends Component {
       startDate,
       endDate,
       dateAttribute,
-      variant,
       theme,
     } = this.props;
     const stixDomainObjectsDistributionVariables = {
@@ -224,8 +166,8 @@ class StixCoreRelationshipsDonut extends Component {
           ) {
             let data = props.stixCoreRelationshipsDistribution;
             if (field === 'internal_id') {
-              data = map(
-                (n) => assoc(
+              data = R.map(
+                (n) => R.assoc(
                   'label',
                   `${
                     toTypes.length > 1
@@ -239,44 +181,16 @@ class StixCoreRelationshipsDonut extends Component {
                 props.stixCoreRelationshipsDistribution,
               );
             }
+            const chartData = data.map((n) => n.value);
+            const labels = data.map((n) => n.label);
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <PieChart
-                  margin={{
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
-                    left: 0,
-                  }}
-                >
-                  <Pie
-                    data={data}
-                    dataKey="value"
-                    nameKey="label"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius="63%"
-                    outerRadius="80%"
-                    fill="#82ca9d"
-                    label={
-                      variant === 'inEntity'
-                        ? this.renderLabel
-                        : this.renderSimpleLabel
-                    }
-                    labelLine={true}
-                    paddingAngle={5}
-                  >
-                    {data.map((entry, index) => (
-                      <Cell
-                        key={index}
-                        fill={itemColor(entry.label)}
-                        stroke={theme.palette.background.paper}
-                      />
-                    ))}
-                  </Pie>
-                  {variant === 'inLine' && <Legend margin={{ bottom: 20 }} />}
-                </PieChart>
-              </ResponsiveContainer>
+              <Chart
+                options={donutChartOptions(theme, labels)}
+                series={chartData}
+                type="donut"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
@@ -316,7 +230,13 @@ class StixCoreRelationshipsDonut extends Component {
     const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('Distribution of entities')}
         </Typography>
         {variant === 'inLine' ? (
@@ -346,7 +266,7 @@ StixCoreRelationshipsDonut.propTypes = {
   variant: PropTypes.string,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withTheme,
   withStyles(styles),

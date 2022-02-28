@@ -2,25 +2,16 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import {
-  BarChart,
-  XAxis,
-  YAxis,
-  Cell,
-  CartesianGrid,
-  Bar,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
-import { truncate } from '../../../../utils/String';
+import { horizontalBarsChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -59,8 +50,6 @@ const reportsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-const tickFormatter = (title) => truncate(title, 10);
-
 class ReportsHorizontalBars extends Component {
   renderContent() {
     const { t, field, startDate, endDate, theme } = this.props;
@@ -81,62 +70,25 @@ class ReportsHorizontalBars extends Component {
             && props.reportsDistribution
             && props.reportsDistribution.length > 0
           ) {
+            const data = props.reportsDistribution.map((n) => ({
+              x: n.entity.name,
+              y: n.value,
+            }));
+            const chartData = [{ name: t('Number of reports'), data }];
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  layout="vertical"
-                  data={props.reportsDistribution}
-                  margin={{
-                    top: 20,
-                    right: 20,
-                    bottom: 0,
-                    left: 20,
-                  }}
-                >
-                  <XAxis
-                    type="number"
-                    dataKey="value"
-                    stroke={theme.palette.text.primary}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    stroke={theme.palette.text.primary}
-                    dataKey={field.includes('.') ? 'entity.name' : 'label'}
-                    type="category"
-                    angle={-30}
-                    textAnchor="end"
-                    tickFormatter={tickFormatter}
-                  />
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
-                  />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                  />
-                  <Bar
-                    fill={theme.palette.primary.main}
-                    dataKey="value"
-                    barSize={15}
-                  >
-                    {props.reportsDistribution.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={itemColor(entry.entity.name)}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={horizontalBarsChartOptions(
+                  theme,
+                  true,
+                  simpleNumberFormat,
+                  null,
+                  true,
+                )}
+                series={chartData}
+                type="bar"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
@@ -176,7 +128,13 @@ class ReportsHorizontalBars extends Component {
     const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('Reports distribution')}
         </Typography>
         {variant !== 'inLine' ? (

@@ -104,7 +104,7 @@ class StixCyberObservablePopover extends Component {
             <Button onClick={this.handleCloseDelete.bind(this)}>
               {t('Cancel')}
             </Button>
-            <Button onClick={onDelete.bind(this)} color="primary">
+            <Button onClick={onDelete.bind(this)} color="secondary">
               {t('Delete')}
             </Button>
           </DialogActions>

@@ -217,7 +217,7 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
                   />
                   <CartesianGrid
                     strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
+                    stroke={theme.palette.background.default}
                   />
                   <Tooltip
                     cursor={{
@@ -286,7 +286,13 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
     const { t, classes, title, variant } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('StixDomainObjects distribution')}
         </Typography>
         {variant !== 'inLine' ? (

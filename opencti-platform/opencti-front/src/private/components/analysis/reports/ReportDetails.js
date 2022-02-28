@@ -9,8 +9,8 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ItemStatus from '../../../../components/ItemStatus';
-import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import EntityStixCoreRelationshipsPolarArea from '../../common/stix_core_relationships/EntityStixCoreRelationshipsPolarArea';
 
 const styles = (theme) => ({
   paper: {
@@ -40,14 +40,14 @@ class ReportDetailsComponent extends Component {
           {t('Entity details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={8}>
+          <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+            <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown source={report.description} limit={400} />
             </Grid>
-            <Grid item={true} xs={4}>
+            <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Report types')}
               </Typography>
@@ -71,14 +71,28 @@ class ReportDetailsComponent extends Component {
               />
             </Grid>
           </Grid>
-          <EntityStixCoreRelationshipsDonut
-            variant="inEntity"
-            entityId={report.id}
-            toTypes={['Stix-Core-Object']}
-            relationshipType="object"
-            field="entity_type"
-            height={290}
-          />
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <EntityStixCoreRelationshipsPolarArea
+                title={t('Entities distribution')}
+                variant="inEntity"
+                entityId={report.id}
+                toTypes={['Stix-Domain-Object']}
+                relationshipType="object"
+                field="entity_type"
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <EntityStixCoreRelationshipsPolarArea
+                title={t('Observables distribution')}
+                variant="inEntity"
+                entityId={report.id}
+                toTypes={['Stix-Cyber-Observable']}
+                relationshipType="object"
+                field="entity_type"
+              />
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );

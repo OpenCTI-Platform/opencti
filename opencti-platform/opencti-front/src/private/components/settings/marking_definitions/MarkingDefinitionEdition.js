@@ -22,7 +22,7 @@ import {
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {

@@ -22,6 +22,7 @@ const styles = () => ({
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
+    overflow: 'hidden',
   },
   labelsCloud: {
     width: '100%',
@@ -125,8 +126,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
                           className={classes.label}
                           style={{
                             color,
-                            borderColor: color,
-                            backgroundColor: hexToRGB(color),
+                            backgroundColor: hexToRGB(color, 0.3),
                           }}
                         >
                           <div className={classes.labelNumber}>
@@ -208,7 +208,13 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
     }
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">

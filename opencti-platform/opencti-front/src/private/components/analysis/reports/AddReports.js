@@ -39,7 +39,7 @@ const styles = (theme) => ({
     float: 'right',
   },
   header: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -110,8 +110,9 @@ class AddReports extends Component {
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
               size="large"
+              color="primary"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
               {t('Add external references')}
