@@ -106,6 +106,12 @@ export const isImpactedTypeAndSide = (type, side) => {
 };
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
+let ca = null;
+if (conf.get('elasticsearch:ssl:ca')) {
+  ca = readFileSync(conf.get('elasticsearch:ssl:ca'));
+} else if (conf.get('elasticsearch:ssl:ca_plain')) {
+  ca = conf.get('elasticsearch:ssl:ca_plain');
+}
 const searchConfiguration = {
   node: conf.get('elasticsearch:url'),
   proxy: conf.get('elasticsearch:proxy') || null,
@@ -118,7 +124,7 @@ const searchConfiguration = {
   requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
   sniffOnStart: booleanConf('elasticsearch:sniff_on_start', false),
   ssl: {
-    ca: conf.get('elasticsearch:ssl:ca') ? readFileSync(conf.get('elasticsearch:ssl:ca')) : null,
+    ca,
     rejectUnauthorized: booleanConf('elasticsearch:ssl:reject_unauthorized', true),
   },
 };
