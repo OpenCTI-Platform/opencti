@@ -18,8 +18,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -54,13 +52,13 @@ class TopMenuInfrastructure extends Component {
           to="/dashboard/observations/infrastructures"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <ServerNetwork className={classes.icon} fontSize="small" />
           {t('Infrastructures')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIos color="primary" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/observations/infrastructures/${infrastructureId}`}
@@ -75,7 +73,7 @@ class TopMenuInfrastructure extends Component {
             location.pathname
             === `/dashboard/observations/infrastructures/${infrastructureId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -97,7 +95,7 @@ class TopMenuInfrastructure extends Component {
               `/dashboard/observations/infrastructures/${infrastructureId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -117,7 +115,7 @@ class TopMenuInfrastructure extends Component {
             location.pathname
             === `/dashboard/observations/infrastructures/${infrastructureId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -139,7 +137,7 @@ class TopMenuInfrastructure extends Component {
               `/dashboard/observations/infrastructures/${infrastructureId}/indicators`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -160,7 +158,7 @@ class TopMenuInfrastructure extends Component {
               location.pathname
               === `/dashboard/observations/infrastructures/${infrastructureId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -181,7 +179,7 @@ class TopMenuInfrastructure extends Component {
             location.pathname
             === `/dashboard/observations/infrastructures/${infrastructureId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

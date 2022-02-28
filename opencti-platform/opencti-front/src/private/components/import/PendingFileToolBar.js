@@ -21,11 +21,10 @@ import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import inject18n from '../../../components/i18n';
 
-const styles = (theme) => ({
+const styles = () => ({
   bottomNav: {
     zIndex: 1100,
     padding: '0 0 0 180px',
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -33,7 +32,6 @@ const styles = (theme) => ({
   bottomNavWithPadding: {
     zIndex: 1100,
     padding: '0 230px 0 180px',
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -84,6 +82,7 @@ class PendingFileToolBar extends Component {
             ? classes.bottomNavWithPadding
             : classes.bottomNav,
         }}
+        elevation={3}
         open={true}
       >
         <Toolbar style={{ minHeight: 54 }}>
@@ -162,7 +161,7 @@ class PendingFileToolBar extends Component {
             <Button onClick={this.handleCloseDelete.bind(this)}>
               {t('Cancel')}
             </Button>
-            <Button onClick={handleDrop.bind(this)} color="primary">
+            <Button onClick={handleDrop.bind(this)} color="secondary">
               {t('Delete')}
             </Button>
           </DialogActions>

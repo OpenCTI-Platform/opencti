@@ -55,19 +55,6 @@ div.break {
   word-break: break-word;
 }
 
-.recharts-legend-item-text,
-.recharts-polar-angle-axis-tick-value,
-.recharts-text,
-.recharts-layer {
-  font-size: 11px;
-  font-family: Roboto, sans-serif;
-}
-
-.recharts-cartesian-axis-tick {
-  font-size: 10px;
-  font-family: Roboto, sans-serif;
-}
-
 div.markdown p {
   margin: 0 0 10px 0;
   overflow: hidden;
@@ -82,11 +69,6 @@ div.markdown p:last-child {
   width: 100%;
   height: 100%;
   border-radius: 6px;
-}
-
-.react-grid-item > .react-resizable-handle::after {
-  border-right: 2px solid rgba(255, 255, 255, 0.4) !important;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
 }
 
 .layout {

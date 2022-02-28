@@ -1,11 +1,11 @@
 export default (
   logo = null,
-  primary = null,
-  primaryAccent = null,
-  secondary = null,
   background = null,
   paper = null,
   nav = null,
+  primary = null,
+  secondary = null,
+  accent = null,
 ) => ({
   logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
@@ -15,8 +15,8 @@ export default (
     background: {
       default: background || '#ffffff',
       paper: paper || '#f3f6f9',
-      nav: nav || '#f8fafd',
-      accent: primaryAccent || '#01478dff',
+      nav: nav || '#f9feff',
+      accent: accent || '#d3eaff',
     },
   },
   typography: {
@@ -57,7 +57,7 @@ export default (
       textTransform: 'uppercase',
       fontSize: 12,
       fontWeight: 500,
-      color: '#a8a8a8',
+      color: '#6c6c6c',
     },
     h5: {
       fontWeight: 400,
@@ -80,24 +80,24 @@ export default (
           },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 8,
-            backgroundColor: primaryAccent || '#01478dff',
+            backgroundColor: accent || '#d3eaff',
             minHeight: 24,
-            border: '3px solid #001e3c',
+            border: `3px solid ${paper || '#f3f6f9'}`,
           },
           '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
             {
-              backgroundColor: primaryAccent || '#01478dff',
+              backgroundColor: accent || '#d3eaff',
             },
           '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
             {
-              backgroundColor: primaryAccent || '#01478dff',
+              backgroundColor: accent || '#d3eaff',
             },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
             {
-              backgroundColor: primaryAccent || '#01478dff',
+              backgroundColor: accent || '#d3eaff',
             },
           '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: primaryAccent || '#01478dff',
+            backgroundColor: accent || '#d3eaff',
           },
           html: {
             WebkitFontSmoothing: 'auto',
@@ -116,13 +116,11 @@ export default (
             borderTopRightRadius: 'inherit',
           },
           pre: {
-            color: '#ffffff !important',
-            background: `${primaryAccent || '#01478dff'} !important`,
+            background: `${accent || '#c0dfff'} !important`,
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
-            color: '#ffffff !important',
-            background: `${primaryAccent || '#01478dff'} !important`,
+            background: `${accent || '#c0dfff'} !important`,
             padding: 3,
             fontSize: 12,
             fontWeight: 400,
@@ -145,26 +143,26 @@ export default (
           '.mde-header': {
             border: '0 !important',
             backgroundColor: 'transparent !important',
-            color: '#ffffff !important',
+            color: '#000000 !important',
           },
           '.mde-header-item button': {
-            color: '#ffffff !important',
+            color: '#000000 !important',
           },
           '.mde-tabs button': {
-            color: '#ffffff !important',
+            color: '#000000 !important',
           },
           '.mde-textarea-wrapper textarea': {
             fontFamily: '"IBM Plex Sans", sans-serif',
-            fontSize: 12,
-            color: '#ffffff',
+            fontSize: 13,
+            color: 'rgba(0, 0, 0, 0.87)',
             background: 'transparent',
-            borderBottom: '1px solid #b9bfc1 !important',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.87) !important',
             transition: 'borderBottom .3s',
             '&:hover': {
-              borderBottom: '2px solid #ffffff !important',
+              borderBottom: '2px solid #000000 !important',
             },
             '&:focus': {
-              borderBottom: `2px solid #${primary || '00b1ff'} !important`,
+              borderBottom: `2px solid #${primary || '#007fff'} !important`,
             },
           },
           '.react-grid-placeholder': {
@@ -179,7 +177,11 @@ export default (
             backgroundColor: '#00bcd4 !important',
           },
           '.leaflet-container': {
-            backgroundColor: '#0a1929 !important',
+            backgroundColor: `${paper || '#f3f6f9'} !important`,
+          },
+          '.react-grid-item .react-resizable-handle::after': {
+            borderRight: '2px solid rgba(0, 0, 0, 0.6) !important',
+            borderBottom: '2px solid rgba(0, 0, 0, 0.6) !important',
           },
         },
       },

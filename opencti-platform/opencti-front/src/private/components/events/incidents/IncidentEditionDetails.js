@@ -120,9 +120,7 @@ class IncidentEditionDetailsComponent extends Component {
               component={DatePickerField}
               name="first_seen"
               disabled={isInferred}
-              invalidDateMessage={t(
-                'The value must be a date (mm/dd/yyyy)',
-              )}
+              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -130,10 +128,7 @@ class IncidentEditionDetailsComponent extends Component {
                 variant: 'standard',
                 fullWidth: true,
                 helperText: (
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="first_seen"
-                  />
+                  <SubscriptionFocus context={context} fieldName="first_seen" />
                 ),
               }}
             />
@@ -142,9 +137,7 @@ class IncidentEditionDetailsComponent extends Component {
               name="last_seen"
               label={t('Last seen')}
               disabled={isInferred}
-              invalidDateMessage={t(
-                'The value must be a date (mm/dd/yyyy)',
-              )}
+              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -153,10 +146,7 @@ class IncidentEditionDetailsComponent extends Component {
                 fullWidth: true,
                 style: { marginTop: 20 },
                 helperText: (
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="last_seen"
-                  />
+                  <SubscriptionFocus context={context} fieldName="last_seen" />
                 ),
               }}
             />

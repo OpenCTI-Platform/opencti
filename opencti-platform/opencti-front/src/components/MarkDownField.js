@@ -46,7 +46,7 @@ const MarkDownField = (props) => {
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
-      <InputLabel style={{ fontSize: 10, marginBottom: 10 }}>
+      <InputLabel shrink={true} variant="standard">
         {label}
       </InputLabel>
       <ReactMde

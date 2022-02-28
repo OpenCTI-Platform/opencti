@@ -389,9 +389,7 @@ class IndicatorEditionOverviewComponent extends Component {
             <Field
               component={DatePickerField}
               name="valid_from"
-              invalidDateMessage={t(
-                'The value must be a date (mm/dd/yyyy)',
-              )}
+              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -400,19 +398,14 @@ class IndicatorEditionOverviewComponent extends Component {
                 fullWidth: true,
                 style: { marginTop: 20 },
                 helperText: (
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="valid_from"
-                  />
+                  <SubscriptionFocus context={context} fieldName="valid_from" />
                 ),
               }}
             />
             <Field
               component={DatePickerField}
               name="valid_until"
-              invalidDateMessage={t(
-                'The value must be a date (mm/dd/yyyy)',
-              )}
+              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{

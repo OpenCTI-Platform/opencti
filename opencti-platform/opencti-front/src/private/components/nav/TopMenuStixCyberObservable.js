@@ -14,8 +14,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -50,13 +48,13 @@ class TopMenuStixCyberObservable extends Component {
           to="/dashboard/observations/observables"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <HexagonOutline className={classes.icon} fontSize="small" />
           {t('Observables')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIos color="primary" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/observations/observables/${observableId}`}
@@ -71,7 +69,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname
             === `/dashboard/observations/observables/${observableId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -93,7 +91,7 @@ class TopMenuStixCyberObservable extends Component {
               `/dashboard/observations/observables/${observableId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -115,7 +113,7 @@ class TopMenuStixCyberObservable extends Component {
               `/dashboard/observations/observables/${observableId}/containers`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -135,7 +133,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname
             === `/dashboard/observations/observables/${observableId}/sightings`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -155,7 +153,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname
             === `/dashboard/observations/observables/${observableId}/files`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -175,7 +173,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname
             === `/dashboard/observations/observables/${observableId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

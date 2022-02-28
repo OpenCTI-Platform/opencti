@@ -17,8 +17,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -53,14 +51,14 @@ class TopMenuThreatActor extends Component {
           to="/dashboard/threats/threat_actors"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <PublicOutlined className={classes.icon} fontSize="small" />
           {t('Threat actors')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -77,7 +75,7 @@ class TopMenuThreatActor extends Component {
             location.pathname
             === `/dashboard/threats/threat_actors/${threatActorId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -99,7 +97,7 @@ class TopMenuThreatActor extends Component {
               `/dashboard/threats/threat_actors/${threatActorId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -119,7 +117,7 @@ class TopMenuThreatActor extends Component {
             location.pathname
             === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -141,7 +139,7 @@ class TopMenuThreatActor extends Component {
               `/dashboard/threats/threat_actors/${threatActorId}/indicators`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -162,7 +160,7 @@ class TopMenuThreatActor extends Component {
               location.pathname
               === `/dashboard/threats/threat_actors/${threatActorId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -183,7 +181,7 @@ class TopMenuThreatActor extends Component {
             location.pathname
             === `/dashboard/threats/threat_actors/${threatActorId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

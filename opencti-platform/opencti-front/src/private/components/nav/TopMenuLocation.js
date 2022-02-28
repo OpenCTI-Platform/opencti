@@ -18,8 +18,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -54,14 +52,14 @@ class TopMenuLocation extends Component {
           to="/dashboard/entities/cities"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <CityVariantOutline className={classes.icon} fontSize="small" />
           {t('Cities')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -76,7 +74,7 @@ class TopMenuLocation extends Component {
           color={
             location.pathname === `/dashboard/entities/cities/${cityId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -98,7 +96,7 @@ class TopMenuLocation extends Component {
               `/dashboard/entities/cities/${cityId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -118,7 +116,7 @@ class TopMenuLocation extends Component {
             location.pathname
             === `/dashboard/entities/cities/${cityId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -140,7 +138,7 @@ class TopMenuLocation extends Component {
               `/dashboard/entities/cities/${cityId}/observables`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -159,7 +157,7 @@ class TopMenuLocation extends Component {
             color={
               location.pathname === `/dashboard/entities/cities/${cityId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -178,7 +176,7 @@ class TopMenuLocation extends Component {
           color={
             location.pathname === `/dashboard/entities/cities/${cityId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

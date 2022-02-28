@@ -43,7 +43,7 @@ class TopMenuData extends Component {
             color={
               location.pathname === '/dashboard/data/entities'
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -61,7 +61,7 @@ class TopMenuData extends Component {
             color={
               location.pathname === '/dashboard/data/tasks'
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -81,7 +81,7 @@ class TopMenuData extends Component {
             color={
               location.pathname.includes('/dashboard/data/connectors')
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -101,7 +101,7 @@ class TopMenuData extends Component {
             color={
               location.pathname === '/dashboard/data/sync'
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -121,7 +121,7 @@ class TopMenuData extends Component {
             color={
               location.pathname === '/dashboard/data/stream'
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -141,7 +141,7 @@ class TopMenuData extends Component {
             color={
               location.pathname === '/dashboard/data/taxii'
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >

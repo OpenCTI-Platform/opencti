@@ -73,10 +73,9 @@ class StixCyberObservablePopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
+          size="small"
         >
-          <MoreVert />
+          <MoreVert fontSize="small" />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}

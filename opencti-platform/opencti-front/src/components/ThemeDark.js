@@ -1,11 +1,11 @@
 export default (
   logo = null,
-  primary = null,
-  primaryAccent = null,
-  secondary = null,
   background = null,
   paper = null,
   nav = null,
+  primary = null,
+  secondary = null,
+  accent = null,
 ) => ({
   logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
@@ -16,7 +16,7 @@ export default (
       default: background || '#0a1929',
       paper: paper || '#001e3c',
       nav: nav || '#071a2e',
-      accent: primaryAccent || '#01478d',
+      accent: accent || '#01478d',
     },
   },
   typography: {
@@ -80,24 +80,24 @@ export default (
           },
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 8,
-            backgroundColor: primaryAccent || '#01478d',
+            backgroundColor: accent || '#01478d',
             minHeight: 24,
-            border: '3px solid #001e3c',
+            border: `3px solid ${paper || '#001e3c'}`,
           },
           '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
             {
-              backgroundColor: primaryAccent || '#01478d',
+              backgroundColor: accent || '#01478d',
             },
           '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
             {
-              backgroundColor: primaryAccent || '#01478d',
+              backgroundColor: accent || '#01478d',
             },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
             {
-              backgroundColor: primaryAccent || '#01478d',
+              backgroundColor: accent || '#01478d',
             },
           '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
-            backgroundColor: primaryAccent || '#01478d',
+            backgroundColor: accent || '#01478d',
           },
           html: {
             WebkitFontSmoothing: 'auto',
@@ -117,12 +117,12 @@ export default (
           },
           pre: {
             color: '#ffffff !important',
-            background: `${primaryAccent || '#01478d'} !important`,
+            background: `${accent || '#01478d'} !important`,
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
             color: '#ffffff !important',
-            background: `${primaryAccent || '#01478d'} !important`,
+            background: `${accent || '#01478d'} !important`,
             padding: 3,
             fontSize: 12,
             fontWeight: 400,
@@ -160,7 +160,7 @@ export default (
             fontSize: 13,
             color: '#ffffff',
             background: 'transparent',
-            borderBottom: '1px solid #b9bfc1 !important',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.7) !important',
             transition: 'borderBottom .3s',
             '&:hover': {
               borderBottom: '2px solid #ffffff !important',
@@ -181,7 +181,11 @@ export default (
             backgroundColor: '#00bcd4 !important',
           },
           '.leaflet-container': {
-            backgroundColor: '#0a1929 !important',
+            backgroundColor: `${paper || '#001e3c'} !important`,
+          },
+          '.react-grid-item .react-resizable-handle::after': {
+            borderRight: '2px solid rgba(255, 255, 255, 0.4) !important',
+            borderBottom: '2px solid rgba(255, 255, 255, 0.4) !important',
           },
         },
       },

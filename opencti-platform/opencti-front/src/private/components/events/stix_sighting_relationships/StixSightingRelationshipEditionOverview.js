@@ -366,9 +366,7 @@ const StixSightingRelationshipEditionContainer = ({
               <Field
                 component={DatePickerField}
                 name="first_seen"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}
                 TextFieldProps={{
@@ -388,9 +386,7 @@ const StixSightingRelationshipEditionContainer = ({
               <Field
                 component={DatePickerField}
                 name="last_seen"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}
                 TextFieldProps={{

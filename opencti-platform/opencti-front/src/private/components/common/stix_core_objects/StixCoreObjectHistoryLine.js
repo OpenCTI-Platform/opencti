@@ -10,7 +10,8 @@ import {
   deepPurple,
   yellow,
   indigo,
-  teal, red,
+  teal,
+  red,
 } from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -22,7 +23,8 @@ import {
   LinkOutlined,
   LinkOffOutlined,
   HelpOutlined,
-  LanguageOutlined, DeleteOutlined,
+  LanguageOutlined,
+  DeleteOutlined,
 } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';

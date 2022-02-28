@@ -14,8 +14,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -50,13 +48,13 @@ class TopMenuArtifact extends Component {
           to="/dashboard/observations/artifacts"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <ArchiveOutline className={classes.icon} fontSize="small" />
           {t('Artifacts')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIos color="primary" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/observations/artifacts/${observableId}`}
@@ -71,7 +69,7 @@ class TopMenuArtifact extends Component {
             location.pathname
             === `/dashboard/observations/artifacts/${observableId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -93,7 +91,7 @@ class TopMenuArtifact extends Component {
               `/dashboard/observations/artifacts/${observableId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -113,7 +111,7 @@ class TopMenuArtifact extends Component {
             location.pathname
             === `/dashboard/observations/artifacts/${observableId}/sightings`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -133,7 +131,7 @@ class TopMenuArtifact extends Component {
             location.pathname
             === `/dashboard/observations/artifacts/${observableId}/files`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -153,7 +151,7 @@ class TopMenuArtifact extends Component {
             location.pathname
             === `/dashboard/observations/artifacts/${observableId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

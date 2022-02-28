@@ -39,7 +39,7 @@ const TopMenuSettings = ({ t, location, classes }) => (
         location.pathname === '/dashboard/settings'
         || location.pathname === '/dashboard/settings/about'
           ? 'secondary'
-          : 'inherit'
+          : 'primary'
       }
       classes={{ root: classes.button }}
     >
@@ -58,7 +58,7 @@ const TopMenuSettings = ({ t, location, classes }) => (
         color={
           location.pathname.includes('/dashboard/settings/accesses')
             ? 'secondary'
-            : 'inherit'
+            : 'primary'
         }
         classes={{ root: classes.button }}
       >
@@ -77,7 +77,7 @@ const TopMenuSettings = ({ t, location, classes }) => (
       color={
         location.pathname === '/dashboard/settings/workflow'
           ? 'secondary'
-          : 'inherit'
+          : 'primary'
       }
       classes={{ root: classes.button }}
     >
@@ -95,7 +95,7 @@ const TopMenuSettings = ({ t, location, classes }) => (
       color={
         location.pathname.includes('/dashboard/settings/retention')
           ? 'secondary'
-          : 'inherit'
+          : 'primary'
       }
       classes={{ root: classes.button }}
     >
@@ -113,7 +113,7 @@ const TopMenuSettings = ({ t, location, classes }) => (
       color={
         location.pathname.includes('/dashboard/settings/rules')
           ? 'secondary'
-          : 'inherit'
+          : 'primary'
       }
       classes={{ root: classes.button }}
     >
@@ -132,7 +132,7 @@ const TopMenuSettings = ({ t, location, classes }) => (
         color={
           location.pathname.includes('/dashboard/settings/attributes')
             ? 'secondary'
-            : 'inherit'
+            : 'primary'
         }
         classes={{ root: classes.button }}
       >

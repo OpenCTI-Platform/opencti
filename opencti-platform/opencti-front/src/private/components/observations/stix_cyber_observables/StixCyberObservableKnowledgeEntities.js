@@ -12,6 +12,7 @@ import StixCyberObservableEntitiesLines, {
 } from './StixCyberObservableEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import SearchInput from '../../../../components/SearchInput';
 
 const styles = () => ({
   paper: {
@@ -88,10 +89,8 @@ class StixCyberObservableKnowledgeEntities extends Component {
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
-        searchVariant="inDrawer"
       >
         <QueryRenderer
           query={stixCyberObservableEntitiesLinesQuery}
@@ -154,6 +153,13 @@ class StixCyberObservableKnowledgeEntities extends Component {
             targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
           />
         </Security>
+        <div style={{ float: 'right', marginTop: -10 }}>
+          <SearchInput
+            variant="thin"
+            onSubmit={this.handleSearch.bind(this)}
+            keyword={searchTerm}
+          />
+        </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}

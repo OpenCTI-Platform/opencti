@@ -17,8 +17,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -53,14 +51,14 @@ class TopMenuSector extends Component {
           to="/dashboard/entities/sectors"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <DomainOutlined className={classes.icon} fontSize="small" />
           {t('Sectors')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -75,7 +73,7 @@ class TopMenuSector extends Component {
           color={
             location.pathname === `/dashboard/entities/sectors/${sectorId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -97,7 +95,7 @@ class TopMenuSector extends Component {
               `/dashboard/entities/sectors/${sectorId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -117,7 +115,7 @@ class TopMenuSector extends Component {
             location.pathname
             === `/dashboard/entities/sectors/${sectorId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -138,7 +136,7 @@ class TopMenuSector extends Component {
               location.pathname
               === `/dashboard/entities/sectors/${sectorId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -159,7 +157,7 @@ class TopMenuSector extends Component {
             location.pathname
             === `/dashboard/entities/sectors/${sectorId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

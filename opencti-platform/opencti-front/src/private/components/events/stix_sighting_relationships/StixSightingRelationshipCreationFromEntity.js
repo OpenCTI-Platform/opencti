@@ -722,9 +722,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
               <Field
                 component={DatePickerField}
                 name="first_seen"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('First seen'),
                   variant: 'standard',
@@ -735,9 +733,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
               <Field
                 component={DatePickerField}
                 name="last_seen"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Last seen'),
                   variant: 'standard',

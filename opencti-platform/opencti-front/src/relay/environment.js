@@ -47,8 +47,11 @@ const loc = window.location;
 const isSecure = loc.protocol === 'https:' ? 's' : '';
 const subscriptionUrl = `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`;
 const subscribeFn = (request, variables) => {
-  if (!subscriptionClient) { // Lazy creation of the subscription client to connect only after auth
-    subscriptionClient = new SubscriptionClient(subscriptionUrl, { reconnect: true });
+  if (!subscriptionClient) {
+    // Lazy creation of the subscription client to connect only after auth
+    subscriptionClient = new SubscriptionClient(subscriptionUrl, {
+      reconnect: true,
+    });
   }
   const subscribeObservable = subscriptionClient.request({
     query: request.text,
@@ -57,8 +60,13 @@ const subscribeFn = (request, variables) => {
   });
   return Observable.from(subscribeObservable);
 };
-const fetchMiddleware = urlMiddleware({ url: `${APP_BASE_PATH}/graphql`, credentials: 'same-origin' });
-const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], { subscribeFn });
+const fetchMiddleware = urlMiddleware({
+  url: `${APP_BASE_PATH}/graphql`,
+  credentials: 'same-origin',
+});
+const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
+  subscribeFn,
+});
 const store = new Store(new RecordSource());
 export const environment = new Environment({ network, store });
 

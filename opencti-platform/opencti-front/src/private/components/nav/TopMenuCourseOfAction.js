@@ -18,8 +18,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -54,14 +52,14 @@ class TopMenuCourseOfAction extends Component {
           to="/dashboard/arsenal/courses_of_action"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <ProgressWrench className={classes.icon} fontSize="small" />
           {t('Courses of action')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -78,7 +76,7 @@ class TopMenuCourseOfAction extends Component {
             location.pathname
             === `/dashboard/arsenal/courses_of_action/${courseOfActionId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -99,7 +97,7 @@ class TopMenuCourseOfAction extends Component {
               location.pathname
               === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -120,7 +118,7 @@ class TopMenuCourseOfAction extends Component {
             location.pathname
             === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

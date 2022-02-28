@@ -21,6 +21,8 @@ const styles = () => ({
   container: {
     width: '100%',
     height: '100%',
+    overflow: 'auto',
+    paddingBottom: 10,
   },
   paper: {
     height: '100%',
@@ -188,7 +190,7 @@ class StixCoreRelationshipsList extends Component {
             }
             return (
               <div id="container" className={classes.container}>
-                <TableContainer component={Paper}>
+                <TableContainer>
                   <Table size="small" style={{ width: '100%' }}>
                     <TableHead>
                       <TableRow>

@@ -20,8 +20,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -56,14 +54,14 @@ class TopMenuOrganization extends Component {
           to="/dashboard/entities/organizations"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <AccountBalanceOutlined className={classes.icon} fontSize="small" />
           {t('Organizations')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -80,7 +78,7 @@ class TopMenuOrganization extends Component {
             location.pathname
             === `/dashboard/entities/organizations/${organizationId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -102,7 +100,7 @@ class TopMenuOrganization extends Component {
               `/dashboard/entities/organizations/${organizationId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -122,7 +120,7 @@ class TopMenuOrganization extends Component {
             location.pathname
             === `/dashboard/entities/organizations/${organizationId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -143,7 +141,7 @@ class TopMenuOrganization extends Component {
               location.pathname
               === `/dashboard/entities/organizations/${organizationId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -164,7 +162,7 @@ class TopMenuOrganization extends Component {
             location.pathname
             === `/dashboard/entities/organizations/${organizationId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

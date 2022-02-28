@@ -18,8 +18,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -54,14 +52,14 @@ class TopMenuTool extends Component {
           to="/dashboard/techniques/tools"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <Application className={classes.icon} fontSize="small" />
           {t('Tools')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -76,7 +74,7 @@ class TopMenuTool extends Component {
           color={
             location.pathname === `/dashboard/techniques/tools/${toolId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -98,7 +96,7 @@ class TopMenuTool extends Component {
               `/dashboard/techniques/tools/${toolId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -118,7 +116,7 @@ class TopMenuTool extends Component {
             location.pathname
             === `/dashboard/techniques/tools/${toolId}/reports`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -140,7 +138,7 @@ class TopMenuTool extends Component {
               `/dashboard/techniques/tools/${toolId}/indicators`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -161,7 +159,7 @@ class TopMenuTool extends Component {
               location.pathname
               === `/dashboard/techniques/tools/${toolId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -182,7 +180,7 @@ class TopMenuTool extends Component {
             location.pathname
             === `/dashboard/techniques/tools/${toolId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

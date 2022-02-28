@@ -58,12 +58,20 @@ const settingsQuery = graphql`
       platform_theme
       platform_language
       platform_login_message
+      platform_theme_dark_background
+      platform_theme_dark_paper
+      platform_theme_dark_nav
       platform_theme_dark_primary
       platform_theme_dark_secondary
+      platform_theme_dark_accent
       platform_theme_dark_logo
       platform_theme_dark_logo_login
+      platform_theme_light_background
+      platform_theme_light_paper
+      platform_theme_light_nav
       platform_theme_light_primary
       platform_theme_light_secondary
+      platform_theme_light_accent
       platform_theme_light_logo
       platform_theme_light_logo_login
       platform_enable_reference
@@ -91,12 +99,20 @@ const settingsMutationFieldPatch = graphql`
         platform_title
         platform_email
         platform_theme
+        platform_theme_dark_background
+        platform_theme_dark_paper
+        platform_theme_dark_nav
         platform_theme_dark_primary
         platform_theme_dark_secondary
+        platform_theme_dark_accent
         platform_theme_dark_logo
         platform_theme_dark_logo_login
+        platform_theme_light_background
+        platform_theme_light_paper
+        platform_theme_light_nav
         platform_theme_light_primary
         platform_theme_light_secondary
+        platform_theme_light_accent
         platform_theme_light_logo
         platform_theme_light_logo_login
         platform_language
@@ -134,12 +150,20 @@ const settingsValidation = (t) => Yup.object().shape({
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
   platform_theme: Yup.string().nullable(),
+  platform_theme_dark_background: Yup.string().nullable(),
+  platform_theme_dark_paper: Yup.string().nullable(),
+  platform_theme_dark_nav: Yup.string().nullable(),
   platform_theme_dark_primary: Yup.string().nullable(),
   platform_theme_dark_secondary: Yup.string().nullable(),
+  platform_theme_dark_accent: Yup.string().nullable(),
   platform_theme_dark_logo: Yup.string().nullable(),
   platform_theme_dark_logo_login: Yup.string().nullable(),
+  platform_theme_light_background: Yup.string().nullable(),
+  platform_theme_light_paper: Yup.string().nullable(),
+  platform_theme_light_nav: Yup.string().nullable(),
   platform_theme_light_primary: Yup.string().nullable(),
   platform_theme_light_secondary: Yup.string().nullable(),
+  platform_theme_light_accent: Yup.string().nullable(),
   platform_theme_light_logo: Yup.string().nullable(),
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
@@ -164,10 +188,18 @@ class Settings extends Component {
     let finalValue = value;
     if (
       [
+        'platform_theme_dark_background',
+        'platform_theme_dark_paper',
+        'platform_theme_dark_nav',
         'platform_theme_dark_primary',
         'platform_theme_dark_secondary',
+        'platform_theme_dark_accent',
+        'platform_theme_light_background',
+        'platform_theme_light_paper',
+        'platform_theme_light_nav',
         'platform_theme_light_primary',
         'platform_theme_light_secondary',
+        'platform_theme_light_accent',
       ].includes(name)
       && finalValue.length > 0
     ) {
@@ -207,12 +239,20 @@ class Settings extends Component {
                   'platform_theme',
                   'platform_language',
                   'platform_login_message',
+                  'platform_theme_dark_background',
+                  'platform_theme_dark_paper',
+                  'platform_theme_dark_nav',
                   'platform_theme_dark_primary',
                   'platform_theme_dark_secondary',
+                  'platform_theme_dark_accent',
                   'platform_theme_dark_logo',
                   'platform_theme_dark_logo_login',
+                  'platform_theme_light_background',
+                  'platform_theme_light_paper',
+                  'platform_theme_light_nav',
                   'platform_theme_light_primary',
                   'platform_theme_light_secondary',
+                  'platform_theme_light_accent',
                   'platform_theme_light_logo',
                   'platform_theme_light_logo_login',
                   'platform_map_tile_server_dark',
@@ -382,14 +422,14 @@ class Settings extends Component {
                       </Paper>
                     </Grid>
                   </Grid>
-                  <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
-                    <Grid item={true} xs={6}>
+                  <Grid container={true} spacing={3} style={{ marginTop: 0 }}>
+                    <Grid item={true} xs={4}>
                       <Paper
                         classes={{ root: classes.paper }}
                         variant="outlined"
                       >
                         <Typography variant="h1" gutterBottom={true}>
-                          {t('Theme')}
+                          {t('Dark theme')}
                         </Typography>
                         <Formik
                           enableReinitialize={true}
@@ -400,13 +440,73 @@ class Settings extends Component {
                             <Form style={{ marginTop: 20 }}>
                               <Field
                                 component={ColorPickerField}
-                                name="platform_theme_dark_primary"
-                                label={t('[Theme dark] Primary color')}
+                                name="platform_theme_dark_background"
+                                label={t('Background color')}
                                 placeholder={t('Default')}
                                 InputLabelProps={{
                                   shrink: true,
                                 }}
                                 fullWidth={true}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_dark_background"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_dark_paper"
+                                label={t('Paper color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_dark_paper"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_dark_nav"
+                                label={t('Navigation color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_dark_nav"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_dark_primary"
+                                label={t('Primary color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
                                 variant="standard"
@@ -420,7 +520,7 @@ class Settings extends Component {
                               <Field
                                 component={ColorPickerField}
                                 name="platform_theme_dark_secondary"
-                                label={t('[Theme dark] Secondary color')}
+                                label={t('Secondary color')}
                                 placeholder={t('Default')}
                                 InputLabelProps={{
                                   shrink: true,
@@ -438,10 +538,30 @@ class Settings extends Component {
                                 }
                               />
                               <Field
+                                component={ColorPickerField}
+                                name="platform_theme_dark_accent"
+                                label={t('Accent color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_dark_accent"
+                                  />
+                                }
+                              />
+                              <Field
                                 component={TextField}
                                 variant="standard"
                                 name="platform_theme_dark_logo"
-                                label={t('[Theme dark] Logo URL')}
+                                label={t('Logo URL')}
                                 placeholder={t('Default')}
                                 InputLabelProps={{
                                   shrink: true,
@@ -461,9 +581,7 @@ class Settings extends Component {
                                 component={TextField}
                                 variant="standard"
                                 name="platform_theme_dark_logo_login"
-                                label={t(
-                                  '[Theme dark] Logo URL for login page',
-                                )}
+                                label={t('Logo URL for login page')}
                                 placeholder={t('Default')}
                                 InputLabelProps={{
                                   shrink: true,
@@ -479,10 +597,89 @@ class Settings extends Component {
                                   />
                                 }
                               />
+                            </Form>
+                          )}
+                        </Formik>
+                      </Paper>
+                    </Grid>
+                    <Grid item={true} xs={4}>
+                      <Paper
+                        classes={{ root: classes.paper }}
+                        variant="outlined"
+                      >
+                        <Typography variant="h1" gutterBottom={true}>
+                          {t('Light theme')}
+                        </Typography>
+                        <Formik
+                          enableReinitialize={true}
+                          initialValues={initialValues}
+                          validationSchema={settingsValidation(t)}
+                        >
+                          {() => (
+                            <Form style={{ marginTop: 20 }}>
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_light_background"
+                                label={t('Background color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_light_background"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_light_paper"
+                                label={t('Paper color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_light_paper"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={ColorPickerField}
+                                name="platform_theme_light_nav"
+                                label={t('Navigation color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_light_nav"
+                                  />
+                                }
+                              />
                               <Field
                                 component={ColorPickerField}
                                 name="platform_theme_light_primary"
-                                label={t('[Theme light] Primary color')}
+                                label={t('Primary color')}
                                 placeholder={t('Default')}
                                 InputLabelProps={{
                                   shrink: true,
@@ -502,7 +699,7 @@ class Settings extends Component {
                               <Field
                                 component={ColorPickerField}
                                 name="platform_theme_light_secondary"
-                                label={t('[Theme light] Secondary color')}
+                                label={t('Secondary color')}
                                 placeholder={t('Default')}
                                 InputLabelProps={{
                                   shrink: true,
@@ -520,10 +717,30 @@ class Settings extends Component {
                                 }
                               />
                               <Field
+                                component={ColorPickerField}
+                                name="platform_theme_light_accent"
+                                label={t('Accent color')}
+                                placeholder={t('Default')}
+                                InputLabelProps={{
+                                  shrink: true,
+                                }}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                variant="standard"
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_theme_light_accent"
+                                  />
+                                }
+                              />
+                              <Field
                                 component={TextField}
                                 variant="standard"
                                 name="platform_theme_light_logo"
-                                label={t('[Theme light] Logo URL')}
+                                label={t('Logo URL')}
                                 placeholder={t('Default')}
                                 InputLabelProps={{
                                   shrink: true,
@@ -543,9 +760,7 @@ class Settings extends Component {
                                 component={TextField}
                                 variant="standard"
                                 name="platform_theme_light_logo_login"
-                                label={t(
-                                  '[Theme light] Logo URL for login page',
-                                )}
+                                label={t('Logo URL for login page')}
                                 placeholder={t('Default')}
                                 InputLabelProps={{
                                   shrink: true,
@@ -566,7 +781,7 @@ class Settings extends Component {
                         </Formik>
                       </Paper>
                     </Grid>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={4}>
                       <Paper
                         classes={{ root: classes.paper }}
                         variant="outlined"

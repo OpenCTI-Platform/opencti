@@ -418,9 +418,7 @@ const StixCoreRelationshipEditionContainer = ({
               <Field
                 component={DatePickerField}
                 name="start_time"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{
@@ -439,9 +437,7 @@ const StixCoreRelationshipEditionContainer = ({
               <Field
                 component={DatePickerField}
                 name="stop_time"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
                 onSubmit={handleSubmitField}
                 TextFieldProps={{

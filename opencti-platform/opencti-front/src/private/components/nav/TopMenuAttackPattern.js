@@ -14,8 +14,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -50,14 +48,14 @@ class TopMenuAttackPattern extends Component {
           to="/dashboard/arsenal/attack_patterns"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <LockPattern className={classes.icon} fontSize="small" />
           {t('Attack patterns')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -74,7 +72,7 @@ class TopMenuAttackPattern extends Component {
             location.pathname
             === `/dashboard/arsenal/attack_patterns/${attackPatternId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -96,7 +94,7 @@ class TopMenuAttackPattern extends Component {
               `/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -116,7 +114,7 @@ class TopMenuAttackPattern extends Component {
             location.pathname
             === `/dashboard/arsenal/attack_patterns/${attackPatternId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -138,7 +136,7 @@ class TopMenuAttackPattern extends Component {
               `/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -158,7 +156,7 @@ class TopMenuAttackPattern extends Component {
             location.pathname
             === `/dashboard/arsenal/attack_patterns/${attackPatternId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

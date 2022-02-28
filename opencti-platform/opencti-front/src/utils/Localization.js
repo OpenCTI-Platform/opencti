@@ -85,6 +85,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette détection ?',
       'Do you want to delete this workspace?':
         'Souhaitez-vous supprimer cet espace de travail ?',
+      'Do you want to delete this widget?':
+        'Souhaitez-vous supprimer ce widget ?',
       'Do you want to delete this attack pattern?':
         "Souhaitez-vous supprimer ce motif d'attaque ?",
       'Do you want to delete this course of action?':
@@ -105,8 +107,7 @@ const i18n = {
         'Souhaitez-vous supprimer cet attribut ?',
       'Do you want to remove this external reference?':
         'Souhaitez-vous retirer cette référence externe ?',
-      'Do you want to remove this note?':
-        'Souhaitez-vous retirer cette note ?',
+      'Do you want to remove this note?': 'Souhaitez-vous retirer cette note ?',
       'Do you want to remove this report?':
         'Souhaitez-vous supprimer ce rapport ?',
       'Do you want to remove these elements from this report?':
@@ -301,6 +302,7 @@ const i18n = {
         'Modification des connaissances (sauf indicateurs et observables)',
       'Containers (reports, notes & opinions)':
         'Conteneurs (rapports, notes et opinions)',
+      Containers: 'Conteneurs',
       'Technical elements (indicators & observables)':
         'Eléments techniques (indicateurs & observables)',
       'As it happens': "Au fil de l'eau",
@@ -1422,6 +1424,7 @@ const i18n = {
       'Do you want to delete this relation?': '是否要删除此关系？',
       'Do you want to delete this sighting?': '是否要删除此目击？',
       'Do you want to delete this workspace?': '是否要删除此工作区？',
+      'Do you want to delete this widget?': '你想删除这个小部件吗？',
       'Do you want to delete this attack pattern?': '是否要删除此攻击模式？',
       'Do you want to delete this course of action?': '是否要删除此应对措施？',
       'Do you want to delete this tool?': '是否要删除此工具？',
@@ -1606,6 +1609,7 @@ const i18n = {
       'Knowledge update (except indicators & observables)':
         '知识更新(攻击指标和可观测数据除外)',
       'Containers (reports, notes & opinions)': '容器(报告、注释和建议)',
+      Containers: '容器',
       'Technical elements (indicators & observables)':
         '技术元素(攻击指标和可观测数据)',
       'As it happens': '当其发生时',

@@ -17,8 +17,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -53,14 +51,14 @@ class TopMenuOpinion extends Component {
           to="/dashboard/analysis/opinions"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <FeedbackOutlined className={classes.icon} fontSize="small" />
           {t('Opinions')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -75,7 +73,7 @@ class TopMenuOpinion extends Component {
           color={
             location.pathname === `/dashboard/analysis/opinions/${opinionId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -96,7 +94,7 @@ class TopMenuOpinion extends Component {
               location.pathname
               === `/dashboard/analysis/opinions/${opinionId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -117,7 +115,7 @@ class TopMenuOpinion extends Component {
             location.pathname
             === `/dashboard/analysis/opinions/${opinionId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

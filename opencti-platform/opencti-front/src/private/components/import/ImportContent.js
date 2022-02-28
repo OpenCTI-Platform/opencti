@@ -318,7 +318,7 @@ class ImportContentComponent extends Component {
               <Paper
                 classes={{ root: classes.paper }}
                 variant="outlined"
-                style={{ marginTop: 15 }}
+                style={{ marginTop: 10 }}
               >
                 {pendingFilesEdges.length ? (
                   <List>
@@ -399,10 +399,7 @@ class ImportContentComponent extends Component {
                     </Field>
                   </DialogContent>
                   <DialogActions>
-                    <Button
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                    >
+                    <Button onClick={handleReset} disabled={isSubmitting}>
                       {t('Cancel')}
                     </Button>
                     <Button
@@ -463,10 +460,7 @@ class ImportContentComponent extends Component {
                     </Field>
                   </DialogContent>
                   <DialogActions>
-                    <Button
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                    >
+                    <Button onClick={handleReset} disabled={isSubmitting}>
                       {t('Cancel')}
                     </Button>
                     <Button

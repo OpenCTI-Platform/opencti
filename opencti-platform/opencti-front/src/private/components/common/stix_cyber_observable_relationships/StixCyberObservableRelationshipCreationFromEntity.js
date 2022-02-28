@@ -639,9 +639,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
               <Field
                 component={DatePickerField}
                 name="start_time"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Start time'),
                   variant: 'standard',
@@ -652,9 +650,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
               <Field
                 component={DatePickerField}
                 name="stop_time"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Stop time'),
                   variant: 'standard',

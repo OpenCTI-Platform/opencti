@@ -34,7 +34,7 @@ class TopMenuDashboard extends Component {
           to="/dashboard"
           variant={location.pathname === '/dashboard' ? 'contained' : 'text'}
           size="small"
-          color={location.pathname === '/dashboard' ? 'secondary' : 'inherit'}
+          color={location.pathname === '/dashboard' ? 'secondary' : 'primary'}
           classes={{ root: classes.button }}
         >
           {t('Dashboard')}

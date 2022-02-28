@@ -18,8 +18,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -54,14 +52,14 @@ class TopMenuIncident extends Component {
           to="/dashboard/events/incidents"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <Fire className={classes.icon} fontSize="small" />
           {t('Incidents')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -76,7 +74,7 @@ class TopMenuIncident extends Component {
           color={
             location.pathname === `/dashboard/events/incidents/${incidentId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -98,7 +96,7 @@ class TopMenuIncident extends Component {
               `/dashboard/events/incidents/${incidentId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -118,7 +116,7 @@ class TopMenuIncident extends Component {
             location.pathname
             === `/dashboard/events/incidents/${incidentId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -139,7 +137,7 @@ class TopMenuIncident extends Component {
               location.pathname
               === `/dashboard/events/incidents/${incidentId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -160,7 +158,7 @@ class TopMenuIncident extends Component {
             location.pathname
             === `/dashboard/events/incidents/${incidentId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

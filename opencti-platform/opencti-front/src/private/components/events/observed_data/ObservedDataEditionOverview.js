@@ -274,9 +274,7 @@ class ObservedDataEditionOverviewComponent extends Component {
               <Field
                 component={DatePickerField}
                 name="first_observed"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 TextFieldProps={{
@@ -294,9 +292,7 @@ class ObservedDataEditionOverviewComponent extends Component {
               <Field
                 component={DatePickerField}
                 name="last_observed"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 TextFieldProps={{

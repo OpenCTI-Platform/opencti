@@ -20,8 +20,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -56,14 +54,14 @@ class TopMenuObservedData extends Component {
           to="/dashboard/events/observed_data"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <WifiTetheringOutlined className={classes.icon} fontSize="small" />
           {t('Observed datas')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -80,7 +78,7 @@ class TopMenuObservedData extends Component {
             location.pathname
             === `/dashboard/events/observed_data/${observedDataId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -100,7 +98,7 @@ class TopMenuObservedData extends Component {
             location.pathname
             === `/dashboard/events/observed_data/${observedDataId}/entities`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -120,7 +118,7 @@ class TopMenuObservedData extends Component {
             location.pathname
             === `/dashboard/events/observed_data/${observedDataId}/observables`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -141,7 +139,7 @@ class TopMenuObservedData extends Component {
               location.pathname
               === `/dashboard/events/observed_data/${observedDataId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -162,7 +160,7 @@ class TopMenuObservedData extends Component {
             location.pathname
             === `/dashboard/events/observed_data/${observedDataId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

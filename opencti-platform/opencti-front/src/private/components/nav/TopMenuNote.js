@@ -17,8 +17,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -53,14 +51,14 @@ class TopMenuNote extends Component {
           to="/dashboard/analysis/notes"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <WorkOutline className={classes.icon} fontSize="small" />
           {t('Notes')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -75,7 +73,7 @@ class TopMenuNote extends Component {
           color={
             location.pathname === `/dashboard/analysis/notes/${noteId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -94,7 +92,7 @@ class TopMenuNote extends Component {
             color={
               location.pathname === `/dashboard/analysis/notes/${noteId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -113,7 +111,7 @@ class TopMenuNote extends Component {
           color={
             location.pathname === `/dashboard/analysis/notes/${noteId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

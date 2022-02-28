@@ -69,7 +69,7 @@ const styles = () => ({
     padding: 20,
     borderRadius: 6,
     display: 'relative',
-    overflow: 'auto',
+    overflow: 'hidden',
   },
 });
 
@@ -606,12 +606,13 @@ class DashboardComponent extends Component {
               <Grid container={true} spacing={1}>
                 <Grid item={true} xs="auto">
                   <FormControl style={{ width: 194, marginRight: 20 }}>
-                    <InputLabel id="timeField">
+                    <InputLabel id="timeField" variant="standard">
                       {t('Date reference')}
                     </InputLabel>
                     <Select
                       variant="standard"
                       labelId="timeField"
+                      size="small"
                       value={timeField === null ? '' : timeField}
                       onChange={this.handleTimeFieldChange.bind(this)}
                     >
@@ -626,10 +627,13 @@ class DashboardComponent extends Component {
                 </Grid>
                 <Grid item={true} xs="auto">
                   <FormControl style={{ width: 194, marginRight: 20 }}>
-                    <InputLabel id="relative">{t('Relative time')}</InputLabel>
+                    <InputLabel id="relative" variant="standard">
+                      {t('Relative time')}
+                    </InputLabel>
                     <Select
                       variant="standard"
                       labelId="relative"
+                      size="small"
                       value={relativeDate === null ? '' : relativeDate}
                       onChange={this.handleDateChange.bind(
                         this,

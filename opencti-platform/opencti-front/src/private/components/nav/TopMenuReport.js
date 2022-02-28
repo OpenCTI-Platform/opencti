@@ -20,8 +20,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -56,14 +54,14 @@ class TopMenuReport extends Component {
           to="/dashboard/analysis/reports"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <DescriptionOutlined className={classes.icon} fontSize="small" />
           {t('Reports')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -78,7 +76,7 @@ class TopMenuReport extends Component {
           color={
             location.pathname === `/dashboard/analysis/reports/${reportId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -100,7 +98,7 @@ class TopMenuReport extends Component {
               `/dashboard/analysis/reports/${reportId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -120,7 +118,7 @@ class TopMenuReport extends Component {
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/content`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -140,7 +138,7 @@ class TopMenuReport extends Component {
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/entities`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -160,7 +158,7 @@ class TopMenuReport extends Component {
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/observables`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -181,7 +179,7 @@ class TopMenuReport extends Component {
               location.pathname
               === `/dashboard/analysis/reports/${reportId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >

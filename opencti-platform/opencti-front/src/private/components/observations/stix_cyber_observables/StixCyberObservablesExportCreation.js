@@ -267,10 +267,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   }}
                 />
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button

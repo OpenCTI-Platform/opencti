@@ -8,7 +8,6 @@ import { graphql, createFragmentContainer } from 'react-relay';
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
 import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
@@ -32,17 +31,6 @@ import { reportMutationFieldPatch } from './ReportEditionOverview';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
-
-const styles = (theme) => ({
-  bottomNav: {
-    zIndex: 1000,
-    padding: '0 200px 0 205px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-});
 
 export const reportKnowledgeCorrelationQuery = graphql`
   query ReportKnowledgeCorrelationQuery($id: String) {
@@ -1215,5 +1203,4 @@ export default R.compose(
   inject18n,
   withRouter,
   withTheme,
-  withStyles(styles),
 )(ReportKnowledgeCorrelation);

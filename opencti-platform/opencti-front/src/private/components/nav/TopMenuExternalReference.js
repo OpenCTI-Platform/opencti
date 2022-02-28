@@ -13,8 +13,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -49,14 +47,14 @@ class TopMenuExternalReference extends Component {
           to="/dashboard/analysis/external_references"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <WorkOutline className={classes.icon} fontSize="small" />
           {t('External references')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -73,7 +71,7 @@ class TopMenuExternalReference extends Component {
             location.pathname
             === `/dashboard/analysis/external_references/${externalReferenceId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

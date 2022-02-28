@@ -49,7 +49,6 @@ const styles = (theme) => ({
     width: 250,
     padding: '0 0 20px 0',
     position: 'fixed',
-
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -268,10 +267,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
                   }}
                 />
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button

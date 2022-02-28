@@ -176,9 +176,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
             <Field
               component={DatePickerField}
               name="first_seen"
-              invalidDateMessage={t(
-                'The value must be a date (mm/dd/yyyy)',
-              )}
+              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -186,19 +184,14 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 variant: 'standard',
                 fullWidth: true,
                 helperText: (
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="first_seen"
-                  />
+                  <SubscriptionFocus context={context} fieldName="first_seen" />
                 ),
               }}
             />
             <Field
               component={DatePickerField}
               name="last_seen"
-              invalidDateMessage={t(
-                'The value must be a date (mm/dd/yyyy)',
-              )}
+              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -207,10 +200,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 fullWidth: true,
                 style: { marginTop: 20 },
                 helperText: (
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="last_seen"
-                  />
+                  <SubscriptionFocus context={context} fieldName="last_seen" />
                 ),
               }}
             />

@@ -288,7 +288,11 @@ const TopBar = ({
         <div className={classes.barRight}>
           <Security needs={[KNOWLEDGE]}>
             <div className={classes.barRightContainer}>
-              <SearchInput onSubmit={handleSearch} keyword={keyword} variant="topBar" />
+              <SearchInput
+                onSubmit={handleSearch}
+                keyword={keyword}
+                variant="topBar"
+              />
               <Filters
                 variant="dialog"
                 availableFilterKeys={[

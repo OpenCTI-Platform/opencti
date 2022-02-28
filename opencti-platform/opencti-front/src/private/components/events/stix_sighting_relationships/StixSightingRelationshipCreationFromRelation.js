@@ -45,7 +45,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -753,9 +752,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
               <Field
                 component={DatePickerField}
                 name="first_seen"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('First seen'),
                   variant: 'standard',
@@ -766,9 +763,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
               <Field
                 component={DatePickerField}
                 name="last_seen"
-                invalidDateMessage={t(
-                  'The value must be a date (mm/dd/yyyy)',
-                )}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
                   label: t('Last seen'),
                   variant: 'standard',

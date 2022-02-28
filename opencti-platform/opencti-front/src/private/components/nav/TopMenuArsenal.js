@@ -43,7 +43,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/malwares'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -62,7 +62,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/attack_patterns'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -81,7 +81,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/courses_of_action'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -100,7 +100,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/tools'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -119,7 +119,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/vulnerabilities'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

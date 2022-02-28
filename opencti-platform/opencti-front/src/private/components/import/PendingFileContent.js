@@ -962,6 +962,7 @@ class PendingFileContentComponent extends Component {
                                 type
                               ) : (
                               <Select
+                                variant="standard"
                                 labelId="type"
                                 value={type}
                                 onChange={this.handleChangeType.bind(
@@ -1248,10 +1249,7 @@ class PendingFileContentComponent extends Component {
                   </Field>
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button

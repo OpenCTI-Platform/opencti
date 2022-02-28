@@ -18,8 +18,6 @@ const styles = (theme) => ({
     padding: '2px 5px 2px 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
@@ -54,14 +52,14 @@ class TopMenuIndicator extends Component {
           to="/dashboard/observations/indicators"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <ShieldSearch className={classes.icon} fontSize="small" />
           {t('Indicators')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -78,7 +76,7 @@ class TopMenuIndicator extends Component {
             location.pathname
             === `/dashboard/observations/indicators/${indicatorId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -100,7 +98,7 @@ class TopMenuIndicator extends Component {
               `/dashboard/observations/indicators/${indicatorId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -120,7 +118,7 @@ class TopMenuIndicator extends Component {
             location.pathname
             === `/dashboard/observations/indicators/${indicatorId}/sightings`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -141,7 +139,7 @@ class TopMenuIndicator extends Component {
               location.pathname
               === `/dashboard/observations/indicators/${indicatorId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -162,7 +160,7 @@ class TopMenuIndicator extends Component {
             location.pathname
             === `/dashboard/observations/indicators/${indicatorId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

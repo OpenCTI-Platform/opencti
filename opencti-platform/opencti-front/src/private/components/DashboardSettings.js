@@ -78,7 +78,7 @@ class DashboardSettings extends Component {
     const { open } = this.state;
     return (
       <span>
-        <IconButton onClick={this.handleOpen.bind(this)} size="small">
+        <IconButton onClick={this.handleOpen.bind(this)} size="medium">
           <SettingsOutlined fontSize="small" />
         </IconButton>
         <Dialog

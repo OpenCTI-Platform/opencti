@@ -48,7 +48,10 @@ export const areaChartOptions = (
       shadeIntensity: 1,
       opacityFrom: 0.7,
       opacityTo: 0.4,
-      gradientToColors: [theme.palette.background.default, theme.palette.primary.main],
+      gradientToColors: [
+        theme.palette.background.default,
+        theme.palette.primary.main,
+      ],
     },
   },
   xaxis: {

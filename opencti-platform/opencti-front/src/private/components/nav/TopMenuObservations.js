@@ -42,7 +42,7 @@ class TopMenuObservations extends Component {
           color={
             location.pathname.includes('/dashboard/observations/observables')
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -61,7 +61,7 @@ class TopMenuObservations extends Component {
           color={
             location.pathname.includes('/dashboard/observations/artifacts')
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -80,7 +80,7 @@ class TopMenuObservations extends Component {
           color={
             location.pathname.includes('/dashboard/observations/indicators')
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -103,7 +103,7 @@ class TopMenuObservations extends Component {
               '/dashboard/observations/infrastructures',
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
