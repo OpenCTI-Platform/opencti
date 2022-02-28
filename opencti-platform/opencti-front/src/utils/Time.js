@@ -8,6 +8,13 @@ export const TWO_SECONDS = 2000;
 export const FIVE_SECONDS = 5000;
 export const TEN_SECONDS = FIVE_SECONDS * 2;
 
+export const buildDate = (date) => {
+  if (isNone(date)) {
+    return null;
+  }
+  return new Date(date);
+};
+
 export const parse = (date) => moment(date);
 
 export const dayStartDate = (date = null, fromStart = true) => {

@@ -9,8 +9,15 @@ import { fieldToTextField } from 'formik-mui';
 import { ColorLens } from '@mui/icons-material';
 
 const ColorPickerField = (props) => {
-  const anchorEl = React.createRef();
-  const [open, setOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const id = open ? 'color-popover' : undefined;
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const {
     form: { setFieldValue, setTouched },
     field: { name },
@@ -54,7 +61,6 @@ const ColorPickerField = (props) => {
       onSubmit(name, color && color.hex ? color.hex : '');
     }
   };
-
   return (
     <div>
       <MuiTextField
@@ -69,7 +75,7 @@ const ColorPickerField = (props) => {
             <InputAdornment position="end">
               <IconButton
                 aria-label="open"
-                onClick={() => setOpen(true)}
+                onClick={handleClick}
                 size="large"
               >
                 <ColorLens />
@@ -79,16 +85,13 @@ const ColorPickerField = (props) => {
         }}
       />
       <Popover
+        id={id}
         open={open}
-        anchorEl={anchorEl.current}
-        onClose={() => setOpen(false)}
+        anchorEl={anchorEl}
+        onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
+          horizontal: 'left',
         }}
       >
         <SketchPicker

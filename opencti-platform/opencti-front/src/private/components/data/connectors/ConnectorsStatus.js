@@ -254,7 +254,7 @@ class ConnectorsStatusComponent extends Component {
     );
     const sortedConnectors = sort(connectors);
     return (
-      <Card>
+      <Card variant="outlined">
         <CardHeader
           avatar={<Extension className={classes.icon} />}
           title={t('Registered connectors')}

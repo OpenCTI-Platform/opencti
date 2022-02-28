@@ -108,7 +108,7 @@ class PendingFileToolBar extends Component {
               <IconButton
                 aria-label="validate"
                 onClick={handleValidate.bind(this)}
-                color="primary"
+                color="secondary"
                 disabled={isDeleteActive}
                 size="large"
               >
@@ -135,7 +135,6 @@ class PendingFileToolBar extends Component {
                 <IconButton
                   aria-label="drop"
                   onClick={this.handleOpenDelete.bind(this)}
-                  color="primary"
                   size="large"
                 >
                   <CancelOutlined />

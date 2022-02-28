@@ -7,12 +7,12 @@ import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import { dateFormat, parse } from '../../../../utils/Time';
+import { buildDate, parse } from '../../../../utils/Time';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -149,11 +149,10 @@ class CampaignEditionDetailsComponent extends Component {
   render() {
     const { t, campaign, context, enableReferences } = this.props;
     const initialValues = R.pipe(
-      R.assoc('first_seen', dateFormat(campaign.first_seen)),
-      R.assoc('last_seen', dateFormat(campaign.last_seen)),
+      R.assoc('first_seen', buildDate(campaign.first_seen)),
+      R.assoc('last_seen', buildDate(campaign.last_seen)),
       R.pick(['first_seen', 'last_seen', 'objective']),
     )(campaign);
-
     return (
       <Formik
         enableReinitialize={true}
@@ -170,9 +169,11 @@ class CampaignEditionDetailsComponent extends Component {
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
-              component={DatePickerField}
+              component={DateTimePickerField}
               name="first_seen"
-              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
+              invalidDateMessage={t(
+                'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m))',
+              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{
@@ -185,9 +186,11 @@ class CampaignEditionDetailsComponent extends Component {
               }}
             />
             <Field
-              component={DatePickerField}
+              component={DateTimePickerField}
               name="last_seen"
-              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
+              invalidDateMessage={t(
+                'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m)',
+              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               TextFieldProps={{

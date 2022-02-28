@@ -83,6 +83,7 @@ class WorkersStatusComponent extends Component {
       <Card
         classes={{ root: classes.card }}
         style={{ maxHeight: '100vh', height: '100%' }}
+        variant="outlined"
       >
         <CardHeader
           avatar={<MultilineChart className={classes.icon} />}
