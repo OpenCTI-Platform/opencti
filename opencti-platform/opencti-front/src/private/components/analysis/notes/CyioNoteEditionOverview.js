@@ -182,6 +182,7 @@ class CyioNoteEditionOverviewComponent extends Component {
     const {
       t,
       note,
+      refreshQuery,
       classes,
     } = this.props;
     // const createdBy = pathOr(null, ['createdBy', 'name'], note) === null
@@ -234,6 +235,7 @@ class CyioNoteEditionOverviewComponent extends Component {
               <CyioCoreObjectLabelsView
                 name="labels"
                 labels={note.labels}
+                refreshQuery={refreshQuery}
                 typename={note.__typename}
                 id={note.id}
               />
@@ -288,6 +290,7 @@ class CyioNoteEditionOverviewComponent extends Component {
 
 CyioNoteEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   theme: PropTypes.object,
   t: PropTypes.func,
   note: PropTypes.object,

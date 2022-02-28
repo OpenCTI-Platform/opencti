@@ -161,7 +161,7 @@ class CyioNotePopover extends Component {
 
   render() {
     const {
-      classes, t, id, handleOpenRemove, node,
+      classes, t, id, handleOpenRemove, node, refreshQuery,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -256,6 +256,7 @@ class CyioNotePopover extends Component {
                 return ( */}
           <CyioNoteEditionContainer
             note={node}
+            refreshQuery={refreshQuery}
             handleClose={this.handleCloseEdit.bind(this)}
           />
           {/* );
@@ -273,6 +274,7 @@ CyioNotePopover.propTypes = {
   node: PropTypes.object,
   id: PropTypes.string,
   entityId: PropTypes.string,
+  refreshQuery: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

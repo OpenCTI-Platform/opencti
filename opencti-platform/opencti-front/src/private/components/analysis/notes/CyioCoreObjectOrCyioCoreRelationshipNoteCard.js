@@ -162,6 +162,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
       nsdt,
       classes,
       node,
+      refreshQuery,
       t,
       theme,
       CyioCoreObjectOrCyioCoreRelationshipId,
@@ -183,6 +184,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
           action={
             <CyioNotePopover
               node={node}
+              refreshQuery={refreshQuery}
               id={node.id}
               entityId={CyioCoreObjectOrCyioCoreRelationshipId}
               handleOpenRemove={this.handleOpenDialog.bind(this)}
@@ -355,6 +357,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
 
 CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent.propTypes = {
   CyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
+  refreshQuery: PropTypes.func,
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
