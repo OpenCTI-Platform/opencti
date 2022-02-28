@@ -3,14 +3,12 @@ import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import MenuItem from '@mui/material/MenuItem';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { dateFormat, parse } from '../../../../utils/Time';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import DatePickerField from '../../../../components/DatePickerField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
@@ -22,8 +20,10 @@ import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import ItemIcon from '../../../../components/ItemIcon';
+import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 
-const styles = () => ({
+const styles = (theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -33,6 +33,19 @@ const styles = () => ({
     position: 'absolute',
     top: 30,
     right: 30,
+  },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
+  autoCompleteIndicator: {
+    display: 'none',
   },
 });
 
@@ -129,6 +142,7 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('published', parse(values.published).format()),
       R.assoc('status_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
       R.map((n) => ({
@@ -158,6 +172,9 @@ class ReportEditionOverviewComponent extends Component {
       let finalValue = value;
       if (name === 'status_id') {
         finalValue = value.value;
+      }
+      if (name === 'report_types') {
+        finalValue = R.pluck('value', value);
       }
       reportValidation(this.props.t)
         .validateAt(name, { [name]: value })
@@ -227,7 +244,7 @@ class ReportEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, report, context, enableReferences } = this.props;
+    const { t, report, context, enableReferences, classes } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], report) === null
       ? ''
       : {
@@ -256,6 +273,10 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('objectMarking', objectMarking),
       R.assoc('published', dateFormat(report.published)),
       R.assoc('status_id', status),
+      R.assoc(
+        'report_types',
+        report.report_types.map((n) => ({ label: n, value: n })),
+      ),
       R.pick([
         'name',
         'published',
@@ -314,28 +335,39 @@ class ReportEditionOverviewComponent extends Component {
                           }
                         />
                         <Field
-                          component={SelectField}
-                          variant="standard"
-                          name="report_types"
-                          onFocus={this.handleChangeFocus.bind(this)}
+                          component={AutocompleteFreeSoloField}
                           onChange={this.handleSubmitField.bind(this)}
-                          label={t('Report types')}
-                          fullWidth={true}
+                          style={{ marginTop: 20 }}
+                          name="report_types"
                           multiple={true}
-                          containerstyle={{ marginTop: 20, width: '100%' }}
-                          helpertext={
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="report_types"
-                            />
-                          }
-                        >
-                          {elements.map((reportType) => (
-                            <MenuItem key={reportType} value={reportType}>
-                              {reportType}
-                            </MenuItem>
-                          ))}
-                        </Field>
+                          createLabel={t('Add')}
+                          textfieldprops={{
+                            variant: 'standard',
+                            label: t('Report types'),
+                            helperText: (
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName="report_types"
+                              />
+                            ),
+                          }}
+                          options={elements.map((n) => ({
+                            id: n,
+                            value: n,
+                            label: n,
+                          }))}
+                          renderOption={(optionProps, option) => (
+                            <li {...optionProps}>
+                              <div className={classes.icon}>
+                                <ItemIcon type="attribute" />
+                              </div>
+                              <div className={classes.text}>{option.label}</div>
+                            </li>
+                          )}
+                          classes={{
+                            clearIndicator: classes.autoCompleteIndicator,
+                          }}
+                        />
                         <ConfidenceField
                           name="confidence"
                           onFocus={this.handleChangeFocus.bind(this)}

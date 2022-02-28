@@ -1016,6 +1016,7 @@ const i18n = {
       'Last ingested analysis (creation date in the platform)':
         'Dernières analyses ajoutées (date de création dans la plateforme)',
       'Distribution of entities': 'Distribution des entités',
+      'Entities distribution': 'Distribution des entités',
       'Distribution of opinions': 'Distribution des opinions',
       'Observables distribution': 'Distribution des observables',
       'Distribution of relations (including inferred)':
@@ -2303,6 +2304,7 @@ const i18n = {
       'Last ingested analysis (creation date in the platform)':
         '上次引入的分析(在平台中的创建日期)',
       'Distribution of entities': '实体分布',
+      'Entities distribution': '实体分布',
       'Distribution of opinions': '意见分布',
       'Observables distribution': '可观测数据分布',
       'Distribution of relations (including inferred)': '关系分布(包含推理)',

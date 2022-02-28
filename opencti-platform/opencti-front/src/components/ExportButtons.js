@@ -164,7 +164,6 @@ class ExportButtons extends Component {
           anchorEl={anchorElImage}
           open={Boolean(anchorElImage)}
           onClose={this.handleCloseImage.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem
             onClick={this.exportImage.bind(
@@ -225,7 +224,6 @@ class ExportButtons extends Component {
           anchorEl={anchorElPdf}
           open={Boolean(anchorElPdf)}
           onClose={this.handleClosePdf.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem
             onClick={this.exportPdf.bind(

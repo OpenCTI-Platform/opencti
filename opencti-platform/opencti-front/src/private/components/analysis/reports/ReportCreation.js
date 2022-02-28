@@ -6,7 +6,6 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
@@ -18,7 +17,6 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
-import SelectField from '../../../../components/SelectField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
@@ -27,6 +25,8 @@ import CreatedByField from '../../common/form/CreatedByField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import ItemIcon from '../../../../components/ItemIcon';
+import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -70,6 +70,19 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
+  autoCompleteIndicator: {
+    display: 'none',
+  },
 });
 
 const reportMutation = graphql`
@@ -86,7 +99,7 @@ const reportValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
-  report_types: Yup.string().required(t('This field is required')),
+  report_types: Yup.array().required(t('This field is required')),
   description: Yup.string().nullable(),
 });
 
@@ -117,6 +130,7 @@ class ReportCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
       R.assoc('published', parse(values.published).format()),
+      R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
@@ -207,7 +221,7 @@ class ReportCreation extends Component {
                           published: dayStartDate(),
                           confidence: 15,
                           description: '',
-                          report_types: '',
+                          report_types: [],
                           createdBy: '',
                           objectMarking: [],
                           objectLabel: [],
@@ -246,22 +260,34 @@ class ReportCreation extends Component {
                               }}
                             />
                             <Field
-                              component={SelectField}
-                              variant="standard"
+                              component={AutocompleteFreeSoloField}
+                              style={{ marginTop: 20 }}
                               name="report_types"
-                              label={t('Report type')}
-                              fullWidth={true}
-                              containerstyle={{
-                                marginTop: 20,
-                                width: '100%',
+                              multiple={true}
+                              createLabel={t('Add')}
+                              textfieldprops={{
+                                variant: 'standard',
+                                label: t('Report types'),
                               }}
-                            >
-                              {elements.map((reportType) => (
-                                <MenuItem key={reportType} value={reportType}>
-                                  {reportType}
-                                </MenuItem>
-                              ))}
-                            </Field>
+                              options={elements.map((n) => ({
+                                id: n,
+                                value: n,
+                                label: n,
+                              }))}
+                              renderOption={(optionProps, option) => (
+                                <li {...optionProps}>
+                                  <div className={classes.icon}>
+                                    <ItemIcon type="attribute" />
+                                  </div>
+                                  <div className={classes.text}>
+                                    {option.label}
+                                  </div>
+                                </li>
+                              )}
+                              classes={{
+                                clearIndicator: classes.autoCompleteIndicator,
+                              }}
+                            />
                             <ConfidenceField
                               name="confidence"
                               label={t('Confidence')}

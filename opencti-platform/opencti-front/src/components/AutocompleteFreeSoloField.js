@@ -2,12 +2,16 @@ import React from 'react';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
-import MUIAutocomplete from '@mui/material/Autocomplete';
+import MUIAutocomplete, {
+  createFilterOptions,
+} from '@mui/material/Autocomplete';
 import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
 
-const AutocompleteField = (props) => {
+const filter = createFilterOptions();
+
+const AutocompleteFreeSoloField = (props) => {
   const {
     form: { setFieldValue, setTouched },
     field: { name },
@@ -17,6 +21,7 @@ const AutocompleteField = (props) => {
     renderOption,
     textfieldprops,
     openCreate,
+    createLabel,
   } = props;
   const [, meta] = useField(name);
   const internalOnChange = React.useCallback(
@@ -46,6 +51,20 @@ const AutocompleteField = (props) => {
         selectOnFocus={true}
         autoHighlight={true}
         handleHomeEndKeys={true}
+        freeSolo={true}
+        filterOptions={(options, params) => {
+          const filtered = filter(options, params);
+          const { inputValue } = params;
+          // Suggest the creation of a new value
+          const isExisting = options.some((option) => inputValue === option);
+          if (inputValue !== '' && !isExisting) {
+            filtered.push({
+              value: inputValue,
+              label: `${createLabel} "${inputValue}"`,
+            });
+          }
+          return filtered;
+        }}
         getOptionLabel={(option) => (option.label ? option.label : option)}
         noOptionsText={noOptionsText}
         {...fieldProps}
@@ -78,4 +97,4 @@ const AutocompleteField = (props) => {
   );
 };
 
-export default AutocompleteField;
+export default AutocompleteFreeSoloField;

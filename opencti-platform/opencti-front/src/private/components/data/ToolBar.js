@@ -139,7 +139,7 @@ const styles = (theme) => ({
     margin: '0 0 20px 0',
     padding: 15,
     verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.background.paperLight}`,
+    border: `1px solid ${theme.palette.background.accent}`,
     borderRadius: 5,
     display: 'flex',
   },
@@ -487,6 +487,7 @@ class ToolBar extends Component {
     }
     return (
       <Select
+        variant="standard"
         disabled={disabled}
         value={actionsInputs[i]?.type}
         onChange={this.handleChangeActionInput.bind(this, i, 'field')}
@@ -702,8 +703,9 @@ class ToolBar extends Component {
       case 'confidence':
         return (
           <FormControl style={{ width: '100%' }}>
-            <InputLabel>{t('Values')}</InputLabel>
+            <InputLabel variant="standard">{t('Values')}</InputLabel>
             <Select
+              variant="standard"
               onChange={this.handleChangeActionInputValuesReplace.bind(this, i)}
               label={t('Values')}
               fullWidth={true}
@@ -1087,7 +1089,7 @@ class ToolBar extends Component {
             </Button>
             <Button
               onClick={this.submitTask.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.processing}
             >
               {t('Launch')}
@@ -1108,8 +1110,9 @@ class ToolBar extends Component {
               className={classes.closeButton}
               onClick={this.handleCloseUpdate.bind(this)}
               size="large"
+              color="primary"
             >
-              <CloseOutlined fontSize="small" />
+              <CloseOutlined fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Update entities')}</Typography>
           </div>
@@ -1130,8 +1133,11 @@ class ToolBar extends Component {
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={3}>
                       <FormControl className={classes.formControl}>
-                        <InputLabel>{t('Action type')}</InputLabel>
+                        <InputLabel variant="standard">
+                          {t('Action type')}
+                        </InputLabel>
                         <Select
+                          variant="standard"
                           value={actionsInputs[i]?.type}
                           onChange={this.handleChangeActionInput.bind(
                             this,
@@ -1147,7 +1153,7 @@ class ToolBar extends Component {
                     </Grid>
                     <Grid item={true} xs={3}>
                       <FormControl className={classes.formControl}>
-                        <InputLabel>{t('Field')}</InputLabel>
+                        <InputLabel variant="standard">{t('Field')}</InputLabel>
                         {this.renderFieldOptions(i)}
                       </FormControl>
                     </Grid>
@@ -1196,8 +1202,9 @@ class ToolBar extends Component {
               className={classes.closeButton}
               onClick={this.handleCloseMerge.bind(this)}
               size="large"
+              color="primary"
             >
-              <CloseOutlined fontSize="small" />
+              <CloseOutlined fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Merge entities')}</Typography>
           </div>
@@ -1329,7 +1336,7 @@ class ToolBar extends Component {
             <div className={classes.buttons}>
               <Button
                 variant="contained"
-                color="primary"
+                color="secondary"
                 onClick={this.handleLaunchMerge.bind(this)}
                 classes={{ root: classes.button }}
               >

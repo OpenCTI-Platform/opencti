@@ -82,7 +82,7 @@ class PendingFileToolBar extends Component {
             ? classes.bottomNavWithPadding
             : classes.bottomNav,
         }}
-        elevation={3}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
         open={true}
       >
         <Toolbar style={{ minHeight: 54 }}>

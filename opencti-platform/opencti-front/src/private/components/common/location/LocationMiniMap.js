@@ -21,9 +21,9 @@ const styles = () => ({
   },
 });
 
-const pointerIcon = new L.Icon({
-  iconUrl: '/static/city.png',
-  iconRetinaUrl: '/static/city.png',
+const pointerIcon = (dark = true) => new L.Icon({
+  iconUrl: `/static/city_${dark ? 'dark' : 'light'}.png`,
+  iconRetinaUrl: `/static/city_${dark ? 'dark' : 'light'}.png`,
   iconAnchor: [5, 55],
   popupAnchor: [10, -44],
   iconSize: [25, 25],
@@ -68,7 +68,14 @@ const LocationMiniMap = (props) => {
             }
           />
           <GeoJSON data={countries} style={getStyle} />
-          {position ? <Marker position={position} icon={pointerIcon} /> : ''}
+          {position ? (
+            <Marker
+              position={position}
+              icon={pointerIcon(theme.palette.mode)}
+            />
+          ) : (
+            ''
+          )}
         </MapContainer>
       </Paper>
     </div>

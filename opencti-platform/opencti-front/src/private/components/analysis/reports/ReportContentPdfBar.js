@@ -42,7 +42,7 @@ class ReportContentPdfBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
-        elevation={3}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
         <div
           style={{

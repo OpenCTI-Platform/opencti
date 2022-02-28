@@ -54,13 +54,14 @@ class AttackPatternEditionContainer extends Component {
     return (
       <div>
         <div className={classes.header}>
-          <IconButton
+<IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
             size="large"
+            color="primary"
           >
-            <Close fontSize="small" />
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update an attack pattern')}
