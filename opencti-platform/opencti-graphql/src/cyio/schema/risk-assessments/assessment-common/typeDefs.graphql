@@ -3,7 +3,7 @@
     # Activity
     activity(id: ID!): Activity
     activities( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: ActivityOrdering
       orderMode: OrderingMode
@@ -14,7 +14,7 @@
     # Actor
     actor(id: ID!): Actor
     actors( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: ActorOrdering
       orderMode: OrderingMode
@@ -25,7 +25,7 @@
     # Characterizations
     characterization(id: ID!): Characterization
     characterizations( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: CharacterizationOrdering
       orderMode: OrderingMode
@@ -36,7 +36,7 @@
     # Evidence
     evidence(id: ID!): Evidence
     evidenceList( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: EvidenceOrdering
       orderMode: OrderingMode
@@ -47,7 +47,7 @@
     # Facet
     facet(id: ID!): Facet
     facets( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: FacetOrdering
       orderMode: OrderingMode
@@ -58,7 +58,7 @@
     # Assessment Log Entry
     assessmentLogEntry(id: ID!): AssessmentLogEntry
     assessmentLogEntries( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: AssessmentLogEntriesOrdering
       orderMode: OrderingMode
@@ -69,7 +69,7 @@
     # Observation
     observation(id: ID!): Observation
     observations( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: ObservationsOrdering
       orderMode: OrderingMode
@@ -80,7 +80,7 @@
     # Origin
     origin(id: ID!): Origin
     origins( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OriginOrdering
       orderMode: OrderingMode
@@ -91,7 +91,7 @@
     # Oscal Task
     oscalTask(id: ID!): OscalTask
     oscalTasks( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalTaskOrdering
       orderMode: OrderingMode
@@ -102,7 +102,7 @@
     # Required Asset
     requiredAsset(id: ID!): RequiredAsset
     requiredAssets( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: RequiredAssetOrdering
       orderMode: OrderingMode
@@ -113,7 +113,7 @@
     # Risk 
     risk(id: ID!): Risk
     risks( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: RisksOrdering
       orderMode: OrderingMode
@@ -124,7 +124,7 @@
     # Risk Response
     riskResponse(id: ID!): RiskResponse
     riskResponses( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: RiskResponsesOrdering
       orderMode: OrderingMode
@@ -135,7 +135,7 @@
     # Risk Log Entry
     riskLogEntry(id: ID!): RiskLogEntry
     riskLogEntries( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: RiskLogEntriesOrdering
       orderMode: OrderingMode
@@ -146,7 +146,7 @@
     # Subject
     subject(id: ID!): Subject
     subjects( 
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: SubjectOrdering
       orderMode: OrderingMode
@@ -239,7 +239,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -748,7 +748,7 @@ interface LogEntry {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -796,7 +796,7 @@ interface LogEntry {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -893,7 +893,7 @@ interface LogEntry {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1002,7 +1002,7 @@ interface LogEntry {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1046,7 +1046,7 @@ interface LogEntry {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1235,7 +1235,7 @@ type OscalTask implements BasicObject & LifecycleObject & OscalObject {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1338,7 +1338,7 @@ type OscalTaskEdge {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1427,7 +1427,7 @@ type OscalTaskEdge {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1457,9 +1457,9 @@ type OscalTaskEdge {
     "Identifies either recommended or an actual plan for addressing the risk."
     remediations: [RiskResponse]
     "log of all risk-related tasks taken."
-    risk_log(limit: Int): RiskLogEntryConnection
+    risk_log(first: Int): RiskLogEntryConnection
     "Relates the finding to a set of referenced observations that were used to determine the risk.  This would be the Component in which the risk exists and the InventoryItem(s) in which theComponent is installed"
-    related_observations(limit: Int): ObservationConnection
+    related_observations(first: Int): ObservationConnection
     "Identifies that the risk has been confirmed to be a false positive."
     false_positive: RiskAssertionState
     "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
@@ -1569,7 +1569,7 @@ type OscalTaskEdge {
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode

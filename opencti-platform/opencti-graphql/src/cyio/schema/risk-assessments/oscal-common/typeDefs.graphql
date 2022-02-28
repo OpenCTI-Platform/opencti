@@ -4,7 +4,7 @@
     # OSCAL Location
     oscalLocation(id: ID!): OscalLocation
     oscalLocations(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalLocationOrdering
       orderMode: OrderingMode
@@ -15,7 +15,7 @@
     # OSCAL Party
     oscalParty(id: ID!): OscalParty
     oscalParties(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalPartyOrdering
       orderMode: OrderingMode
@@ -26,7 +26,7 @@
     # OSCAL Relationship
     oscalRelationship(id: ID!): OscalRelationship
     oscalRelationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -37,7 +37,7 @@
     # OSCAL Resource
     oscalResource(id: ID!): OscalResource
     oscalResources(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalResourcesOrdering
       orderMode: OrderingMode
@@ -48,7 +48,7 @@
     # OSCAL Responsible Party
     oscalResponsibleParty(id: ID!): OscalResponsibleParty
     oscalResponsibleParties(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalResponsiblePartyOrdering
       orderMode: OrderingMode
@@ -59,7 +59,7 @@
     # OSCAL Role
     oscalRole(id: ID!): OscalRole
     oscalRoles(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRolesOrdering
       orderMode: OrderingMode
@@ -70,7 +70,7 @@
     # OSCAL User
     oscalUser(id: ID!): OscalUser
     oscalUsers(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalUsersOrdering
       orderMode: OrderingMode
@@ -192,7 +192,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -216,15 +216,15 @@
     "Identifies references to previous versions of this document."
     document_ids: [ID]
     "Identifies one or more references to a function assumed or expected to be assumed by a party in a specific situation."
-    roles( limit: Int ): OscalRoleConnection
+    roles( first: Int ): OscalRoleConnection
     "Identifies one or more references to a location."
-    locations( limit: Int ): OscalLocationConnection
+    locations( first: Int ): OscalLocationConnection
     "Identifies one or more references to a responsible entity which is either a person or an organization."
-    parties( limit: Int ): OscalPartyConnection
+    parties( first: Int ): OscalPartyConnection
     "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties( limit: Int ): OscalResponsiblePartyConnection
+    responsible_parties( first: Int ): OscalResponsiblePartyConnection
     # Back-matter
-    resources( limit: Int ): OscalResourceConnection
+    resources( first: Int ): OscalResourceConnection
   }
 
   "Defines the identifying information about an OSCAL object."
@@ -238,7 +238,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -273,7 +273,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -385,7 +385,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -623,7 +623,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -862,7 +862,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -973,7 +973,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -1094,7 +1094,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
