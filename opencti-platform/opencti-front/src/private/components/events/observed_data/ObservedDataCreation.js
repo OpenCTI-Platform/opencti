@@ -116,6 +116,7 @@ class ObservedDataCreation extends Component {
         first_observed: () => parse(values.first_observed).format(),
         last_observed: () => parse(values.last_observed).format(),
         number_observed: () => parseInt(values.number_observed, 10),
+        confidence: () => parseInt(values.confidence, 10),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
