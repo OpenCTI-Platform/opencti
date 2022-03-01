@@ -151,7 +151,11 @@ const Login = ({ classes, theme, settings }) => {
   return (
     <div className={classes.container} style={{ marginTop }}>
       <img
-        src={`${loginLogo && loginLogo.length > 0 ? loginLogo : `/${logo}`}`}
+        src={`${
+          loginLogo && loginLogo.length > 0
+            ? loginLogo
+            : `/${window.BASE_PATH ? `${window.BASE_PATH}/` : ''}${logo}`
+        }`}
         alt="logo"
         className={classes.logo}
       />

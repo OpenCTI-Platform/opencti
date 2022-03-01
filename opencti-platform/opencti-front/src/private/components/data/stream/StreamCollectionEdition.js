@@ -203,8 +203,9 @@ const StreamCollectionEditionContainer = (props) => {
           className={classes.closeButton}
           onClick={handleClose}
           size="large"
+          color="primary"
         >
-          <Close fontSize="small" />
+          <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6">{t('Update a live stream')}</Typography>
       </div>

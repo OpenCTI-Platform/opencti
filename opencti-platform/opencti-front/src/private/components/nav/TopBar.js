@@ -150,7 +150,12 @@ const TopBar = ({
     }
   };
   return (
-    <AppBar position="fixed" className={classes.appBar}>
+    <AppBar
+      position="fixed"
+      className={classes.appBar}
+      variant="elevation"
+      elevation={1}
+    >
       <Toolbar>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">

@@ -180,7 +180,7 @@ class EntityStixSightingRelationships extends Component {
             <Grid container={true} spacing={1}>
               <Grid item={true} xs="auto">
                 <Select
-                  style={{ height: 50, marginRight: 15 }}
+                  variant="standard"
                   value={toType}
                   open={openToType}
                   onClose={this.handleCloseToType.bind(this)}

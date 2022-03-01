@@ -71,7 +71,7 @@ const LocationMiniMap = (props) => {
           {position ? (
             <Marker
               position={position}
-              icon={pointerIcon(theme.palette.mode)}
+              icon={pointerIcon(theme.palette.mode === 'dark')}
             />
           ) : (
             ''

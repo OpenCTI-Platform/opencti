@@ -73,11 +73,7 @@ const ColorPickerField = (props) => {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton
-                aria-label="open"
-                onClick={handleClick}
-                size="large"
-              >
+              <IconButton aria-label="open" onClick={handleClick} size="large">
                 <ColorLens />
               </IconButton>
             </InputAdornment>

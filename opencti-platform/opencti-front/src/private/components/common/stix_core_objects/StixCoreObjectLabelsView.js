@@ -265,7 +265,10 @@ const StixCoreObjectLabelsView = (props) => {
                   openCreate={isLabelManager ? handleOpenCreate : null}
                   renderOption={(optionsProps, option) => (
                     <li {...optionsProps}>
-                      <div className={classes.icon} style={{ color: option.color }}>
+                      <div
+                        className={classes.icon}
+                        style={{ color: option.color }}
+                      >
                         <Label />
                       </div>
                       <div className={classes.text}>{option.label}</div>

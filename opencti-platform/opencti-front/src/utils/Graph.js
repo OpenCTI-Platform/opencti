@@ -46,7 +46,7 @@ import { isNone } from '../components/i18n';
 
 const genImage = (src) => {
   const img = new Image();
-  img.src = src;
+  img.src = `/${window.BASE_PATH ? `${window.BASE_PATH}/` : ''}${src}`;
   return img;
 };
 

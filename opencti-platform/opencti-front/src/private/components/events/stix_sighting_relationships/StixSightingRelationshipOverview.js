@@ -286,7 +286,7 @@ class StixSightingRelationshipContainer extends Component {
             </div>
           </div>
         </Link>
-        <div className="clearfix" style={{ height: 20 }} />
+        <div className="clearfix" style={{ height: 40 }} />
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>

@@ -28,7 +28,7 @@ const styles = (theme) => ({
     lineHeight: '12px',
     backgroundColor: theme.palette.background.accent,
     borderRadius: 5,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },

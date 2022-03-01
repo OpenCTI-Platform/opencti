@@ -17,6 +17,7 @@ export default (
       paper: paper || '#f3f6f9',
       nav: nav || '#f9feff',
       accent: accent || '#d3eaff',
+      shadow: 'rgba(0, 0, 0, .1)',
     },
   },
   typography: {
@@ -109,7 +110,7 @@ export default (
           'input:-webkit-autofill': {
             WebkitAnimation: 'autofill 0s forwards',
             animation: 'autofill 0s forwards',
-            WebkitTextFillColor: '#ffffff !important',
+            WebkitTextFillColor: '#000000 !important',
             caretColor: 'transparent !important',
             WebkitBoxShadow:
               '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',

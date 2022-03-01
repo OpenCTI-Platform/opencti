@@ -11,6 +11,7 @@ import {
   yellow,
   indigo,
   teal,
+  red,
 } from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
@@ -21,12 +22,25 @@ import {
   LinkOutlined,
   LinkOffOutlined,
   HelpOutlined,
+  DeleteOutlined,
 } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import DialogContentText from '@mui/material/DialogContentText';
+import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   container: {
@@ -45,10 +59,10 @@ const styles = (theme) => ({
     float: 'left',
     width: 40,
     height: 40,
-    marginRight: 20,
+    margin: '5px 10px 0 0',
   },
   content: {
-    height: 50,
+    height: 40,
     width: 'auto',
     overflow: 'hidden',
   },
@@ -60,8 +74,8 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.line,
-    padding: '17px 15px 15px 15px',
+    padding: '8px 15px 0 15px',
+    backgroundColor: theme.palette.background.shadow,
   },
   description: {
     height: '100%',
@@ -73,40 +87,72 @@ const styles = (theme) => ({
     float: 'right',
     textAlign: 'right',
     width: 180,
+    paddingTop: 2,
   },
 });
 
 class StixSightingRelationshipHistoryLineComponent extends Component {
-  // eslint-disable-next-line class-methods-use-this
+  constructor(props) {
+    super(props);
+    this.state = {
+      open: false,
+      displayExternalLink: false,
+      externalLink: null,
+    };
+  }
+
+  handleOpen() {
+    this.setState({ open: true });
+  }
+
+  handleClose() {
+    this.setState({ open: false });
+  }
+
+  handleOpenExternalLink(url) {
+    this.setState({ displayExternalLink: true, externalLink: url });
+  }
+
+  handleCloseExternalLink() {
+    this.setState({ displayExternalLink: false, externalLink: null });
+  }
+
+  handleBrowseExternalLink() {
+    window.open(this.state.externalLink, '_blank');
+    this.setState({ displayExternalLink: false, externalLink: null });
+  }
+
   renderIcon(eventType, isRelation, eventMesage, commit) {
     if (isRelation) {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOutlined />
+            <LinkOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'delete') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepPurple[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOffOutlined />
+            <LinkOffOutlined fontSize="small" />
           </Avatar>
         );
       }
@@ -114,90 +160,110 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <AddOutlined />
+            <AddOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'merge') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: teal[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <Merge />
+            <Merge fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <EditOutlined />
+            <EditOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <EditOutlined />
+            <EditOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: indigo[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkVariantPlus />
+            <LinkVariantPlus fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepOrange[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkVariantRemove />
+            <LinkVariantRemove fontSize="small" />
+          </Avatar>
+        );
+      }
+      if (eventType === 'delete') {
+        return (
+          <Avatar
+            sx={{
+              width: 30,
+              height: 30,
+              backgroundColor: red[500],
+              color: '#ffffff',
+            }}
+          >
+            <DeleteOutlined fontSize="small" />
           </Avatar>
         );
       }
@@ -205,20 +271,19 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
     return (
       <Avatar
         style={{
-          marginTop: 5,
           backgroundColor: yellow[800],
           color: '#ffffff',
           cursor: commit ? 'pointer' : 'auto',
         }}
         onClick={() => commit && this.handleOpen()}
       >
-        <HelpOutlined />
+        <HelpOutlined fontSize="small" />
       </Avatar>
     );
   }
 
   render() {
-    const { nsdt, classes, node, isRelation } = this.props;
+    const { nsdt, classes, node, isRelation, t } = this.props;
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
@@ -256,6 +321,53 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
           </Paper>
         </div>
         <div className={classes.line} />
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>{t('Commit message')}</DialogTitle>
+          <DialogContent>
+            <Markdown
+              remarkPlugins={[remarkGfm, remarkParse]}
+              parserOptions={{ commonmark: true }}
+              className="markdown"
+            >
+              {node.context_data.commit}
+            </Markdown>
+          </DialogContent>
+          <DialogActions>
+            <Button color="primary" onClick={this.handleClose.bind(this)}>
+              {t('Close')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.displayExternalLink}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseExternalLink.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to browse this external link?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleCloseExternalLink.bind(this)}>
+              {t('Cancel')}
+            </Button>
+            <Button
+              button={true}
+              color="secondary"
+              onClick={this.handleBrowseExternalLink.bind(this)}
+            >
+              {t('Browse the link')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -282,6 +394,15 @@ const StixSightingRelationshipHistoryLine = createFragmentContainer(
         }
         context_data {
           message
+          commit
+          references {
+            id
+            source_name
+            external_id
+            url
+            created
+            description
+          }
         }
       }
     `,

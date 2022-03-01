@@ -47,7 +47,7 @@ const styles = (theme) => ({
   },
   createButton: {
     float: 'left',
-    margin: '-15px 0 0 10px',
+    marginTop: -15,
   },
 });
 

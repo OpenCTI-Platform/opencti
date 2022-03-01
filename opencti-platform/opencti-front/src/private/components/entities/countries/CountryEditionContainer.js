@@ -46,7 +46,7 @@ class CountryEditionContainer extends Component {
     return (
       <div>
         <div className={classes.header}>
-<IconButton
+          <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}

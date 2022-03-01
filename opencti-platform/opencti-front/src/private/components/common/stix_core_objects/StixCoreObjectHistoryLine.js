@@ -49,7 +49,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const styles = () => ({
+const styles = (theme) => ({
   container: {
     marginBottom: 20,
   },
@@ -82,6 +82,7 @@ const styles = () => ({
     width: '100%',
     height: '100%',
     padding: '8px 15px 0 15px',
+    backgroundColor: theme.palette.background.shadow,
   },
   description: {
     height: '100%',
@@ -308,7 +309,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Badge>
         </div>
         <div className={classes.content}>
-          <Paper classes={{ root: classes.paper }} elevation={1}>
+          <Paper classes={{ root: classes.paper }}>
             <div className={classes.date}>{nsdt(node.timestamp)}</div>
             <Tooltip
               classes={{ tooltip: classes.tooltip }}

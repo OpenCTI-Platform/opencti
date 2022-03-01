@@ -73,7 +73,7 @@ const styles = (theme) => ({
     float: 'left',
     margin: '0 10px 10px 0',
     backgroundColor: theme.palette.background.accent,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
   },
   number: {
     fontWeight: 600,
