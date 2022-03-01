@@ -263,16 +263,13 @@ const StixCoreObjectLabelsView = (props) => {
                   options={stateLabels}
                   onInputChange={searchLabels}
                   openCreate={isLabelManager ? handleOpenCreate : null}
-                  renderOption={(option) => (
-                    <React.Fragment>
-                      <div
-                        className={classes.icon}
-                        style={{ color: option.color }}
-                      >
+                  renderOption={(optionsProps, option) => (
+                    <li {...optionsProps}>
+                      <div className={classes.icon} style={{ color: option.color }}>
                         <Label />
                       </div>
                       <div className={classes.text}>{option.label}</div>
-                    </React.Fragment>
+                    </li>
                   )}
                   classes={{ clearIndicator: classes.autoCompleteIndicator }}
                 />

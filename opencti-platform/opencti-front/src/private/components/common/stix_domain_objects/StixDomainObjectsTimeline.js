@@ -29,7 +29,7 @@ const styles = (theme) => ({
     overflow: 'auto',
   },
   paper: {
-    padding: 0,
+    padding: 15,
   },
   itemIcon: {
     color: theme.palette.primary.main,
