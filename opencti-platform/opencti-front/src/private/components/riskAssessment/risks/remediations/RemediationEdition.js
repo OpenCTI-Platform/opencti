@@ -81,6 +81,7 @@ class RemediationEdition extends Component {
       remediationId,
       open,
       history,
+      remediation,
     } = this.props;
     return (
       <div>
@@ -110,6 +111,7 @@ class RemediationEdition extends Component {
                 <RemediationEditionContainer
                   risk={props.riskResponse}
                   remediationId={remediationId}
+                  remediation={remediation}
                   // enableReferences={props.settings.platform_enable_reference?.includes(
                     //   'Risk',
                     // )}
@@ -134,6 +136,7 @@ RemediationEdition.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  remediation: PropTypes.object,
 };
 
 export default compose(

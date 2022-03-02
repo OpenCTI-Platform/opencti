@@ -130,6 +130,7 @@ class RemediationComponent extends Component {
             riskId={riskId}
             remediationId={remediation.id}
             history={history}
+            remediation={remediation}
           />
           // </Security>
         )}

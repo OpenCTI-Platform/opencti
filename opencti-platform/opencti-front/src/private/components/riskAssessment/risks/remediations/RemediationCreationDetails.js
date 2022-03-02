@@ -109,6 +109,7 @@ class RemediationCreationDetailsComponent extends Component {
       enableReferences,
       onSubmit,
       setFieldValue,
+      values,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -178,7 +179,17 @@ class RemediationCreationDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                />
+                >
+                  <MenuItem value='Helloworld'>
+                    helloWorld
+                  </MenuItem>
+                  <MenuItem value='test'>
+                    test
+                  </MenuItem>
+                  <MenuItem value='data'>
+                    data
+                  </MenuItem>
+                </Field>
               </Grid>
             </Grid>
             <Grid item={true} xs={6}>
@@ -209,7 +220,17 @@ class RemediationCreationDetailsComponent extends Component {
                   fullWidth={true}
                   style={{ height: '38.09px' }}
                   containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                />
+                >
+                   <MenuItem value='Helloworld'>
+                    helloWorld
+                  </MenuItem>
+                  <MenuItem value='test'>
+                    test
+                  </MenuItem>
+                  <MenuItem value='data'>
+                    data
+                  </MenuItem>
+                </Field>
               </Grid>
             </Grid>
           </Grid>

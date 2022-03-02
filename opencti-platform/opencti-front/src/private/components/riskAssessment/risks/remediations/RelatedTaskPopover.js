@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
@@ -7,6 +9,8 @@ import {
   mergeAll,
   path,
   pipe,
+  dissoc,
+  assoc,
 } from 'ramda';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
@@ -151,6 +155,26 @@ class RelatedTaskPopover extends Component {
     this.setState({ displayDelete: false });
   }
 
+  onSubmit(values, { setSubmitting, resetForm }) {
+    console.log('relatedTask', values);
+    this.setState({
+      timings: {
+        start_date: values.start_date,
+        end_date: values.end_date,
+      },
+      responsible_roles: [{
+        responsible_role: values.responsible_role,
+      }],
+    });
+    const finalValues = pipe(
+      dissoc('start_date'),
+      dissoc('end_date'),
+      dissoc('responsible_role'),
+      assoc('timings', this.state.timings),
+      assoc('responsible_roles', this.state.responsible_roles),
+    )(values);
+  }
+  
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
@@ -304,7 +328,7 @@ class RelatedTaskPopover extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
           // validationSchema={RelatedTaskValidation(t)}
-          // onSubmit={this.onSubmit.bind(this)}
+          onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -419,7 +443,17 @@ class RelatedTaskPopover extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -531,13 +565,23 @@ class RelatedTaskPopover extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
+                          component={SelectField}
                           name="related_tasks"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -592,7 +636,17 @@ class RelatedTaskPopover extends Component {
                         size='small'
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
-                      />
+                      >
+                         <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                      </Field>
                     </div>
                   </Grid>
                   <Grid container={true} spacing={3}>
@@ -630,7 +684,7 @@ class RelatedTaskPopover extends Component {
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
-                    {t('Create')}
+                    {t('Submit')}
                   </Button>
                 </DialogActions>
               </Form>

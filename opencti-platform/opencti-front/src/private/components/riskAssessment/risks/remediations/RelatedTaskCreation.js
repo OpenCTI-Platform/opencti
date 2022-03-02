@@ -1,7 +1,14 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { compose } from 'ramda';
+import {
+  compose,
+  dissoc,
+  assoc,
+  pipe,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,6 +24,7 @@ import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
+import MenuItem from '@material-ui/core/MenuItem';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
@@ -117,12 +125,14 @@ const RelatedTaskCreationMutation = graphql`
     $input: ExternalReferenceAddInput!
   ) {
     externalReferenceAdd(input: $input) {
-      id
-      source_name
+      task_type
+      name
       description
-      url
-      external_id
-      created
+      start_date
+      end_date
+      associated_activities
+      task_dependenices
+      responsible_role
     }
   }
 `;
@@ -140,6 +150,17 @@ class RelatedTaskCreation extends Component {
     this.state = {
       open: false,
       close: false,
+      timings: {
+        start_date: '',
+        end_date: '',
+      },
+      responsible_roles: [
+        {
+          responsible_role: '',
+          parties: [
+        
+          ],
+        }],
     };
   }
 
@@ -152,28 +173,45 @@ class RelatedTaskCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    CM(environmentDarkLight, {
-      mutation: RelatedTaskCreationMutation,
-      variables: {
-        input: values,
+    console.log('relatedTask', values);
+    this.setState({
+      timings: {
+        start_date: values.start_date,
+        end_date: values.end_date,
       },
-      // updater: (store) => insertNode(
-      //   store,
-      //   'Pagination_externalReferences',
-      //   this.props.paginationOptions,
-      //   'externalReferenceAdd',
-      // ),
-      setSubmitting,
-      onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        if (this.props.onCreate) {
-          this.props.onCreate(response.externalReferenceAdd, true);
-        }
-      },
-      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+      responsible_roles: [{
+          responsible_role: values.responsible_role,
+        }],
     });
+    const finalValues = pipe(
+      dissoc('start_date'),
+      dissoc('end_date'),
+      dissoc('responsible_role'),
+      assoc('timings', this.state.timings),
+      assoc('responsible_roles', this.state.responsible_roles),
+    )(values);
+    // CM(environmentDarkLight, {
+    //   mutation: RelatedTaskCreationMutation,
+    //   variables: {
+    //     input: values,
+    //   },
+    //   // updater: (store) => insertNode(
+    //   //   store,
+    //   //   'Pagination_externalReferences',
+    //   //   this.props.paginationOptions,
+    //   //   'externalReferenceAdd',
+    //   // ),
+    //   setSubmitting,
+    //   onCompleted: (response) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //     if (this.props.onCreate) {
+    //       this.props.onCreate(response.externalReferenceAdd, true);
+    //     }
+    //   },
+    //   onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+    // });
     // commitMutation({
     //   mutation: RelatedTaskCreationMutation,
     //   variables: {
@@ -254,7 +292,7 @@ class RelatedTaskCreation extends Component {
                 url: '',
                 description: '',
               }}
-              validationSchema={RelatedTaskValidation(t)}
+              // validationSchema={RelatedTaskValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -341,18 +379,17 @@ class RelatedTaskCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              id: '',
               name: '',
               description: '',
-              associated_activities: [],
-              related_tasks: '',
               task_type: [],
+              task_dependencies: [],
               start_date: null,
               end_date: null,
-              dependencies: '',
-              responsible_parties: [],
+              related_tasks: [],
+              associated_activities: [],
+              responsible_role: [],
             }}
-            validationSchema={RelatedTaskValidation(t)}
+            // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -466,7 +503,17 @@ class RelatedTaskCreation extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -487,13 +534,23 @@ class RelatedTaskCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
-                          name="dependencies"
-                          fullWidth={true}
-                          size="small"
-                          variant='outlined'
-                          containerstyle={{ width: '100%' }}
-                        />
+                         component={SelectField}
+                         name="task_dependencies"
+                         fullWidth={true}
+                         variant='outlined'
+                         style={{ height: '38.09px' }}
+                         containerstyle={{ width: '100%' }}
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                   </Grid>
@@ -578,13 +635,23 @@ class RelatedTaskCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
-                          name="related_tasks"
-                          fullWidth={true}
-                          size="small"
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                        />
+                           component={SelectField}
+                           name="related_tasks"
+                           fullWidth={true}
+                           variant='outlined'
+                           style={{ height: '38.09px' }}
+                           containerstyle={{ width: '100%' }}
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                        </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -611,7 +678,17 @@ class RelatedTaskCreation extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                   </Grid>
@@ -635,11 +712,21 @@ class RelatedTaskCreation extends Component {
                         component={SelectField}
                         style={{ height: '38.09px' }}
                         variant='outlined'
-                        name="responsible_parties"
+                        name="responsible_role"
                         size='small'
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
-                      />
+                      >
+                        <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                      </Field>
                     </div>
                   </Grid>
                   <Grid container={true} spacing={3}>

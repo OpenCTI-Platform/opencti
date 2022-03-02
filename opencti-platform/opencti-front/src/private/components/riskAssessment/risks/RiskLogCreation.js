@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { compose } from 'ramda';
 import * as Yup from 'yup';
+import {
+  compose,
+  dissoc,
+  assoc,
+  pipe,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -14,6 +19,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { Information } from 'mdi-material-ui';
 import DialogActions from '@material-ui/core/DialogActions';
 import Typography from '@material-ui/core/Typography';
+import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
@@ -92,15 +98,18 @@ const styles = (theme) => ({
 
 const RiskLogCreationMutation = graphql`
   mutation RiskLogCreationMutation(
+    $id: id
     $input: ExternalReferenceAddInput!
   ) {
-    externalReferenceAdd(input: $input) {
-      id
-      source_name
+    externalReferenceAdd(id:$id, input: $input) {
+      entry_type
+      name
       description
-      url
-      external_id
-      created
+      event_start
+      event_end
+      logged_by
+      status_change
+      related_response
     }
   }
 `;
@@ -115,7 +124,12 @@ const RiskLogValidation = (t) => Yup.object().shape({
 class RiskLogCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = {
+      open: false,
+      related_responses: [{
+        related_response: '',
+      }],
+    };
   }
 
   handleOpen() {
@@ -127,28 +141,39 @@ class RiskLogCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    CM(environmentDarkLight, {
-      mutation: RiskLogCreationMutation,
-      variables: {
-        input: values,
-      },
-      // updater: (store) => insertNode(
-      //   store,
-      //   'Pagination_externalReferences',
-      //   this.props.paginationOptions,
-      //   'externalReferenceAdd',
-      // ),
-      setSubmitting,
-      onCompleted: (response) => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-        if (this.props.onCreate) {
-          this.props.onCreate(response.externalReferenceAdd, true);
-        }
-      },
-      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+    console.log('riskLogData', values);
+    this.setState({
+      related_responses: [{
+        related_response: values.related_response,
+      }],
     });
+    const finalValues = pipe(
+      dissoc('related_response'),
+      assoc('related_responses', this.state.related_responses),
+    )(values);
+    // CM(environmentDarkLight, {
+    //   mutation: RiskLogCreationMutation,
+    //   variables: {
+    //      id:
+    //     input: values,
+    //   },
+    //   // updater: (store) => insertNode(
+    //   //   store,
+    //   //   'Pagination_externalReferences',
+    //   //   this.props.paginationOptions,
+    //   //   'externalReferenceAdd',
+    //   // ),
+    //   setSubmitting,
+    //   onCompleted: (response) => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //     if (this.props.onCreate) {
+    //       this.props.onCreate(response.externalReferenceAdd, true);
+    //     }
+    //   },
+    //   onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+    // });
     // commitMutation({
     //   mutation: RiskLogCreationMutation,
     //   variables: {
@@ -220,7 +245,7 @@ class RiskLogCreation extends Component {
                 event_start: null,
                 event_end: null,
               }}
-              validationSchema={RiskLogValidation(t)}
+              // validationSchema={RiskLogValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -271,7 +296,7 @@ class RiskLogCreation extends Component {
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
                     >
-                      {t('Create')}
+                      {t('Submit')}
                     </Button>
                   </div>
                 </Form>
@@ -301,26 +326,28 @@ class RiskLogCreation extends Component {
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
           onClose={this.handleClose.bind(this)}
+          keepMounted={true}
           fullWidth={true}
           maxWidth='sm'
           PaperProps={{
             style: {
-              overflowY: 'hidden',
-              height: '100%',
+              overflowY: 'scroll',
             },
           }}
         >
           <Formik
             enableReinitialize={true}
             initialValues={{
-              source_name: inputValue,
-              external_id: '',
-              url: '',
+              entry_type: '',
+              name: '',
               description: '',
-              event_start: null,
-              event_end: null,
+              event_start: '',
+              event_end: '',
+              logged_by: '',
+              status_change: '',
+              related_response: [],
             }}
-            validationSchema={RiskLogValidation(t)}
+            // validationSchema={RiskLogValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -352,7 +379,17 @@ class RiskLogCreation extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -374,7 +411,7 @@ class RiskLogCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="title"
+                          name="name"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -487,7 +524,7 @@ class RiskLogCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={SelectField}
+                          component={TextField}
                           name="related_response"
                           fullWidth={true}
                           variant='outlined'
@@ -548,7 +585,17 @@ class RiskLogCreation extends Component {
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                   </Grid>
