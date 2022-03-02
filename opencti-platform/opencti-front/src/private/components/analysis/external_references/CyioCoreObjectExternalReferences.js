@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, take } from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 // import { QueryRenderer as QR } from 'react-relay';
 // import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
@@ -51,16 +49,16 @@ const styles = (theme) => ({
 });
 
 class CyioCoreObjectExternalReferences extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      expanded: false,
-    };
-  }
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     expanded: false,
+  //   };
+  // }
 
-  handleToggleExpand() {
-    this.setState({ expanded: !this.state.expanded });
-  }
+  // handleToggleExpand() {
+  //   this.setState({ expanded: !this.state.expanded });
+  // }
 
   render() {
     const {
@@ -71,8 +69,8 @@ class CyioCoreObjectExternalReferences extends Component {
       typename,
       externalReferences,
     } = this.props;
-    const { expanded } = this.state;
-    const expandable = externalReferences.length > 7;
+    // const { expanded } = this.state;
+    // const expandable = externalReferences.length > 7;
     return (
       <>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -90,7 +88,7 @@ class CyioCoreObjectExternalReferences extends Component {
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {externalReferences.length > 0 ? (
-            take(expanded ? 200 : 7, externalReferences).map((externalReference) => (
+            externalReferences.map((externalReference) => (
               <CyioCoreObjectExternalReferencesLines
                 key={externalReference.id}
                 cyioCoreObjectId={cyioCoreObjectId}
@@ -111,7 +109,7 @@ class CyioCoreObjectExternalReferences extends Component {
               </span>
             </div>
           )}
-          {expandable && (
+          {/* {expandable && (
            <Button
              variant="contained"
              size="small"
@@ -124,7 +122,7 @@ class CyioCoreObjectExternalReferences extends Component {
                <ExpandMoreOutlined fontSize="small" />
              )}
            </Button>
-          )}
+          )} */}
         </Paper>
       </>
     );

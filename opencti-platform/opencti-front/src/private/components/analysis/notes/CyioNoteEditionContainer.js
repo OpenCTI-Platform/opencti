@@ -60,7 +60,7 @@ class CyioNoteEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, note,
+      t, classes, handleClose, note, refreshQuery,
     } = this.props;
     const { editContext } = note;
     return (
@@ -82,6 +82,7 @@ class CyioNoteEditionContainer extends Component {
         <div className={classes.container}>
           <CyioNoteEditionOverview
             note={this.props.note}
+            refreshQuery={refreshQuery}
             context={editContext}
             handleClose={handleClose.bind(this)}
           />
@@ -94,6 +95,7 @@ class CyioNoteEditionContainer extends Component {
 CyioNoteEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   note: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
