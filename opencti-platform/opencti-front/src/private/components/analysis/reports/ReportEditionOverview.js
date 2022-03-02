@@ -22,6 +22,8 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
+import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
+import AutocompleteField from '../../../../components/AutocompleteField';
 
 const styles = (theme) => ({
   createButton: {
@@ -334,40 +336,84 @@ class ReportEditionOverviewComponent extends Component {
                             />
                           }
                         />
-                        <Field
-                          component={AutocompleteFreeSoloField}
-                          onChange={this.handleSubmitField.bind(this)}
-                          style={{ marginTop: 20 }}
-                          name="report_types"
-                          multiple={true}
-                          createLabel={t('Add')}
-                          textfieldprops={{
-                            variant: 'standard',
-                            label: t('Report types'),
-                            helperText: (
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName="report_types"
-                              />
-                            ),
-                          }}
-                          options={elements.map((n) => ({
-                            id: n,
-                            value: n,
-                            label: n,
-                          }))}
-                          renderOption={(optionProps, option) => (
-                            <li {...optionProps}>
-                              <div className={classes.icon}>
-                                <ItemIcon type="attribute" />
-                              </div>
-                              <div className={classes.text}>{option.label}</div>
-                            </li>
-                          )}
-                          classes={{
-                            clearIndicator: classes.autoCompleteIndicator,
-                          }}
-                        />
+                        <Security
+                          needs={[SETTINGS_SETLABELS]}
+                          placeholder={
+                            <Field
+                              component={AutocompleteField}
+                              onChange={this.handleSubmitField.bind(this)}
+                              style={{ marginTop: 20 }}
+                              name="report_types"
+                              multiple={true}
+                              createLabel={t('Add')}
+                              textfieldprops={{
+                                variant: 'standard',
+                                label: t('Report types'),
+                                helperText: (
+                                  <SubscriptionFocus
+                                    context={context}
+                                    fieldName="report_types"
+                                  />
+                                ),
+                              }}
+                              options={elements.map((n) => ({
+                                id: n,
+                                value: n,
+                                label: n,
+                              }))}
+                              renderOption={(optionProps, option) => (
+                                <li {...optionProps}>
+                                  <div className={classes.icon}>
+                                    <ItemIcon type="attribute" />
+                                  </div>
+                                  <div className={classes.text}>
+                                    {option.label}
+                                  </div>
+                                </li>
+                              )}
+                              classes={{
+                                clearIndicator: classes.autoCompleteIndicator,
+                              }}
+                            />
+                          }
+                        >
+                          <Field
+                            component={AutocompleteFreeSoloField}
+                            onChange={this.handleSubmitField.bind(this)}
+                            style={{ marginTop: 20 }}
+                            name="report_types"
+                            multiple={true}
+                            createLabel={t('Add')}
+                            textfieldprops={{
+                              variant: 'standard',
+                              label: t('Report types'),
+                              helperText: (
+                                <SubscriptionFocus
+                                  context={context}
+                                  fieldName="report_types"
+                                />
+                              ),
+                            }}
+                            options={elements.map((n) => ({
+                              id: n,
+                              value: n,
+                              label: n,
+                            }))}
+                            renderOption={(optionProps, option) => (
+                              <li {...optionProps}>
+                                <div className={classes.icon}>
+                                  <ItemIcon type="attribute" />
+                                </div>
+                                <div className={classes.text}>
+                                  {option.label}
+                                </div>
+                              </li>
+                            )}
+                            classes={{
+                              clearIndicator: classes.autoCompleteIndicator,
+                            }}
+                          />
+                        </Security>
                         <ConfidenceField
                           name="confidence"
                           onFocus={this.handleChangeFocus.bind(this)}

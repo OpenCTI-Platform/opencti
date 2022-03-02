@@ -26,7 +26,9 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
 import ItemIcon from '../../../../components/ItemIcon';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
+import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -259,35 +261,71 @@ class ReportCreation extends Component {
                                 style: { marginTop: 20 },
                               }}
                             />
-                            <Field
-                              component={AutocompleteFreeSoloField}
-                              style={{ marginTop: 20 }}
-                              name="report_types"
-                              multiple={true}
-                              createLabel={t('Add')}
-                              textfieldprops={{
-                                variant: 'standard',
-                                label: t('Report types'),
-                              }}
-                              options={elements.map((n) => ({
-                                id: n,
-                                value: n,
-                                label: n,
-                              }))}
-                              renderOption={(optionProps, option) => (
-                                <li {...optionProps}>
-                                  <div className={classes.icon}>
-                                    <ItemIcon type="attribute" />
-                                  </div>
-                                  <div className={classes.text}>
-                                    {option.label}
-                                  </div>
-                                </li>
-                              )}
-                              classes={{
-                                clearIndicator: classes.autoCompleteIndicator,
-                              }}
-                            />
+                            <Security
+                              needs={[SETTINGS_SETLABELS]}
+                              placeholder={
+                                <Field
+                                  component={AutocompleteFreeSoloField}
+                                  style={{ marginTop: 20 }}
+                                  name="report_types"
+                                  multiple={true}
+                                  createLabel={t('Add')}
+                                  textfieldprops={{
+                                    variant: 'standard',
+                                    label: t('Report types'),
+                                  }}
+                                  options={elements.map((n) => ({
+                                    id: n,
+                                    value: n,
+                                    label: n,
+                                  }))}
+                                  renderOption={(optionProps, option) => (
+                                    <li {...optionProps}>
+                                      <div className={classes.icon}>
+                                        <ItemIcon type="attribute" />
+                                      </div>
+                                      <div className={classes.text}>
+                                        {option.label}
+                                      </div>
+                                    </li>
+                                  )}
+                                  classes={{
+                                    clearIndicator:
+                                      classes.autoCompleteIndicator,
+                                  }}
+                                />
+                              }
+                            >
+                              <Field
+                                component={AutocompleteFreeSoloField}
+                                style={{ marginTop: 20 }}
+                                name="report_types"
+                                multiple={true}
+                                createLabel={t('Add')}
+                                textfieldprops={{
+                                  variant: 'standard',
+                                  label: t('Report types'),
+                                }}
+                                options={elements.map((n) => ({
+                                  id: n,
+                                  value: n,
+                                  label: n,
+                                }))}
+                                renderOption={(optionProps, option) => (
+                                  <li {...optionProps}>
+                                    <div className={classes.icon}>
+                                      <ItemIcon type="attribute" />
+                                    </div>
+                                    <div className={classes.text}>
+                                      {option.label}
+                                    </div>
+                                  </li>
+                                )}
+                                classes={{
+                                  clearIndicator: classes.autoCompleteIndicator,
+                                }}
+                              />
+                            </Security>
                             <ConfidenceField
                               name="confidence"
                               label={t('Confidence')}
