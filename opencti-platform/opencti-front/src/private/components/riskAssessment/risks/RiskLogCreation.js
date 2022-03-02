@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
@@ -6,6 +8,7 @@ import {
   compose,
   dissoc,
   assoc,
+  evolve,
   pipe,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
@@ -96,23 +99,19 @@ const styles = (theme) => ({
   },
 });
 
-// const RiskLogCreationMutation = graphql`
-//   mutation RiskLogCreationMutation(
-//     $id: id
-//     $input: ExternalReferenceAddInput!
-//   ) {
-//     externalReferenceAdd(id:$id, input: $input) {
-//       entry_type
-//       name
-//       description
-//       event_start
-//       event_end
-//       logged_by
-//       status_change
-//       related_response
-//     }
-//   }
-// `;
+const RiskLogCreationMutation = graphql`
+  mutation RiskLogCreationMutation(
+    $input: RiskLogEntryAddInput
+  ) {
+    createRiskLogEntry(input: $input) {
+      id
+      standard_id
+      entity_type
+      parent_types
+      entry_type
+    }
+  }
+`;
 
 const RiskLogValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
@@ -126,9 +125,6 @@ class RiskLogCreation extends Component {
     super(props);
     this.state = {
       open: false,
-      related_responses: [{
-        related_response: '',
-      }],
     };
   }
 
@@ -141,39 +137,39 @@ class RiskLogCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('riskLogData', values);
-    this.setState({
-      related_responses: [{
-        related_response: values.related_response,
-      }],
+    const adaptedValues = evolve(
+      {
+        event_end: () => values.event_end === null ? null : parse(values.event_end).format(),
+        event_start: () => values.event_end === null ? null : parse(values.event_end).format(),
+      },
+      values,
+    );
+    // const finalValues = pipe(
+    //   dissoc('related_response'),
+    //   assoc('related_responses', this.state.related_responses),
+    // )(values);
+    CM(environmentDarkLight, {
+      mutation: RiskLogCreationMutation,
+      variables: {
+        input: adaptedValues,
+      },
+      // updater: (store) => insertNode(
+      //   store,
+      //   'Pagination_externalReferences',
+      //   this.props.paginationOptions,
+      //   'externalReferenceAdd',
+      // ),
+      setSubmitting,
+      onCompleted: (response) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        if (this.props.onCreate) {
+          this.props.onCreate(response.externalReferenceAdd, true);
+        }
+      },
+      onError: (err) => console.log('riskLogCreationValueError', err),
     });
-    const finalValues = pipe(
-      dissoc('related_response'),
-      assoc('related_responses', this.state.related_responses),
-    )(values);
-    // CM(environmentDarkLight, {
-    //   mutation: RiskLogCreationMutation,
-    //   variables: {
-    //      id:
-    //     input: values,
-    //   },
-    //   // updater: (store) => insertNode(
-    //   //   store,
-    //   //   'Pagination_externalReferences',
-    //   //   this.props.paginationOptions,
-    //   //   'externalReferenceAdd',
-    //   // ),
-    //   setSubmitting,
-    //   onCompleted: (response) => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //     if (this.props.onCreate) {
-    //       this.props.onCreate(response.externalReferenceAdd, true);
-    //     }
-    //   },
-    //   onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
-    // });
     // commitMutation({
     //   mutation: RiskLogCreationMutation,
     //   variables: {
@@ -338,14 +334,14 @@ class RiskLogCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              entry_type: '',
+              entry_type: [],
               name: '',
               description: '',
               event_start: '',
               event_end: '',
-              logged_by: '',
+              logged_by: [],
               status_change: '',
-              related_response: [],
+              related_responses: [],
             }}
             // validationSchema={RiskLogValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -376,18 +372,25 @@ class RiskLogCreation extends Component {
                           component={SelectField}
                           name="entry_type"
                           fullWidth={true}
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
+                          <MenuItem value='remediated'>
+                            remediated
                           </MenuItem>
-                          <MenuItem value='test'>
-                            test
+                          <MenuItem value='mitigation'>
+                            mitigation
                           </MenuItem>
-                          <MenuItem value='data'>
-                            data
+                          <MenuItem value='closed'>
+                            closed
+                          </MenuItem>
+                          <MenuItem value='vendor_check_in'>
+                            vendor_check_in
+                          </MenuItem>
+                          <MenuItem value='status_update'>
+                            status_update
                           </MenuItem>
                         </Field>
                       </div>
@@ -524,13 +527,21 @@ class RiskLogCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
-                          name="related_response"
+                          component={SelectField}
+                          name="related_responses"
                           fullWidth={true}
+                          size="small"
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                           <MenuItem value='Hello'>
+                            Hello
+                          </MenuItem>
+                          <MenuItem value='Name'>
+                            Name
+                          </MenuItem>
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -586,14 +597,20 @@ class RiskLogCreation extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
+                          <MenuItem value='open'>
+                            open
                           </MenuItem>
-                          <MenuItem value='test'>
-                            test
+                          <MenuItem value='investigating'>
+                            investigating
                           </MenuItem>
-                          <MenuItem value='data'>
-                            data
+                          <MenuItem value='closed'>
+                            closed
+                          </MenuItem>
+                          <MenuItem value='deviation_requested'>
+                            deviation_requested
+                          </MenuItem>
+                          <MenuItem value='deviation_approved'>
+                            deviation_approved
                           </MenuItem>
                         </Field>
                       </div>

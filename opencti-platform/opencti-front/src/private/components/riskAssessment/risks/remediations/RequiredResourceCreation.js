@@ -117,15 +117,12 @@ const styles = (theme) => ({
 
 const RequiredResourceCreationMutation = graphql`
   mutation RequiredResourceCreationMutation(
-    $input: ExternalReferenceAddInput!
+    $input: RequiredAssetAddInput
   ) {
-    externalReferenceAdd(input: $input) {
+    createRequiredAsset(input: $input) {
       id
-      source_name
+      name
       description
-      url
-      external_id
-      created
     }
   }
 `;
@@ -145,7 +142,8 @@ class RequiredResourceCreation extends Component {
       close: false,
       subjects: [{
         subject_type: '',
-        subject: '',
+        subject_ref: '',
+        name: '',
       }],
     };
   }
@@ -170,40 +168,41 @@ class RequiredResourceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('RequiredResourceCreation', values);
     this.setState({
       subjects: [{
         subject_type: values.resource_type,
-        subject: values.resource,
+        subject_ref: values.resource,
+        name: values.name,
       }],
     });
     const finalValues = pipe(
+      assoc('name', values.name),
       dissoc('resource_type'),
       dissoc('resource'),
       assoc('subjects', this.state.subjects),
     )(values);
-    // CM(environmentDarkLight, {
-    //   mutation: RequiredResourceCreationMutation,
-    //   variables: {
-    //     input: values,
-    //   },
-    //   // updater: (store) => insertNode(
-    //   //   store,
-    //   //   'Pagination_externalReferences',
-    //   //   this.props.paginationOptions,
-    //   //   'externalReferenceAdd',
-    //   // ),
-    //   setSubmitting,
-    //   onCompleted: (response) => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //     if (this.props.onCreate) {
-    //       this.props.onCreate(response.externalReferenceAdd, true);
-    //     }
-    //   },
-    //   onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
-    // });
+    CM(environmentDarkLight, {
+      mutation: RequiredResourceCreationMutation,
+      variables: {
+        input: finalValues,
+      },
+      // updater: (store) => insertNode(
+      //   store,
+      //   'Pagination_externalReferences',
+      //   this.props.paginationOptions,
+      //   'externalReferenceAdd',
+      // ),
+      setSubmitting,
+      onCompleted: (response) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        if (this.props.onCreate) {
+          this.props.onCreate(response.externalReferenceAdd, true);
+        }
+      },
+      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+    });
     // commitMutation({
     //   mutation: RequiredResourceCreationMutation,
     //   variables: {
@@ -361,9 +360,9 @@ class RequiredResourceCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               name: 'Hello World',
-              resource: [],
+              resource: '',
               description: '',
-              resource_type: [],
+              resource_type: '',
             }}
             // validationSchema={RequiredResourceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -418,18 +417,25 @@ class RequiredResourceCreation extends Component {
                           component={SelectField}
                           name="resource_type"
                           fullWidth={true}
+                          // multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
+                          <MenuItem value='party'>
+                            Party
                           </MenuItem>
-                          <MenuItem value='test'>
-                            test
+                          <MenuItem value='user'>
+                            User
                           </MenuItem>
-                          <MenuItem value='data'>
-                            data
+                          <MenuItem value='resource'>
+                            Resource
+                          </MenuItem>
+                          <MenuItem value='location'>
+                            Location
+                          </MenuItem>
+                          <MenuItem value='component'>
+                            Component
                           </MenuItem>
                         </Field>
                       </div>
@@ -455,6 +461,7 @@ class RequiredResourceCreation extends Component {
                           component={TextField}
                           name="id"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
@@ -483,14 +490,11 @@ class RequiredResourceCreation extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
+                          <MenuItem value='Adobe Acrobat 7.1.05'>
+                            Adobe Acrobat 7.1.05
                           </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
+                          <MenuItem value='Adobe Acrobat 2.0.3'>
+                            Adobe Acrobat 2.0.3
                           </MenuItem>
                         </Field>
                       </div>
