@@ -82,6 +82,7 @@ const labelMutation = graphql`
 export const labelContextualMutation = graphql`
   mutation LabelCreationContextualMutation($input: CyioLabelAddInput!) {
     createCyioLabel(input: $input) {
+      __typename
       id
       name
       color
