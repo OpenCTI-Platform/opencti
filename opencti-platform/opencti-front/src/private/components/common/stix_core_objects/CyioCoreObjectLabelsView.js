@@ -359,6 +359,7 @@ const CyioCoreObjectLabelsView = (props) => {
                     {
                       label: data.createCyioLabel.name,
                       value: data.createCyioLabel.id,
+                      typename: data.createCyioLabel.__typename,
                     },
                     values.new_labels,
                   ),
