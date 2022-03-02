@@ -11,13 +11,13 @@ import { Add, Close } from '@material-ui/icons';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation as CM } from 'react-relay';
+// import { commitMutation as CM } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
+// import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
@@ -157,7 +157,6 @@ class LabelCreation extends Component {
       },
       setSubmitting,
       onCompleted: (response) => {
-        console.log('labelCreationResponse', response);
         setSubmitting(false);
         resetForm();
         if (this.props.contextual) {

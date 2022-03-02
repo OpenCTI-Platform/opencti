@@ -5,9 +5,9 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
-import CyioCoreObjectHistoryLines, {
-  cyioCoreObjectHistoryLinesQuery,
-} from './CyioCoreObjectHistoryLines';
+// import CyioCoreObjectHistoryLines, {
+//   cyioCoreObjectHistoryLinesQuery,
+// } from './CyioCoreObjectHistoryLines';
 // import { QueryRenderer } from '../../../../relay/environment';
 
 class CyioCoreObjectLatestHistory extends Component {
@@ -33,21 +33,7 @@ class CyioCoreObjectLatestHistory extends Component {
             orderBy: 'timestamp',
             orderMode: 'desc',
           }}
-          render={({ props }) => {
-            if (false) {
-              return (
-                <CyioCoreObjectHistoryLines
-                  cyioCoreObjectId={cyioCoreObjectId}
-                  data={props}
-                  isRelationLog={false}
-                />
-              );
-            }
-            return (
-              <Paper style={{ height: '100%', margin: '10px 0 0 0' }} elevation={2}>
-              </Paper>
-            );
-          }}
+          render={() => <Paper style={{ height: '100%', margin: '10px 0 0 0' }} elevation={2} /> }
         />
       </div>
     );
