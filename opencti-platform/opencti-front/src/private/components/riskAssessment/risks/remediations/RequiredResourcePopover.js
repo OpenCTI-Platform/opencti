@@ -209,17 +209,17 @@ class RequiredResourcePopover extends Component {
       data,
     } = this.props;
     const requiredResourceNode = R.pipe(
-      R.pathOr([], ['node', 'subjects']),
+      R.pathOr([], ['subjects']),
       R.map((value) => ({
-        name: value.subject.name,
-        description: value.subject.description,
-        resource_type: value.subject.party_type,
-        resource: value.subject.asset_type,
+        name: value.subject_ref.name,
+        description: value.subject_ref.description,
+        resource_type: value.subject_ref.party_type,
+        resource: value.subject_ref.asset_type,
       })),
       R.mergeAll,
     )(data);
     const initialValues = R.pipe(
-      R.assoc('id', data.node.id || ''),
+      R.assoc('id', data.id || ''),
       R.assoc('name', requiredResourceNode?.name || ''),
       R.assoc('description', requiredResourceNode?.description || ''),
       R.assoc('resource_type', requiredResourceNode.resource_type || ''),

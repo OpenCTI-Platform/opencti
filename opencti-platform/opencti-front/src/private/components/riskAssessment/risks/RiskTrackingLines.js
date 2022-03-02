@@ -281,27 +281,25 @@ RiskTrackingLinesContainer.propTypes = {
 };
 
 export const RiskTrackingLinesQuery = graphql`
-  query RiskTrackingLinesQuery($count: Int!, $id: ID!) {
+  query RiskTrackingLinesQuery($id: ID!) {
     ...RiskTrackingLines_data
-      @arguments(count: $count, id: $id)
+      @arguments(id: $id)
   }
 `;
 
-const RiskTrackingLines = createPaginationContainer(
+const RiskTrackingLines = createFragmentContainer(
   RiskTrackingLinesContainer,
   {
     data: graphql`
       fragment RiskTrackingLines_data on Query
       @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
       ) {
         risk(id: $id) {
           id
           created
           modified
-          risk_log(first: 5) 
-          @connection(key: "Pagination_risk_log") {
+          risk_log {
             edges {
               node {
                 id
@@ -312,25 +310,6 @@ const RiskTrackingLines = createPaginationContainer(
         }
       }
     `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.risk.risk_log;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count }, fragmentVariables) {
-      return {
-        count,
-        id: fragmentVariables.id,
-      };
-    },
-    query: RiskTrackingLinesQuery,
   },
 );
 

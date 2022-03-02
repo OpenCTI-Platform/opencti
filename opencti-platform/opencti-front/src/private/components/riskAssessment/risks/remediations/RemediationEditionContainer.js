@@ -81,16 +81,16 @@ const styles = (theme) => ({
   },
 });
 
-const remediationEditionMutation = graphql`
-  mutation RemediationEditionContainerMutation(
-    $id: ID!,
-    $input: [EditInput]!
-  ) {
-    editRemediation(id: $id, input: $input) {
-      id
-    }
-  }
-`;
+// const remediationEditionMutation = graphql`
+//   mutation RemediationEditionContainerMutation(
+//     $id: ID!,
+//     $input: [EditInput]!
+//   ) {
+//     editRemediation(id: $id, input: $input) {
+//       id
+//     }
+//   }
+// `;
 
 const riskValidation = (t) => Yup.object().shape({
   // name: Yup.string().required(t('This field is required')),
@@ -156,7 +156,7 @@ class RemediationEditionContainer extends Component {
     console.log('RemediationEntitiesEdition', finalValues);
     // const pair = Object.keys(values).map((key) => [{ key, value: values[key] }]);
     CM(environmentDarkLight, {
-      mutation: remediationEditionMutation,
+      // mutation: remediationEditionMutation,
       variables: {
         id: this.props.risk?.id,
         input: finalValues,
@@ -454,7 +454,7 @@ const RemediationEditionFragment = createFragmentContainer(
           origin_actors {
             actor_type
             actor {
-              ... on OscalPerson {
+              ... on OscalParty {
                 id
                 name      # source
               }

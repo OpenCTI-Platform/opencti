@@ -50,7 +50,7 @@ class RelatedTasks extends Component {
       <QR
         environment={QueryRendererDarkLight}
         query={RelatedTasksLinesQuery}
-        variables={{ id: remediationId, count: 200 }}
+        variables={{ id: remediationId }}
         render={({ props }) => {
           if (props) {
             return (

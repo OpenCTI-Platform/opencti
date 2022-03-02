@@ -179,11 +179,11 @@ class RelatedTaskLine extends Component {
     } = this.props;
     const { expanded } = this.state;
     const taskDependency = pipe(
-      pathOr([], ['node', 'task_dependencies', 'edges']),
+      pathOr([], ['task_dependencies']),
       mergeAll,
     )(data);
     const responsibleRoles = pipe(
-      pathOr([], ['node', 'responsible_roles']),
+      pathOr([], ['responsible_roles']),
       mergeAll,
       path(['role']),
     )(data);
@@ -208,7 +208,7 @@ class RelatedTaskLine extends Component {
                 <Grid container={true} style={{ marginLeft: '10px' }}>
                   <Grid item={true} xs={12}>
                     <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
-                      {data.node.name && t(data.node.name)}
+                      {data.name && t(data.name)}
                     </Typography>
                   </Grid>
                   <Grid style={{ display: 'flex' }} item={true} xs={6}>
@@ -216,7 +216,7 @@ class RelatedTaskLine extends Component {
                       {t('Start Date: ')}
                     </Typography>
                     <Typography align="left" color="textSecondary" variant="h3">
-                      {data.node.timing?.start_date || data.node.timing?.on_date}
+                      {data.timing?.start_date || data.timing?.on_date}
                     </Typography>
                   </Grid>
                   <Grid style={{ display: 'flex' }} item={true} xs={6}>
@@ -224,7 +224,7 @@ class RelatedTaskLine extends Component {
                       {t('End Date: ')}
                     </Typography>
                     <Typography align="left" color="textSecondary" variant="h3">
-                      {data.node.timing?.end_date && t(data.node.timing?.end_date)}
+                      {data.timing?.end_date && t(data.timing?.end_date)}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -245,7 +245,7 @@ class RelatedTaskLine extends Component {
                     <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {/* {t('Lorem Ipsum')} */}
-                      {data.node.name && t(data.node.name)}
+                      {data.name && t(data.name)}
                     </Typography>
                   </div>
                 </Grid>
@@ -261,7 +261,7 @@ class RelatedTaskLine extends Component {
                     <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {/* {t('Lorem Ipsum')} */}
-                      {data.node.id && t(data.node.id)}
+                      {data.id && t(data.id)}
                     </Typography>
                   </div>
                 </Grid>
@@ -275,7 +275,7 @@ class RelatedTaskLine extends Component {
                     <div className={classes.cardContent}>
                       <FlagIcon fontSize='large' color="disabled" />
                       <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
-                        {data.node.task_type && t(data.node.task_type)}
+                        {data.task_type && t(data.task_type)}
                       </Typography>
                     </div>
                   </div>
@@ -285,7 +285,7 @@ class RelatedTaskLine extends Component {
                     <Typography align="left" color="textSecondary" variant="h3">{t('Start Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {/* {t('21 June 2021')} */}
-                      {data.node.timing?.start_date || data.node.timing?.on_date}
+                      {data.timing?.start_date || data.timing?.on_date}
                     </Typography>
                   </div>
                 </Grid>
@@ -303,7 +303,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Dependency')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {taskDependency.node?.name || t(taskDependency.node?.name)}
+                      {taskDependency?.name || t(taskDependency?.name)}
                     </Typography>
                   </div>
                 </Grid>
@@ -315,7 +315,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('End Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {data.node.timing?.end_date && t(data.node.timing?.end_date)}
+                      {data.timing?.end_date && t(data.timing?.end_date)}
                     </Typography>
                   </div>
                 </Grid>
@@ -362,7 +362,7 @@ class RelatedTaskLine extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {data.node.description && t(data.node.description)}
+                      {data.description && t(data.description)}
                     </div>
                   </div>
                 </div>

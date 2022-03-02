@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, createFragmentContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -197,8 +197,7 @@ class RequiredResourcesLinesContainer extends Component {
     } = this.props;
     const { expanded } = this.state;
     const requiredResourceData = data.riskResponse;
-    const requiredResourcesEdges = R.pathOr([], ['required_assets', 'edges'], requiredResourceData);
-    // console.log('requiredResourcesLines', requiredAssetsEdges);
+    const requiredResourcesEdges = R.pathOr([], ['required_assets'], requiredResourceData);
     // const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>
@@ -228,7 +227,7 @@ class RequiredResourcesLinesContainer extends Component {
             <RequiredResourceLine
               remediationId={remediationId}
               requiredResourceData={requiredResourceData}
-              key={requiredResource.node.id}
+              key={requiredResource.id}
               data={requiredResource}
             />
           ))}
@@ -304,19 +303,18 @@ RequiredResourcesLinesContainer.propTypes = {
 };
 
 export const requiredResourcesLinesQuery = graphql`
-  query RequiredResourcesLinesQuery($count: Int!, $id: ID!) {
+  query RequiredResourcesLinesQuery($id: ID!) {
     ...RequiredResourcesLines_data
-      @arguments(count: $count, id: $id)
+      @arguments(id: $id)
   }
 `;
 
-const RequiredResourcesLines = createPaginationContainer(
+const RequiredResourcesLines = createFragmentContainer(
   RequiredResourcesLinesContainer,
   {
     data: graphql`
       fragment RequiredResourcesLines_data on Query
       @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
       ) {
         riskResponse(id: $id) {
@@ -345,29 +343,24 @@ const RequiredResourcesLines = createPaginationContainer(
               description
             }
           }
-          required_assets(first: $count)
-            @connection(key: "Pagination_required_assets") {
-            edges {
-              node {
+          required_assets {
+            id
+            subjects {
+              subject_ref {
+                ... on InventoryItem {
+                  id
+                  asset_type
+                  name   # Required Resource
+                }
+                ... on Component{
+                  id
+                  component_type
+                  name    # Required Resource
+                }
+                ... on OscalParty {
                 id
-                subjects {
-                  subject {
-                    ... on InventoryItem {
-                      id
-                      asset_type
-                      name   # Required Resource
-                    }
-                    ... on Component{
-                      id
-                      component_type
-                      name    # Required Resource
-                    }
-                    ... on OscalParty {
-                    id
-                    party_type
-                    name      # Required Resource
-                    }
-                  }
+                party_type
+                name      # Required Resource
                 }
               }
             }
@@ -375,25 +368,6 @@ const RequiredResourcesLines = createPaginationContainer(
         }
       }
     `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.riskResponse.required_assets;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count }, fragmentVariables) {
-      return {
-        count,
-        id: fragmentVariables.id,
-      };
-    },
-    query: requiredResourcesLinesQuery,
   },
 );
 

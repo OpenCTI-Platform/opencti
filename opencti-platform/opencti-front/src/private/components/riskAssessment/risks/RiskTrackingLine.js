@@ -476,7 +476,7 @@ const RiskTrackingLineFragment = createFragmentContainer(
   RiskTrackingLineContainer,
   {
     node: graphql`
-    fragment RiskTrackingLine_node on LogEntry{
+    fragment RiskTrackingLine_node on RiskLogEntry{
       id
       created
       modified
@@ -487,14 +487,14 @@ const RiskTrackingLineFragment = createFragmentContainer(
       event_end         # End Date
       status_change     # Status Change
       logged_by {
-        ... on OscalPerson {
+        ... on OscalParty {
           id
           name
         }
-        ... on OscalOrganization {
-          id
-          name
-        }
+        # ... on OscalOrganization {
+        #   id
+        #   name
+        # }
       }
       related_responses {
         id

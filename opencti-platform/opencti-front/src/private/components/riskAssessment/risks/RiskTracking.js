@@ -78,7 +78,7 @@ class RiskTracking extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={RiskTrackingLinesQuery}
-          variables={{ id: riskId, count: 200 }}
+          variables={{ id: riskId }}
           render={({ props }) => {
             console.log('RiskTrackingProps', props);
             if (props) {

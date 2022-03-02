@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, createFragmentContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -226,7 +226,7 @@ class RelatedTasksLinesContainer extends Component {
     // const externalReferencesEdges = data.riskResponse.external_references.edges;
     // const expandable = externalReferencesEdges.length > 7;
     console.log('RelatedTasksData', data);
-    const relatedTasksEdges = R.pathOr([], ['tasks', 'edges'], data.riskResponse);
+    const relatedTasksEdges = R.pathOr([], ['tasks'], data.riskResponse);
     console.log('relatedTasksEdges', relatedTasksEdges);
     return (
       <div style={{ height: '100%' }}>
@@ -334,19 +334,18 @@ RelatedTasksLinesContainer.propTypes = {
 };
 
 export const RelatedTasksLinesQuery = graphql`
-  query RelatedTasksLinesQuery($count: Int!, $id: ID!) {
+  query RelatedTasksLinesQuery($id: ID!) {
     ...RelatedTasksLines_data
-      @arguments(count: $count, id: $id)
+      @arguments(id: $id)
   }
 `;
 
-const RelatedTasksLines = createPaginationContainer(
+const RelatedTasksLines = createFragmentContainer(
   RelatedTasksLinesContainer,
   {
     data: graphql`
       fragment RelatedTasksLines_data on Query
       @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
         id: { type: "ID!" }
       ) {
         riskResponse(id: $id) {
@@ -373,82 +372,54 @@ const RelatedTasksLines = createPaginationContainer(
               description
             }
           }
-          tasks(first: $count)
-            @connection(key: "Pagination_related_tasks") {
-            edges {
-              node {
+          tasks {
+            id
+            created
+            modified
+            labels {
+              id
+              name
+              color
+              description
+            }
+            task_type
+            name
+            description
+            timing {
+              ... on DateRangeTiming {
+                start_date          # Start Date
+                end_date            # End Date
+              }
+              ... on OnDateTiming {
+                on_date             # Start Date
+              }
+            }
+            task_dependencies {
+              id
+              name
+            }
+            responsible_roles {
+              id
+              # created
+              # modified
+              labels {
+                id
+                name
+                color
+                description
+              }
+              role {
                 id
                 created
                 modified
-                labels {
-                  id
-                  name
-                  color
-                  description
-                }
-                task_type
+                role_identifier
                 name
-                description
-                timing {
-                  ... on DateRangeTiming {
-                    start_date          # Start Date
-                    end_date            # End Date
-                  }
-                  ... on OnDateTiming {
-                    on_date             # Start Date
-                  }
-                }
-                task_dependencies(first: 5) {
-                  edges {
-                    node {
-                      id
-                      name
-                    }
-                  }
-                }
-                responsible_roles {
-                  id
-                  created
-                  modified
-                  labels {
-                    id
-                    name
-                    color
-                    description
-                  }
-                  role {
-                    id
-                    created
-                    modified
-                    role_identifier
-                    name
-                  }
-                }
               }
             }
           }
         }
       }
     `,
-  },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.riskResponse.tasks;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count }, fragmentVariables) {
-      return {
-        count,
-        id: fragmentVariables.id,
-      };
-    },
-    query: RelatedTasksLinesQuery,
   },
 );
 

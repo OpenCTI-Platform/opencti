@@ -276,17 +276,17 @@ class Risks extends Component {
         width: '15%',
         isSortable: false,
       },
-      risk: {
+      risk_level: {
         label: 'Risk',
         width: '7%',
         isSortable: true,
       },
-      status: {
+      risk_status: {
         label: 'Status',
         width: '17%',
         isSortable: true,
       },
-      response: {
+      risk_response: {
         label: 'Response',
         width: '11%',
         isSortable: true,
