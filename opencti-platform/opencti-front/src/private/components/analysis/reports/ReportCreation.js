@@ -265,7 +265,7 @@ class ReportCreation extends Component {
                               needs={[SETTINGS_SETLABELS]}
                               placeholder={
                                 <Field
-                                  component={AutocompleteFreeSoloField}
+                                  component={AutocompleteField}
                                   style={{ marginTop: 20 }}
                                   name="report_types"
                                   multiple={true}
