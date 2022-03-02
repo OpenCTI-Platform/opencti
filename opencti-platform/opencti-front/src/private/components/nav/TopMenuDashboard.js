@@ -10,7 +10,7 @@ import DashboardSettings from '../DashboardSettings';
 const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(1),
-    padding: '0 5px 1px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     textTransform: 'none',
   },

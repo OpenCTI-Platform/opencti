@@ -526,7 +526,7 @@ const LastIngestedAnalysis = () => {
     types: ['Report', 'Note', 'Opinion'],
   });
   const objects = data.stixDomainObjects;
-  if (objects.length === 0) {
+  if (objects.edges.length === 0) {
     return <NoTableElement />;
   }
   return (

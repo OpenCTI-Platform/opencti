@@ -15,7 +15,7 @@ import Security, {
 const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(2),
-    padding: '0 5px 1px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
