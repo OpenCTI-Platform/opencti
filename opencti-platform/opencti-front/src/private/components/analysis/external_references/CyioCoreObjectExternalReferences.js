@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, take } from 'ramda';
+import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 // import { QueryRenderer as QR } from 'react-relay';
 // import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
