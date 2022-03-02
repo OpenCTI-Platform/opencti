@@ -185,7 +185,6 @@ class RulesListComponent extends Component {
           <Paper
             variant="outlined"
             classes={{ root: classes.paper }}
-            variant="outlined"
           >
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={8}>

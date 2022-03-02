@@ -16,8 +16,8 @@ class AuthBoundaryComponent extends React.Component {
 
   render() {
     if (this.state.error) {
-      const baseErrors = this.state.error?.res?.errors ?? [];
-      const retroErrors = this.state.error?.data?.res?.errors ?? [];
+      const baseErrors = this.state.error.res?.errors ?? [];
+      const retroErrors = this.state.error.data?.res?.errors ?? [];
       const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
       // If access is forbidden, just redirect to home page
       if (includes('ForbiddenAccess', types)) window.location.href = '/';

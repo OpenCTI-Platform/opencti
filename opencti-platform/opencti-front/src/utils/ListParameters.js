@@ -12,7 +12,7 @@ import {
 import { useHistory, useLocation } from 'react-router-dom';
 import { APP_BASE_PATH } from '../relay/environment';
 
-const buildParamsFromHistory = (history, location, params) => {
+const buildParamsFromHistory = (params) => {
   let urlParams = pipe(
     dissoc('graphData'),
     dissoc('openTimeField'),
@@ -81,7 +81,7 @@ export const saveViewParameters = (
   // Save the params in local storage
   saveParamsToLocalStorage(localStorageKey, params);
   // Apply params in history
-  const searchParams = buildParamsFromHistory(history, location, params);
+  const searchParams = buildParamsFromHistory(params);
   const newUrl = `${APP_BASE_PATH}${location.pathname}?${searchParams}`;
   if (refresh) {
     history.replace(newUrl);

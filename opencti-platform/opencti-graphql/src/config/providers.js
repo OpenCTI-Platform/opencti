@@ -281,10 +281,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const groupsToAssociate = isGroupMapping ? computeGroupsMapping() : [];
           // endregion
           if (!isRoleBaseAccess || rolesToAssociate.length > 0) {
-            const nameAttribute = mappedConfig?.name_attribute ?? 'name';
-            const emailAttribute = mappedConfig?.email_attribute ?? 'email';
-            const firstnameAttribute = mappedConfig?.firstname_attribute ?? 'given_name';
-            const lastnameAttribute = mappedConfig?.lastname_attribute ?? 'family_name';
+            const nameAttribute = mappedConfig.name_attribute ?? 'name';
+            const emailAttribute = mappedConfig.email_attribute ?? 'email';
+            const firstnameAttribute = mappedConfig.firstname_attribute ?? 'given_name';
+            const lastnameAttribute = mappedConfig.lastname_attribute ?? 'family_name';
             const name = userinfo[nameAttribute];
             const email = userinfo[emailAttribute];
             const firstname = userinfo[firstnameAttribute];
