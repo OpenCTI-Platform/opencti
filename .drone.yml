@@ -92,12 +92,12 @@ services:
   - name: redis
     image: redis:6.2.6
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.1
     environment:
       discovery.type: single-node
       ES_JAVA_OPTS: -Xms2g -Xmx2g
   - name: minio
-    image: minio/minio:RELEASE.2022-02-01T18-00-14Z
+    image: minio/minio:RELEASE.2022-02-26T02-54-46Z
     environment:
       MINIO_ROOT_USER: ChangeMe
       MINIO_ROOT_PASSWORD: ChangeMe
