@@ -166,11 +166,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
                     gutterBottom={true}
                     className={ classes.tableText }
                   >
-                    {characterizationFacets.cvss2_name
-                    || characterizationFacets.cvss3_name
-                    || characterizationFacets.risk_name
-                    || characterizationFacets.vuln_name
-                    || characterizationFacets.name}
+                    {characterizationFacets.facet_name}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>
@@ -179,7 +175,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
                     gutterBottom={true}
                     className={ classes.tableText }
                   >
-                    {characterizationFacets?.value && t(characterizationFacets?.value)}
+                    {characterizationFacets?.facet_value && t(characterizationFacets?.facet_value)}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>
@@ -237,28 +233,11 @@ const RiskAnalysisCharacterization = createFragmentContainer(
           }
           facets {
             id
-            risk_state
             source_system
-            ... on CustomFacet {
-              name
-              value
-            }
-            ... on RiskFacet {
-              risk_name: name
-              value
-            }
-            ... on VulnerabilityFacet {
-              vuln_name: name
-              value
-            }
-            ... on Cvss2Facet {
-              cvss2_name: name
-              value
-            }
-            ... on Cvss3Facet {
-              cvss3_name: name
-              value
-            }
+            facet_name
+            facet_value
+            risk_state
+            entity_type
           }
         }
         links {

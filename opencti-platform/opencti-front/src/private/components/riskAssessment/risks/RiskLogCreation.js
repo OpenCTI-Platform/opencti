@@ -96,23 +96,23 @@ const styles = (theme) => ({
   },
 });
 
-const RiskLogCreationMutation = graphql`
-  mutation RiskLogCreationMutation(
-    $id: id
-    $input: ExternalReferenceAddInput!
-  ) {
-    externalReferenceAdd(id:$id, input: $input) {
-      entry_type
-      name
-      description
-      event_start
-      event_end
-      logged_by
-      status_change
-      related_response
-    }
-  }
-`;
+// const RiskLogCreationMutation = graphql`
+//   mutation RiskLogCreationMutation(
+//     $id: id
+//     $input: ExternalReferenceAddInput!
+//   ) {
+//     externalReferenceAdd(id:$id, input: $input) {
+//       entry_type
+//       name
+//       description
+//       event_start
+//       event_end
+//       logged_by
+//       status_change
+//       related_response
+//     }
+//   }
+// `;
 
 const RiskLogValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),

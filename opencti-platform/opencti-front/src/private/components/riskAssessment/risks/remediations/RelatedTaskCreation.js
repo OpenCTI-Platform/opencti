@@ -120,22 +120,22 @@ const styles = (theme) => ({
   },
 });
 
-const RelatedTaskCreationMutation = graphql`
-  mutation RelatedTaskCreationMutation(
-    $input: ExternalReferenceAddInput!
-  ) {
-    externalReferenceAdd(input: $input) {
-      task_type
-      name
-      description
-      start_date
-      end_date
-      associated_activities
-      task_dependenices
-      responsible_role
-    }
-  }
-`;
+// const RelatedTaskCreationMutation = graphql`
+//   mutation RelatedTaskCreationMutation(
+//     $input: ExternalReferenceAddInput!
+//   ) {
+//     externalReferenceAdd(input: $input) {
+//       task_type
+//       name
+//       description
+//       start_date
+//       end_date
+//       associated_activities
+//       task_dependenices
+//       responsible_role
+//     }
+//   }
+// `;
 
 const RelatedTaskValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),

@@ -103,13 +103,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const remediationCreationMutation = graphql`
-  mutation RemediationCreationMutation($input: RemediationTaskAddInput) {
-    createRemediationTask (input: $input) {
-      id
-    }
-  }
-`;
+// const remediationCreationMutation = graphql`
+//   mutation RemediationCreationMutation($input: RemediationTaskAddInput) {
+//     createRemediationTask (input: $input) {
+//       id
+//     }
+//   }
+// `;
 
 const remediationValidation = (t) => Yup.object().shape({
   // name: Yup.string().required(t('This field is required')),
@@ -144,41 +144,42 @@ class RemediationCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    // const adaptedValues = R.evolve(
-    //   {
-    //     created: () => parse(values.created).format(),
-    //     modified: () => parse(values.modified).format(),
-    //   },
-    //   values,
-    // );
-    // const finalValues = R.pipe(
-    //   R.assoc('task_type', values.task_type),
-    // )(adaptedValues);
-    // console.log('RemdiationCreationFinal', finalValues);
-    // CM(environmentDarkLight, {
-    //   mutation: remediationCreationMutation,
-    //   // const adaptedValues = evolve(
-    //   //   {
-    //   //     published: () => parse(values.published).format(),
-    //   //     createdBy: path(['value']),
-    //   //     objectMarking: pluck('value'),
-    //   //     objectLabel: pluck('value'),
-    //   //   },
-    //   //   values,
-    //   // );
-    //   variables: {
-    //     input: finalValues,
-    //   },
-    //   setSubmitting,
-    //   onCompleted: (data) => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     console.log('remediationCreationComplete', data);
-    //     this.handleClose();
-    //     this.props.history.push('/dashboard/risk-assessment/risks');
-    //   },
-    //   onError: (err) => console.log('RemediationCreationDarkLightMutationError', err),
-    // });
+    console.log('remediationCreationValues', values);
+    const adaptedValues = R.evolve(
+      {
+        created: () => parse(values.created).format(),
+        modified: () => parse(values.modified).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.assoc('task_type', values.task_type),
+    )(adaptedValues);
+    console.log('RemdiationCreationFinal', finalValues);
+    CM(environmentDarkLight, {
+      // mutation: remediationCreationMutation,
+      // const adaptedValues = evolve(
+      //   {
+      //     published: () => parse(values.published).format(),
+      //     createdBy: path(['value']),
+      //     objectMarking: pluck('value'),
+      //     objectLabel: pluck('value'),
+      //   },
+      //   values,
+      // );
+      variables: {
+        input: finalValues,
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        resetForm();
+        console.log('remediationCreationComplete', data);
+        this.handleClose();
+        this.props.history.push('/dashboard/risk-assessment/risks');
+      },
+      onError: (err) => console.log('RemediationCreationDarkLightMutationError', err),
+    });
     // commitMutation({
     //   mutation: remediationCreationMutation,
     //   variables: {

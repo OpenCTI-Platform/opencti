@@ -139,13 +139,13 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk.width }}
+                style={{ width: dataColumns.risk_level.width }}
               >
                 {/* {riskCharacterization.risk && riskCharacterization.risk} */}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.status.width }}
+                style={{ width: dataColumns.risk_status.width }}
               >
                 <Button
                   variant="outlined"
@@ -158,7 +158,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.response.width }}
+                style={{ width: dataColumns.risk_response.width }}
               >
                 <Button
                   variant="outlined"
@@ -296,7 +296,7 @@ class RiskLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk.width }}
+                style={{ width: dataColumns.risk_level.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -307,7 +307,7 @@ class RiskLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.status.width }}
+                style={{ width: dataColumns.risk_status.width }}
               >
                 <Skeleton
                   animation="wave"
@@ -318,7 +318,7 @@ class RiskLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.response.width }}
+                style={{ width: dataColumns.risk_response.width }}
               >
                 <Skeleton
                   animation="wave"

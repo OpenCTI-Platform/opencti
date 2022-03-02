@@ -529,7 +529,7 @@ const RiskAnalysisEditionCharacterization = createFragmentContainer(
                   origin_actors {
                     actor_type
                     actor {
-                      ... on OscalPerson {
+                      ... on OscalParty {
                         id
                         name      #Detection Source
                       }
@@ -546,7 +546,7 @@ const RiskAnalysisEditionCharacterization = createFragmentContainer(
               id
               name                #Impacted Component
               subjects {
-                subject {
+                subject_ref {
                   ... on HardwareComponent {
                     id
                     name          #Impacted

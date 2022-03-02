@@ -548,7 +548,7 @@ const RiskTrackingLogEdition = createFragmentContainer(
         id
         created
         modified
-        risk_log(first: 5) {
+        risk_log {
           edges {
             node {
               id
@@ -561,14 +561,14 @@ const RiskTrackingLogEdition = createFragmentContainer(
               event_end         # End Date
               status_change     # Status Change
               logged_by {
-                ... on OscalPerson {
+                ... on OscalParty {
                   id
                   name
                 }
-                ... on OscalOrganization {
-                  id
-                  name
-                }
+                # ... on OscalOrganization {
+                #   id
+                #   name
+                # }
               }
               related_responses {
                 id

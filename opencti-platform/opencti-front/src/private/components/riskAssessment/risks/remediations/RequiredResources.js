@@ -48,7 +48,7 @@ class RequiredResources extends Component {
     return (
       <QueryRenderer
         query={requiredResourcesLinesQuery}
-        variables={{ id: remediationId, count: 200 }}
+        variables={{ id: remediationId }}
         render={({ props }) => {
           if (props) {
             return (

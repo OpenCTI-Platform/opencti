@@ -216,24 +216,24 @@ class RelatedTaskPopover extends Component {
       classes, t, externalReferenceId, handleRemove, remediationId, relatedTaskData, data,
     } = this.props;
     const taskDependency = pipe(
-      pathOr([], ['node', 'task_dependencies', 'edges']),
+      pathOr([], ['task_dependencies']),
       mergeAll,
     )(data);
     const responsibleRoles = pipe(
-      pathOr([], ['node', 'responsible_roles']),
+      pathOr([], ['responsible_roles']),
       mergeAll,
       path(['role']),
     )(data);
     const initialValues = R.pipe(
-      R.assoc('id', data?.node.id || ''),
-      R.assoc('name', data?.node.name || ''),
-      R.assoc('description', data?.node.description || ''),
-      R.assoc('task_type', data?.node.task_type || ''),
-      R.assoc('start_date', dateFormat(data.node.timing?.start_date) || dateFormat(data.node.timing?.on_date)),
-      R.assoc('end_date', dateFormat(data?.node.timing?.end_date)),
+      R.assoc('id', data?.id || ''),
+      R.assoc('name', data?.name || ''),
+      R.assoc('description', data?.description || ''),
+      R.assoc('task_type', data?.task_type || ''),
+      R.assoc('start_date', dateFormat(data.timing?.start_date) || dateFormat(data.timing?.on_date)),
+      R.assoc('end_date', dateFormat(data?.timing?.end_date)),
       R.assoc('related_tasks', ''),
       R.assoc('associated_activities', ''),
-      R.assoc('dependencies', taskDependency.node?.name || ''),
+      R.assoc('dependencies', taskDependency?.name || ''),
       R.assoc('responsible_parties', responsibleRoles.role_identifier || ''),
       R.pick([
         'id',

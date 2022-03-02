@@ -79,14 +79,10 @@ const remediationEntitiesQuery = graphql`
           }
         }
         tasks {             # only necessary if Start/End date is supported in UI
-          edges {
-            node {
-              timing {
-                ... on DateRangeTiming {
-                  start_date
-                  end_date
-                }
-              }
+          timing {
+            ... on DateRangeTiming {
+              start_date
+              end_date
             }
           }
         }

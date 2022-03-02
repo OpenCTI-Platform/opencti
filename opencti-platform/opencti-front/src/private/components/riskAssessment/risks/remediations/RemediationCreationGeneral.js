@@ -273,7 +273,7 @@ const RemediationCreationOverview = createFragmentContainer(
           origin_actors {
             actor_type
             actor {
-              ... on OscalPerson {
+              ... on OscalParty {
                 id
                 name      # source
               }

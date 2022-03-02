@@ -176,12 +176,12 @@ class RequiredResourceLineComponent extends Component {
     } = this.props;
     const { expanded } = this.state;
     const requiredResourceNode = pipe(
-      pathOr([], ['node', 'subjects']),
+      pathOr([], ['subjects']),
       map((value) => ({
-        name: value.subject.name,
-        description: value.subject.description,
-        resource_type: value.subject.party_type,
-        resource: value.subject.asset_type,
+        name: value.subject_ref.name,
+        description: value.subject_ref.description,
+        resource_type: value.subject_ref.party_type,
+        resource: value.subject_ref.asset_type,
       })),
       mergeAll,
     )(data);
@@ -245,7 +245,7 @@ class RequiredResourceLineComponent extends Component {
                     <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {/* {t('Lorem Ipsum')} */}
-                      {data.node.id && t(data.node.id)}
+                      {data.id && t(data.id)}
                     </Typography>
                   </div>
                 </Grid>

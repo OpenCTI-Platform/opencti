@@ -78,7 +78,7 @@ class RemediationEntityLineComponent extends Component {
       entityId,
     } = this.props;
     const remediationTiming = R.pipe(
-      R.pathOr([], ['tasks', 'edges']),
+      R.pathOr([], ['tasks']),
       R.mergeAll,
     )(node);
     const remediationSource = R.pipe(
@@ -168,14 +168,14 @@ class RemediationEntityLineComponent extends Component {
                 <Typography align="left">
                   {/* {node.tasks.edges[0].node.timing.start_date
                   && fldt(node.tasks.edges[0].node.timing.start_date)} */}
-                  {remediationTiming?.node?.timing?.start_date
-                    && fldt(remediationTiming?.node?.timing?.start_date)}
+                  {remediationTiming?.timing?.start_date
+                    && fldt(remediationTiming?.timing?.start_date)}
                 </Typography>
               </div>
               <div className={classes.bodyItem}>
                 <Typography align="left">
-                  {remediationTiming?.node?.timing?.end_date
-                    && fldt(remediationTiming?.node?.timing?.end_date)}
+                  {remediationTiming?.timing?.end_date
+                    && fldt(remediationTiming?.timing?.end_date)}
                   {/* {node.tasks.edges[0].node.timing.end_date
                   && fldt(node.tasks.edges[0].node.timing.end_date)} */}
                 </Typography>
@@ -255,14 +255,10 @@ const RemediationEntityLineFragment = createFragmentContainer(
             }
           }
           tasks {             # only necessary if Start/End date is supported in UI
-            edges {
-              node {
-                timing {
-                  ... on DateRangeTiming {
-                    start_date
-                    end_date
-                  }
-                }
+            timing {
+              ... on DateRangeTiming {
+                start_date
+                end_date
               }
             }
           }
