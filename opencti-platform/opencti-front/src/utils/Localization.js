@@ -451,6 +451,7 @@ const i18n = {
       'potential duplicate entities': "duplicats potentiels d'entité",
       'have been found.': 'ont été trouvés.',
       'Potential duplicate entities': "Duplicats potentiels d'entités",
+      'Update opinion': "Modifier l'opinion",
       // Menu
       Dashboard: 'Tableau de bord',
       Visualization: 'Visualisation',
@@ -1103,6 +1104,7 @@ const i18n = {
       None: 'Aucun',
       Nonee: 'Aucune',
       Status: 'Statut',
+      'No file selected.': 'Aucun fichier sélectionné.',
       // Time
       '24h': '24h',
       // Types
@@ -1360,6 +1362,9 @@ const i18n = {
       Reset: 'Réinitialiser',
       'Do you want to clear the works of this connector?':
         'Souhaitez-vous nettoyer toutes les exécutions de ce connecteur ?',
+      disagree: 'désapprouve',
+      neutral: 'neutre',
+      agree: 'approuve',
     },
     'zh-cn': {
       // Titles
@@ -2642,6 +2647,11 @@ const i18n = {
       'Do you want to clear the works of this connector?':
         '你想清除这个连接器的工作吗？',
       Reset: '重启',
+      'No file selected.': '未选择文件。',
+      'Update opinion': '更新意见',
+      disagree: '不同意',
+      neutral: '中性的',
+      agree: '同意',
     },
     'en-us': {
       progress: 'In progress',

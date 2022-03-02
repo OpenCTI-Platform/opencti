@@ -17,7 +17,7 @@ export default (
       paper: paper || '#001e3c',
       nav: nav || '#071a2e',
       accent: accent || '#01478d',
-      shadow: 'rgba(255, 255, 255, .1)',
+      shadow: 'rgba(255, 255, 255, 0)',
     },
   },
   typography: {
@@ -73,6 +73,13 @@ export default (
     },
   },
   components: {
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.7)',
+        },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
         body: {

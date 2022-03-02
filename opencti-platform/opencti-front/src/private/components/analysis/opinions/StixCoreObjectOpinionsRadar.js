@@ -241,7 +241,13 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
                 left: 0,
               }}
             >
-              <PolarGrid stroke={theme.palette.background.default} />
+              <PolarGrid
+                stroke={
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, .1)'
+                    : 'rgba(0, 0, 0, .1)'
+                }
+              />
               <PolarAngleAxis
                 dataKey="label"
                 tick={(innerProps) => this.tickFormatter(innerProps)}
@@ -305,9 +311,9 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
     const { t, classes, title, variant, height, marginTop, stixCoreObjectId } = this.props;
     const marks = [
       { label: '-', value: 1 },
-      { label: 'disagree', value: 2 },
-      { label: 'neutral', value: 3 },
-      { label: 'agree', value: 4 },
+      { label: t('disagree'), value: 2 },
+      { label: t('neutral'), value: 3 },
+      { label: t('agree'), value: 4 },
       { label: '+', value: 5 },
     ];
     return (
@@ -391,7 +397,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
                               {t('Cancel')}
                             </Button>
                             <Button
-                              color="primary"
+                              color="secondary"
                               onClick={submitForm}
                               disabled={isSubmitting}
                             >

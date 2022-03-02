@@ -9,7 +9,7 @@ import inject18n from '../../../components/i18n';
 const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(1),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 1px 5px',
     minHeight: 20,
     textTransform: 'none',
     cursor: 'default',

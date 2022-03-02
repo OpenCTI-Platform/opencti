@@ -53,6 +53,10 @@ class ReportContentFilesComponent extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
   render() {
     const { classes, t, handleSelectFile, report, fld, currentFile } = this.props;
     const sortByLastModified = R.sortBy(R.prop('name'));
@@ -66,12 +70,7 @@ class ReportContentFilesComponent extends Component {
       R.map((n) => n.node),
     )(R.pathOr([], ['externalReferences', 'edges'], report));
     const files = R.pipe(
-      R.filter((n) => [
-        'text/plain',
-        'text/html',
-        'text/markdown',
-        'application/pdf',
-      ].includes(n.metaData.mimetype)),
+      R.filter((n) => ['application/pdf'].includes(n.metaData.mimetype)),
       sortByLastModified,
     )([...importFiles, ...externalReferencesFiles]);
     return (
@@ -93,7 +92,7 @@ class ReportContentFilesComponent extends Component {
               key={file.id}
               dense={true}
               button={true}
-              selected={file.id === currentFile.id}
+              selected={file.id === currentFile?.id}
               onClick={handleSelectFile.bind(this, file)}
               classes={{ root: classes.item }}
             >

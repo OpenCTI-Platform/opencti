@@ -15,13 +15,13 @@ import Security, {
 const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 1px 5px',
     minHeight: 20,
     textTransform: 'none',
   },
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 1px 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',

@@ -885,7 +885,7 @@ class PendingFileContentComponent extends Component {
             </div>
           </Grid>
         </Grid>
-        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
+        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 50 }}>
           {t('Bundle content')}
         </Typography>
         <Paper classes={{ root: classes.paperList }} variant="outlined">
