@@ -280,6 +280,7 @@ class CyioAddNotes extends Component {
                   }}
                   render={({ props }) => {
                     if (props) {
+                      console.log('cyioAddNotes', props, cyioCoreObjectOrStixCoreRelationshipNotes);
                       return (
                         <CyioAddNotesLines
                           cyioCoreObjectOrStixCoreRelationshipId={

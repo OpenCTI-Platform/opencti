@@ -73,9 +73,10 @@ class CyioAddNotesLinesContainer extends Component {
       cyioCoreObjectOrStixCoreRelationshipNotes,
     } = this.props;
     const entityNotesIds = map(
-      (n) => n.node.id,
+      (n) => n.id,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
+    console.log('cyioAddNotesLines', cyioCoreObjectOrStixCoreRelationshipNotes);
     const alreadyAdded = entityNotesIds.includes(note.id);
     if (event.target.checked && !alreadyAdded) {
       this.state.addNotes.push(note);
@@ -89,7 +90,7 @@ class CyioAddNotesLinesContainer extends Component {
   render() {
     const { classes, data, cyioCoreObjectOrStixCoreRelationshipNotes } = this.props;
     const entityNotesIds = map(
-      (n) => n.node.id,
+      (n) => n.id,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
     const filteredValue = filter((value) => (value.node.abstract.toLowerCase()).includes(this.props.search), data.cyioNotes.edges);
@@ -109,7 +110,7 @@ class CyioAddNotesLinesContainer extends Component {
             >
               <ListItemIcon>
                 {alreadyAdded ? (
-                  <Checkbox Checked classes={{ root: classes.icon }} />
+                  <Checkbox checked classes={{ root: classes.icon }} />
                 ) : (
                   <Checkbox
                     onChange={this.toggleNote.bind(
