@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -102,10 +104,9 @@ const requiredResourcePopoverDeletionMutation = graphql`
 `;
 
 const cyioRequiredResourceEditionQuery = graphql`
-  query RequiredResourcePopoverEditionQuery($id: String!) {
-    externalReference(id: $id) {
+  mutation RequiredResourcePopoverEditionQuery($id: ID!, $input: [EditInput]!) {
+    editRequiredAsset(id: $id, input: $input) {
       id
-      # ...CyioExternalReferenceEdition_externalReference
     }
   }
 `;
@@ -118,6 +119,11 @@ class RequiredResourcePopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
+      subjects: [{
+        subject_type: '',
+        subject_ref: '',
+        name: '',
+      }],
     };
   }
 
@@ -151,14 +157,31 @@ class RequiredResourcePopover extends Component {
     this.setState({
       subjects: [{
         subject_type: values.resource_type,
-        subject: values.resource,
+        subject_ref: values.resource,
+        name: values.name,
       }],
     });
-    const finalValues = pipe(
-      dissoc('resource_type'),
-      dissoc('resource'),
-      assoc('subjects', this.state.subjects),
-    )(values);
+    console.log('requiredResourcePopover', values, this.state.subjects);
+    // CM(environmentDarkLight, {
+    //   mutation: cyioRequiredResourceEditionQuery,
+    //   variables: {
+    //     id: this.props.data.id,
+    //     input: [
+    //       { key: 'id', value: values.id },
+    //       { key: 'name', value: values.name },
+    //       { key: 'description', value: values.description },
+    //       { key: 'subject_type', value: values.resource_type },
+    //       { key: 'subject_ref', value: values.resource },
+    //     ],
+    //   },
+    //   setSubmitting,
+    //   onCompleted: () => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleCloseUpdate();
+    //   },
+    //   // onError: (err) => console.log('CyioNoteEditionDarkLightMutationError', err),
+    // });
   }
 
   submitDelete() {
@@ -201,8 +224,8 @@ class RequiredResourcePopover extends Component {
     const {
       classes,
       t,
-      externalReferenceId,
       handleRemove,
+      refreshQuery,
       inputValue,
       remediationId,
       requiredResourceData,
@@ -218,6 +241,7 @@ class RequiredResourcePopover extends Component {
       })),
       R.mergeAll,
     )(data);
+    console.log('RequiredResourceEdition', data);
     const initialValues = R.pipe(
       R.assoc('id', data.id || ''),
       R.assoc('name', requiredResourceNode?.name || ''),
@@ -313,8 +337,8 @@ class RequiredResourcePopover extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-          // validationSchema={RequiredAssetValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
+            // validationSchema={RequiredAssetValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -371,7 +395,7 @@ class RequiredResourcePopover extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
-                          <MenuItem value='Helloworld'>
+                        <MenuItem value='Helloworld'>
                             helloWorld
                           </MenuItem>
                           <MenuItem value='test'>
@@ -469,20 +493,23 @@ class RequiredResourcePopover extends Component {
                         rows="3"
                         variant='outlined'
                         containerstyle={{ width: '100%' }}
-                        disabled={true}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '5px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
+                        typename={requiredResourceData.__typename}
                         externalReferences={requiredResourceData.links}
                         cyioCoreObjectId={remediationId}
+                        refreshQuery={refreshQuery}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        typename={requiredResourceData.__typename}
                         notes={requiredResourceData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop='0px'
+                        refreshQuery={refreshQuery}
                       // data={props}
                       // marginTop={marginTop}
                       />
@@ -562,6 +589,7 @@ RequiredResourcePopover.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   handleRemove: PropTypes.func,
+  refreshQuery: PropTypes.func,
   data: PropTypes.object,
 };
 

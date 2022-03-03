@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -57,6 +59,7 @@ class RemediationComponent extends Component {
     const {
       classes,
       remediation,
+      refreshQuery,
       riskId,
       history,
       location,
@@ -107,15 +110,19 @@ class RemediationComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
+                  typename={remediation.__typename}
                   externalReferences={remediation.links}
                   cyioCoreObjectId={remediation.id}
+                  refreshQuery={refreshQuery}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  typename={remediation.__typename}
                   notes={remediation.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={remediation.id}
                   marginTop='0px'
+                  refreshQuery={refreshQuery}
                 />
               </Grid>
             </Grid>
@@ -144,14 +151,17 @@ RemediationComponent.propTypes = {
   remediation: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  refreshQuery: PropTypes.func,
 };
 
 const Remediation = createFragmentContainer(RemediationComponent, {
   remediation: graphql`
     fragment Remediation_remediation on RiskResponse {
+      __typename
       id
       name
       links {
+        __typename
         id
         # created
         # modified
@@ -160,16 +170,21 @@ const Remediation = createFragmentContainer(RemediationComponent, {
         description
         url
         media_type
+        entity_type
       }
       remarks {
+        __typename
         id
         abstract
         content
         authors
+        entity_type
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
       }

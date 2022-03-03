@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -57,6 +59,7 @@ class RiskComponent extends Component {
       risk,
       history,
       location,
+      refreshQuery,
     } = this.props;
     console.log('RiskMainContainer', risk);
     return (
@@ -78,7 +81,7 @@ class RiskComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={6}>
-                <RiskOverview risk={risk} />
+                <RiskOverview risk={risk} refreshQuery={refreshQuery} />
               </Grid>
               <Grid item={true} xs={6}>
                 <RiskDetails risk={risk} history={history} />
@@ -92,16 +95,20 @@ class RiskComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
+                typename={risk.__typename}
                 externalReferences={risk.links}
                 cyioCoreObjectId={risk.id}
+                refreshQuery={refreshQuery}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  typename={risk.__typename}
                   notes={risk.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
                   marginTop='0px'
+                  refreshQuery={refreshQuery}
                 />
               </Grid>
             </Grid>
@@ -127,20 +134,25 @@ RiskComponent.propTypes = {
   risk: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  refreshQuery: PropTypes.func,
 };
 
 const Risk = createFragmentContainer(RiskComponent, {
   risk: graphql`
     fragment Risk_risk on POAMItem {
+      __typename
       id
       name
       labels {
+        __typename
         id
         name
         color
+        entity_type
         description
       }
       links {
+        __typename
         id
         # created
         # modified
@@ -149,16 +161,21 @@ const Risk = createFragmentContainer(RiskComponent, {
         description     # description
         url             # URL
         media_type      # Media Type
+        entity_type
       }
       remarks {
+        __typename
         id
         abstract
         content
         authors
+        entity_type
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
       }

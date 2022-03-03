@@ -193,7 +193,7 @@ class RequiredResourcesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, remediationId, data,
+      t, classes, remediationId, data, refreshQuery,
     } = this.props;
     const { expanded } = this.state;
     const requiredResourceData = data.riskResponse;
@@ -213,6 +213,7 @@ class RequiredResourcesLinesContainer extends Component {
             remediationId={remediationId}
             display={true}
             contextual={true}
+            refreshQuery={refreshQuery}
             requiredResourceData={requiredResourceData}
           // stixCoreObjectOrStixCoreRelationshipId={remediationId}
           // stixCoreObjectOrStixCoreRelationshipReferences={
@@ -227,6 +228,7 @@ class RequiredResourcesLinesContainer extends Component {
             <RequiredResourceLine
               remediationId={remediationId}
               requiredResourceData={requiredResourceData}
+              refreshQuery={refreshQuery}
               key={requiredResource.id}
               data={requiredResource}
             />
@@ -300,6 +302,7 @@ RequiredResourcesLinesContainer.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
   relay: PropTypes.object,
+  refreshQuery: PropTypes.func,
 };
 
 export const requiredResourcesLinesQuery = graphql`
@@ -318,10 +321,12 @@ const RequiredResourcesLines = createFragmentContainer(
         id: { type: "ID!" }
       ) {
         riskResponse(id: $id) {
+          __typename
           id
           name
           description
           links {
+            __typename
             id
             # created
             # modified
@@ -330,16 +335,21 @@ const RequiredResourcesLines = createFragmentContainer(
             description
             url
             media_type
+            entity_type
           }
           remarks {
+            __typename
             id
             abstract
             content
             authors
+            entity_type
             labels {
+              __typename
               id
               name
               color
+              entity_type
               description
             }
           }

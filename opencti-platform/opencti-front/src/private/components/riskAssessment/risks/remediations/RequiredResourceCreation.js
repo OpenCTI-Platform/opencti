@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
@@ -337,7 +339,13 @@ class RequiredResourceCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display, remediationId, requiredResourceData,
+      t,
+      classes,
+      refreshQuery,
+      inputValue,
+      display,
+      remediationId,
+      requiredResourceData,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -528,12 +536,16 @@ class RequiredResourceCreation extends Component {
                     </Grid>
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
+                        refreshQuery={refreshQuery}
+                        typename={requiredResourceData.__typename}
                         externalReferences={requiredResourceData.links}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        refreshQuery={refreshQuery}
+                        typename={requiredResourceData.__typename}
                         notes={requiredResourceData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         // data={props}
@@ -623,6 +635,7 @@ RequiredResourceCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
+  refreshQuery: PropTypes.func,
   t: PropTypes.func,
   contextual: PropTypes.bool,
   display: PropTypes.bool,
