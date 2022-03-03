@@ -111,7 +111,7 @@ class OpenCTIStix2Update:
             kill_chain_phase_id = self.opencti.kill_chain_phase.create(
                 kill_chain_name=kill_chain_phase["kill_chain_name"],
                 phase_name=kill_chain_phase["phase_name"],
-                phase_order=kill_chain_phase["x_opencti_order"]
+                x_opencti_order=kill_chain_phase["x_opencti_order"]
                 if "x_opencti_order" in kill_chain_phase
                 else 0,
                 stix_id=kill_chain_phase["id"] if "id" in kill_chain_phase else None,
