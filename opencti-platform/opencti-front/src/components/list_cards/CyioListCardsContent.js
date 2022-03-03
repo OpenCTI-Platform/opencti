@@ -91,7 +91,6 @@ class CyioListCardsContent extends Component {
       loadMore,
       hasMore,
       isLoading,
-      dataList,
       globalCount,
       nbOfCardsToLoad,
     } = this.props;
@@ -129,7 +128,6 @@ class CyioListCardsContent extends Component {
   }) {
     const {
       classes,
-      dataList,
       selectAll,
       bookmarkList,
       CardComponent,
@@ -174,7 +172,6 @@ class CyioListCardsContent extends Component {
 
   render() {
     const {
-      dataList,
       globalCount,
       initialLoading,
       isLoading,
@@ -254,7 +251,6 @@ CyioListCardsContent.propTypes = {
   loadMore: PropTypes.func,
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
-  dataList: PropTypes.array,
   bookmarkList: PropTypes.array,
   offset: PropTypes.number,
   globalCount: PropTypes.number,

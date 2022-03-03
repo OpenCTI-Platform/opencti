@@ -84,7 +84,6 @@ class ListLinesContent extends Component {
       loadMore,
       hasMore,
       isLoading,
-      dataList,
       globalCount,
       nbOfRowsToLoad,
     } = this.props;
@@ -106,7 +105,6 @@ class ListLinesContent extends Component {
   _rowRenderer({ index, key, style }) {
     const {
       dataColumns,
-      dataList,
       LineComponent,
       DummyLineComponent,
       paginationOptions,
@@ -153,7 +151,6 @@ class ListLinesContent extends Component {
 
   render() {
     const {
-      dataList,
       globalCount,
       initialLoading,
       isLoading,
@@ -214,7 +211,6 @@ ListLinesContent.propTypes = {
   loadMore: PropTypes.func,
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
-  dataList: PropTypes.array,
   offset: PropTypes.number,
   me: PropTypes.object,
   globalCount: PropTypes.number,
