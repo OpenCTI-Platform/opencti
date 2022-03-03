@@ -38,7 +38,7 @@ describe('Minio file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10565);
+    expect(file.size).toEqual(10566);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
@@ -48,7 +48,7 @@ describe('Minio file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(10565);
+    expect(file.size).toEqual(10566);
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
@@ -69,7 +69,7 @@ describe('Minio file listing', () => {
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId(malware));
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(10565);
+    expect(file.size).toEqual(10566);
   });
   it('should delete file', async () => {
     const malware = await elLoadById(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
