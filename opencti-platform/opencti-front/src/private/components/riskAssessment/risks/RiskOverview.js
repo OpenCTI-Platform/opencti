@@ -63,7 +63,7 @@ const styles = (theme) => ({
 class RiskOverviewComponent extends Component {
   render() {
     const {
-      t, fldt, classes, risk,
+      t, fldt, classes, risk, refreshQuery,
     } = this.props;
     // console.log('RiskOverview', risk);
     const riskEdges = R.pipe(
@@ -409,6 +409,7 @@ class RiskOverviewComponent extends Component {
                 labels={risk.labels}
                 marginTop={20}
                 id={risk.id}
+                refreshQuery={refreshQuery}
                 typename={risk.__typename}
               />
             </Grid>
@@ -424,6 +425,7 @@ RiskOverviewComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
+  refreshQuery: PropTypes.func,
 };
 
 const RiskOverview = createFragmentContainer(

@@ -7,6 +7,7 @@ import {
   compose,
   pathOr,
   mergeAll,
+  map,
   path,
   pipe,
   dissoc,
@@ -110,10 +111,9 @@ const relatedTaskPopoverDeletionMutation = graphql`
 `;
 
 const relatedTaskEditionQuery = graphql`
-  query RelatedTaskPopoverEditionQuery($id: String!) {
-    externalReference(id: $id) {
+  mutation RelatedTaskPopoverEditionQuery($id: ID!, $input: [EditInput]!) {
+    editOscalTask(id: $id, input: $input) {
       id
-      # ...CyioExternalReferenceEdition_externalReference
     }
   }
 `;
@@ -126,6 +126,10 @@ class RelatedTaskPopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
+      timings: {
+        start_date: '',
+        end_date: '',
+      },
     };
   }
 
@@ -162,19 +166,41 @@ class RelatedTaskPopover extends Component {
         start_date: values.start_date,
         end_date: values.end_date,
       },
-      responsible_roles: [{
-        responsible_role: values.responsible_role,
-      }],
     });
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
       dissoc('responsible_role'),
       assoc('timings', this.state.timings),
-      assoc('responsible_roles', this.state.responsible_roles),
+      dissoc('timings'),
+      // map((n) => ({
+      //   'key': n[0],
+      //   'value': n[1],
+      // }))
     )(values);
+    console.log('relatedTasksPopoverFinal', finalValues);
+    // CM(environmentDarkLight, {
+    //   mutation: relatedTaskEditionQuery,
+    //   variables: {
+    //     id: this.props.data.id,
+    //     input: [
+    //       { key: 'id', value: values.id },
+    //       { key: 'name', value: values.name },
+    //       { key: 'description', value: values.description },
+    //       { key: 'subject_type', value: values.resource_type },
+    //       { key: 'subject_ref', value: values.resource },
+    //     ],
+    //   },
+    //   setSubmitting,
+    //   onCompleted: () => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleCloseUpdate();
+    //   },
+    //   // onError: (err) => console.log('CyioNoteEditionDarkLightMutationError', err),
+    // });
   }
-  
+
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
@@ -213,7 +239,14 @@ class RelatedTaskPopover extends Component {
 
   render() {
     const {
-      classes, t, externalReferenceId, handleRemove, remediationId, relatedTaskData, data,
+      classes,
+      t,
+      externalReferenceId,
+      handleRemove,
+      remediationId,
+      refreshQuery,
+      relatedTaskData,
+      data,
     } = this.props;
     const taskDependency = pipe(
       pathOr([], ['task_dependencies']),
@@ -327,8 +360,8 @@ class RelatedTaskPopover extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-          // validationSchema={RelatedTaskValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
+            // validationSchema={RelatedTaskValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
@@ -359,7 +392,6 @@ class RelatedTaskPopover extends Component {
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
-                          disabled={true}
                         />
                       </div>
                     </Grid>
@@ -415,7 +447,6 @@ class RelatedTaskPopover extends Component {
                         rows="3"
                         variant='outlined'
                         containerstyle={{ width: '100%' }}
-                        disabled={true}
                       />
                     </Grid>
                   </Grid>
@@ -637,27 +668,31 @@ class RelatedTaskPopover extends Component {
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
                       >
-                         <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
+                        <MenuItem value='Helloworld'>
+                          helloWorld
+                        </MenuItem>
+                        <MenuItem value='test'>
+                          test
+                        </MenuItem>
+                        <MenuItem value='data'>
+                          data
+                        </MenuItem>
                       </Field>
                     </div>
                   </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
+                        refreshQuery={refreshQuery}
+                        typename={relatedTaskData.__typename}
                         externalReferences={relatedTaskData.links}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        refreshQuery={refreshQuery}
+                        typename={relatedTaskData.__typename}
                         notes={relatedTaskData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
@@ -736,6 +771,7 @@ RelatedTaskPopover.propTypes = {
   relatedTaskData: PropTypes.object,
   remediationId: PropTypes.string,
   externalReferenceId: PropTypes.string,
+  refreshQuery: PropTypes.func,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

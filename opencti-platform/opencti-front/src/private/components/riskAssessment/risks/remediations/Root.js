@@ -101,7 +101,7 @@ class RootRemediation extends Component {
           environment={QueryRendererDarkLight}
           query={remediationQuery}
           variables={{ id: riskId }}
-          render={({ error, props }) => {
+          render={({ error, props, retry }) => {
             console.log('RemediationRootQuery', props);
             if (props) {
               if (props.riskResponse) {
@@ -114,6 +114,7 @@ class RootRemediation extends Component {
                         <Remediation
                           {...routeProps}
                           riskId={riskId}
+                          refreshQuery={retry}
                           remediation={props.riskResponse}
                         />
                       )}

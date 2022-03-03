@@ -155,7 +155,7 @@ class RelatedTaskCreation extends Component {
       //   {
       //     responsible_role: '',
       //     parties: [
-        
+
       //     ],
       //   }],
     };
@@ -353,7 +353,7 @@ class RelatedTaskCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display, remediationId, relatedTaskData,
+      t, classes, inputValue, refreshQuery, display, remediationId, relatedTaskData,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -528,12 +528,12 @@ class RelatedTaskCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                         component={SelectField}
-                         name="task_dependencies"
-                         fullWidth={true}
-                         variant='outlined'
-                         style={{ height: '38.09px' }}
-                         containerstyle={{ width: '100%' }}
+                          component={SelectField}
+                          name="task_dependencies"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
                         >
                           <MenuItem value='Helloworld'>
                             helloWorld
@@ -629,12 +629,12 @@ class RelatedTaskCreation extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                           component={SelectField}
-                           name="related_tasks"
-                           fullWidth={true}
-                           variant='outlined'
-                           style={{ height: '38.09px' }}
-                           containerstyle={{ width: '100%' }}
+                          component={SelectField}
+                          name="related_tasks"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
                         >
                           <MenuItem value='Helloworld'>
                             helloWorld
@@ -644,7 +644,7 @@ class RelatedTaskCreation extends Component {
                           </MenuItem>
                           <MenuItem value='data'>
                             data
-                        </MenuItem>
+                          </MenuItem>
                         </Field>
                       </div>
                     </Grid>
@@ -712,26 +712,30 @@ class RelatedTaskCreation extends Component {
                         containerstyle={{ width: '100%' }}
                       >
                         <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
+                          helloWorld
+                        </MenuItem>
+                        <MenuItem value='test'>
+                          test
+                        </MenuItem>
+                        <MenuItem value='data'>
+                          data
+                        </MenuItem>
                       </Field>
                     </div>
                   </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
+                        refreshQuery={refreshQuery}
+                        typename={relatedTaskData.__typename}
                         externalReferences={relatedTaskData.links}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
+                        refreshQuery={refreshQuery}
+                        typename={relatedTaskData.__typename}
                         notes={relatedTaskData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
@@ -822,6 +826,7 @@ RelatedTaskCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
+  refreshQuery: PropTypes.func,
   t: PropTypes.func,
   contextual: PropTypes.bool,
   display: PropTypes.bool,

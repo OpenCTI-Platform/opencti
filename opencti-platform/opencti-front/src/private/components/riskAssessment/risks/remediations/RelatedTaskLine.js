@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -170,6 +172,7 @@ class RelatedTaskLine extends Component {
       fsd,
       t,
       fldt,
+      refreshQuery,
       classes,
       data,
       remediationId,
@@ -369,12 +372,16 @@ class RelatedTaskLine extends Component {
               </Grid>
               <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                 <CyioCoreobjectExternalReferences
+                  refreshQuery={refreshQuery}
+                  typename={relatedTaskData.__typename}
                   externalReferences={relatedTaskData.links}
                   cyioCoreObjectId={remediationId}
                 />
               </Grid>
               <Grid style={{ margin: '50px 0 20px 0' }} xs={12} item={true}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  refreshQuery={refreshQuery}
+                  typename={relatedTaskData.__typename}
                   notes={relatedTaskData.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                   marginTop='0px'
@@ -388,6 +395,7 @@ class RelatedTaskLine extends Component {
         <div style={{ marginTop: '30px' }}>
           <RelatedTaskPopover
             relatedTaskData={relatedTaskData}
+            refreshQuery={refreshQuery}
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
             data={data}
@@ -406,6 +414,7 @@ RelatedTaskLine.propTypes = {
   node: PropTypes.object,
   data: PropTypes.object,
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   t: PropTypes.func,
   fldt: PropTypes.func,
   fsd: PropTypes.func,

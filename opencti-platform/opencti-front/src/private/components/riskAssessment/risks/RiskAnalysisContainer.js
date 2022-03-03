@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -49,8 +51,10 @@ const styles = () => ({
 export const riskAnalysisContainerQuery = graphql`
   query RiskAnalysisContainerQuery($id: ID!) {
     risk(id: $id) {
+      __typename
       id
       links {
+        __typename
         id
         created
         modified
@@ -59,16 +63,21 @@ export const riskAnalysisContainerQuery = graphql`
         description     # description
         url             # URL
         media_type      # Media Type
+        entity_type
       }
       remarks {
+        __typename
         id
         abstract
         content
         authors
+        entity_type
         labels {
+          __typename
           id
           name
           color
+          entity_type
           description
         }
       }
@@ -212,12 +221,14 @@ class RiskAnalysisContainerComponent extends Component {
                   environment={environmentDarkLight}
                   query={riskAnalysisContainerQuery}
                   variables={{ id: riskId }}
-                  render={({ error, props }) => {
+                  render={({ error, props, retry }) => {
                     if (props) {
                       return (
                         <CyioCoreObjectExternalReferences
+                          typename={risk.__typename}
                           externalReferences={props.risk.links}
                           cyioCoreObjectId={risk.id}
+                          refreshQuery={retry}
                         />
                       );
                     }
@@ -243,13 +254,15 @@ class RiskAnalysisContainerComponent extends Component {
                   environment={environmentDarkLight}
                   query={riskAnalysisContainerQuery}
                   variables={{ id: riskId }}
-                  render={({ error, props }) => {
+                  render={({ error, props, retry }) => {
                     if (props) {
                       return (
                         <CyioCoreObjectOrCyioCoreRelationshipNotes
+                          typename={risk.__typename}
                           notes={props.risk.remarks}
                           cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
                           marginTop='0px'
+                          refreshQuery={retry}
                         />
                       );
                     }

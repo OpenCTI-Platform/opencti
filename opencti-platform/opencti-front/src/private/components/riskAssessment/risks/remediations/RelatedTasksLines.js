@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -219,7 +221,7 @@ class RelatedTasksLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, remediationId, data,
+      t, classes, remediationId, data, refreshQuery,
     } = this.props;
     const { expanded } = this.state;
     const relatedTaskData = data.riskResponse;
@@ -243,6 +245,7 @@ class RelatedTasksLinesContainer extends Component {
               relatedTaskData={relatedTaskData}
               display={true}
               contextual={true}
+              refreshQuery={refreshQuery}
               remediationId={remediationId}
             // stixCoreObjectOrStixCoreRelationshipId={remediationId}
             // stixCoreObjectOrStixCoreRelationshipReferences={
@@ -259,6 +262,7 @@ class RelatedTasksLinesContainer extends Component {
               remediationId={remediationId}
               key={relatedTask.id}
               data={relatedTask}
+              refreshQuery={refreshQuery}
               relatedTaskData={relatedTaskData}
             />
           ))}
@@ -330,6 +334,7 @@ RelatedTasksLinesContainer.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  refreshQuery: PropTypes.func,
   relay: PropTypes.object,
 };
 
@@ -349,26 +354,33 @@ const RelatedTasksLines = createFragmentContainer(
         id: { type: "ID!" }
       ) {
         riskResponse(id: $id) {
+          __typename
           id
           links {
+            __typename
             id
             # created
             # modified
             external_id
             source_name
             description
+            entity_type
             url
             media_type
           }
           remarks {
+            __typename
             id
             abstract
             content
             authors
+            entity_type
             labels {
+              __typename
               id
               name
               color
+              entity_type
               description
             }
           }
@@ -377,9 +389,11 @@ const RelatedTasksLines = createFragmentContainer(
             created
             modified
             labels {
+              __typename
               id
               name
               color
+              entity_type
               description
             }
             task_type
@@ -403,9 +417,11 @@ const RelatedTasksLines = createFragmentContainer(
               # created
               # modified
               labels {
+                __typename
                 id
                 name
                 color
+                entity_type
                 description
               }
               role {

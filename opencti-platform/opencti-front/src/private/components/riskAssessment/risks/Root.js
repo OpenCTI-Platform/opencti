@@ -105,7 +105,7 @@ class RootRisk extends Component {
           environment={QueryRendererDarkLight}
           query={riskQuery}
           variables={{ id: riskId }}
-          render={({ error, props }) => {
+          render={({ error, props, retry }) => {
             console.log('riskError', error);
             if (props) {
               console.log('RiskData', props);
@@ -118,6 +118,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                         <Risk
                           {...routeProps}
+                          refreshQuery={retry}
                           risk={props.poamItem}
                         />
                       )}
@@ -128,6 +129,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                           <RiskAnalysisContainer
                             {...routeProps}
+                            refreshQuery={retry}
                             risk={props.poamItem}
                             riskId={riskId}
                           />
@@ -149,6 +151,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                         <Remediations
                             {...routeProps}
+                            refreshQuery={retry}
                             remediation={props.poamItem}
                         />
                       )}
