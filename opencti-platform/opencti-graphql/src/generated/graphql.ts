@@ -45,7 +45,7 @@ export type AppInfo = {
   dependencies: Array<DependencyVersion>;
   /** The OpenCTI api current memory usage */
   memory?: Maybe<AppMemory>;
-  /** The OpenCTI aplication version */
+  /** The OpenCTI application version */
   version: Scalars['String'];
 };
 

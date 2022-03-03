@@ -15,6 +15,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import pjson from '../../package.json';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -115,7 +116,7 @@ export const BUS_TOPICS = {
   },
 };
 
-export const PLATFORM_VERSION = process.env.npm_package_version;
+export const PLATFORM_VERSION = pjson.version;
 
 export const booleanConf = (key, defaultValue = true) => {
   const configValue = nconf.get(key);

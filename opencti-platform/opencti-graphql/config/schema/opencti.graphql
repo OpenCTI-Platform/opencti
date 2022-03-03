@@ -138,7 +138,7 @@ Retrieve the application information version add dependencies
 """
 type AppInfo {
   """
-  The OpenCTI aplication version
+  The OpenCTI application version
   """
   version: String!
   """
