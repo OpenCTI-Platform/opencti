@@ -28,19 +28,19 @@ import RiskAnalysisContainer from './RiskAnalysisContainer';
 import RiskTracking from './RiskTracking';
 import RemediationRoot from './remediations/Root';
 
-const subscription = graphql`
-  subscription RootRiskSubscription($id: ID!) {
-    stixDomainObject(id: $id) {
-      # ... on ThreatActor {
-      #   ...Risk_risk
-      #   ...RiskEditionContainer_risk
-      # }
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-    }
-  }
-`;
+// const subscription = graphql`
+//   subscription RootRiskSubscription($id: ID!) {
+//     stixDomainObject(id: $id) {
+//       # ... on ThreatActor {
+//       #   ...Risk_risk
+//       #   ...RiskEditionContainer_risk
+//       # }
+//       ...FileImportViewer_entity
+//       ...FileExportViewer_entity
+//       ...FileExternalReferencesViewer_entity
+//     }
+//   }
+// `;
 
 const riskQuery = graphql`
   query RootRiskQuery($id: ID!) {
@@ -61,15 +61,15 @@ class RootRisk extends Component {
         params: { riskId },
       },
     } = props;
-    this.sub = requestSubscription({
-      subscription,
-      variables: { id: riskId },
-    });
+    // this.sub = requestSubscription({
+    //   subscription,
+    //   variables: { id: riskId },
+    // });
   }
 
-  componentWillUnmount() {
-    this.sub.dispose();
-  }
+  // componentWillUnmount() {
+  //   this.sub.dispose();
+  // }
 
   render() {
     const {

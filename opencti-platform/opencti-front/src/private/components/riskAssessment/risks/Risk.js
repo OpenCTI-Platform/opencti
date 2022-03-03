@@ -24,6 +24,7 @@ import CyioCoreObjectExternalReferences from '../../analysis/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import TopMenuRisk from '../../nav/TopMenuRisk';
+import RiskObservation from './RiskObservation';
 
 const styles = () => ({
   container: {
@@ -85,6 +86,7 @@ class RiskComponent extends Component {
               </Grid>
               <Grid item={true} xs={6}>
                 <RiskDetails risk={risk} history={history} />
+                <RiskObservation risk={risk}/>
               </Grid>
             </Grid>
             <Grid
@@ -181,6 +183,7 @@ const Risk = createFragmentContainer(RiskComponent, {
       }
       ...RiskOverview_risk
       ...RiskDetails_risk
+      ...RiskObservation_risk
     }
   `,
 });

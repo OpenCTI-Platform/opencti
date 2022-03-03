@@ -66,7 +66,7 @@ class RequiredResources extends Component {
                 gutterBottom={true}
                 style={{ float: 'left', marginBottom: 15 }}
               >
-                {t('Required Resources')}
+                {t('Required Resource')}
               </Typography>
               <div className="clearfix" />
               <Paper classes={{ root: classes.paper }} elevation={2}>
