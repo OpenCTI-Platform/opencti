@@ -203,7 +203,7 @@ class RequiredResourcesLinesContainer extends Component {
       <div style={{ height: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-            {t('Required Resources')}
+            {t('Required Resource')}
           </Typography>
           {/* <Security
           needs={[KNOWLEDGE_KNUPDATE]}
