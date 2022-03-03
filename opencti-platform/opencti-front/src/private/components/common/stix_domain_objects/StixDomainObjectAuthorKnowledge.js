@@ -12,20 +12,14 @@ import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now, yearsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import Loader from '../../../../components/Loader';
+import { areaChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = (theme) => ({
   card: {
@@ -276,54 +270,31 @@ class StixDomainObjectAuthorKnowledge extends Component {
                 }}
                 render={({ props }) => {
                   if (props && props.stixDomainObjectsTimeSeries) {
+                    const chartData = props.stixDomainObjectsTimeSeries.map(
+                      (entry) => ({
+                        x: new Date(entry.date),
+                        y: entry.value,
+                      }),
+                    );
                     return (
-                      <div className={classes.graphContainer}>
-                        <ResponsiveContainer height={270} width="100%">
-                          <AreaChart
-                            data={props.stixDomainObjectsTimeSeries}
-                            margin={{
-                              top: 0,
-                              right: 0,
-                              bottom: 0,
-                              left: -10,
-                            }}
-                          >
-                            <CartesianGrid
-                              strokeDasharray="2 2"
-                              stroke={theme.palette.background.default}
-                            />
-                            <XAxis
-                              dataKey="date"
-                              stroke={theme.palette.text.primary}
-                              interval={0}
-                              textAnchor="end"
-                              tickFormatter={mtd}
-                            />
-                            <YAxis stroke={theme.palette.text.primary} />
-                            <Tooltip
-                              cursor={{
-                                fill: 'rgba(0, 0, 0, 0.2)',
-                                stroke: 'rgba(0, 0, 0, 0.2)',
-                                strokeWidth: 2,
-                              }}
-                              contentStyle={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                fontSize: 12,
-                                borderRadius: 10,
-                              }}
-                              labelFormatter={fsd}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="value"
-                              stroke={theme.palette.primary.main}
-                              strokeWidth={2}
-                              fill={theme.palette.primary.main}
-                              fillOpacity={0.1}
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
+                      <Chart
+                        options={areaChartOptions(
+                          theme,
+                          true,
+                          fsd,
+                          simpleNumberFormat,
+                          undefined,
+                        )}
+                        series={[
+                          {
+                            name: t('Number of reports'),
+                            data: chartData,
+                          },
+                        ]}
+                        type="area"
+                        width="100%"
+                        height="100%"
+                      />
                     );
                   }
                   return <Loader variant="inElement" />;

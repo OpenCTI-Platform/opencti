@@ -451,7 +451,7 @@ class ConnectorComponent extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
+        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 60 }}>
           {t('In progress works')}
         </Typography>
         <QueryRenderer

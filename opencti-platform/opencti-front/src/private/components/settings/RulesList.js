@@ -342,7 +342,7 @@ class RulesListComponent extends Component {
             </Button>
             <Button
               onClick={this.submitEnableRule.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.processing}
             >
               {t('Enable')}

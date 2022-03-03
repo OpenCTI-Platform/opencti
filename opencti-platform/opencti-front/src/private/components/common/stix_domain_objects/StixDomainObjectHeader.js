@@ -57,7 +57,7 @@ const styles = () => ({
     float: 'right',
   },
   viewAsField: {
-    marginTop: -7,
+    marginTop: -3,
     float: 'left',
   },
   viewAsFieldLabel: {

@@ -287,7 +287,7 @@ class ListLines extends Component {
         </div>
         <div className="clearfix" />
         {message && (
-          <div style={{ width: '100%' }}>
+          <div style={{ width: '100%', marginTop: 10 }}>
             <Alert
               severity="info"
               variant="outlined"
