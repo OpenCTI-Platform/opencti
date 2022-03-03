@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
-import { QueryRenderer as QR } from 'react-relay';
-import Paper from '@material-ui/core/Paper';
-import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectNotesCards, {
 // cyioCoreObjectNotesCardsQuery,

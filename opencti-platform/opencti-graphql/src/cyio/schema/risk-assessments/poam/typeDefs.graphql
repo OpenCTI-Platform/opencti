@@ -2,7 +2,7 @@
   extend type Query {
     poam( id: ID ): POAM
     poams(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: POAMOrdering
       orderMode: OrderingMode
@@ -12,7 +12,7 @@
     ): POAMConnection
     poamItem( id: ID ): POAMItem
     poamItems(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: POAMItemsOrdering
       orderMode: OrderingMode
@@ -60,7 +60,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -84,13 +84,13 @@
     "Identifies references to previous versions of this document."
     document_ids: [ID]
     "Identifies one or more references to a function assumed or expected to be assumed by a party in a specific situation."
-    roles( limit: Int ): OscalRoleConnection
+    roles( first: Int ): OscalRoleConnection
     "Identifies one or more references to a location."
-    locations( limit: Int ): OscalLocationConnection
+    locations( first: Int ): OscalLocationConnection
     "Identifies one or more references to a responsible entity which is either a person or an organization."
-    parties( limit: Int ): OscalPartyConnection
+    parties( first: Int ): OscalPartyConnection
     "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties( limit: Int ): OscalResponsiblePartyConnection
+    responsible_parties( first: Int ): OscalResponsiblePartyConnection
     # POAM Item
     system_id: String
     "Identifies the identification system from which the provided identifier was assigned."
@@ -98,14 +98,14 @@
     "Identifies components and inventory-items to be defined within the POA&M for circumstances where no OSCAL-based SSP exists, or is not delivered with the POA&M."
     local_definitions: POAMLocalDefinition
     "Identifies one or more individual observations."
-    observations( limit: Int ): ObservationConnection
+    observations( first: Int ): ObservationConnection
     "Identifies one or more individual observations."
-    risks( limit: Int ): RiskConnection
+    risks( first: Int ): RiskConnection
     "Identifies one ore more POAM Items that bind a specific Risk to the associated Observations."
-    poam_items( limit: Int ): POAMItemConnection
+    poam_items( first: Int ): POAMItemConnection
     # Backmatter
     "Identifies one or more Resources that are associated with this POAM."
-    resources( limit: Int ): OscalResourceConnection
+    resources( first: Int ): OscalResourceConnection
   }
 
   input POAMAddInput {
@@ -204,7 +204,7 @@
     remarks: [CyioNote]
     "Identifies one or more relationships to other entities."
     relationships(
-      limit: Int
+      first: Int
       offset: Int
       orderedBy: OscalRelationshipsOrdering
       orderMode: OrderingMode
@@ -224,9 +224,9 @@
     # "Identifies a reference to the implementation statement in the SSP to which this finding is related."
     # implementation_statement: ImplementationStatement
     "Relates the item to a set of referenced observations that were used to determine the finding."
-    related_observations( limit: Int ): ObservationConnection
+    related_observations( first: Int ): ObservationConnection
     "Relates the item to a set of referenced risks that were used to determine the finding."
-    related_risks( limit: Int ): RiskConnection
+    related_risks( first: Int ): RiskConnection
     # POAM Item
     "Indicates a CSP-assigned unique POA&M ID to allow for compliance with FedRAMP."
     poam_id: String
@@ -312,8 +312,8 @@
 ## POAM Local Definition
 #
   type POAMLocalDefinition {
-    components( limit: Int ): ComponentConnection
-    inventory_items( limit: Int ): InventoryItemConnection
+    components( first: Int ): ComponentConnection
+    inventory_items( first: Int ): InventoryItemConnection
     remarks: [CyioNote]
   }
 
