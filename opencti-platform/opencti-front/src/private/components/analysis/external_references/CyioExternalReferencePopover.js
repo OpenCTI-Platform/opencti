@@ -15,12 +15,11 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
-import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   container: {
@@ -145,7 +144,6 @@ class CyioExternalReferencePopover extends Component {
     const {
       classes,
       t,
-      externalReferenceId,
       handleRemove,
       externalReference,
     } = this.props;

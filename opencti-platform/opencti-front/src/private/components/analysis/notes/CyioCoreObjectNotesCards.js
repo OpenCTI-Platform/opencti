@@ -2,10 +2,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
+// import graphql from 'babel-plugin-relay/macro';
 import Paper from '@material-ui/core/Paper';
 import { withStyles } from '@material-ui/core/styles';
-import { createFragmentContainer, createPaginationContainer } from 'react-relay';
+// import { createFragmentContainer, createPaginationContainer } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
@@ -13,7 +13,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNoteCard from './CyioCoreObjectOrCyio
 // import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import { commitMutation } from '../../../../relay/environment';
 import { noteCreationMutation } from './NoteCreation';
-import CyioNoteCreation from './CyioNoteCreation';
+// import CyioNoteCreation from './CyioNoteCreation';
 import CyioAddNotes from './CyioAddNotes';
 
 const styles = (theme) => ({
@@ -117,9 +117,9 @@ class CyioCoreObjectNotesCardsContainer extends Component {
       t, cyioCoreObjectId, marginTop, data, height, typename, refreshQuery,
     } = this.props;
     // const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
-    const paginationOptions = {
-      search: this.state.search,
-    };
+    // const paginationOptions = {
+    //   search: this.state.search,
+    // };
     return (
       <div style={{ marginTop: marginTop || 40, height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
