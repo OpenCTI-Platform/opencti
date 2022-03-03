@@ -120,22 +120,19 @@ const styles = (theme) => ({
   },
 });
 
-// const RelatedTaskCreationMutation = graphql`
-//   mutation RelatedTaskCreationMutation(
-//     $input: ExternalReferenceAddInput!
-//   ) {
-//     externalReferenceAdd(input: $input) {
-//       task_type
-//       name
-//       description
-//       start_date
-//       end_date
-//       associated_activities
-//       task_dependenices
-//       responsible_role
-//     }
-//   }
-// `;
+const RelatedTaskCreationMutation = graphql`
+  mutation RelatedTaskCreationMutation(
+    $input: OscalTaskAddInput
+  ) {
+    createOscalTask(input: $input) {
+      id
+      entity_type
+      name
+      task_type
+      description
+    }
+  }
+`;
 
 const RelatedTaskValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
@@ -154,13 +151,13 @@ class RelatedTaskCreation extends Component {
         start_date: '',
         end_date: '',
       },
-      responsible_roles: [
-        {
-          responsible_role: '',
-          parties: [
+      // responsible_roles: [
+      //   {
+      //     responsible_role: '',
+      //     parties: [
         
-          ],
-        }],
+      //     ],
+      //   }],
     };
   }
 
@@ -179,39 +176,38 @@ class RelatedTaskCreation extends Component {
         start_date: values.start_date,
         end_date: values.end_date,
       },
-      responsible_roles: [{
-          responsible_role: values.responsible_role,
-        }],
+      // responsible_roles: [{
+      //     responsible_role: values.responsible_role,
+      //   }],
     });
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      dissoc('responsible_role'),
+      dissoc('related_tasks'),
       assoc('timings', this.state.timings),
-      assoc('responsible_roles', this.state.responsible_roles),
+      dissoc('timings'),
+      // assoc('responsible_roles', this.state.responsible_roles),
     )(values);
-    // CM(environmentDarkLight, {
-    //   mutation: RelatedTaskCreationMutation,
-    //   variables: {
-    //     input: values,
-    //   },
-    //   // updater: (store) => insertNode(
-    //   //   store,
-    //   //   'Pagination_externalReferences',
-    //   //   this.props.paginationOptions,
-    //   //   'externalReferenceAdd',
-    //   // ),
-    //   setSubmitting,
-    //   onCompleted: (response) => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //     if (this.props.onCreate) {
-    //       this.props.onCreate(response.externalReferenceAdd, true);
-    //     }
-    //   },
-    //   onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
-    // });
+    CM(environmentDarkLight, {
+      mutation: RelatedTaskCreationMutation,
+      variables: {
+        input: finalValues,
+      },
+      // updater: (store) => insertNode(
+      //   store,
+      //   'Pagination_externalReferences',
+      //   this.props.paginationOptions,
+      //   'externalReferenceAdd',
+      // ),
+      setSubmitting,
+      onCompleted: (response) => {
+        console.log('relatedTasksCreationResponse', response);
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+      },
+      onError: (err) => console.log('finalValuesRelatedTasksError', err),
+    });
     // commitMutation({
     //   mutation: RelatedTaskCreationMutation,
     //   variables: {
@@ -381,13 +377,13 @@ class RelatedTaskCreation extends Component {
             initialValues={{
               name: '',
               description: '',
-              task_type: [],
+              task_type: '',
               task_dependencies: [],
               start_date: null,
               end_date: null,
               related_tasks: [],
               associated_activities: [],
-              responsible_role: [],
+              responsible_roles: [],
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -445,6 +441,7 @@ class RelatedTaskCreation extends Component {
                           component={TextField}
                           name="id"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
@@ -504,14 +501,11 @@ class RelatedTaskCreation extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
+                          <MenuItem value='milestone'>
+                            Milestone
                           </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
+                          <MenuItem value='action'>
+                            Action
                           </MenuItem>
                         </Field>
                       </div>
@@ -712,7 +706,7 @@ class RelatedTaskCreation extends Component {
                         component={SelectField}
                         style={{ height: '38.09px' }}
                         variant='outlined'
-                        name="responsible_role"
+                        name="responsible_roles"
                         size='small'
                         fullWidth={true}
                         containerstyle={{ width: '100%' }}
