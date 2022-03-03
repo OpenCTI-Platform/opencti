@@ -1,0 +1,165 @@
+import * as R from 'ramda';
+import { loadStixById } from '../../../src/database/middleware';
+import { ADMIN_USER } from '../../utils/testQuery';
+import data from '../../data/DATA-TEST-STIX2_v2.json';
+import {
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+  isStixDomainObject
+} from '../../../src/schema/stixDomainObject';
+import { convertTypeToStixType } from '../../../src/database/stix';
+import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
+import { isStixRelationship } from '../../../src/schema/stixRelationship';
+
+describe('Stix opencti converter', () => {
+  const dataMap = new Map(data.objects.map((obj) => [obj.id, obj]));
+
+  const rawDataCompare = async (rawId, standardId) => {
+    let rawData = dataMap.get(rawId);
+    const stixData = await loadStixById(ADMIN_USER, rawId);
+    // console.log(stixData);
+    let remainingData = { ...stixData };
+    if (stixData.x_opencti_type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
+      rawData = R.dissoc('objects', rawData);
+      rawData = R.dissoc('object_refs', rawData);
+      remainingData = R.dissoc('object_refs', remainingData);
+    }
+    // Testing stix data
+    const isReportType = stixData.type === ENTITY_TYPE_CONTAINER_REPORT.toLowerCase();
+    const keys = Object.keys(rawData);
+    for (let index = 0; index < keys.length; index += 1) {
+      const rawKey = keys[index];
+      remainingData = R.dissoc(rawKey, remainingData);
+      const initialData = rawData[rawKey];
+      const refetchData = stixData[rawKey];
+      if (rawKey.startsWith('x_')) {
+        // eslint-disable-next-line no-continue
+        continue;
+      }
+      // console.log(`${rawKey} - ${refetchData} / ${initialData}`);
+      if (rawKey === 'id') { // Because of standard_id generation
+        expect(refetchData).toBe(standardId);
+      } else if (rawKey === 'kill_chain_phases') {
+        expect(refetchData).toEqual(initialData);
+        remainingData = R.dissoc(rawKey, remainingData);
+      } else if (rawKey === 'external_references') {
+        expect(refetchData).toEqual(initialData);
+        remainingData = R.dissoc(rawKey, remainingData);
+      } else if (rawKey === 'modified') {
+        // Update will change with current date
+        remainingData = R.dissoc(rawKey, remainingData);
+      } else if (isReportType && rawKey === 'created') {
+        expect(stixData.created).toEqual(rawData.published);
+        remainingData = R.dissoc(rawKey, remainingData);
+      } else if (rawKey.endsWith('_ref') || rawKey.endsWith('_refs')) {
+        const resolvedIds = [];
+        const refetchDataAsArray = Array.isArray(refetchData) ? refetchData : [refetchData];
+        for (let i = 0; i < refetchDataAsArray.length; i += 1) {
+          const refetchElement = refetchDataAsArray[i];
+          const stixRef = await loadStixById(ADMIN_USER, refetchElement);
+          resolvedIds.push(stixRef.id, ...stixRef.x_opencti_stix_ids);
+        }
+        const initialDataAsArray = Array.isArray(initialData) ? initialData : [initialData];
+        for (let j = 0; j < initialDataAsArray.length; j += 1) {
+          const initialId = initialDataAsArray[j];
+          expect(resolvedIds).toContainEqual(initialId);
+        }
+      } else {
+        expect(refetchData).toEqual(initialData);
+      }
+    }
+    // Testing opencti added data
+    expect(remainingData.x_opencti_id).not.toBeNull();
+    expect(convertTypeToStixType(remainingData.x_opencti_type)).toEqual(rawData.type);
+    expect(remainingData.x_opencti_stix_ids).toContainEqual(rawData.id);
+    expect(remainingData.created_at).not.toBeNull();
+    expect(remainingData.updated_at).not.toBeNull();
+    // Default value for stix domains and relationships
+    if (isStixDomainObject(remainingData.x_opencti_type) || isStixRelationship(remainingData.x_opencti_type)) {
+      expect(remainingData.lang).toEqual('en');
+      remainingData = R.dissoc('lang', remainingData);
+      expect(remainingData.revoked).not.toBeNull(); // Could be revoked by the manager.
+      remainingData = R.dissoc('revoked', remainingData);
+      if (remainingData.confidence) {
+        expect(remainingData.confidence).toEqual(15);
+        remainingData = R.dissoc('confidence', remainingData);
+      }
+    }
+    // Default values for malware
+    if (remainingData.x_opencti_type === ENTITY_TYPE_MALWARE || remainingData.x_opencti_type === ENTITY_TYPE_INTRUSION_SET) {
+      expect(remainingData.first_seen).toEqual(FROM_START_STR);
+      remainingData = R.dissoc('first_seen', remainingData);
+      expect(remainingData.last_seen).toEqual(UNTIL_END_STR);
+      remainingData = R.dissoc('last_seen', remainingData);
+    }
+    // Default values for malware
+    if (remainingData.x_opencti_type === ENTITY_TYPE_MALWARE) {
+      expect(remainingData.is_family).toEqual(false);
+      remainingData = R.dissoc('is_family', remainingData);
+    }
+    // All remaining data must be extensions
+    const remain = R.mergeAll(
+      Object.entries(remainingData)
+        .filter(([k]) => !k.startsWith('x_') && k !== 'extensions')
+        .map(([k, v]) => ({ [k]: v }))
+    );
+    if (!R.isEmpty(remain)) {
+      console.log(remain);
+    }
+    const notExtSize = Object.keys(remainingData)
+      .filter((key) => !key.startsWith('x_') && key !== 'extensions').length;
+    expect(notExtSize).toEqual(0);
+  };
+
+  it('Should converter maintains data', async () => {
+    // await rawDataCompare('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc', 'attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
+
+    // Campaign
+
+    // await rawDataCompare('course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e', 'course-of-action--2d3af28d-aa36-59ad-ac57-65aa27664752');
+
+    // Grouping
+
+    // await rawDataCompare('identity--c017f212-546b-4f21-999d-97d3dc558f7b', 'identity--732421a0-8471-52de-8d9f-18c8b260813c');
+
+    // await rawDataCompare('incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4', 'incident--9024f9de-e5cc-5347-9509-cb7efdf8081d');
+
+    // await rawDataCompare('indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf', 'indicator--4099edd7-1efd-54aa-9736-7bcd7219b78b');
+
+    // Infrastructure
+
+    // await rawDataCompare('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7', 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+
+    // await rawDataCompare('location--5acd8b26-51c2-4608-86ed-e9edd43ad971', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d');
+
+    // await rawDataCompare('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+
+    // Malware analysis
+
+    // await rawDataCompare('note--573f623c-bf68-4f19-9500-d618f0d00af0', 'note--88978334-e6d4-53ba-b390-204f05b40af0');
+
+    // await rawDataCompare('observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be', 'observed-data--d5c0414a-aeb6-5927-a2ae-e465846c206f');
+
+    // await rawDataCompare('opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f', 'opinion--440d6aff-8a06-55e2-a638-92802747d447');
+
+    // await rawDataCompare('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', 'report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
+
+    // Threat actor
+
+    // Tool
+
+    // Vulnerability
+
+    // await rawDataCompare('marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168', 'marking-definition--ab216ddd-5f1e-5e6a-88d7-3797fbe5a03f');
+
+    // Language Content- Not implemented
+
+    // await rawDataCompare('sighting--579a46af-a339-400d-809e-b92101fe7de8', 'sighting--3310b5b6-6981-4fcb-817f-521acb908fff');
+
+    // await rawDataCompare('relationship--9315a197-fe15-4c96-b77c-edcaa5e22ecb', 'relationship--c5fcc64b-dd86-4041-ba1a-1910ba40fb73');
+
+    // Cyber observables
+    // ...
+  });
+});

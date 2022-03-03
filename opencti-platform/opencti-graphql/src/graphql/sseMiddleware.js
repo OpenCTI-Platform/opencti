@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
-import conf, { basePath, logApp } from '../config/conf';
+import conf, { basePath, booleanConf, logApp } from '../config/conf';
 import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
@@ -13,13 +13,12 @@ import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import {
   generateCreateMessage,
   isNotEmptyField,
-  READ_INDEX_STIX_CORE_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLES,
-  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_INFERRED_ENTITIES,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_STIX_META_OBJECTS,
-  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  READ_STIX_INDICES,
 } from '../database/utils';
-import { buildStixData } from '../database/stix';
+import { convertInstanceToStix } from '../database/stix';
 import { BYPASS, isBypassUser } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FROM_START_STR, utcDate } from '../utils/format';
@@ -37,6 +36,7 @@ const KEEP_ALIVE_INTERVAL_MS = 20000;
 const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
 const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
+const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
 
 const isEventGranted = (event, user) => {
   const { data } = event;
@@ -111,13 +111,6 @@ const authenticate = async (req, res, next) => {
 };
 
 const createSeeMiddleware = () => {
-  const queryIndices = [
-    READ_INDEX_STIX_DOMAIN_OBJECTS, // Malware, ...
-    READ_INDEX_STIX_META_OBJECTS, // Marking def, External ref ...
-    READ_INDEX_STIX_CYBER_OBSERVABLES, // File, ...
-    READ_INDEX_STIX_CORE_RELATIONSHIPS, // related-to, ...
-    READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, // sighting, ...
-  ];
   createHeartbeatProcessor();
   const wait = (ms) => {
     return new Promise((resolve) => setTimeout(() => resolve(), ms));
@@ -126,7 +119,7 @@ const createSeeMiddleware = () => {
     const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
     return R.find(capabilityControl, user.capabilities || []) !== undefined;
   };
-  const resolveMissingReferences = async (req, streamFilters, start, after, missingRefs, cache) => {
+  const resolveMissingReferences = async (queryIndices, req, streamFilters, start, after, missingRefs, cache) => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     const missingElements = [];
     if (refsToResolve.length > 0) {
@@ -146,7 +139,7 @@ const createSeeMiddleware = () => {
       const resolvedElements = await Promise.map(uniqueIds, elementResolver, { concurrency: ES_MAX_CONCURRENCY });
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
-        const newMissing = await resolveMissingReferences(req, streamFilters, start, after, parentRefs, cache);
+        const newMissing = await resolveMissingReferences(queryIndices, req, streamFilters, start, after, parentRefs, cache);
         missingElements.unshift(...newMissing);
       }
     }
@@ -267,11 +260,22 @@ const createSeeMiddleware = () => {
   };
   const liveStreamHandler = async (req, res) => {
     const { id } = req.params;
+    const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
     try {
       const version = STREAM_EVENT_VERSION;
-      const startFrom = req.query.from || req.headers['last-event-id'];
+      const startFrom = req.query.from || req.headers.from || req.headers['last-event-id'];
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
       const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
+      const withInferences = (req.query['with-inferences'] || req.headers['with-inferences']) === 'true';
+      if (withInferences) {
+        // Check if platform option is enable
+        if (!INCLUDE_INFERENCES) {
+          res.statusMessage = 'This live stream requires activated redis include_inferences option';
+          res.status(400).end();
+          return;
+        }
+        queryIndices.push(READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS);
+      }
       // Build filters
       let streamFilters = {};
       if (id !== DEFAULT_LIVE_STREAM) {
@@ -340,7 +344,7 @@ const createSeeMiddleware = () => {
           const { internal_id: elemId } = elements[index];
           const instance = await loadByIdWithMetaRels(req.session.user, elemId, { withFiles: true });
           if (isFullVisibleElement(instance)) {
-            const stixData = buildStixData(instance, { clearEmptyValues: true });
+            const stixData = convertInstanceToStix(instance, { clearEmptyValues: true });
             const start = stixData.updated_at;
             const eventId = utcDate(start).toDate().getTime();
             if (channel.connected()) {
@@ -348,13 +352,13 @@ const createSeeMiddleware = () => {
               // publish missing if needed
               if (noDependencies === false) {
                 const refs = stixRefsExtractor(stixData, generateStandardId);
-                const missingElements = await resolveMissingReferences(req, streamFilters, after, start, refs, cache);
+                const missingElements = await resolveMissingReferences(queryIndices, req, streamFilters, after, start, refs, cache);
                 for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
                   const missingRef = missingElements[missingIndex];
                   if (!cache.has(missingRef)) {
                     const missingInstance = await loadByIdWithMetaRels(req.session.user, missingRef);
                     if (isFullVisibleElement(missingInstance)) {
-                      const missingData = buildStixData(missingInstance, { clearEmptyValues: true });
+                      const missingData = convertInstanceToStix(missingInstance, { clearEmptyValues: true });
                       const markings = missingData.object_marking_refs || [];
                       const message = generateCreateMessage(missingInstance);
                       const content = { data: missingData, markings, message, version };
@@ -400,6 +404,7 @@ const createSeeMiddleware = () => {
         if (!noDelete) {
           const stixDeletions = elements
             .filter((e) => e.topic === EVENT_TYPE_DELETE)
+            .filter((e) => (INCLUDE_INFERENCES ? true : (e.data.data.x_opencti_inference ?? false) === false))
             .filter((d) => {
               // Deletion must be published if UPDATED_AT of delete element < fetching UPDATED_AT
               const deleteUpdatedAt = utcDate(d.data.data.updated_at);

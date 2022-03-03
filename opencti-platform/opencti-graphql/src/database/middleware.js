@@ -82,7 +82,7 @@ import {
   storeUpdateEvent,
 } from './redis';
 import {
-  buildStixData,
+  convertInstanceToStix,
   checkStixCoreRelationshipMapping,
   checkStixCyberObservableRelationshipMapping,
   cleanStixIds,
@@ -649,7 +649,7 @@ export const loadByIdWithMetaRels = async (user, id, opts = {}) => {
 export const loadStixById = async (user, id, opts = {}) => {
   const instance = await loadByIdWithMetaRels(user, id, opts);
   if (instance) {
-    return buildStixData(instance, { clearEmptyValues: true });
+    return convertInstanceToStix(instance, { clearEmptyValues: true });
   }
   return undefined;
 };
@@ -1044,6 +1044,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   }
   logApp.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
   // Pre-checks
+  // - No self merge
   const sourceIds = R.map((e) => e.internal_id, sourceEntities);
   if (R.includes(targetEntity.internal_id, sourceIds)) {
     throw FunctionalError('Cannot merge an entity on itself', {
@@ -1051,6 +1052,14 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
       source: sourceIds,
     });
   }
+  // - No inferences
+  const elementsInferences = elements.filter((s) => isInferredIndex(s._index));
+  if (elementsInferences.length > 0) {
+    throw FunctionalError('Cannot merge inferred entities', {
+      inferences: elementsInferences.map((e) => e.internal_id)
+    });
+  }
+  // - No different types
   const targetType = targetEntity.entity_type;
   const sourceTypes = R.map((s) => s.entity_type, sourceEntities);
   const isWorkingOnSameType = sourceTypes.every((v) => v === targetType);
@@ -2390,7 +2399,7 @@ const buildRelationData = async (user, input, opts = {}) => {
         connectionFormat: false,
       });
       if (statuses.length > 0) {
-        data.status_id = R.head(statuses).id;
+        data.x_opencti_workflow_id = R.head(statuses).id;
       }
     }
   }
@@ -2714,7 +2723,7 @@ const buildEntityData = async (user, input, type, opts = {}) => {
       connectionFormat: false,
     });
     if (statuses.length > 0) {
-      data = R.assoc('status_id', R.head(statuses).id, data);
+      data = R.assoc('x_opencti_workflow_id', R.head(statuses).id, data);
     }
   }
   // -- Aliased entities
@@ -2849,13 +2858,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
           const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
           hashMergeValidation([target, ...sources]);
-
-          await mergeEntities(
-            user,
-            target.internal_id,
-            sources.map((s) => s.internal_id),
-            { locks: participantIds }
-          );
+          await mergeEntities(user, target.internal_id, sources.map((s) => s.internal_id), { locks: participantIds });
           dataEntity = upsertElementRaw(target, type, resolvedInput);
         } else if (existingByStandard) {
           // Sometimes multiple entities can match

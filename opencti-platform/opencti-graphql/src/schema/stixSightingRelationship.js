@@ -42,7 +42,7 @@ export const stixSightingRelationshipsAttributes = {
     'attribute_count',
     'x_opencti_negative',
     'i_inference_weight',
-    'status_id',
+    'x_opencti_workflow_id',
   ],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), stixSightingRelationshipsAttributes);

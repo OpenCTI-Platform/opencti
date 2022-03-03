@@ -59,7 +59,7 @@ const stixDomainObjectResolvers = {
     },
     importFiles: (entity, { first }, { user }) => filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
     exportFiles: (entity, { first }, { user }) => filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
-    status: (entity, _, { user }) => (entity.status_id ? findStatusById(user, entity.status_id) : null),
+    status: (entity, _, { user }) => (entity.x_opencti_workflow_id ? findStatusById(user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (entity, _, { user }) => {
       const statusesEdges = await getTypeStatuses(user, entity.entity_type);
       return statusesEdges.edges.length > 0;

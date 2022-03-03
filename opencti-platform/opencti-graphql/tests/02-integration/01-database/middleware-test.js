@@ -229,7 +229,7 @@ describe('Entities listing', () => {
   });
   it('should list multiple entities with attribute filters', async () => {
     const identity = await elLoadById(ADMIN_USER, 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5');
-    const filters = [{ key: `rel_created-by.internal_id`, values: [identity.internal_id] }];
+    const filters = [{ key: 'rel_created-by.internal_id', values: [identity.internal_id] }];
     const options = { filters };
     const entities = await listEntities(ADMIN_USER, ['Attack-Pattern', 'Intrusion-Set'], options);
     expect(entities).not.toBeNull();
@@ -842,16 +842,15 @@ describe('Upsert and merge entities', () => {
   it('should dates update correctly rejected', async () => {
     const target = await createThreat({ name: 'THREAT_UPDATE' });
     const malware = await createEntity(ADMIN_USER, { name: 'MALWARE_UPDATE_02' }, ENTITY_TYPE_MALWARE);
-    const createBadRelation = () =>
-      createRelation(ADMIN_USER, {
-        fromId: target.internal_id,
-        toId: malware.internal_id,
-        relationship_type: RELATION_USES,
-        start_time: '2021-10-11T22:00:00.000Z',
-        stop_time: '2021-10-08T22:00:00.000Z',
-      });
+    const createBadRelation = () => createRelation(ADMIN_USER, {
+      fromId: target.internal_id,
+      toId: malware.internal_id,
+      relationship_type: RELATION_USES,
+      start_time: '2021-10-11T22:00:00.000Z',
+      stop_time: '2021-10-08T22:00:00.000Z',
+    });
     await expect(createBadRelation()).rejects.toHaveProperty(
-      `data.reason`,
+      'data.reason',
       'You cant create a relation with a start_time less than the stop_time'
     );
     const rel = await createRelation(ADMIN_USER, {
@@ -992,9 +991,7 @@ describe('Upsert and merge entities', () => {
     });
     // merge by update
     const md5Input = { key: 'hashes.MD5', value: [MD5] };
-    // eslint-disable-next-line prettier/prettier
     const patchSha1 = updateAttribute(SYSTEM_USER, sha1.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);
-    // eslint-disable-next-line prettier/prettier
     const patchSha256 = updateAttribute(SYSTEM_USER, sha256.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [
       md5Input,
     ]);

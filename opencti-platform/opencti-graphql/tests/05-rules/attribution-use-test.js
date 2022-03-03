@@ -15,7 +15,6 @@ const SPELEVO = 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85';
 const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 
 describe('Attribute use rule', () => {
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should rule successfully activated',
     async () => {
@@ -45,7 +44,6 @@ describe('Attribute use rule', () => {
       // Check database state
       const afterActivationRelations = await getInferences(RELATION_USES);
       expect(afterActivationRelations.length).toBe(1);
-      // eslint-disable-next-line prettier/prettier
       const myThreatToParadise = await inferenceLookup(
         afterActivationRelations,
         MY_THREAT,

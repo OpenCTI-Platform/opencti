@@ -119,7 +119,7 @@ export const stixCoreRelationshipsAttributes = [
   'i_stop_time_month',
   'i_stop_time_year',
   'i_inference_weight',
-  'status_id',
+  'x_opencti_workflow_id',
 ];
 R.map(
   (stixCoreRelationshipType) => schemaTypes.registerAttributes(stixCoreRelationshipType, stixCoreRelationshipsAttributes),

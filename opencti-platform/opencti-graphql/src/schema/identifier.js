@@ -406,6 +406,7 @@ export const getInputIds = (type, input) => {
 };
 export const getInstanceIdentifiers = (instance) => {
   const base = {
+    _index: instance._index,
     standard_id: instance.standard_id,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,

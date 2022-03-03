@@ -327,9 +327,13 @@ export const rulesCleanHandler = async (eventId, instances, rules, deletedDepend
 let streamEventProcessedCount = 0;
 const ruleStreamHandler = async (streamEvents) => {
   // Create list of events to process
+  // Events must be in a compatible version and not inferences events
+  // Inferences directly handle recursively by the manager
   const compatibleEvents = streamEvents.filter((event) => {
-    const { data } = event;
-    return data && parseInt(data.version, 10) >= MIN_LIVE_STREAM_EVENT_VERSION;
+    const eventVersion = parseInt(event.data?.version ?? '0', 10);
+    const isCompatibleVersion = eventVersion >= MIN_LIVE_STREAM_EVENT_VERSION;
+    const isInferenceEvent = event.data?.data?.x_opencti_inference ?? false;
+    return isCompatibleVersion && !isInferenceEvent;
   });
   if (compatibleEvents.length > 0) {
     const ruleEvents = compatibleEvents.map((e) => {

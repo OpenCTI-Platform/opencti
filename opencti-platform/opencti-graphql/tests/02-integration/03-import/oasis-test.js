@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import platformInit from '../../../src/initialization';
 import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI } from '../../utils/testQuery';
 import { execPython3 } from '../../../src/python/pythonBridge';

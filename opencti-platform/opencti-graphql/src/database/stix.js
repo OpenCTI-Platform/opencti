@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import dot from 'dot-object';
 import { version as uuidVersion } from 'uuid';
 import uuidTime from 'uuid-time';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -141,8 +142,8 @@ import {
   INTERNAL_PREFIX,
   REL_INDEX_PREFIX,
 } from '../schema/general';
-import { isEmptyField, isNotEmptyField, pascalize, UPDATE_OPERATION_REPLACE } from './utils';
-import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { isEmptyField, isInferredIndex, isNotEmptyField, pascalize, UPDATE_OPERATION_REPLACE } from './utils';
+import { isStixRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
@@ -163,6 +164,40 @@ import { isInternalObject } from '../schema/internalObject';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
+const EXCLUDED_FIELDS_FROM_STIX = [
+  '_index',
+  'standard_id',
+  'internal_id',
+  'fromId',
+  'fromRole',
+  'fromType',
+  'toId',
+  'toRole',
+  'toType',
+  'parent_types',
+  'base_type',
+  'entity_type',
+  'update',
+  'connections',
+  'created_at',
+  'updated_at',
+  'sort',
+  'x_opencti_inferences',
+  'x_opencti_graph_data'
+];
+const STIX_BASIC_FIELDS = [
+  'id',
+  'x_opencti_id',
+  'type',
+  'spec_version',
+  'source_ref',
+  'x_opencti_source_ref',
+  'target_ref',
+  'x_opencti_target_ref',
+  'start_time',
+  'stop_time',
+  'hashes',
+];
 
 export const convertTypeToStixType = (type) => {
   if (isStixDomainObjectIdentity(type)) {
@@ -188,19 +223,6 @@ const isValidStix = (data) => {
   return !R.isEmpty(data);
 };
 
-const BASIC_FIELDS = [
-  'id',
-  'x_opencti_id',
-  'type',
-  'spec_version',
-  'source_ref',
-  'x_opencti_source_ref',
-  'target_ref',
-  'x_opencti_target_ref',
-  'start_time',
-  'stop_time',
-  'hashes',
-];
 const isDefinedValue = (element) => {
   if (element) {
     // If not in diff mode, we only take into account none empty element
@@ -211,75 +233,80 @@ const isDefinedValue = (element) => {
   }
   return false;
 };
+
 export const isTrustedStixId = (stixId) => {
   const segments = stixId.split('--');
   const [, uuid] = segments;
   return uuidVersion(uuid) !== 1;
 };
-export const stixDataConverter = (data, args = {}) => {
-  const { patchGeneration = false, clearEmptyValues = false } = args;
-  let finalData = data;
-  const isSighting = data.type === 'sighting';
+
+const cleanObject = (data) => {
+  return R.mergeAll(Object.entries(data).filter(([, v]) => isNotEmptyField(v)).map(([k, v]) => ({ [k]: v })));
+};
+
+const extractObjectExtensions = (data) => {
+  return R.mergeAll(Object.entries(data).filter(([k, v]) => {
+    return k.startsWith('x_') && isNotEmptyField(v);
+  }).map(([k, v]) => ({ [k]: v })));
+};
+
+export const convertInstanceToStix = (instance, args = {}) => {
+  const { patchGeneration = false, clearEmptyValues = false, onlyBase = false } = args;
+  let finalData = instance;
+  if (instance._index && isInferredIndex(instance._index)) {
+    finalData.x_opencti_inference = true;
+  }
+  if (instance.internal_id) {
+    finalData.x_opencti_id = instance.internal_id;
+  }
+  if (instance.standard_id) {
+    finalData.id = instance.standard_id;
+  }
+  if (instance.entity_type) {
+    finalData.type = convertTypeToStixType(instance.entity_type);
+    finalData.x_opencti_type = instance.entity_type;
+  }
   // region Relationships
-  if (isDefinedValue(finalData.fromId)) {
-    finalData = R.pipe(R.dissoc('fromId'), R.dissoc('fromRole'), R.dissoc('fromType'))(finalData);
-    if (isSighting) {
-      finalData = R.pipe(
-        R.assoc('x_opencti_sighting_of_ref', data.fromId),
-        R.assoc('x_opencti_sighting_of_type', data.fromType)
-      )(finalData);
-    } else {
-      finalData = R.pipe(
-        R.assoc('x_opencti_source_ref', data.fromId),
-        R.assoc('x_opencti_source_type', data.fromType)
-      )(finalData);
-    }
+  const isRelation = isStixRelationship(instance.type);
+  if (isRelation && isEmptyField(finalData.from)) {
+    throw UnsupportedError(`Cannot convert relation without a resolved from: ${finalData.fromId}`);
+  }
+  if (isRelation && isEmptyField(finalData.to)) {
+    throw UnsupportedError(`Cannot convert relation without a resolved to: ${finalData.toId}`);
   }
   if (isDefinedValue(finalData.from)) {
-    finalData = R.pipe(R.dissoc(RELATION_FROM))(finalData);
-    if (isSighting) {
+    finalData = R.pipe(R.dissoc(RELATION_FROM), R.dissoc('fromId'))(finalData);
+    if (instance.type === 'sighting') {
       finalData = R.pipe(
         R.dissoc('source_ref'),
-        R.assoc('sighting_of_ref', data.from.standard_id),
-        R.assoc('x_opencti_sighting_of_ref', data.from.internal_id),
-        R.assoc('x_opencti_sighting_of_type', data.from.entity_type)
+        R.dissoc('relationship_type'),
+        R.assoc('sighting_of_ref', instance.from.standard_id),
+        R.assoc('x_opencti_sighting_of_ref', instance.from.internal_id),
+        R.assoc('x_opencti_sighting_of_type', instance.from.entity_type)
       )(finalData);
     } else {
       finalData = R.pipe(
-        R.assoc('source_ref', data.from.standard_id),
-        R.assoc('x_opencti_source_ref', data.from.internal_id),
-        R.assoc('x_opencti_source_type', data.from.entity_type)
-      )(finalData);
-    }
-  }
-  if (isDefinedValue(finalData.toId)) {
-    finalData = R.pipe(R.dissoc('toId'), R.dissoc('toRole'), R.dissoc('toType'))(finalData);
-    if (isSighting) {
-      finalData = R.pipe(
-        R.assoc('x_opencti_where_sighted_refs', [data.toId]),
-        R.assoc('x_opencti_where_sighted_types', [data.toType])
-      )(finalData);
-    } else {
-      finalData = R.pipe(
-        R.assoc('x_opencti_target_ref', data.toId),
-        R.assoc('x_opencti_target_type', data.toType)
+        R.assoc('source_ref', instance.from.standard_id),
+        R.assoc('x_opencti_source_ref', instance.from.internal_id),
+        R.assoc('x_opencti_source_type', instance.from.entity_type)
       )(finalData);
     }
   }
   if (isDefinedValue(finalData.to)) {
     finalData = R.pipe(R.dissoc(RELATION_TO))(finalData);
-    if (isSighting) {
+    if (instance.type === 'sighting') {
       finalData = R.pipe(
         R.dissoc('target_ref'),
-        R.assoc('where_sighted_refs', [data.to.standard_id]),
-        R.assoc('x_opencti_where_sighted_refs', [data.to.internal_id]),
-        R.assoc('x_opencti_where_sighted_types', [data.to.entity_type])
+        R.dissoc('relationship_type'),
+        R.assoc('where_sighted_refs', [instance.to.standard_id]),
+        R.assoc('x_opencti_where_sighted_refs', [instance.to.internal_id]),
+        R.assoc('x_opencti_where_sighted_types', [instance.to.entity_type])
       )(finalData);
     } else {
       finalData = R.pipe(
-        R.assoc('target_ref', data.to.standard_id),
-        R.assoc('x_opencti_target_ref', data.to.internal_id),
-        R.assoc('x_opencti_target_type', data.to.entity_type)
+        R.assoc('target_ref', instance.to.standard_id),
+        R.assoc('x_opencti_target_ref', instance.to.internal_id),
+        R.assoc('x_opencti_target_type', instance.to.entity_type)
       )(finalData);
     }
   }
@@ -342,10 +369,10 @@ export const stixDataConverter = (data, args = {}) => {
   if (isDefinedValue(finalData.killChainPhases)) {
     const killSet = Array.isArray(finalData.killChainPhases) ? finalData.killChainPhases : [finalData.killChainPhases];
     const kills = R.map((k) => {
-      const value = { kill_chain_name: k.kill_chain_name, phase_name: k.phase_name };
-      return patchGeneration
-        ? { value: k.standard_id, reference: k.kill_chain_name, x_opencti_id: k.internal_id }
-        : value;
+      const extension = extractObjectExtensions(k);
+      const attrs = ['kill_chain_name', 'phase_name'];
+      const value = cleanObject({ ...R.pick(attrs, k), ...extension });
+      return patchGeneration ? { value: k.standard_id, reference: k.kill_chain_name, x_opencti_id: k.internal_id } : value;
     }, killSet);
     finalData = R.pipe(R.dissoc(INPUT_KILLCHAIN), R.assoc('kill_chain_phases', kills))(finalData);
   } else {
@@ -357,7 +384,9 @@ export const stixDataConverter = (data, args = {}) => {
     const refs = finalData.externalReferences;
     const externalSet = Array.isArray(refs) ? refs : [refs];
     const externals = R.map((e) => {
-      const value = R.pick(['source_name', 'description', 'url', 'hashes', 'external_id'], e);
+      const extension = extractObjectExtensions(e);
+      const attrs = ['source_name', 'description', 'url', 'hashes', 'external_id'];
+      const value = cleanObject({ ...R.pick(attrs, e), ...extension });
       return patchGeneration ? { value: e.standard_id, reference: e.source_name, x_opencti_id: e.internal_id } : value;
     }, externalSet);
     finalData = R.pipe(R.dissoc(INPUT_EXTERNAL_REFS), R.assoc('external_references', externals))(finalData);
@@ -417,7 +446,7 @@ export const stixDataConverter = (data, args = {}) => {
     const isEmpty = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
     const clearEmptyKey = clearEmptyValues && isEmpty;
     const isInternal = key.startsWith(INTERNAL_PREFIX) || key.startsWith(REL_INDEX_PREFIX);
-    const isInternalKey = isInternal || key === 'x_opencti_graph_data'; // Specific case of graph
+    const isInternalKey = isInternal || EXCLUDED_FIELDS_FROM_STIX.includes(key);
     if (isInternalKey || isStixRelationShipExceptMeta(key) || clearEmptyKey) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
@@ -432,11 +461,38 @@ export const stixDataConverter = (data, args = {}) => {
   // region specific format for marking definition
   if (filteredData.type === convertTypeToStixType(ENTITY_TYPE_MARKING_DEFINITION) && filteredData.definition) {
     const key = filteredData.definition_type.toLowerCase();
-    filteredData.name = filteredData.definition;
+    filteredData.x_opencti_name = filteredData.definition;
     filteredData.definition_type = key;
     filteredData.definition = { [key]: filteredData.definition.replace(/^(tlp|TLP):/g, '') };
   }
+  // Add x_ in extension
+  // https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ct36xlv6obo7
+  const createFromPath = (path, value) => {
+    const row = { [path]: value };
+    dot.object(row);
+    return row;
+  };
+  const dataEntries = Object.entries(filteredData);
+  let openctiExtension = {};
+  for (let attr = 0; attr < dataEntries.length; attr += 1) {
+    const [key, val] = dataEntries[attr];
+    if (key.startsWith('x_')) {
+      const isOpenCTIExtension = key.startsWith('x_opencti_');
+      const path = isOpenCTIExtension ? key.replace('x_opencti_', 'opencti.') : key.substring(2);
+      const obj = createFromPath(path, val);
+      openctiExtension = R.mergeDeepRight(openctiExtension, obj);
+    }
+    if (!R.isEmpty(openctiExtension)) {
+      filteredData.extensions = openctiExtension;
+    }
+  }
   // endregion
+  if (!isValidStix(filteredData)) {
+    throw FunctionalError('Invalid stix data conversion', { data: instance });
+  }
+  if (onlyBase) {
+    return R.pick(STIX_BASIC_FIELDS, filteredData);
+  }
   return filteredData;
 };
 
@@ -531,34 +587,6 @@ export const buildInputDataFromStix = (stix) => {
   }
   return { type: inputType, input: inputData };
 };
-export const buildStixData = (data, args = {}) => {
-  const { onlyBase = false } = args;
-  const type = data.entity_type;
-  // general
-  const rawData = R.pipe(
-    R.assoc('id', data.standard_id),
-    R.assoc('x_opencti_id', data.internal_id),
-    R.assoc('type', convertTypeToStixType(type)),
-    R.assoc('x_opencti_type', type),
-    R.dissoc('_index'),
-    R.dissoc('standard_id'),
-    R.dissoc('internal_id'),
-    R.dissoc('parent_types'),
-    R.dissoc('base_type'),
-    R.dissoc('entity_type'),
-    R.dissoc('update'),
-    R.dissoc('connections'),
-    R.dissoc('sort')
-  )(data);
-  const stixData = stixDataConverter(rawData, args);
-  if (!isValidStix(stixData)) {
-    throw FunctionalError('Invalid stix data conversion', { data: stixData });
-  }
-  if (onlyBase) {
-    return R.pick(BASIC_FIELDS, stixData);
-  }
-  return stixData;
-};
 
 export const mergeDeepRightAll = R.unapply(R.reduce(R.mergeDeepRight, {}));
 export const updateInputsToPatch = (inputs) => {
@@ -571,13 +599,13 @@ export const updateInputsToPatch = (inputs) => {
       throw UnsupportedError('previous must be an array');
     }
     const opts = { patchGeneration: true };
-    const keyConvert = R.head(Object.keys(stixDataConverter({ [key]: value || previous }, opts)));
+    const keyConvert = R.head(Object.keys(convertInstanceToStix({ [key]: value || previous }, opts)));
     // Sometime the key will be empty because the patch include a none stix modification
     if (isEmptyField(keyConvert)) {
       return {};
     }
     const converter = (val) => {
-      const converted = stixDataConverter({ [key]: val }, opts);
+      const converted = convertInstanceToStix({ [key]: val }, opts);
       return converted[keyConvert];
     };
     const convertedVal = value ? converter(value) : value;
@@ -600,9 +628,9 @@ export const updateInputsToPatch = (inputs) => {
 
 export const convertStixMetaRelationshipToStix = (data) => {
   const entityType = data.entity_type;
-  let finalData = buildStixData(data.from, { onlyBase: true });
+  let finalData = convertInstanceToStix(data.from, { onlyBase: true });
   if (isStixInternalMetaRelationship(entityType)) {
-    finalData = R.assoc(entityType.replace('-', '_'), [buildStixData(data.to)], finalData);
+    finalData = R.assoc(entityType.replace('-', '_'), [convertInstanceToStix(data.to)], finalData);
   } else {
     finalData = R.assoc(
       `${entityType.replace('-', '_')}_ref${!isSingleStixEmbeddedRelationship(entityType) ? 's' : ''}`,
@@ -615,7 +643,7 @@ export const convertStixMetaRelationshipToStix = (data) => {
 
 export const convertStixCyberObservableRelationshipToStix = (data) => {
   const entityType = data.entity_type;
-  let finalData = buildStixData(data.from, { onlyBase: true });
+  let finalData = convertInstanceToStix(data.from, { onlyBase: true });
   finalData = R.assoc(`${entityType.replace('-', '_')}_ref`, data.to.standard_id, finalData);
   return finalData;
 };

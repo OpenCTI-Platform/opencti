@@ -1,11 +1,10 @@
-/* eslint-disable prettier/prettier */
 import platformInit from '../../../src/initialization';
 import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI } from '../../utils/testQuery';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { startModules, shutdownModules } from '../../../src/modules';
 
 describe('Database provision', () => {
-  const importOpts = [API_URI, API_TOKEN, '/tests/data/DATA-TEST-STIX2_v2.json'];
+  const importOpts = [API_URI, API_TOKEN, './tests/data/DATA-TEST-STIX2_v2.json'];
   it(
     'should platform init',
     () => {

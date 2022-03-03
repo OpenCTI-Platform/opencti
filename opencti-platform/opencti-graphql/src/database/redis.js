@@ -18,7 +18,7 @@ import {
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
-import { buildStixData, updateInputsToPatch } from './stix';
+import { convertInstanceToStix, updateInputsToPatch } from './stix';
 import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
@@ -33,6 +33,7 @@ import {
 } from '../schema/stixEmbeddedRelationship';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
+const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
 const REDIS_CA = conf.get('redis:ca').map((path) => readFileSync(path));
 const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
@@ -40,6 +41,10 @@ const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 const BASE_DATABASE = 0; // works key for tracking / stream
 const CONTEXT_DATABASE = 1; // locks / user context
 const REDIS_EXPIRE_TIME = 90;
+
+const mustBeIncludeInStream = (instance) => {
+  return INCLUDE_INFERENCES || !isInferredIndex(instance._index);
+};
 
 const redisOptions = (database) => ({
   keyPrefix: REDIS_PREFIX,
@@ -378,8 +383,8 @@ const DIFF_REMOVE = 3;
 const DIFF_TYPE = '_t';
 const DIFF_TYPE_ARRAY = 'a';
 export const computeMergeDifferential = (initialInstance, mergedInstance) => {
-  const convertInit = buildStixData(initialInstance, { patchGeneration: true });
-  const convertMerged = buildStixData(mergedInstance, { patchGeneration: true });
+  const convertInit = convertInstanceToStix(initialInstance, { patchGeneration: true });
+  const convertMerged = convertInstanceToStix(mergedInstance, { patchGeneration: true });
   const diffGenerator = createJsonDiff({
     objectHash: (obj) => {
       return obj.x_opencti_id;
@@ -454,12 +459,12 @@ export const computeMergeDifferential = (initialInstance, mergedInstance) => {
 const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities, impacts) => {
   const patch = computeMergeDifferential(initialInstance, mergedInstance);
   const message = generateMergeMessage(initialInstance, sourceEntities);
-  const data = buildStixData(mergedInstance, { clearEmptyValues: true });
+  const data = convertInstanceToStix(mergedInstance, { clearEmptyValues: true });
   const { updatedRelations, dependencyDeletions } = impacts;
   data.x_opencti_patch = patch;
   data.x_opencti_context = {
-    sources: R.map((s) => buildStixData(s, { clearEmptyValues: true }), sourceEntities),
-    deletions: R.map((s) => buildStixData(s, { clearEmptyValues: true }), dependencyDeletions),
+    sources: R.map((s) => convertInstanceToStix(s, { clearEmptyValues: true }), sourceEntities),
+    deletions: R.map((s) => convertInstanceToStix(s, { clearEmptyValues: true }), dependencyDeletions),
     shifts: updatedRelations,
   };
   return buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.object_marking_refs, message, data);
@@ -467,10 +472,7 @@ const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities, 
 export const storeMergeEvent = async (user, initialInstance, mergedInstance, sourceEntities, impacts) => {
   try {
     const event = buildMergeEvent(user, initialInstance, mergedInstance, sourceEntities, impacts);
-    // Push the event in the stream only if instance is in "real index"
-    if (!isInferredIndex(mergedInstance._index)) {
-      await pushToStream(clientBase, event);
-    }
+    await pushToStream(clientBase, event);
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
@@ -487,7 +489,7 @@ export const buildUpdateEvent = (user, instance, patch, opts = {}) => {
   // Generate the message
   const message = withoutMessage ? '-' : generateUpdateMessage(patch);
   // Build and send the event
-  const dataEvent = buildStixData(data, { clearEmptyValues });
+  const dataEvent = convertInstanceToStix(data, { clearEmptyValues });
   return buildEvent(
     EVENT_TYPE_UPDATE,
     user,
@@ -507,7 +509,7 @@ export const storeUpdateEvent = async (user, instance, patchInputs, opts = {}) =
       const eventData = mustBeRepublished ? instance : getInstanceIdentifiers(instance);
       const event = buildUpdateEvent(user, eventData, patch, opts);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index)) {
+      if (mustBeIncludeInStream(instance)) {
         await pushToStream(clientBase, event);
       }
       return event;
@@ -545,7 +547,7 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
   }
   // Convert the input to data
   const mergedData = { ...instance, ...input };
-  const data = buildStixData(mergedData, { clearEmptyValues: true });
+  const data = convertInstanceToStix(mergedData, { clearEmptyValues: true });
   // Generate the message
   const message = withoutMessage ? '-' : generateCreateMessage(mergedData);
   // Build and send the event
@@ -553,15 +555,16 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
   return buildEvent(EVENT_TYPE_CREATE, user, inputMarkings, message, data);
 };
 export const buildScanEvent = (user, instance) => {
-  const data = buildStixData(instance);
+  const data = convertInstanceToStix(instance);
   return buildEvent(EVENT_TYPE_CREATE, user, instance.object_marking_refs ?? [], '-', data);
 };
+
 export const storeCreateEvent = async (user, instance, input, loaders) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
       const event = await buildCreateEvent(user, instance, input, loaders);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index)) {
+      if (mustBeIncludeInStream(instance)) {
         await pushToStream(clientBase, event);
       }
       return event;
@@ -598,11 +601,11 @@ export const buildDeleteEvent = async (user, instance, dependencyDeletions, load
     return buildUpdateEvent(user, publishedInstance, patch, opts);
   }
   // Convert the input to data
-  const data = buildStixData(instance, { clearEmptyValues: true });
+  const data = convertInstanceToStix(instance, { clearEmptyValues: true });
   // Generate the message
   const message = withoutMessage ? '-' : generateDeleteMessage(instance);
   data.x_opencti_context = {
-    deletions: R.map((s) => buildStixData(s, { clearEmptyValues: true }), dependencyDeletions),
+    deletions: R.map((s) => convertInstanceToStix(s, { clearEmptyValues: true }), dependencyDeletions),
   };
   return buildEvent(EVENT_TYPE_DELETE, user, instance.object_marking_refs, message, data);
 };
@@ -611,7 +614,7 @@ export const storeDeleteEvent = async (user, instance, dependencyDeletions, load
     if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
       const event = await buildDeleteEvent(user, instance, dependencyDeletions, loaders);
       // Push the event in the stream only if instance is in "real index"
-      if (!isInferredIndex(instance._index)) {
+      if (mustBeIncludeInStream(instance)) {
         await pushToStream(clientBase, event);
       }
       return event;

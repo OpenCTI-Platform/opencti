@@ -19,7 +19,6 @@ const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const TLP_TEST_ID = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
 
 describe('Located at located rule', () => {
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should rule successfully activated',
     async () => {
@@ -42,7 +41,6 @@ describe('Located at located rule', () => {
       // Check database state
       const afterActivationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterActivationRelations.length).toBe(3);
-      // eslint-disable-next-line prettier/prettier
       const hietzingToWesternEurope = await inferenceLookup(
         afterActivationRelations,
         HIETZING,
@@ -89,7 +87,6 @@ describe('Located at located rule', () => {
       const afterLiveRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterLiveRelations.length).toBe(5);
       // Inferences must have been created by the markings combination
-      // eslint-disable-next-line prettier/prettier
       const parisToWesternEurope = await inferenceLookup(
         afterLiveRelations,
         PARIS,

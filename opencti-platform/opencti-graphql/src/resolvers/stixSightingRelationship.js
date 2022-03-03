@@ -69,7 +69,7 @@ const stixSightingRelationshipResolvers = {
     notes: (rel, _, { user }) => notesLoader.load(rel.id, user),
     opinions: (rel, _, { user }) => opinionsLoader.load(rel.id, user),
     editContext: (rel) => fetchEditContext(rel.id),
-    status: (entity, _, { user }) => (entity.status_id ? findStatusById(user, entity.status_id) : null),
+    status: (entity, _, { user }) => (entity.x_opencti_workflow_id ? findStatusById(user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (entity, _, { user }) => {
       const statusesEdges = await getTypeStatuses(user, entity.entity_type);
       return statusesEdges.edges.length > 0;

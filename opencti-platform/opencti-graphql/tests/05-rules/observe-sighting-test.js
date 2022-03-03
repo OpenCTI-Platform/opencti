@@ -28,7 +28,6 @@ describe('Observed sighting rule', () => {
     return inferences;
   };
 
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should rule successfully activated',
     async () => {
