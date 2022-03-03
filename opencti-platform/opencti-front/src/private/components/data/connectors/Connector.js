@@ -416,7 +416,7 @@ class ConnectorComponent extends Component {
             </Button>
             <Button
               onClick={this.submitResetState.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.resetting}
             >
               {t('Reset')}
@@ -444,7 +444,7 @@ class ConnectorComponent extends Component {
             </Button>
             <Button
               onClick={this.submitClearWorks.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.clearing}
             >
               {t('Clear')}

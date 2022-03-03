@@ -179,7 +179,6 @@ class StixCyberObservableIndicatorsComponent extends Component {
             anchorEl={this.state.anchorEl}
             open={Boolean(this.state.anchorEl)}
             onClose={this.handleClose.bind(this)}
-            style={{ marginTop: 50 }}
           >
             <MenuItem onClick={this.handleOpenPromoteStix.bind(this)}>
               {t('[Promote] Create a STIX indicator')}
