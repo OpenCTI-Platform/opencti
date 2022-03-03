@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -168,6 +170,7 @@ class RequiredResourceLineComponent extends Component {
       t,
       fldt,
       classes,
+      refreshQuery,
       data,
       remediationId,
       requiredResourceData,
@@ -287,15 +290,19 @@ class RequiredResourceLineComponent extends Component {
               </Grid>
               <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                 <CyioCoreobjectExternalReferences
+                  typename={requiredResourceData.__typename}
                   externalReferences={requiredResourceData.links}
                   cyioCoreObjectId={remediationId}
+                  refreshQuery={refreshQuery}
                 />
               </Grid>
               <Grid style={{ margin: '30px 0 20px 0' }} xs={12} item={true}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  typename={requiredResourceData.__typename}
                   notes={requiredResourceData.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                   marginTop='0px'
+                  refreshQuery={refreshQuery}
                 // data={props}
                 // marginTop={marginTop}
                 />
@@ -309,6 +316,7 @@ class RequiredResourceLineComponent extends Component {
             remediationId={remediationId}
             requiredResourceData={requiredResourceData}
             data={data}
+            refreshQuery={refreshQuery}
           />
         </div>
       </div>
@@ -326,6 +334,7 @@ RequiredResourceLineComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
+  refreshQuery: PropTypes.func,
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,

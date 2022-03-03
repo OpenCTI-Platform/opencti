@@ -51,12 +51,13 @@ class RelatedTasks extends Component {
         environment={QueryRendererDarkLight}
         query={RelatedTasksLinesQuery}
         variables={{ id: remediationId }}
-        render={({ props }) => {
+        render={({ props, error, retry }) => {
           if (props) {
             return (
               <RelatedTasksLines
                 remediationId={remediationId}
                 data={props}
+                refreshQuery={retry}
               />
             );
           }
