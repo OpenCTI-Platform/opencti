@@ -14,6 +14,7 @@ import RootEvents from './components/events/Root';
 import RootObservations from './components/observations/Root';
 import RootThreats from './components/threats/Root';
 import RootAssets from './components/assets/Root';
+import RootRiskAssessment from './components/riskAssessment/Root';
 import RootArsenal from './components/arsenal/Root';
 import RootEntities from './components/entities/Root';
 import RootSettings from './components/settings/Root';
@@ -100,6 +101,7 @@ const Index = (me) => {
           <Route path="/dashboard/observations" component={RootObservations} />
           <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
           <BoundaryRoute path="/dashboard/assets" component={RootAssets} />
+          <BoundaryRoute path="/dashboard/risk-assessment" component={RootRiskAssessment} />
           <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
           <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
           <BoundaryRoute path="/dashboard/data" render={RootData} />

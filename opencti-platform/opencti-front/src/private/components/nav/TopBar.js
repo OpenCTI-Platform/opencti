@@ -61,6 +61,7 @@ import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
+import TopMenuRisk from './TopMenuRisk';
 import { commitMutation } from '../../../relay/environment';
 import Security, {
   KNOWLEDGE,

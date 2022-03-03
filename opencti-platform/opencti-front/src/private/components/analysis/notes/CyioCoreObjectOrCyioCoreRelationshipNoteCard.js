@@ -35,7 +35,7 @@ import { resolveLink } from '../../../../utils/Entity';
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: '100%',
+    // height: '100%',
     borderRadius: 0,
     padding: '24px 24px 12px 24px',
     position: 'relative',

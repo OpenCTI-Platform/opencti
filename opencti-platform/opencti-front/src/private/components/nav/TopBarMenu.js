@@ -27,7 +27,6 @@ import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
 import TopMenuAnalysis from './TopMenuAnalysis';
-// import TopMenuRisksAnalysis from './TopMenuRisksAnalysis';
 import TopMenuReport from './TopMenuReport';
 import TopMenuNote from './TopMenuNote';
 import TopMenuOpinion from './TopMenuOpinion';
@@ -46,10 +45,9 @@ import TopMenuVSAC from './TopMenuVSAC';
 //import TopMenuVsacExploreResults from './TopMenuVsacExploreResults';
 //import TopMenuVsacViewCharts from './TopMenuVsacViewCharts';
 import TopMenuAssets from './TopMenuAssets';
-// import TopMenuRisk from './TopMenuRisk';
-// import TopMenuRisksAssessment from './TopMenuRisksAssessment';
+import TopMenuRiskAssessment from './TopMenuRiskAssessment';
+import TopMenuRisk from './TopMenuRisk';
 import TopMenuThreatActor from './TopMenuThreatActor';
-// import TopMenuTracking from './TopMenuTracking';
 import TopMenuDevice from './TopMenuDevice';
 import TopMenuOverviews from './TopMenuOverviews';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
@@ -161,7 +159,7 @@ const TopBarMenu = ({
     elevation={1}
     style={{ backgroundColor: theme.palette.header.background }}
   >
-    <Toolbar className={classes.toolbar}>
+    <Toolbar style={{ display: location.pathname === '/dashboard/risk-assessment/risks' ? 'none' : 'block' }} className={classes.toolbar}>
         <div className={classes.menuContainer}>
           {(location.pathname === '/dashboard'
             || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
@@ -249,29 +247,14 @@ const TopBarMenu = ({
           {location.pathname.includes('/dashboard/assets/software/') && (
             <TopMenuSoftware />
           )}
-          {/* {(location.pathname === '/dashboard/risks-assessment'
-            || location.pathname.match('/dashboard/risks-assessment/[a-z_]+$')) && (
-            <TopMenuRisksAssessment />
-          )}
-          {location.pathname.includes('/dashboard/risks-assessment/risks/') && (
+          {console.log('location.pathname', location.pathname)}
+          {/* {(location.pathname === '/dashboard/risk-assessment'
+            || location.pathname.match('/dashboard/risk-assessment/[a-z_]+$')) && (
+            <TopMenuRiskAssessment />
+          )} */}
+          {location.pathname.includes('/dashboard/risk-assessment/risks/') && (
             <TopMenuRisk />
-          )} */}
-          {/* {(location.pathname === '/dashboard/risks'
-            || location.pathname.match('/dashboard/risks/[a-z_]+$')) && (
-            <TopMenuRisks />
           )}
-          {location.pathname.includes('/dashboard/risks/overviews/') && (
-            <TopMenuOverviews />
-          )}
-          {location.pathname.includes('/dashboard/risks/analysis/') && (
-            <TopMenuRisksAnalysis />
-          )}
-          {location.pathname.includes('/dashboard/risks/remediations/') && (
-            <TopMenuRemediations />
-          )}
-          {location.pathname.includes('/dashboard/risks/tracking/') && (
-            <TopMenuTracking />
-          )} */}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
             <TopMenuArsenal />
