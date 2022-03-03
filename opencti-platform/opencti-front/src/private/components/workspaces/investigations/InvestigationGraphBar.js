@@ -284,8 +284,10 @@ class InvestigationGraphBar extends Component {
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
     let viewLink = null;
+    const isInferred = R.filter((n) => n.inferred, selectedNodes).length > 0
+      || R.filter((n) => n.inferred, selectedLinks).length > 0;
     if (viewEnabled) {
-      if (numberOfSelectedNodes === 1) {
+      if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
         if (selectedNodes[0].relationship_type) {
           viewLink = `${resolveLink(selectedNodes[0].fromType)}/${
             selectedNodes[0].fromId
@@ -295,7 +297,7 @@ class InvestigationGraphBar extends Component {
             selectedNodes[0].id
           }`;
         }
-      } else if (numberOfSelectedLinks === 1) {
+      } else if (numberOfSelectedLinks === 1 && selectedLinks.length === 1) {
         const remoteRelevant = selectedLinks[0].source.relationship_type
           ? selectedLinks[0].target
           : selectedLinks[0].source;
@@ -304,17 +306,21 @@ class InvestigationGraphBar extends Component {
         }/knowledge/relations/${selectedLinks[0].id}`;
       }
     }
-    const editionEnabled = (numberOfSelectedNodes === 1
+    const editionEnabled = (!isInferred
+        && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
+        && selectedNodes.length === 1
         && !selectedNodes[0].isObservable)
-      || (numberOfSelectedNodes === 0
+      || (!isInferred
+        && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
+        && selectedLinks.length === 1
         && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
     const expandEnabled = numberOfSelectedNodes > 0 || numberOfSelectedLinks > 0;
-    const fromSelectedTypes = numberOfSelectedNodes >= 2
+    const fromSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];
-    const toSelectedTypes = numberOfSelectedNodes >= 2
+    const toSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
       : [];
     const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
@@ -845,7 +851,7 @@ class InvestigationGraphBar extends Component {
                         this.handleCloseRemove();
                         handleDeleteSelected();
                       }}
-                      color="primary"
+                      color="secondary"
                     >
                       {t('Remove')}
                     </Button>
@@ -957,7 +963,7 @@ class InvestigationGraphBar extends Component {
                             {t('Cancel')}
                           </Button>
                           <Button
-                            color="primary"
+                            color="secondary"
                             onClick={submitForm}
                             disabled={isSubmitting}
                           >

@@ -201,7 +201,6 @@ class RootOrganization extends Component {
                           <StixDomainObjectHeader
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}
-                            onViewAs={this.handleChangeViewAs.bind(this)}
                             enableReferences={props.settings.platform_enable_reference?.includes(
                               'Organization',
                             )}

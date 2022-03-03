@@ -813,7 +813,7 @@ class ReportKnowledgeGraphBar extends Component {
                         this.handleCloseRemove();
                         handleDeleteSelected();
                       }}
-                      color="primary"
+                      color="secondary"
                     >
                       {t('Remove')}
                     </Button>
