@@ -36,6 +36,7 @@ import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/SelectField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { insertNode } from '../../../../../utils/Store';
+// import { parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
@@ -180,14 +181,23 @@ class RelatedTaskCreation extends Component {
       //     responsible_role: values.responsible_role,
       //   }],
     });
+    // const adaptedValues = evolve(
+    //   {
+    //     start_date: () => this.state.timings.start_date === null ? null : parse(this.state.timings.start_date).format(),
+    //     end_date: () => this.state.timings.end_date === null ? null : parse(this.state.timings.end_date).format(),
+    //   },
+    //   values,
+    // );
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
       dissoc('related_tasks'),
       assoc('timings', this.state.timings),
       dissoc('timings'),
+      dissoc('milestone'),
       // assoc('responsible_roles', this.state.responsible_roles),
     )(values);
+    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
       variables: {
@@ -384,6 +394,7 @@ class RelatedTaskCreation extends Component {
               related_tasks: [],
               associated_activities: [],
               responsible_roles: [],
+              milestone: '',
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -393,6 +404,50 @@ class RelatedTaskCreation extends Component {
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Related Task')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Task Type')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
+                          <Tooltip title={t('Description')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          name="task_type"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        >
+                          <MenuItem value='milestone'>
+                            Milestone
+                          </MenuItem>
+                          <MenuItem value='action'>
+                            Action
+                          </MenuItem>
+                          <MenuItem value='query'>
+                            Query
+                          </MenuItem>
+                          <MenuItem value='list'>
+                            List
+                          </MenuItem>
+                          <MenuItem value='ruke'>
+                            Rule
+                          </MenuItem>
+                        </Field>
+                      </div>
+                    </Grid>
+                  </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
@@ -485,7 +540,7 @@ class RelatedTaskCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Task Type')}
+                          {t('Milestone')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
                           <Tooltip title={t('Description')} >
@@ -495,7 +550,7 @@ class RelatedTaskCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="task_type"
+                          name="milestone"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}

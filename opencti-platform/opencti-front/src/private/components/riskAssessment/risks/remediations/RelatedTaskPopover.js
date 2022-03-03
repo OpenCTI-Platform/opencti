@@ -368,6 +368,50 @@ class RelatedTaskPopover extends Component {
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Related Task')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
+                <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Task Type')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
+                          <Tooltip title={t('Description')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          name="task_type"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        >
+                          <MenuItem value='milestone'>
+                            Milestone
+                          </MenuItem>
+                          <MenuItem value='action'>
+                            Action
+                          </MenuItem>
+                          <MenuItem value='query'>
+                            Query
+                          </MenuItem>
+                          <MenuItem value='list'>
+                            List
+                          </MenuItem>
+                          <MenuItem value='ruke'>
+                            Rule
+                          </MenuItem>
+                        </Field>
+                      </div>
+                    </Grid>
+                  </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
@@ -459,7 +503,7 @@ class RelatedTaskPopover extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Task Type')}
+                          {t('Milestone')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
                           <Tooltip title={t('Description')} >
@@ -469,7 +513,7 @@ class RelatedTaskPopover extends Component {
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="task_type"
+                          name="Milestone"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
