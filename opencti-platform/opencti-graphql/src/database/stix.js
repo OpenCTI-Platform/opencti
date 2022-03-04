@@ -143,7 +143,7 @@ import {
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import { isEmptyField, isInferredIndex, isNotEmptyField, pascalize, UPDATE_OPERATION_REPLACE } from './utils';
-import { isStixRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { isStixRelationship } from '../schema/stixRelationship';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_KILL_CHAIN_PHASE,

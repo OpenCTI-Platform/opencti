@@ -1,16 +1,14 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import { buildDeleteEvent, buildEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
+import { buildEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
-  connectionLoaders,
   createEntity,
   internalLoadById,
   listAllRelations,
   patchAttribute,
   loadStixById,
-  loadByIdWithMetaRels,
 } from '../database/middleware';
 import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
@@ -21,7 +19,7 @@ import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
 import { RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
-import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
+import { getParentTypes } from '../schema/schemaUtils';
 import { extractFieldsOfPatch, rebuildInstanceBeforePatch } from '../utils/patch';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
