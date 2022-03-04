@@ -26,7 +26,7 @@ FROM base AS front-builder
 WORKDIR /opt/opencti-build/opencti-front
 COPY opencti-front/package.json opencti-front/yarn.lock opencti-front/.yarnrc.yml ./
 COPY opencti-front/.yarn ./.yarn
-COPY opencti-graphql/patch ./patch
+COPY opencti-front/patch ./patch
 RUN yarn install
 COPY opencti-front /opt/opencti-build/opencti-front
 COPY opencti-graphql/config/schema/opencti.graphql /opt/opencti-build/opencti-graphql/config/schema/opencti.graphql
