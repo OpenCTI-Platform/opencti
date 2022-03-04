@@ -30,7 +30,7 @@
         "metrics_path": "/prometheus/metrics"
       }
     },
-    "request_timeout": 120000,
+    "request_timeout": 1200000,
     "session_timeout": 1200000,
     "session_manager": "shared",
     "rate_protection": {

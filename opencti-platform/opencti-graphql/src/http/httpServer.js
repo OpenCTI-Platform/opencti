@@ -14,6 +14,7 @@ import { applicationSession, initializeSession } from '../database/session';
 import { checkSystemDependencies } from '../initialization';
 import { getSettings } from '../domain/settings';
 
+const MIN_20 = 20 * 60 * 1000;
 const PORT = conf.get('app:port');
 const REQ_TIMEOUT = conf.get('app:request_timeout');
 const CERT_KEY_PATH = conf.get('app:https_cert:key');
@@ -40,7 +41,7 @@ const createHttpServer = async () => {
   } else {
     httpServer = http.createServer(app);
   }
-  httpServer.setTimeout(REQ_TIMEOUT || 120000);
+  httpServer.setTimeout(REQ_TIMEOUT || MIN_20);
   // subscriptionServer
   const subscriptionServer = SubscriptionServer.create(
     {
