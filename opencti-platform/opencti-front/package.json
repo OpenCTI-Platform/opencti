@@ -96,10 +96,10 @@
   },
   "scripts": {
     "esbuild": "node builder/prod/prod.js",
-    "esbuild:keep-files": "node builder/prod/prod-keepfiles.js",
+    "esbuild:standalone": "node builder/prod/prod-standalone.js",
     "relay": "relay-compiler",
     "build": "yarn relay && yarn esbuild",
-    "build:standalone": "yarn relay && yarn esbuild:keep-files",
+    "build:standalone": "yarn relay && yarn esbuild:standalone",
     "start": "yarn relay && node builder/dev/dev.js",
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
     "control": "yarn audit --groups dependencies --summary",
