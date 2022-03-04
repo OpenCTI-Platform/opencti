@@ -18,7 +18,7 @@ COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
-RUN yarn build
+RUN yarn build:prod
 
 
 FROM base AS front-builder
@@ -30,7 +30,7 @@ COPY opencti-front/patch ./patch
 RUN yarn install
 COPY opencti-front /opt/opencti-build/opencti-front
 COPY opencti-graphql/config/schema/opencti.graphql /opt/opencti-build/opencti-graphql/config/schema/opencti.graphql
-RUN yarn relay && yarn generate
+RUN yarn build
 
 
 FROM base AS app
