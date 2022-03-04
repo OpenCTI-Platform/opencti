@@ -344,7 +344,7 @@ const createSeeMiddleware = () => {
           const { internal_id: elemId } = elements[index];
           const instance = await loadByIdWithMetaRels(req.session.user, elemId, { withFiles: true });
           if (isFullVisibleElement(instance)) {
-            const stixData = convertInstanceToStix(instance, { clearEmptyValues: true });
+            const stixData = convertInstanceToStix(instance);
             const start = stixData.updated_at;
             const eventId = utcDate(start).toDate().getTime();
             if (channel.connected()) {
@@ -358,7 +358,7 @@ const createSeeMiddleware = () => {
                   if (!cache.has(missingRef)) {
                     const missingInstance = await loadByIdWithMetaRels(req.session.user, missingRef);
                     if (isFullVisibleElement(missingInstance)) {
-                      const missingData = convertInstanceToStix(missingInstance, { clearEmptyValues: true });
+                      const missingData = convertInstanceToStix(missingInstance);
                       const markings = missingData.object_marking_refs || [];
                       const message = generateCreateMessage(missingInstance);
                       const content = { data: missingData, markings, message, version };

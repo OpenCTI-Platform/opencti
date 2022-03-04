@@ -123,23 +123,16 @@ const ruleMergeHandler = async (event) => {
   const { data, markings } = event;
   const events = [];
   const generateInternalDeleteEvent = (instance) => {
-    const loaders = { stixLoadById: loadByIdWithMetaRels, connectionLoaders };
-    return buildDeleteEvent(RULE_MANAGER_USER, instance, [], loaders, { withoutMessage: true });
+    return buildEvent(EVENT_TYPE_DELETE, RULE_MANAGER_USER, instance.object_marking_refs, '', instance);
   };
   // region 01 - Generate events for deletion
   // -- sources
   const { x_opencti_context } = data;
-  const sourceDeleteEventsPromise = x_opencti_context.sources.map((s) => {
-    const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
-    return generateInternalDeleteEvent(instance);
-  });
+  const sourceDeleteEventsPromise = x_opencti_context.sources.map((s) => generateInternalDeleteEvent(s));
   const sourceDeleteEvents = await Promise.all(sourceDeleteEventsPromise);
   events.push(...sourceDeleteEvents);
   // -- derived deletions
-  const derivedDeleteEventsPromise = x_opencti_context.deletions.map((s) => {
-    const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
-    return generateInternalDeleteEvent(instance);
-  });
+  const derivedDeleteEventsPromise = x_opencti_context.deletions.map((s) => generateInternalDeleteEvent(s));
   const derivedDeleteEvents = await Promise.all(derivedDeleteEventsPromise);
   events.push(...derivedDeleteEvents);
   // endregion
@@ -150,10 +143,7 @@ const ruleMergeHandler = async (event) => {
   // region 03 - Generate events for shifted relations
   // We need to cleanup the element associated with this relation and then rescan it
   if (x_opencti_context.shifts.length > 0) {
-    const shiftDeleteEventsPromise = x_opencti_context.shifts.map((s) => {
-      const instance = { ...s, standard_id: s.id, internal_id: s.x_opencti_id, entity_type: generateInternalType(s) };
-      return generateInternalDeleteEvent(instance);
-    });
+    const shiftDeleteEventsPromise = x_opencti_context.shifts.map((s) => generateInternalDeleteEvent(s));
     const shiftDeleteEvents = await Promise.all(shiftDeleteEventsPromise);
     events.push(shiftDeleteEvents);
     // Then we need to generate event for redo rule on updated element

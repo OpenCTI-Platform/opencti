@@ -377,6 +377,7 @@ const pushToStream = (client, event) => {
   }
   return client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
 };
+
 const DIFF_ADDED = 1;
 const DIFF_CHANGE = 2;
 const DIFF_REMOVE = 3;
@@ -455,16 +456,17 @@ export const computeMergeDifferential = (initialInstance, mergedInstance) => {
   }
   return patch;
 };
+
 // Merge
 const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities, impacts) => {
   const patch = computeMergeDifferential(initialInstance, mergedInstance);
   const message = generateMergeMessage(initialInstance, sourceEntities);
-  const data = convertInstanceToStix(mergedInstance, { clearEmptyValues: true });
+  const data = convertInstanceToStix(mergedInstance);
   const { updatedRelations, dependencyDeletions } = impacts;
   data.x_opencti_patch = patch;
   data.x_opencti_context = {
-    sources: R.map((s) => convertInstanceToStix(s, { clearEmptyValues: true }), sourceEntities),
-    deletions: R.map((s) => convertInstanceToStix(s, { clearEmptyValues: true }), dependencyDeletions),
+    sources: R.map((s) => convertInstanceToStix(s), sourceEntities),
+    deletions: R.map((s) => convertInstanceToStix(s), dependencyDeletions),
     shifts: updatedRelations,
   };
   return buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.object_marking_refs, message, data);
@@ -479,7 +481,7 @@ export const storeMergeEvent = async (user, initialInstance, mergedInstance, sou
 };
 // Update
 export const buildUpdateEvent = (user, instance, patch, opts = {}) => {
-  const { withoutMessage = false, clearEmptyValues = false } = opts;
+  const { withoutMessage = false } = opts;
   // dataUpdate can be empty
   if (isEmptyField(patch)) {
     return null;
@@ -489,7 +491,7 @@ export const buildUpdateEvent = (user, instance, patch, opts = {}) => {
   // Generate the message
   const message = withoutMessage ? '-' : generateUpdateMessage(patch);
   // Build and send the event
-  const dataEvent = convertInstanceToStix(data, { clearEmptyValues });
+  const dataEvent = convertInstanceToStix(data);
   return buildEvent(
     EVENT_TYPE_UPDATE,
     user,
@@ -547,7 +549,7 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
   }
   // Convert the input to data
   const mergedData = { ...instance, ...input };
-  const data = convertInstanceToStix(mergedData, { clearEmptyValues: true });
+  const data = convertInstanceToStix(mergedData);
   // Generate the message
   const message = withoutMessage ? '-' : generateCreateMessage(mergedData);
   // Build and send the event
@@ -601,12 +603,10 @@ export const buildDeleteEvent = async (user, instance, dependencyDeletions, load
     return buildUpdateEvent(user, publishedInstance, patch, opts);
   }
   // Convert the input to data
-  const data = convertInstanceToStix(instance, { clearEmptyValues: true });
+  const data = convertInstanceToStix(instance);
   // Generate the message
   const message = withoutMessage ? '-' : generateDeleteMessage(instance);
-  data.x_opencti_context = {
-    deletions: R.map((s) => convertInstanceToStix(s, { clearEmptyValues: true }), dependencyDeletions),
-  };
+  data.x_opencti_context = { deletions: R.map((s) => convertInstanceToStix(s), dependencyDeletions) };
   return buildEvent(EVENT_TYPE_DELETE, user, instance.object_marking_refs, message, data);
 };
 export const storeDeleteEvent = async (user, instance, dependencyDeletions, loaders) => {

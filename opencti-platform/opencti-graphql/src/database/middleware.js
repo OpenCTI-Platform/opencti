@@ -649,7 +649,7 @@ export const loadByIdWithMetaRels = async (user, id, opts = {}) => {
 export const loadStixById = async (user, id, opts = {}) => {
   const instance = await loadByIdWithMetaRels(user, id, opts);
   if (instance) {
-    return convertInstanceToStix(instance, { clearEmptyValues: true });
+    return convertInstanceToStix(instance);
   }
   return undefined;
 };

@@ -8,9 +8,10 @@ import {
   ENTITY_TYPE_MALWARE,
   isStixDomainObject
 } from '../../../src/schema/stixDomainObject';
-import { convertTypeToStixType } from '../../../src/database/stix';
+import { convertTypeToStixType, updateInputsToPatch } from '../../../src/database/stix';
 import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
+import { UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
 
 describe('Stix opencti converter', () => {
   const dataMap = new Map(data.objects.map((obj) => [obj.id, obj]));
@@ -112,38 +113,48 @@ describe('Stix opencti converter', () => {
     expect(notExtSize).toEqual(0);
   };
 
-  it('Should converter maintains data', async () => {
-    // await rawDataCompare('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc', 'attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
+  it('Should patch correctly generated', async () => {
+    const dataEvent = updateInputsToPatch([{
+      operation: UPDATE_OPERATION_REPLACE,
+      key: 'revoked',
+      value: [true],
+      previous: [false]
+    }]);
+    expect(dataEvent).toEqual({ replace: { revoked: { current: true, previous: false } } });
+  });
+
+  it('Should stix data correctly generated', async () => {
+    await rawDataCompare('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc', 'attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
 
     // Campaign
 
-    // await rawDataCompare('course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e', 'course-of-action--2d3af28d-aa36-59ad-ac57-65aa27664752');
+    await rawDataCompare('course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e', 'course-of-action--2d3af28d-aa36-59ad-ac57-65aa27664752');
 
     // Grouping
 
-    // await rawDataCompare('identity--c017f212-546b-4f21-999d-97d3dc558f7b', 'identity--732421a0-8471-52de-8d9f-18c8b260813c');
+    await rawDataCompare('identity--c017f212-546b-4f21-999d-97d3dc558f7b', 'identity--732421a0-8471-52de-8d9f-18c8b260813c');
 
-    // await rawDataCompare('incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4', 'incident--9024f9de-e5cc-5347-9509-cb7efdf8081d');
+    await rawDataCompare('incident--0b626d41-1d8d-4b96-86fa-ad49cea2cfd4', 'incident--9024f9de-e5cc-5347-9509-cb7efdf8081d');
 
-    // await rawDataCompare('indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf', 'indicator--4099edd7-1efd-54aa-9736-7bcd7219b78b');
+    await rawDataCompare('indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf', 'indicator--4099edd7-1efd-54aa-9736-7bcd7219b78b');
 
     // Infrastructure
 
-    // await rawDataCompare('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7', 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    await rawDataCompare('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7', 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
 
-    // await rawDataCompare('location--5acd8b26-51c2-4608-86ed-e9edd43ad971', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d');
+    await rawDataCompare('location--5acd8b26-51c2-4608-86ed-e9edd43ad971', 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d');
 
-    // await rawDataCompare('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    await rawDataCompare('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
 
     // Malware analysis
 
-    // await rawDataCompare('note--573f623c-bf68-4f19-9500-d618f0d00af0', 'note--88978334-e6d4-53ba-b390-204f05b40af0');
+    await rawDataCompare('note--573f623c-bf68-4f19-9500-d618f0d00af0', 'note--88978334-e6d4-53ba-b390-204f05b40af0');
 
-    // await rawDataCompare('observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be', 'observed-data--d5c0414a-aeb6-5927-a2ae-e465846c206f');
+    await rawDataCompare('observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be', 'observed-data--d5c0414a-aeb6-5927-a2ae-e465846c206f');
 
-    // await rawDataCompare('opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f', 'opinion--440d6aff-8a06-55e2-a638-92802747d447');
+    await rawDataCompare('opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f', 'opinion--440d6aff-8a06-55e2-a638-92802747d447');
 
-    // await rawDataCompare('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', 'report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
+    await rawDataCompare('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', 'report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
 
     // Threat actor
 
@@ -151,13 +162,13 @@ describe('Stix opencti converter', () => {
 
     // Vulnerability
 
-    // await rawDataCompare('marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168', 'marking-definition--ab216ddd-5f1e-5e6a-88d7-3797fbe5a03f');
+    await rawDataCompare('marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168', 'marking-definition--ab216ddd-5f1e-5e6a-88d7-3797fbe5a03f');
 
     // Language Content- Not implemented
 
-    // await rawDataCompare('sighting--579a46af-a339-400d-809e-b92101fe7de8', 'sighting--3310b5b6-6981-4fcb-817f-521acb908fff');
+    await rawDataCompare('sighting--579a46af-a339-400d-809e-b92101fe7de8', 'sighting--3310b5b6-6981-4fcb-817f-521acb908fff');
 
-    // await rawDataCompare('relationship--9315a197-fe15-4c96-b77c-edcaa5e22ecb', 'relationship--c5fcc64b-dd86-4041-ba1a-1910ba40fb73');
+    await rawDataCompare('relationship--9315a197-fe15-4c96-b77c-edcaa5e22ecb', 'relationship--c5fcc64b-dd86-4041-ba1a-1910ba40fb73');
 
     // Cyber observables
     // ...

@@ -54,7 +54,7 @@ import {
 } from '../schema/stixCyberObservable';
 import {
   isStixInternalMetaRelationship,
-  isStixMetaRelationship,
+  isStixMetaRelationship, META_FIELD_TO_STIX_ATTRIBUTE,
   STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD,
 } from '../schema/stixMetaRelationship';
 import {
@@ -155,12 +155,13 @@ import {
   isSingleStixEmbeddedRelationship,
   isSingleStixEmbeddedRelationshipInput,
 } from '../schema/stixEmbeddedRelationship';
-import { observableValue } from '../utils/format';
 import { generateInternalType } from '../schema/schemaUtils';
 import typeDefs from '../../config/schema/opencti.graphql';
 import { generateStandardId, normalizeName } from '../schema/identifier';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
+import { isStixObject } from '../schema/stixCoreObject';
+import { observableValue } from '../utils/format';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -250,8 +251,71 @@ const extractObjectExtensions = (data) => {
   }).map(([k, v]) => ({ [k]: v })));
 };
 
-export const convertInstanceToStix = (instance, args = {}) => {
-  const { patchGeneration = false, clearEmptyValues = false, onlyBase = false } = args;
+const isStixFieldKey = (key) => {
+  const isInternal = key.startsWith(INTERNAL_PREFIX);
+  const isSpecificRels = key.startsWith(REL_INDEX_PREFIX);
+  return (isInternal || isSpecificRels || EXCLUDED_FIELDS_FROM_STIX.includes(key)) === false;
+};
+
+export const convertInputToStixPatchValue = ({ key, value }) => {
+  // If key is not part of stix specification, empty value
+  if (!isStixFieldKey(key)) {
+    return {};
+  }
+  // Entities
+  if (key === INPUT_OBJECTS) { // objects
+    const values = Array.isArray(value) ? value : [value];
+    const data = values.map((m) => ({ value: m.standard_id, reference: m.name, x_opencti_id: m.internal_id }));
+    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
+  }
+  if (key === INPUT_MARKINGS) { // objectMarkings
+    const values = Array.isArray(value) ? value : [value];
+    const data = values.map((m) => ({ value: m.standard_id, reference: m.definition, x_opencti_id: m.internal_id }));
+    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
+  }
+  if (key === INPUT_CREATED_BY) { // createdBy
+    const val = Array.isArray(value) ? R.head(value) : value;
+    const data = { value: val.standard_id, reference: val.name, x_opencti_id: val.internal_id };
+    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
+  }
+  if (key === INPUT_LABELS) { // objectLabels
+    const values = Array.isArray(value) ? value : [value];
+    const data = values.map((m) => ({ value: m.standard_id, reference: m, x_opencti_id: m.internal_id }));
+    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
+  }
+  if (key === INPUT_KILLCHAIN) { // kill chains
+    const values = Array.isArray(value) ? value : [value];
+    const data = values.map((m) => ({ value: m.standard_id, reference: m.kill_chain_name, x_opencti_id: m.internal_id }));
+    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
+  }
+  if (key === INPUT_EXTERNAL_REFS) { // externalReferences
+    const values = Array.isArray(value) ? value : [value];
+    const data = values.map((m) => ({ value: m.standard_id, reference: m.source_name, x_opencti_id: m.internal_id }));
+    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
+  }
+  // Observables
+  if (STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]) {
+    if (isSingleStixEmbeddedRelationshipInput(key)) {
+      const val = Array.isArray(value) ? R.head(value) : value;
+      const data = { value: val.standard_id, reference: observableValue(val), x_opencti_id: val.internal_id };
+      return { key: STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key], value: data };
+    }
+    const values = Array.isArray(value) ? value : [value];
+    const data = values.map((m) => ({ value: m.standard_id, reference: observableValue(m), x_opencti_id: m.internal_id }));
+    return { key: STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key], value: data };
+  }
+  // No specific transform to do
+  return { key, value };
+};
+
+export const convertInstanceToStix = (instance) => {
+  if (isEmptyField(instance._index)) {
+    throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
+  }
+  // Instance must must valid except for patch that accept partial information.
+  if (!isStixObject(instance.entity_type) && !isStixRelationship(instance.entity_type)) {
+    throw UnsupportedError(`Type ${instance.entity_type} cannot be converted to Stix`, { instance });
+  }
   let finalData = instance;
   if (instance._index && isInferredIndex(instance._index)) {
     finalData.x_opencti_inference = true;
@@ -267,7 +331,7 @@ export const convertInstanceToStix = (instance, args = {}) => {
     finalData.x_opencti_type = instance.entity_type;
   }
   // region Relationships
-  const isRelation = isStixRelationship(instance.type);
+  const isRelation = isStixRelationship(instance.entity_type);
   if (isRelation && isEmptyField(finalData.from)) {
     throw UnsupportedError(`Cannot convert relation without a resolved from: ${finalData.fromId}`);
   }
@@ -313,18 +377,22 @@ export const convertInstanceToStix = (instance, args = {}) => {
   // endregion
   // region Specific input cases
   if (isDefinedValue(finalData.stix_id)) {
-    finalData = R.pipe(R.dissoc('stix_id'), R.assoc('x_opencti_stix_ids', [finalData.stix_id]))(finalData);
+    const ids = [...(finalData.x_opencti_stix_ids ?? []), finalData.stix_id];
+    finalData = R.pipe(
+      R.dissoc('stix_id'),
+      R.assoc('x_opencti_stix_ids', ids)
+    )(finalData);
   } else {
     finalData = R.dissoc('stix_id', finalData);
+  }
+  if (isDefinedValue(finalData.x_opencti_stix_ids)) {
+    finalData.x_opencti_stix_ids = finalData.x_opencti_stix_ids.filter((stixId) => isTrustedStixId(stixId));
   }
   // endregion
   // region Inner relations
   if (isDefinedValue(finalData.objects)) {
     const objectSet = Array.isArray(finalData.objects) ? finalData.objects : [finalData.objects];
-    const objects = R.map((m) => {
-      const value = m.standard_id;
-      return patchGeneration ? { value, reference: m.name, x_opencti_id: m.internal_id } : m.standard_id;
-    }, objectSet);
+    const objects = R.map((m) => m.standard_id, objectSet);
     finalData = R.pipe(R.dissoc(INPUT_OBJECTS), R.assoc('object_refs', objects))(finalData);
   } else {
     finalData = R.pipe(R.dissoc(INPUT_OBJECTS), R.dissoc('object_refs'))(finalData);
@@ -333,10 +401,7 @@ export const convertInstanceToStix = (instance, args = {}) => {
   // region Markings
   if (isDefinedValue(finalData.objectMarking)) {
     const markingSet = Array.isArray(finalData.objectMarking) ? finalData.objectMarking : [finalData.objectMarking];
-    const markings = R.map((m) => {
-      const value = m.standard_id;
-      return patchGeneration ? { value, reference: m.definition, x_opencti_id: m.internal_id } : m.standard_id;
-    }, markingSet);
+    const markings = R.map((m) => m.standard_id, markingSet);
     finalData = R.pipe(R.dissoc(INPUT_MARKINGS), R.assoc('object_marking_refs', markings))(finalData);
   } else {
     finalData = R.pipe(R.dissoc(INPUT_MARKINGS), R.dissoc('object_marking_refs'))(finalData);
@@ -345,9 +410,7 @@ export const convertInstanceToStix = (instance, args = {}) => {
   // region created by
   if (isDefinedValue(finalData.createdBy)) {
     const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
-    const created = patchGeneration
-      ? [{ value: creator.standard_id, reference: creator.name, x_opencti_id: creator.internal_id }]
-      : creator.standard_id;
+    const created = creator.standard_id;
     finalData = R.pipe(R.dissoc(INPUT_CREATED_BY), R.assoc('created_by_ref', created))(finalData);
   } else {
     finalData = R.pipe(R.dissoc(INPUT_CREATED_BY), R.dissoc('created_by_ref'))(finalData);
@@ -356,10 +419,7 @@ export const convertInstanceToStix = (instance, args = {}) => {
   // region Embedded relations
   if (isDefinedValue(finalData.objectLabel)) {
     const labelSet = Array.isArray(finalData.objectLabel) ? finalData.objectLabel : [finalData.objectLabel];
-    const labels = R.map((m) => {
-      const { value } = m;
-      return patchGeneration ? { value: m.standard_id, reference: value, x_opencti_id: m.internal_id } : value;
-    }, labelSet);
+    const labels = R.map((m) => m.value, labelSet);
     finalData = R.pipe(R.dissoc(INPUT_LABELS), R.assoc('labels', labels))(finalData);
   } else {
     finalData = R.pipe(R.dissoc(INPUT_LABELS), R.dissoc('labels'))(finalData);
@@ -371,8 +431,7 @@ export const convertInstanceToStix = (instance, args = {}) => {
     const kills = R.map((k) => {
       const extension = extractObjectExtensions(k);
       const attrs = ['kill_chain_name', 'phase_name'];
-      const value = cleanObject({ ...R.pick(attrs, k), ...extension });
-      return patchGeneration ? { value: k.standard_id, reference: k.kill_chain_name, x_opencti_id: k.internal_id } : value;
+      return cleanObject({ ...R.pick(attrs, k), ...extension });
     }, killSet);
     finalData = R.pipe(R.dissoc(INPUT_KILLCHAIN), R.assoc('kill_chain_phases', kills))(finalData);
   } else {
@@ -386,8 +445,7 @@ export const convertInstanceToStix = (instance, args = {}) => {
     const externals = R.map((e) => {
       const extension = extractObjectExtensions(e);
       const attrs = ['source_name', 'description', 'url', 'hashes', 'external_id'];
-      const value = cleanObject({ ...R.pick(attrs, e), ...extension });
-      return patchGeneration ? { value: e.standard_id, reference: e.source_name, x_opencti_id: e.internal_id } : value;
+      return cleanObject({ ...R.pick(attrs, e), ...extension });
     }, externalSet);
     finalData = R.pipe(R.dissoc(INPUT_EXTERNAL_REFS), R.assoc('external_references', externals))(finalData);
   } else {
@@ -402,27 +460,13 @@ export const convertInstanceToStix = (instance, args = {}) => {
     if (isDefinedValue(cyberInput)) {
       if (isSingleStixEmbeddedRelationshipInput(stixCyberObservableRelationshipInput)) {
         const stixCyberObservable = Array.isArray(cyberInput) ? R.head(cyberInput) : cyberInput;
-        const stixCyberObservableRef = patchGeneration
-          ? [
-            {
-              value: stixCyberObservable.standard_id,
-              reference: observableValue(stixCyberObservable),
-              x_opencti_id: stixCyberObservable.internal_id,
-            },
-          ]
-          : stixCyberObservable.standard_id;
         finalData = R.pipe(
           R.dissoc(stixCyberObservableRelationshipInput),
-          R.assoc(stixKey, stixCyberObservableRef)
+          R.assoc(stixKey, stixCyberObservable.standard_id)
         )(finalData);
       } else {
         const stixCyberObservable = Array.isArray(cyberInput) ? cyberInput : [cyberInput];
-        const stixCyberObservables = R.map(
-          (m) => (patchGeneration
-            ? { value: m.standard_id, reference: observableValue(m), x_opencti_id: m.internal_id }
-            : m.standard_id),
-          stixCyberObservable
-        );
+        const stixCyberObservables = R.map((m) => m.standard_id, stixCyberObservable);
         finalData = R.pipe(
           R.dissoc(stixCyberObservableRelationshipInput),
           R.assoc(stixKey, stixCyberObservables)
@@ -433,22 +477,15 @@ export const convertInstanceToStix = (instance, args = {}) => {
     }
   }
   // endregion
-  // region StixID V1 are transient and so not in data output
-  if (isDefinedValue(finalData.x_opencti_stix_ids)) {
-    finalData.x_opencti_stix_ids = finalData.x_opencti_stix_ids.filter((stixId) => isTrustedStixId(stixId));
-  }
-  // endregion
   // region Attributes filtering
   const filteredData = {};
   const entries = Object.entries(finalData);
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
     const isEmpty = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
-    const clearEmptyKey = clearEmptyValues && isEmpty;
-    const isInternal = key.startsWith(INTERNAL_PREFIX) || key.startsWith(REL_INDEX_PREFIX);
-    const isInternalKey = isInternal || EXCLUDED_FIELDS_FROM_STIX.includes(key);
-    if (isInternalKey || isStixRelationShipExceptMeta(key) || clearEmptyKey) {
-      // Internal opencti attributes.
+    const isInternal = !isStixFieldKey(key);
+    if (isEmpty || isInternal) {
+      // Empty or internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
       // Stix but reserved keywords
       const targetKey = key.replace('attribute_', '');
@@ -458,8 +495,8 @@ export const convertInstanceToStix = (instance, args = {}) => {
     }
   }
   // endregion
-  // region specific format for marking definition
-  if (filteredData.type === convertTypeToStixType(ENTITY_TYPE_MARKING_DEFINITION) && filteredData.definition) {
+  // region specific format for types
+  if (finalData.x_opencti_type === ENTITY_TYPE_MARKING_DEFINITION && filteredData.definition) {
     const key = filteredData.definition_type.toLowerCase();
     filteredData.x_opencti_name = filteredData.definition;
     filteredData.definition_type = key;
@@ -490,10 +527,11 @@ export const convertInstanceToStix = (instance, args = {}) => {
   if (!isValidStix(filteredData)) {
     throw FunctionalError('Invalid stix data conversion', { data: instance });
   }
-  if (onlyBase) {
-    return R.pick(STIX_BASIC_FIELDS, filteredData);
-  }
   return filteredData;
+};
+
+export const convertInstanceToStixBase = (instance) => {
+  return R.pick(STIX_BASIC_FIELDS, convertInstanceToStix(instance));
 };
 
 export const extractFieldInputDefinition = (entityType) => {
@@ -598,18 +636,13 @@ export const updateInputsToPatch = (inputs) => {
     if (isNotEmptyField(previous) && !Array.isArray(previous)) {
       throw UnsupportedError('previous must be an array');
     }
-    const opts = { patchGeneration: true };
-    const keyConvert = R.head(Object.keys(convertInstanceToStix({ [key]: value || previous }, opts)));
+    const converter = (val) => convertInputToStixPatchValue({ key, value: val });
+    const { key: keyConvert, value: convertedVal } = value ? converter(value) : value;
     // Sometime the key will be empty because the patch include a none stix modification
     if (isEmptyField(keyConvert)) {
       return {};
     }
-    const converter = (val) => {
-      const converted = convertInstanceToStix({ [key]: val }, opts);
-      return converted[keyConvert];
-    };
-    const convertedVal = value ? converter(value) : value;
-    const convertedPrevious = previous ? converter(previous) : previous;
+    const { value: convertedPrevious } = previous ? converter(previous) : { value: previous };
     if (isMultipleAttribute(key)) {
       if (operation === UPDATE_OPERATION_REPLACE) {
         return { [operation]: { [keyConvert]: { current: convertedVal, previous: convertedPrevious } } };
@@ -628,7 +661,7 @@ export const updateInputsToPatch = (inputs) => {
 
 export const convertStixMetaRelationshipToStix = (data) => {
   const entityType = data.entity_type;
-  let finalData = convertInstanceToStix(data.from, { onlyBase: true });
+  let finalData = convertInstanceToStixBase(data.from);
   if (isStixInternalMetaRelationship(entityType)) {
     finalData = R.assoc(entityType.replace('-', '_'), [convertInstanceToStix(data.to)], finalData);
   } else {
@@ -643,7 +676,7 @@ export const convertStixMetaRelationshipToStix = (data) => {
 
 export const convertStixCyberObservableRelationshipToStix = (data) => {
   const entityType = data.entity_type;
-  let finalData = convertInstanceToStix(data.from, { onlyBase: true });
+  let finalData = convertInstanceToStixBase(data.from);
   finalData = R.assoc(`${entityType.replace('-', '_')}_ref`, data.to.standard_id, finalData);
   return finalData;
 };
