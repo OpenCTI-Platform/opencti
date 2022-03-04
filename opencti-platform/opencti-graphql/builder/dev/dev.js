@@ -21,7 +21,7 @@ esbuild.build({
     sourcemap: true,
     sourceRoot: 'src',
     sourcesContent: true,
-    outdir: 'builder/dev/build',
+    outdir: 'build',
     incremental: true,
     watch: true,
 }).catch((error) => {
