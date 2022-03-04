@@ -3,6 +3,9 @@ const { RelayPlugin } = require("../plugin/esbuild-relay");
 const fsExtra = require("fs-extra");
 const fs = require("fs");
 
+// Define args options
+const keep = process.argv.slice(2).includes('--keep');
+
 const buildPath = "./builder/prod/build/";
 esbuild
   .build({
@@ -31,12 +34,13 @@ esbuild
     incremental: false,
   })
   .then(() => {
-    // Copy file
+    // region Copy public files to build
     fsExtra.copySync("./builder/public/", buildPath, {
       recursive: true,
       overwrite: true,
     });
-    // Generate index.html
+    // endregion
+    // region Generate index.html
     const cssStaticFiles = fs.readdirSync(buildPath + "static/css");
     const cssLinks = cssStaticFiles.map(
       (f) => `<link href="%BASE_PATH%/static/css/${f}" rel="stylesheet">`
@@ -66,9 +70,12 @@ esbuild
         </body>
     </html>`;
     fs.writeFileSync(buildPath + "index.html", indexHtml);
-    // Move to api
-    // Move build directory to api public directory
-    fsExtra.moveSync(buildPath, "../opencti-graphql/public/", {
-      overwrite: true,
-    });
+    // endregion
+    // region Move build directory to api public directory
+    if (!keep) {
+        fsExtra.moveSync(buildPath, "../opencti-graphql/public/", {
+            overwrite: true,
+        });
+    }
+    // endregion
   });
