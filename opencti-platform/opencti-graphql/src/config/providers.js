@@ -237,18 +237,19 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
         const client = new Client(config);
-        // region additional scopes
-        const additionalScope = [];
+        // region scopes generation
+        const defaultScopes = mappedConfig.default_scopes ?? ['openid', 'email', 'profile'];
+        const openIdScopes = [...defaultScopes];
         const rolesScope = mappedConfig.roles_management?.roles_scope;
         if (rolesScope) {
-          additionalScope.push(rolesScope);
+          openIdScopes.push(rolesScope);
         }
         const groupsScope = mappedConfig.groups_management?.groups_scope;
         if (groupsScope) {
-          additionalScope.push(groupsScope);
+          openIdScopes.push(groupsScope);
         }
         // endregion
-        const openIdScope = `openid email profile ${R.uniq(additionalScope).join(' ')}`;
+        const openIdScope = R.uniq(openIdScopes).join(' ');
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
           logApp.debug('[OPENID] Successfully logged', { userinfo });
