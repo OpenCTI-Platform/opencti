@@ -136,7 +136,7 @@ class RiskObservationPopover extends Component {
           <MenuItem
             className={classes.menuItem}
             onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
+            {t('Details')}
           </MenuItem>
         </Menu>
         <Dialog

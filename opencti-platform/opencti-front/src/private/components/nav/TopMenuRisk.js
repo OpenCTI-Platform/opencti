@@ -9,6 +9,7 @@ import NoteRoundedIcon from '@material-ui/icons/NoteRounded';
 import ManageSearchIcon from '@material-ui/icons/SearchOutlined';
 import AddModeratorIcon from '@material-ui/icons/AddToQueueRounded';
 import HistoryIcon from '@material-ui/icons/History';
+import TopBarBreadcrumbs from './TopBarBreadcrumbs';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -49,6 +50,7 @@ class TopMenuRisk extends Component {
     } = this.props;
     return (
       <div className={classes.riskMenuContainer}>
+        <TopBarBreadcrumbs />
         <Button
           component={Link}
           to={`/dashboard/risk-assessment/risks/${riskId}`}

@@ -185,7 +185,7 @@ class RiskDeletion extends Component {
               variant="contained"
               onClick={this.handleOpenDelete.bind(this)}
               className={classes.iconButton}
-              disabled={Boolean(!id) && Boolean(!isAllselected)}
+              disabled={(Boolean(!id) && Boolean(!isAllselected)) || true}
               color="primary"
               size="large"
             >

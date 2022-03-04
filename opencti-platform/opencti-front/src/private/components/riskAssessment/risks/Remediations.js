@@ -65,6 +65,7 @@ const Remediations = (props) => {
           <CyioDomainObjectHeader
             cyioDomainObject={remediation}
             history={history}
+            disabled={true}
             // PopoverComponent={<DevicePopover />}
             // handleDisplayEdit={handleDisplayEdit.bind(this)}
             handleOpenNewCreation={handleOpenNewCreation.bind(this)}

@@ -44,7 +44,12 @@ const styles = (theme) => ({
 
 class RelatedTasks extends Component {
   render() {
-    const { t, classes, remediationId } = this.props;
+    const {
+      t,
+      classes,
+      remediationId,
+      history,
+    } = this.props;
     return (
       // <QueryRenderer
       <QR
@@ -56,6 +61,7 @@ class RelatedTasks extends Component {
             return (
               <RelatedTasksLines
                 remediationId={remediationId}
+                history={history}
                 data={props}
                 refreshQuery={retry}
               />

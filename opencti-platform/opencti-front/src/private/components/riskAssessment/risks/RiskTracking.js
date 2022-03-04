@@ -69,6 +69,7 @@ class RiskTracking extends Component {
         <CyioDomainObjectHeader
           cyioDomainObject={risk}
           history={history}
+          disabled={true}
           PopoverComponent={<RiskPopover />}
           // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
@@ -84,6 +85,7 @@ class RiskTracking extends Component {
             if (props) {
               return (
                 <RiskTrackingLines
+                  history={history}
                   riskId={riskId}
                   data={props}
                 />

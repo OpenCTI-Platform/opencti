@@ -19,6 +19,8 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import AddIcon from '@material-ui/icons/Add';
+import ListItem from '@material-ui/core/ListItem';
+import List from '@material-ui/core/List';
 import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -88,6 +90,16 @@ const styles = (theme) => ({
     lineHeight: '24px',
     color: theme.palette.header.text,
   },
+  item: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: theme.palette.navAlt.background,
+    },
+  },
+  resourceDropdown: {
+    maxHeight: 130,
+    overflow: "auto",
+    background: '#06102D',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -119,6 +131,8 @@ class RequiredResourcePopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
+      listItem: null,
+      listItem2: null,
       subjects: [{
         subject_type: '',
         subject_ref: '',
@@ -231,6 +245,7 @@ class RequiredResourcePopover extends Component {
       requiredResourceData,
       data,
     } = this.props;
+    const types = ["Party", "Component", "User", "Location", "Inventory-Item", "Party"];
     const requiredResourceNode = R.pipe(
       R.pathOr([], ['subjects']),
       R.map((value) => ({
@@ -379,32 +394,29 @@ class RequiredResourcePopover extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Resource Type')}
+                          {t('Type')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Resource Type')} >
+                          <Tooltip title={t('Type')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource_type"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                        <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        <div className={classes.resourceDropdown}>
+                          <List style={{ height: '130px' }}>
+                            {types.map((type, i) => (
+                              <ListItem
+                                classes={{ root: classes.item }}
+                                onClick={() => this.setState({ listItem2: i })}
+                                selected={this.state.listItem2 === i}
+                                button={true}
+                                key={type}
+                              >
+                                {type}
+                              </ListItem>
+                            ))}
+                          </List>
+                        </div>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -448,24 +460,21 @@ class RequiredResourcePopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        <div className={classes.resourceDropdown}>
+                          <List style={{ height: '130px' }}>
+                            {types.map((type, i) => (
+                              <ListItem
+                                classes={{ root: classes.item }}
+                                onClick={() => this.setState({ listItem: i })}
+                                selected={this.state.listItem === i}
+                                button={true}
+                                key={type}
+                              >
+                                {type}
+                              </ListItem>
+                            ))}
+                          </List>
+                        </div>
                       </div>
                     </Grid>
                   </Grid>

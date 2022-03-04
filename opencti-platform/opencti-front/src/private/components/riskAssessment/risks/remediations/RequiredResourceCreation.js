@@ -122,6 +122,11 @@ const styles = (theme) => ({
   container: {
     padding: "10px 20px 20px 20px",
   },
+  resourceDropdown: {
+    maxHeight: 130,
+    overflow: "auto",
+    background: '#06102D',
+  },
 });
 
 const RequiredResourceCreationMutation = graphql`
@@ -142,21 +147,21 @@ const RequiredResourceValidation = (t) =>
     // description: Yup.string(),
   });
 
-const types = ["Party", "Component", "User", "Location", "Inventory-Item", "Party"];
-
 class RequiredResourceCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
       close: false,
+      listItem: null,
+      listItem2: null,
       subjects: [
         {
           subject_type: "",
           subject_ref: "",
         },
       ],
-      selectedIndex:1,
+      selectedIndex: 1,
     };
   }
 
@@ -358,6 +363,7 @@ class RequiredResourceCreation extends Component {
       requiredResourceData,
       selectedElements,
     } = this.props;
+    const types = ["Party", "Component", "User", "Location", "Inventory-Item", "Party"];
     return (
       <div style={{ display: display ? "block" : "none" }}>
         <IconButton
@@ -434,54 +440,21 @@ class RequiredResourceCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Paper style={{ maxHeight: 200, overflow: "auto", background:'#06102D' }}>
-                          <List style={{ height:'130px' }}>
-                            {types.map((type) => (
-                              <ListItem 
-                                classes={{ root: classes.item }} 
-                                button 
-                                key={type}
-                                selected={type.index in (selectedElements || {})}
-                                sx={{
-                                  // selected and (selected + hover) states
-                                  '&& .Mui-selected, && .Mui-selected:hover': {
-                                    bgcolor: 'red',
-                                    '&, & .MuiListItemIcon-root': {
-                                      color: 'pink',
-                                    },
-                                  },
-                                  // hover states
-                                  '& .MuiListItemButton-root:hover': {
-                                    bgcolor: 'orange',
-                                    '&, & .MuiListItemIcon-root': {
-                                      color: 'yellow',
-                                    },
-                                  },
-                                }}
+                        <div className={classes.resourceDropdown}>
+                          <List style={{ height: '130px' }}>
+                            {types.map((type, i) => (
+                              <ListItem
+                                classes={{ root: classes.item }}
+                                onClick={() => this.setState({ listItem: i })}
+                                selected={this.state.listItem === i}
+                                button={true}
+                                key={i}
                               >
                                 {type}
                               </ListItem>
                             ))}
                           </List>
-                        </Paper>
-                        {/* <Field
-                          component={SelectField}
-                          name="resource_type"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='party'>
-                          party
-                          </MenuItem>
-                          <MenuItem value='resource'>
-                          resource
-                          </MenuItem>
-                          <MenuItem value='component'>
-                          component
-                          </MenuItem>
-                        </Field> */}
+                        </div>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -525,25 +498,21 @@ class RequiredResourceCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Paper style={{ maxHeight: 200, overflow: "auto", background:'#06102D' }}>
-                          <List style={{ height:'130px' }}>
-                            {types.map((type) => (
-                              <ListItem button key={type}>{type}</ListItem>
+                        <div className={classes.resourceDropdown}>
+                          <List style={{ height: '130px' }}>
+                            {types.map((type, i) => (
+                              <ListItem
+                                classes={{ root: classes.item }}
+                                onClick={() => this.setState({ listItem2: i })}
+                                selected={this.state.listItem2 === i}
+                                button={true}
+                                key={i}
+                              >
+                                {type}
+                              </ListItem>
                             ))}
                           </List>
-                        </Paper>
-                        {/* <Field
-                          component={SelectField}
-                          name="resource"
-                          fullWidth={true}
-                          variant="outlined"
-                          style={{ height: "38.09px" }}
-                          containerstyle={{ width: "100%" }}
-                        >
-                          <MenuItem value="3b47e03a-a515-4cce-a44f-bd6903f141f0">
-                            ID
-                          </MenuItem>
-                        </Field> */}
+                        </div>
                       </div>
                     </Grid>
                   </Grid>
@@ -644,7 +613,7 @@ class RequiredResourceCreation extends Component {
               {t("Go Back")}
             </Button>
             <Button
-              // onClick={this.submitDelete.bind(this)}
+              onClick={() => this.props.history.goBack()}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}

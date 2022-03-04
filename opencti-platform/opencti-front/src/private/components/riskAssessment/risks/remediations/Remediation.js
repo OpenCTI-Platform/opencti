@@ -72,6 +72,7 @@ class RemediationComponent extends Component {
             <CyioDomainObjectHeader
               cyioDomainObject={remediation}
               history={history}
+              disabled={true}
               PopoverComponent={<RiskPopover />}
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
@@ -96,10 +97,10 @@ class RemediationComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <RequiredResources remediationId={remediation.id} />
+                <RequiredResources history={history} remediationId={remediation.id} />
               </Grid>
               <Grid item={true} xs={6}>
-                <RelatedTasks remediationId={remediation.id} />
+                <RelatedTasks history={history} remediationId={remediation.id} />
               </Grid>
             </Grid>
             <Grid

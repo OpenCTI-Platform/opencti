@@ -70,6 +70,7 @@ class RiskComponent extends Component {
             <CyioDomainObjectHeader
               cyioDomainObject={risk}
               history={history}
+              disabled={true}
               PopoverComponent={<RiskPopover />}
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
