@@ -528,13 +528,11 @@
       "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
       "external_references": [
         {
-          "id": "external-reference--cfe1345e-4674-4001-b72d-21fa6fb446b6",
           "source_name": "FireEye APT41 Aug 2019",
           "description": "Fraser, N., et al. (2019, August 7). Double DragonAPT41, a dual espionage and cyber crime operation APT41. Retrieved September 23, 2019.",
           "url": "https://content.fireeye.com/apt-41/rpt-apt41"
         },
         {
-          "id": "external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5",
           "source_name": "mitre-attack",
           "url": "https://attack.mitre.org/groups/G0096",
           "external_id": "G0096"
@@ -555,7 +553,6 @@
       "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
       "kill_chain_phases": [
         {
-          "id": "kill-chain-phase--8c2055ac-b474-4be0-8e0d-873a4ca97e02",
           "kill_chain_name": "mitre-pre-attack",
           "phase_name": "launch",
           "x_opencti_order": 0
@@ -563,7 +560,6 @@
       ],
       "external_references": [
         {
-          "id": "external-reference--7a6f0e28-ef74-4a87-b6ef-c76057e84586",
           "source_name": "mitre-pre-attack",
           "url": "https://attack.mitre.org/techniques/T1368",
           "external_id": "T1368"
