@@ -70,7 +70,7 @@ describe('Tool resolver standard behavior', () => {
         name: 'Tool',
         stix_id: toolStixId,
         description: 'Tool description',
-        killChainPhases: ['kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a'],
+        killChainPhases: ['kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'],
       },
     };
     const tool = await queryAsAdmin({
