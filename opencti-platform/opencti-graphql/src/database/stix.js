@@ -280,7 +280,7 @@ export const convertInputToStixPatchValue = ({ key, value }) => {
   }
   if (key === INPUT_LABELS) { // objectLabels
     const values = Array.isArray(value) ? value : [value];
-    const data = values.map((m) => ({ value: m.standard_id, reference: m, x_opencti_id: m.internal_id }));
+    const data = values.map((m) => ({ value: m.standard_id, reference: m.value, x_opencti_id: m.internal_id }));
     return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
   }
   if (key === INPUT_KILLCHAIN) { // kill chains

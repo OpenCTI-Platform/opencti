@@ -4,7 +4,7 @@ import { execPython3 } from '../../../src/python/pythonBridge';
 import { shutdownModules, startModules } from '../../../src/modules';
 
 describe('Database provision', () => {
-  const importOpts = [API_URI, API_TOKEN, '/tests/data/poisonivy.json'];
+  const importOpts = [API_URI, API_TOKEN, './tests/data/poisonivy.json'];
   it(
     'should platform init',
     () => {

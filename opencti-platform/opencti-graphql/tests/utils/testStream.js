@@ -1,11 +1,10 @@
 import EventSource from 'eventsource';
 import * as R from 'ramda';
 import { validate as isUuid } from 'uuid';
-import moment from 'moment';
 import { ADMIN_USER, generateBasicAuth } from './testQuery';
 import { internalLoadById } from '../../src/database/middleware';
 import { isStixId } from '../../src/schema/schemaUtils';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
+import { EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
 import { isEmptyField } from '../../src/database/utils';
 
@@ -49,12 +48,10 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
     const attributeKey = attributes[attrIndex];
     if (
-      attributeKey === 'x_opencti_id' ||
-      attributeKey === 'status_id' || // TODO Add a specific check
-      attributeKey === 'created_at' ||
-      attributeKey === 'updated_at' ||
-      attributeKey === 'revoked' ||
-      attributeKey === 'lang'
+      attributeKey === 'x_opencti_id'
+      || attributeKey === 'x_opencti_workflow_id' // TODO Add a specific check
+      || attributeKey === 'revoked'
+      || attributeKey === 'lang'
     ) {
       // Currently some attributes are valuated by default or different by design
     } else {
@@ -94,12 +91,6 @@ export const checkStreamData = (type, data) => {
   expect(data.x_opencti_id).toBeDefined();
   expect(isUuid(data.x_opencti_id)).toBeTruthy();
   expect(data.type).toBeDefined();
-  if (type === EVENT_TYPE_CREATE) {
-    expect(data.created_at).toBeDefined();
-    expect(moment(data.created_at).isValid()).toBeTruthy();
-    expect(data.updated_at).toBeDefined();
-    expect(moment(data.updated_at).isValid()).toBeTruthy();
-  }
   if (type === EVENT_TYPE_UPDATE) {
     expect(data.x_opencti_patch).toBeDefined();
     if (data.x_opencti_patch.add) {
