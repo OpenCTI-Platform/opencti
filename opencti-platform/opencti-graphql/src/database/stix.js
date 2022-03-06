@@ -328,7 +328,12 @@ export const convertInstanceToStix = (instance) => {
   }
   if (instance.entity_type) {
     finalData.type = convertTypeToStixType(instance.entity_type);
-    finalData.x_opencti_type = instance.entity_type;
+    if (finalData.type !== instance.entity_type) {
+      finalData.x_opencti_type = instance.entity_type;
+    }
+  }
+  if (isEmptyField(instance.created)) {
+    finalData.created = instance.created_at;
   }
   // region Relationships
   const isRelation = isStixRelationship(instance.entity_type);
