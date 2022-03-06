@@ -121,6 +121,9 @@ describe('Database provision', () => {
       return dataId.stixObjectOrStixRelationship;
     };
     const diffElements = await checkInstanceDiff(initStixReport, stixReport, idLoader);
+    if (diffElements.length > 0) {
+      console.log(JSON.stringify(diffElements));
+    }
     expect(diffElements.length).toBe(0);
   };
 
