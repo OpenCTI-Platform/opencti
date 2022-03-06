@@ -410,6 +410,7 @@ export const getInstanceIdentifiers = (instance) => {
     standard_id: instance.standard_id,
     internal_id: instance.internal_id,
     entity_type: instance.entity_type,
+    created: instance.created,
   };
   if (instance.identity_class) {
     base.identity_class = instance.identity_class;

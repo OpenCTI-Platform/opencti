@@ -175,9 +175,8 @@ describe('Raw streams tests', () => {
     async () => {
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       const contextWithDeletionEvents = events.filter(
-        (e) =>
-          (e.data.data.x_opencti_context?.deletions || []).length > 0 ||
-          (e.data.data.x_opencti_context?.sources || []).length > 0
+        (e) => (e.data.data.x_opencti_context?.deletions || []).length > 0
+          || (e.data.data.x_opencti_context?.sources || []).length > 0
       );
       const deletions = R.flatten(
         contextWithDeletionEvents.map((e) => [
