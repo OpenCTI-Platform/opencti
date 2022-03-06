@@ -50,6 +50,7 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
     if (attributeKey === 'x_opencti_id'
       || attributeKey === 'x_opencti_created_at'
       || attributeKey === 'x_opencti_workflow_id'
+      || attributeKey === 'extensions'
       || attributeKey === 'revoked'
       || attributeKey === 'lang'
     ) {
