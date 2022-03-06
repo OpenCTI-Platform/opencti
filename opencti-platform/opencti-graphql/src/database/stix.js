@@ -317,23 +317,15 @@ export const convertInstanceToStix = (instance) => {
     throw UnsupportedError(`Type ${instance.entity_type} cannot be converted to Stix`, { instance });
   }
   let finalData = instance;
-  if (instance.standard_id) {
-    finalData.id = instance.standard_id;
+  finalData.id = instance.standard_id;
+  finalData.type = convertTypeToStixType(instance.entity_type);
+  finalData.x_opencti_id = instance.internal_id;
+  finalData.x_opencti_created_at = instance.created_at;
+  if (finalData.type !== instance.entity_type) {
+    finalData.x_opencti_type = instance.entity_type;
   }
-  if (instance._index && isInferredIndex(instance._index)) {
+  if (isInferredIndex(instance._index)) {
     finalData.x_opencti_inference = true;
-  }
-  if (instance.internal_id) {
-    finalData.x_opencti_id = instance.internal_id;
-  }
-  if (instance.entity_type) {
-    finalData.type = convertTypeToStixType(instance.entity_type);
-    if (finalData.type !== instance.entity_type) {
-      finalData.x_opencti_type = instance.entity_type;
-    }
-  }
-  if (isEmptyField(instance.created)) {
-    finalData.created = instance.created_at;
   }
   // region Relationships
   const isRelation = isStixRelationship(instance.entity_type);
