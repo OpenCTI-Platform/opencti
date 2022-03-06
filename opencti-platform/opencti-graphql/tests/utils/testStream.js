@@ -47,12 +47,13 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
   const diffElements = [];
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
     const attributeKey = attributes[attrIndex];
-    if (
-      attributeKey === 'x_opencti_id'
-      || attributeKey === 'x_opencti_workflow_id' // TODO Add a specific check
+    if (attributeKey === 'x_opencti_id'
+      || attributeKey === 'x_opencti_created_at'
+      || attributeKey === 'x_opencti_workflow_id'
       || attributeKey === 'revoked'
       || attributeKey === 'lang'
     ) {
+      // TODO Add a specific check
       // Currently some attributes are valuated by default or different by design
     } else {
       const fetchAttr = loaded[attributeKey];
