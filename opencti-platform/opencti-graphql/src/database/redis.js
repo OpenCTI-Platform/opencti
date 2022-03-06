@@ -556,11 +556,6 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
   const inputMarkings = (input.objectMarking || []).map((m) => m.internal_id);
   return buildEvent(EVENT_TYPE_CREATE, user, inputMarkings, message, data);
 };
-export const buildScanEvent = (user, instance) => {
-  const data = convertInstanceToStix(instance);
-  return buildEvent(EVENT_TYPE_CREATE, user, instance.object_marking_refs ?? [], '-', data);
-};
-
 export const storeCreateEvent = async (user, instance, input, loaders) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {

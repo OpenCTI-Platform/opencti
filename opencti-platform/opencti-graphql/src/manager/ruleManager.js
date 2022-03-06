@@ -1,19 +1,18 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
-import { buildEvent, buildScanEvent, createStreamProcessor, lockResource } from '../database/redis';
+import { buildEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
   internalLoadById,
-  listAllRelations,
   patchAttribute,
-  loadStixById,
+  loadStixById, loadByIdWithMetaRels,
 } from '../database/middleware';
 import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { elList } from '../database/engine';
-import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
+import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createRuleTask, deleteTask, findAll } from '../domain/task';
@@ -117,21 +116,19 @@ export const setRuleActivation = async (user, ruleId, active) => {
   return getRule(ruleId);
 };
 
+const buildInternalEvent = (type, instance) => {
+  return buildEvent(type, RULE_MANAGER_USER, instance.object_marking_refs ?? [], '-', instance);
+};
 const ruleMergeHandler = async (event) => {
   const { data, markings } = event;
   const events = [];
-  const generateInternalDeleteEvent = (instance) => {
-    return buildEvent(EVENT_TYPE_DELETE, RULE_MANAGER_USER, instance.object_marking_refs, '', instance);
-  };
   // region 01 - Generate events for deletion
   // -- sources
   const { x_opencti_context } = data;
-  const sourceDeleteEventsPromise = x_opencti_context.sources.map((s) => generateInternalDeleteEvent(s));
-  const sourceDeleteEvents = await Promise.all(sourceDeleteEventsPromise);
+  const sourceDeleteEvents = x_opencti_context.sources.map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...sourceDeleteEvents);
   // -- derived deletions
-  const derivedDeleteEventsPromise = x_opencti_context.deletions.map((s) => generateInternalDeleteEvent(s));
-  const derivedDeleteEvents = await Promise.all(derivedDeleteEventsPromise);
+  const derivedDeleteEvents = x_opencti_context.deletions.map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...derivedDeleteEvents);
   // endregion
   // region 02 - Generate event for merged entity
@@ -141,17 +138,11 @@ const ruleMergeHandler = async (event) => {
   // region 03 - Generate events for shifted relations
   // We need to cleanup the element associated with this relation and then rescan it
   if (x_opencti_context.shifts.length > 0) {
-    const shiftDeleteEventsPromise = x_opencti_context.shifts.map((s) => generateInternalDeleteEvent(s));
-    const shiftDeleteEvents = await Promise.all(shiftDeleteEventsPromise);
+    const shiftDeleteEvents = x_opencti_context.shifts.map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
     events.push(shiftDeleteEvents);
     // Then we need to generate event for redo rule on updated element
-    const mergeCallback = async (relationships) => {
-      const creationEvents = relationships.map((r) => buildScanEvent(RULE_MANAGER_USER, r));
-      events.push(...creationEvents);
-    };
-    const ids = x_opencti_context.shifts.map((s) => s.x_opencti_id);
-    const listToArgs = { ids, callback: mergeCallback };
-    await listAllRelations(RULE_MANAGER_USER, ABSTRACT_STIX_RELATIONSHIP, listToArgs);
+    const shiftRescanEvents = x_opencti_context.shifts.map((s) => buildInternalEvent(EVENT_TYPE_CREATE, s));
+    events.push(shiftRescanEvents);
   }
   // endregion
   return events;
@@ -301,7 +292,7 @@ export const rulesCleanHandler = async (eventId, instances, rules, deletedDepend
       const rule = rules[ruleIndex];
       const isElementCleanable = isNotEmptyField(instance[RULE_PREFIX + rule.id]);
       if (isElementCleanable) {
-        const processingElement = await internalLoadById(RULE_MANAGER_USER, instance.internal_id);
+        const processingElement = await loadByIdWithMetaRels(RULE_MANAGER_USER, instance.internal_id);
         // In case of inference of inference, element can be recursively cleanup by the deletion system
         if (processingElement) {
           const derivedEvents = await rule.clean(processingElement, deletedDependencies);
