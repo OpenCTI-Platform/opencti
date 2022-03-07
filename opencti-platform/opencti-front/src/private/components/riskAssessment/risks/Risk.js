@@ -76,7 +76,7 @@ class RiskComponent extends Component {
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
-            <TopMenuRisk />
+            <TopMenuRisk risk={risk}/>
             <Grid
               container={true}
               spacing={3}

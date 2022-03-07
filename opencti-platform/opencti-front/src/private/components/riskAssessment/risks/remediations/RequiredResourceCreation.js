@@ -1,44 +1,51 @@
 /* eslint-disable */
 /* refactor */
-import React, { Component } from "react";
-import * as PropTypes from "prop-types";
-import { Formik, Form, Field } from "formik";
-import { compose, dissoc, assoc, pipe } from "ramda";
-import * as Yup from "yup";
-import graphql from "babel-plugin-relay/macro";
-import { withStyles } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import Dialog from "@material-ui/core/Dialog";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogActions from "@material-ui/core/DialogActions";
-import MenuItem from "@material-ui/core/MenuItem";
-import AddIcon from "@material-ui/icons/Add";
-import Typography from "@material-ui/core/Typography";
-import { Information } from "mdi-material-ui";
-import Tooltip from "@material-ui/core/Tooltip";
-import Button from "@material-ui/core/Button";
-import Grid from "@material-ui/core/Grid";
-import IconButton from "@material-ui/core/IconButton";
-import Fab from "@material-ui/core/Fab";
-import { Add, Close } from "@material-ui/icons";
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import { Formik, Form, Field } from 'formik';
+import {
+  compose,
+  dissoc,
+  map,
+  pathOr,
+  assoc,
+  pipe,
+} from 'ramda';
+import * as Yup from 'yup';
+import graphql from 'babel-plugin-relay/macro';
+import { withStyles } from '@material-ui/core/styles';
+import Drawer from '@material-ui/core/Drawer';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogActions from '@material-ui/core/DialogActions';
+import MenuItem from '@material-ui/core/MenuItem';
+import AddIcon from '@material-ui/icons/Add';
+import Typography from '@material-ui/core/Typography';
+import { Information } from 'mdi-material-ui';
+import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
+import Fab from '@material-ui/core/Fab';
+import { Add, Close } from '@material-ui/icons';
 import {
   List,
   ListItem,
   ListItemText,
   ListSubheader,
   Paper,
-} from "@material-ui/core";
-import { QueryRenderer as QR, commitMutation as CM } from "react-relay";
-import environmentDarkLight from "../../../../../relay/environmentDarkLight";
-import { commitMutation } from "../../../../../relay/environment";
-import inject18n from "../../../../../components/i18n";
-import TextField from "../../../../../components/TextField";
-import MarkDownField from "../../../../../components/MarkDownField";
-import SelectField from "../../../../../components/SelectField";
-import { insertNode } from "../../../../../utils/Store";
-import CyioCoreObjectExternalReferences from "../../../analysis/external_references/CyioCoreObjectExternalReferences";
-import CyioCoreObjectOrCyioCoreRelationshipNotes from "../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes";
+} from '@material-ui/core';
+import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import environmentDarkLight, { fetchDarklightQuery } from '../../../../../relay/environmentDarkLight';
+import { commitMutation } from '../../../../../relay/environment';
+import inject18n from '../../../../../components/i18n';
+import TextField from '../../../../../components/TextField';
+import MarkDownField from '../../../../../components/MarkDownField';
+import SelectField from '../../../../../components/SelectField';
+import { insertNode } from '../../../../../utils/Store';
+import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
 const styles = (theme) => ({
   item: {
@@ -47,35 +54,35 @@ const styles = (theme) => ({
     },
   },
   drawerPaper: {
-    minHeight: "100%",
-    width: "50%",
-    position: "fixed",
+    minHeight: '100%',
+    width: '50%',
+    position: 'fixed',
     backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create("width", {
+    transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
   },
   dialogRoot: {
-    padding: "24px",
+    padding: '24px',
   },
   popoverDialog: {
-    fontSize: "18px",
-    lineHeight: "24px",
+    fontSize: '18px',
+    lineHeight: '24px',
     color: theme.palette.header.text,
   },
   dialogTitle: {
-    padding: "24px 0 16px 24px",
+    padding: '24px 0 16px 24px',
   },
   dialogContent: {
-    overflowY: "scroll",
-    height: "500px",
-    overflowX: "hidden",
-    padding: "8px 24px",
+    overflowY: 'scroll',
+    height: '500px',
+    overflowX: 'hidden',
+    padding: '8px 24px',
   },
   createButton: {
-    position: "fixed",
+    position: 'fixed',
     bottom: 30,
     right: 30,
   },
@@ -87,10 +94,10 @@ const styles = (theme) => ({
   },
   buttons: {
     marginTop: 20,
-    textAlign: "right",
+    textAlign: 'right',
   },
   buttonPopover: {
-    textTransform: "capitalize",
+    textTransform: 'capitalize',
   },
   button: {
     marginLeft: theme.spacing(2),
@@ -98,33 +105,33 @@ const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
     color: theme.palette.navAlt.backgroundHeaderText,
-    padding: "20px 20px 20px 60px",
+    padding: '20px 20px 20px 60px',
   },
   closeButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 12,
     left: 5,
-    color: "inherit",
+    color: 'inherit',
   },
   dialogClosebutton: {
-    float: "left",
-    padding: "8px 0 24px 24px",
+    float: 'left',
+    padding: '8px 0 24px 24px',
   },
   dialogActions: {
-    justifyContent: "flex-start",
-    padding: "10px 0 20px 22px",
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
   importButton: {
-    position: "absolute",
+    position: 'absolute',
     top: 15,
     right: 20,
   },
   container: {
-    padding: "10px 20px 20px 20px",
+    padding: '10px 20px 20px 20px',
   },
   resourceDropdown: {
     maxHeight: 130,
-    overflow: "auto",
+    overflow: 'auto',
     background: '#06102D',
   },
 });
@@ -139,13 +146,25 @@ const RequiredResourceCreationMutation = graphql`
   }
 `;
 
-const RequiredResourceValidation = (t) =>
-  Yup.object().shape({
-    // source_name: Yup.string().required(t('This field is required')),
-    // external_id: Yup.string(),
-    // url: Yup.string().url(t('The value must be an URL')),
-    // description: Yup.string(),
-  });
+const RequiredResourceCreationDataQuery = graphql`
+ query RequiredResourceCreationDataQuery{
+  __type(name: "SubjectType") {
+    name
+    enumValues {
+      name
+      description
+    }
+  }
+}
+`;
+
+// const RequiredResourceValidation = (t) =>
+//   Yup.object().shape({
+//     // source_name: Yup.string().required(t('This field is required')),
+//     // external_id: Yup.string(),
+//     // url: Yup.string().url(t('The value must be an URL')),
+//     // description: Yup.string(),
+//   });
 
 class RequiredResourceCreation extends Component {
   constructor(props) {
@@ -153,16 +172,34 @@ class RequiredResourceCreation extends Component {
     this.state = {
       open: false,
       close: false,
-      listItem: null,
-      listItem2: null,
+      typeList: null,
+      resourcelist: null,
+      SubjectField: [],
       subjects: [
         {
-          subject_type: "",
-          subject_ref: "",
+          subject_type: '',
+          subject_ref: '',
         },
       ],
       selectedIndex: 1,
     };
+  }
+
+  componentDidMount() {
+    fetchDarklightQuery(RequiredResourceCreationDataQuery)
+      .toPromise()
+      .then((data) => {
+        const SubjectFieldEntities = pipe(
+          pathOr([], ['__type', 'enumValues']),
+          map((n) => ({
+            name: n.name,
+            description: n.description,
+          })),
+        )(data);
+        this.setState({
+          SubjectField : SubjectFieldEntities,
+        });
+      });
   }
 
   handleOpen() {
@@ -194,11 +231,11 @@ class RequiredResourceCreation extends Component {
       ],
     });
     const finalValues = pipe(
-      dissoc("resource_type"),
-      dissoc("resource"),
-      assoc("subjects", this.state.subjects)
+      dissoc('resource_type'),
+      dissoc('resource'),
+      assoc('subjects', this.state.subjects),
     )(values);
-    console.log("finalValues", finalValues);
+    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: RequiredResourceCreationMutation,
       variables: {
@@ -219,8 +256,7 @@ class RequiredResourceCreation extends Component {
           this.props.onCreate(response.externalReferenceAdd, true);
         }
       },
-      onError: (err) =>
-        console.log("ExternalReferenceCreationMutationError", err),
+      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
     });
     // commitMutation({
     //   mutation: RequiredResourceCreationMutation,
@@ -259,88 +295,88 @@ class RequiredResourceCreation extends Component {
       <div>
         <Fab
           onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Add"
+          color='secondary'
+          aria-label='Add'
           className={classes.createButton}
         >
           <Add />
         </Fab>
         <Drawer
           open={this.state.open}
-          anchor="right"
+          anchor='right'
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
           <div className={classes.header}>
             <IconButton
-              aria-label="Close"
+              aria-label='Close'
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
             >
-              <Close fontSize="small" />
+              <Close fontSize='small' />
             </IconButton>
-            <Typography variant="h6">{t("Required Asset")}</Typography>
+            <Typography variant='h6'>{t('Required Asset')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                name: "",
-                description: "",
-                resource_type: "",
-                resource: "",
+                name: '',
+                description: '',
+                resource_type: '',
+                resource: '',
               }}
               // validationSchema={RequiredResourceValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
               {({ submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ margin: "20px 0 20px 0" }}>
+                <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
-                    name="source_name"
-                    label={t("Source name")}
+                    name='source_name'
+                    label={t('Source name')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
-                    name="external_id"
-                    label={t("External ID")}
+                    name='external_id'
+                    label={t('External ID')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
                   <Field
                     component={TextField}
-                    name="url"
-                    label={t("URL")}
+                    name='url'
+                    label={t('URL')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
                   <Field
                     component={MarkDownField}
-                    name="description"
-                    label={t("Description")}
+                    name='description'
+                    label={t('Description')}
                     fullWidth={true}
                     multiline={true}
-                    rows="4"
+                    rows='4'
                     style={{ marginTop: 20 }}
                   />
                   <div className={classes.buttons}>
                     <Button
-                      variant="contained"
+                      variant='contained'
                       onClick={handleReset}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
                     >
-                      {t("Cancel")}
+                      {t('Cancel')}
                     </Button>
                     <Button
-                      variant="contained"
-                      color="primary"
+                      variant='contained'
+                      color='primary'
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
                     >
-                      {t("Submit")}
+                      {t('Submit')}
                     </Button>
                   </div>
                 </Form>
@@ -363,30 +399,29 @@ class RequiredResourceCreation extends Component {
       requiredResourceData,
       selectedElements,
     } = this.props;
-    const types = ["Party", "Component", "User", "Location", "Inventory-Item", "Party"];
     return (
-      <div style={{ display: display ? "block" : "none" }}>
+      <div style={{ display: display ? 'block' : 'none' }}>
         <IconButton
-          color="inherit"
-          aria-label="Add"
-          edge="end"
+          color='inherit'
+          aria-label='Add'
+          edge='end'
           onClick={this.handleOpen.bind(this)}
         >
-          <Add fontSize="small" />
+          <Add fontSize='small' />
         </IconButton>
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
           onClose={this.handleClose.bind(this)}
           fullWidth={true}
-          maxWidth="sm"
+          maxWidth='sm'
         >
           <Formik
             enableReinitialize={true}
             initialValues={{
-              name: "Hello World",
+              name: 'Hello World',
               resource: [],
-              description: "",
+              description: '',
               resource_type: [],
             }}
             // validationSchema={RequiredResourceValidation(t)}
@@ -396,61 +431,61 @@ class RequiredResourceCreation extends Component {
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t("Require Resource")}
+                  {t('Required Resource')}
                 </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: "15px" }}>
+                      <div style={{ marginBottom: '15px' }}>
                         <Typography
-                          variant="h3"
-                          color="textSecondary"
+                          variant='h3'
+                          color='textSecondary'
                           gutterBottom={true}
-                          style={{ float: "left" }}
+                          style={{ float: 'left' }}
                         >
-                          {t("Name")}
+                          {t('Name')}
                         </Typography>
-                        <div style={{ float: "left", margin: "1px 0 0 5px" }}>
-                          <Tooltip title={t("Description")}>
-                            <Information fontSize="inherit" color="disabled" />
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Description')}>
+                            <Information fontSize='inherit' color='disabled' />
                           </Tooltip>
                         </div>
-                        <div className="clearfix" />
+                        <div className='clearfix' />
                         <Field
                           component={TextField}
-                          name="name"
+                          name='name'
                           fullWidth={true}
-                          size="small"
-                          containerstyle={{ width: "100%" }}
-                          variant="outlined"
+                          size='small'
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
                         />
                       </div>
-                      <div style={{ marginBottom: "15px" }}>
+                      <div style={{ marginBottom: '15px' }}>
                         <Typography
-                          variant="h3"
-                          color="textSecondary"
+                          variant='h3'
+                          color='textSecondary'
                           gutterBottom={true}
-                          style={{ float: "left" }}
+                          style={{ float: 'left' }}
                         >
-                          {t("Type")}
+                          {t('Type')}
                         </Typography>
-                        <div style={{ float: "left", margin: "1px 0 0 5px" }}>
-                          <Tooltip title={t("Resource Type")}>
-                            <Information fontSize="inherit" color="disabled" />
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Resource Type')}>
+                            <Information fontSize='inherit' color='disabled' />
                           </Tooltip>
                         </div>
-                        <div className="clearfix" />
+                        <div className='clearfix' />
                         <div className={classes.resourceDropdown}>
                           <List style={{ height: '130px' }}>
-                            {types.map((type, i) => (
+                            {this.state.SubjectField.map((type, i) => (
                               <ListItem
                                 classes={{ root: classes.item }}
-                                onClick={() => this.setState({ listItem: i })}
-                                selected={this.state.listItem === i}
+                                onClick={() => this.setState({ typeList: i })}
+                                selected={this.state.typeList === i}
                                 button={true}
                                 key={i}
                               >
-                                {type}
+                                {type.name}
                               </ListItem>
                             ))}
                           </List>
@@ -458,57 +493,57 @@ class RequiredResourceCreation extends Component {
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: "15px" }}>
+                      <div style={{ marginBottom: '15px' }}>
                         <Typography
-                          variant="h3"
-                          color="textSecondary"
+                          variant='h3'
+                          color='textSecondary'
                           gutterBottom={true}
-                          size="small"
-                          style={{ float: "left" }}
+                          size='small'
+                          style={{ float: 'left' }}
                         >
-                          {t("ID")}
+                          {t('ID')}
                         </Typography>
-                        <div style={{ float: "left", margin: "1px 0 0 5px" }}>
-                          <Tooltip title={t("Description")}>
-                            <Information fontSize="inherit" color="disabled" />
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Description')}>
+                            <Information fontSize='inherit' color='disabled' />
                           </Tooltip>
                         </div>
-                        <div className="clearfix" />
+                        <div className='clearfix' />
                         <Field
                           component={TextField}
-                          name="id"
+                          name='id'
                           fullWidth={true}
-                          size="small"
-                          variant="outlined"
-                          containerstyle={{ width: "100%" }}
+                          size='small'
+                          variant='outlined'
+                          containerstyle={{ width: '100%' }}
                         />
                       </div>
-                      <div style={{ marginBottom: "15px" }}>
+                      <div style={{ marginBottom: '15px' }}>
                         <Typography
-                          variant="h3"
-                          color="textSecondary"
+                          variant='h3'
+                          color='textSecondary'
                           gutterBottom={true}
-                          style={{ float: "left" }}
+                          style={{ float: 'left' }}
                         >
-                          {t("Resource")}
+                          {t('Resource')}
                         </Typography>
-                        <div style={{ float: "left", margin: "1px 0 0 5px" }}>
-                          <Tooltip title={t("Resource")}>
-                            <Information fontSize="inherit" color="disabled" />
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Resource')}>
+                            <Information fontSize='inherit' color='disabled' />
                           </Tooltip>
                         </div>
-                        <div className="clearfix" />
+                        <div className='clearfix' />
                         <div className={classes.resourceDropdown}>
                           <List style={{ height: '130px' }}>
-                            {types.map((type, i) => (
+                            {this.state.SubjectField.map((type, i) => (
                               <ListItem
                                 classes={{ root: classes.item }}
-                                onClick={() => this.setState({ listItem2: i })}
-                                selected={this.state.listItem2 === i}
+                                onClick={() => this.setState({ resourcelist: i })}
+                                selected={this.state.resourcelist === i}
                                 button={true}
                                 key={i}
                               >
-                                {type}
+                                {type.description}
                               </ListItem>
                             ))}
                           </List>
@@ -519,30 +554,30 @@ class RequiredResourceCreation extends Component {
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
                       <Typography
-                        variant="h3"
-                        color="textSecondary"
+                        variant='h3'
+                        color='textSecondary'
                         gutterBottom={true}
-                        style={{ float: "left" }}
+                        style={{ float: 'left' }}
                       >
-                        {t("Description")}
+                        {t('Description')}
                       </Typography>
-                      <div style={{ float: "left", margin: "1px 0 0 5px" }}>
-                        <Tooltip title={t("Description")}>
-                          <Information fontSize="inherit" color="disabled" />
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Description')}>
+                          <Information fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
-                      <div className="clearfix" />
+                      <div className='clearfix' />
                       <Field
                         component={MarkDownField}
-                        name="description"
+                        name='description'
                         fullWidth={true}
                         multiline={true}
-                        rows="3"
-                        variant="outlined"
-                        containerstyle={{ width: "100%" }}
+                        rows='3'
+                        variant='outlined'
+                        containerstyle={{ width: '100%' }}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: "6px" }} xs={12} item={true}>
+                    <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
                         typename={requiredResourceData.__typename}
@@ -550,36 +585,36 @@ class RequiredResourceCreation extends Component {
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: "15px" }} xs={12} item={true}>
+                    <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
                         typename={requiredResourceData.__typename}
                         notes={requiredResourceData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         // data={props}
-                        marginTop="0px"
+                        marginTop='0px'
                       />
                     </Grid>
                   </Grid>
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
-                    variant="outlined"
+                    variant='outlined'
                     // onClick={handleReset}
                     onClick={this.handleCancelClick.bind(this)}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
-                    {t("Cancel")}
+                    {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
-                    color="primary"
+                    variant='contained'
+                    color='primary'
                     onClick={submitForm}
                     classes={{ root: classes.buttonPopover }}
                     disabled={isSubmitting}
                   >
-                    {t("Create")}
+                    {t('Create')}
                   </Button>
                 </DialogActions>
               </Form>
@@ -594,10 +629,10 @@ class RequiredResourceCreation extends Component {
         >
           <DialogContent>
             <Typography className={classes.popoverDialog}>
-              {t("Are you sure you’d like to cancel?")}
+              {t('Are you sure you’d like to cancel?')}
             </Typography>
-            <Typography align="left">
-              {t("Your progress will not be saved")}
+            <Typography align='left'>
+              {t('Your progress will not be saved')}
             </Typography>
           </DialogContent>
           <DialogActions className={classes.dialogActions}>
@@ -607,20 +642,20 @@ class RequiredResourceCreation extends Component {
               // onClick={handleReset}
               onClick={this.handleCancelCloseClick.bind(this)}
               classes={{ root: classes.buttonPopover }}
-              variant="outlined"
-              size="small"
+              variant='outlined'
+              size='small'
             >
-              {t("Go Back")}
+              {t('Go Back')}
             </Button>
             <Button
               onClick={() => this.props.history.goBack()}
-              color="secondary"
+              color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
-              variant="contained"
-              size="small"
+              variant='contained'
+              size='small'
             >
-              {t("Yes, Cancel")}
+              {t('Yes, Cancel')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -653,5 +688,5 @@ RequiredResourceCreation.propTypes = {
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true })
+  withStyles(styles, { withTheme: true }),
 )(RequiredResourceCreation);

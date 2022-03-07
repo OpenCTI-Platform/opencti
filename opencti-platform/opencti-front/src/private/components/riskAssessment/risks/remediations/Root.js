@@ -72,6 +72,7 @@ class RootRemediation extends Component {
       match: {
         params: { riskId },
       },
+      risk,
     } = this.props;
     const link = `/dashboard/risk-assessment/risks/${riskId}/knowledge`;
     return (
@@ -115,6 +116,7 @@ class RootRemediation extends Component {
                           {...routeProps}
                           riskId={riskId}
                           refreshQuery={retry}
+                          risk={risk}
                           remediation={props.riskResponse}
                         />
                       )}
@@ -133,6 +135,7 @@ class RootRemediation extends Component {
 }
 
 RootRemediation.propTypes = {
+  risk: PropTypes.object,
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
