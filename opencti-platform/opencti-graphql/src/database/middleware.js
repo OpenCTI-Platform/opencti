@@ -660,15 +660,12 @@ export const convertDataToRawStix = async (user, id) => {
 // endregion
 
 // region Graphics
-const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', parent_types: [] };
 const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   const resolveLabels = await elFindByIds(user, data.map((d) => d.label), { toMap: true });
-  return R.map((n) => {
-    const resolved = resolveLabels[n.label];
-    const resolvedData = resolved || restrictedAggElement;
-    return R.assoc('entity', resolvedData, n);
-  }, data);
+  return data // Depending of user access, info can be empty, must be filtered
+    .filter((n) => isNotEmptyField(resolveLabels[n.label]))
+    .map((n) => R.assoc('entity', resolveLabels[n.label], n));
 };
 export const timeSeriesEntities = async (user, entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
