@@ -1278,7 +1278,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
 
 // region elastic common loader.
 export const specialElasticCharsEscape = (query) => {
-  return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
+  return query.replace(/([/+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
 
 const BASE_SEARCH_CONNECTIONS = [
