@@ -28,11 +28,11 @@ test('should string correctly escaped', async () => {
 test('should search parsing correctly generated', () => {
   // URL TESTING
   let parsed = parse('first http://localhost:4000/graphql');
-  expect(parsed.queriesString).toBe('first* http\\://localhost\\:4000/graphql*');
+  expect(parsed.queriesString).toBe('first* http\\:\\/\\/localhost\\:4000\\/graphql*');
   expect(parsed.matchesString).toBe('');
 
   parsed = parse('https://localhost:4000/graphql second');
-  expect(parsed.queriesString).toBe('https\\://localhost\\:4000/graphql* second*');
+  expect(parsed.queriesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
   expect(parsed.matchesString).toBe('');
 
   // GENERIC TESTING
