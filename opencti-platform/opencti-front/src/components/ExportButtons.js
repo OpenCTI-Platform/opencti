@@ -250,7 +250,7 @@ class ExportButtons extends Component {
         </Menu>
         {csvData && (
           <Tooltip title={t('Export to CSV')}>
-            <IconButton aria-haspopup="true" color="primary" size="large">
+            <IconButton aria-haspopup="true" color="primary" size="medium">
               <CSVLink data={csvData}>
                 <FileDelimitedOutline />
               </CSVLink>
