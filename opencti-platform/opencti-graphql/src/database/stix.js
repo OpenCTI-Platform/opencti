@@ -275,7 +275,7 @@ export const convertInputToStixPatchValue = ({ key, value }) => {
   }
   if (key === INPUT_CREATED_BY) { // createdBy
     const val = Array.isArray(value) ? R.head(value) : value;
-    const data = { value: val.standard_id, reference: val.name, x_opencti_id: val.internal_id };
+    const data = [{ value: val.standard_id, reference: val.name, x_opencti_id: val.internal_id }];
     return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
   }
   if (key === INPUT_LABELS) { // objectLabels
@@ -297,7 +297,7 @@ export const convertInputToStixPatchValue = ({ key, value }) => {
   if (STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]) {
     if (isSingleStixEmbeddedRelationshipInput(key)) {
       const val = Array.isArray(value) ? R.head(value) : value;
-      const data = { value: val.standard_id, reference: observableValue(val), x_opencti_id: val.internal_id };
+      const data = [{ value: val.standard_id, reference: observableValue(val), x_opencti_id: val.internal_id }];
       return { key: STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key], value: data };
     }
     const values = Array.isArray(value) ? value : [value];
