@@ -4,12 +4,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
-import {
-  compose,
-  dissoc,
-  assoc,
-  pipe,
-} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -33,7 +27,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import environmentDarkLight, { fetchDarklightQuery } from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import TextField from '../../../../../components/TextField';
@@ -97,7 +91,7 @@ const styles = (theme) => ({
   },
   resourceDropdown: {
     maxHeight: 130,
-    overflow: "auto",
+    overflow: 'auto',
     background: '#06102D',
   },
 });
@@ -113,6 +107,18 @@ const requiredResourcePopoverDeletionMutation = graphql`
       delete
     }
   }
+`;
+
+const RequiredResourcePopoverDataQuery = graphql`
+ query RequiredResourcePopoverDataQuery{
+  __type(name: "SubjectType") {
+    name
+    enumValues {
+      name
+      description
+    }
+  }
+}
 `;
 
 const cyioRequiredResourceEditionQuery = graphql`
@@ -131,14 +137,32 @@ class RequiredResourcePopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
-      listItem: null,
-      listItem2: null,
+      resourceList: null,
+      typeList: null,
+      SubjectField: [],
       subjects: [{
         subject_type: '',
         subject_ref: '',
         name: '',
       }],
     };
+  }
+
+  componentDidMount() {
+    fetchDarklightQuery(RequiredResourcePopoverDataQuery)
+      .toPromise()
+      .then((data) => {
+        const SubjectFieldEntities = R.pipe(
+          R.pathOr([], ['__type', 'enumValues']),
+          R.map((n) => ({
+            name: n.name,
+            description: n.description,
+          })),
+        )(data);
+        this.setState({
+          SubjectField: SubjectFieldEntities,
+        });
+      });
   }
 
   handleOpen(event) {
@@ -161,6 +185,10 @@ class RequiredResourcePopover extends Component {
   handleOpenDelete() {
     this.setState({ displayDelete: true });
     this.handleClose();
+  }
+
+  handleTypeChange(event) {
+    console.log('handleResourceChange', event.target.innerText);
   }
 
   handleCloseDelete() {
@@ -245,7 +273,6 @@ class RequiredResourcePopover extends Component {
       requiredResourceData,
       data,
     } = this.props;
-    const types = ["Party", "Component", "User", "Location", "Inventory-Item", "Party"];
     const requiredResourceNode = R.pipe(
       R.pathOr([], ['subjects']),
       R.map((value) => ({
@@ -403,16 +430,16 @@ class RequiredResourcePopover extends Component {
                         </div>
                         <div className="clearfix" />
                         <div className={classes.resourceDropdown}>
-                          <List style={{ height: '130px' }}>
-                            {types.map((type, i) => (
+                          <List onClick={this.handleTypeChange.bind(this)} style={{ height: '130px' }}>
+                            {this.state.SubjectField.map((type, i) => (
                               <ListItem
                                 classes={{ root: classes.item }}
-                                onClick={() => this.setState({ listItem2: i })}
-                                selected={this.state.listItem2 === i}
+                                onClick={() => this.setState({ typeList: i })}
+                                selected={this.state.typeList === i}
                                 button={true}
-                                key={type}
+                                key={i}
                               >
-                                {type}
+                                {type.name}
                               </ListItem>
                             ))}
                           </List>
@@ -462,15 +489,15 @@ class RequiredResourcePopover extends Component {
                         <div className="clearfix" />
                         <div className={classes.resourceDropdown}>
                           <List style={{ height: '130px' }}>
-                            {types.map((type, i) => (
+                            {this.state.SubjectField.map((type, i) => (
                               <ListItem
                                 classes={{ root: classes.item }}
-                                onClick={() => this.setState({ listItem: i })}
-                                selected={this.state.listItem === i}
+                                onClick={() => this.setState({ resourceList: i })}
+                                selected={this.state.resourceList === i}
                                 button={true}
-                                key={type}
+                                key={i}
                               >
-                                {type}
+                                {type.description}
                               </ListItem>
                             ))}
                           </List>
@@ -602,4 +629,4 @@ RequiredResourcePopover.propTypes = {
   data: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(RequiredResourcePopover);
+export default R.compose(inject18n, withStyles(styles))(RequiredResourcePopover);

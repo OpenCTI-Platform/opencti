@@ -96,7 +96,7 @@ const styles = (theme) => ({
 });
 
 const logoutMutation = graphql`
-  mutation TopBarBreadcrumbsLogoutMutation {
+  mutation TopBarRiskBreadcrumbsLogoutMutation {
     logout
   }
 `;
