@@ -91,6 +91,7 @@ export const checkStreamData = (type, data) => {
   expect(data.id).toBeDefined();
   expect(isStixId(data.id)).toBeTruthy();
   expect(data.x_opencti_id).toBeDefined();
+  expect(data.x_opencti_type).toBeDefined();
   expect(data.x_opencti_created_at).toBeDefined();
   expect(isUuid(data.x_opencti_id)).toBeTruthy();
   expect(data.type).toBeDefined();

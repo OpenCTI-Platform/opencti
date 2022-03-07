@@ -318,12 +318,10 @@ export const convertInstanceToStix = (instance) => {
   }
   let finalData = instance;
   finalData.id = instance.standard_id;
-  finalData.type = convertTypeToStixType(instance.entity_type);
   finalData.x_opencti_id = instance.internal_id;
+  finalData.type = convertTypeToStixType(instance.entity_type);
+  finalData.x_opencti_type = instance.entity_type;
   finalData.x_opencti_created_at = instance.created_at;
-  if (finalData.type !== instance.entity_type) {
-    finalData.x_opencti_type = instance.entity_type;
-  }
   if (isInferredIndex(instance._index)) {
     finalData.x_opencti_inference = true;
   }
