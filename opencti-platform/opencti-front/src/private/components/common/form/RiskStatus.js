@@ -5,7 +5,6 @@ import { Field } from 'formik';
 import * as R from 'ramda';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
-import { Information } from 'mdi-material-ui';
 import graphql from 'babel-plugin-relay/macro'
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
@@ -14,7 +13,8 @@ import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 const RiskStatusQuery = graphql`
  query RiskStatusQuery{
   __type(name: "RiskStatus" ) {
-    name enumValues {
+    name
+    enumValues {
       name
       description
     }
@@ -85,15 +85,16 @@ class RiskStatus extends Component {
           helperText={helperText}
         >
           {riskStatusList.map((et, key) => (
-            et
-            && <MenuItem value={et.value} key={key}>
-              {et.value}
-              <Tooltip
-                title={et.label}
-              >
-                <Information fontSize="inherit" color="disabled" />
-              </Tooltip>
-            </MenuItem>
+            et.label
+            && <Tooltip
+              title={et.label}
+              value={et.value}
+              key={key}
+            >
+              <MenuItem value={et.value}>
+                {et.value}
+              </MenuItem>
+            </Tooltip>
           ))}
         </Field>
       </div>

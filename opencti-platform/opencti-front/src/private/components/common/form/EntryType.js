@@ -14,7 +14,8 @@ import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 const EntryTypeQuery = graphql`
  query EntryTypeQuery{
   __type(name: "EntryType" ) {
-    name enumValues {
+    name
+    enumValues {
       name
       description
     }
@@ -71,31 +72,32 @@ class EntryType extends Component {
     );
     return (
       <div>
-      <div className="clearfix" />
-      <Field
-        component={SelectField}
-        name={name}
-        label={label}
-        fullWidth={true}
-        containerstyle={containerstyle}
-        variant={variant}
-        disabled={disabled || false}
-        size={size}
-        style={style}
-        helperText={helperText}
-      >
-        {entryTypeList.map((et, key) => (
-          et
-          && <MenuItem value={et.value} key={key}>
-              {et.value}
-              <Tooltip
-                title={et.label}
-              >
-                 <Information fontSize="inherit" color="disabled" />
-              </Tooltip>
-          </MenuItem>
-        ))}
-      </Field>
+        <div className="clearfix" />
+        <Field
+          component={SelectField}
+          name={name}
+          label={label}
+          fullWidth={true}
+          containerstyle={containerstyle}
+          variant={variant}
+          disabled={disabled || false}
+          size={size}
+          style={style}
+          helperText={helperText}
+        >
+          {entryTypeList.map((et, key) => (
+            et.label
+            && <Tooltip
+              title={et.label}
+              value={et.value}
+              key={et.label}
+            >
+              <MenuItem value={et.value}>
+                {et.value}
+              </MenuItem>
+            </Tooltip>
+          ))}
+        </Field>
       </div>
     );
   }
