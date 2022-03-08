@@ -38,6 +38,8 @@ import SelectField from '../../../../components/SelectField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { insertNode } from '../../../../utils/Store';
 import { dateFormat, parse } from '../../../../utils/Time';
+import EntryType from '../../common/form/EntryType';
+import RiskStatus from '../../common/form/RiskStatus';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -202,7 +204,8 @@ class RiskLogCreation extends Component {
   }
 
   renderClassic() {
-    const { t, classes } = this.props;
+    const { t, classes, data } = this.props;
+    console.log('remediationData', dialogActions)
     return (
       <div>
         <Fab
@@ -306,7 +309,7 @@ class RiskLogCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display,
+      t, classes, inputValue, display, riskStatusResponse
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -349,11 +352,11 @@ class RiskLogCreation extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>{t('New Risk Log')}</DialogTitle>
+                <DialogTitle>{t('Risk Log Entry')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
-                    <div style={{ marginBottom: '15px' }}>
+                      <div style={{ marginBottom: '15px' }}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -368,7 +371,15 @@ class RiskLogCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
+                        <EntryType
+                          variant='outlined'
+                          name="entry_type"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        />
+                        {/* <Field
                           component={SelectField}
                           name="entry_type"
                           fullWidth={true}
@@ -392,11 +403,11 @@ class RiskLogCreation extends Component {
                           <MenuItem value='status_update'>
                             status_update
                           </MenuItem>
-                        </Field>
+                        </Field> */}
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
-                    <div style={{ marginBottom: '15px' }}>
+                      <div style={{ marginBottom: '15px' }}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -535,12 +546,11 @@ class RiskLogCreation extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
-                           <MenuItem value='Hello'>
-                            Hello
-                          </MenuItem>
-                          <MenuItem value='Name'>
-                            Name
-                          </MenuItem>
+                          {riskStatusResponse.map((value, i) => (
+                            <MenuItem value={value.name} key={i}>
+                              {value.name}
+                            </MenuItem>
+                          ))}
                         </Field>
                       </div>
                     </Grid>
@@ -588,7 +598,7 @@ class RiskLogCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
+                        {/* <Field
                           component={SelectField}
                           name="status_change"
                           fullWidth={true}
@@ -612,7 +622,15 @@ class RiskLogCreation extends Component {
                           <MenuItem value='deviation_approved'>
                             deviation_approved
                           </MenuItem>
-                        </Field>
+                        </Field> */}
+                        <RiskStatus
+                          variant='outlined'
+                          name="entry_type"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        />
                       </div>
                     </Grid>
                   </Grid>
@@ -698,9 +716,11 @@ RiskLogCreation.propTypes = {
   display: PropTypes.bool,
   inputValue: PropTypes.string,
   onCreate: PropTypes.func,
+  riskStatusResponse: PropTypes.array,
 };
 
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(RiskLogCreation);
+//RisklogCreation

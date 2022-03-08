@@ -222,8 +222,14 @@ class RiskTrackingLinesContainer extends Component {
     } = this.props;
     const riskLogEdges = R.pathOr([], ['risk', 'risk_log', 'edges'], data);
     const { expanded, displayUpdate } = this.state;
-    console.log('riskTrackingData', data);
-    // const riskLogEdges = data.risk.risk_log.edges;
+    const riskStatusResponse = R.pipe(
+      R.pathOr([], ['risk', 'remediations']),
+      R.map((n) => ({
+        description: n.description,
+        name: n.name,
+      })),
+    )(data);
+    console.log('riskStatusResponse', riskStatusResponse);
     const expandable = riskLogEdges.length > 7;
     const paginationOptions = {
       search: this.state.search,
@@ -244,6 +250,8 @@ class RiskTrackingLinesContainer extends Component {
             inputValue={this.state.search}
             paginationOptions={paginationOptions}
             riskId={riskId}
+            data={data}
+            riskStatusResponse={riskStatusResponse}
           // stixCoreObjectOrStixCoreRelationshipReferences={
           //   data.risk.risk_log.edges
           // }
@@ -258,6 +266,7 @@ class RiskTrackingLinesContainer extends Component {
               node={riskLogItem}
               key={riskLogItem.id}
               riskId={riskId}
+              riskStatusResponse={riskStatusResponse}
             />;
           }))
             : <>
@@ -306,6 +315,11 @@ const RiskTrackingLines = createFragmentContainer(
                 ...RiskTrackingLine_node
               }
             }
+          }
+          remediations {
+            id
+            name
+            description
           }
         }
       }

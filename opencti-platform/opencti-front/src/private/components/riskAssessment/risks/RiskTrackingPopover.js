@@ -37,6 +37,8 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import MarkDownField from '../../../../components/MarkDownField';
 import { dateFormat, parse } from '../../../../utils/Time';
+import EntryType from '../../common/form/EntryType';
+import RiskStatus from '../../common/form/RiskStatus';
 
 const styles = (theme) => ({
   container: {
@@ -193,20 +195,23 @@ class RiskTrackingPopover extends Component {
       handleRemove,
       handleOpenUpdate,
       node,
+      riskStatusResponse,
     } = this.props;
     const riskTrackingLoggedBy = R.pipe(
       R.pathOr([], ['logged_by']),
       R.mergeAll,
     )(node);
+    console.log('riskTrackingLoggedBy', node);
+
     const initialValues = R.pipe(
-      R.assoc('entry_type', node?.entry_type || ''),
+      R.assoc('entry_type', node?.entry_type || []),
       R.assoc('title', node?.name || ''),
       R.assoc('description', node?.description || ''),
       R.assoc('event_start', dateFormat(node?.event_start)),
       R.assoc('event_end', dateFormat(node?.event_end)),
       R.assoc('logged_by', riskTrackingLoggedBy?.name || ''),
       R.assoc('status_change', node?.status_change || ''),
-      R.assoc('related_response', node?.related_response || ''),
+      R.assoc('related_response', riskStatusResponse?.name || []),
       R.pick([
         'entry_type',
         'title',
@@ -300,16 +305,16 @@ class RiskTrackingPopover extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-          // validationSchema={riskValidation(t)}
+            // validationSchema={riskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
           >
-          {({ submitForm, handleReset, isSubmitting }) => (
-            <Form>
-              <DialogTitle>{t('Risk Log')}</DialogTitle>
-              <DialogContent classes={{ root: classes.dialogContent }}>
-              <Grid spacing={3} container={true}>
-                  <Grid item={true} xs={6}>
-                    <div style={{ marginBottom: '15px' }}>
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form>
+                <DialogTitle>{t('Risk Log Entry')}</DialogTitle>
+                <DialogContent classes={{ root: classes.dialogContent }}>
+                  <Grid spacing={3} container={true}>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '15px' }}>
                         <Typography
                           variant="subtitle2"
                           gutterBottom={true}
@@ -325,13 +330,231 @@ class RiskTrackingPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <EntryType
                           variant='outlined'
                           name="entry_type"
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        />
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '20px' }}>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Title')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                          <Tooltip
+                            title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                          >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={TextField}
+                          variant='outlined'
+                          size='small'
+                          name="title"
+                          fullWidth={true}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <Typography
+                        variant="subtitle2"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                        <Tooltip
+                          title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                        >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={MarkDownField}
+                        name="description"
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        variant='outlined'
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid spacing={3} container={true}>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '20px' }}>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Start Date')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                          <Tooltip
+                            title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                          >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={DatePickerField}
+                          variant='outlined'
+                          size='small'
+                          name="event_start"
+                          fullWidth={true}
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                      <div style={{ marginBottom: '15px' }}>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Logged By')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                          <Tooltip
+                            title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                          >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          variant='outlined'
+                          name="logged_by"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                        />
+                        <Field
+                          component={SelectField}
+                          variant='outlined'
+                          name="logged_by"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                        />
+                      </div>
+                      <div style={{ marginBottom: '15px' }}>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Related Response')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                          <Tooltip
+                            title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                          >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          name="related_responses"
+                          fullWidth={true}
+                          size="small"
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        >
+                          {riskStatusResponse.map((value, i) => (
+                            <MenuItem value={value.name} key={i}>
+                               {value.name}
+                            </MenuItem>
+                          ))}
+                        </Field>
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '20px' }}>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('End Date')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                          <Tooltip
+                            title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                          >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={DatePickerField}
+                          variant='outlined'
+                          size='small'
+                          name="event_end"
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
+                          style={{ height: '38.09px' }}
+                          fullWidth={true}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                      <div style={{ marginBottom: '15px' }}>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Status Change')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                          <Tooltip
+                            title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
+                          >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <RiskStatus
+                          variant='outlined'
+                          name="entry_type"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        />
+                        {/* <Field
+                          component={SelectField}
+                          variant='outlined'
+                          name="status_change"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                         >
                           <MenuItem value='Helloworld'>
@@ -343,247 +566,32 @@ class RiskTrackingPopover extends Component {
                           <MenuItem value='data'>
                             data
                           </MenuItem>
-                        </Field>
+                        </Field> */}
                       </div>
+                    </Grid>
                   </Grid>
-                  <Grid item={true} xs={6}>
-                  <div style={{ marginBottom: '20px' }}>
-                      <Typography
-                        variant="subtitle2"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Title')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                        <Tooltip
-                          title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        variant='outlined'
-                        size='small'
-                        name="title"
-                        fullWidth={true}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </div>
-                  </Grid>
-              </Grid>
-              <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={12}>
-                    <Typography
-                      variant="subtitle2"
-                      gutterBottom={true}
-                      style={{ float: 'left' }}
-                    >
-                      {t('Description')}
-                    </Typography>
-                    <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                      <Tooltip
-                        title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                      >
-                        <Information fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <Field
-                      component={MarkDownField}
-                      name="description"
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      variant='outlined'
-                    />
-                  </Grid>
-                </Grid>
-                <Grid spacing={3} container={true}>
-                  <Grid item={true} xs={6}>
-                    <div style={{ marginBottom: '20px' }}>
-                      <Typography
-                        variant="subtitle2"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Start Date')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                        <Tooltip
-                          title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={DatePickerField}
-                        variant='outlined'
-                        size='small'
-                        name="event_start"
-                        fullWidth={true}
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </div>
-                    <div style={{ marginBottom: '15px' }}>
-                      <Typography
-                        variant="subtitle2"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Logged By')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                        <Tooltip
-                          title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="logged_by"
-                        size='small'
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                      />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="logged_by"
-                        size='small'
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                      />
-                    </div>
-                    <div style={{ marginBottom: '15px' }}>
-                      <Typography
-                        variant="subtitle2"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Related Response')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                        <Tooltip
-                          title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        variant='outlined'
-                        name="related_response"
-                        size='small'
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                      />
-                    </div>
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <div style={{ marginBottom: '20px' }}>
-                      <Typography
-                        variant="subtitle2"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('End Date')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                        <Tooltip
-                          title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={DatePickerField}
-                        variant='outlined'
-                        size='small'
-                        name="event_end"
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        style={{ height: '38.09px' }}
-                        fullWidth={true}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </div>
-                    <div style={{ marginBottom: '15px' }}>
-                      <Typography
-                        variant="subtitle2"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Status Change')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                        <Tooltip
-                          title='In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.'
-                        >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="status_change"
-                        size='small'
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                      >
-                         <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                      </Field>
-                    </div>
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>
-                <Button
-                  variant="outlined"
-                  classes={{ root: classes.buttonPopover }}
-                  onClick={this.handleCloseUpdate.bind(this)}
-                // disabled={isSubmitting}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  classes={{ root: classes.buttonPopover }}
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                >
-                  {t('Update')}
-                </Button>
-              </DialogActions>
-            </Form>
-          )}
+                </DialogContent>
+                <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>
+                  <Button
+                    variant="outlined"
+                    classes={{ root: classes.buttonPopover }}
+                    onClick={this.handleCloseUpdate.bind(this)}
+                  // disabled={isSubmitting}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    classes={{ root: classes.buttonPopover }}
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                  >
+                    {t('Update')}
+                  </Button>
+                </DialogActions>
+              </Form>
+            )}
           </Formik>
         </Dialog>
         <Dialog
@@ -634,6 +642,6 @@ RiskTrackingPopover.propTypes = {
   t: PropTypes.func,
   handleRemove: PropTypes.func,
   node: PropTypes.object,
+  riskStatusResponse: PropTypes.array,
 };
-
 export default compose(inject18n, withStyles(styles))(RiskTrackingPopover);

@@ -240,6 +240,7 @@ class RiskTrackingLineContainer extends Component {
       classes,
       riskId,
       node,
+      riskStatusResponse,
     } = this.props;
     const { expanded, displayUpdate } = this.state;
     const riskTrackingLoggedBy = R.pipe(
@@ -399,6 +400,7 @@ class RiskTrackingLineContainer extends Component {
               handleRemove={this.handleOpenDialog.bind(this)}
               handleOpenUpdate={this.handleOpenUpdate.bind(this)}
               node={node}
+              riskStatusResponse={riskStatusResponse}
             />
           </div>
         </ListItem>
@@ -470,6 +472,7 @@ RiskTrackingLineContainer.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
   relay: PropTypes.object,
+  riskStatusResponse: PropTypes.array,
 };
 
 const RiskTrackingLineFragment = createFragmentContainer(
