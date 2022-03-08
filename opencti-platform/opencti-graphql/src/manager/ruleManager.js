@@ -131,19 +131,19 @@ const ruleMergeHandler = async (event) => {
   const derivedDeleteEvents = x_opencti_context.deletions.map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...derivedDeleteEvents);
   // endregion
-  // region 02 - Generate event for merged entity
-  const updateEvent = buildEvent(EVENT_TYPE_UPDATE, RULE_MANAGER_USER, markings, '-', data);
-  events.push(updateEvent);
-  // endregion
-  // region 03 - Generate events for shifted relations
+  // region 02 - Generate events for shifted relations
   // We need to cleanup the element associated with this relation and then rescan it
   if (x_opencti_context.shifts.length > 0) {
     const shiftDeleteEvents = x_opencti_context.shifts.map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
-    events.push(shiftDeleteEvents);
+    events.push(...shiftDeleteEvents);
     // Then we need to generate event for redo rule on updated element
-    const shiftRescanEvents = x_opencti_context.shifts.map((s) => buildInternalEvent(EVENT_TYPE_CREATE, s));
-    events.push(shiftRescanEvents);
+    const shiftRescanEvents = x_opencti_context.shifts.map((s) => buildInternalEvent(EVENT_TYPE_UPDATE, s));
+    events.push(...shiftRescanEvents);
   }
+  // endregion
+  // region 03 - Generate event for merged entity
+  const updateEvent = buildEvent(EVENT_TYPE_UPDATE, RULE_MANAGER_USER, markings, '-', data);
+  events.push(updateEvent);
   // endregion
   return events;
 };
@@ -237,7 +237,7 @@ export const rulesApplyHandler = async (events, forRules = []) => {
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
-        const contextDeletions = data.x_opencti_context.deletions.map((d) => d.x_opencti_id);
+        const contextDeletions = (data.x_opencti_context?.deletions ?? []).map((d) => d.x_opencti_id);
         const deletionIds = [data.x_opencti_id, ...contextDeletions];
         await applyCleanupOnDependencyIds(eventId, deletionIds);
       }
