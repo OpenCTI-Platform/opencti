@@ -46,6 +46,7 @@ import SelectField from '../../../../../components/SelectField';
 import { insertNode } from '../../../../../utils/Store';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import ResourceType from '../../../common/form/ResourceType';
 
 const styles = (theme) => ({
   item: {
@@ -146,8 +147,8 @@ const RequiredResourceCreationMutation = graphql`
   }
 `;
 
-const RequiredResourceCreationDataQuery = graphql`
- query RequiredResourceCreationDataQuery{
+const RequiredResourceCreationTypeQuery = graphql`
+ query RequiredResourceCreationTypeQuery{
   __type(name: "SubjectType") {
     name
     enumValues {
@@ -173,7 +174,7 @@ class RequiredResourceCreation extends Component {
       open: false,
       close: false,
       typeList: null,
-      resourcelist: null,
+      resourceName: '',
       SubjectField: [],
       subjects: [
         {
@@ -186,7 +187,7 @@ class RequiredResourceCreation extends Component {
   }
 
   componentDidMount() {
-    fetchDarklightQuery(RequiredResourceCreationDataQuery)
+    fetchDarklightQuery(RequiredResourceCreationTypeQuery)
       .toPromise()
       .then((data) => {
         const SubjectFieldEntities = pipe(
@@ -197,7 +198,7 @@ class RequiredResourceCreation extends Component {
           })),
         )(data);
         this.setState({
-          SubjectField : SubjectFieldEntities,
+          SubjectField: SubjectFieldEntities,
         });
       });
   }
@@ -207,18 +208,23 @@ class RequiredResourceCreation extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, resourceName: '' });
   }
 
   handleCancelClick() {
     this.setState({
       open: false,
       close: true,
+      resourceName: '',
     });
   }
 
+  handleTypeClick(event) {
+    this.setState({ resourceName: event.target.innerText });
+  }
+
   handleCancelCloseClick() {
-    this.setState({ close: false });
+    this.setState({ close: false, resourceName: '' });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -476,7 +482,7 @@ class RequiredResourceCreation extends Component {
                         </div>
                         <div className='clearfix' />
                         <div className={classes.resourceDropdown}>
-                          <List style={{ height: '130px' }}>
+                          <List onClick={this.handleTypeClick.bind(this)} style={{ height: '130px' }}>
                             {this.state.SubjectField.map((type, i) => (
                               <ListItem
                                 classes={{ root: classes.item }}
@@ -485,7 +491,7 @@ class RequiredResourceCreation extends Component {
                                 button={true}
                                 key={i}
                               >
-                                {type.name}
+                                {type.description}
                               </ListItem>
                             ))}
                           </List>
@@ -535,17 +541,7 @@ class RequiredResourceCreation extends Component {
                         <div className='clearfix' />
                         <div className={classes.resourceDropdown}>
                           <List style={{ height: '130px' }}>
-                            {this.state.SubjectField.map((type, i) => (
-                              <ListItem
-                                classes={{ root: classes.item }}
-                                onClick={() => this.setState({ resourcelist: i })}
-                                selected={this.state.resourcelist === i}
-                                button={true}
-                                key={i}
-                              >
-                                {type.description}
-                              </ListItem>
-                            ))}
+                              <ResourceType name={this.state.resourceName}/>
                           </List>
                         </div>
                       </div>
