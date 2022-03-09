@@ -124,6 +124,7 @@ class CyioListCards extends Component {
       OperationsComponent,
       handleDisplayEdit,
       selectedElements,
+      disabled,
       keyword,
       filterEntityType,
       filters,
@@ -258,7 +259,8 @@ class CyioListCards extends Component {
                       variant="contained"
                       onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)}
+                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                      || disabled}
                       color="primary"
                       size="large"
                     >
@@ -280,6 +282,7 @@ class CyioListCards extends Component {
                       onClick={handleNewCreation && handleNewCreation.bind(this)}
                       color='primary'
                       style={{ marginTop: '-22px' }}
+                      disabled={disabled || false}
                     >
                       {t('New')}
                     </Button>
@@ -320,6 +323,7 @@ CyioListCards.propTypes = {
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
+  disabled: PropTypes.bool,
   views: PropTypes.array,
   filterEntityType: PropTypes.string,
   exportContext: PropTypes.string,

@@ -44,7 +44,12 @@ const styles = (theme) => ({
 
 class RequiredResources extends Component {
   render() {
-    const { t, classes, remediationId } = this.props;
+    const {
+      t,
+      classes,
+      remediationId,
+      history,
+    } = this.props;
     return (
       <QueryRenderer
         query={requiredResourcesLinesQuery}
@@ -54,6 +59,7 @@ class RequiredResources extends Component {
             return (
               <RequiredResourcesLines
                 remediationId={remediationId}
+                history={history}
                 data={props}
                 refreshQuery={retry}
               />

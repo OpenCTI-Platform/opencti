@@ -25,6 +25,7 @@ import StixCoreObjectLatestHistory from '../../../common/stix_core_objects/StixC
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import RequiredResources from './RequiredResources';
 import RelatedTasks from './RelatedTasks';
+import TopMenuRisk from '../../../nav/TopMenuRisk';
 import RemediationGeneralDetails from './RemediationGeneralDetails';
 
 const styles = () => ({
@@ -60,11 +61,12 @@ class RemediationComponent extends Component {
       classes,
       remediation,
       refreshQuery,
+      risk,
       riskId,
       history,
       location,
     } = this.props;
-    console.log('remediation', riskId);
+    console.log('remediationRiskData', risk);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
@@ -72,11 +74,13 @@ class RemediationComponent extends Component {
             <CyioDomainObjectHeader
               cyioDomainObject={remediation}
               history={history}
+              disabled={true}
               PopoverComponent={<RiskPopover />}
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
+            <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true}/>
             <Grid
               container={true}
               spacing={3}
@@ -96,10 +100,10 @@ class RemediationComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <RequiredResources remediationId={remediation.id} />
+                <RequiredResources history={history} remediationId={remediation.id} />
               </Grid>
               <Grid item={true} xs={6}>
-                <RelatedTasks remediationId={remediation.id} />
+                <RelatedTasks history={history} remediationId={remediation.id} />
               </Grid>
             </Grid>
             <Grid
@@ -150,6 +154,7 @@ RemediationComponent.propTypes = {
   riskId: PropTypes.string,
   remediation: PropTypes.object,
   classes: PropTypes.object,
+  risk: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };

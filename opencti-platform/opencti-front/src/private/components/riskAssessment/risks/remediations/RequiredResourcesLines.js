@@ -193,7 +193,7 @@ class RequiredResourcesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, remediationId, data, refreshQuery,
+      t, classes, remediationId, data, refreshQuery, history,
     } = this.props;
     const { expanded } = this.state;
     const requiredResourceData = data.riskResponse;
@@ -214,6 +214,7 @@ class RequiredResourcesLinesContainer extends Component {
             display={true}
             contextual={true}
             refreshQuery={refreshQuery}
+            history={history}
             requiredResourceData={requiredResourceData}
           // stixCoreObjectOrStixCoreRelationshipId={remediationId}
           // stixCoreObjectOrStixCoreRelationshipReferences={

@@ -101,6 +101,7 @@ class CyioDomainObjectAssetHeader extends Component {
     const {
       t,
       classes,
+      disabled,
       cyioDomainObject,
       handleDisplayEdit,
       OperationsComponent,
@@ -148,6 +149,7 @@ class CyioDomainObjectAssetHeader extends Component {
                 onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
                 startIcon={<AddCircleOutline />}
                 style={{ marginTop: '-23px' }}
+                disabled={disabled || false}
                 color='primary'
               >
                 {t('New')}
@@ -166,6 +168,7 @@ CyioDomainObjectAssetHeader.propTypes = {
   variant: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  disabled: PropTypes.bool,
   fld: PropTypes.func,
   viewAs: PropTypes.string,
   onViewAs: PropTypes.func,
