@@ -457,8 +457,8 @@ class ViewCharts extends Component {
                           dataKey="value"
                           cx={500}
                           cy={200}
-                          innerRadius={40}
-                          outerRadius={80}
+                          innerRadius={90}
+                          outerRadius={150}
                           fill="#82ca9d"
                           label={({
                             cx,
@@ -487,6 +487,7 @@ class ViewCharts extends Component {
                                 fill={COLORS[array[index].name]}
                                 textAnchor={x > cx ? 'start' : 'end'}
                                 dominantBaseline="central"
+                                style={{ fontSize: '15px' }}
                               >
                                 {array[index].name} ({value})
                               </text>
