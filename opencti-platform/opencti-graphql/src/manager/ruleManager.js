@@ -132,13 +132,16 @@ const ruleMergeHandler = async (event) => {
   events.push(...derivedDeleteEvents);
   // endregion
   // region 02 - Generate events for shifted relations
-  // We need to cleanup the element associated with this relation and then rescan it
   if (x_opencti_context.shifts.length > 0) {
-    const shiftDeleteEvents = x_opencti_context.shifts.map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
-    events.push(...shiftDeleteEvents);
-    // Then we need to generate event for redo rule on updated element
-    const shiftRescanEvents = x_opencti_context.shifts.map((s) => buildInternalEvent(EVENT_TYPE_UPDATE, s));
-    events.push(...shiftRescanEvents);
+    const shifts = x_opencti_context.shifts ?? [];
+    for (let index = 0; index < shifts.length; index += 1) {
+      const shift = shifts[index];
+      const shiftedElement = await loadStixById(RULE_MANAGER_USER, shift.id);
+      // We need to cleanup the element associated with this relation and then rescan it
+      events.push(buildInternalEvent(EVENT_TYPE_DELETE, shiftedElement));
+      // Then we need to generate event for redo rule on shifted relations
+      events.push(buildInternalEvent(EVENT_TYPE_CREATE, shiftedElement));
+    }
   }
   // endregion
   // region 03 - Generate event for merged entity
@@ -383,7 +386,6 @@ const initRuleManager = () => {
   };
   return {
     start: async () => {
-      await getInitRuleManager();
       scheduler = setIntervalAsync(async () => {
         await ruleHandler();
       }, SCHEDULE_TIME);

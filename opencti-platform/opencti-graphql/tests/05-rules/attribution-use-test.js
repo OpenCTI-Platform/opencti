@@ -20,6 +20,7 @@ describe('Attribute use rule', () => {
     async () => {
       // Start
       await startModules();
+      await sleep(FIVE_SECS);
       // ---- Create the dataset
       // 01. Create a threat actor
       const threat = await addThreatActor(SYSTEM_USER, { name: 'MY TREAT ACTOR' });
@@ -95,6 +96,7 @@ describe('Attribute use rule', () => {
     async () => {
       // Start
       await startModules();
+      await sleep(FIVE_SECS);
       // ---- Create the dataset
       // 01. Create a threat actor
       const threat = await addThreatActor(SYSTEM_USER, { name: 'MY TREAT ACTOR' });
@@ -130,13 +132,7 @@ describe('Attribute use rule', () => {
       const secondThreat = await addThreatActor(SYSTEM_USER, { name: 'MY SECOND TREAT ACTOR', description: 'Threat' });
       // 02. Create require relation
       // APT41 -> uses -> Paradise (start: 2020-02-28T23:00:00.000Z, stop: 2020-02-29T23:00:00.000Z, confidence: 30)
-      await createRelation(SYSTEM_USER, {
-        fromId: APT41,
-        toId: secondThreat.id,
-        confidence: 10,
-        relationship_type: RELATION_ATTRIBUTED_TO,
-        objectMarking: [TLP_WHITE_ID],
-      });
+      await createRelation(SYSTEM_USER, { fromId: APT41, toId: secondThreat.id, relationship_type: RELATION_ATTRIBUTED_TO });
       await sleep(FIVE_SECS); // let some time to rule manager to create the elements
       const afterLiveRelations = await getInferences(RELATION_USES);
       expect(afterLiveRelations.length).toBe(2);
@@ -146,6 +142,8 @@ describe('Attribute use rule', () => {
       await sleep(FIVE_SECS); // let some time to rule manager to create the elements
       const afterMergeRelations = await getInferences(RELATION_USES);
       expect(afterMergeRelations.length).toBe(1);
+      // Disable the rule
+      await disableRule(AttributionUseRule.id);
       // Clean
       await deleteElement(SYSTEM_USER, threat);
       // Stop

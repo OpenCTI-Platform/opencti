@@ -86,7 +86,6 @@ import {
   checkStixCoreRelationshipMapping,
   checkStixCyberObservableRelationshipMapping,
   cleanStixIds,
-  convertTypeToStixType,
   isTrustedStixId,
   mergeDeepRightAll,
   STIX_SPEC_VERSION,
@@ -1179,20 +1178,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
   const updatedRelations = updateConnections
     .filter((u) => isStixRelationShipExceptMeta(u.entity_type))
-    .map((c) => ({
-      id: c.standard_id,
-      x_opencti_id: c.id,
-      type: convertTypeToStixType(c.entity_type),
-      relationship_type: c.entity_type,
-      x_opencti_patch: {
-        replace: {
-          [c.side]: {
-            current: { value: c.data.standard_id, x_opencti_id: c.data.internal_id },
-            previous: { value: c.toReplace },
-          },
-        },
-      },
-    }));
+    .map((c) => ({ id: c.standard_id }));
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
