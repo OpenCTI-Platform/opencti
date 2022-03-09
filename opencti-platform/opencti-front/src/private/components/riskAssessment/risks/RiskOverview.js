@@ -59,6 +59,12 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
 });
 
 class RiskOverviewComponent extends Component {
