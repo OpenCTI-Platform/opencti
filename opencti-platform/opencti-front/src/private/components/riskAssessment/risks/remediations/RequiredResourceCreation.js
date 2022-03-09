@@ -175,11 +175,13 @@ class RequiredResourceCreation extends Component {
       close: false,
       typeList: null,
       resourceName: '',
+      resourceType: '',
       SubjectField: [],
       subjects: [
         {
           subject_type: '',
           subject_ref: '',
+          name: '',
         },
       ],
       selectedIndex: 1,
@@ -208,7 +210,11 @@ class RequiredResourceCreation extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false, resourceName: '' });
+    this.setState({ open: false, resourceName: '', typeList: null });
+  }
+
+  handleResourceTypeClick(resourceValue) {
+    this.setState({ resourceType: resourceValue });
   }
 
   handleCancelClick() {
@@ -216,23 +222,21 @@ class RequiredResourceCreation extends Component {
       open: false,
       close: true,
       resourceName: '',
+      typeList: null,
     });
   }
 
-  handleTypeClick(event) {
-    this.setState({ resourceName: event.target.innerText });
-  }
-
   handleCancelCloseClick() {
-    this.setState({ close: false, resourceName: '' });
+    this.setState({ close: false, resourceName: '', typeList: null });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
     this.setState({
       subjects: [
         {
-          subject_type: values.resource_type,
-          subject_ref: values.resource,
+          subject_type: this.state.resourceName,
+          subject_ref: this.state.resourceType,
+          name: values.name,
         },
       ],
     });
@@ -426,9 +430,9 @@ class RequiredResourceCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               name: 'Hello World',
-              resource: [],
+              resource: '',
               description: '',
-              resource_type: [],
+              resource_type: '',
             }}
             // validationSchema={RequiredResourceValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -482,11 +486,11 @@ class RequiredResourceCreation extends Component {
                         </div>
                         <div className='clearfix' />
                         <div className={classes.resourceDropdown}>
-                          <List onClick={this.handleTypeClick.bind(this)} style={{ height: '130px' }}>
+                          <List style={{ height: '130px' }}>
                             {this.state.SubjectField.map((type, i) => (
                               <ListItem
                                 classes={{ root: classes.item }}
-                                onClick={() => this.setState({ typeList: i })}
+                                onClick={() => this.setState({ typeList: i, resourceName: type.name })}
                                 selected={this.state.typeList === i}
                                 button={true}
                                 key={i}
@@ -541,7 +545,7 @@ class RequiredResourceCreation extends Component {
                         <div className='clearfix' />
                         <div className={classes.resourceDropdown}>
                           <List style={{ height: '130px' }}>
-                              <ResourceType name={this.state.resourceName}/>
+                            <ResourceType onSelectResource={this.handleResourceTypeClick.bind(this)} name={this.state.resourceName} />
                           </List>
                         </div>
                       </div>

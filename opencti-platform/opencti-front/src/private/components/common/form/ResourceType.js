@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { Field } from 'formik';
 import * as R from 'ramda';
 import { ListItem } from '@material-ui/core';
+import { withStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
@@ -10,16 +11,16 @@ import SelectField from '../../../../components/SelectField';
 import ItemIcon from '../../../../components/ItemIcon';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
-const ResourceTypeQuery = graphql`
- query ResourceTypeQuery {
-  inventoryItemList {
-    edges {
-      node {
-        name
-        description
-      }
-    }
-  }
+const styles = () => ({
+  item: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: '#075AD3',
+    },
+  },
+});
+
+const ResourceTypeComponentQuery = graphql`
+ query ResourceTypeComponentQuery {
   componentList {
     edges {
       node {
@@ -28,6 +29,22 @@ const ResourceTypeQuery = graphql`
       }
     }
   }
+}
+`;
+const ResourceTypeInventoryQuery = graphql`
+ query ResourceTypeInventoryQuery {
+  inventoryItemList {
+    edges {
+      node {
+        name
+        description
+      }
+    }
+  }
+}
+`;
+const ResourceTypeResourceQuery = graphql`
+ query ResourceTypeResourceQuery {
   oscalResources {
     edges {
       node {
@@ -36,6 +53,10 @@ const ResourceTypeQuery = graphql`
       }
     }
   }
+}
+`;
+const ResourceTypeUserQuery = graphql`
+ query ResourceTypeUserQuery {
   oscalUsers {
     edges {
       node {
@@ -44,7 +65,11 @@ const ResourceTypeQuery = graphql`
       }
     }
   }
-  oscalParties {
+}
+`;
+const ResourceTypePartyQuery = graphql`
+ query ResourceTypePartyQuery {
+  oscalUsers {
     edges {
       node {
         name
@@ -52,6 +77,10 @@ const ResourceTypeQuery = graphql`
       }
     }
   }
+}
+`;
+const ResourceTypeLocationQuery = graphql`
+ query ResourceTypeLocationQuery {
   oscalLocations {
     edges {
       node {
@@ -68,6 +97,7 @@ class ResourceType extends Component {
     super(props);
     this.state = {
       resourceType: {},
+      resourceTypeName: '',
       typeList: null,
     };
   }
@@ -84,8 +114,8 @@ class ResourceType extends Component {
 
   handleResourceType() {
     this.setState({ typeList: null });
-    if (this.props.name === 'Component') {
-      fetchDarklightQuery(ResourceTypeQuery)
+    if (this.props.name === 'component') {
+      fetchDarklightQuery(ResourceTypeComponentQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -98,8 +128,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'Location') {
-      fetchDarklightQuery(ResourceTypeQuery)
+    if (this.props.name === 'location') {
+      fetchDarklightQuery(ResourceTypeLocationQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -112,8 +142,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'Inventory Item') {
-      fetchDarklightQuery(ResourceTypeQuery)
+    if (this.props.name === 'inventory_item') {
+      fetchDarklightQuery(ResourceTypeInventoryQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -126,8 +156,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'Interview Party') {
-      fetchDarklightQuery(ResourceTypeQuery)
+    if (this.props.name === 'party') {
+      fetchDarklightQuery(ResourceTypePartyQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -140,8 +170,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'User') {
-      fetchDarklightQuery(ResourceTypeQuery)
+    if (this.props.name === 'user') {
+      fetchDarklightQuery(ResourceTypeUserQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -154,8 +184,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'Resource or Artifact') {
-      fetchDarklightQuery(ResourceTypeQuery)
+    if (this.props.name === 'resource') {
+      fetchDarklightQuery(ResourceTypeResourceQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -170,10 +200,21 @@ class ResourceType extends Component {
     }
   }
 
+  handleResourceTypeClickEvent(i, resourceName, event) {
+    this.setState({ typeList: i, resourceTypeName: resourceName }, () => {
+      this.handleResourceRecieveClick();
+    });
+  }
+
+  handleResourceRecieveClick() {
+    this.props.onSelectResource(this.state.resourceTypeName);
+  }
+
   render() {
     const {
       t,
       name,
+      classes,
     } = this.props;
     return (
       <>
@@ -181,7 +222,8 @@ class ResourceType extends Component {
           ? this.state.resourceType.map((value, i) => (
             <ListItem
               key={i}
-              onClick={() => this.setState({ typeList: i })}
+              classes={{ root: classes.item }}
+              onClick={this.handleResourceTypeClickEvent.bind(this, i, value.name)}
               selected={this.state.typeList === i}
               button={true}
             >
@@ -194,4 +236,4 @@ class ResourceType extends Component {
   }
 }
 
-export default inject18n(ResourceType);
+export default R.compose(withStyles(styles), inject18n)(ResourceType);
