@@ -37,6 +37,7 @@ import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import MarkDownField from '../../../../../components/MarkDownField';
+import ResourceType from '../../../common/form/ResourceType';
 
 const styles = (theme) => ({
   container: {
@@ -137,7 +138,8 @@ class RequiredResourcePopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
-      resourceList: null,
+      resourceName: '',
+      resourceType: '',
       typeList: null,
       SubjectField: [],
       subjects: [{
@@ -173,22 +175,22 @@ class RequiredResourcePopover extends Component {
     this.setState({ anchorEl: null });
   }
 
+  handleResourceTypeClick(resourceValue) {
+    this.setState({ resourceType: resourceValue });
+  }
+
   handleOpenUpdate() {
     this.setState({ displayUpdate: true });
     this.handleClose();
   }
 
   handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
+    this.setState({ displayUpdate: false, resourceName: '', typeList: null });
   }
 
   handleOpenDelete() {
     this.setState({ displayDelete: true });
     this.handleClose();
-  }
-
-  handleTypeChange(event) {
-    console.log('handleResourceChange', event.target.innerText);
   }
 
   handleCloseDelete() {
@@ -198,8 +200,8 @@ class RequiredResourcePopover extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     this.setState({
       subjects: [{
-        subject_type: values.resource_type,
-        subject_ref: values.resource,
+        subject_type: this.state.resourceName,
+        subject_ref: this.state.resourceType,
         name: values.name,
       }],
     });
@@ -430,16 +432,16 @@ class RequiredResourcePopover extends Component {
                         </div>
                         <div className="clearfix" />
                         <div className={classes.resourceDropdown}>
-                          <List onClick={this.handleTypeChange.bind(this)} style={{ height: '130px' }}>
+                          <List style={{ height: '130px' }}>
                             {this.state.SubjectField.map((type, i) => (
                               <ListItem
                                 classes={{ root: classes.item }}
-                                onClick={() => this.setState({ typeList: i })}
+                                onClick={() => this.setState({ typeList: i, resourceName: type.name })}
                                 selected={this.state.typeList === i}
                                 button={true}
                                 key={i}
                               >
-                                {type.name}
+                                {type.description}
                               </ListItem>
                             ))}
                           </List>
@@ -489,17 +491,7 @@ class RequiredResourcePopover extends Component {
                         <div className="clearfix" />
                         <div className={classes.resourceDropdown}>
                           <List style={{ height: '130px' }}>
-                            {this.state.SubjectField.map((type, i) => (
-                              <ListItem
-                                classes={{ root: classes.item }}
-                                onClick={() => this.setState({ resourceList: i })}
-                                selected={this.state.resourceList === i}
-                                button={true}
-                                key={i}
-                              >
-                                {type.description}
-                              </ListItem>
-                            ))}
+                            <ResourceType onSelectResource={this.handleResourceTypeClick.bind(this)} name={this.state.resourceName} />
                           </List>
                         </div>
                       </div>
