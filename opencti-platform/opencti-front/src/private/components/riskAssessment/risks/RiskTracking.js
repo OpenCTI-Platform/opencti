@@ -69,12 +69,13 @@ class RiskTracking extends Component {
         <CyioDomainObjectHeader
           cyioDomainObject={risk}
           history={history}
+          disabled={true}
           PopoverComponent={<RiskPopover />}
           // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           OperationsComponent={<RiskDeletion />}
         />
-        <TopMenuRisk />
+        <TopMenuRisk risk={risk}/>
         <QR
           environment={QueryRendererDarkLight}
           query={RiskTrackingLinesQuery}
@@ -84,6 +85,7 @@ class RiskTracking extends Component {
             if (props) {
               return (
                 <RiskTrackingLines
+                  history={history}
                   riskId={riskId}
                   data={props}
                 />

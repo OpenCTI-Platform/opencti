@@ -121,12 +121,13 @@ class RiskAnalysisContainerComponent extends Component {
             <CyioDomainObjectHeader
               cyioDomainObject={risk}
               history={history}
+              disabled={true}
               PopoverComponent={<RiskPopover />}
               // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
-            <TopMenuRisk />
+            <TopMenuRisk risk={risk}/>
             <Grid
               container={true}
               spacing={3}

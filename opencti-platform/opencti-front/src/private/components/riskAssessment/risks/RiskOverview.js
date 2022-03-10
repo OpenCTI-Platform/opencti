@@ -38,6 +38,12 @@ const styles = (theme) => ({
     margin: '0 7px 7px 0',
     backgroundColor: theme.palette.header.background,
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
   scrollBg: {
     background: theme.palette.header.background,
     width: '100%',
@@ -58,6 +64,12 @@ const styles = (theme) => ({
     fontFamily: 'sans-serif',
     padding: '0px',
     textAlign: 'left',
+  },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
   },
 });
 

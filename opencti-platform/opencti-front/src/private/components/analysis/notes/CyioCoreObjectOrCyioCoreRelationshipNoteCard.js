@@ -35,10 +35,11 @@ import { resolveLink } from '../../../../utils/Entity';
 const styles = (theme) => ({
   card: {
     width: '100%',
-    // height: '100%',
+    boxShadow: 'none',
     borderRadius: 0,
     padding: '24px 24px 12px 24px',
     position: 'relative',
+    boxShadow: 'none',
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,

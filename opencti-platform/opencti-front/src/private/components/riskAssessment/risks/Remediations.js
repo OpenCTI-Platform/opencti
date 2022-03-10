@@ -65,12 +65,13 @@ const Remediations = (props) => {
           <CyioDomainObjectHeader
             cyioDomainObject={remediation}
             history={history}
+            disabled={true}
             // PopoverComponent={<DevicePopover />}
             // handleDisplayEdit={handleDisplayEdit.bind(this)}
             handleOpenNewCreation={handleOpenNewCreation.bind(this)}
             OperationsComponent={<RiskDeletion />}
           />
-          <TopMenuRisk />
+          <TopMenuRisk risk={remediation}/>
           <Grid item={true} xs={12}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t('Remediations')}
