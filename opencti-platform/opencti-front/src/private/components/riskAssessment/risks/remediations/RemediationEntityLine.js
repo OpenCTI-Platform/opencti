@@ -196,7 +196,7 @@ class RemediationEntityLineComponent extends Component {
           {/* ) : ( */}
           {/*  <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
           <RemediationPopover
-            stixCoreRelationshipId={node.id}
+            cyioCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
           // disabled={restricted}
           />

@@ -238,6 +238,7 @@ class RiskTrackingLineContainer extends Component {
       t,
       fd,
       classes,
+      history,
       riskId,
       node,
     } = this.props;
@@ -398,6 +399,7 @@ class RiskTrackingLineContainer extends Component {
             <RiskTrackingPopover
               handleRemove={this.handleOpenDialog.bind(this)}
               handleOpenUpdate={this.handleOpenUpdate.bind(this)}
+              history={history}
               node={node}
             />
           </div>

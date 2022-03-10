@@ -193,6 +193,7 @@ class Risks extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
+        disabled={true}
         CreateItemComponent={<RiskCreation />}
         OperationsComponent={<RiskDeletion />}
         openExports={openExports}
@@ -326,6 +327,7 @@ class Risks extends Component {
         OperationsComponent={<RiskDeletion />}
         openExports={openExports}
         selectAll={selectAll}
+        disabled={true}
         exportEntityType="Risk"
         keyword={searchTerm}
         filters={filters}

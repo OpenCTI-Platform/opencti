@@ -111,7 +111,7 @@ class RemediationPopover extends Component {
     commitMutation({
       mutation: remediationPopoverDeletionMutation,
       variables: {
-        id: this.props.stixCoreRelationshipId,
+        id: this.props.cyioCoreRelationshipId,
       },
       updater: (store) => {
         if (typeof this.props.onDelete !== 'function') {
@@ -138,7 +138,7 @@ class RemediationPopover extends Component {
 
   render() {
     const {
-      classes, t, stixCoreRelationshipId, disabled,
+      classes, t, cyioCoreRelationshipId, disabled,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -155,6 +155,13 @@ class RemediationPopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
+          {/* <MenuItem
+            className={classes.menuItem}
+            divider={true}
+            onClick={this.handleOpenEdit.bind(this)}
+          >
+            {t('Update')}
+          </MenuItem> */}
           <MenuItem
             className={classes.menuItem}
             divider={true}
@@ -171,7 +178,7 @@ class RemediationPopover extends Component {
         </Menu>
         {/* <StixCoreRelationshipEdition
           variant="noGraph"
-          stixCoreRelationshipId={stixCoreRelationshipId}
+          cyioCoreRelationshipId={cyioCoreRelationshipId}
           open={this.state.displayUpdate}
           handleClose={this.handleCloseUpdate.bind(this)}
         /> */}
@@ -217,7 +224,7 @@ class RemediationPopover extends Component {
 }
 
 RemediationPopover.propTypes = {
-  stixCoreRelationshipId: PropTypes.string,
+  cyioCoreRelationshipId: PropTypes.string,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

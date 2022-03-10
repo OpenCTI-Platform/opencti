@@ -221,7 +221,7 @@ class RelatedTasksLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, remediationId, data, refreshQuery,
+      t, classes, remediationId, data, refreshQuery, history,
     } = this.props;
     const { expanded } = this.state;
     const relatedTaskData = data.riskResponse;
@@ -245,6 +245,7 @@ class RelatedTasksLinesContainer extends Component {
               relatedTaskData={relatedTaskData}
               display={true}
               contextual={true}
+              history={history}
               refreshQuery={refreshQuery}
               remediationId={remediationId}
             // stixCoreObjectOrStixCoreRelationshipId={remediationId}

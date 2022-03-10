@@ -4,12 +4,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
-import {
-  compose,
-  dissoc,
-  assoc,
-  pipe,
-} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -19,6 +13,8 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import AddIcon from '@material-ui/icons/Add';
+import ListItem from '@material-ui/core/ListItem';
+import List from '@material-ui/core/List';
 import { Information } from 'mdi-material-ui';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -31,7 +27,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import environmentDarkLight, { fetchDarklightQuery } from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import TextField from '../../../../../components/TextField';
@@ -41,6 +37,7 @@ import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import MarkDownField from '../../../../../components/MarkDownField';
+import ResourceType from '../../../common/form/ResourceType';
 
 const styles = (theme) => ({
   container: {
@@ -88,6 +85,16 @@ const styles = (theme) => ({
     lineHeight: '24px',
     color: theme.palette.header.text,
   },
+  item: {
+    '&.Mui-selected, &.Mui-selected:hover': {
+      backgroundColor: theme.palette.navAlt.background,
+    },
+  },
+  resourceDropdown: {
+    maxHeight: 130,
+    overflow: 'auto',
+    background: '#06102D',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -101,6 +108,18 @@ const requiredResourcePopoverDeletionMutation = graphql`
       delete
     }
   }
+`;
+
+const RequiredResourcePopoverDataQuery = graphql`
+ query RequiredResourcePopoverDataQuery{
+  __type(name: "SubjectType") {
+    name
+    enumValues {
+      name
+      description
+    }
+  }
+}
 `;
 
 const cyioRequiredResourceEditionQuery = graphql`
@@ -119,12 +138,33 @@ class RequiredResourcePopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
+      resourceName: '',
+      resourceType: '',
+      typeList: null,
+      SubjectField: [],
       subjects: [{
         subject_type: '',
         subject_ref: '',
         name: '',
       }],
     };
+  }
+
+  componentDidMount() {
+    fetchDarklightQuery(RequiredResourcePopoverDataQuery)
+      .toPromise()
+      .then((data) => {
+        const SubjectFieldEntities = R.pipe(
+          R.pathOr([], ['__type', 'enumValues']),
+          R.map((n) => ({
+            name: n.name,
+            description: n.description,
+          })),
+        )(data);
+        this.setState({
+          SubjectField: SubjectFieldEntities,
+        });
+      });
   }
 
   handleOpen(event) {
@@ -135,13 +175,17 @@ class RequiredResourcePopover extends Component {
     this.setState({ anchorEl: null });
   }
 
+  handleResourceTypeClick(resourceValue) {
+    this.setState({ resourceType: resourceValue });
+  }
+
   handleOpenUpdate() {
     this.setState({ displayUpdate: true });
     this.handleClose();
   }
 
   handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
+    this.setState({ displayUpdate: false, resourceName: '', typeList: null });
   }
 
   handleOpenDelete() {
@@ -156,8 +200,8 @@ class RequiredResourcePopover extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     this.setState({
       subjects: [{
-        subject_type: values.resource_type,
-        subject_ref: values.resource,
+        subject_type: this.state.resourceName,
+        subject_ref: this.state.resourceType,
         name: values.name,
       }],
     });
@@ -379,32 +423,29 @@ class RequiredResourcePopover extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Resource Type')}
+                          {t('Type')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Resource Type')} >
+                          <Tooltip title={t('Type')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource_type"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                        <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        <div className={classes.resourceDropdown}>
+                          <List style={{ height: '130px' }}>
+                            {this.state.SubjectField.map((type, i) => (
+                              <ListItem
+                                classes={{ root: classes.item }}
+                                onClick={() => this.setState({ typeList: i, resourceName: type.name })}
+                                selected={this.state.typeList === i}
+                                button={true}
+                                key={i}
+                              >
+                                {type.description}
+                              </ListItem>
+                            ))}
+                          </List>
+                        </div>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -448,24 +489,11 @@ class RequiredResourcePopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        <div className={classes.resourceDropdown}>
+                          <List style={{ height: '130px' }}>
+                            <ResourceType onSelectResource={this.handleResourceTypeClick.bind(this)} name={this.state.resourceName} />
+                          </List>
+                        </div>
                       </div>
                     </Grid>
                   </Grid>
@@ -593,4 +621,4 @@ RequiredResourcePopover.propTypes = {
   data: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(RequiredResourcePopover);
+export default R.compose(inject18n, withStyles(styles))(RequiredResourcePopover);

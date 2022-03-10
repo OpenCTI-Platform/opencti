@@ -66,6 +66,12 @@ const styles = (theme) => ({
     alignItems: 'center',
     textTransform: 'uppercase',
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -136,7 +142,7 @@ class RiskObservationPopover extends Component {
           <MenuItem
             className={classes.menuItem}
             onClick={this.handleOpenUpdate.bind(this)}>
-            {t('Update')}
+            {t('Details')}
           </MenuItem>
         </Menu>
         <Dialog
@@ -177,6 +183,7 @@ class RiskObservationPopover extends Component {
                           size="small"
                           key={i}
                           style={{ margin: '1px' }}
+                          className={ classes.statusButton }
                         >
                           {value}
                         </Button>
@@ -195,6 +202,7 @@ class RiskObservationPopover extends Component {
                           size="small"
                           key={i}
                           style={{ margin: '1px' }}
+                          className={ classes.statusButton }
                         >
                           {value}
                         </Button>
