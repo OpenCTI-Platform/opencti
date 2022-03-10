@@ -18,8 +18,9 @@ import nconf from "nconf";
 import querySelectMap from "../cyio/schema/querySelectMap";
 import {KeycloakContext} from "keycloak-connect-graphql";
 import {
+  applyKeycloakContext,
   authDirectiveTransformer,
-  getKeycloak,
+  getKeycloak, keycloakEnabled,
   permissionDirectiveTransformer,
   roleDirectiveTransformer
 } from "../service/keycloak";
@@ -28,17 +29,20 @@ const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
-  const kauth = new KeycloakContext({ req }, getKeycloak());
   const clientId = req.headers['x-cyio-client'];
-  let dbName;
-  if(clientId !== undefined){
-    dbName = `db${clientId}`;
-  }
+  const context = { req, res, workId}
 
-  if (user) {
-    return { req, res, user: userWithOrigin(req, user), workId, dbName, kauth};
+  //Stardog database
+  if(clientId !== undefined){
+    context.dbName = `db${clientId}`;
   }
-  return { req, res, user, workId, dbName, kauth};
+  //Keycloak configuration
+  applyKeycloakContext(context)
+  //OpenCTI user info
+  if (user) {
+    context.user = userWithOrigin(req, user);
+  }
+  return context
 };
 
 // perform the standard keycloak-connect middleware setup on our app
@@ -87,7 +91,7 @@ const createApolloServer = (app) => {
     introspection: true,
     mocks,
     mockEntireSchema: false,
-    dataSources: () => ({ 
+    dataSources: () => ({
       Stardog: new StardogKB( )
     }),
     playground: {

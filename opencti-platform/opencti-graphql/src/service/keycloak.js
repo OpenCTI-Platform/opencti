@@ -117,6 +117,12 @@ export const configureKeycloakMiddleware = (route, expressApp) => {
   }
 }
 
-export const getKeycloak = () => {
+export const applyKeycloakContext = (context) => {
+  if(keycloakEnabled()){
+    context.kauth = getKeycloak()
+  }
+}
+
+const getKeycloak = () => {
   return keycloakInstance;
 }
