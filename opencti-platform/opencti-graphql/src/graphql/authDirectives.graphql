@@ -1,0 +1,6 @@
+# Keycloak Directives
+# Temporary kc prefix so to work in tandem with OCTI capabilities
+
+directive @kcHasRole(role: [String]) on FIELD | FIELD_DEFINITION
+directive @kcAuth on FIELD | FIELD_DEFINITION
+directive @kcHasPermission(resources: [String]) on FIELD | FIELD_DEFINITION

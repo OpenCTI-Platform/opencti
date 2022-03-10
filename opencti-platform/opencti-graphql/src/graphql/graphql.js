@@ -12,25 +12,23 @@ import {createPrometheusExporterPlugin} from "@bmatei/apollo-prometheus-exporter
 import {checkSystemDependencies} from "../initialization";
 import {getSettings} from "../domain/settings";
 import { applicationSession } from '../database/session';
-// Stardog
 import StardogKB from '../datasources/stardog.js';
-
-// import cors from "cors";
-
-// Keycloak
-// import configureKeycloak from './keycloak-config.js';
-// import { KeycloakContext, KeycloakTypeDefs, KeycloakSchemaDirectives } from 'keycloak-connect-graphql';
-
-// mocks
 import mockList from './mocks.js' ;
 import nconf from "nconf";
 import querySelectMap from "../cyio/schema/querySelectMap";
+import {KeycloakContext} from "keycloak-connect-graphql";
+import {
+  authDirectiveTransformer,
+  getKeycloak,
+  permissionDirectiveTransformer,
+  roleDirectiveTransformer
+} from "../service/keycloak";
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
-  // const kauth = new KeycloakContext({ req }, keycloak);
+  const kauth = new KeycloakContext({ req }, getKeycloak());
   const clientId = req.headers['x-cyio-client'];
   let dbName;
   if(clientId !== undefined){
@@ -38,9 +36,9 @@ const buildContext = (user, req, res) => {
   }
 
   if (user) {
-    return { req, res, user: userWithOrigin(req, user), workId, dbName, };
+    return { req, res, user: userWithOrigin(req, user), workId, dbName, kauth};
   }
-  return { req, res, user, workId, dbName, };
+  return { req, res, user, workId, dbName, kauth};
 };
 
 // perform the standard keycloak-connect middleware setup on our app
@@ -78,8 +76,14 @@ const createApolloServer = (app) => {
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
 
   const cdnUrl = conf.get('app:playground_cdn_url');
+
+  let schema = createSchema()
+  schema = authDirectiveTransformer(schema, "kcAuth")
+  schema = permissionDirectiveTransformer(schema, "kcHasPermission")
+  schema = roleDirectiveTransformer(schema, "kcHasRole")
+
   const server = new ApolloServer({
-    schema: createSchema(),
+    schema,
     introspection: true,
     mocks,
     mockEntireSchema: false,
