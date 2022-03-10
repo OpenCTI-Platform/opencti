@@ -18,7 +18,7 @@ import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { initializeSession } from '../database/session';
 import { LOGIN_ACTION } from '../config/audit';
-import {getKeycloak, getKeycloakMiddleware} from "../service/keycloak";
+import {configureKeycloakMiddleware, getKeycloak, getKeycloakMiddleware} from "../service/keycloak";
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -93,7 +93,7 @@ const createApp = async () => {
   });
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
 
-  app.use(`${basePath}/graphql`, getKeycloak().middleware({}));
+  configureKeycloakMiddleware(`${basePath}/graphql`, app);
 
   app.use(appSessionHandler.session);
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
