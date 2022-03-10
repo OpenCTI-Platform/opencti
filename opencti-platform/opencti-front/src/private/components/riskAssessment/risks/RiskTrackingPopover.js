@@ -108,6 +108,7 @@ class RiskTrackingPopover extends Component {
     this.state = {
       anchorEl: null,
       displayUpdate: false,
+      displayCancel: false,
       displayDelete: false,
       deleting: false,
     };
@@ -127,7 +128,7 @@ class RiskTrackingPopover extends Component {
   }
 
   handleCloseUpdate() {
-    this.setState({ displayUpdate: false });
+    this.setState({ displayUpdate: false, displayCancel: true });
   }
 
   handleOpenDelete() {
@@ -137,6 +138,10 @@ class RiskTrackingPopover extends Component {
 
   handleCloseDelete() {
     this.setState({ displayDelete: false });
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -488,7 +493,7 @@ class RiskTrackingPopover extends Component {
                         >
                           {riskStatusResponse.map((value, i) => (
                             <MenuItem value={value.name} key={i}>
-                               {value.name}
+                              {value.name}
                             </MenuItem>
                           ))}
                         </Field>
@@ -574,6 +579,47 @@ class RiskTrackingPopover extends Component {
               </Form>
             )}
           </Formik>
+        </Dialog>
+        <Dialog
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          onClose={this.handleCancelButton.bind(this)}
+        >
+          <DialogContent>
+            <Typography style={{
+              fontSize: '18px',
+              lineHeight: '24px',
+              color: 'white',
+            }} >
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <DialogContentText>
+              {t('Your progress will not be saved')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              // onClick={this.handleCloseDelete.bind(this)}
+              // disabled={this.state.deleting}
+              onClick={this.handleCancelButton.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant="outlined"
+              size="small"
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              // onClick={this.submitDelete.bind(this)}
+              // disabled={this.state.deleting}
+              onClick={() => this.props.history.goBack()}
+              color="primary"
+              classes={{ root: classes.buttonPopover }}
+              variant="contained"
+              size="small"
+            >
+              {t('Yes Cancel')}
+            </Button>
+          </DialogActions>
         </Dialog>
         <Dialog
           open={this.state.displayDelete}

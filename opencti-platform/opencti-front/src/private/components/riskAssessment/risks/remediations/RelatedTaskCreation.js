@@ -7,6 +7,7 @@ import {
   compose,
   dissoc,
   assoc,
+  evolve,
   pipe,
 } from 'ramda';
 import * as Yup from 'yup';
@@ -36,7 +37,7 @@ import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/SelectField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { insertNode } from '../../../../../utils/Store';
-// import { parse } from '../../../../../utils/Time';
+import { parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 
@@ -152,13 +153,6 @@ class RelatedTaskCreation extends Component {
         start_date: '',
         end_date: '',
       },
-      // responsible_roles: [
-      //   {
-      //     responsible_role: '',
-      //     parties: [
-
-      //     ],
-      //   }],
     };
   }
 
@@ -174,20 +168,10 @@ class RelatedTaskCreation extends Component {
     console.log('relatedTask', values);
     this.setState({
       timings: {
-        start_date: values.start_date,
-        end_date: values.end_date,
+        start_date: values.start_date === null ? null : parse(values.start_date).format(),
+        end_date: values.end_date === null ? null : parse(values.end_date).format(),
       },
-      // responsible_roles: [{
-      //     responsible_role: values.responsible_role,
-      //   }],
     });
-    // const adaptedValues = evolve(
-    //   {
-    //     start_date: () => this.state.timings.start_date === null ? null : parse(this.state.timings.start_date).format(),
-    //     end_date: () => this.state.timings.end_date === null ? null : parse(this.state.timings.end_date).format(),
-    //   },
-    //   values,
-    // );
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
@@ -197,7 +181,6 @@ class RelatedTaskCreation extends Component {
       dissoc('milestone'),
       // assoc('responsible_roles', this.state.responsible_roles),
     )(values);
-    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
       variables: {
@@ -851,7 +834,7 @@ class RelatedTaskCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              // onClick={this.submitDelete.bind(this)}
+              onClick={() => this.props.history.goBack()}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}

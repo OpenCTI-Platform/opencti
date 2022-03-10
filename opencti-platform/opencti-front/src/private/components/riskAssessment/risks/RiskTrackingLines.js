@@ -218,7 +218,7 @@ class RiskTrackingLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, riskId, data,
+      t, classes, riskId, data, history,
     } = this.props;
     const riskLogEdges = R.pathOr([], ['risk', 'risk_log', 'edges'], data);
     const { expanded, displayUpdate } = this.state;
@@ -263,6 +263,7 @@ class RiskTrackingLinesContainer extends Component {
           {(riskLogEdges.length > 0 ? (riskLogEdges.map((riskTrackingEdge, key) => {
             const riskLogItem = riskTrackingEdge.node;
             return <RiskTrackingLine
+              history={history}
               node={riskLogItem}
               key={riskLogItem.id}
               riskId={riskId}
