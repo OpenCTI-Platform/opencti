@@ -883,11 +883,11 @@ class Scans extends Component {
           {!loadingAnalyses ? (
             analyses.map((analysis, i) => {
               return (
-                <Grid item={true} xs={4}>
+                <Grid item={true} md={6} lg={4} xl={3} style={{minWidth: 425}}>
                   <Paper
                     classes={{ root: classes.paper }}
                     elevation={2}
-                    style={{ marginBottom: 20, height: 575 }}
+                    style={{ marginBottom: 20, height: 575}}
                   >
                     <CardHeader
                       style={{ padding: 16 }}
@@ -1045,17 +1045,22 @@ class Scans extends Component {
                       title={truncate(t(analysis.scan.scan_name),30)}
                       subheader={moment(analysis.completed_date).fromNow()}
                     />
-                    <CardContent>
-                    <div style={{ width: 370, height: 370}}>
-                          <div className={analysisLoaderNoDisplay ? "AnalysisLoader" : "NoDisplay"}>
-                            <CircularProgress  />
-                          </div>
+                    <CardContent
+                      style={{
+                        display: "flex", flexDirection: "column", alignItems: "center"
+                      }}
+                    >
+                    <div style={{ width: 370, height: 370, marginRight: 20 }}>
+                      <div className={analysisLoaderNoDisplay ? "AnalysisLoader" : "NoDisplay"}>
+                        <CircularProgress  />
+                      </div>
                       {(scatterPlotData && scatterPlotData[analysis.id]) && (
-                        
-                        <ResponsiveContainer width="100%" aspect={1}>
+
+                        <ResponsiveContainer
+                          width="100%"
+                          aspect={1}
+                        >
                           <ScatterChart
-                            width={200}
-                            height={200}
                             margin={{
                               top: 0,
                               right: 0,
@@ -1098,37 +1103,39 @@ class Scans extends Component {
                             />
                           </ScatterChart>
                         </ResponsiveContainer>
-                        
+
                       )}
                       </div>
-                      {analysis.completed_date && (
-                        <Chip
-                          size="small"
-                          style={{ margin: 3 }}
-                          label={moment(analysis.completed_date).fromNow()}
-                        />
-                      )}
-                      {analysis.weakness_range && (
-                        <Chip
-                          size="small"
-                          style={{ margin: 3 }}
-                          label={`Top  ${analysis.weakness_range}`}
-                        />
-                      )}
-                      {analysis.vulnerability_range && (
-                        <Chip
-                          size="small"
-                          style={{ margin: 3 }}
-                          label={`Previous ${analysis.vulnerability_range} Years`}
-                        />
-                      )}
-                      {analysis.vignette_name && (
-                        <Chip
-                          size="small"
-                          style={{ margin: 3 }}
-                          label={analysis.vignette_name}
-                        />
-                      )}
+                      <div id={"chart-chips"}>
+                        {analysis.completed_date && (
+                          <Chip
+                            size="small"
+                            style={{ margin: 3 }}
+                            label={moment(analysis.completed_date).fromNow()}
+                          />
+                        )}
+                        {analysis.weakness_range && (
+                          <Chip
+                            size="small"
+                            style={{ margin: 3 }}
+                            label={`Top  ${analysis.weakness_range}`}
+                          />
+                        )}
+                        {analysis.vulnerability_range && (
+                          <Chip
+                            size="small"
+                            style={{ margin: 3 }}
+                            label={`Previous ${analysis.vulnerability_range} Years`}
+                          />
+                        )}
+                        {analysis.vignette_name && (
+                          <Chip
+                            size="small"
+                            style={{ margin: 3 }}
+                            label={analysis.vignette_name}
+                          />
+                        )}
+                      </div>
                     </CardContent>
                     { (scatterPlotData && scatterPlotData[analysis.id]) && (
                       <CardActions style={{justifyContent: "right"}}>
