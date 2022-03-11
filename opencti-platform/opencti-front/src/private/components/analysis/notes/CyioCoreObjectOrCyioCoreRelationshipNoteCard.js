@@ -39,7 +39,6 @@ const styles = (theme) => ({
     borderRadius: 0,
     padding: '24px 24px 12px 24px',
     position: 'relative',
-    boxShadow: 'none',
   },
   avatar: {
     backgroundColor: theme.palette.primary.main,
