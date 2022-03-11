@@ -120,11 +120,11 @@ export const checkSystemDependencies = async () => {
     logApp.info('[Check] Stardog service is not available.');
   }
   // Check if keycloak is alive
-  // if (await keycloakAlive()) {
-  //   logApp.info('[Check] Keycloak service is alive');
-  // } else {
-  //   logApp.info('[Check] Keycloak service did not load.');
-  // }
+  if (await keycloakAlive()) {
+    logApp.info('[Check] Keycloak service is alive');
+  } else {
+    logApp.info('[Check] Keycloak service did not load.');
+  }
   // Check if elasticsearch is available
   await elIsAlive();
   logApp.info(`[CHECK] ElasticSearch is alive`);
