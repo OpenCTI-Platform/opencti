@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { Component } from 'react';
 import { Field } from 'formik';
 import * as R from 'ramda';
@@ -12,15 +11,19 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
 const styles = () => ({
-  item: {
+  resourceTypeField: {
+    backgroundColor: '#06102D',
+    maxHeight: 130,
+  },
+  menuItemRoot: {
     '&.Mui-selected, &.Mui-selected:hover': {
       backgroundColor: '#075AD3',
     },
   },
 });
 
-const ResourceTypeComponentQuery = graphql`
- query ResourceTypeComponentQuery {
+const ResourceNameFieldComponentQuery = graphql`
+ query ResourceNameFieldComponentQuery {
   componentList {
     edges {
       node {
@@ -31,8 +34,8 @@ const ResourceTypeComponentQuery = graphql`
   }
 }
 `;
-const ResourceTypeInventoryQuery = graphql`
- query ResourceTypeInventoryQuery {
+const ResourceNameFieldInventoryQuery = graphql`
+ query ResourceNameFieldInventoryQuery {
   inventoryItemList {
     edges {
       node {
@@ -43,8 +46,8 @@ const ResourceTypeInventoryQuery = graphql`
   }
 }
 `;
-const ResourceTypeResourceQuery = graphql`
- query ResourceTypeResourceQuery {
+const ResourceNameFieldResourceQuery = graphql`
+ query ResourceNameFieldResourceQuery {
   oscalResources {
     edges {
       node {
@@ -55,8 +58,8 @@ const ResourceTypeResourceQuery = graphql`
   }
 }
 `;
-const ResourceTypeUserQuery = graphql`
- query ResourceTypeUserQuery {
+const ResourceNameFieldUserQuery = graphql`
+ query ResourceNameFieldUserQuery {
   oscalUsers {
     edges {
       node {
@@ -67,9 +70,9 @@ const ResourceTypeUserQuery = graphql`
   }
 }
 `;
-const ResourceTypePartyQuery = graphql`
- query ResourceTypePartyQuery {
-  oscalUsers {
+const ResourceNameFieldPartyQuery = graphql`
+ query ResourceNameFieldPartyQuery {
+  oscalParties {
     edges {
       node {
         name
@@ -79,8 +82,8 @@ const ResourceTypePartyQuery = graphql`
   }
 }
 `;
-const ResourceTypeLocationQuery = graphql`
- query ResourceTypeLocationQuery {
+const ResourceNameFieldLocationQuery = graphql`
+ query ResourceNameFieldLocationQuery {
   oscalLocations {
     edges {
       node {
@@ -92,18 +95,18 @@ const ResourceTypeLocationQuery = graphql`
 }
 `;
 
-class ResourceType extends Component {
+class ResourceNameField extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      resourceType: {},
+      resourceType: [],
       resourceTypeName: '',
       typeList: null,
     };
   }
 
   componentDidUpdate(prevProps) {
-    if (this.props.name !== prevProps.name) {
+    if (this.props.resourceTypename !== prevProps.resourceTypename) {
       this.handleResourceType();
     }
   }
@@ -114,8 +117,8 @@ class ResourceType extends Component {
 
   handleResourceType() {
     this.setState({ typeList: null });
-    if (this.props.name === 'component') {
-      fetchDarklightQuery(ResourceTypeComponentQuery)
+    if (this.props.resourceTypename === 'component') {
+      fetchDarklightQuery(ResourceNameFieldComponentQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -128,8 +131,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'location') {
-      fetchDarklightQuery(ResourceTypeLocationQuery)
+    if (this.props.resourceTypename === 'location') {
+      fetchDarklightQuery(ResourceNameFieldLocationQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -142,8 +145,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'inventory_item') {
-      fetchDarklightQuery(ResourceTypeInventoryQuery)
+    if (this.props.resourceTypename === 'inventory_item') {
+      fetchDarklightQuery(ResourceNameFieldInventoryQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -156,8 +159,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'party') {
-      fetchDarklightQuery(ResourceTypePartyQuery)
+    if (this.props.resourceTypename === 'party') {
+      fetchDarklightQuery(ResourceNameFieldPartyQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -170,8 +173,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'user') {
-      fetchDarklightQuery(ResourceTypeUserQuery)
+    if (this.props.resourceTypename === 'user') {
+      fetchDarklightQuery(ResourceNameFieldUserQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -184,8 +187,8 @@ class ResourceType extends Component {
           this.setState({ resourceType: ResourceTypeEntities });
         });
     }
-    if (this.props.name === 'resource') {
-      fetchDarklightQuery(ResourceTypeResourceQuery)
+    if (this.props.resourceTypename === 'resource') {
+      fetchDarklightQuery(ResourceNameFieldResourceQuery)
         .toPromise()
         .then((data) => {
           const ResourceTypeEntities = R.pipe(
@@ -200,40 +203,59 @@ class ResourceType extends Component {
     }
   }
 
-  handleResourceTypeClickEvent(i, resourceName, event) {
-    this.setState({ typeList: i, resourceTypeName: resourceName }, () => {
-      this.handleResourceRecieveClick();
-    });
-  }
-
-  handleResourceRecieveClick() {
-    this.props.onSelectResource(this.state.resourceTypeName);
-  }
-
   render() {
     const {
       t,
       name,
       classes,
+      size,
+      label,
+      style,
+      variant,
+      onChange,
+      onFocus,
+      resourceTypename,
+      containerstyle,
+      editContext,
+      disabled,
+      helperText,
     } = this.props;
     return (
       <>
-        {this.state.resourceType.length > 0
-          ? this.state.resourceType.map((value, i) => (
-            <ListItem
+        <Field
+          component={SelectField}
+          name={name}
+          MenuProps={{
+            anchorOrigin: {
+              vertical: 'bottom',
+              horizontal: 'left',
+            },
+            getContentAnchorEl: null,
+            classes: { paper: classes.resourceTypeField },
+          }}
+          label={label}
+          fullWidth={true}
+          containerstyle={containerstyle}
+          variant={variant}
+          disabled={disabled || false}
+          size={size}
+          multiple={false}
+          style={style}
+          helperText={helperText}
+        >
+          {this.state.resourceType.map((value, i) => (
+            <MenuItem
               key={i}
-              classes={{ root: classes.item }}
-              onClick={this.handleResourceTypeClickEvent.bind(this, i, value.name)}
-              selected={this.state.typeList === i}
-              button={true}
+              classes={{ root: classes.menuItemRoot }}
+              value={value.name}
             >
               {value.name}
-            </ListItem>
-          ))
-          : <></>}
+            </MenuItem>
+          ))}
+        </Field>
       </>
     );
   }
 }
 
-export default R.compose(withStyles(styles), inject18n)(ResourceType);
+export default R.compose(withStyles(styles), inject18n)(ResourceNameField);
