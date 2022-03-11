@@ -171,21 +171,6 @@ const classes = {
   },
 };
 
-function rand() {
-  return Math.round(Math.random() * 20) - 10;
-}
-
-function getModalStyle() {
-  const top = 50 + rand();
-  const left = 50 + rand();
-
-  return {
-    top: `${top}%`,
-    left: `${left}%`,
-    transform: `translate(-${top}%, -${left}%)`,
-  };
-}
-
 class Scans extends Component {
 
   constructor(props) {
@@ -239,7 +224,6 @@ class Scans extends Component {
     fetchAllScans(this.state.client_ID)
         .then((response) => {
           const newScans = response.data;
-
           if(refreshInBackground){
             
             if(JSON.stringify(this.state.scans) !== JSON.stringify(newScans)){
@@ -263,7 +247,6 @@ class Scans extends Component {
   }
 
   refreshAnalyses(refreshInBackground){
-
     const prevAnalysis = this.state.analyses;
 
     fetchAllAnalysis(this.state.client_ID)
@@ -271,7 +254,8 @@ class Scans extends Component {
           let newAnalyses = response.data;
           let scatterPlotData = {};
           const associationTable = {}
-          newAnalyses.forEach(analysis =>{
+
+          newAnalyses.forEach(analysis => {
             let associations = associationTable[analysis.scan.id]
             if(associations === undefined){
               associations = 1
@@ -296,13 +280,9 @@ class Scans extends Component {
                 .catch((error) => {
                   console.log(error);
                 })
-
           })
 
-         
-
           if(refreshInBackground){
-            
             if(JSON.stringify(prevAnalysis) !== JSON.stringify(newAnalyses)){
               this.setState({analysisLoaderNoDisplay: true});
               this.setState({ analyses: newAnalyses });
@@ -311,9 +291,7 @@ class Scans extends Component {
               setTimeout(() => {this.setState({analysisLoaderNoDisplay: false})}, 3000);
 
               clearInterval(this.state.refreshIntervalId);
-              
             }
-
           } else {
             this.setState({analysisLoaderNoDisplay: true})
             this.setState({ scanAssociation: associationTable })
@@ -321,19 +299,13 @@ class Scans extends Component {
             this.setState({scatterPlotData: scatterPlotData});
             setTimeout(() => {this.setState({analysisLoaderNoDisplay: false})}, 3000);
           }
-          
-         
-          
-          
+
           this.setState({ loadingAnalyses: false });
-          
         })
         .catch((error) => {
           console.log(error);
         });
   };
-
-
 
   componentDidMount() {
     this.setState({client_ID: localStorage.getItem('client_id')},function() {
