@@ -48,7 +48,7 @@ const redisOptions = (database) => ({
   host: conf.get('redis:hostname'),
   username: conf.get('redis:username'),
   password: conf.get('redis:password'),
-  tls: USE_SSL ? configureCA(REDIS_CA) : null,
+  tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : null,
   retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
   lazyConnect: true,
   enableAutoPipelining: false,
