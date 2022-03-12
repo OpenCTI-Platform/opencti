@@ -2,7 +2,7 @@ import * as Minio from 'minio';
 import * as He from 'he';
 import { assoc, concat, map, sort, filter } from 'ramda';
 import querystring from 'querystring';
-import conf, { booleanConf, logApp, logAudit } from '../config/conf';
+import conf, { booleanConf, configureCA, logApp, logAudit } from '../config/conf';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
 import { now, sinceNowInMinutes } from '../utils/format';
@@ -18,6 +18,10 @@ const minioClient = new Minio.Client({
   useSSL: booleanConf('minio:use_ssl', false),
   accessKey: String(conf.get('minio:access_key')),
   secretKey: String(conf.get('minio:secret_key')),
+  reqOptions: {
+    ...configureCA(conf.get('minio:ca')),
+    servername: conf.get('minio:endpoint'),
+  },
 });
 
 export const isStorageAlive = () => {
