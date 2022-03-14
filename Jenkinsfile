@@ -39,15 +39,15 @@ node {
         sh 'yarn install'
       }
     }
-
-    dir('opencti-worker/src') {
-      sh 'pip install --no-cache-dir -r requirements.txt'
-      sh 'pip install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master'
-    }
   }
 
   parallel test: {
     stage('Test') {
+      dir('opencti-worker/src') {
+        sh 'pip install --no-cache-dir -r requirements.txt'
+        sh 'pip install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master'
+      }
+      
       dir('opencti-platform') {
         dir('opencti-graphql') {
           sh 'yarn test'
