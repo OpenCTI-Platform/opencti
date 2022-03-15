@@ -46,7 +46,8 @@ import SelectField from '../../../../../components/SelectField';
 import { insertNode } from '../../../../../utils/Store';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import ResourceType from '../../../common/form/ResourceType';
+import ResourceNameField from '../../../common/form/ResourceNameField';
+import ResourceTypeField from '../../../common/form/ResourceTypeField';
 
 const styles = (theme) => ({
   item: {
@@ -130,11 +131,6 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-  resourceDropdown: {
-    maxHeight: 130,
-    overflow: 'auto',
-    background: '#06102D',
-  },
 });
 
 const RequiredResourceCreationMutation = graphql`
@@ -145,18 +141,6 @@ const RequiredResourceCreationMutation = graphql`
       description
     }
   }
-`;
-
-const RequiredResourceCreationTypeQuery = graphql`
- query RequiredResourceCreationTypeQuery{
-  __type(name: "SubjectType") {
-    name
-    enumValues {
-      name
-      description
-    }
-  }
-}
 `;
 
 // const RequiredResourceValidation = (t) =>
@@ -173,10 +157,7 @@ class RequiredResourceCreation extends Component {
     this.state = {
       open: false,
       close: false,
-      typeList: null,
       resourceName: '',
-      resourceType: '',
-      SubjectField: [],
       subjects: [
         {
           subject_type: '',
@@ -188,33 +169,16 @@ class RequiredResourceCreation extends Component {
     };
   }
 
-  componentDidMount() {
-    fetchDarklightQuery(RequiredResourceCreationTypeQuery)
-      .toPromise()
-      .then((data) => {
-        const SubjectFieldEntities = pipe(
-          pathOr([], ['__type', 'enumValues']),
-          map((n) => ({
-            name: n.name,
-            description: n.description,
-          })),
-        )(data);
-        this.setState({
-          SubjectField: SubjectFieldEntities,
-        });
-      });
-  }
-
   handleOpen() {
     this.setState({ open: true });
   }
 
-  handleClose() {
-    this.setState({ open: false, resourceName: '', typeList: null });
+  handleResourceTypeFieldChange(resourceType) {
+    this.setState({ resourceName: resourceType });
   }
 
-  handleResourceTypeClick(resourceValue) {
-    this.setState({ resourceType: resourceValue });
+  handleClose() {
+    this.setState({ open: false, resourceName: '' });
   }
 
   handleCancelClick() {
@@ -222,20 +186,19 @@ class RequiredResourceCreation extends Component {
       open: false,
       close: true,
       resourceName: '',
-      typeList: null,
     });
   }
 
   handleCancelCloseClick() {
-    this.setState({ close: false, resourceName: '', typeList: null });
+    this.setState({ close: false, resourceName: '' });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
     this.setState({
       subjects: [
         {
-          subject_type: this.state.resourceName,
-          subject_ref: this.state.resourceType,
+          subject_type: values.resource_type,
+          subject_ref: values.resource,
           name: values.name,
         },
       ],
@@ -441,7 +404,7 @@ class RequiredResourceCreation extends Component {
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t('Required Resource')}
+                  {t('Resource')}
                 </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
@@ -477,7 +440,7 @@ class RequiredResourceCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Type')}
+                          {t('Resource Type')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                           <Tooltip title={t('Resource Type')}>
@@ -485,21 +448,15 @@ class RequiredResourceCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className='clearfix' />
-                        <div className={classes.resourceDropdown}>
-                          <List style={{ height: '130px' }}>
-                            {this.state.SubjectField.map((type, i) => (
-                              <ListItem
-                                classes={{ root: classes.item }}
-                                onClick={() => this.setState({ typeList: i, resourceName: type.name })}
-                                selected={this.state.typeList === i}
-                                button={true}
-                                key={i}
-                              >
-                                {type.description}
-                              </ListItem>
-                            ))}
-                          </List>
-                        </div>
+                        <ResourceTypeField
+                          name='resource_type'
+                          fullWidth={true}
+                          variant='outlined'
+                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
+                          type='hardware'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -535,7 +492,7 @@ class RequiredResourceCreation extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Resource')}
+                          {t('Resource Name')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                           <Tooltip title={t('Resource')}>
@@ -543,11 +500,15 @@ class RequiredResourceCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className='clearfix' />
-                        <div className={classes.resourceDropdown}>
-                          <List style={{ height: '130px' }}>
-                            <ResourceType onSelectResource={this.handleResourceTypeClick.bind(this)} name={this.state.resourceName} />
-                          </List>
-                        </div>
+                        <ResourceNameField
+                          name='resource'
+                          resourceTypename={this.state.resourceName}
+                          fullWidth={true}
+                          variant='outlined'
+                          type='hardware'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                   </Grid>
