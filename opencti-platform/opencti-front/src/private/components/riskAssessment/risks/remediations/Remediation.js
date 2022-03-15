@@ -76,7 +76,7 @@ class RemediationComponent extends Component {
               history={history}
               disabled={true}
               PopoverComponent={<RiskPopover />}
-              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
@@ -86,12 +86,12 @@ class RemediationComponent extends Component {
               spacing={3}
               classes={{ container: classes.gridContainer }}
             >
-              <Grid item={true} xs={6}>
+              <Grid item={true} xs={12}>
                 <RemediationGeneralOverview remediation={remediation} />
               </Grid>
-              <Grid item={true} xs={6}>
+              {/* <Grid item={true} xs={6}>
                 <RemediationGeneralDetails remediation={remediation} />
-              </Grid>
+              </Grid> */}
             </Grid>
             <Grid
               container={true}
