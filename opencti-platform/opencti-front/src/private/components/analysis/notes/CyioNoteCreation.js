@@ -5,7 +5,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 // import { ConnectionHandler } from 'relay-runtime';
 import {
-  compose, union, map, pathOr, pipe, dissoc,
+  compose, union, map, pathOr, pipe, dissoc, assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -63,9 +63,8 @@ const styles = (theme) => ({
     display: 'inline-block',
   },
   createButtonContextual: {
+    float: 'left',
     marginTop: -15,
-    // bottom: 30,
-    // right: 30,
   },
   buttons: {
     marginTop: 20,
@@ -204,6 +203,7 @@ class CyioNoteCreation extends Component {
     // );
     const finalValues = pipe(
       dissoc('labels'),
+      assoc('authors', values.authors),
     )(values);
     CM(environmentDarkLight, {
       mutation: cyioNoteCreationMutation,
@@ -393,7 +393,6 @@ class CyioNoteCreation extends Component {
       <div style={{ display: display ? 'block' : 'none' }}>
         <IconButton
           aria-label="Add"
-          edge="end"
           onClick={this.handleOpen.bind(this)}
           color="primary"
           className={classes.createButtonContextual}
@@ -406,7 +405,7 @@ class CyioNoteCreation extends Component {
             initialValues={{
               abstract: '',
               content: '',
-              authors: [],
+              authors: me.name,
               labels: [],
             }}
             validationSchema={cyioNoteValidation(t)}

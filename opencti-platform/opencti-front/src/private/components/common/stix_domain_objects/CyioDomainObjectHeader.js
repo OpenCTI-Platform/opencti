@@ -101,6 +101,7 @@ class CyioDomainObjectAssetHeader extends Component {
     const {
       t,
       classes,
+      disabled,
       cyioDomainObject,
       handleDisplayEdit,
       OperationsComponent,
@@ -123,10 +124,10 @@ class CyioDomainObjectAssetHeader extends Component {
         </Typography>
         <div className={classes.aliases}>
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
-            <Tooltip title={t('Edit')}>
-              <Button
+            {handleDisplayEdit && <Tooltip title={t('Edit')}>
+             <Button
                 variant="contained"
-                onClick={handleDisplayEdit.bind(this)}
+                onClick={handleDisplayEdit?.bind(this)}
                 className={classes.iconButton}
                 disabled={Boolean(!cyioDomainObject?.id)}
                 color="primary"
@@ -134,7 +135,7 @@ class CyioDomainObjectAssetHeader extends Component {
               >
                 <Edit fontSize="inherit" />
               </Button>
-            </Tooltip>
+            </Tooltip>}
             <div style={{ display: 'inline-block' }}>
               {OperationsComponent && React.cloneElement(OperationsComponent, {
                 id: cyioDomainObject?.id,
@@ -148,6 +149,7 @@ class CyioDomainObjectAssetHeader extends Component {
                 onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
                 startIcon={<AddCircleOutline />}
                 style={{ marginTop: '-23px' }}
+                disabled={disabled || false}
                 color='primary'
               >
                 {t('New')}
@@ -166,6 +168,7 @@ CyioDomainObjectAssetHeader.propTypes = {
   variant: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  disabled: PropTypes.bool,
   fld: PropTypes.func,
   viewAs: PropTypes.string,
   onViewAs: PropTypes.func,

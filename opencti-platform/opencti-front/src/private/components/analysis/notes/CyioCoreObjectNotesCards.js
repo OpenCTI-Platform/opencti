@@ -18,9 +18,12 @@ import CyioAddNotes from './CyioAddNotes';
 
 const styles = (theme) => ({
   paper: {
+    height: '100%',
+    minHeight: '100%',
     margin: 0,
+    marginTop: '-5px',
+    position: 'relative',
     padding: '20px 20px 20px 20px',
-    borderRadius: 6,
   },
   heading: {
     display: 'flex',
@@ -118,7 +121,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
     //   search: this.state.search,
     // };
     return (
-      <div style={{ marginTop: marginTop || 40 }}>
+      <div style={{ marginTop: marginTop || 40, height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes')}
         </Typography>

@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Redirect } from 'react-router-dom';
 import * as R from 'ramda';
-import inject18n from '../../../components/i18n';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
@@ -35,6 +34,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import Chip from '@material-ui/core/Chip';
+import inject18n from '../../../components/i18n';
 import {
   getCVESeverityChartData,
   getSeverityPieChartData,
@@ -80,12 +80,12 @@ class ViewCharts extends Component {
   constructor(props) {
     super(props);
     const analysesMap = {}
-    this.props.location.state?.analyses.forEach((a) => analysesMap[a.id] = a)
+    this.props.location.state?.analyses.forEach((a) => analysesMap[a.id] = a);
     this.state = {
       tabValue: 0,
       anchorEl: false,
       clientId: localStorage.getItem('client_id'),
-      analysis_id: (this.props.location.state? this.props.location.state.analysis_id : null),
+      analysis_id: (this.props.location.state ? this.props.location.state.analysis_id : null),
       analysises: analysesMap,
       severityChartData: {},
       vulnerabilityByYearChartData: {},
@@ -108,9 +108,9 @@ class ViewCharts extends Component {
   };
 
   componentDidMount() {
-    this.setState({isDisabled: true});
+    this.setState({ isDisabled: true });
 
-    getSeverityPieChartData(this.state.clientId,  this.state.analysis_id)
+    getSeverityPieChartData(this.state.clientId, this.state.analysis_id)
       .then((response) => {
         const analysisId = this.state.analysis_id;
         const severityChartData = {};
@@ -118,8 +118,8 @@ class ViewCharts extends Component {
         this.setState({ severityChartData });
         const checked = this.state.checked;
         checked[analysisId] = true;
-        this.setState({checked})
-        this.setState({isDisabled: false});
+        this.setState({ checked })
+        this.setState({ isDisabled: false });
       })
       .catch((error) => {
         console.log(error);
@@ -129,7 +129,7 @@ class ViewCharts extends Component {
 
   render() {
 
-    if(this.props.location.state == undefined) return <Redirect to="/dashboard/vsac/scans" />;
+    if (this.props.location.state == undefined) return <Redirect to="/dashboard/vsac/scans" />;
 
     const {
       tabValue,
@@ -154,7 +154,7 @@ class ViewCharts extends Component {
 
     const handleTabChange = (event, newValue) => {
       this.setState({ tabValue: newValue });
-      this.setState({isDisabled: true});
+      this.setState({ isDisabled: true });
       const ids = activeChecked().join();
       switch (newValue) {
         case 0:
@@ -163,11 +163,11 @@ class ViewCharts extends Component {
               response.data.forEach((d) => {
                 severityChartData[d.id] = d;
               })
-              this.setState({severityChartData})
-              this.setState({isDisabled: false});
+              this.setState({ severityChartData })
+              this.setState({ isDisabled: false });
             })
             .catch((error) => {
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
               console.log(error);
             });
           break;
@@ -178,45 +178,45 @@ class ViewCharts extends Component {
                 vulnerabilityByYearChartData[d.id] = d;
               })
               this.setState({ vulnerabilityByYearChartData });
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
             })
             .catch((error) => {
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
               console.log(error);
             });
           break;
         case 2:
-          this.setState({isDisabled: false});
+          this.setState({ isDisabled: false });
           getTopVulnerableHostsChartData(this.state.clientId, ids)
             .then((response) => {
               response.data.forEach((d) => {
                 topVulnerableHost[d.id] = d;
               })
               this.setState({ topVulnerableHost });
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
             })
             .catch((error) => {
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
               console.log(error);
             });
           break;
         case 3:
-          this.setState({isDisabled: false});
+          this.setState({ isDisabled: false });
           getTopVulnerableProductsChartData(this.state.clientId, ids)
             .then((response) => {
               response.data.forEach((d) => {
                 topVulnerableProducts[d.id] = d;
               })
               this.setState({ topVulnerableProducts });
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
             })
             .catch((error) => {
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
               console.log(error);
             });
           break;
         case 4:
-          this.setState({isDisabled: true});
+          this.setState({ isDisabled: true });
           getTrendingChartData(this.state.clientId, ids)
             .then((response) => {
               const data = response.data.map((item) => {
@@ -231,10 +231,10 @@ class ViewCharts extends Component {
                 };
               })
               this.setState({ trendingChatData: data });
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
             })
             .catch((error) => {
-              this.setState({isDisabled: false});
+              this.setState({ isDisabled: false });
               console.log(error);
             });
 
@@ -257,86 +257,86 @@ class ViewCharts extends Component {
 
     const handleToggle = (isChecked, id) => {
       checked[id] = isChecked
-      this.setState({isDisabled: true});
+      this.setState({ isDisabled: true });
 
-      if(!isChecked){
+      if (!isChecked) {
         delete severityChartData[id]
         delete vulnerabilityByYearChartData[id]
         delete topVulnerableHost[id]
         return
       }
       switch (tabValue) {
-          case 0:
-            getSeverityPieChartData(this.state.clientId, id)
-              .then((response) => {
-                severityChartData[id] = response.data[0];
-                this.setState({ severityChartData})
-                this.setState({ isDisabled: false });
-              })
-              .catch((error) => {
-                this.setState({isDisabled: false});
-                console.log(error);
+        case 0:
+          getSeverityPieChartData(this.state.clientId, id)
+            .then((response) => {
+              severityChartData[id] = response.data[0];
+              this.setState({ severityChartData })
+              this.setState({ isDisabled: false });
+            })
+            .catch((error) => {
+              this.setState({ isDisabled: false });
+              console.log(error);
+            });
+          break;
+        case 1:
+          getCVESeverityChartData(this.state.clientId, id)
+            .then((response) => {
+              vulnerabilityByYearChartData[id] = response.data[0];
+              this.setState({ vulnerabilityByYearChartData });
+              this.setState({ isDisabled: false });
+            })
+            .catch((error) => {
+              this.setState({ isDisabled: false });
+              console.log(error);
+            });
+          break;
+        case 2:
+          getTopVulnerableHostsChartData(this.state.clientId, id)
+            .then((response) => {
+              topVulnerableHost[id] = response.data[0];
+              this.setState({ topVulnerableHost });
+              this.setState({ isDisabled: false });
+            })
+            .catch((error) => {
+              this.setState({ isDisabled: false });
+              console.log(error);
+            });
+          break;
+        case 3:
+          getTopVulnerableProductsChartData(this.state.clientId, id)
+            .then((response) => {
+              topVulnerableProducts[id] = response.data[0];
+              this.setState({ topVulnerableProducts });
+              this.setState({ isDisabled: false });
+            })
+            .catch((error) => {
+              this.setState({ isDisabled: false });
+              console.log(error);
+            });
+          break;
+        case 4:
+          getTrendingChartData(this.state.clientId, activeChecked().join())
+            .then((response) => {
+              const data = response.data.map((item) => {
+                return {
+                  name: item.id,
+                  data: item.data.map((item) => {
+                    return {
+                      category: item.x,
+                      value: parseInt(item.y),
+                    };
+                  }),
+                };
               });
-            break;
-          case 1:
-            getCVESeverityChartData(this.state.clientId, id)
-              .then((response) => {
-                vulnerabilityByYearChartData[id] = response.data[0];
-                this.setState({ vulnerabilityByYearChartData });
-                this.setState({isDisabled: false});
-              })
-              .catch((error) => {
-                this.setState({isDisabled: false});
-                console.log(error);
-              });
-            break;
-          case 2:
-            getTopVulnerableHostsChartData(this.state.clientId, id)
-              .then((response) => {
-                topVulnerableHost[id] = response.data[0];
-                this.setState({ topVulnerableHost });
-                this.setState({isDisabled: false});
-              })
-              .catch((error) => {
-                this.setState({isDisabled: false});
-                console.log(error);
-              });
-            break;
-          case 3:
-            getTopVulnerableProductsChartData(this.state.clientId, id)
-              .then((response) => {
-                topVulnerableProducts[id] = response.data[0];
-                this.setState({ topVulnerableProducts });
-                this.setState({isDisabled: false});
-              })
-              .catch((error) => {
-                this.setState({isDisabled: false});
-                console.log(error);
-              });
-            break;
-          case 4:
-            getTrendingChartData(this.state.clientId, activeChecked().join())
-              .then((response) => {
-                const data = response.data.map((item) => {
-                  return {
-                    name: item.id,
-                    data: item.data.map((item) => {
-                      return {
-                        category: item.x,
-                        value: parseInt(item.y),
-                      };
-                    }),
-                  };
-                });
-                this.setState({ trendingChatData: data });
-                this.setState({isDisabled: false});
-              })
-              .catch((error) => {
-                this.setState({isDisabled: false});
-                console.log(error);
-              });
-            break;
-        }
+              this.setState({ trendingChatData: data });
+              this.setState({ isDisabled: false });
+            })
+            .catch((error) => {
+              this.setState({ isDisabled: false });
+              console.log(error);
+            });
+          break;
+      }
     };
 
     return (
@@ -360,7 +360,7 @@ class ViewCharts extends Component {
         >
           <List>
             {analysises &&
-              Object.entries(analysises).map(([id,analysis]) => {
+              Object.entries(analysises).map(([id, analysis]) => {
                 return (
                   <MenuItem onClick={handleClose}>
                     <ListItem key={analysis.id}>
@@ -425,7 +425,7 @@ class ViewCharts extends Component {
             value={tabValue}
             index={0}
           >
-            { severityChartData && activeChecked().map((i) => {
+            {severityChartData && activeChecked().map((i) => {
               const array = severityChartData[i]?.data?.map((item) => {
                 return {
                   name: item.label,
@@ -457,8 +457,8 @@ class ViewCharts extends Component {
                           dataKey="value"
                           cx={500}
                           cy={200}
-                          innerRadius={40}
-                          outerRadius={80}
+                          innerRadius={90}
+                          outerRadius={150}
                           fill="#82ca9d"
                           label={({
                             cx,
@@ -487,6 +487,7 @@ class ViewCharts extends Component {
                                 fill={COLORS[array[index].name]}
                                 textAnchor={x > cx ? 'start' : 'end'}
                                 dominantBaseline="central"
+                                style={{ fontSize: '15px' }}
                               >
                                 {array[index].name} ({value})
                               </text>
@@ -547,10 +548,14 @@ class ViewCharts extends Component {
                           <XAxis
                             dataKey="year"
                             type="number"
+                            tick={{ fill: 'white' }}
                             domain={[1999, 2021]}
                           />
-                          <YAxis type="number" />
-                          <Tooltip cursor={false}/>
+                          <YAxis
+                            tick={{ fill: 'white' }}
+                            type="number"
+                          />
+                          <Tooltip cursor={false} />
                           <Legend />
                           <Bar
                             stackId="a"
@@ -582,7 +587,6 @@ class ViewCharts extends Component {
                       {analysises[i].scan.scan_name} :{' '}
                       {moment(analysises[i].completed_date).fromNow()}
                     </Typography>
-                    }
                     <Paper
                       elevation={2}
                       style={{
@@ -606,9 +610,9 @@ class ViewCharts extends Component {
                           }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" domain={[0, 'auto']} />
-                          <YAxis type="category" dataKey="host" />
-                          <Tooltip cursor={false}/>
+                          <XAxis tick={{ fill: 'white' }} type="number" domain={[0, 'auto']} />
+                          <YAxis tick={{ fill: 'white' }} type="category" dataKey="host" />
+                          <Tooltip cursor={false} />
                           <Legend />
                           <Bar
                             stackId="a"
@@ -658,9 +662,9 @@ class ViewCharts extends Component {
                           }}
                         >
                           <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis type="number" domain={[0, 'auto']} />
-                          <YAxis type="category" dataKey="product" />
-                          <Tooltip cursor={false}/>
+                          <XAxis tick={{ fill: 'white' }} type="number" domain={[0, 'auto']} />
+                          <YAxis tick={{ fill: 'white' }} type="category" dataKey="product" />
+                          <Tooltip cursor={false} />
                           <Legend />
                           <Bar
                             stackId="a"
@@ -693,32 +697,32 @@ class ViewCharts extends Component {
                   marginBottom: 40,
                 }}
               >
-               {trendingChatData &&
-                <ResponsiveContainer width="100%" height="90%">
-                  <LineChart width={500} height={500}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="category"
-                      type="category"
-                      allowDuplicatedCategory={false}
-                      tick={{ fill: 'white' }}
-                    />
-                    <YAxis dataKey="value" tick={{ fill: 'white' }}/>
-                    <Tooltip />
-                    <Legend wrapperStyle={{ bottom: -20 }}/>
-                    {trendingChatData.map((s) => (
-                      <Line
-                        dataKey="value"
-                        data={s.data}
-                        name={s.name}
-                        key={s.name}
-                        dot={{ r: 8 }}
-                        activeDot={{ r: 8 }}
+                {trendingChatData &&
+                  <ResponsiveContainer width="100%" height="90%">
+                    <LineChart width={500} height={500}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="category"
+                        type="category"
+                        allowDuplicatedCategory={false}
+                        tick={{ fill: 'white' }}
                       />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              }
+                      <YAxis dataKey="value" tick={{ fill: 'white' }} />
+                      <Tooltip />
+                      <Legend wrapperStyle={{ bottom: -20 }} />
+                      {trendingChatData.map((s) => (
+                        <Line
+                          dataKey="value"
+                          data={s.data}
+                          name={s.name}
+                          key={s.name}
+                          dot={{ r: 8 }}
+                          activeDot={{ r: 8 }}
+                        />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                }
               </Paper>
             </Grid>
           </TabPanel>

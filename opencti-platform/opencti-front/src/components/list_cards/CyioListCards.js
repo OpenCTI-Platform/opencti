@@ -43,9 +43,7 @@ const styles = (theme) => ({
     margin: '0 300px 0 -10px',
   },
   toolBar: {
-    marginLeft: -24,
-    marginRight: -24,
-    marginTop: -20,
+    margin: '-20px -24px 20px -24px',
     height: '64px',
     '@media (max-width: 1063.5px)': {
       height: '100%',
@@ -126,6 +124,7 @@ class CyioListCards extends Component {
       OperationsComponent,
       handleDisplayEdit,
       selectedElements,
+      disabled,
       keyword,
       filterEntityType,
       filters,
@@ -260,7 +259,8 @@ class CyioListCards extends Component {
                       variant="contained"
                       onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)}
+                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                      || disabled}
                       color="primary"
                       size="large"
                     >
@@ -282,6 +282,7 @@ class CyioListCards extends Component {
                       onClick={handleNewCreation && handleNewCreation.bind(this)}
                       color='primary'
                       style={{ marginTop: '-22px' }}
+                      disabled={disabled || false}
                     >
                       {t('New')}
                     </Button>
@@ -322,6 +323,7 @@ CyioListCards.propTypes = {
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
+  disabled: PropTypes.bool,
   views: PropTypes.array,
   filterEntityType: PropTypes.string,
   exportContext: PropTypes.string,

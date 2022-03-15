@@ -1070,7 +1070,7 @@ class Scans extends Component {
                                 value: "% of Hosts with Weakness",
                                 fill: 'white',
                               }}
-                              domain={[-200, 200]}
+                              domain={[0, 200]}
                               tick={false}
                             />
                             <YAxis
@@ -1081,7 +1081,7 @@ class Scans extends Component {
                                 angle: -90,
                                 fill: 'white',
                               }}
-                              domain={[-200, 200]}
+                              domain={[0, 200]}
                               tick={false}
                             />
                             <ZAxis range={[250]} />

@@ -59,9 +59,7 @@ const styles = (theme) => ({
     padding: '0 310px 50px 0',
   },
   toolBar: {
-    marginLeft: -24,
-    marginRight: -24,
-    marginTop: -20,
+    margin: '-20px -24px 20px -24px',
     height: '64px',
     '@media (max-width: 1063.5px)': {
       height: '100%',
@@ -218,6 +216,7 @@ class CyioListLines extends Component {
       secondaryAction,
       keyword,
       filters,
+      disabled,
       bottomNav,
       children,
       handleDisplayEdit,
@@ -355,7 +354,8 @@ class CyioListLines extends Component {
                       variant="contained"
                       onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)}
+                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                      || disabled}
                       color="primary"
                       size="large"
                     >
@@ -376,6 +376,7 @@ class CyioListLines extends Component {
                       startIcon={<AddCircleOutline />}
                       onClick={handleNewCreation && handleNewCreation.bind(this)}
                       color='primary'
+                      disabled={disabled || false}
                       style={{ marginTop: '-22px' }}
                     >
                       {t('New')}
@@ -515,6 +516,7 @@ CyioListLines.propTypes = {
   exportContext: PropTypes.string,
   keyword: PropTypes.string,
   filters: PropTypes.object,
+  disabled: PropTypes.bool,
   sortBy: PropTypes.string,
   orderAsc: PropTypes.bool,
   dataColumns: PropTypes.object.isRequired,
