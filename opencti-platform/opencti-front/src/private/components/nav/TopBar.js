@@ -187,8 +187,8 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
-            <TopMenuAnalysis />
-          )}
+              <TopMenuAnalysis />
+            )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -203,8 +203,8 @@ const TopBar = ({
           ) && <TopMenuExternalReference />}
           {(location.pathname === '/dashboard/events'
             || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
-            <TopMenuEvents />
-          )}
+              <TopMenuEvents />
+            )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuIncident />
           )}
@@ -216,8 +216,8 @@ const TopBar = ({
           )}
           {(location.pathname === '/dashboard/observations'
             || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
-            <TopMenuObservations />
-          )}
+              <TopMenuObservations />
+            )}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
           ) && <TopMenuIndicator />}
@@ -232,8 +232,8 @@ const TopBar = ({
           )}
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
-            <TopMenuThreats />
-          )}
+              <TopMenuThreats />
+            )}
           {location.pathname.includes('/dashboard/threats/threat_actors/') && (
             <TopMenuThreatActor />
           )}
@@ -245,8 +245,8 @@ const TopBar = ({
           )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
-            <TopMenuArsenal />
-          )}
+              <TopMenuArsenal />
+            )}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && (
             <TopMenuMalware />
           )}
@@ -264,8 +264,8 @@ const TopBar = ({
           ) && <TopMenuVulnerability />}
           {(location.pathname === '/dashboard/entities'
             || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
-            <TopMenuEntities />
-          )}
+              <TopMenuEntities />
+            )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
           )}
@@ -306,7 +306,7 @@ const TopBar = ({
           <div className={classes.barContainer}>
             <Security needs={[KNOWLEDGE]}>
               <div className={classes.searchContainer}>
-                <SearchInput onSubmit={handleSearch} keyword={keyword} />
+                <SearchInput disabled={true} onSubmit={handleSearch} keyword={keyword} />
               </div>
               <Filters
                 variant="dialog"
@@ -323,7 +323,8 @@ const TopBar = ({
                   'created_at_end_date',
                 ]}
                 currentFilters={{}}
-                disabled={location.pathname.includes('/dashboard/search')}
+                // disabled={location.pathname.includes('/dashboard/search')}
+                disabled={true}
               />
             </Security>
           </div>
@@ -377,38 +378,41 @@ const TopBar = ({
                 </IconButton>
               </Tooltip>
             </Security>
-              <Tooltip title={t('Dashboard')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
+            <Tooltip title={t('Dashboard')}>
+              <IconButton
+                component={Link}
+                classes={{ root: classes.button }}
+              >
                 <DashboardIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
+              </IconButton>
+            </Tooltip>
             <Tooltip title={t('Find in Page')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
+              <IconButton
+                component={Link}
+                disabled={true}
+                classes={{ root: classes.button }}
+              >
                 <FindInPageIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
-            <Tooltip title={t('Upload')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('Data Import')}>
+              <IconButton
+                component={Link}
+                disabled={true}
+                classes={{ root: classes.button }}
+              >
                 <PublishIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
+              </IconButton>
+            </Tooltip>
             <Tooltip title={t('Add Note')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
+              <IconButton
+                disabled={true}
+                component={Link}
+                classes={{ root: classes.button }}
+              >
                 <NoteAddIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
+              </IconButton>
+            </Tooltip>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}

@@ -153,6 +153,7 @@ class CyioListCards extends Component {
                 variant="small"
                 onSubmit={handleSearch.bind(this)}
                 keyword={keyword}
+                disabled={true}
               />
             </div>
             {availableFilterKeys && availableFilterKeys.length > 0 ? (

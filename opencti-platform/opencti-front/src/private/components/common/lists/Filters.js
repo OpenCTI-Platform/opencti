@@ -1032,7 +1032,7 @@ class Filters extends Component {
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
-            style={{ color: theme.palette.header.text }}
+            // style={{ color: theme.palette.header.text }}
           >
             <ToyBrickSearchOutline fontSize="default" />
           </IconButton>

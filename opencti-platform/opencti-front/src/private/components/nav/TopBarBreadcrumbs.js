@@ -105,25 +105,25 @@ const TopBarBreadcrumbs = ({
   t, classes, location, history, keyword, theme,
 }) => {
 
-  const pathParts   = location.pathname.split("/").filter(entry => entry !== "");
-  
+  const pathParts = location.pathname.split("/").filter(entry => entry !== "");
+
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
 
   const buildBreadCrumbs = (array) => {
 
-     let url = "/";
-     let crumbArry = [];
+    let url = "/";
+    let crumbArry = [];
 
-      for(let x = 0; x < array.length; x++){
-                 
-        url += array[x] + "/";
-        let obj = { label: array[x], path: url } 
+    for (let x = 0; x < array.length; x++) {
 
-        crumbArry.push(obj);
+      url += array[x] + "/";
+      let obj = { label: array[x], path: url }
 
-      }
+      crumbArry.push(obj);
 
-      return crumbArry;
+    }
+
+    return crumbArry;
 
   }
   const handleOpenMenu = (event) => {
@@ -168,19 +168,19 @@ const TopBarBreadcrumbs = ({
           </Link>
         </div>
         <div className={classes.menuContainer}>
-           <Breadcrumbs aria-label="breadcrumb">
-           {breadCrumbs.map((crumb, i, array) => {     
-              if(i === array.length -1){
-               return (<Typography color="textPrimary" style={{textTransform: 'capitalize'}}>{crumb.label}</Typography>)
-             } else {
-               return (<Link color="inherit" 
-                             to={crumb.path} 
-                             onClick={(e) => { e.preventDefault(); history.push(crumb.path); }}
-                             style={{textTransform: 'capitalize'}}
-                       >
-                             {crumb.label}
-                      </Link>)
-             }
+          <Breadcrumbs aria-label="breadcrumb">
+            {breadCrumbs.map((crumb, i, array) => {
+              if (i === array.length - 1) {
+                return (<Typography color="textPrimary" style={{ textTransform: 'capitalize' }}>{crumb.label}</Typography>)
+              } else {
+                return (<Link color="inherit"
+                  to={crumb.path}
+                  onClick={(e) => { e.preventDefault(); history.push(crumb.path); }}
+                  style={{ textTransform: 'capitalize' }}
+                >
+                  {crumb.label}
+                </Link>)
+              }
             })}
           </Breadcrumbs>
         </div>
@@ -188,7 +188,7 @@ const TopBarBreadcrumbs = ({
           <div className={classes.barContainer}>
             <Security needs={[KNOWLEDGE]}>
               <div className={classes.searchContainer}>
-                <SearchInput onSubmit={handleSearch} keyword={keyword} />
+                <SearchInput disabled={true} onSubmit={handleSearch} keyword={keyword} />
               </div>
               <Filters
                 variant="dialog"
@@ -205,7 +205,8 @@ const TopBarBreadcrumbs = ({
                   'created_at_end_date',
                 ]}
                 currentFilters={{}}
-                disabled={location.pathname.includes('/dashboard/search')}
+                // disabled={location.pathname.includes('/dashboard/search')}
+                disabled={true}
               />
             </Security>
           </div>
@@ -259,38 +260,41 @@ const TopBarBreadcrumbs = ({
                 </IconButton>
               </Tooltip>
             </Security>
-              <Tooltip title={t('Dashboard')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
+            <Tooltip title={t('Dashboard')}>
+              <IconButton
+                component={Link}
+                classes={{ root: classes.button }}
+              >
                 <DashboardIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
+              </IconButton>
+            </Tooltip>
             <Tooltip title={t('Find in Page')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
+              <IconButton
+                disabled={true}
+                component={Link}
+                classes={{ root: classes.button }}
+              >
                 <FindInPageIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
-            <Tooltip title={t('Upload')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={t('Data Import')}>
+              <IconButton
+                disabled={true}
+                component={Link}
+                classes={{ root: classes.button }}
+              >
                 <PublishIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
+              </IconButton>
+            </Tooltip>
             <Tooltip title={t('Add Note')}>
-                <IconButton
-                  component={Link}
-                  classes={{ root: classes.button }}
-                >
+              <IconButton
+                disabled={true}
+                component={Link}
+                classes={{ root: classes.button }}
+              >
                 <NoteAddIcon fontSize="default" />
-                </IconButton>
-              </Tooltip>
+              </IconButton>
+            </Tooltip>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}
