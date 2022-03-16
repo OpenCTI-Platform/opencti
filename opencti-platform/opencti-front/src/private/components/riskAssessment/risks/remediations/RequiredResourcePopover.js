@@ -37,7 +37,8 @@ import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import MarkDownField from '../../../../../components/MarkDownField';
-import ResourceType from '../../../common/form/ResourceType';
+import ResourceNameField from '../../../common/form/ResourceNameField';
+import ResourceTypeField from '../../../common/form/ResourceTypeField';
 
 const styles = (theme) => ({
   container: {
@@ -122,14 +123,6 @@ const RequiredResourcePopoverDataQuery = graphql`
 }
 `;
 
-const cyioRequiredResourceEditionQuery = graphql`
-  mutation RequiredResourcePopoverEditionQuery($id: ID!, $input: [EditInput]!) {
-    editRequiredAsset(id: $id, input: $input) {
-      id
-    }
-  }
-`;
-
 class RequiredResourcePopover extends Component {
   constructor(props) {
     super(props);
@@ -139,9 +132,6 @@ class RequiredResourcePopover extends Component {
       displayDelete: false,
       deleting: false,
       resourceName: '',
-      resourceType: '',
-      typeList: null,
-      SubjectField: [],
       subjects: [{
         subject_type: '',
         subject_ref: '',
@@ -150,21 +140,8 @@ class RequiredResourcePopover extends Component {
     };
   }
 
-  componentDidMount() {
-    fetchDarklightQuery(RequiredResourcePopoverDataQuery)
-      .toPromise()
-      .then((data) => {
-        const SubjectFieldEntities = R.pipe(
-          R.pathOr([], ['__type', 'enumValues']),
-          R.map((n) => ({
-            name: n.name,
-            description: n.description,
-          })),
-        )(data);
-        this.setState({
-          SubjectField: SubjectFieldEntities,
-        });
-      });
+  handleResourceTypeFieldChange(resourceType) {
+    this.setState({ resourceName: resourceType });
   }
 
   handleOpen(event) {
@@ -172,11 +149,7 @@ class RequiredResourcePopover extends Component {
   }
 
   handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleResourceTypeClick(resourceValue) {
-    this.setState({ resourceType: resourceValue });
+    this.setState({ anchorEl: null, resourceName: '' });
   }
 
   handleOpenUpdate() {
@@ -185,7 +158,7 @@ class RequiredResourcePopover extends Component {
   }
 
   handleCloseUpdate() {
-    this.setState({ displayUpdate: false, resourceName: '', typeList: null });
+    this.setState({ displayUpdate: false, resourceName: '' });
   }
 
   handleOpenDelete() {
@@ -194,14 +167,14 @@ class RequiredResourcePopover extends Component {
   }
 
   handleCloseDelete() {
-    this.setState({ displayDelete: false });
+    this.setState({ displayDelete: false, resourceName: '' });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
     this.setState({
       subjects: [{
-        subject_type: this.state.resourceName,
-        subject_ref: this.state.resourceType,
+        subject_type: values.resource_type,
+        subject_ref: values.resource,
         name: values.name,
       }],
     });
@@ -387,7 +360,7 @@ class RequiredResourcePopover extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Require Resource')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Resource')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
@@ -423,7 +396,7 @@ class RequiredResourcePopover extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Type')}
+                          {t('Resource Type')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                           <Tooltip title={t('Type')} >
@@ -431,21 +404,15 @@ class RequiredResourcePopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <div className={classes.resourceDropdown}>
-                          <List style={{ height: '130px' }}>
-                            {this.state.SubjectField.map((type, i) => (
-                              <ListItem
-                                classes={{ root: classes.item }}
-                                onClick={() => this.setState({ typeList: i, resourceName: type.name })}
-                                selected={this.state.typeList === i}
-                                button={true}
-                                key={i}
-                              >
-                                {type.description}
-                              </ListItem>
-                            ))}
-                          </List>
-                        </div>
+                        <ResourceTypeField
+                          name='resource_type'
+                          fullWidth={true}
+                          variant='outlined'
+                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
+                          type='hardware'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -481,7 +448,7 @@ class RequiredResourcePopover extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Resource')}
+                          {t('Resource Name')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                           <Tooltip title={t('Resource')} >
@@ -489,11 +456,15 @@ class RequiredResourcePopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <div className={classes.resourceDropdown}>
-                          <List style={{ height: '130px' }}>
-                            <ResourceType onSelectResource={this.handleResourceTypeClick.bind(this)} name={this.state.resourceName} />
-                          </List>
-                        </div>
+                        <ResourceNameField
+                          name='resource'
+                          resourceTypename={this.state.resourceName}
+                          fullWidth={true}
+                          variant='outlined'
+                          type='hardware'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                   </Grid>

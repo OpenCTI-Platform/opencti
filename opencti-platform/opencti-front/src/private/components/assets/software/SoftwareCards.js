@@ -65,7 +65,8 @@ class SoftwareCards extends Component {
     //       />
             <CyioListCardsContent
               initialLoading={initialLoading}
-              loadMore={this.handleOffsetChange.bind(this)}
+              loadMore={relay.loadMore.bind(this)}
+              handleOffsetChange={this.handleOffsetChange.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
               dataList={pathOr([], ['softwareAssetList', 'edges'], this.props.data)}

@@ -294,7 +294,7 @@ class RelatedTaskLine extends Component {
                 </Grid>
                 <Grid item={true} xs={6} className={classes.cardContent} style={{ marginBottom: '15px' }}>
                   <div style={{ marginLeft: '10px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Related Tasks')}</Typography>
+                    <Typography align="left" color="textSecondary" variant="h3">{t('Tasks')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {t('Hello world')}
                     </Typography>
@@ -322,17 +322,7 @@ class RelatedTaskLine extends Component {
                     </Typography>
                   </div>
                 </Grid>
-                <Grid className={classes.cardContent} style={{ marginBottom: '20px' }}>
-                  <div style={{ marginLeft: '18px' }}>
-                    <Typography align="left" color="textSecondary" variant="h3">{t('Associated Activities')}</Typography>
-                    <Typography align="left" variant="subtitle1">{t('Lorem Ipsum')}</Typography>
-                  </div>
-                </Grid>
-              </Grid>
-
-            </Grid>
-            <Grid container={true}>
-              <Grid item={true} xs={12} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
+                <Grid item={true} xs={6} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
                 <div style={{ marginLeft: '18px' }}>
                   <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
                   <div className={classes.cardContent}>
@@ -346,6 +336,9 @@ class RelatedTaskLine extends Component {
                   </div>
                 </div>
               </Grid>
+              </Grid>
+            </Grid>
+            <Grid container={true}>
               <Grid item={true} xs={12} style={{ marginBottom: '10px' }}>
                 <Typography
                   color="textSecondary"

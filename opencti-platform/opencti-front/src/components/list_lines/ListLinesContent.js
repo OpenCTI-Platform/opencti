@@ -85,6 +85,7 @@ class ListLinesContent extends Component {
       hasMore,
       isLoading,
       globalCount,
+      handleOffsetChange,
       nbOfRowsToLoad,
     } = this.props;
     if (!hasMore() || isLoading()) {
@@ -95,6 +96,7 @@ class ListLinesContent extends Component {
       loadingRowCount:
         difference >= nbOfRowsToLoad ? nbOfRowsToLoad : difference,
     });
+    handleOffsetChange();
     loadMore(nbOfRowsToLoad, this._resetLoadingRowCount);
   }
 
@@ -211,6 +213,7 @@ ListLinesContent.propTypes = {
   loadMore: PropTypes.func,
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
+  handleOffsetChange: PropTypes.func,
   offset: PropTypes.number,
   me: PropTypes.object,
   globalCount: PropTypes.number,

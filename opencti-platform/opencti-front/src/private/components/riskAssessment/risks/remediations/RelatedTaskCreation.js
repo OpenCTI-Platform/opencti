@@ -377,7 +377,8 @@ class RelatedTaskCreation extends Component {
               related_tasks: [],
               associated_activities: [],
               responsible_roles: [],
-              milestone: '',
+              resource_type:'',
+              resource_name:'',
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -385,52 +386,8 @@ class RelatedTaskCreation extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Related Task')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Task')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Task Type')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
-                          <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="task_type"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='milestone'>
-                            Milestone
-                          </MenuItem>
-                          <MenuItem value='action'>
-                            Action
-                          </MenuItem>
-                          <MenuItem value='query'>
-                            Query
-                          </MenuItem>
-                          <MenuItem value='list'>
-                            List
-                          </MenuItem>
-                          <MenuItem value='ruke'>
-                            Rule
-                          </MenuItem>
-                        </Field>
-                      </div>
-                    </Grid>
-                  </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
@@ -489,6 +446,34 @@ class RelatedTaskCreation extends Component {
                   </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Task Type')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
+                          <Tooltip title={t('Description')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          name="task_type"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
@@ -512,78 +497,6 @@ class RelatedTaskCreation extends Component {
                         variant='outlined'
                         containerstyle={{ width: '100%' }}
                       />
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Milestone')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
-                          <Tooltip title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="milestone"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='milestone'>
-                            Milestone
-                          </MenuItem>
-                          <MenuItem value='action'>
-                            Action
-                          </MenuItem>
-                        </Field>
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <Typography
-                            variant="h3"
-                            color="textSecondary"
-                            gutterBottom={true}
-                            style={{ float: 'left' }}
-                          >
-                            {t('Dependency')}
-                          </Typography>
-                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Description')} >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="task_dependencies"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
-                      </div>
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
@@ -651,6 +564,67 @@ class RelatedTaskCreation extends Component {
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Resource Type')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
+                          <Tooltip title={t('Description')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          name="resource_type"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        >
+                          <MenuItem value='milestone'>
+                            Milestone
+                          </MenuItem>
+                          <MenuItem value='action'>
+                            Action
+                          </MenuItem>
+                        </Field>
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Resource Name')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 5px 5px' }}>
+                          <Tooltip title={t('Description')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          name="resource_name"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '10px' }}>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Typography
                             variant="h3"
@@ -663,7 +637,6 @@ class RelatedTaskCreation extends Component {
                           <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Related Tasks')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
-                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
                         </div>
                         <div className="clearfix" />
                         <Field
@@ -700,7 +673,6 @@ class RelatedTaskCreation extends Component {
                           <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Associated Activities')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
-                          <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
                         </div>
                         <div className="clearfix" />
                         <Field
@@ -724,42 +696,79 @@ class RelatedTaskCreation extends Component {
                       </div>
                     </Grid>
                   </Grid>
-                  <Grid item={true} xs={12}>
-                    <div style={{ marginBottom: '10px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('Responsible Parties')}
+                          </Typography>
+                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Responsible Parties')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <Field
+                          component={SelectField}
+                          style={{ height: '38.09px' }}
+                          variant='outlined'
+                          name="responsible_roles"
+                          size='small'
+                          fullWidth={true}
+                          containerstyle={{ width: '100%' }}
                         >
-                          {t('Responsible Parties')}
-                        </Typography>
-                        <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Responsible Parties')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                        <AddIcon style={{ margin: '0 0 4px 0' }} fontSize="small" />
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
                       </div>
-                      <Field
-                        component={SelectField}
-                        style={{ height: '38.09px' }}
-                        variant='outlined'
-                        name="responsible_roles"
-                        size='small'
-                        fullWidth={true}
-                        containerstyle={{ width: '100%' }}
-                      >
-                        <MenuItem value='Helloworld'>
-                          helloWorld
-                        </MenuItem>
-                        <MenuItem value='test'>
-                          test
-                        </MenuItem>
-                        <MenuItem value='data'>
-                          data
-                        </MenuItem>
-                      </Field>
-                    </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('Dependencies')}
+                          </Typography>
+                          <Tooltip style={{ margin: '0 0 4px 5px' }} title={t('Description')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          name="task_dependencies"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        >
+                          <MenuItem value='Helloworld'>
+                            helloWorld
+                          </MenuItem>
+                          <MenuItem value='test'>
+                            test
+                          </MenuItem>
+                          <MenuItem value='data'>
+                            data
+                          </MenuItem>
+                        </Field>
+                      </div>
+                    </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>

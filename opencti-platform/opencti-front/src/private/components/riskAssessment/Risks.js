@@ -166,7 +166,7 @@ class Risks extends Component {
     } = this.state;
     const dataColumns = {
       poam_id: {
-        label: 'Poam id',
+        label: 'POAM ID',
       },
       name: {
         label: 'Name',
@@ -268,7 +268,7 @@ class Risks extends Component {
     }
     const dataColumns = {
       poam_id: {
-        label: 'Poam id',
+        label: 'POAM ID',
         width: '13%',
         isSortable: true,
       },
