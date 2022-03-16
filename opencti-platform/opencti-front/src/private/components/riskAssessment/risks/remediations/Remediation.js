@@ -76,9 +76,9 @@ class RemediationComponent extends Component {
               history={history}
               disabled={true}
               PopoverComponent={<RiskPopover />}
-              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              OperationsComponent={<RiskDeletion />}
+              // OperationsComponent={<RiskDeletion />}
             />
             <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true}/>
             <Grid
