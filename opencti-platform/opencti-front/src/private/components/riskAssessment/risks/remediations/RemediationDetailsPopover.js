@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -21,9 +22,11 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import AddIcon from '@material-ui/icons/Add';
 import { MoreVertOutlined } from '@material-ui/icons';
+import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation } from '../../../../../relay/environment';
+import { dateFormat, parse } from '../../../../../utils/Time';
 import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
@@ -56,6 +59,7 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
+    overflow: 'hidden',
   },
   dialogClosebutton: {
     float: 'left',
@@ -81,22 +85,11 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const remediationDetailsPopoverDeletionMutation = graphql`
-  mutation RemediationDetailsPopoverDeletionMutation($id: ID!) {
-    stixCoreRelationshipEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
 class RemediationDetailsPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
       anchorEl: null,
-      displayUpdate: false,
-      displayDelete: false,
-      deleting: false,
       details: false,
     };
   }
@@ -108,11 +101,6 @@ class RemediationDetailsPopover extends Component {
 
   handleClose() {
     this.setState({ anchorEl: null });
-  }
-
-  handleOpenUpdate() {
-    this.setState({ displayUpdate: true });
-    this.handleClose();
   }
 
   handleCloseUpdate() {
@@ -128,42 +116,32 @@ class RemediationDetailsPopover extends Component {
     this.setState({ details: false });
   }
 
-  submitDelete() {
-    this.setState({ deleting: true });
-    commitMutation({
-      mutation: remediationDetailsPopoverDeletionMutation,
-      variables: {
-        id: this.props.cyioCoreRelationshipId,
-      },
-      updater: (store) => {
-        if (typeof this.props.onDelete !== 'function') {
-          const container = store.getRoot();
-          const payload = store.getRootField('stixCoreRelationshipEdit');
-          const userProxy = store.get(container.getDataID());
-          const conn = ConnectionHandler.getConnection(
-            userProxy,
-            this.props.connectionKey || 'Pagination_stixCoreRelationships',
-            this.props.paginationOptions,
-          );
-          ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
-        }
-      },
-      onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleCloseDetails();
-        if (typeof this.props.onDelete === 'function') {
-          this.props.onDelete();
-        }
-      },
-    });
-  }
-
   render() {
     const {
-      classes, t, cyioCoreRelationshipId, disabled, risk, remediation,
+      classes, t, disabled, risk, remediation,
     } = this.props;
-    console.log('riskDetails', risk);
-    console.log('remediationDetails', remediation);
+    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
+    const initialValues = R.pipe(
+      R.assoc('id', risk?.id || ''),
+      R.assoc('description', remediation?.description || ''),
+      R.assoc('name', remediation?.name || ''),
+      R.assoc('source', remediationOriginData?.name || []),
+      R.assoc('modified', dateFormat(risk?.modified)),
+      R.assoc('created', dateFormat(risk?.created)),
+      R.assoc('lifecycle', remediation?.lifecycle || []),
+      R.assoc('response_type', remediation?.response_type || ''),
+      R.pick([
+        'id',
+        'name',
+        'description',
+        'source',
+        'modified',
+        'created',
+        'lifecycle',
+        'response_type',
+      ]),
+    )(risk);
+    console.log('remediation', remediation);
     return (
       <span className={classes.container}>
         <IconButton
@@ -194,14 +172,14 @@ class RemediationDetailsPopover extends Component {
         >
           <Formik
             enableReinitialize={true}
-          // initialValues={initialValues}
+            initialValues={initialValues}
           // validationSchema={RelatedTaskValidation(t)}
           // onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Related Task')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Edit Remediation')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
@@ -215,7 +193,7 @@ class RemediationDetailsPopover extends Component {
                           {t('Name')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('Name')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -243,7 +221,7 @@ class RemediationDetailsPopover extends Component {
                           {t('Created')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('Created')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -273,7 +251,7 @@ class RemediationDetailsPopover extends Component {
                           {t('Last Modified')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('Last Modified')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -294,7 +272,7 @@ class RemediationDetailsPopover extends Component {
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                      <Grid xs={12} style={{ marginTop: '10px' }} item={true}>
+                      <Grid xs={12} item={true}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -304,7 +282,7 @@ class RemediationDetailsPopover extends Component {
                           {t('Description')}
                         </Typography>
                         <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                          <Tooltip title={t('Label')}>
+                          <Tooltip title={t('Description')}>
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -321,7 +299,7 @@ class RemediationDetailsPopover extends Component {
                   </Grid>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={6}>
-                      <Grid style={{ marginBottom: '20px' }} item={true}>
+                      <Grid style={{ marginTop: '10px', marginBottom: '20px' }} item={true}>
                         <Typography variant="h3"
                           color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
                           {t('Source')}
@@ -454,8 +432,10 @@ RemediationDetailsPopover.propTypes = {
   t: PropTypes.func,
   onDelete: PropTypes.func,
   connectionKey: PropTypes.string,
+  enableReferences: PropTypes.bool,
   risk: PropTypes.object,
   remediation: PropTypes.object,
+  remediationId: PropTypes.string,
 };
 
 export default compose(

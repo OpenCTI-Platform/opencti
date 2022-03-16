@@ -74,6 +74,12 @@ const styles = (theme) => ({
     top: '0px',
     margin: '5px 20px',
   },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
+  },
 });
 
 class RemediationGeneralOverviewComponent extends Component {
@@ -84,6 +90,7 @@ class RemediationGeneralOverviewComponent extends Component {
       fldt,
       classes,
       remediation,
+      risk,
     } = this.props;
     console.log('remediationGenreal', remediation);
     const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
@@ -293,7 +300,8 @@ class RemediationGeneralOverviewComponent extends Component {
           </Grid>
           <div className={classes.remediationPopover}>
           <RemediationDetailsPopover
-            cyioCoreRelationshipId={remediation.id}
+            remediation={remediation}
+            risk={risk}
           />
           </div>
         </Paper>
@@ -307,6 +315,7 @@ RemediationGeneralOverviewComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
+  risk: PropTypes.risk,
 };
 
 const RemediationGeneralOverview = createFragmentContainer(
