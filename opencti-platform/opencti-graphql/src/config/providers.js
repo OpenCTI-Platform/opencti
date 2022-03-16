@@ -8,7 +8,7 @@ import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import Auth0Strategy from 'passport-auth0';
 import { Strategy as SamlStrategy } from 'passport-saml';
-import { Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
+import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
@@ -234,9 +234,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const providerRef = identifier || 'oic';
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
-      OpenIDIssuer.discover(config.issuer).then((issuer) => {
+      OpenIDCustom.setHttpOptionsDefaults({
+        timeout: 0,
+      });
+      OpenIDIssuer[OpenIDCustom.http_options].discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
-        const client = new Client(config);
+        const client = new Client[OpenIDCustom.http_options](config);
         // region scopes generation
         const defaultScopes = mappedConfig.default_scopes ?? ['openid', 'email', 'profile'];
         const openIdScopes = [...defaultScopes];
