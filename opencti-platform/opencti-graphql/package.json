@@ -138,7 +138,6 @@
     "fs-capacitor": "6.2.0",
     "lodash": "4.17.21",
     "node-fetch": "2.6.7",
-    "ldapjs"
     "graphql-constraint-directive": "patch:graphql-constraint-directive@2.3.0#./patch/graphql-constraint-directive-2.3.0.patch",
     "nconf": "patch:nconf@0.11.3#./patch/nconf-0.11.3.patch"
   },
