@@ -262,6 +262,7 @@ const TopBarBreadcrumbs = ({
               <Tooltip title={t('Dashboard')}>
                 <IconButton
                   component={Link}
+                  to='/dashboard'
                   classes={{ root: classes.button }}
                 >
                 <DashboardIcon fontSize="default" />
