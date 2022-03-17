@@ -216,7 +216,7 @@ class Devices extends Component {
           'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'labels_or',
+          'label_name',
         ]}
       >
         {/* <QueryRenderer */}
@@ -329,7 +329,7 @@ class Devices extends Component {
           'asset_type_or',
           'created_start_date',
           'created_end_date',
-          'labels_or',
+          'label_name',
         ]}
       >
         {/* <QueryRenderer */}
