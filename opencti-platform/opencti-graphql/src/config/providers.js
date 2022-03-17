@@ -237,9 +237,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       OpenIDCustom.setHttpOptionsDefaults({
         timeout: 0,
       });
-      OpenIDIssuer[OpenIDCustom.http_options].discover(config.issuer).then((issuer) => {
+      OpenIDIssuer.discover(config.issuer).then((issuer) => {
         const { Client } = issuer;
-        const client = new Client[OpenIDCustom.http_options](config);
+        const client = new Client(config);
         // region scopes generation
         const defaultScopes = mappedConfig.default_scopes ?? ['openid', 'email', 'profile'];
         const openIdScopes = [...defaultScopes];
