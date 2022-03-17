@@ -343,7 +343,7 @@ jobs:
   docker_build_platform:
     working_directory: ~/opencti_docker
     machine:
-      image: ubuntu-1604:202007-01
+      image: ubuntu-2004:202111-02
       resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
@@ -380,7 +380,7 @@ jobs:
   docker_build_worker:
     working_directory: ~/opencti_docker
     machine:
-      image: ubuntu-1604:202007-01
+      image: ubuntu-2004:202111-02
       resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
@@ -416,7 +416,7 @@ jobs:
   docker_build_platform_rolling:
     working_directory: ~/opencti_docker
     machine:
-      image: ubuntu-1604:202007-01
+      image: ubuntu-2004:202111-02
       resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
@@ -453,7 +453,7 @@ jobs:
   docker_build_worker_rolling:
     working_directory: ~/opencti_docker
     machine:
-      image: ubuntu-1604:202007-01
+      image: ubuntu-2004:202111-02
       resource_class: large
     environment:
       DOCKER_BUILDKIT: 1
