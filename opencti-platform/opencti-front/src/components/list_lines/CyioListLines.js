@@ -249,6 +249,7 @@ class CyioListLines extends Component {
                   variant={searchVariant || 'small'}
                   onSubmit={handleSearch.bind(this)}
                   keyword={keyword}
+                  disabled={true}
                 />
               </div>
             )}
