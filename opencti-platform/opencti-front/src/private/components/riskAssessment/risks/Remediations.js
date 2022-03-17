@@ -69,7 +69,7 @@ const Remediations = (props) => {
             // PopoverComponent={<DevicePopover />}
             // handleDisplayEdit={handleDisplayEdit.bind(this)}
             handleOpenNewCreation={handleOpenNewCreation.bind(this)}
-            OperationsComponent={<RiskDeletion />}
+            // OperationsComponent={<RiskDeletion />}
           />
           <TopMenuRisk risk={remediation}/>
           <Grid item={true} xs={12}>

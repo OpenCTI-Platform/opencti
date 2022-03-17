@@ -261,11 +261,12 @@ const TopBarBreadcrumbs = ({
                 </IconButton>
               </Tooltip>
             </Security>
-            <Tooltip title={t('Dashboard')}>
-              <IconButton
-                component={Link}
-                classes={{ root: classes.button }}
-              >
+              <Tooltip title={t('Dashboard')}>
+                <IconButton
+                  component={Link}
+                  to='/dashboard'
+                  classes={{ root: classes.button }}
+                >
                 <DashboardIcon fontSize="default" />
               </IconButton>
             </Tooltip>

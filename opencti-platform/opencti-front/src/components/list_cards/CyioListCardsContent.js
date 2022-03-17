@@ -92,6 +92,7 @@ class CyioListCardsContent extends Component {
       hasMore,
       isLoading,
       globalCount,
+      handleOffsetChange,
       nbOfCardsToLoad,
     } = this.props;
     if (!hasMore() || isLoading()) {
@@ -102,6 +103,7 @@ class CyioListCardsContent extends Component {
       loadingCardCount:
         difference >= nbOfCardsToLoad ? nbOfCardsToLoad : difference,
     });
+    handleOffsetChange();
     loadMore(nbOfCardsToLoad, this._resetLoadingCardCount);
   }
 
@@ -251,6 +253,7 @@ CyioListCardsContent.propTypes = {
   loadMore: PropTypes.func,
   hasMore: PropTypes.func,
   isLoading: PropTypes.func,
+  handleOffsetChange: PropTypes.func,
   bookmarkList: PropTypes.array,
   offset: PropTypes.number,
   globalCount: PropTypes.number,

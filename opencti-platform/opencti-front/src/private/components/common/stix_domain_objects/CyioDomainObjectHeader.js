@@ -66,6 +66,7 @@ const styles = () => ({
     marginTop: '-13px',
   },
   aliases: {
+    display: 'flex',
     float: 'right',
     marginTop: '-5px',
   },
@@ -129,7 +130,7 @@ class CyioDomainObjectAssetHeader extends Component {
                 variant="contained"
                 onClick={handleDisplayEdit?.bind(this)}
                 className={classes.iconButton}
-                disabled={Boolean(!cyioDomainObject?.id)}
+                disabled={Boolean(!cyioDomainObject?.id) || disabled}
                 color="primary"
                 size="large"
               >
@@ -148,7 +149,6 @@ class CyioDomainObjectAssetHeader extends Component {
                 size="small"
                 onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
                 startIcon={<AddCircleOutline />}
-                style={{ marginTop: '-23px' }}
                 disabled={disabled || false}
                 color='primary'
               >

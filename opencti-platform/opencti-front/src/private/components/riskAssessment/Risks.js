@@ -166,7 +166,7 @@ class Risks extends Component {
     } = this.state;
     const dataColumns = {
       poam_id: {
-        label: 'Poam id',
+        label: 'POAM ID',
       },
       name: {
         label: 'Name',
@@ -207,7 +207,7 @@ class Risks extends Component {
           'created_start_date',
           'created_end_date',
           'createdBy',
-          'labelledBy',
+          'label_name',
         ]}
       >
         <QR
@@ -268,7 +268,7 @@ class Risks extends Component {
     }
     const dataColumns = {
       poam_id: {
-        label: 'Poam id',
+        label: 'POAM ID',
         width: '13%',
         isSortable: true,
       },
@@ -335,7 +335,6 @@ class Risks extends Component {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'assetTypeBy',
-          'labelledBy',
           'release_date',
           // 'markedBy',
           // 'created_start_date',
@@ -343,7 +342,7 @@ class Risks extends Component {
           'operation_System',
           // 'created_end_date',
           // 'createdBy',
-          'labelledBy',
+          'label_name',
         ]}
       >
         <QR

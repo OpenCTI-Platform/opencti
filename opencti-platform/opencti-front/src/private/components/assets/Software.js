@@ -209,7 +209,7 @@ class Software extends Component {
           'created_start_date',
           'created_end_date',
           'vendor_name_or',
-          'labels_or',
+          'label_name',
         ]}
       >
         {/* <QueryRenderer */}
@@ -316,7 +316,7 @@ class Software extends Component {
           'created_start_date',
           'created_end_date',
           'vendor_name_or',
-          'labels_or',
+          'label_name',
         ]}
       >
         {/* <QueryRenderer */}

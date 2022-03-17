@@ -41,23 +41,40 @@ node {
     }
   }
 
-  dir('opencti-platform') {
-    String buildArgs = '--no-cache --progress=plain .'
-    docker_steps(registry, product, tag, buildArgs)
-  }
+  parallel test: {
+    stage('Test') {
+      dir('opencti-worker/src') {
+        sh 'pip install --no-cache-dir -r requirements.txt'
+        sh 'pip install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master'
+      }
+      
+      dir('opencti-platform') {
+        dir('opencti-graphql') {
+          sh 'yarn test'
+        }
+        dir('opencti-front') {
+          sh 'yarn test'
+        }
+      }
+    }
+  }, build: {
+    stage('Build') {
+      dir('opencti-platform') {
+        String buildArgs = '--no-cache --progress=plain .'
+        docker_steps(registry, product, tag, buildArgs)
+      }
+    }
 
-  office365ConnectorSend(
-    status: 'Completed',
-    color: '00FF00',
-    webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
-  )
+    office365ConnectorSend(
+      status: 'Completed',
+      color: '00FF00',
+      webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
+    )
+  }
 }
 
 void docker_steps(String registry, String image, String tag, String buildArgs) {
-  def app
-  stage('Build') {
-    app = docker.build("${registry}/${image}:${tag}", "${buildArgs}")
-  }
+  def app = docker.build("${registry}/${image}:${tag}", "${buildArgs}")
 
   stage('Save') {
     sh "docker save ${registry}/${image}:${tag} | gzip > ${image}.${tag}.tar.gz"

@@ -37,6 +37,8 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
 import MarkDownField from '../../../../components/MarkDownField';
 import { dateFormat, parse } from '../../../../utils/Time';
+import EntryType from '../../common/form/EntryType';
+import RiskStatus from '../../common/form/RiskStatus';
 
 const styles = (theme) => ({
   container: {
@@ -198,20 +200,23 @@ class RiskTrackingPopover extends Component {
       handleRemove,
       handleOpenUpdate,
       node,
+      riskStatusResponse,
     } = this.props;
     const riskTrackingLoggedBy = R.pipe(
       R.pathOr([], ['logged_by']),
       R.mergeAll,
     )(node);
+    console.log('riskTrackingLoggedBy', node);
+
     const initialValues = R.pipe(
-      R.assoc('entry_type', node?.entry_type || ''),
+      R.assoc('entry_type', node?.entry_type || []),
       R.assoc('title', node?.name || ''),
       R.assoc('description', node?.description || ''),
       R.assoc('event_start', dateFormat(node?.event_start)),
       R.assoc('event_end', dateFormat(node?.event_end)),
       R.assoc('logged_by', riskTrackingLoggedBy?.name || ''),
       R.assoc('status_change', node?.status_change || ''),
-      R.assoc('related_response', node?.related_response || ''),
+      R.assoc('related_response', riskStatusResponse?.name || []),
       R.pick([
         'entry_type',
         'title',
@@ -310,7 +315,7 @@ class RiskTrackingPopover extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>{t('Risk Log')}</DialogTitle>
+                <DialogTitle>{t('Risk Log Entry')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid spacing={3} container={true}>
                     <Grid item={true} xs={6}>
@@ -330,25 +335,14 @@ class RiskTrackingPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <EntryType
                           variant='outlined'
                           name="entry_type"
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px', marginBottom: '3px' }}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -489,14 +483,20 @@ class RiskTrackingPopover extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={TextField}
-                          variant='outlined'
-                          name="related_response"
-                          size='small'
+                          component={SelectField}
+                          name="related_responses"
                           fullWidth={true}
+                          size="small"
+                          variant='outlined'
                           style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                        />
+                          containerstyle={{ width: '100%' }}
+                        >
+                          {riskStatusResponse.map((value, i) => (
+                            <MenuItem value={value.name} key={i}>
+                              {value.name}
+                            </MenuItem>
+                          ))}
+                        </Field>
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -545,25 +545,14 @@ class RiskTrackingPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <RiskStatus
                           variant='outlined'
-                          name="status_change"
+                          name="entry_type"
                           size='small'
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        />
                       </div>
                     </Grid>
                   </Grid>
@@ -680,6 +669,6 @@ RiskTrackingPopover.propTypes = {
   t: PropTypes.func,
   handleRemove: PropTypes.func,
   node: PropTypes.object,
+  riskStatusResponse: PropTypes.array,
 };
-
 export default compose(inject18n, withStyles(styles))(RiskTrackingPopover);
