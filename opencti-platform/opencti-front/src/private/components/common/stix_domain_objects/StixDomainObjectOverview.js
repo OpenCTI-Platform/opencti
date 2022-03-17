@@ -151,7 +151,7 @@ class StixDomainObjectOverview extends Component {
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
                 {stixIds.length > 0
-                  ? stixIds.map((stixId) => `${stixId}\n`)
+                  ? stixIds.slice(0, 2).map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>
             </Grid>
