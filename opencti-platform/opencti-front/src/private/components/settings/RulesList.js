@@ -166,8 +166,8 @@ class RulesListComponent extends Component {
       R.compose(R.toLower, R.prop('name')),
     );
     const filterByKeyword = (p) => keyword === ''
-      || p.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || p.user.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      || p.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || p.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     const rules = R.pipe(
       R.propOr([], 'rules'),
       R.filter(filterByKeyword),
@@ -185,6 +185,7 @@ class RulesListComponent extends Component {
           <Paper
             variant="outlined"
             classes={{ root: classes.paper }}
+            style={{ marginTop: 20 }}
           >
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={8}>
