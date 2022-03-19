@@ -553,25 +553,25 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
     expect(groupByIndices['opencti_internal_relationships-000001'].length).toEqual(14);
-    expect(groupByIndices['opencti_stix_core_relationships-000001'].length).toEqual(18);
+    expect(groupByIndices['opencti_stix_core_relationships-000001'].length).toEqual(21);
     // expect(groupByIndices['opencti_stix_meta_relationships-000001'].length).toEqual(110);
     expect(groupByIndices['opencti_stix_sighting_relationships-000001'].length).toEqual(3);
     const metas = groupByIndices['opencti_stix_meta_relationships-000001'].map((m) => m.node);
     const metaByEntityType = R.groupBy((m) => m.entity_type, metas);
-    expect(metaByEntityType.object.length).toEqual(36);
+    expect(metaByEntityType.object.length).toEqual(38);
     expect(metaByEntityType['object-label'].length).toEqual(25);
     expect(metaByEntityType['created-by'].length).toEqual(17);
     expect(metaByEntityType['external-reference'].length).toEqual(7);
     expect(metaByEntityType['object-marking'].length).toEqual(20);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
-    expect(data.edges.length).toEqual(143);
+    expect(data.edges.length).toEqual(148);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
     data = await elPaginate(ADMIN_USER, READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(143);
+    expect(data.length).toEqual(148);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
@@ -596,7 +596,7 @@ describe('Elasticsearch basic loader', () => {
     expect(data.entity_type).toEqual('Malware');
   });
   it('should relation reconstruct', async () => {
-    const data = await elLoadById(ADMIN_USER, 'relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c');
+    const data = await elLoadById(ADMIN_USER, 'relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
     expect(data).not.toBeNull();
     expect(data.fromRole).toEqual('indicates_from');
     expect(data.toRole).toEqual('indicates_to');
