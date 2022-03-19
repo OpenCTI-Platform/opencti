@@ -17,8 +17,7 @@ const logResolvers = {
     },
   },
   ContextData: {
-    references: (data, _, { user }) =>
-      Promise.all((data.references || []).map((n) => loadById(user, n, ENTITY_TYPE_EXTERNAL_REFERENCE))),
+    references: (data, _, { user }) => Promise.all((data.references || []).map((n) => loadById(user, n, ENTITY_TYPE_EXTERNAL_REFERENCE))),
   },
   LogsFilter: {
     entity_id: 'context_data.id',

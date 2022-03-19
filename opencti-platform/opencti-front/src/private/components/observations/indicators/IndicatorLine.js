@@ -1,17 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { KeyboardArrowRight } from '@mui/icons-material';
 import { ShieldSearch } from 'mdi-material-ui';
 import { compose, pathOr } from 'ramda';
-import Checkbox from '@material-ui/core/Checkbox';
-import Skeleton from '@material-ui/lab/Skeleton';
+import Checkbox from '@mui/material/Checkbox';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -207,7 +206,12 @@ class IndicatorLineDummyComponent extends Component {
           <Checkbox edge="start" disabled={true} disableRipple={true} />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Skeleton animation="wave" variant="circle" width={30} height={30} />
+          <Skeleton
+            animation="wave"
+            variant="circular"
+            width={30}
+            height={30}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -218,7 +222,7 @@ class IndicatorLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -229,7 +233,7 @@ class IndicatorLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -240,7 +244,7 @@ class IndicatorLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -251,7 +255,7 @@ class IndicatorLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -262,7 +266,7 @@ class IndicatorLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height="100%"
                 />
@@ -273,7 +277,7 @@ class IndicatorLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width={100}
                   height="100%"
                 />

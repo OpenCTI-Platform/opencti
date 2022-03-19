@@ -1,20 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import IconButton from '@material-ui/core/IconButton';
-import { TextFieldsOutlined } from '@material-ui/icons';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import Tooltip from '@material-ui/core/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import { TextFieldsOutlined } from '@mui/icons-material';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import Tooltip from '@mui/material/Tooltip';
 import { Field, Form, Formik } from 'formik';
-import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogTitle from '@mui/material/DialogTitle';
 import * as Yup from 'yup';
-import { withStyles } from '@material-ui/core/styles';
-import Slide from '@material-ui/core/Slide';
+import Slide from '@mui/material/Slide';
 import TextField from '../../../../components/TextField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -25,30 +24,6 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-
-const styles = (theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 12,
-    left: 5,
-    color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-});
 
 const freeTextUploaderGlobalMutation = graphql`
   mutation FreeTextUploaderGlobalMutation($file: Upload!) {
@@ -128,13 +103,14 @@ class FreeTextUploader extends Component {
   }
 
   render() {
-    const { t, classes, color } = this.props;
+    const { t, color } = this.props;
     return (
       <React.Fragment>
         <Tooltip title={t('Copy/paste text content')}>
           <IconButton
             onClick={this.handleOpen.bind(this)}
             color={color || 'primary'}
+            size="large"
           >
             <TextFieldsOutlined />
           </IconButton>
@@ -149,6 +125,7 @@ class FreeTextUploader extends Component {
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={this.state.open}
                 onClose={this.handleClose.bind(this)}
                 fullWidth={true}
@@ -158,6 +135,7 @@ class FreeTextUploader extends Component {
                 <DialogContent>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="content"
                     label={t('Content')}
                     fullWidth={true}
@@ -166,18 +144,13 @@ class FreeTextUploader extends Component {
                   />
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Import')}
                   </Button>
@@ -197,8 +170,4 @@ FreeTextUploader.propTypes = {
   color: PropTypes.string,
 };
 
-export default R.compose(
-  inject18n,
-  withRouter,
-  withStyles(styles, { withTheme: true }),
-)(FreeTextUploader);
+export default R.compose(inject18n, withRouter)(FreeTextUploader);

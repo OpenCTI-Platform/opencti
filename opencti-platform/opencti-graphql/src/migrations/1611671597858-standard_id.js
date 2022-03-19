@@ -2,14 +2,14 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
+import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Rewriting standard ids for Attack pattern and Course of action`);
+  logApp.info('[MIGRATION] Rewriting standard ids for Attack pattern and Course of action');
   const bulkOperations = [];
   const callback = (attacks) => {
     const op = attacks

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import Chip from '@material-ui/core/Chip';
+import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
 import { assoc, pipe } from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -25,7 +25,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -45,8 +44,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -74,7 +72,7 @@ const styles = (theme) => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.accent,
     margin: '0 10px 10px 0',
   },
 });
@@ -168,7 +166,9 @@ const RetentionCreation = (props) => {
       },
       onCompleted: (data) => {
         setVerified(true);
-        MESSAGING$.notifySuccess(t(`Retention policy will delete ${data.retentionRuleCheck} elements`));
+        MESSAGING$.notifySuccess(
+          t(`Retention policy will delete ${data.retentionRuleCheck} elements`),
+        );
       },
       onError: () => {
         setVerified(false);
@@ -211,6 +211,8 @@ const RetentionCreation = (props) => {
       <Drawer
         open={open}
         anchor="right"
+        sx={{ zIndex: 1202 }}
+        elevation={1}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
@@ -219,8 +221,10 @@ const RetentionCreation = (props) => {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
+            size="large"
+            color="primary"
           >
-            <Close fontSize="small" />
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a retention policy')}</Typography>
         </div>
@@ -231,18 +235,18 @@ const RetentionCreation = (props) => {
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({
-              submitForm, handleReset, isSubmitting, values,
-            }) => (
+            {({ submitForm, handleReset, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="max_retention"
                   label={t('Maximum retention days')}
                   fullWidth={true}
@@ -324,17 +328,17 @@ const RetentionCreation = (props) => {
                     {t('Cancel')}
                   </Button>
                   <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => handleVerify(values)}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleVerify(values)}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
                   >
                     {t('Verify')}
                   </Button>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={!verified || isSubmitting}
                     classes={{ root: classes.button }}

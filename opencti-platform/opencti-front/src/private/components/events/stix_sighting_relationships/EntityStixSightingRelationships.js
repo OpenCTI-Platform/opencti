@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Grid from '@material-ui/core/Grid';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Grid from '@mui/material/Grid';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
@@ -23,7 +23,6 @@ const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
     padding: '10px 200px 10px 205px',
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
   },
   chips: {
@@ -152,9 +151,7 @@ class EntityStixSightingRelationships extends Component {
       isTo,
       noPadding,
     } = this.props;
-    const {
-      view, searchTerm, toType, openToType, sortBy, orderAsc,
-    } = this.state;
+    const { view, searchTerm, toType, openToType, sortBy, orderAsc } = this.state;
     // Display types selection when target types are multiple
     const displayTypes = !isTo
       && (targetStixDomainObjectTypes.length > 1
@@ -178,11 +175,12 @@ class EntityStixSightingRelationships extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
+            PaperProps={{ variant: 'elevation', elevation: 1 }}
           >
             <Grid container={true} spacing={1}>
               <Grid item={true} xs="auto">
                 <Select
-                  style={{ height: 50, marginRight: 15 }}
+                  variant="standard"
                   value={toType}
                   open={openToType}
                   onClose={this.handleCloseToType.bind(this)}

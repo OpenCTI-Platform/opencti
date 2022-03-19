@@ -7,6 +7,8 @@ import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
 import { createEntity, createRelation, listThroughGetTo, loadEntity, patchAttribute } from './middleware';
 import { SYSTEM_USER } from '../utils/access';
+// eslint-disable-next-line import/extensions,import/no-unresolved
+import migrations, { filenames as migrationsFilenames } from '../migrations/*.js';
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -16,22 +18,21 @@ const normalizeMigrationName = (rawName) => {
 };
 
 const retrieveMigrations = () => {
-  const webpackMigrationsContext = require.context('../migrations', false, /.js$/);
-  return webpackMigrationsContext
-    .keys()
-    .sort()
-    .map((name) => {
-      const title = normalizeMigrationName(name);
-      const migration = webpackMigrationsContext(name);
-      const [time] = title.split('-');
-      const timestamp = parseInt(time, 10);
-      return { title, up: migration.up, down: migration.down, timestamp };
-    });
+  const knexMigrations = migrations.map((migration, i) => ({
+    name: migrationsFilenames[i].substring('../migrations/'.length),
+    migration,
+  }));
+  return knexMigrations.map(({ name, migration }) => {
+    const title = normalizeMigrationName(name);
+    const [time] = title.split('-');
+    const timestamp = parseInt(time, 10);
+    return { title, up: migration.up, down: migration.down, timestamp };
+  });
 };
 
 export const lastAvailableMigrationTime = () => {
-  const migrations = retrieveMigrations();
-  const lastMigration = R.last(migrations);
+  const allMigrations = retrieveMigrations();
+  const lastMigration = R.last(allMigrations);
   return lastMigration && lastMigration.timestamp;
 };
 
@@ -40,13 +41,13 @@ const migrationStorage = {
     // Get current status of migrations
     const migration = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
     const migrationId = migration.internal_id;
-    const migrations = await listThroughGetTo(
+    const dbMigrations = await listThroughGetTo(
       SYSTEM_USER,
       migrationId,
       RELATION_MIGRATES,
       ENTITY_TYPE_MIGRATION_REFERENCE
     );
-    logApp.info(`[MIGRATION] Read ${migrations.length} migrations from the database`);
+    logApp.info(`[MIGRATION] Read ${dbMigrations.length} migrations from the database`);
     const migrationStatus = {
       lastRun: migration.lastRun,
       internal_id: migration.internal_id,
@@ -56,7 +57,7 @@ const migrationStorage = {
           title: record.title,
           timestamp: record.timestamp,
         }),
-        migrations
+        dbMigrations
       ),
     };
     return fn(null, migrationStatus);
@@ -84,7 +85,7 @@ const migrationStorage = {
   },
 };
 
-const applyMigration = () => {
+export const applyMigration = () => {
   const set = new MigrationSet(migrationStorage);
   return new Promise((resolve, reject) => {
     migrationStorage.load((err, state) => {
@@ -103,7 +104,7 @@ const applyMigration = () => {
       if (migrationToApply.length > 0) {
         logApp.info(`[MIGRATION] ${migrationToApply.length} migrations will be executed`);
       } else {
-        logApp.info(`[MIGRATION] Platform already up to date, nothing to migrate`);
+        logApp.info('[MIGRATION] Platform already up to date, nothing to migrate');
       }
       for (let index = 0; index < migrationToApply.length; index += 1) {
         const migSet = migrationToApply[index];
@@ -132,5 +133,3 @@ const applyMigration = () => {
     logApp.info(`[MIGRATION] Platform version updated to ${PLATFORM_VERSION}`);
   });
 };
-
-export default applyMigration;

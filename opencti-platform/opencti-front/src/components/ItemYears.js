@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
+import withStyles from '@mui/styles/withStyles';
+import Chip from '@mui/material/Chip';
 
 const styles = () => ({
   chip: {
@@ -20,9 +20,7 @@ const styles = () => ({
 
 class ItemYears extends Component {
   render() {
-    const {
-      years, classes, variant, disabled,
-    } = this.props;
+    const { years, classes, variant, disabled } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     return (
       <Chip

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createPaginationContainer } from 'react-relay';
 import {
   map,
   filter,
@@ -12,16 +11,16 @@ import {
   append,
   pipe,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import { ExpandMore, CheckCircle } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import { ExpandMore, CheckCircle } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -38,9 +37,6 @@ import {
 const styles = (theme) => ({
   container: {
     padding: '20px 0 20px 0',
-  },
-  expansionPanel: {
-    backgroundColor: theme.palette.action.expansion,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -121,14 +117,11 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
   }
 
   toggleStixCoreObject(stixCoreObject) {
-    const {
-      containerId, paginationOptions, knowledgeGraph, onAdd, onDelete,
-    } = this.props;
+    const { containerId, paginationOptions, knowledgeGraph, onAdd, onDelete } = this.props;
     const { addedStixCoreObjects } = this.state;
     const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
       || containerStixCoreObjectsIds.includes(stixCoreObject.id);
-
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
@@ -165,6 +158,14 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
               this.props.paginationOptions,
             );
             ConnectionHandler.deleteNode(conn, stixCoreObject.id);
+          },
+          onCompleted: () => {
+            this.setState({
+              addedStixCoreObjects: filter(
+                (n) => n !== stixCoreObject.id,
+                this.state.addedStixCoreObjects,
+              ),
+            });
           },
         });
       }
@@ -212,6 +213,14 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             );
             ConnectionHandler.insertEdgeBefore(conn, newEdge);
           },
+          onCompleted: () => {
+            this.setState({
+              addedStixCoreObjects: append(
+                stixCoreObject.id,
+                this.state.addedStixCoreObjects,
+              ),
+            });
+          },
         });
       }
     }
@@ -234,9 +243,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, fd,
-    } = this.props;
+    const { t, classes, data, fd } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = pipe(
       map((n) => n.node),
@@ -258,7 +265,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                 stixCoreObjectsTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
-              classes={{ root: classes.expansionPanel }}
+              elevation={3}
             >
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography className={classes.heading}>

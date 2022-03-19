@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { SettingsInputComponent } from '@material-ui/icons';
-import Grid from '@material-ui/core/Grid';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import { SettingsInputComponent } from '@mui/icons-material';
+import Grid from '@mui/material/Grid';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
@@ -22,6 +22,7 @@ const styles = () => ({
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
+    overflow: 'hidden',
   },
   labelsCloud: {
     width: '100%',
@@ -125,8 +126,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
                           className={classes.label}
                           style={{
                             color,
-                            borderColor: color,
-                            backgroundColor: hexToRGB(color),
+                            backgroundColor: hexToRGB(color, 0.3),
                           }}
                         >
                           <div className={classes.labelNumber}>
@@ -182,7 +182,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
     } = this.props;
     if (variant === 'explore') {
       return (
-        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
+        <Paper classes={{ root: classes.paperExplore }} variant="outlined">
           <Typography
             variant="h4"
             gutterBottom={true}
@@ -208,10 +208,16 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
     }
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           {this.renderContent()}
         </Paper>
       </div>

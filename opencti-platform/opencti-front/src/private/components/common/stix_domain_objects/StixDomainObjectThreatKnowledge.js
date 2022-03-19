@@ -1,29 +1,29 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core/styles';
+import { graphql } from 'react-relay';
+import CircularProgress from '@mui/material/CircularProgress';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Grid';
+import withStyles from '@mui/styles/withStyles';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
 import {
   DescriptionOutlined,
   DeviceHubOutlined,
   SettingsOutlined,
-} from '@material-ui/icons';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
+} from '@mui/icons-material';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
-import Chip from '@material-ui/core/Chip';
-import IconButton from '@material-ui/core/IconButton';
-import Popover from '@material-ui/core/Popover';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Popover from '@mui/material/Popover';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -100,7 +100,7 @@ const styles = (theme) => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.accent,
     marginRight: 10,
   },
 });
@@ -226,9 +226,7 @@ class StixDomainObjectThreatKnowledge extends Component {
   }
 
   render() {
-    const {
-      viewType, filters, timeField, openTimeField, anchorEl, notes,
-    } = this.state;
+    const { viewType, filters, timeField, openTimeField, anchorEl, notes } = this.state;
     const {
       t,
       n,
@@ -291,10 +289,9 @@ class StixDomainObjectThreatKnowledge extends Component {
     return (
       <div>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
-              raised={true}
-              elevation={3}
+              variant="outlined"
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >
@@ -336,10 +333,9 @@ class StixDomainObjectThreatKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
-              raised={true}
-              elevation={3}
+              variant="outlined"
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >
@@ -392,10 +388,9 @@ class StixDomainObjectThreatKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
             <Card
-              raised={true}
-              elevation={3}
+              variant="outlined"
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >
@@ -437,15 +432,15 @@ class StixDomainObjectThreatKnowledge extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+        <Grid container={true} spacing={3} style={{ marginTop: -10 }}>
+          <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
             <StixCoreObjectReportsHorizontalBars
               stixCoreObjectId={stixDomainObjectId}
               field="created-by.internal_id"
               title={t('Distribution of sources')}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+          <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
             <StixCoreObjectStixCoreRelationshipsCloud
               stixCoreObjectId={stixDomainObjectId}
               stixCoreObjectType="Stix-Domain-Object"
@@ -478,58 +473,64 @@ class StixDomainObjectThreatKnowledge extends Component {
               handleAddFilter={this.handleAddFilter.bind(this)}
               currentFilters={filters}
               allEntityTypes={true}
-            />{' '}
-            &nbsp;&nbsp;
-            {R.map((currentFilter) => {
-              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const values = (
-                <span>
-                  {R.map(
-                    (o) => (
-                      <span key={o.value}>
-                        {o.value && o.value.length > 0
-                          ? truncate(o.value, 15)
-                          : t('No label')}{' '}
-                        {R.last(currentFilter[1]).value !== o.value && (
-                          <code>OR</code>
-                        )}{' '}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span key={label}>
-                  <Chip
-                    key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={this.handleRemoveFilter.bind(
-                      this,
-                      currentFilter[0],
-                    )}
-                  />
-                  {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
-                    <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
-                    />
-                  )}
-                </span>
-              );
-            }, R.toPairs(filters))}
+              variant=""
+            />
             <IconButton
               color="primary"
               onClick={this.handleOpenTimeField.bind(this)}
-              style={{ float: 'left', marginTop: -7 }}
+              style={{ float: 'left', marginTop: -5 }}
+              size="large"
             >
               <SettingsOutlined />
             </IconButton>
+            <div style={{ float: 'left', margin: '3px 0 0 5px' }}>
+              {R.map((currentFilter) => {
+                const label = `${truncate(
+                  t(`filter_${currentFilter[0]}`),
+                  20,
+                )}`;
+                const values = (
+                  <span>
+                    {R.map(
+                      (o) => (
+                        <span key={o.value}>
+                          {o.value && o.value.length > 0
+                            ? truncate(o.value, 15)
+                            : t('No label')}{' '}
+                          {R.last(currentFilter[1]).value !== o.value && (
+                            <code>OR</code>
+                          )}{' '}
+                        </span>
+                      ),
+                      currentFilter[1],
+                    )}
+                  </span>
+                );
+                return (
+                  <span key={label}>
+                    <Chip
+                      key={currentFilter[0]}
+                      classes={{ root: classes.filter }}
+                      label={
+                        <div>
+                          <strong>{label}</strong>: {values}
+                        </div>
+                      }
+                      onDelete={this.handleRemoveFilter.bind(
+                        this,
+                        currentFilter[0],
+                      )}
+                    />
+                    {R.last(R.toPairs(filters))[0] !== currentFilter[0] && (
+                      <Chip
+                        classes={{ root: classes.operator }}
+                        label={t('AND')}
+                      />
+                    )}
+                  </span>
+                );
+              }, R.toPairs(filters))}
+            </div>
             <Popover
               classes={{ paper: classes.container }}
               open={openTimeField}
@@ -543,10 +544,14 @@ class StixDomainObjectThreatKnowledge extends Component {
                 vertical: 'top',
                 horizontal: 'center',
               }}
+              elevation={1}
             >
               <FormControl style={{ width: '100%' }}>
-                <InputLabel id="timeField">{t('Date reference')}</InputLabel>
+                <InputLabel id="timeField" variant="standard">
+                  {t('Date reference')}
+                </InputLabel>
                 <Select
+                  variant="standard"
                   labelId="timeField"
                   value={timeField === null ? '' : timeField}
                   onChange={this.handleChangeTimeField.bind(this)}

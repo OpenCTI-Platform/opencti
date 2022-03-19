@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { ArrowForwardIosOutlined, WorkOutline } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import { ArrowForwardIosOutlined, WorkOutline } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -14,15 +14,13 @@ import Security, {
 const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -53,14 +51,14 @@ class TopMenuNote extends Component {
           to="/dashboard/analysis/notes"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <WorkOutline className={classes.icon} fontSize="small" />
           {t('Notes')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -75,7 +73,7 @@ class TopMenuNote extends Component {
           color={
             location.pathname === `/dashboard/analysis/notes/${noteId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -94,7 +92,7 @@ class TopMenuNote extends Component {
             color={
               location.pathname === `/dashboard/analysis/notes/${noteId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -113,7 +111,7 @@ class TopMenuNote extends Component {
           color={
             location.pathname === `/dashboard/analysis/notes/${noteId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

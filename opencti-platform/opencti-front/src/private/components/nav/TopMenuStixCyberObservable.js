@@ -2,24 +2,22 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import { ArrowForwardIos } from '@mui/icons-material';
 import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -50,13 +48,13 @@ class TopMenuStixCyberObservable extends Component {
           to="/dashboard/observations/observables"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <HexagonOutline className={classes.icon} fontSize="small" />
           {t('Observables')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIos color="primary" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/observations/observables/${observableId}`}
@@ -71,7 +69,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname
             === `/dashboard/observations/observables/${observableId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -93,7 +91,7 @@ class TopMenuStixCyberObservable extends Component {
               `/dashboard/observations/observables/${observableId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -115,7 +113,7 @@ class TopMenuStixCyberObservable extends Component {
               `/dashboard/observations/observables/${observableId}/containers`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -135,7 +133,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname
             === `/dashboard/observations/observables/${observableId}/sightings`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -155,7 +153,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname
             === `/dashboard/observations/observables/${observableId}/files`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -175,7 +173,7 @@ class TopMenuStixCyberObservable extends Component {
             location.pathname
             === `/dashboard/observations/observables/${observableId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

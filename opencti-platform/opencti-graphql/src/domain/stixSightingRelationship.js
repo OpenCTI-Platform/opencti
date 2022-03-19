@@ -33,7 +33,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 
 export const findAll = async (user, args) => {
@@ -142,14 +142,14 @@ export const stixSightingRelationshipDeleteRelation = async (
 // region context
 export const stixSightingRelationshipCleanContext = (user, stixSightingRelationshipId) => {
   delEditContext(user, stixSightingRelationshipId);
-  return loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
-    notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user)
-  );
+  return loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
+    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
+  });
 };
 export const stixSightingRelationshipEditContext = (user, stixSightingRelationshipId, input) => {
   setEditContext(user, stixSightingRelationshipId, input);
-  return loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
-    notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user)
-  );
+  return loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
+    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
+  });
 };
 // endregion

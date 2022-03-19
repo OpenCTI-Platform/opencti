@@ -2,17 +2,16 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardActionArea from '@material-ui/core/CardActionArea';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import Avatar from '@material-ui/core/Avatar';
+import withStyles from '@mui/styles/withStyles';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import Avatar from '@mui/material/Avatar';
 import { Fire } from 'mdi-material-ui';
-import Skeleton from '@material-ui/lab/Skeleton';
+import Skeleton from '@mui/material/Skeleton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
@@ -55,12 +54,15 @@ const styles = (theme) => ({
     paddingTop: 0,
   },
   description: {
-    height: 70,
+    height: 61,
+    display: '-webkit-box',
+    '-webkit-box-orient': 'vertical',
+    '-webkit-line-clamp': 2,
     overflow: 'hidden',
   },
   objectLabel: {
     height: 45,
-    paddingTop: 7,
+    paddingTop: 15,
   },
   contentDummy: {
     width: '100%',
@@ -87,11 +89,9 @@ const styles = (theme) => ({
 
 class IncidentCardComponent extends Component {
   render() {
-    const {
-      t, fsd, classes, node, onLabelClick,
-    } = this.props;
+    const { t, fsd, classes, node, onLabelClick } = this.props;
     return (
-      <Card classes={{ root: classes.card }} raised={true} elevation={3}>
+      <Card classes={{ root: classes.card }} variant="outlined">
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
@@ -176,7 +176,7 @@ class IncidentCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
-      <Card classes={{ root: classes.cardDummy }} raised={true} elevation={3}>
+      <Card classes={{ root: classes.cardDummy }} variant="outlined">
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}
@@ -199,19 +199,19 @@ class IncidentCardDummyComponent extends Component {
           <CardContent classes={{ root: classes.contentDummy }}>
             <Skeleton
               animation="wave"
-              variant="rect"
+              variant="rectangular"
               width="90%"
               style={{ marginBottom: 10 }}
             />
             <Skeleton
               animation="wave"
-              variant="rect"
+              variant="rectangular"
               width="95%"
               style={{ marginBottom: 10 }}
             />
             <Skeleton
               animation="wave"
-              variant="rect"
+              variant="rectangular"
               width="90%"
               style={{ marginBottom: 10 }}
             />

@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import { Add, Close } from '@material-ui/icons';
-import Skeleton from '@material-ui/lab/Skeleton';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import { Add, Close } from '@mui/icons-material';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -23,7 +23,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -37,8 +36,7 @@ const styles = (theme) => ({
     float: 'right',
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -94,12 +92,15 @@ class AddAttackPatterns extends Component {
           aria-label="Attack Pattern"
           onClick={this.handleOpen.bind(this)}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          size="large"
         >
           <Add fontSize="small" />
         </IconButton>
         <Drawer
           open={this.state.open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -108,8 +109,10 @@ class AddAttackPatterns extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
+              size="large"
+              color="primary"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
               {t('Add attack patterns')}
@@ -151,7 +154,7 @@ class AddAttackPatterns extends Component {
                         <ListItemIcon>
                           <Skeleton
                             animation="wave"
-                            variant="circle"
+                            variant="circular"
                             width={30}
                             height={30}
                           />
@@ -160,7 +163,7 @@ class AddAttackPatterns extends Component {
                           primary={
                             <Skeleton
                               animation="wave"
-                              variant="rect"
+                              variant="rectangular"
                               width="90%"
                               height={15}
                               style={{ marginBottom: 10 }}
@@ -169,7 +172,7 @@ class AddAttackPatterns extends Component {
                           secondary={
                             <Skeleton
                               animation="wave"
-                              variant="rect"
+                              variant="rectangular"
                               width="90%"
                               height={15}
                             />

@@ -11,8 +11,8 @@ import {
   append,
 } from 'ramda';
 import { Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import { LanguageOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import { LanguageOutlined } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -115,6 +115,7 @@ class ExternalReferencesField extends Component {
           name={name}
           multiple={true}
           textfieldprops={{
+            variant: 'standard',
             label: t('External references'),
             helperText: helpertext,
             onFocus: this.searchExternalReferences.bind(this),
@@ -124,13 +125,13 @@ class ExternalReferencesField extends Component {
           onInputChange={this.searchExternalReferences.bind(this)}
           openCreate={this.handleOpenExternalReferenceCreation.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon} style={{ color: option.color }}>
                 <LanguageOutlined />
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />

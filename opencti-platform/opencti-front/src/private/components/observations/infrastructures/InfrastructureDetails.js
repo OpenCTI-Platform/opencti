@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
@@ -23,15 +22,13 @@ const styles = () => ({
 
 class InfrastructureDetailsComponent extends Component {
   render() {
-    const {
-      t, fld, classes, infrastructure,
-    } = this.props;
+    const { t, fld, classes, infrastructure } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>

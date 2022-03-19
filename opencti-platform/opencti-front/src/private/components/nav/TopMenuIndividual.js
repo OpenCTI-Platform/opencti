@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { PersonOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import { PersonOutlined, ArrowForwardIosOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -14,15 +14,13 @@ import Security, {
 const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -53,14 +51,14 @@ class TopMenuIndividual extends Component {
           to="/dashboard/entities/individuals"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <PersonOutlined className={classes.icon} fontSize="small" />
           {t('Individuals')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -77,7 +75,7 @@ class TopMenuIndividual extends Component {
             location.pathname
             === `/dashboard/entities/individuals/${individualId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -99,7 +97,7 @@ class TopMenuIndividual extends Component {
               `/dashboard/entities/individuals/${individualId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -119,7 +117,7 @@ class TopMenuIndividual extends Component {
             location.pathname
             === `/dashboard/entities/individuals/${individualId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -140,7 +138,7 @@ class TopMenuIndividual extends Component {
               location.pathname
               === `/dashboard/entities/individuals/${individualId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -161,7 +159,7 @@ class TopMenuIndividual extends Component {
             location.pathname
             === `/dashboard/entities/individuals/${individualId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

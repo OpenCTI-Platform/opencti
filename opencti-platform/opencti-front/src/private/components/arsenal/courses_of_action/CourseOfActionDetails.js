@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Chip from '@material-ui/core/Chip';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import { PostOutline } from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
+import ListItemText from '@mui/material/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
 import inject18n from '../../../../components/i18n';
@@ -42,7 +41,7 @@ class CourseOfActionDetailsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>

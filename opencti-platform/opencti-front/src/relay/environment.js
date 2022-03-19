@@ -1,8 +1,4 @@
-import {
-  Environment, RecordSource, Store, Observable,
-} from 'relay-runtime';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { installRelayDevTools } from 'relay-devtools';
+import { Environment, RecordSource, Store, Observable } from 'relay-runtime';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -15,19 +11,13 @@ import {
   fetchQuery as FQ,
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
-import {
-  map, isEmpty, difference, filter, pathOr, isNil,
-} from 'ramda';
+import { map, isEmpty, difference, filter, pathOr, isNil } from 'ramda';
 import {
   urlMiddleware,
   RelayNetworkLayer,
 } from 'react-relay-network-modern/node8';
 import * as R from 'ramda';
 import uploadMiddleware from './uploadMiddleware';
-
-// Dev tools
-export const IN_DEV_MODE = process.env.NODE_ENV === 'development';
-if (IN_DEV_MODE) installRelayDevTools();
 
 // Service bus
 const MESSENGER$ = new Subject().pipe(debounce(() => timer(500)));
@@ -51,51 +41,39 @@ const isEmptyPath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
 const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
-// Subscription
+// Create Network
+let subscriptionClient;
 const loc = window.location;
 const isSecure = loc.protocol === 'https:' ? 's' : '';
-const subscriptionClient = new SubscriptionClient(
-  `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`,
-  {
-    reconnect: true,
-  },
-);
-
+const subscriptionUrl = `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`;
 const subscribeFn = (request, variables) => {
+  if (!subscriptionClient) {
+    // Lazy creation of the subscription client to connect only after auth
+    subscriptionClient = new SubscriptionClient(subscriptionUrl, {
+      reconnect: true,
+    });
+  }
   const subscribeObservable = subscriptionClient.request({
     query: request.text,
     operationName: request.name,
     variables,
   });
-  // Important: Convert subscriptions-transport-ws observable type to Relay's
   return Observable.from(subscribeObservable);
 };
-
-const network = new RelayNetworkLayer(
-  [
-    urlMiddleware({
-      url: `${APP_BASE_PATH}/graphql`,
-      credentials: 'same-origin',
-    }),
-    uploadMiddleware(),
-  ],
-  { subscribeFn },
-);
-
-const store = new Store(new RecordSource());
-// Activate the read from store then network
-// store.holdGC();
-export const environment = new Environment({
-  network,
-  store,
+const fetchMiddleware = urlMiddleware({
+  url: `${APP_BASE_PATH}/graphql`,
+  credentials: 'same-origin',
 });
+const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
+  subscribeFn,
+});
+const store = new Store(new RecordSource());
+export const environment = new Environment({ network, store });
 
 // Components
 export class QueryRenderer extends Component {
   render() {
-    const {
-      variables, query, render, managedErrorTypes,
-    } = this.props;
+    const { variables, query, render, managedErrorTypes } = this.props;
     return (
       <QR
         environment={environment}

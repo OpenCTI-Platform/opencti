@@ -1,9 +1,9 @@
 import React from 'react';
-import TextField from '@material-ui/core/TextField';
-import IconButton from '@material-ui/core/IconButton';
-import { Add } from '@material-ui/icons';
-import MUIAutocomplete from '@material-ui/lab/Autocomplete';
-import { fieldToTextField } from 'formik-material-ui';
+import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
+import { Add } from '@mui/icons-material';
+import MUIAutocomplete from '@mui/material/Autocomplete';
+import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
 
@@ -45,7 +45,8 @@ const AutocompleteField = (props) => {
         size="small"
         selectOnFocus={true}
         autoHighlight={true}
-        getOptionLabel={(option) => (option.label ? option.label : '')}
+        handleHomeEndKeys={true}
+        getOptionLabel={(option) => (option.label ? option.label : option)}
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
@@ -68,6 +69,7 @@ const AutocompleteField = (props) => {
           onClick={() => openCreate()}
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
+          size="large"
         >
           <Add />
         </IconButton>

@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCyberObservablePopover from './StixCyberObservablePopover';
 import { truncate } from '../../../../utils/String';
@@ -27,9 +26,7 @@ const styles = () => ({
 
 class StixCyberObservableHeaderComponent extends Component {
   render() {
-    const {
-      classes, variant, stixCyberObservable, isArtifact,
-    } = this.props;
+    const { classes, variant, stixCyberObservable, isArtifact } = this.props;
     return (
       <div>
         <Typography

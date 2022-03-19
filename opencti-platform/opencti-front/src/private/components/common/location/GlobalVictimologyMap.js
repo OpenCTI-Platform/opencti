@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Typography from '@material-ui/core/Typography';
-import graphql from 'babel-plugin-relay/macro';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import LocationMiniMapTargets from './LocationMiniMapTargets';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -61,15 +61,13 @@ const styles = () => ({
 
 class GlobalVictimologyMap extends Component {
   render() {
-    const {
-      t, title, startDate, endDate, dateAttribute,
-    } = this.props;
+    const { t, title, startDate, endDate, dateAttribute } = this.props;
     return (
       <div style={{ height: '100%', paddingBottom: 10 }}>
         <Typography
           variant="h4"
           gutterBottom={true}
-          style={{ marginBottom: 10 }}
+          style={{ margin: '-10px 0 10px -7px' }}
         >
           {title || t('Victimology map')}
         </Typography>

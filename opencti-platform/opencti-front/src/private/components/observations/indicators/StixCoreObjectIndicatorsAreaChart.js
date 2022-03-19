@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import {
   ResponsiveContainer,
   CartesianGrid,
@@ -11,10 +11,11 @@ import {
   Area,
   Tooltip,
 } from 'recharts';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
@@ -109,7 +110,7 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
                 >
                   <CartesianGrid
                     strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
+                    stroke={theme.palette.background.default}
                   />
                   <XAxis
                     dataKey="date"
@@ -179,16 +180,20 @@ class StixCoreObjectIndicatorsAreaChart extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('Indicators history')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

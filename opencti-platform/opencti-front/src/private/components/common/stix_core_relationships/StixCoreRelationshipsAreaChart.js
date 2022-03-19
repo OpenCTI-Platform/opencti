@@ -1,23 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  AreaChart,
-  ResponsiveContainer,
-  CartesianGrid,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from 'recharts';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import { graphql } from 'react-relay';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
-import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
+import { monthsAgo, now } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import { areaChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -80,8 +75,7 @@ class StixCoreRelationshipsAreaChart extends Component {
       t,
       toTypes,
       relationshipType,
-      md,
-      nsd,
+      fsd,
       field,
       startDate,
       endDate,
@@ -90,11 +84,6 @@ class StixCoreRelationshipsAreaChart extends Component {
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const days = numberOfDays(finalStartDate, finalEndDate);
-    let tickFormatter = md;
-    if (days <= 30) {
-      tickFormatter = nsd;
-    }
     const stixCoreRelationshipsTimeSeriesVariables = {
       toTypes,
       relationship_type: relationshipType,
@@ -112,50 +101,31 @@ class StixCoreRelationshipsAreaChart extends Component {
         variables={stixCoreRelationshipsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.stixCoreRelationshipsTimeSeries) {
+            const chartData = props.stixCoreRelationshipsTimeSeries.map(
+              (entry) => ({
+                x: new Date(entry.date),
+                y: entry.value,
+              }),
+            );
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <AreaChart
-                  data={props.stixCoreRelationshipsTimeSeries}
-                  margin={{
-                    top: 20,
-                    right: 50,
-                    bottom: 35,
-                    left: -10,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke={theme.palette.text.primary}
-                    interval={interval}
-                    angle={-45}
-                    textAnchor="end"
-                    tickFormatter={tickFormatter}
-                  />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                    labelFormatter={tickFormatter}
-                  />
-                  <YAxis stroke={theme.palette.text.primary} />
-                  <Area
-                    type="monotone"
-                    stroke={theme.palette.primary.main}
-                    dataKey="value"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <Chart
+                options={areaChartOptions(
+                  theme,
+                  true,
+                  fsd,
+                  simpleNumberFormat,
+                  undefined,
+                )}
+                series={[
+                  {
+                    name: t('Number of relationships'),
+                    data: chartData,
+                  },
+                ]}
+                type="area"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
@@ -192,9 +162,7 @@ class StixCoreRelationshipsAreaChart extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
         <Typography
@@ -206,7 +174,7 @@ class StixCoreRelationshipsAreaChart extends Component {
         {variant === 'inLine' || variant === 'inEntity' ? (
           this.renderContent()
         ) : (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         )}

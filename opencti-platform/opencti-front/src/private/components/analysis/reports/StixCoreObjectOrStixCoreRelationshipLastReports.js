@@ -2,16 +2,16 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { compose, pathOr, head } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { DescriptionOutlined } from '@material-ui/icons';
-import Skeleton from '@material-ui/lab/Skeleton';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { DescriptionOutlined } from '@mui/icons-material';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -131,7 +131,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
             ? t('Latest reports written by this entity')
             : t('Latest reports about this entity')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <QueryRenderer
             query={stixCoreObjectOrStixCoreRelationshipLastReportsQuery}
             variables={{
@@ -227,7 +227,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                       <ListItemIcon classes={{ root: classes.itemIcon }}>
                         <Skeleton
                           animation="wave"
-                          variant="circle"
+                          variant="circular"
                           width={30}
                           height={30}
                         />
@@ -236,7 +236,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                         primary={
                           <Skeleton
                             animation="wave"
-                            variant="rect"
+                            variant="rectangular"
                             width="90%"
                             height={15}
                             style={{ marginBottom: 10 }}
@@ -245,7 +245,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                         secondary={
                           <Skeleton
                             animation="wave"
-                            variant="rect"
+                            variant="rectangular"
                             width="90%"
                             height={15}
                           />

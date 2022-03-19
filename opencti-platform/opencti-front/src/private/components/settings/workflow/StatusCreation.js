@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
-import { Add } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+import { Add } from '@mui/icons-material';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import MenuItem from '@material-ui/core/MenuItem';
+import { graphql } from 'react-relay';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -23,7 +23,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -44,8 +43,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -158,6 +156,7 @@ class StatusCreation extends Component {
             <Form>
               <Dialog
                 open={this.state.open}
+                PaperProps={{ elevation: 1 }}
                 onClose={this.handleClose.bind(this)}
                 fullWidth={true}
               >
@@ -175,6 +174,7 @@ class StatusCreation extends Component {
                         return (
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="template_id"
                             label={t('Name')}
                             fullWidth={true}
@@ -196,6 +196,7 @@ class StatusCreation extends Component {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="order"
                     label={t('Order')}
                     fullWidth={true}
@@ -208,7 +209,7 @@ class StatusCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

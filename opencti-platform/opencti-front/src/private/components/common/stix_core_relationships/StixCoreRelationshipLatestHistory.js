@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipHistoryLines, {
   stixCoreObjectHistoryLinesQuery,
@@ -25,7 +25,7 @@ class StixCoreRelationshipLatestHistory extends Component {
                 values: ['create', 'update', 'merge'],
               },
             ],
-            first: 6,
+            first: 7,
             orderBy: 'timestamp',
             orderMode: 'desc',
           }}

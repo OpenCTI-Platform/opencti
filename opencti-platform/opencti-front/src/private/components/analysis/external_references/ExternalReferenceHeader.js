@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';

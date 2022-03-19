@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { BULK_TIMEOUT, el, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
+import { BULK_TIMEOUT, searchClient, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
@@ -10,7 +10,7 @@ import { SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Rewriting IDs and types of Incidents`);
+  logApp.info('[MIGRATION] Rewriting IDs and types of Incidents');
   const bulkOperations = [];
   const callback = (entities) => {
     const op = entities
@@ -45,7 +45,7 @@ export const up = async (next) => {
   logApp.info(`[MIGRATION] Rewriting IDs and types done in ${new Date() - start} ms`);
   const source = `if (ctx._source.fromType == params.type) {
       ctx._source.fromType = params.target;
-    } 
+    }
     if (ctx._source.toType == params.type) {
       ctx._source.toType = params.target;
     }
@@ -60,9 +60,9 @@ export const up = async (next) => {
       }
       connection.types = values;
   }`;
-  logApp.info(`[MIGRATION] Migrating all relationships connections`);
+  logApp.info('[MIGRATION] Migrating all relationships connections');
   const startMigrateRelationships = new Date().getTime();
-  await el
+  await searchClient()
     .updateByQuery({
       index: READ_RELATIONSHIPS_INDICES,
       refresh: true,

@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import {
-  compose, pathOr, pipe, map, union,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
@@ -114,6 +112,7 @@ class CreatedByField extends Component {
           name={name}
           disabled={disabled}
           textfieldprops={{
+            variant: 'standard',
             label: t('Author'),
             helperText: helpertext,
             onFocus: this.searchIdentities.bind(this),
@@ -123,13 +122,13 @@ class CreatedByField extends Component {
           onInputChange={this.handleSearch.bind(this)}
           openCreate={this.handleOpenIdentityCreation.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon}>
                 <ItemIcon type={option.type} />
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />

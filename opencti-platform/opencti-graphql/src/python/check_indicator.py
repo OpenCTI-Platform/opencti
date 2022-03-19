@@ -1,20 +1,15 @@
-import json
 import sys
 
 import plyara
-from lib.snortparser import *
 from parsuricata import parse_rules
 from sigma.parser.collection import SigmaCollectionParser
 from stix2patterns.validator import run_validator
 
-
-def return_data(data):
-    print(json.dumps(data))
-    sys.stdout.flush()
-    exit(0)
+from lib.snortparser import Parser
+from lib.utils import return_data
 
 
-def main():
+def main():  # pylint: disable=too-many-branches
     if len(sys.argv) <= 2:
         return_data(
             {"status": "error", "message": "Missing argument to the Python script"}
@@ -32,7 +27,7 @@ def main():
             errors = run_validator(indicator_value)
             if len(errors) == 0:
                 result = True
-        except:
+        except:  # pylint: disable=bare-except
             result = False
         return_data({"status": "success", "data": result})
 
@@ -42,7 +37,7 @@ def main():
         try:
             parser.parse_string(indicator_value)
             result = True
-        except:
+        except:  # pylint: disable=bare-except
             result = False
         return_data({"status": "success", "data": result})
 
@@ -51,25 +46,25 @@ def main():
         try:
             parser = SigmaCollectionParser(indicator_value)
             result = True
-        except:
+        except:  # pylint: disable=bare-except
             result = False
         return_data({"status": "success", "data": result})
 
     if pattern_type == "snort":
         result = False
         try:
-            parsed = Parser(indicator_value).all
+            Parser(indicator_value)
             result = True
-        except:
+        except:  # pylint: disable=bare-except
             result = False
         return_data({"status": "success", "data": result})
 
     if pattern_type == "suricata":
         result = False
         try:
-            parsed = parse_rules(indicator_value)
+            parse_rules(indicator_value)
             result = True
-        except:
+        except:  # pylint: disable=bare-except
             result = False
         return_data({"status": "success", "data": result})
 

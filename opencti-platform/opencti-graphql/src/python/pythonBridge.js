@@ -49,7 +49,7 @@ export const execPython3 = async (scriptPath, scriptName, args, stopCondition) =
     });
   } catch (err) {
     /* istanbul ignore next */
-    throw ConfigurationError(`Python3 is missing or script not found`, { detail: err.message });
+    throw ConfigurationError('Python3 is missing or script not found', { detail: err.message });
   }
 };
 

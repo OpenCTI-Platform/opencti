@@ -3,14 +3,13 @@ import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { ExpandMore, ExpandLess } from '@material-ui/icons';
-import IconButton from '@material-ui/core/IconButton';
+import { ExpandMore, ExpandLess } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import { compose } from 'ramda';
-import { withTheme } from '@material-ui/core/styles';
+import withTheme from '@mui/styles/withTheme';
 import { truncate } from '../utils/String';
 
 export const MarkDownComponents = (theme) => ({
-  // eslint-disable-next-line react/display-name
   table: ({ node, ...tableProps }) => (
     <table
       style={{
@@ -20,11 +19,9 @@ export const MarkDownComponents = (theme) => ({
       {...tableProps}
     />
   ),
-  // eslint-disable-next-line react/display-name
   tr: ({ node, ...trProps }) => (
     <tr style={{ border: `1px solid ${theme.palette.divider}` }} {...trProps} />
   ),
-  // eslint-disable-next-line react/display-name
   td: ({ node, ...tdProps }) => (
     <td
       style={{
@@ -34,7 +31,6 @@ export const MarkDownComponents = (theme) => ({
       {...tdProps}
     />
   ),
-  // eslint-disable-next-line react/display-name
   th: ({ node, ...tdProps }) => (
     <th
       style={{
@@ -58,7 +54,7 @@ const ExpandableMarkdown = (props) => {
     <div style={{ position: 'relative' }}>
       {shouldBeTruncated && (
         <div style={{ position: 'absolute', top: -32, right: 0 }}>
-          <IconButton onClick={onClick}>
+          <IconButton onClick={onClick} size="large">
             {expand ? <ExpandLess /> : <ExpandMore />}
           </IconButton>
         </div>

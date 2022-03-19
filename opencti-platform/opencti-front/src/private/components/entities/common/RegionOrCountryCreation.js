@@ -1,20 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import SpeedDial from '@material-ui/lab/SpeedDial';
-import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
-import { Close, FlagOutlined, LocalPlayOutlined } from '@material-ui/icons';
-import {
-  compose, pipe, pluck, assoc,
-} from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import { Close, FlagOutlined, LocalPlayOutlined } from '@mui/icons-material';
+import { compose, pipe, pluck, assoc } from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -27,7 +26,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -47,8 +45,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -232,6 +229,8 @@ class RegionOrCountryCreation extends Component {
         <Drawer
           open={this.state.openRegion}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseRegion.bind(this)}
         >
@@ -240,6 +239,7 @@ class RegionOrCountryCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseRegion.bind(this)}
+              size="large"
             >
               <Close fontSize="small" />
             </IconButton>
@@ -257,12 +257,11 @@ class RegionOrCountryCreation extends Component {
               onSubmit={this.onSubmitRegion.bind(this)}
               onReset={this.onResetRegion.bind(this)}
             >
-              {({
-                submitForm, handleReset, isSubmitting, setFieldValue,
-              }) => (
+              {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
@@ -297,7 +296,7 @@ class RegionOrCountryCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -313,6 +312,8 @@ class RegionOrCountryCreation extends Component {
         <Drawer
           open={this.state.openCountry}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseCountry.bind(this)}
         >
@@ -321,6 +322,7 @@ class RegionOrCountryCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleCloseCountry.bind(this)}
+              size="large"
             >
               <Close fontSize="small" />
             </IconButton>
@@ -338,12 +340,11 @@ class RegionOrCountryCreation extends Component {
               onSubmit={this.onSubmitCountry.bind(this)}
               onReset={this.onResetCountry.bind(this)}
             >
-              {({
-                submitForm, handleReset, isSubmitting, setFieldValue,
-              }) => (
+              {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
@@ -378,7 +379,7 @@ class RegionOrCountryCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}

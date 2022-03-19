@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Responsive, WidthProvider } from 'react-grid-layout';
-import { DatePicker } from '@material-ui/pickers';
-import Drawer from '@material-ui/core/Drawer';
-import Grid from '@material-ui/core/Grid';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
+import DatePicker from '@mui/lab/DatePicker';
+import Drawer from '@mui/material/Drawer';
+import Grid from '@mui/material/Grid';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import TextField from '@mui/material/TextField';
 import {
   daysAgo,
   monthsAgo,
@@ -48,17 +48,17 @@ import GlobalActivityReports from './GlobalActivityReports';
 import GlobalActivityIndicators from './GlobalActivityIndicators';
 import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
 import ThreatVulnerabilities from './ThreatVulnerabilities';
+import { fromB64, toB64 } from '../../../../utils/String';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     margin: '0 -20px 0 -20px',
   },
   bottomNav: {
     zIndex: 1000,
     padding: '7px 0 0 205px',
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 64,
     overflow: 'hidden',
@@ -69,7 +69,7 @@ const styles = (theme) => ({
     padding: 20,
     borderRadius: 6,
     display: 'relative',
-    overflow: 'auto',
+    overflow: 'hidden',
   },
 });
 
@@ -81,9 +81,7 @@ class DashboardComponent extends Component {
 
   saveManifest(manifest) {
     const { workspace } = this.props;
-    const newManifest = Buffer.from(JSON.stringify(manifest)).toString(
-      'base64',
-    );
+    const newManifest = toB64(JSON.stringify(manifest));
     if (workspace.manifest !== newManifest) {
       commitMutation({
         mutation: workspaceMutationFieldPatch,
@@ -102,9 +100,7 @@ class DashboardComponent extends Component {
     const { workspace } = this.props;
     let manifest = { widgets: {}, config: {} };
     if (workspace.manifest && workspace.manifest.length > 0) {
-      manifest = JSON.parse(
-        Buffer.from(workspace.manifest, 'base64').toString('ascii'),
-      );
+      manifest = JSON.parse(fromB64(workspace.manifest));
     }
     return manifest;
   }
@@ -487,9 +483,7 @@ class DashboardComponent extends Component {
   }
 
   render() {
-    const {
-      t, classes, workspace, noToolbar,
-    } = this.props;
+    const { t, classes, workspace, noToolbar } = this.props;
     const manifest = this.decodeManifest();
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
     let timeField = R.propOr('technical', 'timeField', manifest.config);
@@ -513,6 +507,7 @@ class DashboardComponent extends Component {
             anchor="bottom"
             variant="permanent"
             classes={{ paper: classes.bottomNav }}
+            PaperProps={{ variant: 'elevation', elevation: 1 }}
           >
             <Security
               needs={[EXPLORE_EXUPDATE]}
@@ -524,6 +519,7 @@ class DashboardComponent extends Component {
                         {t('Date reference')}
                       </InputLabel>
                       <Select
+                        variant="standard"
                         labelId="timeField"
                         value={relativeDate === null ? '' : relativeDate}
                         onChange={this.handleTimeFieldChange.bind(this)}
@@ -544,6 +540,7 @@ class DashboardComponent extends Component {
                         {t('Relative time')}
                       </InputLabel>
                       <Select
+                        variant="standard"
                         labelId="relative"
                         value={relativeDate === null ? '' : relativeDate}
                         onChange={this.handleDateChange.bind(
@@ -567,27 +564,40 @@ class DashboardComponent extends Component {
                     <DatePicker
                       value={R.propOr(null, 'startDate', manifest.config)}
                       disableToolbar={true}
-                      format="YYYY-MM-DD"
                       autoOk={true}
                       label={t('Start date')}
                       clearable={true}
                       disableFuture={true}
                       disabled={true}
                       onChange={this.handleDateChange.bind(this, 'startDate')}
-                      style={{ marginRight: 20 }}
+                      renderInput={(params) => (
+                        <TextField
+                          style={{ marginRight: 20 }}
+                          variant="standard"
+                          size="small"
+                          {...params}
+                        />
+                      )}
                     />
                   </Grid>
                   <Grid item={true} xs="auto">
                     <DatePicker
                       value={R.propOr(null, 'endDate', manifest.config)}
                       disableToolbar={true}
-                      format="YYYY-MM-DD"
                       autoOk={true}
                       label={t('End date')}
                       clearable={true}
                       disabled={true}
                       disableFuture={true}
                       onChange={this.handleDateChange.bind(this, 'endDate')}
+                      renderInput={(params) => (
+                        <TextField
+                          style={{ marginRight: 20 }}
+                          variant="standard"
+                          size="small"
+                          {...params}
+                        />
+                      )}
                     />
                   </Grid>
                 </Grid>
@@ -596,11 +606,13 @@ class DashboardComponent extends Component {
               <Grid container={true} spacing={1}>
                 <Grid item={true} xs="auto">
                   <FormControl style={{ width: 194, marginRight: 20 }}>
-                    <InputLabel id="timeField">
+                    <InputLabel id="timeField" variant="standard">
                       {t('Date reference')}
                     </InputLabel>
                     <Select
+                      variant="standard"
                       labelId="timeField"
+                      size="small"
                       value={timeField === null ? '' : timeField}
                       onChange={this.handleTimeFieldChange.bind(this)}
                     >
@@ -615,9 +627,13 @@ class DashboardComponent extends Component {
                 </Grid>
                 <Grid item={true} xs="auto">
                   <FormControl style={{ width: 194, marginRight: 20 }}>
-                    <InputLabel id="relative">{t('Relative time')}</InputLabel>
+                    <InputLabel id="relative" variant="standard">
+                      {t('Relative time')}
+                    </InputLabel>
                     <Select
+                      variant="standard"
                       labelId="relative"
+                      size="small"
                       value={relativeDate === null ? '' : relativeDate}
                       onChange={this.handleDateChange.bind(
                         this,
@@ -637,27 +653,34 @@ class DashboardComponent extends Component {
                   <DatePicker
                     value={R.propOr(null, 'startDate', manifest.config)}
                     disableToolbar={true}
-                    format="YYYY-MM-DD"
                     autoOk={true}
                     label={t('Start date')}
                     clearable={true}
                     disableFuture={true}
                     disabled={relativeDate !== null}
                     onChange={this.handleDateChange.bind(this, 'startDate')}
-                    style={{ marginRight: 20 }}
+                    renderInput={(params) => (
+                      <TextField
+                        style={{ marginRight: 20 }}
+                        variant="standard"
+                        size="small"
+                        {...params}
+                      />
+                    )}
                   />
                 </Grid>
                 <Grid item={true} xs="auto">
                   <DatePicker
                     value={R.propOr(null, 'endDate', manifest.config)}
-                    disableToolbar={true}
-                    format="YYYY-MM-DD"
                     autoOk={true}
                     label={t('End date')}
                     clearable={true}
                     disabled={relativeDate !== null}
                     disableFuture={true}
                     onChange={this.handleDateChange.bind(this, 'endDate')}
+                    renderInput={(params) => (
+                      <TextField variant="standard" size="small" {...params} />
+                    )}
                   />
                 </Grid>
               </Grid>
@@ -693,7 +716,7 @@ class DashboardComponent extends Component {
                   key={widget.id}
                   data-grid={widget.layout}
                   classes={{ root: classes.paper }}
-                  elevation={2}
+                  variant="outlined"
                 >
                   {widget.perspective === 'global'
                     && this.renderGlobalVisualization(widget, manifest.config)}
@@ -735,7 +758,7 @@ class DashboardComponent extends Component {
                 key={widget.id}
                 data-grid={widget.layout}
                 classes={{ root: classes.paper }}
-                elevation={2}
+                variant="outlined"
               >
                 {!noToolbar && (
                   <WidgetPopover

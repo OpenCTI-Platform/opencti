@@ -12,11 +12,11 @@ import {
   elIndex,
   elIndexElements,
   elIndexExists,
-  elIsAlive,
+  searchEngineInit,
   elLoadById,
   elPaginate,
   elRebuildRelation,
-} from '../../../src/database/elasticSearch';
+} from '../../../src/database/engine';
 import {
   READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
@@ -37,7 +37,7 @@ import { loadByIdWithMetaRels } from '../../../src/database/middleware';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
-    expect(elIsAlive()).resolves.toBeTruthy();
+    expect(searchEngineInit()).resolves.toBeTruthy();
     // expect(elVersion().then((v) => v.number)).resolves.toContain('7.16');
     expect(elIndexExists(READ_INDEX_INTERNAL_OBJECTS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();
@@ -406,7 +406,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(99);
+    expect(data.edges.length).toEqual(97);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -472,12 +472,12 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(93); // The 4 Default TLP Marking definitions + 1
+    expect(data.edges.length).toEqual(91);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(6); // The 4 Default TLP Marking definitions
+    expect(data.edges.length).toEqual(6);
   });
   it('should entity paginate with equality filter', async () => {
     // eq operation will use the field.keyword to do an exact field equality

@@ -1,16 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import MenuItem from '@material-ui/core/MenuItem';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import { dayStartDate, parse } from '../../../../utils/Time';
@@ -18,7 +17,6 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
-import SelectField from '../../../../components/SelectField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
@@ -27,6 +25,10 @@ import CreatedByField from '../../common/form/CreatedByField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ExternalReferencesField from '../../common/form/ExternalReferencesField';
+import ItemIcon from '../../../../components/ItemIcon';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
+import Security, { SETTINGS_SETLABELS } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -34,7 +36,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -54,8 +55,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -71,6 +71,19 @@ const styles = (theme) => ({
   },
   container: {
     padding: '10px 20px 20px 20px',
+  },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
+  autoCompleteIndicator: {
+    display: 'none',
   },
 });
 
@@ -88,7 +101,7 @@ const reportValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   confidence: Yup.number().required(t('This field is required')),
-  report_types: Yup.string().required(t('This field is required')),
+  report_types: Yup.array().required(t('This field is required')),
   description: Yup.string().nullable(),
 });
 
@@ -119,6 +132,7 @@ class ReportCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
       R.assoc('published', parse(values.published).format()),
+      R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
@@ -168,6 +182,8 @@ class ReportCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -175,8 +191,15 @@ class ReportCreation extends Component {
             query={attributesQuery}
             variables={{ key: 'report_types' }}
             render={({ props }) => {
-              if (props && props.attributes) {
-                const reportClassesEdges = props.attributes.edges;
+              if (props && props.runtimeAttributes) {
+                const reportEdges = props.runtimeAttributes.edges.map(
+                  (e) => e.node.value,
+                );
+                const elements = R.uniq([
+                  ...reportEdges,
+                  'threat-report',
+                  'internal-report',
+                ]);
                 return (
                   <div>
                     <div className={classes.header}>
@@ -184,8 +207,10 @@ class ReportCreation extends Component {
                         aria-label="Close"
                         className={classes.closeButton}
                         onClick={this.handleClose.bind(this)}
+                        size="large"
+                        color="primary"
                       >
-                        <Close fontSize="small" />
+                        <Close fontSize="small" color="primary" />
                       </IconButton>
                       <Typography variant="h6">
                         {t('Create a report')}
@@ -198,7 +223,7 @@ class ReportCreation extends Component {
                           published: dayStartDate(),
                           confidence: 15,
                           description: '',
-                          report_types: '',
+                          report_types: [],
                           createdBy: '',
                           objectMarking: [],
                           objectLabel: [],
@@ -218,6 +243,7 @@ class ReportCreation extends Component {
                           <Form style={{ margin: '20px 0 20px 0' }}>
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="name"
                               label={t('Name')}
                               fullWidth={true}
@@ -225,32 +251,81 @@ class ReportCreation extends Component {
                             <Field
                               component={DatePickerField}
                               name="published"
-                              label={t('Publication date')}
                               invalidDateMessage={t(
-                                'The value must be a date (YYYY-MM-DD)',
+                                'The value must be a date (mm/dd/yyyy)',
                               )}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
-                            />
-                            <Field
-                              component={SelectField}
-                              name="report_types"
-                              label={t('Report type')}
-                              fullWidth={true}
-                              containerstyle={{
-                                marginTop: 20,
-                                width: '100%',
+                              TextFieldProps={{
+                                label: t('Publication date'),
+                                variant: 'standard',
+                                fullWidth: true,
+                                style: { marginTop: 20 },
                               }}
+                            />
+                            <Security
+                              needs={[SETTINGS_SETLABELS]}
+                              placeholder={
+                                <Field
+                                  component={AutocompleteField}
+                                  style={{ marginTop: 20 }}
+                                  name="report_types"
+                                  multiple={true}
+                                  createLabel={t('Add')}
+                                  textfieldprops={{
+                                    variant: 'standard',
+                                    label: t('Report types'),
+                                  }}
+                                  options={elements.map((n) => ({
+                                    id: n,
+                                    value: n,
+                                    label: n,
+                                  }))}
+                                  renderOption={(optionProps, option) => (
+                                    <li {...optionProps}>
+                                      <div className={classes.icon}>
+                                        <ItemIcon type="attribute" />
+                                      </div>
+                                      <div className={classes.text}>
+                                        {option.label}
+                                      </div>
+                                    </li>
+                                  )}
+                                  classes={{
+                                    clearIndicator:
+                                      classes.autoCompleteIndicator,
+                                  }}
+                                />
+                              }
                             >
-                              {reportClassesEdges.map((reportClassEdge) => (
-                                <MenuItem
-                                  key={reportClassEdge.node.id}
-                                  value={reportClassEdge.node.value}
-                                >
-                                  {reportClassEdge.node.value}
-                                </MenuItem>
-                              ))}
-                            </Field>
+                              <Field
+                                component={AutocompleteFreeSoloField}
+                                style={{ marginTop: 20 }}
+                                name="report_types"
+                                multiple={true}
+                                createLabel={t('Add')}
+                                textfieldprops={{
+                                  variant: 'standard',
+                                  label: t('Report types'),
+                                }}
+                                options={elements.map((n) => ({
+                                  id: n,
+                                  value: n,
+                                  label: n,
+                                }))}
+                                renderOption={(optionProps, option) => (
+                                  <li {...optionProps}>
+                                    <div className={classes.icon}>
+                                      <ItemIcon type="attribute" />
+                                    </div>
+                                    <div className={classes.text}>
+                                      {option.label}
+                                    </div>
+                                  </li>
+                                )}
+                                classes={{
+                                  clearIndicator: classes.autoCompleteIndicator,
+                                }}
+                              />
+                            </Security>
                             <ConfidenceField
                               name="confidence"
                               label={t('Confidence')}
@@ -298,7 +373,7 @@ class ReportCreation extends Component {
                               </Button>
                               <Button
                                 variant="contained"
-                                color="primary"
+                                color="secondary"
                                 onClick={submitForm}
                                 disabled={isSubmitting}
                                 classes={{ root: classes.button }}

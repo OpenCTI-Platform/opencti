@@ -41,10 +41,8 @@ const workspaceResolvers = {
       contextClean: () => workspaceCleanContext(user, id),
       relationAdd: ({ input }) => workspaceAddRelation(user, id, input),
       relationsAdd: ({ input }) => workspaceAddRelations(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        workspaceDeleteRelation(user, id, toId, relationshipType),
-      relationsDelete: ({ toIds, relationship_type: relationshipType }) =>
-        workspaceDeleteRelations(user, id, toIds, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => workspaceDeleteRelation(user, id, toId, relationshipType),
+      relationsDelete: ({ toIds, relationship_type: relationshipType }) => workspaceDeleteRelations(user, id, toIds, relationshipType),
     }),
     workspaceAdd: (_, { input }, { user }) => addWorkspace(user, input),
   },

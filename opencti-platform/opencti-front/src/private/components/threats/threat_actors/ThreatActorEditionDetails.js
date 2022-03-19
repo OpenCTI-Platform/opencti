@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
+import withStyles from '@mui/styles/withStyles';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -24,7 +23,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -168,9 +166,7 @@ class ThreatActorEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, threatActor, context, enableReferences,
-    } = this.props;
+    const { t, threatActor, context, enableReferences } = this.props;
     const initialValues = R.pipe(
       R.assoc('first_seen', dateFormat(threatActor.first_seen)),
       R.assoc('last_seen', dateFormat(threatActor.last_seen)),
@@ -219,40 +215,47 @@ class ThreatActorEditionDetailsComponent extends Component {
                 <Field
                   component={DatePickerField}
                   name="first_seen"
-                  label={t('First seen')}
                   invalidDateMessage={t(
-                    'The value must be a date (YYYY-MM-DD)',
+                    'The value must be a date (mm/dd/yyyy)',
                   )}
-                  fullWidth={true}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="first_seen"
-                    />
-                  }
+                  TextFieldProps={{
+                    label: t('First seen'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    helperText: (
+                      <SubscriptionFocus
+                        context={context}
+                        fieldName="first_seen"
+                      />
+                    ),
+                  }}
                 />
                 <Field
                   component={DatePickerField}
                   name="last_seen"
-                  label={t('Last seen')}
                   invalidDateMessage={t(
-                    'The value must be a date (YYYY-MM-DD)',
+                    'The value must be a date (mm/dd/yyyy)',
                   )}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="last_seen"
-                    />
-                  }
+                  TextFieldProps={{
+                    label: t('Last seen'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                    helperText: (
+                      <SubscriptionFocus
+                        context={context}
+                        fieldName="last_seen"
+                      />
+                    ),
+                  }}
                 />
                 <Field
                   component={SelectField}
+                  variant="standard"
                   name="sophistication"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -334,6 +337,7 @@ class ThreatActorEditionDetailsComponent extends Component {
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="goals"
                   label={t('Goals (1 / line)')}
                   fullWidth={true}

@@ -1,11 +1,10 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { compose, pathOr, propOr } from 'ramda';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixObjectsOrStixRelationshipsLines, {
@@ -44,7 +43,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
     },
     name: {
       label: 'Name',
-      width: '45%',
+      width: '35%',
       isSortable: true,
     },
     created_at: {
@@ -65,7 +64,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <ContainerAddStixCoreObjects
           containerId={propOr(null, 'id', container)}
-          containerObjects={pathOr([], ['objects', 'edges'], container)}
+          containerStixCoreObjects={pathOr([], ['objects', 'edges'], container)}
           paginationOptions={paginationOptions}
           simple={true}
           targetStixCoreObjectTypes={[
@@ -75,22 +74,33 @@ const ContainerStixObjectsOrStixRelationshipsComponent = ({
         />
       </Security>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} elevation={2}>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
         <ListLines
           dataColumns={dataColumns}
           secondaryAction={true}
           noHeaders={true}
+          noTopMargin={true}
         >
           <QueryRenderer
             query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
             variables={{ id: container.id, count: 25 }}
-            render={({ props }) => (
-              <ContainerStixObjectsOrStixRelationshipsLines
-                container={props ? props.container : null}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-              />
-            )}
+            render={({ props }) => {
+              if (
+                props
+                && props.container
+                && props.container.objects
+                && props.container.objects.edges.length === 0
+              ) {
+                return <div />;
+              }
+              return (
+                <ContainerStixObjectsOrStixRelationshipsLines
+                  container={props ? props.container : null}
+                  dataColumns={dataColumns}
+                  initialLoading={props === null}
+                />
+              );
+            }}
           />
         </ListLines>
       </Paper>
@@ -113,6 +123,15 @@ const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
     container: graphql`
       fragment ContainerStixObjectsOrStixRelationships_container on Container {
         id
+        objects {
+          edges {
+            node {
+              ... on BasicObject {
+                id
+              }
+            }
+          }
+        }
         ...ContainerHeader_container
       }
     `,

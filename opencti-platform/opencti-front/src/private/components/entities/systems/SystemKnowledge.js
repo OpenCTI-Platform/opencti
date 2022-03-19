@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
@@ -25,9 +24,7 @@ const styles = () => ({
 
 class SystemKnowledgeComponent extends Component {
   render() {
-    const {
-      classes, system, viewAs, onViewAs,
-    } = this.props;
+    const { classes, system, viewAs, onViewAs } = this.props;
     const link = `/dashboard/entities/systems/${system.id}/knowledge`;
     return (
       <div

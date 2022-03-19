@@ -1,25 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr, filter } from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Paper from '@material-ui/core/Paper';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Slide from '@material-ui/core/Slide';
+import { graphql, createRefetchContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import LinearProgress from '@mui/material/LinearProgress';
+import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import { Delete } from 'mdi-material-ui';
 import TaskStatus from '../../../../components/TaskStatus';
@@ -144,16 +143,14 @@ class ConnectorWorksComponent extends Component {
   }
 
   render() {
-    const {
-      classes, data, t, nsdt,
-    } = this.props;
+    const { classes, data, t, nsdt } = this.props;
     const works = pathOr([], ['works', 'edges'], data);
     return (
       <div>
         {works.length === 0 && (
           <Paper
             classes={{ root: classes.paper }}
-            elevation={2}
+            variant="outlined"
             style={{ marginBottom: 20 }}
           >
             <div
@@ -186,7 +183,7 @@ class ConnectorWorksComponent extends Component {
             <Paper
               key={work.id}
               classes={{ root: classes.paper }}
-              elevation={2}
+              variant="outlined"
               style={{ marginBottom: 20 }}
             >
               <Grid container={true} spacing={3}>
@@ -256,13 +253,16 @@ class ConnectorWorksComponent extends Component {
                         classes={{ root: classes.progress }}
                         variant="determinate"
                         value={
-                          tracking?.import_expected_number === 0
-                            ? 0
-                            : Math.round(
-                              (tracking?.import_processed_number
-                                  / tracking?.import_expected_number)
-                                  * 100,
-                            )
+                          // eslint-disable-next-line no-nested-ternary
+                          tracking
+                            ? tracking.import_expected_number === 0
+                              ? 0
+                              : Math.round(
+                                (tracking.import_processed_number
+                                    / tracking.import_expected_number)
+                                    * 100,
+                              )
+                            : 0
                         }
                       />
                     </Grid>
@@ -291,6 +291,7 @@ class ConnectorWorksComponent extends Component {
           );
         })}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayMessages}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -329,6 +330,7 @@ class ConnectorWorksComponent extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayErrors}
           keepMounted={true}
           TransitionComponent={Transition}

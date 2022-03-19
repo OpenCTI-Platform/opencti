@@ -1,22 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, pipe, map, assoc,
-} from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import Timeline from '@material-ui/lab/Timeline';
-import TimelineItem from '@material-ui/lab/TimelineItem';
-import TimelineSeparator from '@material-ui/lab/TimelineSeparator';
-import TimelineConnector from '@material-ui/lab/TimelineConnector';
-import TimelineContent from '@material-ui/lab/TimelineContent';
-import TimelineOppositeContent from '@material-ui/lab/TimelineOppositeContent';
-import TimelineDot from '@material-ui/lab/TimelineDot';
-import { createRefetchContainer } from 'react-relay';
+import { compose, pipe, map, assoc } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Timeline from '@mui/lab/Timeline';
+import TimelineItem from '@mui/lab/TimelineItem';
+import TimelineSeparator from '@mui/lab/TimelineSeparator';
+import TimelineConnector from '@mui/lab/TimelineConnector';
+import TimelineContent from '@mui/lab/TimelineContent';
+import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
+import TimelineDot from '@mui/lab/TimelineDot';
+import { graphql, createRefetchContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
-import Slide from '@material-ui/core/Slide';
+import Slide from '@mui/material/Slide';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
@@ -42,9 +39,7 @@ const styles = (theme) => ({
 
 class StixDomainObjectTimelineComponent extends Component {
   render() {
-    const {
-      md, classes, data, stixDomainObjectId, entityLink, timeField,
-    } = this.props;
+    const { md, classes, data, stixDomainObjectId, entityLink, timeField } = this.props;
     const stixRelationships = pipe(
       map((n) => n.node),
       map((n) => (n.from.id === stixDomainObjectId
@@ -54,7 +49,7 @@ class StixDomainObjectTimelineComponent extends Component {
     return (
       <div style={{ marginBottom: 90 }}>
         <div id="container">
-          <Timeline align="alternate">
+          <Timeline position="alternate">
             {stixRelationships.map((stixRelationship) => {
               const link = `${entityLink}/relations/${stixRelationship.id}`;
               return (
@@ -81,7 +76,7 @@ class StixDomainObjectTimelineComponent extends Component {
                     <TimelineConnector />
                   </TimelineSeparator>
                   <TimelineContent>
-                    <Paper elevation={3} className={classes.paper}>
+                    <Paper variant="outlined" className={classes.paper}>
                       <Typography variant="h2">
                         {defaultValue(stixRelationship.targetEntity)}
                       </Typography>

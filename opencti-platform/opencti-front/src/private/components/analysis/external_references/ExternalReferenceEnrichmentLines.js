@@ -1,24 +1,23 @@
 import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
+import { graphql, createRefetchContainer } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import {
   CheckCircle,
   Delete,
   Extension,
   Refresh,
   Warning,
-} from '@material-ui/icons';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { withStyles } from '@material-ui/core';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import List from '@material-ui/core/List';
+} from '@mui/icons-material';
+import CircularProgress from '@mui/material/CircularProgress';
+import withStyles from '@mui/styles/withStyles';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -93,9 +92,7 @@ const styles = (theme) => ({
 });
 
 const ExternalReferenceEnrichment = (props) => {
-  const {
-    externalReference, connectorsForImport, relay, classes, t, nsdt,
-  } = props;
+  const { externalReference, connectorsForImport, relay, classes, t, nsdt } = props;
   const { id } = externalReference;
   const file = externalReference.importFiles
     && externalReference.importFiles.edges.length > 0
@@ -195,6 +192,7 @@ const ExternalReferenceEnrichment = (props) => {
                           ? askJob(connector.id)
                           : askEnrich(connector.id))
                         }
+                        size="large"
                       >
                         <Refresh />
                       </IconButton>
@@ -263,7 +261,10 @@ const ExternalReferenceEnrichment = (props) => {
                         </ListItemIcon>
                         <ListItemText primary={nsdt(work.timestamp)} />
                         <ListItemSecondaryAction style={{ right: 0 }}>
-                          <IconButton onClick={() => deleteWork(work.id)}>
+                          <IconButton
+                            onClick={() => deleteWork(work.id)}
+                            size="large"
+                          >
                             <Delete />
                           </IconButton>
                         </ListItemSecondaryAction>

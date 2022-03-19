@@ -1,13 +1,12 @@
 import * as R from 'ramda';
-import { BYPASS, ROLE_ADMINISTRATOR } from '../utils/access';
 import { UnsupportedError } from '../config/errors';
 import { shortHash, isInternalId } from '../schema/schemaUtils';
 import { RULE_PREFIX } from '../schema/general';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
+import { BYPASS, ROLE_ADMINISTRATOR } from '../utils/access';
 
-// region declarations
-export const RULES_DECLARATION = [];
+// region definition
 export const RULES_ATTRIBUTES_BEHAVIOR = {
   OPERATIONS: { MIN: 'MIN', MAX: 'MAX', AVG: 'AVG', SUM: 'SUM', AGG: 'AGG' },
   _attributes: {
@@ -18,8 +17,8 @@ export const RULES_ATTRIBUTES_BEHAVIOR = {
     confidence: 'AVG',
     objectMarking: 'AGG',
   },
-  register(rule, attribute, operation) {
-    const meta = { rule, attribute, operation };
+  register({ ruleId, attribute, operation }) {
+    const meta = { ruleId, attribute, operation };
     if (isEmptyField(this.OPERATIONS[operation])) {
       throw UnsupportedError('Try to register an unsupported operation', meta);
     }
@@ -36,7 +35,6 @@ export const RULES_ATTRIBUTES_BEHAVIOR = {
     return Object.keys(this._attributes);
   },
 };
-
 const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 export const RULE_MANAGER_USER = {
   id: RULE_MANAGER_USER_UUID,

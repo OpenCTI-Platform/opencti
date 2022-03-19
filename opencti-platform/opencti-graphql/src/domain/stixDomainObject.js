@@ -9,13 +9,13 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   internalLoadById,
-  listEntities,
   listThroughGetTo,
   loadById,
   timeSeriesEntities,
   updateAttribute,
 } from '../database/middleware';
-import { elCount } from '../database/elasticSearch';
+import { listEntities } from '../database/repository';
+import { elCount } from '../database/engine';
 import { upload } from '../database/minio';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -36,7 +36,6 @@ import {
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
-import { addAttribute, find as findAttribute } from './attribute';
 import { escape } from '../utils/format';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 
@@ -51,8 +50,7 @@ export const findAll = async (user, args) => {
   return listEntities(user, types, args);
 };
 
-export const findById = async (user, stixDomainObjectId) =>
-  loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+export const findById = async (user, stixDomainObjectId) => loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
 
 // region time series
 export const reportsTimeSeries = (user, stixDomainObjectId, args) => {
@@ -180,9 +178,7 @@ export const stixDomainObjectAddRelations = async (user, stixDomainObjectId, inp
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((entity) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, entity, user)
-  );
+  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, entity, user));
 };
 
 export const stixDomainObjectDeleteRelation = async (user, stixDomainObjectId, toId, relationshipType) => {
@@ -202,17 +198,6 @@ export const stixDomainObjectEditField = async (user, stixObjectId, input, opts 
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
   }
-  if (input.key === 'report_types') {
-    await Promise.all(
-      input.value.map(async (reportType) => {
-        const currentAttribute = await findAttribute(user, 'report_types', reportType);
-        if (!currentAttribute) {
-          await addAttribute(user, { key: 'report_types', value: reportType });
-        }
-        return true;
-      })
-    );
-  }
   const { element: updatedElem } = await updateAttribute(user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
     const observables = await listThroughGetTo(user, [stixObjectId], RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -226,15 +211,15 @@ export const stixDomainObjectEditField = async (user, stixObjectId, input, opts 
 // region context
 export const stixDomainObjectCleanContext = async (user, stixDomainObjectId) => {
   await delEditContext(user, stixDomainObjectId);
-  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user)
-  );
+  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user);
+  });
 };
 
 export const stixDomainObjectEditContext = async (user, stixDomainObjectId, input) => {
   await setEditContext(user, stixDomainObjectId, input);
-  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user)
-  );
+  return loadById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user);
+  });
 };
 // endregion

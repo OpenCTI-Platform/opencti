@@ -11,7 +11,6 @@ export const ENTITY_TYPE_RULE = 'Rule';
 export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
-export const ENTITY_TYPE_ATTRIBUTE = 'Attribute';
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_TASK = 'Task';
@@ -50,7 +49,6 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_RULE_MANAGER,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
-  ENTITY_TYPE_ATTRIBUTE,
   ENTITY_TYPE_WORKSPACE,
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
@@ -67,12 +65,20 @@ export const internalObjectsAttributes = {
     'platform_title',
     'platform_email',
     'platform_theme',
+    'platform_theme_dark_background',
+    'platform_theme_dark_paper',
+    'platform_theme_dark_nav',
     'platform_theme_dark_primary',
     'platform_theme_dark_secondary',
+    'platform_theme_dark_accent',
     'platform_theme_dark_logo',
     'platform_theme_dark_logo_login',
+    'platform_theme_light_background',
+    'platform_theme_light_paper',
+    'platform_theme_light_nav',
     'platform_theme_light_primary',
     'platform_theme_light_secondary',
+    'platform_theme_light_accent',
     'platform_theme_light_logo',
     'platform_theme_light_logo_login',
     'platform_language',
@@ -169,7 +175,6 @@ export const internalObjectsAttributes = {
     'i_created_at_year',
     'updated_at',
   ],
-  [ENTITY_TYPE_ATTRIBUTE]: ['internal_id', 'standard_id', 'entity_type', 'key', 'value'],
   [ENTITY_TYPE_WORKSPACE]: [
     'internal_id',
     'standard_id',

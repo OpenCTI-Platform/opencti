@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, prop, uniqBy } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
 import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
 
@@ -45,7 +45,7 @@ class StixDomainObjectVictimologyRegionsMap extends Component {
       .filter((n) => n.to.entity_type === 'City')
       .map((e) => e.to);
     return (
-      <Paper classes={{ root: classes.paper }} elevation={2}>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
         <LocationMiniMapTargets
           center={[48.8566969, 2.3514616]}
           zoom={2.5}

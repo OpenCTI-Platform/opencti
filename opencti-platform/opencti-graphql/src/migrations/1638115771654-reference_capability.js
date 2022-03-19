@@ -1,4 +1,5 @@
-import { BYPASS_REFERENCE, createCapabilities } from '../initialization';
+import { createCapabilities } from '../initialization';
+import { BYPASS_REFERENCE } from '../utils/access';
 
 export const up = async (next) => {
   // Create labels capabilities

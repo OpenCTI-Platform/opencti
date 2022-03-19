@@ -2,7 +2,7 @@
 import platformInit from '../../../src/initialization';
 import { FIVE_MINUTES, PYTHON_PATH, API_TOKEN, API_URI } from '../../utils/testQuery';
 import { execPython3 } from '../../../src/python/pythonBridge';
-import { shutdownModules, startModules } from "../../../src/modules";
+import { shutdownModules, startModules } from '../../../src/modules';
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, '/tests/data/poisonivy.json'];

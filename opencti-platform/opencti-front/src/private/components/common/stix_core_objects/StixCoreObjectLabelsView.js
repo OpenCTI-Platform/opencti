@@ -13,18 +13,18 @@ import {
   prop,
 } from 'ramda';
 import { Form, Formik, Field } from 'formik';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Chip from '@material-ui/core/Chip';
-import IconButton from '@material-ui/core/IconButton';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
-import { Add, CancelOutlined } from '@material-ui/icons';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
+import { Add, CancelOutlined } from '@mui/icons-material';
 import { Label } from 'mdi-material-ui';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -116,9 +116,7 @@ const stixCoreObjectMutationRelationDelete = graphql`
 `;
 
 const StixCoreObjectLabelsView = (props) => {
-  const {
-    classes, labels, t, marginTop,
-  } = props;
+  const { classes, labels, t, marginTop } = props;
   const { me } = useContext(UserContext);
   const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
   const [openAdd, setOpenAdd] = useState(false);
@@ -203,6 +201,7 @@ const StixCoreObjectLabelsView = (props) => {
           aria-label="Label"
           onClick={handleOpenAdd}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+          size="large"
         >
           <Add fontSize="small" />
         </IconButton>
@@ -240,10 +239,9 @@ const StixCoreObjectLabelsView = (props) => {
         onSubmit={onSubmit}
         onReset={onReset}
       >
-        {({
-          submitForm, handleReset, isSubmitting, setFieldValue, values,
-        }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Dialog
+            PaperProps={{ elevation: 1 }}
             open={openAdd}
             TransitionComponent={Transition}
             onClose={handleCloseAdd}
@@ -257,6 +255,7 @@ const StixCoreObjectLabelsView = (props) => {
                   name="new_labels"
                   multiple={true}
                   textfieldprops={{
+                    variant: 'standard',
                     label: t('Labels'),
                     onFocus: searchLabels,
                   }}
@@ -264,8 +263,8 @@ const StixCoreObjectLabelsView = (props) => {
                   options={stateLabels}
                   onInputChange={searchLabels}
                   openCreate={isLabelManager ? handleOpenCreate : null}
-                  renderOption={(option) => (
-                    <React.Fragment>
+                  renderOption={(optionsProps, option) => (
+                    <li {...optionsProps}>
                       <div
                         className={classes.icon}
                         style={{ color: option.color }}
@@ -273,7 +272,7 @@ const StixCoreObjectLabelsView = (props) => {
                         <Label />
                       </div>
                       <div className={classes.text}>{option.label}</div>
-                    </React.Fragment>
+                    </li>
                   )}
                   classes={{ clearIndicator: classes.autoCompleteIndicator }}
                 />

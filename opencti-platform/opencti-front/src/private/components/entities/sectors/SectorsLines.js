@@ -13,10 +13,9 @@ import {
   join,
   assoc,
 } from 'ramda';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core';
-import List from '@material-ui/core/List';
+import { graphql, createPaginationContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
 import { SectorLine, SectorLineDummy } from './SectorLine';
 import inject18n from '../../../../components/i18n';
 

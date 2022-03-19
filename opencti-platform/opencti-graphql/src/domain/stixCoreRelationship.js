@@ -12,7 +12,7 @@ import {
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
@@ -41,8 +41,9 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 
-export const findAll = async (user, args) =>
-  listRelations(user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
+export const findAll = async (user, args) => {
+  return listRelations(user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
+};
 
 export const findById = (user, stixCoreRelationshipId) => {
   return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
@@ -184,15 +185,15 @@ export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelations
 // region context
 export const stixCoreRelationshipCleanContext = (user, stixCoreRelationshipId) => {
   delEditContext(user, stixCoreRelationshipId);
-  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user)
-  );
+  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
+  });
 };
 
 export const stixCoreRelationshipEditContext = (user, stixCoreRelationshipId, input) => {
   setEditContext(user, stixCoreRelationshipId, input);
-  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user)
-  );
+  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
+  });
 };
 // endregion

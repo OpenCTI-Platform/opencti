@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { CampaignLine, CampaignLineDummy } from './CampaignLine';
@@ -20,9 +19,7 @@ class CampaignsLines extends Component {
   }
 
   render() {
-    const {
-      initialLoading, dataColumns, relay, onLabelClick,
-    } = this.props;
+    const { initialLoading, dataColumns, relay, onLabelClick } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}

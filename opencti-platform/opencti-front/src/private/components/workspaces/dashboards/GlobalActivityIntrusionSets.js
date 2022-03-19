@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
 import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
@@ -18,9 +18,7 @@ const styles = () => ({
 
 class GlobalActivityIntrusionSets extends Component {
   render() {
-    const {
-      t, widget, startDate, endDate, timeField,
-    } = this.props;
+    const { t, widget, startDate, endDate, timeField } = this.props;
     let dateAttribute = 'created_at';
     if (timeField === 'functional') {
       dateAttribute = 'start_time';

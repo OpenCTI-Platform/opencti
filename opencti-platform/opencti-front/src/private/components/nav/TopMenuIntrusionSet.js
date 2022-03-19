@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import { ArrowForwardIos } from '@mui/icons-material';
 import { DiamondOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
@@ -15,15 +15,13 @@ import Security, {
 const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -54,13 +52,13 @@ class TopMenuIntrusionSet extends Component {
           to="/dashboard/threats/intrusion_sets"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <DiamondOutline className={classes.icon} fontSize="small" />
           {t('Intrusion sets')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIos color="primary" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
           to={`/dashboard/threats/intrusion_sets/${intrusionSetId}`}
@@ -75,7 +73,7 @@ class TopMenuIntrusionSet extends Component {
             location.pathname
             === `/dashboard/threats/intrusion_sets/${intrusionSetId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -97,7 +95,7 @@ class TopMenuIntrusionSet extends Component {
               `/dashboard/threats/intrusion_sets/${intrusionSetId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -117,7 +115,7 @@ class TopMenuIntrusionSet extends Component {
             location.pathname
             === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -139,7 +137,7 @@ class TopMenuIntrusionSet extends Component {
               `/dashboard/threats/intrusion_sets/${intrusionSetId}/indicators`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -160,7 +158,7 @@ class TopMenuIntrusionSet extends Component {
               location.pathname
               === `/dashboard/threats/intrusion_sets/${intrusionSetId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -181,7 +179,7 @@ class TopMenuIntrusionSet extends Component {
             location.pathname
             === `/dashboard/threats/intrusion_sets/${intrusionSetId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip';
-import Button from '@material-ui/core/Button';
-import Chip from '@material-ui/core/Chip';
+import Tooltip from '@mui/material/Tooltip';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemCreator from '../../../../components/ItemCreator';
@@ -26,8 +26,8 @@ const styles = (theme) => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: theme.palette.background.chip,
-    color: '#ffffff',
+    backgroundColor: theme.palette.background.accent,
+    color: theme.palette.text.primary,
     textTransform: 'uppercase',
     borderRadius: '0',
   },
@@ -35,16 +35,14 @@ const styles = (theme) => ({
 
 class StixCyberObservableOverview extends Component {
   render() {
-    const {
-      t, fldt, classes, stixCyberObservable,
-    } = this.props;
+    const { t, fldt, classes, stixCyberObservable } = this.props;
     const stixIds = stixCyberObservable.x_opencti_stix_ids || [];
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t('Basic information')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
               <Typography

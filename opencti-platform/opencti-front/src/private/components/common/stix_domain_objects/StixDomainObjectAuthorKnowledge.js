@@ -1,30 +1,25 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import Grid from '@material-ui/core/Grid';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
+import { graphql } from 'react-relay';
+import CircularProgress from '@mui/material/CircularProgress';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Grid';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now, yearsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import Loader from '../../../../components/Loader';
+import { areaChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = (theme) => ({
   card: {
@@ -121,16 +116,13 @@ const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
 
 class StixDomainObjectAuthorKnowledge extends Component {
   render() {
-    const {
-      t, fsd, mtd, n, classes, stixDomainObjectId, theme,
-    } = this.props;
+    const { t, fsd, n, classes, stixDomainObjectId, theme } = this.props;
     return (
       <div>
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={4}>
             <Card
-              raised={true}
-              elevation={3}
+              variant="outlined"
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >
@@ -171,8 +163,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
           </Grid>
           <Grid item={true} xs={4}>
             <Card
-              raised={true}
-              elevation={3}
+              variant="outlined"
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >
@@ -216,8 +207,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
           </Grid>
           <Grid item={true} xs={4}>
             <Card
-              raised={true}
-              elevation={3}
+              variant="outlined"
               classes={{ root: classes.card }}
               style={{ height: 120 }}
             >
@@ -263,7 +253,7 @@ class StixDomainObjectAuthorKnowledge extends Component {
             </Typography>
             <Paper
               classes={{ root: classes.paper }}
-              elevation={2}
+              variant="outlined"
               style={{ height: 300 }}
             >
               <QueryRenderer
@@ -280,54 +270,31 @@ class StixDomainObjectAuthorKnowledge extends Component {
                 }}
                 render={({ props }) => {
                   if (props && props.stixDomainObjectsTimeSeries) {
+                    const chartData = props.stixDomainObjectsTimeSeries.map(
+                      (entry) => ({
+                        x: new Date(entry.date),
+                        y: entry.value,
+                      }),
+                    );
                     return (
-                      <div className={classes.graphContainer}>
-                        <ResponsiveContainer height={270} width="100%">
-                          <AreaChart
-                            data={props.stixDomainObjectsTimeSeries}
-                            margin={{
-                              top: 0,
-                              right: 0,
-                              bottom: 0,
-                              left: -10,
-                            }}
-                          >
-                            <CartesianGrid
-                              strokeDasharray="2 2"
-                              stroke={theme.palette.action.grid}
-                            />
-                            <XAxis
-                              dataKey="date"
-                              stroke={theme.palette.text.primary}
-                              interval={0}
-                              textAnchor="end"
-                              tickFormatter={mtd}
-                            />
-                            <YAxis stroke={theme.palette.text.primary} />
-                            <Tooltip
-                              cursor={{
-                                fill: 'rgba(0, 0, 0, 0.2)',
-                                stroke: 'rgba(0, 0, 0, 0.2)',
-                                strokeWidth: 2,
-                              }}
-                              contentStyle={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                fontSize: 12,
-                                borderRadius: 10,
-                              }}
-                              labelFormatter={fsd}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="value"
-                              stroke={theme.palette.primary.main}
-                              strokeWidth={2}
-                              fill={theme.palette.primary.main}
-                              fillOpacity={0.1}
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
+                      <Chart
+                        options={areaChartOptions(
+                          theme,
+                          true,
+                          fsd,
+                          simpleNumberFormat,
+                          undefined,
+                        )}
+                        series={[
+                          {
+                            name: t('Number of reports'),
+                            data: chartData,
+                          },
+                        ]}
+                        type="area"
+                        width="100%"
+                        height="100%"
+                      />
                     );
                   }
                   return <Loader variant="inElement" />;

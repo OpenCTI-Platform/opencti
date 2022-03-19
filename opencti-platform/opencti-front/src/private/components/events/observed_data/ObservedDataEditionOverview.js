@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { commitMutation } from '../../../../relay/environment';
@@ -25,7 +24,7 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -230,9 +229,7 @@ class ObservedDataEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, observedData, context, enableReferences,
-    } = this.props;
+    const { t, observedData, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], observedData) === null
       ? ''
       : {
@@ -277,36 +274,42 @@ class ObservedDataEditionOverviewComponent extends Component {
               <Field
                 component={DatePickerField}
                 name="first_observed"
-                label={t('First observed')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="first_observed"
-                  />
-                }
+                TextFieldProps={{
+                  label: t('First observed'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  helperText: (
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="first_observed"
+                    />
+                  ),
+                }}
               />
               <Field
                 component={DatePickerField}
                 name="last_observed"
-                label={t('Last observed')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="last_observed"
-                  />
-                }
+                TextFieldProps={{
+                  label: t('Last observed'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  helperText: (
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="last_observed"
+                    />
+                  ),
+                }}
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="number_observed"
                 label={t('Number observed')}
                 fullWidth={true}

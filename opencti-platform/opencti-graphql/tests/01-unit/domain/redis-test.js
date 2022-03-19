@@ -1,6 +1,6 @@
-const { computeMergeDifferential } = require('../../../src/database/redis');
-
 // region data
+import { computeMergeDifferential } from '../../../src/database/redis';
+
 const previous = {
   standard_id: 'threat-actor--71c2f3be-a4e9-556d-a0ef-d98e819d786e',
   i_created_at_day: '2021-05-03',

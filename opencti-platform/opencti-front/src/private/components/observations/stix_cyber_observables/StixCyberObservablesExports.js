@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Slide from '@material-ui/core/Slide';
-import Drawer from '@material-ui/core/Drawer';
+import withStyles from '@mui/styles/withStyles';
+import Slide from '@mui/material/Slide';
+import Drawer from '@mui/material/Drawer';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCyberObservablesExportsContent, {
   stixCyberObservablesExportsContentQuery,
@@ -21,21 +21,20 @@ const styles = (theme) => ({
     padding: '0 0 20px 0',
     overflowX: 'hidden',
     zIndex: 1200,
-    backgroundColor: theme.palette.navAlt.background,
   },
   toolbar: theme.mixins.toolbar,
 });
 
 class StixCyberObservablesExports extends Component {
   render() {
-    const {
-      classes, paginationOptions, open, handleToggle, context,
-    } = this.props;
+    const { classes, paginationOptions, open, handleToggle, context } = this.props;
     return (
       <Drawer
         variant="persistent"
         open={open}
         anchor="right"
+        sx={{ zIndex: 1202 }}
+        elevation={1}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleToggle.bind(this)}
       >

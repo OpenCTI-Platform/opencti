@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Field } from 'formik';
-import {
-  assoc, compose, map, pipe, prop, sortBy, toLower,
-} from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import MenuItem from '@material-ui/core/MenuItem';
+import { assoc, compose, map, pipe, prop, sortBy, toLower } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../components/i18n';
 import SelectField from '../../../components/SelectField';
 import { QueryRenderer } from '../../../relay/environment';
@@ -19,9 +17,7 @@ const styles = () => ({
 
 class TypesField extends Component {
   render() {
-    const {
-      t, name, label, containerstyle,
-    } = this.props;
+    const { t, name, label, containerstyle } = this.props;
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesSubTypesQuery}
@@ -38,6 +34,7 @@ class TypesField extends Component {
             return (
               <Field
                 component={SelectField}
+                variant="standard"
                 name={name}
                 label={label}
                 fullWidth={true}

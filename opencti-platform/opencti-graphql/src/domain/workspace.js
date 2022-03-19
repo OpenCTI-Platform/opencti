@@ -7,11 +7,11 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   paginateAllThings,
-  listEntities,
   listThings,
   loadById,
   updateAttribute,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
@@ -69,9 +69,7 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user)
-  );
+  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user));
 };
 
 export const workspaceDeleteRelation = async (user, workspaceId, toId, relationshipType) => {
@@ -113,15 +111,11 @@ export const workspaceDelete = async (user, workspaceId) => {
 // region context
 export const workspaceCleanContext = async (user, workspaceId) => {
   await delEditContext(user, workspaceId);
-  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, userToReturn, user)
-  );
+  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, userToReturn, user));
 };
 
 export const workspaceEditContext = async (user, workspaceId, input) => {
   await setEditContext(user, workspaceId, input);
-  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((workspaceToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user)
-  );
+  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
 };
 // endregion

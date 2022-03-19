@@ -20,7 +20,6 @@ import {
   isInferredIndex,
   isNotEmptyField,
   READ_DATA_INDICES,
-  READ_ENTITIES_INDICES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
@@ -47,7 +46,7 @@ import {
   MAX_SPLIT,
   ROLE_FROM,
   ROLE_TO,
-} from './elasticSearch';
+} from './engine';
 import {
   FIRST_OBSERVED,
   FIRST_SEEN,
@@ -199,7 +198,7 @@ import {
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles, rawFilesListing, stixFileConverter } from './minio';
-import { BYPASS, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
+import { BYPASS, BYPASS_REFERENCE, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
   FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION,
@@ -212,11 +211,12 @@ import {
   STIX_ATTRIBUTE_TO_META_FIELD,
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
-import { BYPASS_REFERENCE } from '../initialization';
+import { buildFilters, listEntities } from './repository';
 import { askEnrich } from '../domain/enrichment';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
+const FUZZY_HASH_ALGORITHMS = ['SSDEEP', 'SDHASH', 'TLSH', 'LZJD'];
 // endregion
 
 // region Loader common
@@ -273,7 +273,7 @@ export const queryAttributes = async (type) => {
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
-    R.map((n) => ({ node: { id: n, key: n, value: n } }))
+    R.map((n) => ({ node: { id: n, key: type, value: n } }))
   )(attributes);
   return buildPagination(0, null, finalResult, finalResult.length);
 };
@@ -390,70 +390,6 @@ export const loadThroughGetTo = async (user, sources, relationType, targetEntity
   return loadThrough(user, sources, 'from', relationType, targetEntityType);
 };
 // Standard listing
-export const buildFilters = (args = {}) => {
-  const builtFilters = { ...args };
-  const { types = [], entityTypes = [], relationshipTypes = [] } = args;
-  const { elementId, elementWithTargetTypes = [] } = args;
-  const { fromId, fromRole, fromTypes = [] } = args;
-  const { toId, toRole, toTypes = [] } = args;
-  const { filters = [] } = args;
-  // Config
-  const customFilters = [...(filters ?? [])];
-  // region element
-  const nestedElement = [];
-  if (elementId) {
-    nestedElement.push({ key: 'internal_id', values: [elementId] });
-  }
-  if (nestedElement.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedElement });
-  }
-  const nestedElementTypes = [];
-  if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
-    nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
-  }
-  if (nestedElementTypes.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedElementTypes });
-  }
-  // endregion
-  // region from filtering
-  const nestedFrom = [];
-  if (fromId) {
-    nestedFrom.push({ key: 'internal_id', values: [fromId] });
-  }
-  if (fromTypes && fromTypes.length > 0) {
-    nestedFrom.push({ key: 'types', values: fromTypes });
-  }
-  if (fromRole) {
-    nestedFrom.push({ key: 'role', values: [fromRole] });
-  } else if (fromId || (fromTypes && fromTypes.length > 0)) {
-    nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
-  }
-  if (nestedFrom.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedFrom });
-  }
-  // endregion
-  // region to filtering
-  const nestedTo = [];
-  if (toId) {
-    nestedTo.push({ key: 'internal_id', values: [toId] });
-  }
-  if (toTypes && toTypes.length > 0) {
-    nestedTo.push({ key: 'types', values: toTypes });
-  }
-  if (toRole) {
-    nestedTo.push({ key: 'role', values: [toRole] });
-  } else if (toId || (toTypes && toTypes.length > 0)) {
-    nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
-  }
-  if (nestedTo.length > 0) {
-    customFilters.push({ key: 'connections', nested: nestedTo });
-  }
-  // endregion
-  // Override some special filters
-  builtFilters.types = [...(types ?? []), ...entityTypes, ...relationshipTypes];
-  builtFilters.filters = customFilters;
-  return builtFilters;
-};
 const buildRelationsFilter = (relationshipTypes, args) => {
   const relationsToGet = Array.isArray(relationshipTypes)
     ? relationshipTypes
@@ -490,7 +426,7 @@ const buildRelationsFilter = (relationshipTypes, args) => {
     const { relation, id, relationId } = relationFilter;
     finalFilters.push({ key: buildRefRelationKey(relation), values: [id] });
     if (relationId) {
-      finalFilters.push({ key: `internal_id`, values: [relationId] });
+      finalFilters.push({ key: 'internal_id', values: [relationId] });
     }
   }
   const nestedElement = [];
@@ -569,11 +505,6 @@ export const paginateAllThings = async (user, thingsTypes, args = {}) => {
   const nodeResult = result.map((n) => ({ node: n }));
   return buildPagination(0, null, nodeResult, nodeResult.length);
 };
-export const listEntities = async (user, entityTypes, args = {}) => {
-  const { indices = READ_ENTITIES_INDICES } = args;
-  const paginateArgs = buildFilters({ entityTypes, ...args });
-  return elPaginate(user, indices, paginateArgs);
-};
 export const listRelations = async (user, relationshipType, args = {}) => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(relationshipType, args);
@@ -604,7 +535,7 @@ export const internalLoadById = (user, id, args = {}) => {
 };
 export const loadById = async (user, id, type, args = {}) => {
   if (R.isNil(type) || R.isEmpty(type)) {
-    throw FunctionalError(`You need to specify a type when loading a element`);
+    throw FunctionalError('You need to specify a type when loading a element');
   }
   const loadArgs = R.assoc('type', type, args);
   return internalLoadById(user, id, loadArgs);
@@ -615,10 +546,10 @@ export const connectionLoaders = async (user, instance) => {
     const toPromise = internalLoadById(user, instance.toId);
     const [from, to] = await Promise.all([fromPromise, toPromise]);
     if (!from) {
-      throw FunctionalError(`Inconsistent relation to update (from)`, { id: instance.id, from: instance.fromId });
+      throw FunctionalError('Inconsistent relation to update (from)', { id: instance.id, from: instance.fromId });
     }
     if (!to) {
-      throw FunctionalError(`Inconsistent relation to update (to)`, { id: instance.id, to: instance.toId });
+      throw FunctionalError('Inconsistent relation to update (to)', { id: instance.id, to: instance.toId });
     }
     return R.mergeRight(instance, { from, to });
   }
@@ -729,20 +660,12 @@ export const convertDataToRawStix = async (user, id) => {
 // endregion
 
 // region Graphics
-const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', parent_types: [] };
 const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
-  // eslint-disable-next-line prettier/prettier
-  const resolveLabels = await elFindByIds(
-    user,
-    data.map((d) => d.label),
-    { toMap: true }
-  );
-  return R.map((n) => {
-    const resolved = resolveLabels[n.label];
-    const resolvedData = resolved || restrictedAggElement;
-    return R.assoc('entity', resolvedData, n);
-  }, data);
+  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), { toMap: true });
+  return data // Depending of user access, info can be empty, must be filtered
+    .filter((n) => isNotEmptyField(resolveLabels[n.label]))
+    .map((n) => R.assoc('entity', resolveLabels[n.label], n));
 };
 export const timeSeriesEntities = async (user, entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
@@ -763,7 +686,7 @@ export const timeSeriesRelations = async (user, options) => {
   const histogramData = await elHistogramCount(user, entityType, field, interval, startDate, endDate, toTypes, filters);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const distributionEntities = async (user, entityType, filters = [], options) => {
+export const distributionEntities = async (user, entityType, filters, options = {}) => {
   // filters: { isRelation: true, type: stix_relation, start: date, end: date, value: uuid }
   const { limit = 10, order = 'desc' } = options;
   const { startDate, endDate, field } = options;
@@ -839,11 +762,7 @@ const inputResolveRefs = async (user, input, type) => {
       cleanedInput[src] = null;
     }
   }
-  // eslint-disable-next-line prettier/prettier
-  const resolvedElements = await internalFindByIds(
-    user,
-    fetchingIds.map((i) => i.id)
-  );
+  const resolvedElements = await internalFindByIds(user, fetchingIds.map((i) => i.id));
   const resolvedElementWithConfGroup = resolvedElements.map((d) => {
     const elementIds = getInstanceIds(d);
     const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
@@ -1039,15 +958,17 @@ const listEntitiesByHashes = (user, type, hashes) => {
   if (isEmptyField(hashes)) {
     return [];
   }
+  // Search hashes must filter the fuzzy hashes
   const searchHashes = Object.entries(hashes)
-    .map(([, s]) => s)
-    .filter((s) => isNotEmptyField(s));
+    .filter(([hashKey]) => !FUZZY_HASH_ALGORITHMS.includes(hashKey.toUpperCase()))
+    .map(([, hashValue]) => hashValue)
+    .filter((hashValue) => isNotEmptyField(hashValue));
   return listEntities(user, [type], {
     filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
     connectionFormat: false,
   });
 };
-const hashMergeValidation = (instances) => {
+export const hashMergeValidation = (instances) => {
   // region Specific check for observables with hashes
   // If multiple results start by checking the possible merge validity
   const allHashes = instances.map((h) => h.hashes).filter((e) => isNotEmptyField(e));
@@ -1057,7 +978,7 @@ const hashMergeValidation = (instances) => {
     Object.entries(groupElements).forEach(([algo, values]) => {
       const hashes = R.uniq(values.map(([, data]) => data));
       if (hashes.length > 1) {
-        const field = `hash_${algo.toUpperCase()}`;
+        const field = `hashes_${algo.toUpperCase()}`;
         const message = { message: `Hashes collision for ${algo} algorithm` };
         throw ValidationError(field, message);
       }
@@ -1125,7 +1046,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // Pre-checks
   const sourceIds = R.map((e) => e.internal_id, sourceEntities);
   if (R.includes(targetEntity.internal_id, sourceIds)) {
-    throw FunctionalError(`Cannot merge an entity on itself`, {
+    throw FunctionalError('Cannot merge an entity on itself', {
       dest: targetEntity.internal_id,
       source: sourceIds,
     });
@@ -1134,7 +1055,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const sourceTypes = R.map((s) => s.entity_type, sourceEntities);
   const isWorkingOnSameType = sourceTypes.every((v) => v === targetType);
   if (!isWorkingOnSameType) {
-    throw FunctionalError(`Cannot merge entities of different types`, {
+    throw FunctionalError('Cannot merge entities of different types', {
       dest: targetType,
       source: sourceTypes,
     });
@@ -1268,7 +1189,6 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
   const entries = Object.entries(updatesByEntity);
   let currentEntUpdateCount = 0;
-  // eslint-disable-next-line prettier/prettier
   const updateBulkEntities = entries
     .filter(([, values]) => values.length === 1)
     .map(([, values]) => values)
@@ -1282,7 +1202,6 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await Promise.map(groupsOfEntityUpdate, concurrentEntitiesUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Take care of multi update
   const updateMultiEntities = entries.filter(([, values]) => values.length > 1);
-  // eslint-disable-next-line prettier/prettier
   await Promise.map(
     updateMultiEntities,
     async ([id, values]) => {
@@ -1397,7 +1316,7 @@ const computeParticipants = (entities) => {
 export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts = {}) => {
   // Pre-checks
   if (R.includes(targetEntityId, sourceEntityIds)) {
-    throw FunctionalError(`Cannot merge entities, same ID detected in source and destination`, {
+    throw FunctionalError('Cannot merge entities, same ID detected in source and destination', {
       targetEntityId,
       sourceEntityIds,
     });
@@ -1424,9 +1343,7 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
-    return loadById(user, target.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
-      notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user)
-    );
+    return loadById(user, target.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) => notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user));
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -1632,7 +1549,7 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
     if (input.key === VALID_UNTIL) {
       const untilDate = R.head(input.value);
       const untilDateTime = utcDate(untilDate).toDate();
-      // eslint-disable-next-line prettier/prettier
+
       const revokedInput = { key: REVOKED, value: [untilDateTime < utcDate().toDate()] };
       const revokedIn = innerUpdateAttribute(instance, revokedInput);
       if (revokedIn.length > 0) {
@@ -1700,14 +1617,14 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
   // Load the element to update
   const instance = await loadByIdWithMetaRels(user, id, { type });
   if (!instance) {
-    throw FunctionalError(`Cant find element to update`, { id, type });
+    throw FunctionalError('Cant find element to update', { id, type });
   }
   const instanceMergeWithInputs = mergeInstanceWithUpdateInputs(instance, inputs);
   const enforceReferences = conf.get('app:enforce_references') || [];
   const keys = R.map((t) => t.key, attributes);
   if (
-    enforceReferences.includes(instance.entity_type) ||
-    (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(instance.entity_type))
+    enforceReferences.includes(instance.entity_type)
+    || (enforceReferences.includes('stix-core-relationship') && isStixCoreRelationship(instance.entity_type))
   ) {
     const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
     if (!isNoReferenceKey && isEmptyField(opts.references)) {
@@ -1726,7 +1643,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       const existingEntities = await internalFindByIds(user, aliasesIds, { type: instance.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== instance.id, existingEntities);
       if (differentEntities.length > 0) {
-        throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+        throw FunctionalError('This update will produce a duplicate', { id: instance.id, type });
       }
     }
   }
@@ -1778,13 +1695,13 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
         );
         const haveExtraKeys = noneStandardKeys.length > 0;
         if (haveExtraKeys) {
-          throw UnsupportedError(`This update can produce a merge, only one update action supported`);
+          throw UnsupportedError('This update can produce a merge, only one update action supported');
         }
         // Everything ok, let merge
         const target = existingEntities.shift();
         const sources = [instanceMergeWithInputs, ...existingEntities];
         hashMergeValidation([target, ...sources]);
-        // eslint-disable-next-line prettier/prettier
+
         const merged = await mergeEntities(
           user,
           target.internal_id,
@@ -1796,7 +1713,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
         return { element: merged };
       }
       // noinspection ExceptionCaughtLocallyJS
-      throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+      throw FunctionalError('This update will produce a duplicate', { id: instance.id, type });
     }
     // noinspection UnnecessaryLocalVariableJS
     const data = updateAttributeRaw(instance, attributes, opts);
@@ -2224,6 +2141,15 @@ const buildRelationTimeFilter = (input) => {
       args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
       args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
     }
+  } else if (isStixCyberObservableRelationship(relationshipType)) {
+    if (!R.isNil(input.start_time)) {
+      args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'days').utc());
+      args.startTimeStop = prepareDate(moment(input.start_time).add(1, 'days').utc());
+    }
+    if (!R.isNil(input.stop_time)) {
+      args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'days').utc());
+      args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'days').utc());
+    }
   } else if (isStixSightingRelationship(relationshipType)) {
     if (!R.isNil(input.first_seen)) {
       args.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
@@ -2403,6 +2329,14 @@ const checkRelationConsistency = (relationshipType, from, to) => {
     }
   }
 };
+const isRelationConsistent = (relationshipType, from, to) => {
+  try {
+    checkRelationConsistency(relationshipType, from, to);
+    return true;
+  } catch {
+    return false;
+  }
+};
 const buildRelationData = async (user, input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
@@ -2567,7 +2501,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
   if (fromId === toId) {
     /* istanbul ignore next */
     const errorData = { from: input.fromId, relationshipType };
-    throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(user, input, relationshipType);
@@ -2581,7 +2515,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
       // TODO
     }
     const errorData = { from: input.fromId, to: input.toId, relationshipType };
-    throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
+    throw UnsupportedError('Relation cant be created with the same source and target', errorData);
   }
   // Check consistency
   checkRelationConsistency(relationshipType, from, to);
@@ -2642,7 +2576,9 @@ export const createRelationRaw = async (user, input, opts = {}) => {
       // Check cyclic reference consistency for embedded relationships before creation
       if (isStixEmbeddedRelationship(relationshipType)) {
         const toRefs = instanceMetaRefsExtractor(to);
-        if (toRefs.includes(from.internal_id)) {
+        // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
+        // Checking the direction of the relation to allow relationships
+        if (toRefs.includes(from.internal_id) && isRelationConsistent(relationshipType, to, from)) {
           throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
         }
       }
@@ -2913,7 +2849,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           const target = R.find((e) => e.standard_id === standardId, filteredEntities) || R.head(filteredEntities);
           const sources = R.filter((e) => e.internal_id !== target.internal_id, filteredEntities);
           hashMergeValidation([target, ...sources]);
-          // eslint-disable-next-line prettier/prettier
+
           await mergeEntities(
             user,
             target.internal_id,
@@ -2928,9 +2864,8 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
           // If a STIX ID has been passed in the creation
           if (resolvedInput.stix_id) {
             // Find the entity corresponding to this STIX ID
-            // eslint-disable-next-line prettier/prettier
-            const stixIdFinder = (e) =>
-              e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
+
+            const stixIdFinder = (e) => e.standard_id === resolvedInput.stix_id || e.x_opencti_stix_ids.includes(resolvedInput.stix_id);
             const existingByGivenStixId = R.find(stixIdFinder, filteredEntities);
             // If the entity exists by the stix id and not the same as the previously founded.
             if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
@@ -2980,6 +2915,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
     if (lock) await lock.unlock();
   }
 };
+
 export const createEntity = async (user, input, type) => {
   // volumes of objects relationships must be controlled
   if (input.objects && input.objects.length > MAX_BATCH_SIZE) {
@@ -3063,7 +2999,7 @@ const deleteElements = async (user, elements, opts = {}) => {
 export const deleteElementById = async (user, elementId, type, opts = {}) => {
   if (R.isNil(type)) {
     /* istanbul ignore next */
-    throw FunctionalError(`You need to specify a type when deleting an entity`);
+    throw FunctionalError('You need to specify a type when deleting an entity');
   }
   // Check consistency
   const element = await loadByIdWithMetaRels(user, elementId, { type });
@@ -3132,7 +3068,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
 export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   /* istanbul ignore if */
   if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
-    throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
+    throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
   }
   const fromThing = await internalLoadById(user, fromId, opts);
   const toThing = await internalLoadById(user, toId, opts);

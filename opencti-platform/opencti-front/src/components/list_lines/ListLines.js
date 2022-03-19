@@ -1,26 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, last, map, toPairs,
-} from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
+import { compose, last, map, toPairs } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import {
   ArrowDropDown,
   ArrowDropUp,
-  DashboardOutlined,
-  TableChartOutlined,
-} from '@material-ui/icons';
-import Chip from '@material-ui/core/Chip';
-import Tooltip from '@material-ui/core/Tooltip';
-import { FileExportOutline } from 'mdi-material-ui';
-import Checkbox from '@material-ui/core/Checkbox';
-import Alert from '@material-ui/lab/Alert';
+  ViewListOutlined,
+  ViewModuleOutlined,
+  FileDownloadOutlined,
+} from '@mui/icons-material';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Chip from '@mui/material/Chip';
+import Checkbox from '@mui/material/Checkbox';
+import Alert from '@mui/material/Alert';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -89,14 +87,14 @@ const styles = (theme) => ({
   },
   filters: {
     float: 'left',
-    margin: '2px 0 0 10px',
+    margin: '5px 0 0 10px',
   },
   filter: {
     marginRight: 10,
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.accent,
     marginRight: 10,
   },
   info: {
@@ -110,9 +108,7 @@ class ListLines extends Component {
   }
 
   renderHeaderElement(field, label, width, isSortable) {
-    const {
-      classes, t, sortBy, orderAsc, handleToggleSelectAll,
-    } = this.props;
+    const { classes, t, sortBy, orderAsc, handleToggleSelectAll } = this.props;
     if (isSortable) {
       const orderComponent = orderAsc ? (
         <ArrowDropDown
@@ -151,7 +147,6 @@ class ListLines extends Component {
       handleSearch,
       handleChangeView,
       disableCards,
-      enableDuplicates,
       handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
@@ -175,6 +170,7 @@ class ListLines extends Component {
       iconExtension,
       searchVariant,
       message,
+      noTopMargin,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -227,7 +223,7 @@ class ListLines extends Component {
                 <span>
                   <Chip
                     key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
+                    classes={{ root: classes.fnoTopMarginilter }}
                     label={
                       <div>
                         <strong>{label}</strong>: {values}
@@ -249,58 +245,49 @@ class ListLines extends Component {
         <div className={classes.views}>
           <div style={{ float: 'right', marginTop: -20 }}>
             {numberOfElements && (
-              <div style={{ float: 'left', padding: '15px 5px 0 0' }}>
+              <div style={{ float: 'left', padding: '16px 5px 0 0' }}>
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                 {t('entitie(s)')}
               </div>
             )}
-            {typeof handleChangeView === 'function' && !disableCards && (
-              <Tooltip title={t('Cards view')}>
-                <IconButton
-                  color="primary"
-                  onClick={handleChangeView.bind(this, 'cards')}
-                >
-                  <DashboardOutlined />
-                </IconButton>
-              </Tooltip>
+            {(typeof handleChangeView === 'function'
+              || typeof handleToggleExports === 'function') && (
+              <ToggleButtonGroup
+                size="small"
+                color="secondary"
+                value="lines"
+                exclusive={true}
+                onChange={(_, value) => {
+                  if (value && value === 'export') {
+                    handleToggleExports();
+                  } else if (value) {
+                    handleChangeView(value);
+                  }
+                }}
+                style={{ margin: '7px 0 0 5px' }}
+              >
+                {typeof handleChangeView === 'function' && !disableCards && (
+                  <ToggleButton value="cards" aria-label="cards">
+                    <ViewModuleOutlined color="primary" />
+                  </ToggleButton>
+                )}
+                <ToggleButton value="lines" aria-label="lines">
+                  <ViewListOutlined />
+                </ToggleButton>
+                {typeof handleToggleExports === 'function' && (
+                  <ToggleButton value="export" aria-label="export">
+                    <FileDownloadOutlined
+                      color={openExports ? 'secondary' : 'primary'}
+                    />
+                  </ToggleButton>
+                )}
+              </ToggleButtonGroup>
             )}
-            {typeof handleChangeView === 'function' && (
-              <Tooltip title={t('Lines view')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'lines')}
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
-            )}
-            {typeof handleChangeView === 'function' && enableDuplicates && (
-              <Tooltip title={t('Detect duplicates')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'duplicates')}
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
-            )}
-            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-              {typeof handleToggleExports === 'function' && (
-                <Tooltip title={t('Exports panel')}>
-                  <IconButton
-                    color={openExports ? 'secondary' : 'primary'}
-                    onClick={handleToggleExports.bind(this)}
-                  >
-                    <FileExportOutline />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Security>
           </div>
         </div>
         <div className="clearfix" />
         {message && (
-          <div style={{ width: '100%' }}>
+          <div style={{ width: '100%', marginTop: 10 }}>
             <Alert
               severity="info"
               variant="outlined"
@@ -317,6 +304,7 @@ class ListLines extends Component {
               ? classes.linesContainerBottomNav
               : classes.linesContainer,
           }}
+          style={noTopMargin ? { marginTop: 0 } : null}
         >
           {!noHeaders ? (
             <ListItem
@@ -419,7 +407,6 @@ ListLines.propTypes = {
   handleSort: PropTypes.func,
   handleChangeView: PropTypes.func,
   disableCards: PropTypes.bool,
-  enableDuplicates: PropTypes.bool,
   handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
@@ -445,6 +432,7 @@ ListLines.propTypes = {
   iconExtension: PropTypes.bool,
   searchVariant: PropTypes.string,
   message: PropTypes.string,
+  noTopMargin: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

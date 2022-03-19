@@ -1,6 +1,4 @@
-import {
-  append, keys, pipe, filter, map, split, includes,
-} from 'ramda';
+import { append, keys, pipe, filter, map, split, includes } from 'ramda';
 
 const relationsTypesMapping = {
   'Attack-Pattern_Attack-Pattern': ['subtechnique-of'],
@@ -221,6 +219,7 @@ const relationsTypesMapping = {
 };
 
 const stixCyberObservableRelationshipTypesMapping = {
+  Directory_Artifact: ['contains'], // TODO
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
   'Domain-Name_Domain-Name': ['resolves-to'],

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCyberObservableRelationshipEditionOverview from './StixCyberObservableRelationshipEditionOverview';
@@ -15,7 +15,6 @@ const styles = (theme) => ({
     width: '30%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -54,6 +53,8 @@ class StixCyberObservableRelationshipEdition extends Component {
       <Drawer
         open={open}
         anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose.bind(this)}
       >

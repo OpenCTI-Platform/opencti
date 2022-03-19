@@ -48,3 +48,7 @@ export const isValidStixBundle = (bundle) => {
     return false;
   }
 };
+
+export const toB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
+
+export const fromB64 = (str) => decodeURIComponent(escape(window.atob(str)));

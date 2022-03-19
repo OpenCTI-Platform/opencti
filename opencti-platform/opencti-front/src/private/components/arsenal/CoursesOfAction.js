@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, dissoc, propOr, uniqBy, prop,
-} from 'ramda';
+import { assoc, compose, dissoc, propOr, uniqBy, prop } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -167,9 +165,7 @@ class CoursesOfAction extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,

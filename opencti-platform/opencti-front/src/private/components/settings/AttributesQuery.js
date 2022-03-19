@@ -1,20 +1,16 @@
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 
 // eslint-disable-next-line import/prefer-default-export
 export const attributesSearchQuery = graphql`
   query AttributesQuerySearchQuery(
-    $key: String
-    $elementType: String
-    $fieldKey: String
-    $search: String
     $first: Int
+    $search: String
+    $attributeName: String!
   ) {
-    attributes(
-      key: $key
-      elementType: $elementType
-      fieldKey: $fieldKey
-      search: $search
+    runtimeAttributes(
       first: $first
+      search: $search
+      attributeName: $attributeName
     ) {
       edges {
         node {

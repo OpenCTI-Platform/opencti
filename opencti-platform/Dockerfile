@@ -6,6 +6,7 @@ FROM base AS graphql-deps-builder
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
 COPY opencti-graphql/.yarn ./.yarn
+COPY opencti-graphql/patch ./patch
 RUN yarn install --frozen-lockfile && yarn cache clean --all
 
 
@@ -14,9 +15,10 @@ FROM base AS graphql-builder
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
 COPY opencti-graphql/.yarn ./.yarn
+COPY opencti-graphql/patch ./patch
 RUN yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
-RUN yarn run webpack --mode production
+RUN yarn build:prod
 
 
 FROM base AS front-builder
@@ -24,10 +26,11 @@ FROM base AS front-builder
 WORKDIR /opt/opencti-build/opencti-front
 COPY opencti-front/package.json opencti-front/yarn.lock opencti-front/.yarnrc.yml ./
 COPY opencti-front/.yarn ./.yarn
+COPY opencti-front/patch ./patch
 RUN yarn install
 COPY opencti-front /opt/opencti-build/opencti-front
 COPY opencti-graphql/config/schema/opencti.graphql /opt/opencti-build/opencti-graphql/config/schema/opencti.graphql
-RUN yarn relay && yarn generate
+RUN yarn build:standalone
 
 
 FROM base AS app
@@ -45,7 +48,7 @@ RUN pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI
 RUN apk del git python3-dev gcc musl-dev
 COPY --from=graphql-deps-builder /opt/opencti-build/opencti-graphql/node_modules ./node_modules
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/build ./build
-COPY --from=front-builder /opt/opencti-build/opencti-front/build ./public
+COPY --from=front-builder /opt/opencti-build/opencti-front/builder/prod/build ./public
 COPY opencti-graphql/src ./src
 COPY opencti-graphql/config ./config
 COPY opencti-graphql/script ./script

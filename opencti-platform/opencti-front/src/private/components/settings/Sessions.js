@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import Slide from '@material-ui/core/Slide';
+import withStyles from '@mui/styles/withStyles';
+import Slide from '@mui/material/Slide';
 import AccessesMenu from './AccessesMenu';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
@@ -22,7 +22,7 @@ Transition.displayName = 'TransitionSlide';
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: '0 200px 50px 0',
   },
   parameters: {
     float: 'left',

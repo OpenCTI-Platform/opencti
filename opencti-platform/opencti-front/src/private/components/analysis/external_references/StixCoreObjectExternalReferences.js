@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
-import Skeleton from '@material-ui/lab/Skeleton';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Avatar from '@mui/material/Avatar';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectExternalReferencesLines, {
@@ -66,7 +66,7 @@ class StixCoreObjectExternalReferences extends Component {
                 {t('External references')}
               </Typography>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 <List>
                   {Array.from(Array(5), (e, i) => (
                     <ListItem
@@ -84,7 +84,7 @@ class StixCoreObjectExternalReferences extends Component {
                         primary={
                           <Skeleton
                             animation="wave"
-                            variant="rect"
+                            variant="rectangular"
                             width="90%"
                             height={15}
                             style={{ marginBottom: 10 }}
@@ -93,7 +93,7 @@ class StixCoreObjectExternalReferences extends Component {
                         secondary={
                           <Skeleton
                             animation="wave"
-                            variant="rect"
+                            variant="rectangular"
                             width="90%"
                             height={15}
                           />

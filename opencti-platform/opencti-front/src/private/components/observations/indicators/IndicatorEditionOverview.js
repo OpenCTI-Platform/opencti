@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import {
   assoc,
   compose,
@@ -16,7 +15,7 @@ import {
   propOr,
 } from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@material-ui/core/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -40,7 +39,7 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -291,9 +290,7 @@ class IndicatorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, indicator, context, enableReferences,
-    } = this.props;
+    const { t, indicator, context, enableReferences } = this.props;
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -354,6 +351,7 @@ class IndicatorEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -375,6 +373,7 @@ class IndicatorEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
+              variant="standard"
               name="pattern"
               label={t('Indicator pattern')}
               fullWidth={true}
@@ -390,28 +389,37 @@ class IndicatorEditionOverviewComponent extends Component {
             <Field
               component={DatePickerField}
               name="valid_from"
-              label={t('Valid from')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="valid_from" />
-              }
+              TextFieldProps={{
+                label: t('Valid from'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="valid_from" />
+                ),
+              }}
             />
             <Field
               component={DatePickerField}
               name="valid_until"
-              label={t('Valid until')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+              invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="valid_until" />
-              }
+              TextFieldProps={{
+                label: t('Valid until'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="valid_until"
+                  />
+                ),
+              }}
             />
             <OpenVocabField
               label={t('Indicator types')}
@@ -426,6 +434,7 @@ class IndicatorEditionOverviewComponent extends Component {
             />
             <Field
               component={SelectField}
+              variant="standard"
               name="x_mitre_platforms"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
@@ -447,6 +456,7 @@ class IndicatorEditionOverviewComponent extends Component {
             </Field>
             <Field
               component={TextField}
+              variant="standard"
               name="x_opencti_score"
               label={t('Score')}
               type="number"

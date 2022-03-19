@@ -21,23 +21,23 @@ import {
   descend,
   propOr,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Collapse from '@material-ui/core/Collapse';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Collapse from '@mui/material/Collapse';
 import {
   ExpandLess,
   ExpandMore,
   LocalPlayOutlined,
   Flag,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import { yearFormat } from '../../../../utils/Time';
@@ -81,9 +81,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, entityLink, paginationOptions, searchTerm,
-    } = this.props;
+    const { t, classes, data, entityLink, paginationOptions, searchTerm } = this.props;
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || propOr('', 'countries_text', n)
@@ -313,6 +311,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                   <IconButton
                     onClick={this.handleToggleLine.bind(this, region.id)}
                     aria-haspopup="true"
+                    size="large"
                   >
                     {this.state.expandedLines[region.id] === true ? (
                       <ExpandLess />
@@ -439,6 +438,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                 country.id,
                               )}
                               aria-haspopup="true"
+                              size="large"
                             >
                               {this.state.expandedLines[country.id] === true ? (
                                 <ExpandLess />

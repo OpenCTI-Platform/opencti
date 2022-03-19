@@ -1,16 +1,23 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
-import MomentUtils from '@date-io/moment';
-import 'moment/locale/fr';
+import AdapterDateFns from '@mui/lab/AdapterDateFns';
+import frLocale from 'date-fns/locale/fr';
+import enLocale from 'date-fns/locale/en-US';
+import cnLocale from 'date-fns/locale/zh-CN';
 import moment from 'moment';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import i18n from '../utils/Localization';
 import { UserContext } from '../utils/Security';
+
+const localeMap = {
+  'en-us': enLocale,
+  'fr-fr': frLocale,
+  'zg-cn': cnLocale,
+};
 
 const AppIntlProvider = (props) => {
   const { children } = props;
@@ -30,8 +37,10 @@ const AppIntlProvider = (props) => {
     ? me.language
     : platformLang;
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG];
-  if (lang === 'fr') {
-    moment.locale('fr');
+  if (lang === 'fr-fr') {
+    moment.locale('fr-fr');
+  } else if (lang === 'zh-cn') {
+    moment.locale('zh-cn');
   } else {
     moment.locale('en-us');
   }
@@ -47,13 +56,12 @@ const AppIntlProvider = (props) => {
         throw err;
       }}
     >
-      <MuiPickersUtilsProvider
-        utils={MomentUtils}
-        locale={lang}
-        moment={moment}
+      <LocalizationProvider
+        dateAdapter={AdapterDateFns}
+        locale={localeMap[lang]}
       >
         {children}
-      </MuiPickersUtilsProvider>
+      </LocalizationProvider>
     </IntlProvider>
   );
 };

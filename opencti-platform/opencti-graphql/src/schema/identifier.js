@@ -146,7 +146,6 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_RULE_MANAGER]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_RULE]: [{ src: 'internal_id' }],
-    [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
     [I.ENTITY_TYPE_WORKSPACE]: [], // ALL
     [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     [I.ENTITY_TYPE_TASK]: [], // ALL
@@ -421,11 +420,11 @@ export const getInstanceIdentifiers = (instance) => {
   if (instance.relationship_type) {
     base.relationship_type = instance.relationship_type;
     if (!instance.from) {
-      throw FunctionalError(`Inconsistent from to identify`, { id: instance.id, from: instance.fromId });
+      throw FunctionalError('Inconsistent from to identify', { id: instance.id, from: instance.fromId });
     }
     base.from = instance.from;
     if (!instance.to) {
-      throw FunctionalError(`Inconsistent to to identify`, { id: instance.id, to: instance.toId });
+      throw FunctionalError('Inconsistent to to identify', { id: instance.id, to: instance.toId });
     }
     base.to = instance.to;
   }

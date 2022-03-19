@@ -1,11 +1,19 @@
 import React from 'react';
-import { compose, includes, dissoc } from 'ramda';
+import { compose, includes, dissoc, map } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
-import Alert from '@material-ui/lab/Alert';
-import AlertTitle from '@material-ui/lab/AlertTitle';
-import { ApplicationError } from '../../relay/environment';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import ErrorNotFound from '../../components/ErrorNotFound';
+
+// Really simple error display
+export const SimpleError = () => (
+  <Alert severity="error">
+    <AlertTitle>Error</AlertTitle>
+    An unknown error occurred. Please contact your administrator or the OpenCTI
+    maintainers.
+  </Alert>
+);
 
 class ErrorBoundaryComponent extends React.Component {
   constructor(props) {
@@ -18,16 +26,17 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   render() {
-    if (this.state.stack) {
-      if (this.state.error instanceof ApplicationError) {
-        const types = this.state.error.data.res.errors.map((e) => e.name);
-        // If auth problem propagate the error.
-        if (
-          includes('ForbiddenAccess', types)
-          || includes('AuthRequired', types)
-        ) {
-          throw this.state.error;
-        }
+    if (this.state.error) {
+      const baseErrors = this.state.error.res?.errors ?? [];
+      const retroErrors = this.state.error.data?.res?.errors ?? [];
+      const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
+      // Access error must be forwarded
+      if (
+        includes('ForbiddenAccess', types)
+        || includes('AuthRequired', types)
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw this.state.error;
       }
       return this.props.display;
     }
@@ -82,12 +91,3 @@ BoundaryRoute.propTypes = {
 
 // 404
 export const NoMatch = () => <ErrorNotFound />;
-
-// Really simple error display
-export const SimpleError = () => (
-  <Alert severity="error">
-    <AlertTitle>Error</AlertTitle>
-    An unknown error occurred. Please contact your administrator or the OpenCTI
-    maintainers.
-  </Alert>
-);

@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
 import {
   AspectRatio,
   FilterListOutlined,
@@ -13,7 +14,7 @@ import {
   ScatterPlotOutlined,
   DateRangeOutlined,
   TableChartOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import {
   Video3d,
   SelectAll,
@@ -22,15 +23,15 @@ import {
   AutoFix,
   FamilyTree,
 } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Drawer from '@material-ui/core/Drawer';
-import Popover from '@material-ui/core/Popover';
-import Divider from '@material-ui/core/Divider';
+import Tooltip from '@mui/material/Tooltip';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Drawer from '@mui/material/Drawer';
+import Popover from '@mui/material/Popover';
+import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
 import {
   ResponsiveContainer,
@@ -39,17 +40,16 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
-import Slide from '@material-ui/core/Slide';
+import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
 import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
 
-const styles = (theme) => ({
+const styles = () => ({
   bottomNav: {
     zIndex: 1000,
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -184,6 +184,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
           anchor="bottom"
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
+          PaperProps={{ variant: 'elevation', elevation: 1 }}
         >
           <div
             style={{
@@ -212,6 +213,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleChangeView.bind(this, 'lines')}
+                    size="large"
                   >
                     <TableChartOutlined />
                   </IconButton>
@@ -220,6 +222,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color="secondary"
                     onClick={handleChangeView.bind(this, 'graph')}
+                    size="large"
                   >
                     <GraphOutline />
                   </IconButton>
@@ -233,6 +236,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     <IconButton
                       color={currentMode3D ? 'secondary' : 'primary'}
                       disabled={true}
+                      size="large"
                     >
                       <Video3d />
                     </IconButton>
@@ -251,6 +255,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                         currentModeTree === 'vertical' ? 'secondary' : 'primary'
                       }
                       disabled={true}
+                      size="large"
                     >
                       <FamilyTree />
                     </IconButton>
@@ -271,6 +276,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                           : 'primary'
                       }
                       disabled={true}
+                      size="large"
                     >
                       <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                     </IconButton>
@@ -285,6 +291,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     <IconButton
                       color={currentModeFixed ? 'primary' : 'secondary'}
                       disabled={true}
+                      size="large"
                     >
                       <ScatterPlotOutlined />
                     </IconButton>
@@ -295,6 +302,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     <IconButton
                       color={displayTimeRange ? 'secondary' : 'primary'}
                       disabled={true}
+                      size="large"
                     >
                       <DateRangeOutlined />
                     </IconButton>
@@ -302,14 +310,14 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 </Tooltip>
                 <Tooltip title={t('Fit graph to canvas')}>
                   <span>
-                    <IconButton color="primary" disabled={true}>
+                    <IconButton color="primary" disabled={true} size="large">
                       <AspectRatio />
                     </IconButton>
                   </span>
                 </Tooltip>
                 <Tooltip title={t('Unfix the nodes and re-apply forces')}>
                   <span>
-                    <IconButton color="primary" disabled={true}>
+                    <IconButton color="primary" disabled={true} size="large">
                       <AutoFix />
                     </IconButton>
                   </span>
@@ -317,21 +325,21 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 <Divider className={classes.divider} orientation="vertical" />
                 <Tooltip title={t('Filter entity types')}>
                   <span>
-                    <IconButton color="primary" disabled={true}>
+                    <IconButton color="primary" disabled={true} size="large">
                       <FilterListOutlined />
                     </IconButton>
                   </span>
                 </Tooltip>
                 <Tooltip title={t('Filter marking definitions')}>
                   <span>
-                    <IconButton color="primary" disabled={true}>
+                    <IconButton color="primary" disabled={true} size="large">
                       <CenterFocusStrongOutlined />
                     </IconButton>
                   </span>
                 </Tooltip>
                 <Tooltip title={t('Filter authors (created by)')}>
                   <span>
-                    <IconButton color="primary" disabled={true}>
+                    <IconButton color="primary" disabled={true} size="large">
                       <AccountBalanceOutlined />
                     </IconButton>
                   </span>
@@ -339,14 +347,14 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 <Divider className={classes.divider} orientation="vertical" />
                 <Tooltip title={t('Select by entity type')}>
                   <span>
-                    <IconButton color="primary" disabled={true}>
+                    <IconButton color="primary" disabled={true} size="large">
                       <SelectGroup />
                     </IconButton>
                   </span>
                 </Tooltip>
                 <Tooltip title={t('Select all nodes')}>
                   <span>
-                    <IconButton color="primary" disabled={true}>
+                    <IconButton color="primary" disabled={true} size="large">
                       <SelectAll />
                     </IconButton>
                   </span>
@@ -366,6 +374,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                         color="primary"
                         target="_blank"
                         disabled={true}
+                        size="large"
                       >
                         <InfoOutlined />
                       </IconButton>
@@ -417,6 +426,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
         <div
           style={{
@@ -445,6 +455,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 <IconButton
                   color="primary"
                   onClick={handleChangeView.bind(this, 'lines')}
+                  size="large"
                 >
                   <TableChartOutlined />
                 </IconButton>
@@ -453,6 +464,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 <IconButton
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'graph')}
+                  size="large"
                 >
                   <GraphOutline />
                 </IconButton>
@@ -466,6 +478,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color={currentMode3D ? 'secondary' : 'primary'}
                     onClick={handleToggle3DMode.bind(this)}
+                    size="large"
                   >
                     <Video3d />
                   </IconButton>
@@ -485,6 +498,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'vertical')}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <FamilyTree />
                   </IconButton>
@@ -504,6 +518,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'horizontal')}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                   </IconButton>
@@ -518,6 +533,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color={currentModeFixed ? 'primary' : 'secondary'}
                     onClick={handleToggleFixedMode.bind(this)}
+                    size="large"
                   >
                     <ScatterPlotOutlined />
                   </IconButton>
@@ -528,6 +544,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color={displayTimeRange ? 'secondary' : 'primary'}
                     onClick={handleToggleDisplayTimeRange.bind(this)}
+                    size="large"
                   >
                     <DateRangeOutlined />
                   </IconButton>
@@ -538,6 +555,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleZoomToFit.bind(this)}
+                    size="large"
                   >
                     <AspectRatio />
                   </IconButton>
@@ -549,6 +567,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     color="primary"
                     onClick={handleResetLayout.bind(this)}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <AutoFix />
                   </IconButton>
@@ -560,6 +579,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
+                    size="large"
                   >
                     <FilterListOutlined />
                   </IconButton>
@@ -612,6 +632,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenMarkedBy.bind(this)}
+                    size="large"
                   >
                     <CenterFocusStrongOutlined />
                   </IconButton>
@@ -664,6 +685,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenCreatedBy.bind(this)}
+                    size="large"
                   >
                     <AccountBalanceOutlined />
                   </IconButton>
@@ -713,6 +735,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenSelectByType.bind(this)}
+                    size="large"
                   >
                     <SelectGroup />
                   </IconButton>
@@ -756,6 +779,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleSelectAll.bind(this)}
+                    size="large"
                   >
                     <SelectAll />
                   </IconButton>
@@ -777,6 +801,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     target="_blank"
                     to={viewLink}
                     disabled={!viewEnabled}
+                    size="large"
                   >
                     <InfoOutlined />
                   </IconButton>

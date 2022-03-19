@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import {
   assoc,
   compose,
@@ -15,7 +14,7 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@material-ui/core/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -34,7 +33,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -244,9 +242,7 @@ class OrganizationEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, organization, context, enableReferences,
-    } = this.props;
+    const { t, organization, context, enableReferences } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], organization) === null
       ? ''
       : {
@@ -290,6 +286,7 @@ class OrganizationEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -315,6 +312,7 @@ class OrganizationEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
+              variant="standard"
               name="contact_information"
               label={t('Contact information')}
               fullWidth={true}
@@ -332,6 +330,7 @@ class OrganizationEditionOverviewComponent extends Component {
             />
             <Field
               component={SelectField}
+              variant="standard"
               name="x_opencti_organization_type"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -357,6 +356,7 @@ class OrganizationEditionOverviewComponent extends Component {
             </Field>
             <Field
               component={SelectField}
+              variant="standard"
               name="x_opencti_reliability"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}

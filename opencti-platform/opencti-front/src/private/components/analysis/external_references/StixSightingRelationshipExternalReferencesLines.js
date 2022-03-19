@@ -1,25 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+import { graphql, createPaginationContainer } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Button from '@material-ui/core/Button';
-import Avatar from '@material-ui/core/Avatar';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
-import Slide from '@material-ui/core/Slide';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Button from '@mui/material/Button';
+import Avatar from '@mui/material/Avatar';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import { ExpandMoreOutlined, ExpandLessOutlined } from '@mui/icons-material';
+import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -64,14 +63,14 @@ const styles = (theme) => ({
   },
   buttonExpand: {
     position: 'absolute',
-    bottom: 2,
+    bottom: 0,
     width: '100%',
     height: 25,
-    backgroundColor: 'rgba(255, 255, 255, .2)',
+    backgroundColor: 'rgba(255, 255, 255, .1)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, .5)',
+      backgroundColor: 'rgba(255, 255, 255, .2)',
     },
   },
 });
@@ -166,9 +165,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
   }
 
   render() {
-    const {
-      t, classes, stixSightingRelationshipId, data,
-    } = this.props;
+    const { t, classes, stixSightingRelationshipId, data } = this.props;
     const { expanded } = this.state;
     const externalReferencesEdges = data.stixSightingRelationship.externalReferences.edges;
     const expandable = externalReferencesEdges.length > 7;
@@ -186,7 +183,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           />
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           {externalReferencesEdges.length > 0 ? (
             <List style={{ marginBottom: 0 }}>
               {R.take(expanded ? 200 : 7, externalReferencesEdges).map(
@@ -352,6 +349,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           )}
         </Paper>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayDialog}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -379,6 +377,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayExternalLink}
           keepMounted={true}
           TransitionComponent={Transition}

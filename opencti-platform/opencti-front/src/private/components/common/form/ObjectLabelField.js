@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
-import {
-  compose, pathOr, pipe, map, union, append,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union, append } from 'ramda';
 import { Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { Label } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -64,9 +62,7 @@ class ObjectLabelField extends Component {
   }
 
   render() {
-    const {
-      t, name, style, classes, setFieldValue, values, helpertext,
-    } = this.props;
+    const { t, name, style, classes, setFieldValue, values, helpertext } = this.props;
     return (
       <div>
         <Field
@@ -75,6 +71,7 @@ class ObjectLabelField extends Component {
           name={name}
           multiple={true}
           textfieldprops={{
+            variant: 'standard',
             label: t('Labels'),
             helperText: helpertext,
             onFocus: this.searchLabels.bind(this),
@@ -83,13 +80,13 @@ class ObjectLabelField extends Component {
           options={this.state.labels}
           onInputChange={this.searchLabels.bind(this)}
           openCreate={this.handleOpenLabelCreation.bind(this)}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon} style={{ color: option.color }}>
                 <Label />
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />

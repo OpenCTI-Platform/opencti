@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
 import {
   compose,
   pluck,
@@ -25,14 +25,14 @@ import {
   propOr,
 } from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import Dialog from '@material-ui/core/Dialog';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@mui/material/Dialog';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
@@ -121,7 +121,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -160,8 +159,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -488,7 +486,7 @@ class StixCyberObservableCreation extends Component {
         query={stixCyberObservablesLinesAttributesQuery}
         variables={{ elementType: type }}
         render={({ props }) => {
-          if (props && props.attributes) {
+          if (props && props.schemaAttributes) {
             const initialValues = {
               x_opencti_description: '',
               x_opencti_score: 50,
@@ -504,7 +502,7 @@ class StixCyberObservableCreation extends Component {
                 (n) => !includes(n.value, ignoredAttributes)
                   && !n.value.startsWith('i_'),
               ),
-            )(props.attributes.edges);
+            )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {
                 initialValues[attribute.value] = null;
@@ -537,6 +535,7 @@ class StixCyberObservableCreation extends Component {
                     <div>
                       <Field
                         component={TextField}
+                        variant="standard"
                         name="x_opencti_score"
                         label={t('Score')}
                         fullWidth={true}
@@ -557,7 +556,7 @@ class StixCyberObservableCreation extends Component {
                             <div key={attribute.value}>
                               <Field
                                 component={TextField}
-                                key={attribute.value}
+                                variant="standard"
                                 name="hashes_MD5"
                                 label="hash_md5"
                                 fullWidth={true}
@@ -565,7 +564,7 @@ class StixCyberObservableCreation extends Component {
                               />
                               <Field
                                 component={TextField}
-                                key={attribute.value}
+                                variant="standard"
                                 name="hashes_SHA-1"
                                 label="hash_sha-1"
                                 fullWidth={true}
@@ -573,7 +572,7 @@ class StixCyberObservableCreation extends Component {
                               />
                               <Field
                                 component={TextField}
-                                key={attribute.value}
+                                variant="standard"
                                 name="hashes_SHA-256"
                                 label="hash_sha-256"
                                 fullWidth={true}
@@ -588,12 +587,15 @@ class StixCyberObservableCreation extends Component {
                               component={DatePickerField}
                               key={attribute.value}
                               name={attribute.value}
-                              label={attribute.value}
                               invalidDateMessage={t(
-                                'The value must be a date (YYYY-MM-DD)',
+                                'The value must be a date (mm/dd/yyyy)',
                               )}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
+                              TextFieldProps={{
+                                label: attribute.value,
+                                variant: 'standard',
+                                fullWidth: true,
+                                style: { marginTop: 20 },
+                              }}
                             />
                           );
                         }
@@ -601,6 +603,7 @@ class StixCyberObservableCreation extends Component {
                           return (
                             <Field
                               component={TextField}
+                              variant="standard"
                               key={attribute.value}
                               name={attribute.value}
                               label={attribute.value}
@@ -625,6 +628,7 @@ class StixCyberObservableCreation extends Component {
                         return (
                           <Field
                             component={TextField}
+                            variant="standard"
                             key={attribute.value}
                             name={attribute.value}
                             label={attribute.value}
@@ -652,6 +656,8 @@ class StixCyberObservableCreation extends Component {
                     <ExternalReferencesField
                       name="externalReferences"
                       style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.externalReferences}
                     />
                     <Field
                       component={SwitchField}
@@ -671,7 +677,7 @@ class StixCyberObservableCreation extends Component {
                       </Button>
                       <Button
                         variant="contained"
-                        color="primary"
+                        color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -708,6 +714,8 @@ class StixCyberObservableCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          sx={{ zIndex: 1202 }}
+          elevation={1}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -716,8 +724,10 @@ class StixCyberObservableCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
+              size="large"
+              color="primary"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Create an observable')}</Typography>
           </div>
@@ -731,9 +741,7 @@ class StixCyberObservableCreation extends Component {
 
   renderContextual() {
     const { type } = this.state;
-    const {
-      t, classes, display, speeddial,
-    } = this.props;
+    const { t, classes, display, speeddial } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!speeddial && (
@@ -748,6 +756,7 @@ class StixCyberObservableCreation extends Component {
         )}
         <Dialog
           open={speeddial ? this.props.open : this.state.open}
+          PaperProps={{ elevation: 1 }}
           onClose={
             speeddial
               ? this.props.handleClose.bind(this)

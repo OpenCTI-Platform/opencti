@@ -1,9 +1,8 @@
 import React from 'react';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core';
+import { graphql, createFragmentContainer } from 'react-relay';
+import Grid from '@mui/material/Grid';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableHeader from './StixCyberObservableHeader';
 import StixCyberObservableKnowledgeEntities from './StixCyberObservableKnowledgeEntities';
@@ -37,7 +36,7 @@ const StixCyberObservableKnowledge = (props) => {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10, marginBottom: 30 }}>
           <QueryRenderer
             query={stixCyberObservableLinksQuery}
             variables={{ count: 25, ...paginationOptions }}
@@ -51,7 +50,7 @@ const StixCyberObservableKnowledge = (props) => {
             )}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 10, marginBottom: 30 }}>
           <StixCyberObservableIndicators
             paginationOptions={paginationOptions}
             stixCyberObservable={stixCyberObservable}

@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import List from '@material-ui/core/List';
+import List from '@mui/material/List';
 import { Link } from 'react-router-dom';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -31,9 +30,7 @@ const styles = () => ({
 
 class ExternalReferenceStixCoreObjectsComponent extends Component {
   render() {
-    const {
-      t, fd, classes, externalReference,
-    } = this.props;
+    const { t, fd, classes, externalReference } = this.props;
     const stixCoreObjects = R.map(
       (n) => n.node,
       externalReference.references.edges,
@@ -43,7 +40,7 @@ class ExternalReferenceStixCoreObjectsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Linked objects')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List classes={{ root: classes.list }}>
             {stixCoreObjects.map((stixCoreObject) => (
               <ListItem

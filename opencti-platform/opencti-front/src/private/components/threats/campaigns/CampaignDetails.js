@@ -1,13 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
@@ -25,15 +24,13 @@ const styles = () => ({
 
 class CampaignDetailsComponent extends Component {
   render() {
-    const {
-      fld, t, classes, campaign,
-    } = this.props;
+    const { fldt, t, classes, campaign } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -59,7 +56,7 @@ class CampaignDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('First seen')}
               </Typography>
-              {fld(campaign.first_seen)}
+              {fldt(campaign.first_seen)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -67,7 +64,7 @@ class CampaignDetailsComponent extends Component {
               >
                 {t('Last seen')}
               </Typography>
-              {fld(campaign.last_seen)}
+              {fldt(campaign.last_seen)}
             </Grid>
           </Grid>
         </Paper>
@@ -80,7 +77,7 @@ CampaignDetailsComponent.propTypes = {
   campaign: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const CampaignDetails = createFragmentContainer(CampaignDetailsComponent, {

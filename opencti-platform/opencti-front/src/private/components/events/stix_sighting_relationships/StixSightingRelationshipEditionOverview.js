@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import {
   assoc,
@@ -14,11 +13,11 @@ import {
   pick,
   pipe,
 } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
-import { Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
+import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { dateFormat } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
@@ -42,8 +41,7 @@ import StatusField from '../../common/form/StatusField';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -63,8 +61,6 @@ const styles = (theme) => ({
   appBar: {
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.header.text,
     borderBottom: '1px solid #5c5c5c',
   },
   title: {
@@ -323,8 +319,10 @@ const StixSightingRelationshipEditionContainer = ({
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
+          size="large"
+          color="primary"
         >
-          <Close fontSize="small" />
+          <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
           {t('Update a sighting')}
@@ -342,6 +340,7 @@ const StixSightingRelationshipEditionContainer = ({
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="attribute_count"
                 label={t('Count')}
                 fullWidth={true}
@@ -368,35 +367,41 @@ const StixSightingRelationshipEditionContainer = ({
               <Field
                 component={DatePickerField}
                 name="first_seen"
-                label={t('First seen')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="first_seen"
-                  />
-                }
+                onChange={handleSubmitField}
+                TextFieldProps={{
+                  label: t('First seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  helperText: (
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="first_seen"
+                    />
+                  ),
+                }}
                 disabled={inferred}
               />
               <Field
                 component={DatePickerField}
                 name="last_seen"
-                label={t('Last seen')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={handleChangeFocus}
-                onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="last_seen"
-                  />
-                }
+                onChange={handleSubmitField}
+                TextFieldProps={{
+                  label: t('Last seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  helperText: (
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="last_seen"
+                    />
+                  ),
+                }}
                 disabled={inferred}
               />
               <Field

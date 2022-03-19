@@ -1,20 +1,20 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import { SettingsOutlined } from '@material-ui/icons';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import IconButton from '@material-ui/core/IconButton';
-import DialogContent from '@material-ui/core/DialogContent';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
-import graphql from 'babel-plugin-relay/macro';
+import withStyles from '@mui/styles/withStyles';
+import { SettingsOutlined } from '@mui/icons-material';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import DialogContent from '@mui/material/DialogContent';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
+import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../relay/environment';
 import Security, { EXPLORE } from '../../utils/Security';
 import inject18n from '../../components/i18n';
@@ -78,11 +78,12 @@ class DashboardSettings extends Component {
     const { open } = this.state;
     return (
       <span>
-        <IconButton onClick={this.handleOpen.bind(this)} size="small">
+        <IconButton onClick={this.handleOpen.bind(this)} size="medium">
           <SettingsOutlined fontSize="small" />
         </IconButton>
         <Dialog
           open={open}
+          PaperProps={{ elevation: 1 }}
           TransitionComponent={Transition}
           onClose={this.handleClose.bind(this)}
           maxWidth="xs"
@@ -128,11 +129,12 @@ class DashboardSettings extends Component {
                     return (
                       <div>
                         <FormControl style={{ width: '100%' }}>
-                          <InputLabel id="timeField">
+                          <InputLabel id="timeField" variant="standard">
                             {t('Date reference')}
                           </InputLabel>
                           <Select
                             labelId="timeField"
+                            variant="standard"
                             value={timeField === null ? '' : timeField}
                             onChange={handleChangeTimeField.bind(this)}
                             fullWidth={true}
@@ -146,11 +148,12 @@ class DashboardSettings extends Component {
                           </Select>
                         </FormControl>
                         <FormControl style={{ width: '100%', marginTop: 20 }}>
-                          <InputLabel id="timeField">
+                          <InputLabel id="timeField" variant="standard">
                             {t('Custom dashboard')}
                           </InputLabel>
                           <Select
                             labelId="dashboard"
+                            variant="standard"
                             value={dashboard === null ? '' : dashboard}
                             onChange={handleChangeDashboard.bind(this)}
                             fullWidth={true}

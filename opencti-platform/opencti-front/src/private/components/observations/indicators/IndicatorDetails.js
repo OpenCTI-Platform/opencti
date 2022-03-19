@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { Launch, SettingsApplications } from '@material-ui/icons';
-import ListItemText from '@material-ui/core/ListItemText';
-import Chip from '@material-ui/core/Chip';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import { Launch, SettingsApplications } from '@mui/icons-material';
+import ListItemText from '@mui/material/ListItemText';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
@@ -31,9 +30,9 @@ const styles = (theme) => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.accent,
     borderRadius: 5,
-    color: '#ffffff',
+    color: theme.palette.text.primary,
     textTransform: 'uppercase',
     margin: '0 5px 5px 0',
   },
@@ -41,15 +40,13 @@ const styles = (theme) => ({
 
 class IndicatorDetailsComponent extends Component {
   render() {
-    const {
-      t, fld, classes, indicator,
-    } = this.props;
+    const { t, fld, classes, indicator } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Typography variant="h3" gutterBottom={true}>
             {t('Indicator pattern')}
           </Typography>

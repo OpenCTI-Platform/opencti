@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import Timeline from '@material-ui/lab/Timeline';
-import TimelineItem from '@material-ui/lab/TimelineItem';
-import TimelineSeparator from '@material-ui/lab/TimelineSeparator';
-import TimelineConnector from '@material-ui/lab/TimelineConnector';
-import TimelineContent from '@material-ui/lab/TimelineContent';
-import TimelineOppositeContent from '@material-ui/lab/TimelineOppositeContent';
-import TimelineDot from '@material-ui/lab/TimelineDot';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Timeline from '@mui/lab/Timeline';
+import TimelineItem from '@mui/lab/TimelineItem';
+import TimelineSeparator from '@mui/lab/TimelineSeparator';
+import TimelineConnector from '@mui/lab/TimelineConnector';
+import TimelineContent from '@mui/lab/TimelineContent';
+import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
+import TimelineDot from '@mui/lab/TimelineDot';
 import { Link } from 'react-router-dom';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from '@mui/material/CircularProgress';
 import Markdown from 'react-markdown';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -26,6 +26,7 @@ const styles = (theme) => ({
   container: {
     width: '100%',
     height: '100%',
+    overflow: 'auto',
   },
   paper: {
     padding: 15,
@@ -53,6 +54,7 @@ const stixDomainObjectsTimelineQuery = graphql`
     ) {
       edges {
         node {
+          id
           entity_type
           created
           modified
@@ -140,9 +142,7 @@ const stixDomainObjectsTimelineQuery = graphql`
 
 class StixDomainObjectsTimeline extends Component {
   renderContent() {
-    const {
-      t, types, md, classes,
-    } = this.props;
+    const { t, types, md, classes } = this.props;
     const stixDomainObjectsVariables = {
       types,
       first: 10,
@@ -162,7 +162,7 @@ class StixDomainObjectsTimeline extends Component {
             const stixDomainObjectsEdges = props.stixDomainObjects.edges;
             return (
               <div id="container" className={classes.container}>
-                <Timeline align="alternate">
+                <Timeline position="alternate">
                   {stixDomainObjectsEdges.map((stixDomainObjectEdge) => {
                     const stixDomainObject = stixDomainObjectEdge.node;
                     const link = `${resolveLink(
@@ -184,7 +184,7 @@ class StixDomainObjectsTimeline extends Component {
                           <TimelineConnector />
                         </TimelineSeparator>
                         <TimelineContent>
-                          <Paper elevation={3} className={classes.paper}>
+                          <Paper variant="outlined" className={classes.paper}>
                             <Typography variant="h2">
                               {defaultValue(stixDomainObject)}
                             </Typography>
@@ -236,16 +236,20 @@ class StixDomainObjectsTimeline extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant,
-    } = this.props;
+    const { t, classes, title, variant } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '-10px 0 5px -7px' : '0 0 10px 0',
+          }}
+        >
           {title || t('StixDomainObjects timeline')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

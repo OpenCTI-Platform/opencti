@@ -1,39 +1,33 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
+import { graphql, createPaginationContainer } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AttributeLine, AttributeLineDummy } from './AttributeLine';
 
-const nbOfRowsToLoad = 50;
+const nbOfRowsToLoad = 200;
 
-class AttributesLines extends Component {
-  render() {
-    const {
-      initialLoading, dataColumns, relay, paginationOptions,
-    } = this.props;
-    return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['attributes', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['attributes', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={<AttributeLine />}
-        DummyLineComponent={<AttributeLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-      />
-    );
-  }
-}
+const AttributesLines = (props) => {
+  const { data, initialLoading, dataColumns, relay, paginationOptions } = props;
+  const attributes = data?.runtimeAttributes?.edges ?? [];
+  const globalCount = data?.runtimeAttributes?.pageInfo?.globalCount ?? nbOfRowsToLoad;
+  const refetch = () => relay.refetchConnection(nbOfRowsToLoad);
+  return (
+    <ListLinesContent
+      initialLoading={initialLoading}
+      loadMore={relay.loadMore}
+      hasMore={relay.hasMore}
+      refetch={refetch}
+      isLoading={relay.isLoading}
+      dataList={attributes}
+      globalCount={globalCount}
+      LineComponent={<AttributeLine />}
+      DummyLineComponent={<AttributeLineDummy />}
+      dataColumns={dataColumns}
+      nbOfRowsToLoad={nbOfRowsToLoad}
+      paginationOptions={paginationOptions}
+    />
+  );
+};
 
 AttributesLines.propTypes = {
   classes: PropTypes.object,
@@ -47,7 +41,7 @@ AttributesLines.propTypes = {
 
 export const attributesQuery = graphql`
   query AttributesLinesAttributesQuery($key: String!) {
-    attributes(key: $key) {
+    runtimeAttributes(attributeName: $key) {
       edges {
         node {
           id
@@ -61,20 +55,16 @@ export const attributesQuery = graphql`
 
 export const attributesLinesQuery = graphql`
   query AttributesLinesPaginationQuery(
-    $key: String!
+    $attributeName: String!
     $search: String
     $count: Int
-    $cursor: ID
-    $orderBy: AttributesOrdering
     $orderMode: OrderingMode
   ) {
     ...AttributesLines_data
       @arguments(
-        key: $key
+        attributeName: $attributeName
         search: $search
         count: $count
-        cursor: $cursor
-        orderBy: $orderBy
         orderMode: $orderMode
       )
   }
@@ -86,21 +76,17 @@ export default createPaginationContainer(
     data: graphql`
       fragment AttributesLines_data on Query
       @argumentDefinitions(
-        key: { type: "String!" }
+        attributeName: { type: "String!" }
         search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "AttributesOrdering", defaultValue: value }
+        count: { type: "Int", defaultValue: 200 }
         orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
-        attributes(
-          key: $key
+        runtimeAttributes(
+          attributeName: $attributeName
           search: $search
           first: $count
-          after: $cursor
-          orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_attributes") {
+        ) @connection(key: "Pagination_runtimeAttributes") {
           edges {
             node {
               ...AttributeLine_node
@@ -118,7 +104,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.attributes;
+      return props.data && props.data.runtimeAttributes;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -126,12 +112,11 @@ export default createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables(props, { count }, fragmentVariables) {
       return {
-        search: fragmentVariables.search,
         count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
+        attributeName: fragmentVariables.attributeName,
+        search: fragmentVariables.search,
         orderMode: fragmentVariables.orderMode,
       };
     },

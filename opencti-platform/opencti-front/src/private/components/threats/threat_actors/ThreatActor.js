@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ThreatActorDetails from './ThreatActorDetails';
 import ThreatActorEdition from './ThreatActorEdition';
@@ -42,10 +41,10 @@ class ThreatActorComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={threatActor} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <ThreatActorDetails threatActor={threatActor} />
           </Grid>
         </Grid>
@@ -144,6 +143,15 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...ThreatActorDetails_threatActor
     }
   `,

@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, map, assoc } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
+import { graphql } from 'react-relay';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -20,6 +21,8 @@ const styles = () => ({
   container: {
     width: '100%',
     height: '100%',
+    overflow: 'auto',
+    paddingBottom: 10,
   },
   paper: {
     height: '100%',
@@ -187,7 +190,7 @@ class StixCoreRelationshipsList extends Component {
             }
             return (
               <div id="container" className={classes.container}>
-                <TableContainer component={Paper}>
+                <TableContainer>
                   <Table size="small" style={{ width: '100%' }}>
                     <TableHead>
                       <TableRow>
@@ -259,16 +262,20 @@ class StixCoreRelationshipsList extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('StixCoreRelationships distribution')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

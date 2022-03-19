@@ -1,19 +1,15 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import {
-  compose, filter, find, includes, pick, propEq,
-} from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Checkbox from '@material-ui/core/Checkbox';
-import List from '@material-ui/core/List';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Checkbox from '@mui/material/Checkbox';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
@@ -21,31 +17,6 @@ import MarkDownField from '../../../../components/MarkDownField';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import SwitchField from '../../../../components/SwitchField';
-
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-  },
-  importButton: {
-    position: 'absolute',
-    top: 30,
-    right: 30,
-  },
-});
 
 const roleMutationFieldPatch = graphql`
   mutation RoleEditionOverviewFieldPatchMutation(
@@ -119,10 +90,8 @@ const roleValidation = (t) => Yup.object().shape({
   default_assignation: Yup.bool(),
 });
 
-const RoleEditionOverviewComponent = ({
-  t, role, context, classes,
-}) => {
-  const initialValues = pick(
+const RoleEditionOverviewComponent = ({ t, role, context }) => {
+  const initialValues = R.pick(
     ['name', 'description', 'default_assignation'],
     role,
   );
@@ -184,6 +153,7 @@ const RoleEditionOverviewComponent = ({
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -229,11 +199,13 @@ const RoleEditionOverviewComponent = ({
                   return (
                     <List
                       dense={true}
-                      className={classes.root}
                       subheader={
                         <ListSubheader
                           component="div"
-                          style={{ paddingLeft: 0 }}
+                          sx={{
+                            paddingLeft: 0,
+                            backgroundColor: 'transparent',
+                          }}
                         >
                           {t('Capabilities')}
                         </ListSubheader>
@@ -242,12 +214,12 @@ const RoleEditionOverviewComponent = ({
                       {props.capabilities.edges.map((edge) => {
                         const capability = edge.node;
                         const paddingLeft = capability.name.split('_').length * 20 - 20;
-                        const roleCapability = find(
-                          propEq('name', capability.name),
+                        const roleCapability = R.find(
+                          R.propEq('name', capability.name),
                         )(role.capabilities);
-                        const matchingCapabilities = filter(
+                        const matchingCapabilities = R.filter(
                           (r) => capability.name !== r.name
-                            && includes(capability.name, r.name),
+                            && R.includes(capability.name, r.name),
                           role.capabilities,
                         );
                         const isDisabled = matchingCapabilities.length > 0;
@@ -310,7 +282,4 @@ const RoleEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(RoleEditionOverview);
+export default inject18n(RoleEditionOverview);

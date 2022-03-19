@@ -1,0 +1,42 @@
+diff --git a/lib/nconf.js b/lib/nconf.js
+index 195d9a1cbd7561e6394e890056d3a1b7eedddccb..639dcf048266b4cb59c5496d295a23d900e68f28 100644
+--- a/lib/nconf.js
++++ b/lib/nconf.js
+@@ -21,12 +21,24 @@
+ //
+ // Setup all stores as lazy-loaded getters.
+ //
+-['argv', 'env', 'file', 'literal', 'memory'].forEach(function (store) {
+-    var name = common.capitalize(store);
++nconf.__defineGetter__('Argv', function () {
++    return require('./nconf/stores/argv').Argv;
++});
++
++nconf.__defineGetter__('Env', function () {
++    return require('./nconf/stores/env').Env;
++});
++
++nconf.__defineGetter__('File', function () {
++    return require('./nconf/stores/file').File;
++});
++
++nconf.__defineGetter__('Literal', function () {
++    return require('./nconf/stores/literal').Literal;
++});
+
+-    nconf.__defineGetter__(name, function () {
+-        return require('./nconf/stores/' + store)[name];
+-    });
++nconf.__defineGetter__('Memory', function () {
++    return require('./nconf/stores/memory').Memory;
+ });
+
+ //
+@@ -36,5 +48,4 @@
+ nconf.path          = common.path;
+ nconf.loadFiles     = common.loadFiles;
+ nconf.loadFilesSync = common.loadFilesSync;
+-nconf.formats       = require('./nconf/formats');
+-nconf.Provider      = Provider;
++nconf.formats       = require('./nconf/formats');
+\ No newline at end of file

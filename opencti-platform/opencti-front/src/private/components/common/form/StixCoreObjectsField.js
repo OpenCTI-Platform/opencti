@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
-import {
-  compose, pathOr, pipe, map, union,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union } from 'ramda';
 import { Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
+import withStyles from '@mui/styles/withStyles';
+import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
@@ -190,9 +188,7 @@ class StixCoreObjectsField extends Component {
   }
 
   render() {
-    const {
-      t, name, style, classes, helpertext,
-    } = this.props;
+    const { t, name, style, classes, helpertext } = this.props;
     return (
       <div>
         <Field
@@ -201,6 +197,7 @@ class StixCoreObjectsField extends Component {
           name={name}
           multiple={true}
           textfieldprops={{
+            variant: 'standard',
             label: t('Entities'),
             helperText: helpertext,
             onFocus: this.searchStixCoreObjects.bind(this),
@@ -208,13 +205,13 @@ class StixCoreObjectsField extends Component {
           noOptionsText={t('No available options')}
           options={this.state.stixCoreObjects}
           onInputChange={this.searchStixCoreObjects.bind(this)}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon} style={{ color: option.color }}>
                 <ItemIcon type={option.type} />
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />

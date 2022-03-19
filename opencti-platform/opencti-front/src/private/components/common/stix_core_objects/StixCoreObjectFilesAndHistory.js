@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
 import {
   compose,
   filter,
@@ -12,17 +11,17 @@ import {
   zip,
 } from 'ramda';
 import * as Yup from 'yup';
-import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
-import MenuItem from '@material-ui/core/MenuItem';
-import { createFragmentContainer } from 'react-relay';
+import MenuItem from '@mui/material/MenuItem';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import FileExportViewer from '../files/FileExportViewer';
 import FileImportViewer from '../files/FileImportViewer';
 import SelectField from '../../../../components/SelectField';
@@ -46,7 +45,7 @@ const styles = () => ({
     marginBottom: 20,
   },
   historyContainer: {
-    marginTop: 40,
+    marginTop: 80,
   },
   paper: {
     height: '100%',
@@ -257,6 +256,7 @@ const StixCoreObjectFilesAndHistory = ({
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={fileToImport}
                 keepMounted={true}
                 onClose={handleCloseImport}
@@ -266,6 +266,7 @@ const StixCoreObjectFilesAndHistory = ({
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="connector_id"
                     label={t('Connector')}
                     fullWidth={true}
@@ -291,18 +292,13 @@ const StixCoreObjectFilesAndHistory = ({
                   </Field>
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>
@@ -327,6 +323,7 @@ const StixCoreObjectFilesAndHistory = ({
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={openExport}
                 keepMounted={true}
                 onClose={handleCloseExport}
@@ -342,6 +339,7 @@ const StixCoreObjectFilesAndHistory = ({
                         <DialogContent>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
@@ -359,6 +357,7 @@ const StixCoreObjectFilesAndHistory = ({
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}
@@ -373,6 +372,7 @@ const StixCoreObjectFilesAndHistory = ({
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}
@@ -398,18 +398,13 @@ const StixCoreObjectFilesAndHistory = ({
                   }}
                 />
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

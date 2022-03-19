@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, map, assoc } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import TableContainer from '@material-ui/core/TableContainer';
-import Table from '@material-ui/core/Table';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import TableCell from '@material-ui/core/TableCell';
-import TableBody from '@material-ui/core/TableBody';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import TableContainer from '@mui/material/TableContainer';
+import Table from '@mui/material/Table';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import TableCell from '@mui/material/TableCell';
+import TableBody from '@mui/material/TableBody';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -251,16 +252,20 @@ class EntityStixCoreRelationshipsList extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant,
-    } = this.props;
+    const { t, classes, title, variant } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('StixDomainObjects distribution')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

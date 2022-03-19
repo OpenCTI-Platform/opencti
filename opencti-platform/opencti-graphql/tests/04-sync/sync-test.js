@@ -17,7 +17,7 @@ import {
   SYNC_RESTORE_START_REMOTE_URI,
   SYNC_TEST_REMOTE_URI,
 } from '../utils/testQuery';
-import { elAggregationCount } from '../../src/database/elasticSearch';
+import { elAggregationCount } from '../../src/database/engine';
 import { execPython3, executePython } from '../../src/python/pythonBridge';
 import { fullLoadById } from '../../src/database/middleware';
 import { buildStixData } from '../../src/database/stix';
@@ -125,7 +125,9 @@ describe('Database provision', () => {
   };
 
   // eslint-disable-next-line prettier/prettier
-  it('Should python raw sync succeed', async () => {
+  it(
+    'Should python raw sync succeed',
+    async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
@@ -142,7 +144,9 @@ describe('Database provision', () => {
   );
 
   // eslint-disable-next-line prettier/prettier
-  it('Should python live sync succeed', async () => {
+  it(
+    'Should python live sync succeed',
+    async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
@@ -167,7 +171,9 @@ describe('Database provision', () => {
   );
 
   // eslint-disable-next-line prettier/prettier
-  it('Should direct sync succeed', async () => {
+  it(
+    'Should direct sync succeed',
+    async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       await startModules();
@@ -273,7 +279,9 @@ describe('Database provision', () => {
     );
   };
   // eslint-disable-next-line prettier/prettier
-  it('Should backup/restore sync succeed', async () => {
+  it(
+    'Should backup/restore sync succeed',
+    async () => {
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Create the backup

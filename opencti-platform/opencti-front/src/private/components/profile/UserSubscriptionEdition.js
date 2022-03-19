@@ -2,19 +2,18 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import * as R from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
-import Chip from '@material-ui/core/Chip';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import { Close } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
@@ -26,8 +25,7 @@ import { defaultValue } from '../../../utils/Graph';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 0px 20px 60px',
   },
   closeButton: {
@@ -47,8 +45,6 @@ const styles = (theme) => ({
   appBar: {
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.header.text,
     borderBottom: '1px solid #5c5c5c',
   },
   title: {
@@ -62,7 +58,7 @@ const styles = (theme) => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.accent,
     margin: '0 10px 10px 0',
   },
 });
@@ -87,9 +83,7 @@ const userSubscriptionValidation = (t) => Yup.object().shape({
 });
 
 const UserSubscriptionEditionContainer = (props) => {
-  const {
-    t, classes, handleClose, userSubscription,
-  } = props;
+  const { t, classes, handleClose, userSubscription } = props;
   const entities = R.pipe(
     R.propOr([], 'entities'),
     R.map((n) => ({
@@ -189,8 +183,10 @@ const UserSubscriptionEditionContainer = (props) => {
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
+          size="large"
+          color="primary"
         >
-          <Close fontSize="small" />
+          <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6">{t('Update a subscription')}</Typography>
       </div>
@@ -204,6 +200,7 @@ const UserSubscriptionEditionContainer = (props) => {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="name"
                 label={t('Name')}
                 fullWidth={true}
@@ -211,6 +208,7 @@ const UserSubscriptionEditionContainer = (props) => {
               />
               <Field
                 component={SelectField}
+                variant="standard"
                 name="cron"
                 label={t('Periodicity')}
                 fullWidth={true}

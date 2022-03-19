@@ -2,16 +2,16 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { WifiTetheringOutlined, VisibilityOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import { WifiTetheringOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { Fire } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -38,7 +38,7 @@ class TopMenuThreats extends Component {
           color={
             location.pathname.includes('/dashboard/events/incidents')
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -57,7 +57,7 @@ class TopMenuThreats extends Component {
           color={
             location.pathname.includes('/dashboard/events/sightings')
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -76,7 +76,7 @@ class TopMenuThreats extends Component {
           color={
             location.pathname.includes('/dashboard/events/observed_data')
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

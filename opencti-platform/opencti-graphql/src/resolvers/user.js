@@ -125,8 +125,7 @@ const userResolvers = {
       contextPatch: ({ input }) => roleEditContext(user, id, input),
       contextClean: () => roleCleanContext(user, id),
       relationAdd: ({ input }) => roleAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        roleDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => roleDeleteRelation(user, id, toId, relationshipType),
     }),
     roleAdd: (_, { input }, { user }) => addRole(user, input),
     userEdit: (_, { id }, { user }) => ({
@@ -136,8 +135,7 @@ const userResolvers = {
       contextClean: () => userCleanContext(user, id),
       tokenRenew: () => userRenewToken(user, id),
       relationAdd: ({ input }) => userAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        userIdDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => userIdDeleteRelation(user, id, toId, relationshipType),
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     meTokenRenew: (_, __, { user }) => userRenewToken(user, user.id),

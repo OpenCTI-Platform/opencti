@@ -20,7 +20,9 @@ const TLP_TEST_ID = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
 
 describe('Located at located rule', () => {
   // eslint-disable-next-line prettier/prettier
-  it('Should rule successfully activated', async () => {
+  it(
+    'Should rule successfully activated',
+    async () => {
       await startModules();
       const TLP_WHITE_INSTANCE = await internalLoadById(SYSTEM_USER, TLP_WHITE_ID);
       const TLP_TEST_INSTANCE = await internalLoadById(SYSTEM_USER, TLP_TEST_ID);
@@ -41,7 +43,12 @@ describe('Located at located rule', () => {
       const afterActivationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterActivationRelations.length).toBe(3);
       // eslint-disable-next-line prettier/prettier
-      const hietzingToWesternEurope = await inferenceLookup(afterActivationRelations, HIETZING, WESTERN_EUROPE, RELATION_LOCATED_AT);
+      const hietzingToWesternEurope = await inferenceLookup(
+        afterActivationRelations,
+        HIETZING,
+        WESTERN_EUROPE,
+        RELATION_LOCATED_AT
+      );
       expect(hietzingToWesternEurope).not.toBeNull();
       expect(hietzingToWesternEurope.confidence).toBe(23); // AVG 2 relations (30 + 0) = 15
       expect(hietzingToWesternEurope.start_time).toBe('2020-02-29T23:00:00.000Z');
@@ -83,7 +90,12 @@ describe('Located at located rule', () => {
       expect(afterLiveRelations.length).toBe(5);
       // Inferences must have been created by the markings combination
       // eslint-disable-next-line prettier/prettier
-      const parisToWesternEurope = await inferenceLookup(afterLiveRelations, PARIS, WESTERN_EUROPE, RELATION_LOCATED_AT);
+      const parisToWesternEurope = await inferenceLookup(
+        afterLiveRelations,
+        PARIS,
+        WESTERN_EUROPE,
+        RELATION_LOCATED_AT
+      );
       expect(parisToWesternEurope).not.toBeNull();
       expect(parisToWesternEurope.confidence).toBe(58); // AVG 2 relations (100 + 0) = 50
       expect(parisToWesternEurope.start_time).toBe('2020-01-20T20:30:00.000Z');

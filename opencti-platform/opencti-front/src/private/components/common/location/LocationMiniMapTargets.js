@@ -11,10 +11,9 @@ import {
   filter,
   head,
 } from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core';
-import {
-  Map, TileLayer, GeoJSON, Marker,
-} from 'react-leaflet';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
@@ -72,20 +71,18 @@ const LocationMiniMapTargets = (props) => {
       return {
         color: country.level ? colors[country.level] : colors[5],
         weight: 1,
-        fillOpacity: props.theme.palette.type === 'light' ? 0.5 : 0.1,
+        fillOpacity: props.theme.palette.mode === 'light' ? 0.5 : 0.1,
       };
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const {
-    center, zoom, cities, theme,
-  } = props;
+  const { center, zoom, cities, theme } = props;
   const locatedCities = cities
     ? filter((n) => n.latitude && n.longitude, cities)
     : [];
   return (
     <div style={{ width: '100%', height: '100%' }}>
-      <Map
+      <MapContainer
         center={center}
         zoom={zoom}
         attributionControl={false}
@@ -93,7 +90,7 @@ const LocationMiniMapTargets = (props) => {
       >
         <TileLayer
           url={
-            theme.palette.type === 'light'
+            theme.palette.mode === 'light'
               ? settings.platform_map_tile_server_light
               : settings.platform_map_tile_server_dark
           }
@@ -105,7 +102,7 @@ const LocationMiniMapTargets = (props) => {
             <Marker key={city.id} position={position} icon={pointerIcon} />
           );
         })}
-      </Map>
+      </MapContainer>
     </div>
   );
 };

@@ -1,16 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
-import Drawer from '@material-ui/core/Drawer';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Drawer from '@mui/material/Drawer';
+import Grid from '@mui/material/Grid';
 import {
   DomainOutlined,
   LocalPlayOutlined,
   GroupOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import Loader from '../../../../components/Loader';
 import StixDomainObjectVictimologySectors, {
   stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery,
@@ -26,14 +26,13 @@ import {
 } from '../../../../utils/ListParameters';
 import EntityStixCoreRelationships from '../stix_core_relationships/EntityStixCoreRelationships';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     marginTop: 15,
   },
   bottomNav: {
     zIndex: 1000,
     padding: '0 200px 0 205px',
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 50,
   },
@@ -73,9 +72,7 @@ class StixDomainObjectVictimology extends Component {
 
   render() {
     const { type, viewMode } = this.state;
-    const {
-      classes, stixDomainObjectId, entityLink, t,
-    } = this.props;
+    const { classes, stixDomainObjectId, entityLink, t } = this.props;
     let types = ['Sector', 'Organization'];
     if (type === 'regions') {
       types = ['Region', 'Country', 'City'];
@@ -93,6 +90,7 @@ class StixDomainObjectVictimology extends Component {
           anchor="bottom"
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
+          PaperProps={{ variant: 'elevation', elevation: 1 }}
         >
           <Grid container={true} spacing={1}>
             <Grid item={true} xs="auto">
@@ -100,6 +98,7 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'sectors' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'sectors')}
+                  size="large"
                 >
                   <DomainOutlined />
                 </IconButton>
@@ -110,6 +109,7 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'regions' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'regions')}
+                  size="large"
                 >
                   <LocalPlayOutlined />
                 </IconButton>
@@ -120,6 +120,7 @@ class StixDomainObjectVictimology extends Component {
                 <IconButton
                   color={type === 'individuals' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'individuals')}
+                  size="large"
                 >
                   <GroupOutlined />
                 </IconButton>

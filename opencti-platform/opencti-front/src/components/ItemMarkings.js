@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import * as R from 'ramda';
 import * as PropTypes from 'prop-types';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
 import { truncate } from '../utils/String';
 
@@ -71,9 +72,7 @@ const inlineStylesLight = {
 
 class ItemMarkings extends Component {
   render() {
-    const {
-      classes, variant, markingDefinitions, limit, theme,
-    } = this.props;
+    const { classes, variant, markingDefinitions, limit, theme } = this.props;
     const className = variant === 'inList' ? classes.chipInList : classes.chip;
     const number = limit || 1;
     const sortBy = R.sortWith([R.descend(R.prop('definition'))]);
@@ -90,7 +89,7 @@ class ItemMarkings extends Component {
             let backgroundColor = markingDefinition.x_opencti_color;
             let textColor = theme.palette.text.primary;
             let border = '0';
-            if (theme.palette.type === 'light') {
+            if (theme.palette.mode === 'light') {
               if (backgroundColor === '#ffffff') {
                 backgroundColor = '#ffffff';
                 textColor = '#2b2b2b';
@@ -115,7 +114,7 @@ class ItemMarkings extends Component {
             );
           }
           let inlineStyles = inlineStylesDark;
-          if (theme.palette.type === 'light') {
+          if (theme.palette.mode === 'light') {
             inlineStyles = inlineStylesLight;
           }
           switch (markingDefinition.definition) {

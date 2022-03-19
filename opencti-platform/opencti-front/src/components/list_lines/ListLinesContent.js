@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import {
   AutoSizer,
   InfiniteLoader,
@@ -100,6 +100,7 @@ class ListLinesContent extends Component {
       entityLink,
       entityId,
       me,
+      refetch,
       onLabelClick,
       selectedElements,
       selectAll,
@@ -126,6 +127,7 @@ class ListLinesContent extends Component {
           paginationOptions,
           entityId,
           entityLink,
+          refetch,
           me,
           onLabelClick,
           selectedElements,
@@ -153,9 +155,7 @@ class ListLinesContent extends Component {
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({
-          height, isScrolling, onChildScroll, scrollTop,
-        }) => (
+        {({ height, isScrolling, onChildScroll, scrollTop }) => (
           <div className={classes.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isRowLoaded}
@@ -200,6 +200,7 @@ ListLinesContent.propTypes = {
   initialLoading: PropTypes.bool,
   loadMore: PropTypes.func,
   hasMore: PropTypes.func,
+  refetch: PropTypes.func,
   isLoading: PropTypes.func,
   dataList: PropTypes.array,
   me: PropTypes.object,

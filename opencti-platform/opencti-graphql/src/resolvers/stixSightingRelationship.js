@@ -27,7 +27,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { creator } from '../domain/log';
 import { buildRefRelationKey } from '../schema/general';
-import { elBatchIds } from '../database/elasticSearch';
+import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -45,11 +45,10 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationship: (_, { id }, { user }) => findById(user, id),
     stixSightingRelationships: (_, args, { user }) => findAll(user, args),
     stixSightingRelationshipsTimeSeries: (_, args, { user }) => timeSeriesRelations(user, args),
-    stixSightingRelationshipsDistribution: (_, args, { user }) =>
-      distributionRelations(
-        user,
-        R.pipe(R.assoc('relationship_type', 'stix-sighting-relationship'), R.assoc('isTo', true))(args)
-      ),
+    stixSightingRelationshipsDistribution: (_, args, { user }) => distributionRelations(
+      user,
+      R.pipe(R.assoc('relationship_type', 'stix-sighting-relationship'), R.assoc('isTo', true))(args)
+    ),
     stixSightingRelationshipsNumber: (_, args, { user }) => stixSightingRelationshipsNumber(user, args),
   },
   StixSightingRelationshipsFilter: {
@@ -83,8 +82,7 @@ const stixSightingRelationshipResolvers = {
       contextPatch: ({ input }) => stixSightingRelationshipEditContext(user, id, input),
       contextClean: () => stixSightingRelationshipCleanContext(user, id),
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        stixSightingRelationshipDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixSightingRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
     stixSightingRelationshipAdd: (_, { input }, { user }) => addStixSightingRelationship(user, input),
   },

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core';
+import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -17,7 +17,7 @@ import LabelsAttributesMenu from './LabelsAttributesMenu';
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: '0 200px 50px 0',
   },
 });
 
@@ -102,9 +102,7 @@ class Labels extends Component {
 
   render() {
     const { classes } = this.props;
-    const {
-      view, sortBy, orderAsc, searchTerm,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm } = this.state;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,

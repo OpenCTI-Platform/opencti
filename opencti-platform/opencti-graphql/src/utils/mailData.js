@@ -14,17 +14,17 @@ export const truncate = (str, limit) => {
 export const defaultValue = (n) => {
   if (!n) return '';
   return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
-    n.name ||
-    n.label ||
-    n.pattern ||
-    n.observable_value ||
-    n.attribute_abstract ||
-    n.opinion ||
-    n.value ||
-    n.definition ||
-    n.source_name ||
-    n.phase_name ||
-    'Unknown'
+    n.name
+    || n.label
+    || n.pattern
+    || n.observable_value
+    || n.attribute_abstract
+    || n.opinion
+    || n.value
+    || n.definition
+    || n.source_name
+    || n.phase_name
+    || 'Unknown'
   }`;
 };
 
@@ -121,7 +121,7 @@ export const header = (
             * {
                 font-family: 'Arial';
             }
-            body 
+            body
                 margin: 0;
                 padding: 0;
                 background-color: #f6f6f6;
@@ -157,10 +157,10 @@ export const header = (
                                       <td bgcolor="#ffffff" style="width: 300px; padding:20px 20px 15px 20px; background: #ffffff; background-color:#ffffff; text-align:center;" valign="middle">
                                           This email is automatically generated.
                                           ${
-                                            entitiesNames && entitiesNames.length > 0
-                                              ? `<br><i>Scope:</i> ${entitiesNames}`
-                                              : ''
-                                          }                                         
+  entitiesNames && entitiesNames.length > 0
+    ? `<br><i>Scope:</i> ${entitiesNames}`
+    : ''
+}
                                       </td>
                                   </tr>
                               </table>
@@ -182,9 +182,9 @@ export const footer = `
                                   <tr>
                                       <td style="width:340px; padding:0 20px 0 0;">
                                           OpenCTI, the open source threat intelligence platform<br>
-                                          <a style="color:#000000; text-decoration:underline;" href="https://www.opencti.io">www.opencti.io</a> 
+                                          <a style="color:#000000; text-decoration:underline;" href="https://www.opencti.io">www.opencti.io</a>
                                           | <a style="color:#000000; text-decoration:underline;" href="mailto:contact@opencti.io">contact@opencti.io</a>
-                                      </td>    
+                                      </td>
                                   </tr>
                                   <tr>
                                       <td style="padding:20px 0 0 0;" colspan="2">Copyright &copy; 2021 OpenCTI.</td>
@@ -235,31 +235,31 @@ export const containerToHtml = (url, entry) => {
         <p style="color: #999999; margin: 0;">By ${author}, ${prepareDate(entry.created_at)}</p>
         <p>${entry.name || entry.attribute_abstract || entry.opinion}</p>
         ${
-          entry.objectMarking && entry.objectMarking.length > 0
-            ? entry.objectMarking.map(
-                (marking) => `<span style="background: ${
-                  marking.x_opencti_color || '#f6f7f9'
-                }; border-radius: 4px; padding: 3px 6px; margin-right: 6px; font-size: 12px; color: ${
-                  marking.x_opencti_color === '#ffffff' ? '#00000' : '#ffffff'
-                }; font-weight: bold;">
+  entry.objectMarking && entry.objectMarking.length > 0
+    ? entry.objectMarking.map(
+      (marking) => `<span style="background: ${
+        marking.x_opencti_color || '#f6f7f9'
+      }; border-radius: 4px; padding: 3px 6px; margin-right: 6px; font-size: 12px; color: ${
+        marking.x_opencti_color === '#ffffff' ? '#00000' : '#ffffff'
+      }; font-weight: bold;">
                   <span>${marking.definition}</span>
               </span>`
-              )
-            : ''
-        }
+    )
+    : ''
+}
         ${
-          entry.objectLabel && entry.objectLabel.length > 0
-            ? entry.objectLabel.map(
-                (label) => `<span style="background: ${
-                  label.color || '#f6f7f9'
-                }; border-radius: 4px; padding: 3px 6px; margin-right: 6px; font-size: 12px; color: ${
-                  !label.color || label.color === '#ffffff' ? '#00000' : '#ffffff'
-                }; font-weight: bold;">
+  entry.objectLabel && entry.objectLabel.length > 0
+    ? entry.objectLabel.map(
+      (label) => `<span style="background: ${
+        label.color || '#f6f7f9'
+      }; border-radius: 4px; padding: 3px 6px; margin-right: 6px; font-size: 12px; color: ${
+        !label.color || label.color === '#ffffff' ? '#00000' : '#ffffff'
+      }; font-weight: bold;">
                   <span>${label.value}</span>
               </span>`
-              )
-            : ''
-        }
+    )
+    : ''
+}
         <hr style="margin:15pt 0 10pt 0; color: #f6f6f6; border-top: #f6f6f6 1px solid; background: #f6f6f6"/>
   `;
 };
@@ -270,8 +270,8 @@ export const relationshipToHtml = (url, entry) => {
   return `
         <p style="padding:0; margin:0; line-height:140%; font-size:18px;">
             <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">New <i>${
-    entry.relationship_type
-  }</i> relationship</a>
+  entry.relationship_type
+}</i> relationship</a>
         </p>
         <p style="color: #999999; margin: 0;">By ${author}, ${prepareDate(entry.created_at)}</p>
         <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse:collapse; margin-top: 10pt; font-size: 10pt;">
@@ -290,7 +290,7 @@ export const relationshipToHtml = (url, entry) => {
                 </td>
             </tr>
         </table>
-        <hr style="margin:15pt 0 10pt 0; color: #f6f6f6; border-top: #f6f6f6 1px solid; background: #f6f6f6">    
+        <hr style="margin:15pt 0 10pt 0; color: #f6f6f6; border-top: #f6f6f6 1px solid; background: #f6f6f6">
   `;
 };
 
@@ -301,9 +301,9 @@ export const technicalElementToHtml = (url, entry) => {
             <tr>
                 <td bgcolor="#ffffff" style="padding:0; width: 40%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
                     <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">${truncate(
-    defaultValue(entry.from),
-    80
-  )}.</a>
+  defaultValue(entry.from),
+  80
+)}.</a>
                 </td>
                 <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
                     ${truncate(entry.from.description, 60)}

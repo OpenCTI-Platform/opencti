@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core';
-import Drawer from '@material-ui/core/Drawer';
-import IconButton from '@material-ui/core/IconButton';
-import { Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import IconButton from '@mui/material/IconButton';
+import { Close } from '@mui/icons-material';
 import { CloudRefresh } from 'mdi-material-ui';
-import Typography from '@material-ui/core/Typography';
-import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectEnrichmentLines, {
@@ -18,7 +18,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -33,8 +32,7 @@ const styles = (theme) => ({
     margin: '-12px -5px 0 5px',
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -72,6 +70,7 @@ class StixCoreObjectEnrichment extends Component {
             color="primary"
             aria-label="Refresh"
             className={classes.enrichButton}
+            size="large"
           >
             <CloudRefresh />
           </IconButton>
@@ -79,6 +78,8 @@ class StixCoreObjectEnrichment extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -87,8 +88,10 @@ class StixCoreObjectEnrichment extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
+              size="large"
+              color="primary"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
               {t('Enrichment connectors')}

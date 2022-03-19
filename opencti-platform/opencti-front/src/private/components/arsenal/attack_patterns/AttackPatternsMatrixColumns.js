@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withTheme, withStyles } from '@material-ui/core';
+import { graphql, createRefetchContainer } from 'react-relay';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
 import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { attackPatternsLinesQuery } from './AttackPatternsLines';

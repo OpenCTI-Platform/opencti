@@ -34,12 +34,9 @@ const externalReferenceResolvers = {
     references: (container, args, { user }) => references(user, container.id, args),
     editContext: (externalReference) => fetchEditContext(externalReference.id),
     jobs: (externalReference, args, { user }) => worksForSource(user, externalReference.id, args),
-    connectors: (externalReference, { onlyAlive = false }, { user }) =>
-      connectorsForEnrichment(user, externalReference.entity_type, onlyAlive),
-    importFiles: (entity, { first }, { user }) =>
-      filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
-    exportFiles: (entity, { first }, { user }) =>
-      filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
+    connectors: (externalReference, { onlyAlive = false }, { user }) => connectorsForEnrichment(user, externalReference.entity_type, onlyAlive),
+    importFiles: (entity, { first }, { user }) => filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
+    exportFiles: (entity, { first }, { user }) => filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
   },
   Mutation: {
     externalReferenceEdit: (_, { id }, { user }) => ({
@@ -48,8 +45,7 @@ const externalReferenceResolvers = {
       contextPatch: ({ input }) => externalReferenceEditContext(user, id, input),
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
-      relationDelete: ({ fromId, relationship_type: relationshipType }) =>
-        externalReferenceDeleteRelation(user, id, fromId, relationshipType),
+      relationDelete: ({ fromId, relationship_type: relationshipType }) => externalReferenceDeleteRelation(user, id, fromId, relationshipType),
       askEnrichment: ({ connectorId }) => externalReferenceAskEnrichment(user, id, connectorId),
       importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
     }),

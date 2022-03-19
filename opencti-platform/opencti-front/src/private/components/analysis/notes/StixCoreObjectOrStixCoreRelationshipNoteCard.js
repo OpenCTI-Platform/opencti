@@ -1,24 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr, take } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
-import graphql from 'babel-plugin-relay/macro';
-import { OpenInNewOutlined } from '@material-ui/icons';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import CardHeader from '@material-ui/core/CardHeader';
-import Typography from '@material-ui/core/Typography';
+import { OpenInNewOutlined } from '@mui/icons-material';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Typography from '@mui/material/Typography';
 import { ConnectionHandler } from 'relay-runtime';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
-import IconButton from '@material-ui/core/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
+import IconButton from '@mui/material/IconButton';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
@@ -54,12 +54,15 @@ const styles = (theme) => ({
     height: '100%',
   },
   description: {
-    height: 70,
+    height: 61,
+    display: '-webkit-box',
+    '-webkit-box-orient': 'vertical',
+    '-webkit-line-clamp': 2,
     overflow: 'hidden',
   },
   objectLabel: {
     height: 45,
-    paddingTop: 7,
+    paddingTop: 15,
   },
   external: {
     position: 'absolute',
@@ -147,10 +150,10 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       }`;
     }
     return (
-      <Card classes={{ root: classes.card }} raised={false}>
+      <Card classes={{ root: classes.card }} variant="outlined">
         <CardHeader
           style={{
-            padding: '10px 10px 0 15px',
+            padding: '15px 10px 10px 15px',
             borderBottom: `1px solid ${theme.palette.divider}`,
           }}
           action={
@@ -158,12 +161,14 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
               id={node.id}
               entityId={stixCoreObjectOrStixCoreRelationshipId}
               handleOpenRemove={this.handleOpenDialog.bind(this)}
+              size="small"
             />
           }
           title={
             <div>
               <div
                 style={{
+                  paddingTop: 2,
                   float: 'left',
                   fontDecoration: 'none',
                   textTransform: 'none',
@@ -239,12 +244,14 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             component={Link}
             to={`/dashboard/analysis/notes/${node.id}`}
             classes={{ root: classes.external }}
+            size="large"
           >
             <OpenInNewOutlined fontSize="small" />
           </IconButton>
         </CardContent>
         <Dialog
           open={this.state.displayDialog}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDialog.bind(this)}
@@ -263,7 +270,7 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
             </Button>
             <Button
               onClick={this.handleRemoval.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.removing}
             >
               {t('Delete')}

@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
@@ -13,9 +12,7 @@ const nbOfRowsToLoad = 8;
 
 class ContainerStixObjectsOrStixRelationshipsLines extends Component {
   render() {
-    const {
-      initialLoading, dataColumns, relay, container, paginationOptions,
-    } = this.props;
+    const { initialLoading, dataColumns, relay, container, paginationOptions } = this.props;
     return (
       <div>
         <ListLinesContent
@@ -66,6 +63,16 @@ export const ContainerStixObjectsOrStixRelationshipsLinesQuery = graphql`
   ) {
     container(id: $id) {
       id
+      objects(first: $count, orderBy: $orderBy, orderMode: $orderMode)
+        @connection(key: "Pagination_objects") {
+        edges {
+          node {
+            ... on BasicObject {
+              id
+            }
+          }
+        }
+      }
       ...ContainerStixObjectsOrStixRelationshipsLines_container
         @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode)
     }

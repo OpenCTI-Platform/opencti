@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { BugReportOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import { BugReportOutlined } from '@mui/icons-material';
 import {
   LockPattern,
   ProgressWrench,
@@ -16,7 +16,7 @@ import inject18n from '../../../components/i18n';
 const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -43,7 +43,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/malwares'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -62,7 +62,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/attack_patterns'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -81,7 +81,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/courses_of_action'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -100,7 +100,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/tools'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -119,7 +119,7 @@ class TopMenuArsenal extends Component {
           color={
             location.pathname === '/dashboard/arsenal/vulnerabilities'
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

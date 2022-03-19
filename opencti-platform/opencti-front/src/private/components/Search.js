@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Chip from '@material-ui/core/Chip';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Chip from '@mui/material/Chip';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
@@ -41,7 +41,7 @@ const styles = (theme) => ({
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.accent,
     margin: '0 10px 10px 0',
   },
 });

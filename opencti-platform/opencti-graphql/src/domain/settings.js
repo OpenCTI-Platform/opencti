@@ -12,7 +12,7 @@ import conf, {
   baseUrl,
 } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
-import { elVersion, isRuntimeSortEnable } from '../database/elasticSearch';
+import { searchEngineVersion, isRuntimeSortEnable } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
@@ -36,7 +36,7 @@ export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
   memory: getMemoryStatistics(),
   dependencies: [
-    { name: 'Search engine', version: elVersion().then((v) => `${v.distribution || 'elk'} - ${v.number}`) },
+    { name: 'Search engine', version: searchEngineVersion().then((v) => `${v.distribution || 'elk'} - ${v.number}`) },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },
     { name: 'Redis', version: getRedisVersion() },
   ],
@@ -65,16 +65,12 @@ export const addSettings = async (user, settings) => {
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return loadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
-    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
-  );
+  return loadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return loadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
-    notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
-  );
+  return loadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
 export const settingsEditField = async (user, settingsId, input) => {

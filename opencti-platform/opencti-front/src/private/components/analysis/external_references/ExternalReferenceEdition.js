@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
-import { Edit } from '@material-ui/icons';
-import graphql from 'babel-plugin-relay/macro';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Fab from '@mui/material/Fab';
+import { Edit } from '@mui/icons-material';
+import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import ExternalReferenceEditionContainer from './ExternalReferenceEditionContainer';
@@ -23,7 +23,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -76,6 +75,8 @@ class ExternalReferenceEdition extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >

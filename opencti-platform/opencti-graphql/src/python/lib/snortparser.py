@@ -1,7 +1,7 @@
 import collections
 import ipaddress
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 try:
     from .dicts import Dicts
@@ -9,7 +9,7 @@ except ImportError:
     from dicts import Dicts
 
 
-class Parser(object):
+class Parser:
     """
     this will take an array of lines and parse it and hand
     back a dictionary
@@ -30,10 +30,9 @@ class Parser(object):
         yield self.data
 
     def __getitem__(self, key):
-        if key is "all":
+        if key == "all":
             return self.data
-        else:
-            return self.data[key]
+        return self.data[key]
 
     @staticmethod
     def actions(action: str) -> str:
@@ -50,9 +49,8 @@ class Parser(object):
 
         if action in actions:
             return action
-        else:
-            msg = "Invalid action specified %s" % action
-            raise ValueError(msg)
+        msg = f"Invalid action specified {action}"
+        raise ValueError(msg)
 
     @staticmethod
     def proto(proto: str) -> str:
@@ -60,24 +58,18 @@ class Parser(object):
 
         if proto.lower() in protos:
             return proto
-        else:
-            msg = "Unsupported Protocol %s " % proto
-            raise ValueError(msg)
+        msg = f"Unsupported Protocol {proto} "
+        raise ValueError(msg)
 
     @staticmethod
-    def __ip_to_tuple(ip: str) -> Tuple:
+    def __ip_to_tuple(ip: str) -> Tuple[bool, str]:
         if ip.startswith("!"):
             ip = ip.lstrip("!")
             return False, ip
-        else:
-            return True, ip
+        return True, ip
 
-    def __form_ip_list(self, ip_list: str) -> List:
-        ip_list = ip_list.split(",")
-        ips = []
-        for ip in ip_list:
-            ips.append(self.__ip_to_tuple(ip))
-        return ips
+    def __form_ip_list(self, ip_list: str) -> List[Tuple[bool, str]]:
+        return [self.__ip_to_tuple(ip) for ip in ip_list.split(",")]
 
     def __flatten_ip(self, ip):
         list_deny = True
@@ -99,14 +91,14 @@ class Parser(object):
                     nested = self.__flatten_ip(item)
                     _return_ips.append(nested)
                     continue
-                else:
-                    _ip_list = self.__form_ip_list(item)
-                    for _ip in _ip_list:
-                        _return_ips.append(_ip)
+                _ip_list = self.__form_ip_list(item)
+                for _ip in _ip_list:
+                    _return_ips.append(_ip)
             return list_deny, _return_ips
         if _not_nest:
             _ip_list = self.__form_ip_list(ip)
             return list_deny, _ip_list
+        return None
 
     def __validate_ip(self, ips):
         variables = {
@@ -149,9 +141,12 @@ class Parser(object):
             valid = self.__validate_ip(ip)
             if valid:
                 return ip
-            else:
-                raise ValueError("Unvalid ip or variable: %s" % ip)
+            raise ValueError(f"Invalid IP or variable: {ip}")
+        return None
 
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-statements
     @staticmethod
     def port(port):
         variables = {"any", "$HTTP_PORTS"}
@@ -164,15 +159,12 @@ class Parser(object):
             if_not = True
         # is it a list ?
         # if it is, then make it a list from the string
-        """
-        Snort allows for ports marked between
-        square brackets and are used to define lists
-        correct:
-        >> [80:443,!90,8080]
-        >> ![80:443]
-        >> [!80:443]
-        """
-
+        # Snort allows for ports marked between
+        # square brackets and are used to define lists
+        # correct:
+        # >> [80:443,!90,8080]
+        # >> ![80:443]
+        # >> [!80:443]
         if port.startswith("["):
             if port.endswith("]"):
                 port = port[1:-1].split(",")
@@ -191,7 +183,7 @@ class Parser(object):
                     items = item.split(":", 1)
                     message = ""
                     for prt in items:
-                        message = "Port range is malformed %s" % item
+                        message = f"Port range is malformed {item}"
                         prt = prt.lstrip("!")
                         if not prt:
                             open_range = True
@@ -199,8 +191,8 @@ class Parser(object):
 
                         try:
                             prt = int(prt)
-                        except:
-                            raise ValueError(message)
+                        except Exception as e:
+                            raise ValueError(message) from e
 
                         if prt < 0 or prt > 65535:
                             raise ValueError(message)
@@ -213,8 +205,8 @@ class Parser(object):
                         try:
                             a = int(items[-1])
                             b = int(items[0])
-                        except:
-                            raise ValueError(message)
+                        except Exception as e:
+                            raise ValueError(message) from e
                         if a - b < 0:
                             raise ValueError(message)
                     not_range = False
@@ -230,24 +222,22 @@ class Parser(object):
                     try:
                         prt = int(item)
                         if prt < 0 or prt > 65535:
-                            raise ValueError("Port is out of range {}".format(item))
-                    except ValueError:
-                        raise ValueError("Unknown port {}".format(item))
+                            raise ValueError(f"Port is out of range {item}")
+                    except ValueError as e:
+                        raise ValueError(f"Unknown port {item}") from e
                 ports.append((port_not, item))
 
             return if_not, ports
 
         if isinstance(port, str):
-            """
-            Parsing ports like: :8080, 80:, 80:443
-            and passes all variables ex: $HTTP
-            ranges do not accept denial (!)
-            """
+            # Parsing ports like: :8080, 80:, 80:443
+            # and passes all variables ex: $HTTP
+            # ranges do not accept denial (!)
             if port or port.lower() in variables or re.search(r"^\$+", port):
                 return if_not, port
 
             if re.search(":", port):
-                message = "Port is out of range %s" % port
+                message = f"Port is out of range {port}"
                 ports = port.split(":")
                 for portl in ports:
                     portl.lstrip("!")
@@ -258,63 +248,59 @@ class Parser(object):
                     try:
                         portl = int(portl)
 
-                    except ValueError:
-                        raise ValueError(message)
+                    except ValueError as e:
+                        raise ValueError(message) from e
                     if portl < 0 or portl > 65535:
                         raise ValueError(message)
 
                 return if_not, port
 
-            """
-            Parsing a single port
-            single port accepts denial.
-            """
+            # Parsing a single port
+            # single port accepts denial.
             try:
-                if not int(port) > 65535 or int(port) < 0:
+                if int(port) <= 65535 or int(port) < 0:
                     return if_not, port
 
                 if int(port) > 65535 or int(port) < 0:
                     raise ValueError
 
-            except:
-                msg = 'Unknown port: "%s" ' % port
-                raise ValueError(msg)
+                return None  # TODO: verify this is intended behavior
+
+            except Exception as e:
+                msg = f'Unknown port: "{port}" '
+                raise ValueError(msg) from e
         else:
-            message = 'Unknown port "%s"' % port
+            message = f'Unknown port "{port}"'
             raise ValueError(message)
 
-    def destination(self, dst):
+    @staticmethod
+    def destination(dst):
         destinations = {"->": "to_dst", "<>": "bi_direct"}
 
         if dst in destinations:
             return dst
-        else:
-            msg = "Invalid destination variable %s" % dst
-            raise ValueError(msg)
+        msg = f"Invalid destination variable {dst}"
+        raise ValueError(msg)
 
     def get_header(self):
         if re.match(r"(^[a-z|A-Z].+?)?(\(.+;\)|;\s\))", self.rule.lstrip()):
             header = self.rule.split("(", 1)
             return header[0]
-        else:
-            msg = (
-                "Error in syntax, check if rule"
-                "has been closed properly %s " % self.rule
-            )
-            raise SyntaxError(msg)
+        msg = f"Error in syntax, check if rulehas been closed properly {self.rule} "
+        raise SyntaxError(msg)
 
     @staticmethod
     def remove_leading_spaces(string: str) -> str:
         return string.strip()
 
     def get_options(self):
-        options = "{}".format(self.rule.split("(", 1)[-1].lstrip().rstrip())
+        options = f"{self.rule.split('(', 1)[-1].lstrip().rstrip()}"
         if not options.endswith(")"):
             raise ValueError(
                 "Snort rule options is not closed properly, " "you have a syntax error"
             )
 
-        op_list = list()
+        op_list = []
 
         value = ""
         option = ""
@@ -333,13 +319,18 @@ class Parser(object):
 
         return op_list
 
-    def parse_header(self):
-        """
-        OrderedDict([('action', 'alert'), ('proto', 'tcp'), ('source', \
-        (True, '$HOME_NET')), ('src_port', (True, 'any')), ('arrow', '->'), \
-        ('destination', (False, '$EXTERNAL_NET')), ('dst_port', (True, 'any'))])
-
-            """
+    def parse_header(self):  # pylint: disable=too-many-statements
+        # OrderedDict(
+        #     [
+        #         ("action", "alert"),
+        #         ("proto", "tcp"),
+        #         ("source", (True, "$HOME_NET")),
+        #         ("src_port", (True, "any")),
+        #         ("arrow", "->"),
+        #         ("destination", (False, "$EXTERNAL_NET")),
+        #         ("dst_port", (True, "any")),
+        #     ]
+        # )
 
         if self.get_header():
             header = self.get_header()
@@ -356,7 +347,7 @@ class Parser(object):
         header_dict = collections.OrderedDict()
         size = len(header)
         if not size == 7 and not size == 1:
-            msg = "Snort rule header is malformed %s" % header
+            msg = f"Snort rule header is malformed {header}"
             raise ValueError(msg)
 
         for item in header:
@@ -371,7 +362,7 @@ class Parser(object):
                     header_dict["proto"] = proto
                     continue
                 except Exception as perror:
-                    raise ValueError(perror)
+                    raise ValueError(perror) from perror
 
             if "source" not in header_dict:
                 try:
@@ -379,7 +370,7 @@ class Parser(object):
                     header_dict["source"] = src_ip
                     continue
                 except Exception as serror:
-                    raise ValueError(serror)
+                    raise ValueError(serror) from serror
 
             if "src_port" not in header_dict:
                 src_port = self.port(item)
@@ -413,7 +404,7 @@ class Parser(object):
             if ":" in option_string:
                 option = option_string.split(":", 1)
                 key, value = option
-                if key is not "pcre":
+                if key != "pcre":
                     value = value.split(",")
                 options_dict[index] = (key, value)
             else:
@@ -421,14 +412,13 @@ class Parser(object):
         return options_dict
 
     def validate_options(self, options):
-
-        for index, option in options.items():
+        for _index, option in options.items():
             key, value = option
             if len(value) == 1:
                 content_mod = self.dicts.content_modifiers(value[0])
                 opt = False
                 if content_mod:
-                    # An unfinished feature
+                    # TODO: implement this feature
                     continue
             gen_option = self.dicts.options(key)
             if gen_option:
@@ -451,16 +441,15 @@ class Parser(object):
                 opt = True
                 continue
             if not opt:
-                message = "unrecognized option: %s" % key
+                message = f"unrecognized option: {key}"
                 raise ValueError(message)
         return options
 
 
-class Sanitizer(object):
+class Sanitizer:
     def __init__(self):
         self.methods = {
             "pcre": self.pcre,
-            # "depth": self.depth
         }
 
     def sanitize(self, parsed):
@@ -477,18 +466,18 @@ class Sanitizer(object):
         value_string = value[0]
         if re.match(r'^"/.*/[ismxAEGRUBPHMCOIDKYS]+"$', value_string):
             return value
-        else:
-            if not str(value).startswith('"/') and value:
-                start = re.split(r'^"', value)
-                start[0] = '"/'
-                value = "".join(start)
-            if not re.search(r'(\/")$', value):
-                end = re.split(r'"$', value)
-                end[-1] = '/"'
-                value = "".join(end)
-            return value
+        if not str(value).startswith('"/') and value:
+            start = re.split(r'^"', value)
+            start[0] = '"/'
+            value = "".join(start)
+        if not re.search(r'(\/")$', value):
+            end = re.split(r'"$', value)
+            end[-1] = '/"'
+            value = "".join(end)
+        return value
 
-    def depth(self, options):
+    @staticmethod
+    def depth(options):
         depth_idx = [idx for idx in options if "depth" in options[idx]][0]
         dsize_idx = [idx for idx in options if "dsize" in options[idx]][0]
         depth = options[depth_idx].get("depth")[0]
@@ -498,11 +487,10 @@ class Sanitizer(object):
         dsize = dsize.strip(operand[0])
         if int(depth) < int(dsize):
             return dsize
-        else:
-            return depth
+        return depth
 
 
-class SerializeRule(object):
+class SerializeRule:
     def __init__(self, rule):
         self.rule = rule
 
@@ -513,6 +501,7 @@ class SerializeRule(object):
             return self.serialize_header()
         if "options" in key:
             return self.serialize_options()
+        return None
 
     def __str__(self):
         return self.serialize_rule()
@@ -521,25 +510,23 @@ class SerializeRule(object):
         serialised = str()
         for _bool, item in items:
             if isinstance(item, list):
-                serialised = "{},{}".format(
-                    serialised, self.__list_serializer(_bool, item)
-                )
+                serialised = f"{serialised},{self.__list_serializer(_bool, item)}"
             else:
                 if _bool:
-                    serialised = "{},{}".format(serialised, item)
+                    serialised = f"{serialised},{item}"
                 if not _bool:
-                    serialised = "{},!{}".format(serialised, item)
+                    serialised = f"{serialised},!{item}"
 
         serialised_list = serialised.lstrip(",")
 
         if list_bool:
-            serialised = "[{}]".format(serialised_list)
+            serialised = f"[{serialised_list}]"
         else:
-            serialised = "![{}]".format(serialised_list)
+            serialised = f"![{serialised_list}]"
 
         return serialised
 
-    def serialize_header_item(self, item: Any) -> str:
+    def serialize_header_item(self, item: Any) -> Optional[str]:
         if isinstance(item, str):
             return item
 
@@ -547,35 +534,35 @@ class SerializeRule(object):
             _bool, item = item
             if isinstance(item, list):
                 return self.__list_serializer(_bool, item)
-            else:
-                return item
+            return item
+        return None  # TODO: verify this is intended behavior
 
     def serialize_header(self, header: Dict = None) -> str:
         serialised = str()
         if not header:
             header = self.rule["header"]
-        for key, value in header.items():
+        assert header is not None
+        for _key, value in header.items():
             item = self.serialize_header_item(value)
-            serialised = "{} {}".format(serialised, item)
+            serialised = f"{serialised} {item}"
         return serialised
 
     def serialize_options(self, options: Dict = None) -> str:
         options_list = []
         if not options:
             options = self.rule["options"]
-        for index, option in options.items():
+        assert options is not None
+        for _index, option in options.items():
             key, value = option
             if value:
-                option_value = "{}:{}".format(key, ",".join(value))
+                option_value = f"{key}:{','.join(value)}"
             else:
-                option_value = "{}".format(key)
+                option_value = f"{key}"
             options_list.append(option_value)
 
         _options = "; ".join(str(e) for e in options_list)
-        serialized_options = "({})".format(_options)
+        serialized_options = f"({_options})"
         return serialized_options
 
     def serialize_rule(self):
-        return "{} {}".format(
-            self.serialize_header(), self.serialize_options()
-        ).lstrip()
+        return f"{self.serialize_header()} {self.serialize_options()}".lstrip()

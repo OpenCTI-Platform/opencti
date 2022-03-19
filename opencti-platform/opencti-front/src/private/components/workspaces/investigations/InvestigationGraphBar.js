@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
 import {
   YAxis,
   ZAxis,
@@ -23,7 +24,7 @@ import {
   ScatterPlotOutlined,
   DateRangeOutlined,
   LinkOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import {
   Video3d,
   SelectAll,
@@ -32,25 +33,25 @@ import {
   AutoFix,
 } from 'mdi-material-ui';
 import TimeRange from 'react-timeline-range-slider';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Tooltip from '@material-ui/core/Tooltip';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Drawer from '@material-ui/core/Drawer';
-import Popover from '@material-ui/core/Popover';
+import LinearProgress from '@mui/material/LinearProgress';
+import Tooltip from '@mui/material/Tooltip';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Drawer from '@mui/material/Drawer';
+import Popover from '@mui/material/Popover';
 import { Field, Form, Formik } from 'formik';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import MenuItem from '@material-ui/core/MenuItem';
-import Divider from '@material-ui/core/Divider';
-import Slide from '@material-ui/core/Slide';
-import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
+import Slide from '@mui/material/Slide';
+import DialogContentText from '@mui/material/DialogContentText';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
@@ -63,10 +64,9 @@ import { dateFormat } from '../../../../utils/Time';
 import { parseDomain } from '../../../../utils/Graph';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 
-const styles = (theme) => ({
+const styles = () => ({
   bottomNav: {
     zIndex: 1000,
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -284,8 +284,10 @@ class InvestigationGraphBar extends Component {
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
     let viewLink = null;
+    const isInferred = R.filter((n) => n.inferred, selectedNodes).length > 0
+      || R.filter((n) => n.inferred, selectedLinks).length > 0;
     if (viewEnabled) {
-      if (numberOfSelectedNodes === 1) {
+      if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
         if (selectedNodes[0].relationship_type) {
           viewLink = `${resolveLink(selectedNodes[0].fromType)}/${
             selectedNodes[0].fromId
@@ -295,7 +297,7 @@ class InvestigationGraphBar extends Component {
             selectedNodes[0].id
           }`;
         }
-      } else if (numberOfSelectedLinks === 1) {
+      } else if (numberOfSelectedLinks === 1 && selectedLinks.length === 1) {
         const remoteRelevant = selectedLinks[0].source.relationship_type
           ? selectedLinks[0].target
           : selectedLinks[0].source;
@@ -304,17 +306,21 @@ class InvestigationGraphBar extends Component {
         }/knowledge/relations/${selectedLinks[0].id}`;
       }
     }
-    const editionEnabled = (numberOfSelectedNodes === 1
+    const editionEnabled = (!isInferred
+        && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
+        && selectedNodes.length === 1
         && !selectedNodes[0].isObservable)
-      || (numberOfSelectedNodes === 0
+      || (!isInferred
+        && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
+        && selectedLinks.length === 1
         && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
     const expandEnabled = numberOfSelectedNodes > 0 || numberOfSelectedLinks > 0;
-    const fromSelectedTypes = numberOfSelectedNodes >= 2
+    const fromSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];
-    const toSelectedTypes = numberOfSelectedNodes >= 2
+    const toSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
       : [];
     const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
@@ -349,6 +355,7 @@ class InvestigationGraphBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
         <div
           style={{
@@ -391,6 +398,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color={currentMode3D ? 'secondary' : 'primary'}
                     onClick={handleToggle3DMode.bind(this)}
+                    size="large"
                   >
                     <Video3d />
                   </IconButton>
@@ -410,6 +418,7 @@ class InvestigationGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'vertical')}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <FamilyTree />
                   </IconButton>
@@ -429,6 +438,7 @@ class InvestigationGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'horizontal')}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                   </IconButton>
@@ -443,6 +453,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color={currentModeFixed ? 'primary' : 'secondary'}
                     onClick={handleToggleFixedMode.bind(this)}
+                    size="large"
                   >
                     <ScatterPlotOutlined />
                   </IconButton>
@@ -453,6 +464,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color={displayTimeRange ? 'secondary' : 'primary'}
                     onClick={handleToggleDisplayTimeRange.bind(this)}
+                    size="large"
                   >
                     <DateRangeOutlined />
                   </IconButton>
@@ -463,6 +475,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleZoomToFit.bind(this)}
+                    size="large"
                   >
                     <AspectRatio />
                   </IconButton>
@@ -474,6 +487,7 @@ class InvestigationGraphBar extends Component {
                     color="primary"
                     onClick={handleResetLayout.bind(this)}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <AutoFix />
                   </IconButton>
@@ -485,6 +499,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
+                    size="large"
                   >
                     <FilterListOutlined />
                   </IconButton>
@@ -537,6 +552,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenMarkedBy.bind(this)}
+                    size="large"
                   >
                     <CenterFocusStrongOutlined />
                   </IconButton>
@@ -589,6 +605,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenCreatedBy.bind(this)}
+                    size="large"
                   >
                     <AccountBalanceOutlined />
                   </IconButton>
@@ -638,6 +655,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenSelectByType.bind(this)}
+                    size="large"
                   >
                     <SelectGroup />
                   </IconButton>
@@ -681,6 +699,7 @@ class InvestigationGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleSelectAll.bind(this)}
+                    size="large"
                   >
                     <SelectAll />
                   </IconButton>
@@ -720,6 +739,7 @@ class InvestigationGraphBar extends Component {
                       disabled={
                         (viewLink && viewLink.includes('null')) || !viewEnabled
                       }
+                      size="large"
                     >
                       <InfoOutlined />
                     </IconButton>
@@ -731,6 +751,7 @@ class InvestigationGraphBar extends Component {
                       color="primary"
                       onClick={this.handleOpenEditItem.bind(this)}
                       disabled={!editionEnabled}
+                      size="large"
                     >
                       <EditOutlined />
                     </IconButton>
@@ -757,6 +778,7 @@ class InvestigationGraphBar extends Component {
                       color="primary"
                       onClick={this.handleOpenExpandElements.bind(this)}
                       disabled={!expandEnabled}
+                      size="large"
                     >
                       <OpenWithOutlined />
                     </IconButton>
@@ -769,6 +791,7 @@ class InvestigationGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenCreateRelationship.bind(this)}
                         disabled={!relationEnabled}
+                        size="large"
                       >
                         <LinkOutlined />
                       </IconButton>
@@ -799,6 +822,7 @@ class InvestigationGraphBar extends Component {
                         numberOfSelectedNodes === 0
                         && numberOfSelectedLinks === 0
                       }
+                      size="large"
                     >
                       <DeleteOutlined />
                     </IconButton>
@@ -806,6 +830,7 @@ class InvestigationGraphBar extends Component {
                 </Tooltip>
                 <Dialog
                   open={this.state.displayRemove}
+                  PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   TransitionComponent={Transition}
                   onClose={this.handleCloseRemove.bind(this)}
@@ -826,13 +851,14 @@ class InvestigationGraphBar extends Component {
                         this.handleCloseRemove();
                         handleDeleteSelected();
                       }}
-                      color="primary"
+                      color="secondary"
                     >
                       {t('Remove')}
                     </Button>
                   </DialogActions>
                 </Dialog>
                 <Dialog
+                  PaperProps={{ elevation: 1 }}
                   open={openExpandElements}
                   onClose={this.handleCloseExpandElements.bind(this)}
                 >
@@ -852,6 +878,7 @@ class InvestigationGraphBar extends Component {
                         <DialogContent>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="entity_type"
                             label={t('Entity types')}
                             fullWidth={true}
@@ -896,6 +923,7 @@ class InvestigationGraphBar extends Component {
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="relationship_type"
                             label={t('Relationship type')}
                             fullWidth={true}
@@ -922,6 +950,7 @@ class InvestigationGraphBar extends Component {
                           </Field>
                           <Field
                             component={TextField}
+                            variant="standard"
                             name="limit"
                             label={t('Limit')}
                             type="number"
@@ -934,7 +963,7 @@ class InvestigationGraphBar extends Component {
                             {t('Cancel')}
                           </Button>
                           <Button
-                            color="primary"
+                            color="secondary"
                             onClick={submitForm}
                             disabled={isSubmitting}
                           >

@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, includes, pipe, assoc, propOr,
-} from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Grid from '@material-ui/core/Grid';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import { compose, includes, pipe, assoc, propOr } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Grid from '@mui/material/Grid';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
@@ -28,15 +26,14 @@ import EntityStixCoreRelationshipsLinesAll, {
 } from './EntityStixCoreRelationshipsLinesAll';
 
 const styles = (theme) => ({
-  container: {
-    marginTop: 15,
-    paddingBottom: 70,
-  },
   bottomNav: {
     zIndex: 1000,
     padding: '10px 200px 10px 205px',
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
+  },
+  container: {
+    marginTop: 15,
+    paddingBottom: 70,
   },
   chips: {
     display: 'flex',
@@ -136,9 +133,7 @@ class EntityStixCoreRelationships extends Component {
   }
 
   renderBottomMenu() {
-    const {
-      t, classes, targetStixDomainObjectTypes, relationshipTypes,
-    } = this.props;
+    const { t, classes, targetStixDomainObjectTypes, relationshipTypes } = this.props;
     const {
       openEntityType,
       openRelationshipType,
@@ -154,12 +149,13 @@ class EntityStixCoreRelationships extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
         <Grid container={true} spacing={1}>
           {displayTypes && (
             <Grid item={true} xs="auto">
               <Select
-                style={{ height: 50, marginRight: 15 }}
+                size="small"
                 value={selectedEntityType}
                 open={openEntityType}
                 onClose={this.handleCloseEntityType.bind(this)}
@@ -240,7 +236,7 @@ class EntityStixCoreRelationships extends Component {
           {displayRelationshipTypes && (
             <Grid item={true} xs="auto">
               <Select
-                style={{ height: 50, marginRight: 15 }}
+                size="small"
                 value={selectedRelationshipType}
                 open={openRelationshipType}
                 onClose={this.handleCloseRelationshipType.bind(this)}
@@ -265,9 +261,7 @@ class EntityStixCoreRelationships extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, numberOfElements } = this.state;
-    const {
-      entityLink, entityId, isRelationReversed, allDirections,
-    } = this.props;
+    const { entityLink, entityId, isRelationReversed, allDirections } = this.props;
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',

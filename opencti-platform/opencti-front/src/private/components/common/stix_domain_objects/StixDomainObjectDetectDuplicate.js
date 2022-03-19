@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, map, pathOr } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import Slide from '@material-ui/core/Slide';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { VisibilityOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Slide from '@mui/material/Slide';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { VisibilityOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { stixDomainObjectsLinesSearchQuery } from './StixDomainObjectsLines';
 import { fetchQuery } from '../../../../relay/environment';
@@ -115,6 +115,7 @@ class StixDomainObjectDetectDuplicate extends Component {
           ''
         )}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.open}
           fullWidth={true}
           maxWidth="md"
@@ -170,6 +171,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                         <IconButton
                           component={Link}
                           to={`${link}/${element.node.id}`}
+                          size="large"
                         >
                           <VisibilityOutlined />
                         </IconButton>

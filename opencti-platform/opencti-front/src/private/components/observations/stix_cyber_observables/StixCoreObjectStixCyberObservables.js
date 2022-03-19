@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter, append } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -155,9 +155,7 @@ class StixCoreObjectStixCyberObservables extends Component {
       noRightBar,
       isRelationReversed,
     } = this.props;
-    const {
-      view, targetStixCyberObservableTypes, sortBy, orderAsc,
-    } = this.state;
+    const { view, targetStixCyberObservableTypes, sortBy, orderAsc } = this.state;
     let paginationOptions = {
       fromTypes: targetStixCyberObservableTypes,
       toId: stixCoreObjectId,

@@ -1,35 +1,35 @@
 import * as R from 'ramda';
 import SpriteText from 'three-spritetext';
-import { truncate } from './String';
-import KillChainPhase from '../resources/images/entities/kill-chain-phase_dark.svg';
-import MarkingDefinition from '../resources/images/entities/marking-definition_dark.svg';
-import Label from '../resources/images/entities/label_dark.svg';
-import ExternalReference from '../resources/images/entities/external-reference_dark.svg';
-import AttackPattern from '../resources/images/entities/attack-pattern_dark.svg';
-import Campaign from '../resources/images/entities/campaign_dark.svg';
-import Note from '../resources/images/entities/note_dark.svg';
-import ObservedData from '../resources/images/entities/observed-data_dark.svg';
-import Opinion from '../resources/images/entities/opinion_dark.svg';
-import Report from '../resources/images/entities/report_dark.svg';
-import CourseOfAction from '../resources/images/entities/course-of-action_dark.svg';
-import Individual from '../resources/images/entities/individual_dark.svg';
-import Organization from '../resources/images/entities/organization_dark.svg';
-import Sector from '../resources/images/entities/sector_dark.svg';
-import System from '../resources/images/entities/system_dark.svg';
-import Indicator from '../resources/images/entities/indicator_dark.svg';
-import Infrastructure from '../resources/images/entities/infrastructure_dark.svg';
-import IntrusionSet from '../resources/images/entities/intrusion-set_dark.svg';
-import City from '../resources/images/entities/city_dark.svg';
-import Country from '../resources/images/entities/country_dark.svg';
-import Region from '../resources/images/entities/region_dark.svg';
-import Position from '../resources/images/entities/position_dark.svg';
-import Malware from '../resources/images/entities/malware_dark.svg';
-import ThreatActor from '../resources/images/entities/threat-actor_dark.svg';
-import Tool from '../resources/images/entities/tool_dark.svg';
-import Vulnerability from '../resources/images/entities/vulnerability_dark.svg';
-import Incident from '../resources/images/entities/incident_dark.svg';
-import StixCyberObservable from '../resources/images/entities/stix-cyber-observable_dark.svg';
-import relationship from '../resources/images/entities/relationship_dark.svg';
+import { fromB64, toB64, truncate } from './String';
+import KillChainPhase from '../resources/images/entities/kill-chain-phase.svg';
+import MarkingDefinition from '../resources/images/entities/marking-definition.svg';
+import Label from '../resources/images/entities/label.svg';
+import ExternalReference from '../resources/images/entities/external-reference.svg';
+import AttackPattern from '../resources/images/entities/attack-pattern.svg';
+import Campaign from '../resources/images/entities/campaign.svg';
+import Note from '../resources/images/entities/note.svg';
+import ObservedData from '../resources/images/entities/observed-data.svg';
+import Opinion from '../resources/images/entities/opinion.svg';
+import Report from '../resources/images/entities/report.svg';
+import CourseOfAction from '../resources/images/entities/course-of-action.svg';
+import Individual from '../resources/images/entities/individual.svg';
+import Organization from '../resources/images/entities/organization.svg';
+import Sector from '../resources/images/entities/sector.svg';
+import System from '../resources/images/entities/system.svg';
+import Indicator from '../resources/images/entities/indicator.svg';
+import Infrastructure from '../resources/images/entities/infrastructure.svg';
+import IntrusionSet from '../resources/images/entities/intrusion-set.svg';
+import City from '../resources/images/entities/city.svg';
+import Country from '../resources/images/entities/country.svg';
+import Region from '../resources/images/entities/region.svg';
+import Position from '../resources/images/entities/position.svg';
+import Malware from '../resources/images/entities/malware.svg';
+import ThreatActor from '../resources/images/entities/threat-actor.svg';
+import Tool from '../resources/images/entities/tool.svg';
+import Vulnerability from '../resources/images/entities/vulnerability.svg';
+import Incident from '../resources/images/entities/incident.svg';
+import StixCyberObservable from '../resources/images/entities/stix-cyber-observable.svg';
+import relationship from '../resources/images/entities/relationship.svg';
 import { itemColor } from './Colors';
 import themeDark from '../components/ThemeDark';
 import {
@@ -46,7 +46,7 @@ import { isNone } from '../components/i18n';
 
 const genImage = (src) => {
   const img = new Image();
-  img.src = src;
+  img.src = `/${window.BASE_PATH ? `${window.BASE_PATH}/` : ''}${src}`;
   return img;
 };
 
@@ -217,13 +217,11 @@ export const graphRawImages = {
   'X-OpenCTI-Text': StixCyberObservable,
 };
 
-export const encodeGraphData = (graphData) => Buffer.from(JSON.stringify(graphData), 'ascii').toString('base64');
+export const encodeGraphData = (graphData) => toB64(JSON.stringify(graphData));
 
 export const decodeGraphData = (encodedGraphData) => {
   if (encodedGraphData) {
-    const decodedGraphData = JSON.parse(
-      Buffer.from(encodedGraphData, 'base64').toString('ascii'),
-    );
+    const decodedGraphData = JSON.parse(fromB64(encodedGraphData));
     if (typeof decodedGraphData === 'object') {
       return decodedGraphData;
     }
@@ -257,6 +255,13 @@ export const defaultDate = (n) => {
   return null;
 };
 
+export const defaultType = (n, t) => {
+  if (n.parent_types.includes('basic-relationship')) {
+    return t(`relationship_${n.entity_type}`);
+  }
+  return t(`entity_${n.entity_type}`);
+};
+
 export const defaultValue = (n, tooltip = false) => {
   if (!n) return '';
   if (tooltip) {
@@ -280,6 +285,12 @@ export const defaultValue = (n, tooltip = false) => {
         )}`)
       || n.id
       || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
+      || (n.from
+        && n.to
+        && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
+          defaultValue(n.to),
+          20,
+        )}`)
       || 'Unknown'
     }`;
   }
@@ -302,6 +313,12 @@ export const defaultValue = (n, tooltip = false) => {
         20,
       )}`)
     || defaultValue(R.head(R.pathOr([], ['objects', 'edges'], n))?.node)
+    || (n.from
+      && n.to
+      && `${truncate(defaultValue(n.from), 20)} ➡️ ${truncate(
+        defaultValue(n.to),
+        20,
+      )}`)
     || 'Unknown'
   }`;
 };
@@ -369,38 +386,32 @@ export const applyNodeFilters = (
   createdBy = [],
   excludedStixCoreObjectsTypes = [],
   interval = [],
-) => {
-  const nodes = R.pipe(
-    R.filter((n) => !R.includes(n.entity_type, excludedStixCoreObjectsTypes)),
-    R.filter((n) => R.includes(n.entity_type, stixCoreObjectsTypes)),
-    R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
-    R.filter((n) => R.includes(n.createdBy.id, createdBy)),
-    R.filter(
-      (n) => interval.length === 0
+) => R.pipe(
+  R.filter((n) => !R.includes(n.entity_type, excludedStixCoreObjectsTypes)),
+  R.filter((n) => R.includes(n.entity_type, stixCoreObjectsTypes)),
+  R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
+  R.filter((n) => R.includes(n.createdBy.id, createdBy)),
+  R.filter(
+    (n) => interval.length === 0
         || isNone(n.defaultDate)
         || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
-    ),
-  )(nodesData);
-  return nodes;
-};
+  ),
+)(nodesData);
 
 export const applyLinkFilters = (
   linksData,
   markedBy = [],
   createdBy = [],
   interval = [],
-) => {
-  const links = R.pipe(
-    R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
-    R.filter((n) => R.includes(n.createdBy.id, createdBy)),
-    R.filter(
-      (n) => interval.length === 0
+) => R.pipe(
+  R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
+  R.filter((n) => R.includes(n.createdBy.id, createdBy)),
+  R.filter(
+    (n) => interval.length === 0
         || isNone(n.defaultDate)
         || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
-    ),
-  )(linksData);
-  return links;
-};
+  ),
+)(linksData);
 
 export const applyFilters = (
   graphData,
@@ -546,7 +557,13 @@ export const buildCorrelationData = (
         markedBy: n.markedBy,
         createdBy: n.createdBy,
       }),
-      relatedReportNodes,
+      R.filter(
+        (m) => m
+            && R.includes(
+              m.id,
+              R.map((o) => o.node.id, n.reports.edges),
+            ),
+      )(relatedReportNodes),
     )),
     R.flatten,
   )(thisReportLinkNodes);

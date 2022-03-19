@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import {
   assoc,
@@ -275,9 +274,7 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, sector, context, enableReferences,
-    } = this.props;
+    const { t, sector, context, enableReferences } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], sector) === null
       ? ''
       : {
@@ -313,6 +310,7 @@ class SectorEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               label={t('Name')}
               fullWidth={true}

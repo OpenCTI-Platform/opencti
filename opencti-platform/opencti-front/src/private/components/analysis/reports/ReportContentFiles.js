@@ -2,15 +2,14 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { interval } from 'rxjs';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Drawer from '@material-ui/core/Drawer';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Drawer from '@mui/material/Drawer';
+import { graphql, createRefetchContainer } from 'react-relay';
+import ListSubheader from '@mui/material/ListSubheader';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import { FileOutline } from 'mdi-material-ui';
 import { propOr } from 'ramda';
 import moment from 'moment';
@@ -26,14 +25,13 @@ const styles = (theme) => ({
     padding: '0 0 20px 0',
     position: 'fixed',
     zIndex: 1100,
-    backgroundColor: theme.palette.navAlt.background,
   },
   drawerPaperExports: {
     minHeight: '100vh',
     width: 250,
     right: 310,
     padding: '0 0 20px 0',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.leavingScreen,
@@ -55,10 +53,12 @@ class ReportContentFilesComponent extends Component {
     });
   }
 
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
+  }
+
   render() {
-    const {
-      classes, t, handleSelectFile, report, fld, currentFile,
-    } = this.props;
+    const { classes, t, handleSelectFile, report, fld, currentFile } = this.props;
     const sortByLastModified = R.sortBy(R.prop('name'));
     const importFiles = R.map(
       (n) => n.node,
@@ -70,18 +70,15 @@ class ReportContentFilesComponent extends Component {
       R.map((n) => n.node),
     )(R.pathOr([], ['externalReferences', 'edges'], report));
     const files = R.pipe(
-      R.filter((n) => [
-        'text/plain',
-        'text/html',
-        'text/markdown',
-        'application/pdf',
-      ].includes(n.metaData.mimetype)),
+      R.filter((n) => ['application/pdf'].includes(n.metaData.mimetype)),
       sortByLastModified,
     )([...importFiles, ...externalReferencesFiles]);
     return (
       <Drawer
         variant="permanent"
         anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
       >
         <div className={classes.toolbar} />
@@ -95,7 +92,7 @@ class ReportContentFilesComponent extends Component {
               key={file.id}
               dense={true}
               button={true}
-              selected={file.id === currentFile.id}
+              selected={file.id === currentFile?.id}
               onClick={handleSelectFile.bind(this, file)}
               classes={{ root: classes.item }}
             >

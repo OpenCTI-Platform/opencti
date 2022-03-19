@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import {
   assoc,
   compose,
@@ -30,7 +29,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -218,6 +216,7 @@ class OpinionEditionOverviewComponent extends Component {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="opinion"
                 label={t('Opinion')}
                 fullWidth={true}

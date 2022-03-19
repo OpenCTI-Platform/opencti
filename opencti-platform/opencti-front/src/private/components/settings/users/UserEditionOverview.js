@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import {
   assoc,
   compose,
@@ -16,8 +15,8 @@ import {
   union,
 } from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@material-ui/core/MenuItem';
-import { Security } from '@material-ui/icons';
+import MenuItem from '@mui/material/MenuItem';
+import { Security } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -193,9 +192,7 @@ class UserEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, user, context, classes,
-    } = this.props;
+    const { t, user, context, classes } = this.props;
     const external = user.external === true;
     const userRoles = pipe(map((n) => ({ label: n.name, value: n.id })))(
       user.roles,
@@ -223,6 +220,7 @@ class UserEditionOverviewComponent extends Component {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="name"
                 label={t('name')}
                 disabled={external}
@@ -235,6 +233,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="user_email"
                 disabled={external}
                 label={t('Email address')}
@@ -248,6 +247,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
@@ -260,6 +260,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
@@ -272,6 +273,7 @@ class UserEditionOverviewComponent extends Component {
               />
               <Field
                 component={SelectField}
+                variant="standard"
                 name="language"
                 label={t('Language')}
                 fullWidth={true}
@@ -294,6 +296,7 @@ class UserEditionOverviewComponent extends Component {
                 multiple={true}
                 noOptionsText={t('No available options')}
                 textfieldprops={{
+                  variant: 'standard',
                   label: t('Roles'),
                   helperText: (
                     <SubscriptionFocus context={context} fieldName="roles" />
@@ -303,18 +306,19 @@ class UserEditionOverviewComponent extends Component {
                 options={this.state.roles}
                 onInputChange={this.searchRoles.bind(this)}
                 onChange={this.handleChangeRole.bind(this)}
-                renderOption={(option) => (
-                  <React.Fragment>
+                renderOption={(props, option) => (
+                  <li {...props}>
                     <div className={classes.icon}>
                       <Security />
                     </div>
                     <div className={classes.text}>{option.label}</div>
-                  </React.Fragment>
+                  </li>
                 )}
                 style={{ marginTop: 20, width: '100%' }}
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="api_token"
                 disabled={true}
                 label={t('Token')}

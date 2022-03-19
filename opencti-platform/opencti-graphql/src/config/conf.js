@@ -1,10 +1,10 @@
-import { lstatSync, readFileSync } from 'fs';
+import { lstatSync, readFileSync } from 'node:fs';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import path from 'path';
+import path from 'node:path';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -15,8 +15,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-
-const pjson = require('../../package.json');
+import pjson from '../../package.json';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -30,17 +29,11 @@ const LINUX_CERTFILES = [
 
 const DEFAULT_ENV = 'production';
 export const OPENCTI_SESSION = 'opencti_session';
-export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';
-export const OPENCTI_DEFAULT_DURATION = 'P99Y';
 export const BUS_TOPICS = {
   [O.ENTITY_TYPE_SETTINGS]: {
     EDIT_TOPIC: 'SETTINGS_EDIT_TOPIC',
     ADDED_TOPIC: 'SETTINGS_ADDED_TOPIC',
-  },
-  [O.ENTITY_TYPE_ATTRIBUTE]: {
-    EDIT_TOPIC: 'ATTRIBUTE_EDIT_TOPIC',
-    ADDED_TOPIC: 'ATTRIBUTE_ADDED_TOPIC',
   },
   [O.ENTITY_TYPE_GROUP]: {
     EDIT_TOPIC: 'GROUP_EDIT_TOPIC',
@@ -151,7 +144,7 @@ nconf.add('argv', {
 const { timestamp } = format;
 const currentPath = process.env.INIT_CWD || process.cwd();
 const resolvePath = (relativePath) => path.join(currentPath, relativePath);
-const environment = nconf.get('env') || nconf.get('node_env') || DEFAULT_ENV;
+const environment = nconf.get('env') || nconf.get('node_env') || process.env.NODE_ENV || DEFAULT_ENV;
 const resolveEnvFile = (env) => path.join(resolvePath('config'), `${env.toLowerCase()}.json`);
 export const DEV_MODE = environment !== 'production';
 const externalConfigurationFile = nconf.get('conf');
@@ -245,7 +238,7 @@ export const logApp = {
 const LOG_AUDIT = 'AUDIT';
 export const logAudit = {
   _log: (level, user, operation, meta = {}) => {
-    if (auditLogTransports.length > 0) {
+    if (!DEV_MODE && auditLogTransports.length > 0) {
       const metaUser = { email: user.user_email, ...user.origin };
       const logMeta = isEmpty(meta) ? { auth: metaUser } : { resource: meta, auth: metaUser };
       auditLogger.log(level, operation, addBasicMetaInformation(LOG_AUDIT, logMeta));

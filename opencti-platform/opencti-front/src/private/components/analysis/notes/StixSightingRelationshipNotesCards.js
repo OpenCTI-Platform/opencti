@@ -1,20 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import { createPaginationContainer } from 'react-relay';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
+import withStyles from '@mui/styles/withStyles';
+import { graphql, createPaginationContainer } from 'react-relay';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
 import {
   EditOutlined,
   ExpandMoreOutlined,
   RateReviewOutlined,
-} from '@material-ui/icons';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
+} from '@mui/icons-material';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Form, Formik } from 'formik';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { ConnectionHandler } from 'relay-runtime';
@@ -48,7 +47,7 @@ const styles = (theme) => ({
   },
   createButton: {
     float: 'left',
-    margin: '-15px 0 0 10px',
+    marginTop: -15,
   },
 });
 
@@ -124,9 +123,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
   }
 
   render() {
-    const {
-      t, stixSightingRelationshipId, marginTop, data, classes,
-    } = this.props;
+    const { t, stixSightingRelationshipId, marginTop, data, classes } = this.props;
     const { open } = this.state;
     const notes = R.pathOr(
       [],
@@ -143,6 +140,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
             color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
+            size="large"
           >
             <EditOutlined fontSize="small" />
           </IconButton>
@@ -165,9 +163,10 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
           );
         })}
         <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
+          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
+          variant="outlined"
         >
           <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
             <Typography className={classes.heading}>
@@ -199,6 +198,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
                 <Form style={{ width: '100%' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
@@ -238,7 +238,7 @@ class StixSightingRelationshipNotesCardsContainer extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}

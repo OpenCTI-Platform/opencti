@@ -197,9 +197,7 @@ class Opinions extends Component {
       objectId,
       authorId,
     } = this.props;
-    const {
-      view, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
     const opinionFilterClass = opinionType !== 'all' && opinionType !== undefined
       ? opinionType.replace(/_/g, ' ')
       : '';

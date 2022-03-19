@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Input from '@material-ui/core/Input';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import { Search } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
+import { Search } from '@mui/icons-material';
 import { compose } from 'ramda';
 import inject18n from './i18n';
 
@@ -13,18 +13,22 @@ const styles = (theme) => ({
     padding: '0 10px 0 10px',
     backgroundColor: theme.palette.background.paper,
   },
+  searchRootTopBar: {
+    borderRadius: 5,
+    padding: '1px 10px 0 10px',
+    marginRight: 5,
+    backgroundColor: theme.palette.background.paper,
+  },
   searchRootInDrawer: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
-    backgroundColor: theme.palette.navAlt.background,
+    height: 30,
   },
-  searchRootInDrawer2: {
+  searchRootThin: {
     borderRadius: 5,
     padding: '0 10px 0 10px',
-    backgroundColor:
-      theme.palette.type === 'light'
-        ? theme.palette.background.paperLight
-        : theme.palette.navAlt.background,
+    height: 30,
+    backgroundColor: theme.palette.background.paper,
   },
   searchRootNoAnimation: {
     borderRadius: 5,
@@ -49,22 +53,24 @@ const styles = (theme) => ({
 
 class SearchInput extends Component {
   render() {
-    const {
-      t, classes, onChange, onSubmit, variant, keyword, fullWidth,
-    } = this.props;
+    const { t, classes, onChange, onSubmit, variant, keyword, fullWidth } = this.props;
     let classRoot = classes.searchRoot;
     if (variant === 'inDrawer') {
       classRoot = classes.searchRootInDrawer;
-    } else if (variant === 'inDrawer2') {
-      classRoot = classes.searchRootInDrawer2;
     } else if (variant === 'noAnimation') {
       classRoot = classes.searchRootNoAnimation;
+    } else if (variant === 'topBar') {
+      classRoot = classes.searchRootTopBar;
+    } else if (variant === 'thin') {
+      classRoot = classes.searchRootThin;
     }
     return (
-      <Input
+      <TextField
         fullWidth={fullWidth}
         name="keyword"
         defaultValue={keyword}
+        variant="outlined"
+        size="small"
         placeholder={`${t('Search')}...`}
         onChange={(event) => {
           const { value } = event.target;
@@ -78,22 +84,23 @@ class SearchInput extends Component {
             onSubmit(value);
           }
         }}
-        startAdornment={
-          <InputAdornment position="start">
-            <Search />
-          </InputAdornment>
-        }
-        classes={{
-          root: classRoot,
-          input:
-            // eslint-disable-next-line no-nested-ternary
-            variant === 'small'
-              ? classes.searchInputSmall
-              : variant !== 'noAnimation'
-                ? classes.searchInput
-                : classes.searchInputNoAnimation,
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Search fontSize="small" />
+            </InputAdornment>
+          ),
+          classes: {
+            root: classRoot,
+            input:
+              // eslint-disable-next-line no-nested-ternary
+              variant === 'small' || variant === 'thin'
+                ? classes.searchInputSmall
+                : variant !== 'noAnimation'
+                  ? classes.searchInput
+                  : classes.searchInputNoAnimation,
+          },
         }}
-        disableUnderline={true}
         autoComplete="off"
       />
     );

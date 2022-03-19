@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import SystemPopover from './SystemPopover';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -19,9 +18,7 @@ const styles = () => ({
 
 class SystemAnalysisComponent extends Component {
   render() {
-    const {
-      classes, system, viewAs, onViewAs,
-    } = this.props;
+    const { classes, system, viewAs, onViewAs } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader

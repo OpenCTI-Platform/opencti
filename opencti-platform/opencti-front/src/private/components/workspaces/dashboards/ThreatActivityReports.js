@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCoreObjectReportsHorizontalBars';
 import StixCoreObjectReportsAreaChart from '../../analysis/reports/StixCoreObjectReportsAreaChart';
@@ -16,9 +16,7 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const {
-      t, widget, startDate, endDate,
-    } = this.props;
+    const { t, widget, startDate, endDate } = this.props;
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (

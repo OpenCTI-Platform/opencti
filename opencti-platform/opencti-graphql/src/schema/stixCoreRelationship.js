@@ -42,9 +42,11 @@ export const RELATION_RELATED_TO = 'related-to';
 export const RELATION_DERIVED_FROM = 'derived-from';
 export const RELATION_DUPLICATE_OF = 'duplicate-of';
 export const RELATION_BELONGS_TO = 'belongs-to';
-export const RELATION_PART_OF = 'part-of'; // Extension
-export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension
-export const RELATION_REVOKED_BY = 'revoked-by'; // Extension
+export const RELATION_RESOLVES_TO = 'resolves-to';
+export const RELATION_PART_OF = 'part-of'; // Extension (OpenCTI)
+export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
+export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
+export const RELATION_DETECTS = 'detects'; // Extension (MITRE)
 export const STIX_CORE_RELATIONSHIPS = [
   RELATION_DELIVERS,
   RELATION_TARGETS,
@@ -83,10 +85,11 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_SUBTECHNIQUE_OF,
   RELATION_REVOKED_BY,
   RELATION_BELONGS_TO,
+  RELATION_RESOLVES_TO,
+  RELATION_DETECTS,
 ];
 schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
-export const isStixCoreRelationship = (type) =>
-  R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
+export const isStixCoreRelationship = (type) => R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 // endregion
 
 export const stixCoreRelationshipsAttributes = [
@@ -119,7 +122,6 @@ export const stixCoreRelationshipsAttributes = [
   'status_id',
 ];
 R.map(
-  (stixCoreRelationshipType) =>
-    schemaTypes.registerAttributes(stixCoreRelationshipType, stixCoreRelationshipsAttributes),
+  (stixCoreRelationshipType) => schemaTypes.registerAttributes(stixCoreRelationshipType, stixCoreRelationshipsAttributes),
   STIX_CORE_RELATIONSHIPS
 );

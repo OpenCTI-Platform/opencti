@@ -2,23 +2,22 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import { graphql, createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Fab from '@material-ui/core/Fab';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Fab from '@mui/material/Fab';
 import {
   ArrowRightAlt,
   Edit,
   ExpandLessOutlined,
   ExpandMoreOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -117,14 +116,14 @@ const styles = (theme) => ({
   },
   buttonExpand: {
     position: 'absolute',
-    bottom: 2,
+    bottom: 0,
     width: '100%',
     height: 25,
-    backgroundColor: 'rgba(255, 255, 255, .2)',
+    backgroundColor: 'rgba(255, 255, 255, .1)',
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, .5)',
+      backgroundColor: 'rgba(255, 255, 255, .2)',
     },
   },
 });
@@ -181,9 +180,7 @@ class StixCoreRelationshipContainer extends Component {
   }
 
   render() {
-    const {
-      t, nsdt, classes, stixCoreRelationship, paddingRight,
-    } = this.props;
+    const { t, nsdt, classes, stixCoreRelationship, paddingRight } = this.props;
     const { expanded } = this.state;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
@@ -334,7 +331,7 @@ class StixCoreRelationshipContainer extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
               <Typography variant="h3" gutterBottom={true}>
                 {t('Marking')}
               </Typography>
@@ -389,7 +386,7 @@ class StixCoreRelationshipContainer extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
               <Typography variant="h3" gutterBottom={true}>
                 {t('Confidence level')}
               </Typography>
@@ -465,7 +462,7 @@ class StixCoreRelationshipContainer extends Component {
               )}
             </div>
           ) : (
-            <div style={{ margin: '40px 0 0px 0' }}>
+            <div style={{ margin: '50px 0 0px 0' }}>
               <Grid
                 container={true}
                 spacing={3}

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
+import withStyles from '@mui/styles/withStyles';
+import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
 import inject18n from './i18n';
 
@@ -65,9 +65,7 @@ const inlineStyles = {
 
 class ItemPatternType extends Component {
   render() {
-    const {
-      classes, variant, label, t,
-    } = this.props;
+    const { classes, variant, label, t } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (this.props.color) {
       return (

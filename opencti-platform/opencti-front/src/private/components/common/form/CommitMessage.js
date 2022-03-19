@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Field } from 'formik';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import withStyles from '@mui/styles/withStyles';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import ExternalReferencesField from './ExternalReferencesField';
@@ -60,6 +60,7 @@ class CommitMessage extends Component {
           </Button>
         )}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={typeof handleClose !== 'function' ? this.state.open : open}
           onClose={handleClose || this.handleClose.bind(this)}
           fullWidth={true}

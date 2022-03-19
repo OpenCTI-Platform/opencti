@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles/index';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import Slide from '@material-ui/core/Slide';
-import MoreVert from '@material-ui/icons/MoreVert';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Slide from '@mui/material/Slide';
+import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -26,7 +26,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -121,7 +120,8 @@ class ContainerStixCoreObjectPopover extends Component {
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
+          style={{ marginTop: 3 }}
+          size="large"
         >
           <MoreVert />
         </IconButton>
@@ -129,13 +129,13 @@ class ContainerStixCoreObjectPopover extends Component {
           anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem onClick={this.handleOpenDelete.bind(this)}>
             {t('Remove')}
           </MenuItem>
         </Menu>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
@@ -154,8 +154,8 @@ class ContainerStixCoreObjectPopover extends Component {
               {t('Cancel')}
             </Button>
             <Button
+              color="secondary"
               onClick={this.submitDelete.bind(this)}
-              color="primary"
               disabled={this.state.deleting}
             >
               {t('Remove')}

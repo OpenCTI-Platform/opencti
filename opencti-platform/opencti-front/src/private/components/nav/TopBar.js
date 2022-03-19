@@ -2,21 +2,22 @@ import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
 import {
   AccountCircleOutlined,
   ExploreOutlined,
   InsertChartOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import { UploadOutline } from 'mdi-material-ui';
-import Menu from '@material-ui/core/Menu';
-import Divider from '@material-ui/core/Divider';
-import MenuItem from '@material-ui/core/MenuItem';
-import Tooltip from '@material-ui/core/Tooltip';
-import graphql from 'babel-plugin-relay/macro';
+import Menu from '@mui/material/Menu';
+import Divider from '@mui/material/Divider';
+import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
+import { graphql } from 'react-relay';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
@@ -70,14 +71,15 @@ const styles = (theme) => ({
   appBar: {
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.header.background,
-    color: theme.palette.header.text,
+    background: 0,
+    backgroundColor: theme.palette.background.nav,
+    paddingTop: theme.spacing(0.2),
   },
   flex: {
     flexGrow: 1,
   },
   logoContainer: {
-    marginLeft: -10,
+    margin: '2px 0 0 -10px',
   },
   logo: {
     cursor: 'pointer',
@@ -85,34 +87,24 @@ const styles = (theme) => ({
   },
   menuContainer: {
     float: 'left',
-    marginLeft: 40,
+    marginLeft: 30,
   },
   barRight: {
     position: 'absolute',
-    right: 5,
-    verticalAlign: 'middle',
+    top: 0,
+    right: 13,
     height: '100%',
   },
-  barContainer: {
-    display: 'table-cell',
+  barRightContainer: {
     float: 'left',
-    paddingTop: 10,
+    height: '100%',
+    paddingTop: 12,
   },
   divider: {
     display: 'table-cell',
-    float: 'left',
     height: '100%',
+    float: 'left',
     margin: '0 5px 0 5px',
-  },
-  searchContainer: {
-    display: 'table-cell',
-    float: 'left',
-    marginRight: 5,
-    paddingTop: 9,
-  },
-  button: {
-    display: 'table-cell',
-    float: 'left',
   },
 });
 
@@ -161,8 +153,8 @@ const TopBar = ({
     <AppBar
       position="fixed"
       className={classes.appBar}
+      variant="elevation"
       elevation={1}
-      style={{ backgroundColor: theme.palette.header.background }}
     >
       <Toolbar>
         <div className={classes.logoContainer}>
@@ -299,11 +291,13 @@ const TopBar = ({
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
         <div className={classes.barRight}>
-          <div className={classes.barContainer}>
-            <Security needs={[KNOWLEDGE]}>
-              <div className={classes.searchContainer}>
-                <SearchInput onSubmit={handleSearch} keyword={keyword} />
-              </div>
+          <Security needs={[KNOWLEDGE]}>
+            <div className={classes.barRightContainer}>
+              <SearchInput
+                onSubmit={handleSearch}
+                keyword={keyword}
+                variant="topBar"
+              />
               <Filters
                 variant="dialog"
                 availableFilterKeys={[
@@ -321,10 +315,10 @@ const TopBar = ({
                 currentFilters={{}}
                 disabled={location.pathname.includes('/dashboard/search')}
               />
-            </Security>
-          </div>
-          <Divider className={classes.divider} orientation="vertical" />
-          <div className={classes.barContainer}>
+            </div>
+            <Divider className={classes.divider} orientation="vertical" />
+          </Security>
+          <div className={classes.barRightContainer}>
             <Security needs={[EXPLORE]}>
               <Tooltip title={t('Custom dashboards')}>
                 <IconButton
@@ -342,9 +336,9 @@ const TopBar = ({
                       '/dashboard/workspaces/dashboards',
                     )
                       ? 'secondary'
-                      : 'inherit'
+                      : 'default'
                   }
-                  classes={{ root: classes.button }}
+                  size="medium"
                 >
                   <InsertChartOutlined fontSize="medium" />
                 </IconButton>
@@ -365,9 +359,9 @@ const TopBar = ({
                       '/dashboard/workspaces/investigations',
                     )
                       ? 'secondary'
-                      : 'inherit'
+                      : 'default'
                   }
-                  classes={{ root: classes.button }}
+                  size="medium"
                 >
                   <ExploreOutlined fontSize="medium" />
                 </IconButton>
@@ -386,9 +380,9 @@ const TopBar = ({
                   color={
                     location.pathname.includes('/dashboard/import')
                       ? 'secondary'
-                      : 'inherit'
+                      : 'default'
                   }
-                  classes={{ root: classes.button }}
+                  size="medium"
                 >
                   <UploadOutline fontSize="medium" />
                 </IconButton>
@@ -400,13 +394,11 @@ const TopBar = ({
               aria-owns={menuOpen.open ? 'menu-appbar' : null}
               aria-haspopup="true"
               onClick={handleOpenMenu}
-              color="inherit"
             >
               <AccountCircleOutlined fontSize="medium" />
             </IconButton>
             <Menu
               id="menu-appbar"
-              style={{ marginTop: 40, zIndex: 2100 }}
               anchorEl={menuOpen.anchorEl}
               open={menuOpen.open}
               onClose={handleCloseMenu}

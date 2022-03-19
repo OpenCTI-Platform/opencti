@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import {
   BarChart,
   ResponsiveContainer,
@@ -11,11 +11,12 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Chip from '@material-ui/core/Chip';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Chip from '@mui/material/Chip';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import { now, monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -87,9 +88,7 @@ class StixCoreObjectReportsChart extends Component {
   }
 
   render() {
-    const {
-      t, md, classes, stixCoreObjectId, authorId, reportType, theme,
-    } = this.props;
+    const { t, md, classes, stixCoreObjectId, authorId, reportType, theme } = this.props;
     let reportsTimeSeriesVariables;
     if (authorId) {
       reportsTimeSeriesVariables = {
@@ -150,7 +149,7 @@ class StixCoreObjectReportsChart extends Component {
           />
         </div>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <QueryRenderer
             query={stixCoreObjectReportsChartReportsTimeSeriesQuery}
             variables={reportsTimeSeriesVariables}
@@ -169,7 +168,7 @@ class StixCoreObjectReportsChart extends Component {
                     >
                       <CartesianGrid
                         strokeDasharray="2 2"
-                        stroke={theme.palette.action.grid}
+                        stroke={theme.palette.background.default}
                       />
                       <XAxis
                         dataKey="date"

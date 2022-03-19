@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
 import {
   AspectRatio,
   FilterListOutlined,
@@ -15,7 +16,7 @@ import {
   InfoOutlined,
   ScatterPlotOutlined,
   DateRangeOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import {
   Video3d,
   SelectAll,
@@ -23,15 +24,15 @@ import {
   FamilyTree,
   AutoFix,
 } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Drawer from '@material-ui/core/Drawer';
-import Popover from '@material-ui/core/Popover';
-import Divider from '@material-ui/core/Divider';
+import Tooltip from '@mui/material/Tooltip';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Drawer from '@mui/material/Drawer';
+import Popover from '@mui/material/Popover';
+import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
 import {
   ResponsiveContainer,
@@ -40,12 +41,12 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
@@ -56,10 +57,9 @@ import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomain
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
 
-const styles = (theme) => ({
+const styles = () => ({
   bottomNav: {
     zIndex: 1000,
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -260,7 +260,7 @@ class ReportKnowledgeGraphBar extends Component {
     const isInferred = R.filter((n) => n.inferred, selectedNodes).length > 0
       || R.filter((n) => n.inferred, selectedLinks).length > 0;
     if (viewEnabled) {
-      if (numberOfSelectedNodes === 1) {
+      if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
         if (selectedNodes[0].relationship_type) {
           viewLink = `${resolveLink(selectedNodes[0].fromType)}/${
             selectedNodes[0].fromId
@@ -270,7 +270,7 @@ class ReportKnowledgeGraphBar extends Component {
             selectedNodes[0].id
           }`;
         }
-      } else if (numberOfSelectedLinks === 1) {
+      } else if (numberOfSelectedLinks === 1 && selectedLinks.length === 1) {
         const remoteRelevant = selectedLinks[0].source.relationship_type
           ? selectedLinks[0].target
           : selectedLinks[0].source;
@@ -282,15 +282,17 @@ class ReportKnowledgeGraphBar extends Component {
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
+        && selectedNodes.length === 1
         && !selectedNodes[0].isObservable)
       || (!isInferred
         && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
+        && selectedLinks.length === 1
         && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
-    const fromSelectedTypes = numberOfSelectedNodes >= 2
+    const fromSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];
-    const toSelectedTypes = numberOfSelectedNodes >= 2
+    const toSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.tail(selectedNodes)))
       : [];
     const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
@@ -325,6 +327,7 @@ class ReportKnowledgeGraphBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
         <div
           style={{
@@ -358,6 +361,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color={currentMode3D ? 'secondary' : 'primary'}
                     onClick={handleToggle3DMode.bind(this)}
+                    size="large"
                   >
                     <Video3d />
                   </IconButton>
@@ -377,6 +381,7 @@ class ReportKnowledgeGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'vertical')}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <FamilyTree />
                   </IconButton>
@@ -396,6 +401,7 @@ class ReportKnowledgeGraphBar extends Component {
                     }
                     onClick={handleToggleTreeMode.bind(this, 'horizontal')}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <FamilyTree style={{ transform: 'rotate(-90deg)' }} />
                   </IconButton>
@@ -410,6 +416,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color={currentModeFixed ? 'primary' : 'secondary'}
                     onClick={handleToggleFixedMode.bind(this)}
+                    size="large"
                   >
                     <ScatterPlotOutlined />
                   </IconButton>
@@ -420,6 +427,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color={displayTimeRange ? 'secondary' : 'primary'}
                     onClick={handleToggleDisplayTimeRange.bind(this)}
+                    size="large"
                   >
                     <DateRangeOutlined />
                   </IconButton>
@@ -430,6 +438,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleZoomToFit.bind(this)}
+                    size="large"
                   >
                     <AspectRatio />
                   </IconButton>
@@ -441,6 +450,7 @@ class ReportKnowledgeGraphBar extends Component {
                     color="primary"
                     onClick={handleResetLayout.bind(this)}
                     disabled={currentModeFixed}
+                    size="large"
                   >
                     <AutoFix />
                   </IconButton>
@@ -452,6 +462,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
+                    size="large"
                   >
                     <FilterListOutlined />
                   </IconButton>
@@ -504,6 +515,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenMarkedBy.bind(this)}
+                    size="large"
                   >
                     <CenterFocusStrongOutlined />
                   </IconButton>
@@ -556,6 +568,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenCreatedBy.bind(this)}
+                    size="large"
                   >
                     <AccountBalanceOutlined />
                   </IconButton>
@@ -605,6 +618,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenSelectByType.bind(this)}
+                    size="large"
                   >
                     <SelectGroup />
                   </IconButton>
@@ -648,6 +662,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={handleSelectAll.bind(this)}
+                    size="large"
                   >
                     <SelectAll />
                   </IconButton>
@@ -689,6 +704,7 @@ class ReportKnowledgeGraphBar extends Component {
                       target="_blank"
                       to={viewLink}
                       disabled={!viewEnabled}
+                      size="large"
                     >
                       <InfoOutlined />
                     </IconButton>
@@ -700,6 +716,7 @@ class ReportKnowledgeGraphBar extends Component {
                       color="primary"
                       onClick={this.handleOpenEditItem.bind(this)}
                       disabled={!editionEnabled}
+                      size="large"
                     >
                       <EditOutlined />
                     </IconButton>
@@ -727,6 +744,7 @@ class ReportKnowledgeGraphBar extends Component {
                         color="primary"
                         onClick={this.handleOpenCreateRelationship.bind(this)}
                         disabled={!relationEnabled}
+                        size="large"
                       >
                         <LinkOutlined />
                       </IconButton>
@@ -765,6 +783,7 @@ class ReportKnowledgeGraphBar extends Component {
                           numberOfSelectedNodes === 0
                           && numberOfSelectedLinks === 0
                         }
+                        size="large"
                       >
                         <DeleteOutlined />
                       </IconButton>
@@ -774,6 +793,7 @@ class ReportKnowledgeGraphBar extends Component {
                 <Dialog
                   open={this.state.displayRemove}
                   keepMounted={true}
+                  PaperProps={{ elevation: 1 }}
                   TransitionComponent={Transition}
                   onClose={this.handleCloseRemove.bind(this)}
                 >
@@ -793,7 +813,7 @@ class ReportKnowledgeGraphBar extends Component {
                         this.handleCloseRemove();
                         handleDeleteSelected();
                       }}
-                      color="primary"
+                      color="secondary"
                     >
                       {t('Remove')}
                     </Button>

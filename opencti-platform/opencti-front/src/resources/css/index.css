@@ -1,6 +1,4 @@
 * {
-  font-size: 100%;
-  font-family: "Roboto", sans-serif;
   scrollbar-width: thin;
 }
 
@@ -8,24 +6,8 @@
   outline: 0;
 }
 
-@keyframes autofill {
-  100% {
-    background: transparent;
-    color: inherit;
-  }
-}
-
-@keyframes loading {
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@-webkit-keyframes autofill {
-  100% {
-    background: transparent;
-    color: inherit;
-  }
+input:-webkit-autofill {
+  transition-delay: 9999s;
 }
 
 a,
@@ -45,13 +27,6 @@ pre {
   white-space: -pre-wrap;
   white-space: -o-pre-wrap;
   word-wrap: break-word;
-  font-weight: 400;
-}
-
-code {
-  font-family: Consolas, monaco, monospace;
-  padding: 3px;
-  font-size: 12px;
   font-weight: 400;
 }
 
@@ -79,19 +54,6 @@ div.break {
   word-break: break-word;
 }
 
-.recharts-legend-item-text,
-.recharts-polar-angle-axis-tick-value,
-.recharts-text,
-.recharts-layer {
-  font-size: 11px;
-  font-family: Roboto, sans-serif;
-}
-
-.recharts-cartesian-axis-tick {
-  font-size: 10px;
-  font-family: Roboto, sans-serif;
-}
-
 div.markdown p {
   margin: 0 0 10px 0;
   overflow: hidden;
@@ -106,11 +68,6 @@ div.markdown p:last-child {
   width: 100%;
   height: 100%;
   border-radius: 6px;
-}
-
-.react-grid-item > .react-resizable-handle::after {
-  border-right: 2px solid rgba(255, 255, 255, 0.4) !important;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
 }
 
 .layout {

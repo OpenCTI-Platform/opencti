@@ -1,23 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  BarChart,
-  ResponsiveContainer,
-  CartesianGrid,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from 'recharts';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';
+import { verticalBarsChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -65,7 +60,7 @@ class ReportsVerticalBars extends Component {
   renderContent() {
     const {
       t,
-      md,
+      fsd,
       reportType,
       startDate,
       endDate,
@@ -106,50 +101,29 @@ class ReportsVerticalBars extends Component {
         variables={reportsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.reportsTimeSeries) {
+            const chartData = props.reportsTimeSeries.map((entry) => ({
+              x: new Date(entry.date),
+              y: entry.value,
+            }));
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  data={props.reportsTimeSeries}
-                  margin={{
-                    top: 20,
-                    right: 50,
-                    bottom: 20,
-                    left: -10,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke={theme.palette.text.primary}
-                    interval={interval}
-                    angle={-45}
-                    textAnchor="end"
-                    tickFormatter={md}
-                  />
-                  <YAxis stroke={theme.palette.text.primary} />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                    labelFormatter={md}
-                  />
-                  <Bar
-                    fill={theme.palette.primary.main}
-                    dataKey="value"
-                    barSize={5}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={verticalBarsChartOptions(
+                  theme,
+                  fsd,
+                  simpleNumberFormat,
+                  false,
+                  true,
+                )}
+                series={[
+                  {
+                    name: t('Number of reports'),
+                    data: chartData,
+                  },
+                ]}
+                type="bar"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
@@ -186,16 +160,20 @@ class ReportsVerticalBars extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('Reports history')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

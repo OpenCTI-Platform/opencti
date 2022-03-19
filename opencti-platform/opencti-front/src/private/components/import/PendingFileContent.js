@@ -2,36 +2,33 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import List from '@material-ui/core/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import List from '@mui/material/List';
 import { v4 as uuid } from 'uuid';
-import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core';
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
-import Paper from '@material-ui/core/Paper';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import Typography from '@mui/material/Typography';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import MenuItem from '@material-ui/core/MenuItem';
-import DialogActions from '@material-ui/core/DialogActions';
-import Checkbox from '@material-ui/core/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import MenuItem from '@mui/material/MenuItem';
+import DialogActions from '@mui/material/DialogActions';
+import Checkbox from '@mui/material/Checkbox';
 import * as Yup from 'yup';
 import { Link, withRouter } from 'react-router-dom';
-import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
+import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import { CodeJson } from 'mdi-material-ui';
-import {
-  Cell, Pie, PieChart, ResponsiveContainer,
-} from 'recharts';
-import { withTheme } from '@material-ui/core/styles';
-import Select from '@material-ui/core/Select';
-import IconButton from '@material-ui/core/IconButton';
+import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import withTheme from '@mui/styles/withTheme';
+import Select from '@mui/material/Select';
+import IconButton from '@mui/material/IconButton';
 import ItemIcon from '../../../components/ItemIcon';
 import { defaultValue } from '../../../utils/Graph';
 import inject18n from '../../../components/i18n';
@@ -646,9 +643,7 @@ class PendingFileContentComponent extends Component {
   renderLabel(props) {
     const { theme } = this.props;
     const RADIAN = Math.PI / 180;
-    const {
-      cx, cy, midAngle, outerRadius, fill, payload, percent, value,
-    } = props;
+    const { cx, cy, midAngle, outerRadius, fill, payload, percent, value } = props;
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);
     const sx = cx + (outerRadius + 10) * cos;
@@ -774,7 +769,7 @@ class PendingFileContentComponent extends Component {
               <Typography variant="h4" gutterBottom={true}>
                 {t('File information')}
               </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={12}>
                     <Typography variant="h3" gutterBottom={true}>
@@ -851,7 +846,7 @@ class PendingFileContentComponent extends Component {
               <Typography variant="h4" gutterBottom={true}>
                 {t('Bundle details')}
               </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 <div style={{ height: 300 }}>
                   <ResponsiveContainer height="100%" width="100%">
                     <PieChart
@@ -890,10 +885,10 @@ class PendingFileContentComponent extends Component {
             </div>
           </Grid>
         </Grid>
-        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
+        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 50 }}>
           {t('Bundle content')}
         </Typography>
-        <Paper classes={{ root: classes.paperList }} elevation={2}>
+        <Paper classes={{ root: classes.paperList }} variant="outlined">
           <List classes={{ root: classes.linesContainer }}>
             <ListItem
               classes={{ root: classes.itemHead }}
@@ -967,6 +962,7 @@ class PendingFileContentComponent extends Component {
                                 type
                               ) : (
                               <Select
+                                variant="standard"
                                 labelId="type"
                                 value={type}
                                 onChange={this.handleChangeType.bind(
@@ -1223,6 +1219,7 @@ class PendingFileContentComponent extends Component {
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
                 open={dataToValidate}
+                PaperProps={{ elevation: 1 }}
                 keepMounted={true}
                 onClose={this.handleCloseValidate.bind(this)}
                 fullWidth={true}
@@ -1231,6 +1228,7 @@ class PendingFileContentComponent extends Component {
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="connector_id"
                     label={t('Connector')}
                     fullWidth={true}
@@ -1251,18 +1249,13 @@ class PendingFileContentComponent extends Component {
                   </Field>
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>
@@ -1273,6 +1266,7 @@ class PendingFileContentComponent extends Component {
         </Formik>
         <Dialog
           open={displayJson}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           onClick={this.handleCloseJson.bind(this)}
           fullWidth={true}

@@ -1,18 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, includes, filter, append,
-} from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { compose, includes, filter, append } from 'ramda';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Typography from '@mui/material/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import IndicatorAddObservables from './IndicatorAddObservables';
@@ -86,9 +83,7 @@ class IndicatorObservablesComponent extends Component {
   }
 
   render() {
-    const {
-      t, fd, classes, indicator,
-    } = this.props;
+    const { t, fd, classes, indicator } = this.props;
     return (
       <div style={{ marginTop: 20 }}>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>

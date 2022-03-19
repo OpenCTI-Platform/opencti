@@ -4,11 +4,10 @@ import * as R from 'ramda';
 import SpriteText from 'three-spritetext';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
@@ -32,17 +31,6 @@ import { reportMutationFieldPatch } from './ReportEditionOverview';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
-
-const styles = (theme) => ({
-  bottomNav: {
-    zIndex: 1000,
-    padding: '0 200px 0 205px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-});
 
 export const reportKnowledgeCorrelationQuery = graphql`
   query ReportKnowledgeCorrelationQuery($id: String) {
@@ -321,6 +309,7 @@ class ReportKnowledgeCorrelationComponent extends Component {
         if (this.zoom && this.zoom.k && !this.state.mode3D) {
           this.graph.current.zoom(this.zoom.k, 400);
         } else {
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
           const currentContext = this;
           setTimeout(
             () => currentContext.graph
@@ -867,9 +856,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 [...this.selectedNodes]
                   .filter((selNode) => selNode !== node)
                   // eslint-disable-next-line no-shadow
-                  .forEach((node) => ['x', 'y', 'z'].forEach(
+                  .forEach((selNode) => ['x', 'y', 'z'].forEach(
                     // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (node[`f${coord}`] = node[coord] + translate[coord]),
+                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
                   ));
               }
             }}
@@ -879,17 +868,17 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 [...this.selectedNodes]
                   .filter((selNode) => selNode !== node) // don't touch node being dragged
                   // eslint-disable-next-line no-shadow
-                  .forEach((node) => {
+                  .forEach((selNode) => {
                     ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (node[`f${coord}`] = undefined),
+                      (coord) => (selNode[`f${coord}`] = undefined),
                     );
                     // eslint-disable-next-line no-param-reassign
-                    node.fx = node.x;
+                    selNode.fx = selNode.x;
                     // eslint-disable-next-line no-param-reassign
-                    node.fy = node.y;
+                    selNode.fy = selNode.y;
                     // eslint-disable-next-line no-param-reassign
-                    node.fz = node.z;
+                    selNode.fz = selNode.z;
                   });
               }
               // eslint-disable-next-line no-param-reassign
@@ -950,9 +939,9 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 [...this.selectedNodes]
                   .filter((selNode) => selNode !== node)
                   // eslint-disable-next-line no-shadow
-                  .forEach((node) => ['x', 'y'].forEach(
+                  .forEach((selNode) => ['x', 'y'].forEach(
                     // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (node[`f${coord}`] = node[coord] + translate[coord]),
+                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
                   ));
               }
             }}
@@ -962,15 +951,15 @@ class ReportKnowledgeCorrelationComponent extends Component {
                 [...this.selectedNodes]
                   .filter((selNode) => selNode !== node) // don't touch node being dragged
                   // eslint-disable-next-line no-shadow
-                  .forEach((node) => {
+                  .forEach((selNode) => {
                     ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (node[`f${coord}`] = undefined),
+                      (coord) => (selNode[`f${coord}`] = undefined),
                     );
                     // eslint-disable-next-line no-param-reassign
-                    node.fx = node.x;
+                    selNode.fx = selNode.x;
                     // eslint-disable-next-line no-param-reassign
-                    node.fy = node.y;
+                    selNode.fy = selNode.y;
                   });
               }
               // eslint-disable-next-line no-param-reassign
@@ -1214,5 +1203,4 @@ export default R.compose(
   inject18n,
   withRouter,
   withTheme,
-  withStyles(styles),
 )(ReportKnowledgeCorrelation);

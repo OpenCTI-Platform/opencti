@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { ArrowForwardIosOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
@@ -15,15 +15,13 @@ import Security, {
 const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -54,14 +52,14 @@ class TopMenuCampaign extends Component {
           to="/dashboard/threats/campaigns"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <ChessKnight className={classes.icon} fontSize="small" />
           {t('Campaigns')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -76,7 +74,7 @@ class TopMenuCampaign extends Component {
           color={
             location.pathname === `/dashboard/threats/campaigns/${campaignId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -98,7 +96,7 @@ class TopMenuCampaign extends Component {
               `/dashboard/threats/campaigns/${campaignId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -118,7 +116,7 @@ class TopMenuCampaign extends Component {
             location.pathname
             === `/dashboard/threats/campaigns/${campaignId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -140,7 +138,7 @@ class TopMenuCampaign extends Component {
               `/dashboard/threats/campaigns/${campaignId}/indicators`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -161,7 +159,7 @@ class TopMenuCampaign extends Component {
               location.pathname
               === `/dashboard/threats/campaigns/${campaignId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -182,7 +180,7 @@ class TopMenuCampaign extends Component {
             location.pathname
             === `/dashboard/threats/campaigns/${campaignId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

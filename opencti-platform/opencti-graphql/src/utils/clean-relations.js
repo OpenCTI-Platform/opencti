@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { el, ES_IGNORE_THROTTLED } from '../database/elasticSearch';
+import { searchClient, ES_IGNORE_THROTTLED } from '../database/engine';
 import { logApp } from '../config/conf';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { deleteElementById } from '../database/middleware';
@@ -33,11 +33,11 @@ const computeMissingRelationsForType = async (relationType) => {
     const query = {
       index: READ_RELATIONSHIPS_INDICES,
       ignore_throttled: ES_IGNORE_THROTTLED,
-      _source_includes: ['internal_id', 'entity_type', `connections`],
+      _source_includes: ['internal_id', 'entity_type', 'connections'],
       track_total_hits: true,
       body,
     };
-    const queryRelations = await el.search(query);
+    const queryRelations = await searchClient().search(query);
     const {
       hits,
       total: { value: valTotal },
@@ -50,13 +50,13 @@ const computeMissingRelationsForType = async (relationType) => {
       counter += hits.length;
       const connectionIds = R.uniq(R.flatten(hits.map((h) => h._source.connections.map((c) => c.internal_id))));
       const findTerms = connectionIds.map((c) => {
-        return { term: { [`internal_id.keyword`]: c } };
+        return { term: { 'internal_id.keyword': c } };
       });
       const findQuery = {
         index: READ_DATA_INDICES,
         ignore_throttled: ES_IGNORE_THROTTLED,
         size: 2000,
-        _source_includes: `internal_id`,
+        _source_includes: 'internal_id',
         body: {
           query: {
             bool: {
@@ -66,7 +66,7 @@ const computeMissingRelationsForType = async (relationType) => {
           },
         },
       };
-      const data = await el.search(findQuery);
+      const data = await searchClient().search(findQuery);
       const resolvedConns = data.body.hits.hits.map((i) => i._source);
       const resolvedIds = resolvedConns.map((r) => r.internal_id);
       const relationsToRemove = hits

@@ -1,23 +1,24 @@
 import React, { Component } from 'react';
 import * as R from 'ramda';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import { KeyboardDatePicker } from '@material-ui/pickers';
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import TextField from '@material-ui/core/TextField';
-import Popover from '@material-ui/core/Popover';
-import IconButton from '@material-ui/core/IconButton';
-import { FilterListOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Grid from '@mui/material/Grid';
+import DatePicker from '@mui/lab/DatePicker';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
+import Popover from '@mui/material/Popover';
+import IconButton from '@mui/material/IconButton';
+import { FilterListOutlined } from '@mui/icons-material';
 import * as PropTypes from 'prop-types';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import { ToyBrickSearchOutline } from 'mdi-material-ui';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import Dialog from '@material-ui/core/Dialog';
-import Chip from '@material-ui/core/Chip';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@mui/material/Dialog';
+import Chip from '@mui/material/Chip';
 import { withRouter } from 'react-router-dom';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identitySearchIdentitiesSearchQuery } from '../identities/IdentitySearch';
@@ -32,7 +33,7 @@ import { statusFieldStatusesSearchQuery } from '../form/StatusField';
 const styles = (theme) => ({
   filters: {
     float: 'left',
-    margin: '-8px 0 0 -5px',
+    margin: '-3px 0 0 -5px',
   },
   filtersDialog: {
     margin: '0 0 20px 0',
@@ -56,15 +57,12 @@ const styles = (theme) => ({
     margin: '5px 10px 0 10px',
     width: 200,
   },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
   filter: {
     margin: '0 10px 10px 0',
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
-    backgroundColor: theme.palette.background.chip,
+    backgroundColor: theme.palette.background.paper,
     margin: '0 10px 10px 0',
   },
 });
@@ -262,7 +260,7 @@ class Filters extends Component {
                     value: null,
                     type: 'Label',
                     color:
-                      theme.palette.type === 'dark' ? '#ffffff' : '#000000',
+                      theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
                   },
                   ...R.union(
                     labelledByEntities,
@@ -429,14 +427,14 @@ class Filters extends Component {
         break;
       case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {
-          fieldKey: 'x_opencti_base_severity',
+          attributeName: 'x_opencti_base_severity',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
             const severityEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+              R.pathOr([], ['runtimeAttributes', 'edges']),
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
@@ -456,14 +454,14 @@ class Filters extends Component {
         break;
       case 'x_opencti_attack_vector':
         fetchQuery(attributesSearchQuery, {
-          fieldKey: 'x_opencti_attack_vector',
+          attributeName: 'x_opencti_attack_vector',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
             const attackVectorEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+              R.pathOr([], ['runtimeAttributes', 'edges']),
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
@@ -511,14 +509,14 @@ class Filters extends Component {
         break;
       case 'x_opencti_organization_type':
         fetchQuery(attributesSearchQuery, {
-          fieldKey: 'x_opencti_organization_type',
+          attributeName: 'x_opencti_organization_type',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
             const organizationTypeEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+              R.pathOr([], ['runtimeAttributes', 'edges']),
               R.map((n) => ({
                 label: n.node.value,
                 value: n.node.value,
@@ -538,14 +536,14 @@ class Filters extends Component {
         break;
       case 'report_types':
         fetchQuery(attributesSearchQuery, {
-          key: 'report_types',
+          attributeName: 'report_types',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
           .then((data) => {
             const reportTypesEntities = R.pipe(
-              R.pathOr([], ['attributes', 'edges']),
+              R.pathOr([], ['runtimeAttributes', 'edges']),
               R.map((n) => ({
                 label: t(n.node.value),
                 value: n.node.value,
@@ -602,6 +600,8 @@ class Filters extends Component {
           'Incident',
           'Stix-Cyber-Observable',
           'Stix-Core-Relationship',
+          'StixFile',
+          'IPv4-Addr',
           'indicates',
           'targets',
           'uses',
@@ -662,12 +662,13 @@ class Filters extends Component {
     }
   }
 
-  handleChangeDate(filterKey, date, value) {
-    if (date && value && date.toISOString()) {
+  handleChangeDate(filterKey, date) {
+    const { nsd } = this.props;
+    if (date && date.toISOString()) {
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(filterKey, date.toISOString(), value);
+        this.handleAddFilter(filterKey, date.toISOString(), nsd(date));
       } else {
-        this.props.handleAddFilter(filterKey, date.toISOString(), value);
+        this.props.handleAddFilter(filterKey, date.toISOString(), nsd(date));
       }
     }
   }
@@ -713,18 +714,22 @@ class Filters extends Component {
           ) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
-                <KeyboardDatePicker
+                <DatePicker
                   label={t(`filter_${filterKey}`)}
                   value={currentValue ? currentValue.id : null}
                   variant="inline"
                   disableToolbar={false}
                   autoOk={true}
                   allowKeyboardControl={true}
-                  format="YYYY-MM-DD"
-                  inputVariant="outlined"
-                  size="small"
-                  fullWidth={variant === 'dialog'}
                   onChange={this.handleChangeDate.bind(this, filterKey)}
+                  renderInput={(params) => (
+                    <TextField
+                      variant="outlined"
+                      size="small"
+                      fullWidth={variant === 'dialog'}
+                      {...params}
+                    />
+                  )}
                 />
               </Grid>
             );
@@ -742,7 +747,7 @@ class Filters extends Component {
                 onInputChange={this.searchEntities.bind(this, filterKey)}
                 inputValue={inputValues[filterKey] || ''}
                 onChange={this.handleChange.bind(this, filterKey)}
-                getOptionSelected={(option, value) => option.value === value.value
+                isOptionEqualToValue={(option, value) => option.value === value.value
                 }
                 renderInput={(params) => (
                   <TextField
@@ -754,8 +759,8 @@ class Filters extends Component {
                     onFocus={this.searchEntities.bind(this, filterKey)}
                   />
                 )}
-                renderOption={(option) => (
-                  <React.Fragment>
+                renderOption={(props, option) => (
+                  <li {...props}>
                     <div
                       className={classes.icon}
                       style={{ color: option.color }}
@@ -763,7 +768,7 @@ class Filters extends Component {
                       <ItemIcon type={option.type} />
                     </div>
                     <div className={classes.text}>{option.label}</div>
-                  </React.Fragment>
+                  </li>
                 )}
               />
             </Grid>
@@ -774,12 +779,8 @@ class Filters extends Component {
   }
 
   renderListFilters() {
-    const {
-      t, classes, availableFilterKeys, noDirectFilters,
-    } = this.props;
-    const {
-      open, anchorEl, entities, inputValues,
-    } = this.state;
+    const { t, classes, availableFilterKeys, noDirectFilters } = this.props;
+    const { open, anchorEl, entities, inputValues } = this.state;
     return (
       <div className={classes.filters}>
         {this.props.variant === 'text' ? (
@@ -797,7 +798,8 @@ class Filters extends Component {
           <IconButton
             color="primary"
             onClick={this.handleOpenFilters.bind(this)}
-            style={{ float: 'left' }}
+            style={{ float: 'left', marginTop: -2 }}
+            size="large"
           >
             <FilterListOutlined />
           </IconButton>
@@ -815,6 +817,7 @@ class Filters extends Component {
             vertical: 'top',
             horizontal: 'center',
           }}
+          elevation={1}
         >
           {this.renderFilters()}
         </Popover>
@@ -834,7 +837,7 @@ class Filters extends Component {
               options={entities[filterKey] ? entities[filterKey] : []}
               onInputChange={this.searchEntities.bind(this, filterKey)}
               onChange={this.handleChange.bind(this, filterKey)}
-              getOptionSelected={(option, value) => option.value === value}
+              isOptionEqualToValue={(option, value) => option.value === value}
               inputValue={inputValues[filterKey] || ''}
               renderInput={(params) => (
                 <TextField
@@ -847,13 +850,13 @@ class Filters extends Component {
                   onFocus={this.searchEntities.bind(this, filterKey)}
                 />
               )}
-              renderOption={(option) => (
-                <React.Fragment>
+              renderOption={(props, option) => (
+                <li {...props}>
                   <div className={classes.icon} style={{ color: option.color }}>
                     <ItemIcon type={option.type} />
                   </div>
                   <div className={classes.text}>{option.label}</div>
-                </React.Fragment>
+                </li>
               )}
             />
           ))}
@@ -902,29 +905,28 @@ class Filters extends Component {
   }
 
   renderDialogFilters() {
-    const {
-      t, classes, theme, disabled,
-    } = this.props;
+    const { t, classes, disabled } = this.props;
     const { open, filters } = this.state;
     return (
-      <div style={{ float: 'left' }}>
+      <React.Fragment>
         <Tooltip title={t('Advanced search')}>
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
-            style={{ color: theme.palette.header.text }}
+            size="medium"
           >
             <ToyBrickSearchOutline fontSize="medium" />
           </IconButton>
         </Tooltip>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={open}
           onClose={this.handleCloseFilters.bind(this)}
           fullWidth={true}
           maxWidth="md"
         >
           <DialogTitle>{t('Advanced search')}</DialogTitle>
-          <DialogContent>
+          <DialogContent style={{ paddingTop: 10 }}>
             {filters && !R.isEmpty(filters) && (
               <div className={classes.filtersDialog}>
                 {R.map((currentFilter) => {
@@ -939,7 +941,7 @@ class Filters extends Component {
                           <span key={n.value}>
                             {truncate(n.value, 15)}{' '}
                             {R.last(currentFilter[1]).value !== n.value && (
-                              <code>OR</code>
+                              <code style={{ marginRight: 5 }}>OR</code>
                             )}
                           </span>
                         ),
@@ -975,22 +977,15 @@ class Filters extends Component {
             {this.renderFilters()}
           </DialogContent>
           <DialogActions>
-            <Button
-              onClick={this.handleCloseFilters.bind(this)}
-              classes={{ root: classes.button }}
-            >
+            <Button onClick={this.handleCloseFilters.bind(this)}>
               {t('Cancel')}
             </Button>
-            <Button
-              color="primary"
-              onClick={this.handleSearch.bind(this)}
-              classes={{ root: classes.button }}
-            >
+            <Button color="secondary" onClick={this.handleSearch.bind(this)}>
               {t('Search')}
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </React.Fragment>
     );
   }
 
@@ -1006,6 +1001,7 @@ Filters.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
+  nsd: PropTypes.func,
   availableFilterKeys: PropTypes.array,
   handleAddFilter: PropTypes.func,
   currentFilters: PropTypes.object,

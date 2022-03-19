@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import {
   assoc,
   compose,
@@ -31,7 +30,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -107,7 +105,7 @@ const noteValidation = (t) => Yup.object().shape({
   attribute_abstract: Yup.string().nullable(),
   content: Yup.string().required(t('This field is required')),
   created: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .typeError(t('The value must be a date (mm/dd/yyyy)'))
     .required(t('This field is required')),
   confidence: Yup.number(),
 });
@@ -224,17 +222,21 @@ class NoteEditionOverviewComponent extends Component {
               <Field
                 component={DatePickerField}
                 name="created"
-                label={t('Date')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="created" />
-                }
+                TextFieldProps={{
+                  label: t('Publication date'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  helperText: (
+                    <SubscriptionFocus context={context} fieldName="created" />
+                  ),
+                }}
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="attribute_abstract"
                 label={t('Abstract')}
                 fullWidth={true}
@@ -314,6 +316,7 @@ const NoteEditionOverview = createFragmentContainer(
     note: graphql`
       fragment NoteEditionOverview_note on Note {
         id
+        created
         attribute_abstract
         content
         confidence

@@ -2,7 +2,6 @@
 import { RELATION_LOCATED_AT, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocationTargetsDefinition';
 import buildRelationToRelationRule from '../relationToRelationBuilder';
-import { RULES_DECLARATION } from '../rules';
 
 const LocationTargetsRule = buildRelationToRelationRule(def, {
   leftType: RELATION_TARGETS,
@@ -10,4 +9,4 @@ const LocationTargetsRule = buildRelationToRelationRule(def, {
   creationType: RELATION_TARGETS,
 });
 
-RULES_DECLARATION.push(LocationTargetsRule);
+export default LocationTargetsRule;

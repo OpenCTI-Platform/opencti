@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createRefetchContainer } from 'react-relay';
 import { interval } from 'rxjs';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import { withStyles } from '@material-ui/core';
-import List from '@material-ui/core/List';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
 import { TEN_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import PendingFileLine from './PendingFileLine';
@@ -47,13 +46,13 @@ const FilePendingViewerBase = ({
     };
   });
   return (
-    <Grid item={true} xs={6}>
+    <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Pending files')}
         </Typography>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           {edges.length ? (
             <List>
               {edges.map((file) => (

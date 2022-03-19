@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Field } from 'formik';
-import MenuItem from '@material-ui/core/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -25,6 +25,7 @@ class OpenVocabField extends Component {
       return (
         <Field
           component={SelectField}
+          variant="standard"
           name={name}
           onFocus={onFocus}
           onChange={onChange}
@@ -47,6 +48,7 @@ class OpenVocabField extends Component {
     return (
       <Field
         component={SelectField}
+        variant="standard"
         name={name}
         label={label}
         fullWidth={true}

@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
+import withStyles from '@mui/styles/withStyles';
+import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -32,7 +32,7 @@ export const rolesSearchQuery = graphql`
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: '0 200px 50px 0',
   },
 });
 
@@ -121,9 +121,7 @@ class Roles extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm } = this.state;
     const { classes } = this.props;
     const paginationOptions = {
       search: searchTerm,

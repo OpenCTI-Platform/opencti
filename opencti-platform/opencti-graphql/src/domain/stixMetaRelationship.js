@@ -1,12 +1,11 @@
 import { assoc, dissoc, propOr } from 'ramda';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
 import { listRelations, loadById } from '../database/middleware';
 
-export const findAll = async (user, args) =>
-  listRelations(user, propOr(ABSTRACT_STIX_META_RELATIONSHIP, 'relationship_type', args), args);
+export const findAll = async (user, args) => listRelations(user, propOr(ABSTRACT_STIX_META_RELATIONSHIP, 'relationship_type', args), args);
 
 export const findById = (user, stixRelationshipId) => {
   return loadById(user, stixRelationshipId, ABSTRACT_STIX_META_RELATIONSHIP);

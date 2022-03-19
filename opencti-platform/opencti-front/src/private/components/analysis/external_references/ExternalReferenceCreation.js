@@ -3,19 +3,19 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogActions from '@material-ui/core/DialogActions';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Fab from '@material-ui/core/Fab';
-import { SimpleFileUpload } from 'formik-material-ui';
-import { Add, Close } from '@material-ui/icons';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import { SimpleFileUpload } from 'formik-mui';
+import { Add, Close } from '@mui/icons-material';
 import {
   commitMutation,
   handleErrorInForm,
@@ -30,7 +30,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -56,8 +55,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -94,8 +92,9 @@ const externalReferenceCreationMutation = graphql`
 const externalReferenceValidation = (t) => Yup.object().shape({
   source_name: Yup.string().required(t('This field is required')),
   external_id: Yup.string().nullable(),
-  url: Yup.string().url(t('The value must be an URL')),
+  url: Yup.string().url(t('The value must be an URL')).nullable(),
   description: Yup.string().nullable(),
+  file: Yup.object().nullable(),
 });
 
 class ExternalReferenceCreation extends Component {
@@ -113,10 +112,11 @@ class ExternalReferenceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
+    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => insertNode(
         store,
@@ -141,10 +141,11 @@ class ExternalReferenceCreation extends Component {
   }
 
   onSubmitContextual(values, { setSubmitting, setErrors, resetForm }) {
+    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -183,6 +184,8 @@ class ExternalReferenceCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -191,8 +194,10 @@ class ExternalReferenceCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
+              size="large"
+              color="primary"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">
               {t('Create an external reference')}
@@ -215,12 +220,14 @@ class ExternalReferenceCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
-                    name="source_name2"
+                    variant="standard"
+                    name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="external_id"
                     label={t('External ID')}
                     fullWidth={true}
@@ -228,6 +235,7 @@ class ExternalReferenceCreation extends Component {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="url"
                     label={t('URL')}
                     fullWidth={true}
@@ -240,13 +248,19 @@ class ExternalReferenceCreation extends Component {
                     fullWidth={true}
                     multiline={true}
                     rows="4"
-                    style={{ marginTop: 20, marginBottom: 20 }}
+                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={SimpleFileUpload}
-                    fullWidth={true}
                     name="file"
                     label={t('Associated file')}
+                    FormControlProps={{ style: { marginTop: 20 } }}
+                    InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                    InputProps={{
+                      fullWidth: true,
+                      variant: 'standard',
+                    }}
+                    fullWidth={true}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -259,7 +273,7 @@ class ExternalReferenceCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -277,9 +291,7 @@ class ExternalReferenceCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t, classes, inputValue, display, open, handleClose,
-    } = this.props;
+    const { t, classes, inputValue, display, open, handleClose } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         {!handleClose && (
@@ -293,6 +305,7 @@ class ExternalReferenceCreation extends Component {
           </Fab>
         )}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={!handleClose ? this.state.open : open}
           onClose={this.handleClose.bind(this)}
         >
@@ -319,12 +332,14 @@ class ExternalReferenceCreation extends Component {
                 <DialogContent>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="source_name"
                     label={t('Source name')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="external_id"
                     label={t('External ID')}
                     fullWidth={true}
@@ -332,6 +347,7 @@ class ExternalReferenceCreation extends Component {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="url"
                     label={t('URL')}
                     fullWidth={true}
@@ -348,10 +364,13 @@ class ExternalReferenceCreation extends Component {
                   />
                   <Field
                     component={SimpleFileUpload}
-                    InputProps={{ fullWidth: true }}
+                    FormControlProps={{ style: { marginTop: 20 } }}
+                    InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                    InputProps={{
+                      fullWidth: true,
+                      variant: 'standard',
+                    }}
                     fullWidth={true}
-                    name="file"
-                    label={t('Associated file')}
                   />
                 </DialogContent>
                 <DialogActions>
@@ -362,7 +381,7 @@ class ExternalReferenceCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
@@ -24,15 +23,13 @@ const styles = () => ({
 
 class RegionOverviewComponent extends Component {
   render() {
-    const {
-      t, fldt, classes, region,
-    } = this.props;
+    const { t, fldt, classes, region } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t('Information')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>

@@ -1,16 +1,16 @@
 import * as R from 'ramda';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { now } from '../utils/format';
-import { elIndex, elPaginate } from '../database/elasticSearch';
+import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
-import { buildFilters, deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
+import { deleteElementById, loadById, patchAttribute } from '../database/middleware';
+import { listEntities, buildFilters } from '../database/repository';
 import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { RULE_PREFIX } from '../schema/general';
-import { getRule } from './rule';
 
 export const MAX_TASK_ELEMENTS = 500;
 
@@ -102,9 +102,8 @@ const checkActionValidity = (user, actions) => {
   }
 };
 
-export const createRuleTask = async (user, input) => {
+export const createRuleTask = async (user, ruleDefinition, input) => {
   const { rule, enable } = input;
-  const ruleDefinition = await getRule(rule);
   const { scan } = ruleDefinition;
   const opts = enable ? buildFilters(scan) : { filters: [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }] };
   const queryData = await elPaginate(user, READ_DATA_INDICES, { ...opts, first: 1 });

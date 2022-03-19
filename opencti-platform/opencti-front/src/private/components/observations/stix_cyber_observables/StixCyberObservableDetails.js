@@ -1,16 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, dissoc, pipe, map, toPairs, filter, includes,
-} from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import { GetAppOutlined } from '@material-ui/icons';
-import Button from '@material-ui/core/Button';
+import { compose, dissoc, pipe, map, toPairs, filter, includes } from 'ramda';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import { GetAppOutlined } from '@mui/icons-material';
+import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { ignoredAttributes } from './StixCyberObservableCreation';
@@ -28,9 +25,7 @@ const styles = () => ({
 
 class StixCyberObservableDetailsComponent extends Component {
   render() {
-    const {
-      t, b, classes, stixCyberObservable,
-    } = this.props;
+    const { t, b, classes, stixCyberObservable } = this.props;
     const observableAttributes = pipe(
       dissoc('id'),
       dissoc('entity_type'),
@@ -51,7 +46,7 @@ class StixCyberObservableDetailsComponent extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
             {file && (
               <Grid item={true} xs={6}>

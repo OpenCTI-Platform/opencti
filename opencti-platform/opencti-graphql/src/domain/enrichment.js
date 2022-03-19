@@ -1,12 +1,11 @@
 import { Promise } from 'bluebird';
 import { map } from 'ramda';
-import { connectorsFor } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
+import { connectorsFor } from '../database/repository';
 
-export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) =>
-  connectorsFor(user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
+export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) => connectorsFor(user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 
 export const askEnrich = async (user, stixCoreObjectId, scope) => {
   // Get the list of compatible connectors

@@ -1,27 +1,26 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createRefetchContainer } from 'react-relay';
 import { interval } from 'rxjs';
-import { withStyles } from '@material-ui/core';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import Paper from '@material-ui/core/Paper';
-import Grid from '@material-ui/core/Grid';
-import { Extension } from '@material-ui/icons';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItem from '@material-ui/core/ListItem';
-import Tooltip from '@material-ui/core/Tooltip';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import { Extension } from '@mui/icons-material';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
+import Tooltip from '@mui/material/Tooltip';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { Field, Form, Formik } from 'formik';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import MenuItem from '@material-ui/core/MenuItem';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import MenuItem from '@mui/material/MenuItem';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import SelectField from '../../../components/SelectField';
 import { FIVE_SECONDS } from '../../../utils/Time';
@@ -213,7 +212,7 @@ class ImportContentComponent extends Component {
                 <FreeTextUploader onUploadSuccess={() => relay.refetch()} />
               </div>
               <div className="clearfix" />
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper classes={{ root: classes.paper }} variant="outlined">
                 {importFilesEdges.length ? (
                   <List>
                     {importFilesEdges.map((file) => (
@@ -251,7 +250,7 @@ class ImportContentComponent extends Component {
             </Typography>
             <Paper
               classes={{ root: classes.paper }}
-              elevation={2}
+              variant="outlined"
               style={{ marginTop: 15 }}
             >
               {connectors.length ? (
@@ -318,8 +317,8 @@ class ImportContentComponent extends Component {
               <div className="clearfix" />
               <Paper
                 classes={{ root: classes.paper }}
-                elevation={2}
-                style={{ marginTop: 15 }}
+                variant="outlined"
+                style={{ marginTop: 10 }}
               >
                 {pendingFilesEdges.length ? (
                   <List>
@@ -365,6 +364,7 @@ class ImportContentComponent extends Component {
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
                   open={fileToImport}
+                  PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   onClose={this.handleCloseImport.bind(this)}
                   fullWidth={true}
@@ -373,6 +373,7 @@ class ImportContentComponent extends Component {
                   <DialogContent>
                     <Field
                       component={SelectField}
+                      variant="standard"
                       name="connector_id"
                       label={t('Connector')}
                       fullWidth={true}
@@ -398,18 +399,13 @@ class ImportContentComponent extends Component {
                     </Field>
                   </DialogContent>
                   <DialogActions>
-                    <Button
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
+                    <Button onClick={handleReset} disabled={isSubmitting}>
                       {t('Cancel')}
                     </Button>
                     <Button
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}
                     >
                       {t('Create')}
                     </Button>
@@ -429,6 +425,7 @@ class ImportContentComponent extends Component {
               <Form style={{ margin: '0 0 20px 0' }}>
                 <Dialog
                   open={fileToValidate}
+                  PaperProps={{ elevation: 1 }}
                   keepMounted={true}
                   onClose={this.handleCloseValidate.bind(this)}
                   fullWidth={true}
@@ -437,6 +434,7 @@ class ImportContentComponent extends Component {
                   <DialogContent>
                     <Field
                       component={SelectField}
+                      variant="standard"
                       name="connector_id"
                       label={t('Connector')}
                       fullWidth={true}
@@ -462,18 +460,13 @@ class ImportContentComponent extends Component {
                     </Field>
                   </DialogContent>
                   <DialogActions>
-                    <Button
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
+                    <Button onClick={handleReset} disabled={isSubmitting}>
                       {t('Cancel')}
                     </Button>
                     <Button
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}
                     >
                       {t('Create')}
                     </Button>

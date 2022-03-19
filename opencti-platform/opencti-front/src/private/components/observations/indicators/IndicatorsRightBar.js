@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, map, pipe, prop, sortBy, toLower,
-} from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
-import ListSubheader from '@material-ui/core/ListSubheader';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Checkbox from '@material-ui/core/Checkbox';
-import Drawer from '@material-ui/core/Drawer';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
+import { assoc, compose, map, pipe, prop, sortBy, toLower } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Drawer from '@mui/material/Drawer';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import { FilterOffOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -23,7 +21,7 @@ const styles = (theme) => ({
     width: 250,
     right: 0,
     padding: '0 0 20px 0',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -34,7 +32,7 @@ const styles = (theme) => ({
     width: 250,
     right: 310,
     padding: '0 0 20px 0',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('right', {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.leavingScreen,
@@ -192,6 +190,7 @@ class IndicatorsRightBar extends Component {
                           onClick={handleClearObservableTypes.bind(this)}
                           disabled={observableTypes.length === 0}
                           color="primary"
+                          size="large"
                         >
                           <FilterOffOutline fontSize="small" />
                         </IconButton>

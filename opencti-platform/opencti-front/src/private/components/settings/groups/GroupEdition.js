@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import { Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import { Close } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import GroupEditionOverview from './GroupEditionOverview';
@@ -18,8 +17,7 @@ import GroupEditionUsers from './GroupEditionUsers';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -36,21 +34,12 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-  appBar: {
-    width: '100%',
-    zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.text.primary,
-    borderBottom: '1px solid #5c5c5c',
-  },
   title: {
     float: 'left',
   },
 });
 
-const GroupEdition = ({
-  t, classes, handleClose, group,
-}) => {
+const GroupEdition = ({ t, classes, handleClose, group }) => {
   const [currentTab, setTab] = useState(0);
   const { editContext } = group;
   return (
@@ -60,8 +49,10 @@ const GroupEdition = ({
           aria-label="Close"
           className={classes.closeButton}
           onClick={handleClose}
+          size="large"
+          color="primary"
         >
-          <Close fontSize="small" />
+          <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
           {t('Update a group')}
@@ -70,13 +61,13 @@ const GroupEdition = ({
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
-        <AppBar position="static" elevation={0} className={classes.appBar}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
             <Tab label={t('Overview')} />
             <Tab label={t('Permissions')} />
             <Tab label={t('Members')} />
           </Tabs>
-        </AppBar>
+        </Box>
         {currentTab === 0 && (
           <GroupEditionOverview group={group} context={editContext} />
         )}

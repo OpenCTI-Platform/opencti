@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
@@ -42,10 +41,10 @@ class IntrusionSetComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={intrusionSet} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <IntrusionSetDetails intrusionSet={intrusionSet} />
           </Grid>
         </Grid>
@@ -144,6 +143,15 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...IntrusionSetDetails_intrusionSet
     }
   `,

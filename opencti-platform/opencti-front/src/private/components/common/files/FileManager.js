@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
 import {
   compose,
   filter,
@@ -12,17 +11,17 @@ import {
   zip,
 } from 'ramda';
 import * as Yup from 'yup';
-import Grid from '@material-ui/core/Grid';
-import { withStyles } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
-import MenuItem from '@material-ui/core/MenuItem';
-import { createFragmentContainer } from 'react-relay';
+import MenuItem from '@mui/material/MenuItem';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import FileExportViewer from './FileExportViewer';
 import FileImportViewer from './FileImportViewer';
 import SelectField from '../../../../components/SelectField';
@@ -243,6 +242,7 @@ const FileManager = ({
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={fileToImport}
                 keepMounted={true}
                 onClose={handleCloseImport}
@@ -252,6 +252,7 @@ const FileManager = ({
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="connector_id"
                     label={t('Connector')}
                     fullWidth={true}
@@ -277,18 +278,13 @@ const FileManager = ({
                   </Field>
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>
@@ -313,6 +309,7 @@ const FileManager = ({
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={openExport}
                 keepMounted={true}
                 onClose={handleCloseExport}
@@ -328,6 +325,7 @@ const FileManager = ({
                         <DialogContent>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
@@ -345,6 +343,7 @@ const FileManager = ({
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}
@@ -359,6 +358,7 @@ const FileManager = ({
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}

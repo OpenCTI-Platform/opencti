@@ -1,25 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  BarChart,
-  XAxis,
-  YAxis,
-  Cell,
-  CartesianGrid,
-  Bar,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
-import { truncate } from '../../../../utils/String';
+import { horizontalBarsChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -56,13 +48,9 @@ const stixCoreObjectIndicatorsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-const tickFormatter = (title) => truncate(title, 10);
-
 class StixCoreObjectIndicatorsHorizontalBars extends Component {
   renderContent() {
-    const {
-      t, stixCoreObjectId, field, theme,
-    } = this.props;
+    const { t, stixCoreObjectId, field, theme } = this.props;
     const indicatorsDistributionVariables = {
       objectId: stixCoreObjectId,
       field: field || 'indicator_types',
@@ -79,62 +67,25 @@ class StixCoreObjectIndicatorsHorizontalBars extends Component {
             && props.indicatorsDistribution
             && props.indicatorsDistribution.length > 0
           ) {
+            const data = props.indicatorsDistribution.map((n) => ({
+              x: n.label,
+              y: n.value,
+            }));
+            const chartData = [{ name: t('Number of indicators'), data }];
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  layout="vertical"
-                  data={props.indicatorsDistribution}
-                  margin={{
-                    top: 20,
-                    right: 20,
-                    bottom: 0,
-                    left: 0,
-                  }}
-                >
-                  <XAxis
-                    type="number"
-                    dataKey="value"
-                    stroke={theme.palette.text.primary}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    stroke={theme.palette.text.primary}
-                    dataKey={field.includes('.') ? 'entity.name' : 'label'}
-                    type="category"
-                    angle={-30}
-                    textAnchor="end"
-                    tickFormatter={tickFormatter}
-                  />
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
-                  />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                  />
-                  <Bar
-                    fill={theme.palette.primary.main}
-                    dataKey="value"
-                    barSize={15}
-                  >
-                    {props.indicatorsDistribution.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={itemColor(entry.label)}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={horizontalBarsChartOptions(
+                  theme,
+                  true,
+                  simpleNumberFormat,
+                  null,
+                  true,
+                )}
+                series={chartData}
+                type="bar"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
@@ -171,16 +122,20 @@ class StixCoreObjectIndicatorsHorizontalBars extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('Indicators distribution')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

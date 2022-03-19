@@ -1,21 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  map, keys, groupBy, assoc, compose,
-} from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Typography from '@material-ui/core/Typography';
-import { ExpandMore } from '@material-ui/icons';
+import { graphql, createPaginationContainer } from 'react-relay';
+import { map, keys, groupBy, assoc, compose } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Typography from '@mui/material/Typography';
+import { ExpandMore } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
@@ -26,9 +23,6 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 const styles = (theme) => ({
   container: {
     padding: '0 0 20px 0',
-  },
-  expansionPanel: {
-    backgroundColor: theme.palette.background.paper,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -87,9 +81,7 @@ class StixDomainObjectsContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, fd,
-    } = this.props;
+    const { t, classes, data, fd } = this.props;
     const stixDomainObjectsNodes = map(
       (n) => n.node,
       data.stixDomainObjects.edges,
@@ -109,7 +101,7 @@ class StixDomainObjectsContainer extends Component {
                 stixDomainObjectsTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
-              classes={{ root: classes.expansionPanel }}
+              elevation={3}
             >
               <AccordionSummary
                 expandIcon={<ExpandMore />}

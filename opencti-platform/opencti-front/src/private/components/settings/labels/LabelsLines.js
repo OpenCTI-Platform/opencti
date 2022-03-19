@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { LabelLine, LabelLineDummy } from './LabelLine';
@@ -10,9 +9,7 @@ const nbOfRowsToLoad = 50;
 
 class LabelsLines extends Component {
   render() {
-    const {
-      initialLoading, dataColumns, relay, paginationOptions,
-    } = this.props;
+    const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}

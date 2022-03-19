@@ -82,6 +82,7 @@ import {
   RELATION_PART_OF,
   RELATION_RELATED_TO,
   RELATION_REMEDIATES,
+  RELATION_RESOLVES_TO,
   RELATION_REVOKED_BY,
   RELATION_SUBTECHNIQUE_OF,
   RELATION_TARGETS,
@@ -92,10 +93,10 @@ import {
 import { isStixSightingRelationship, SIGHTING_RELATIONSHIP_REFS_TO_FIELDS } from '../schema/stixSightingRelationship';
 import {
   isStixCyberObservableRelationship,
-  RELATION_BCC,
   RELATION_BODY_MULTIPART,
   RELATION_BODY_RAW,
   RELATION_CC,
+  RELATION_BCC,
   RELATION_CHILD,
   RELATION_CONTAINS,
   RELATION_CREATOR_USER,
@@ -122,6 +123,8 @@ import {
   STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE,
   STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD,
   STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
+  RELATION_BELONGS_TO as OBS_RELATION_BELONGS_TO,
+  RELATION_RESOLVES_TO as OBS_RELATION_RESOLVES_TO,
 } from '../schema/stixCyberObservableRelationship';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -218,13 +221,13 @@ export const stixDataConverter = (data, args = {}) => {
     finalData = R.pipe(R.dissoc('fromId'), R.dissoc('fromRole'), R.dissoc('fromType'))(finalData);
     if (isSighting) {
       finalData = R.pipe(
-        R.assoc(`x_opencti_sighting_of_ref`, data.fromId),
-        R.assoc(`x_opencti_sighting_of_type`, data.fromType)
+        R.assoc('x_opencti_sighting_of_ref', data.fromId),
+        R.assoc('x_opencti_sighting_of_type', data.fromType)
       )(finalData);
     } else {
       finalData = R.pipe(
-        R.assoc(`x_opencti_source_ref`, data.fromId),
-        R.assoc(`x_opencti_source_type`, data.fromType)
+        R.assoc('x_opencti_source_ref', data.fromId),
+        R.assoc('x_opencti_source_type', data.fromType)
       )(finalData);
     }
   }
@@ -234,14 +237,14 @@ export const stixDataConverter = (data, args = {}) => {
       finalData = R.pipe(
         R.dissoc('source_ref'),
         R.assoc('sighting_of_ref', data.from.standard_id),
-        R.assoc(`x_opencti_sighting_of_ref`, data.from.internal_id),
-        R.assoc(`x_opencti_sighting_of_type`, data.from.entity_type)
+        R.assoc('x_opencti_sighting_of_ref', data.from.internal_id),
+        R.assoc('x_opencti_sighting_of_type', data.from.entity_type)
       )(finalData);
     } else {
       finalData = R.pipe(
         R.assoc('source_ref', data.from.standard_id),
-        R.assoc(`x_opencti_source_ref`, data.from.internal_id),
-        R.assoc(`x_opencti_source_type`, data.from.entity_type)
+        R.assoc('x_opencti_source_ref', data.from.internal_id),
+        R.assoc('x_opencti_source_type', data.from.entity_type)
       )(finalData);
     }
   }
@@ -249,13 +252,13 @@ export const stixDataConverter = (data, args = {}) => {
     finalData = R.pipe(R.dissoc('toId'), R.dissoc('toRole'), R.dissoc('toType'))(finalData);
     if (isSighting) {
       finalData = R.pipe(
-        R.assoc(`x_opencti_where_sighted_refs`, [data.toId]),
-        R.assoc(`x_opencti_where_sighted_types`, [data.toType])
+        R.assoc('x_opencti_where_sighted_refs', [data.toId]),
+        R.assoc('x_opencti_where_sighted_types', [data.toType])
       )(finalData);
     } else {
       finalData = R.pipe(
-        R.assoc(`x_opencti_target_ref`, data.toId),
-        R.assoc(`x_opencti_target_type`, data.toType)
+        R.assoc('x_opencti_target_ref', data.toId),
+        R.assoc('x_opencti_target_type', data.toType)
       )(finalData);
     }
   }
@@ -265,14 +268,14 @@ export const stixDataConverter = (data, args = {}) => {
       finalData = R.pipe(
         R.dissoc('target_ref'),
         R.assoc('where_sighted_refs', [data.to.standard_id]),
-        R.assoc(`x_opencti_where_sighted_refs`, [data.to.internal_id]),
-        R.assoc(`x_opencti_where_sighted_types`, [data.to.entity_type])
+        R.assoc('x_opencti_where_sighted_refs', [data.to.internal_id]),
+        R.assoc('x_opencti_where_sighted_types', [data.to.entity_type])
       )(finalData);
     } else {
       finalData = R.pipe(
         R.assoc('target_ref', data.to.standard_id),
-        R.assoc(`x_opencti_target_ref`, data.to.internal_id),
-        R.assoc(`x_opencti_target_type`, data.to.entity_type)
+        R.assoc('x_opencti_target_ref', data.to.internal_id),
+        R.assoc('x_opencti_target_type', data.to.entity_type)
       )(finalData);
     }
   }
@@ -368,12 +371,12 @@ export const stixDataConverter = (data, args = {}) => {
         const stixCyberObservable = Array.isArray(cyberInput) ? R.head(cyberInput) : cyberInput;
         const stixCyberObservableRef = patchGeneration
           ? [
-              {
-                value: stixCyberObservable.standard_id,
-                reference: observableValue(stixCyberObservable),
-                x_opencti_id: stixCyberObservable.internal_id,
-              },
-            ]
+            {
+              value: stixCyberObservable.standard_id,
+              reference: observableValue(stixCyberObservable),
+              x_opencti_id: stixCyberObservable.internal_id,
+            },
+          ]
           : stixCyberObservable.standard_id;
         finalData = R.pipe(
           R.dissoc(stixCyberObservableRelationshipInput),
@@ -382,10 +385,9 @@ export const stixDataConverter = (data, args = {}) => {
       } else {
         const stixCyberObservable = Array.isArray(cyberInput) ? cyberInput : [cyberInput];
         const stixCyberObservables = R.map(
-          (m) =>
-            patchGeneration
-              ? { value: m.standard_id, reference: observableValue(m), x_opencti_id: m.internal_id }
-              : m.standard_id,
+          (m) => (patchGeneration
+            ? { value: m.standard_id, reference: observableValue(m), x_opencti_id: m.internal_id }
+            : m.standard_id),
           stixCyberObservable
         );
         finalData = R.pipe(
@@ -478,11 +480,7 @@ export const extractFieldInputDefinition = (entityType) => {
     const schemaFields = def.fields.map((f) => f.name.value);
     return [...baseFields, ...schemaFields];
   }
-  // eslint-disable-next-line prettier/prettier
-  const formattedType = `${entityType
-    .split('-')
-    .map((e) => pascalize(e))
-    .join('')}AddInput`;
+  const formattedType = `${entityType.split('-').map((e) => pascalize(e)).join('')}AddInput`;
   const def = R.find((e) => e.name.value === formattedType, typeDefs.definitions);
   if (def) {
     return def.fields.map((f) => f.name.value);
@@ -497,13 +495,12 @@ export const buildInputDataFromStix = (stix) => {
   const entries = Object.entries(stix);
   for (let index = 0; index < entries.length; index += 1) {
     const [key] = entries[index];
-    let translatedKey =
-      RELATIONSHIP_CORE_REFS_TO_FIELDS[key] ||
-      SIGHTING_RELATIONSHIP_REFS_TO_FIELDS[key] ||
-      STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[key] ||
-      STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key] ||
-      CONTAINER_REFS_TO_FIELDS[key] ||
-      key;
+    let translatedKey = RELATIONSHIP_CORE_REFS_TO_FIELDS[key]
+      || SIGHTING_RELATIONSHIP_REFS_TO_FIELDS[key]
+      || STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[key]
+      || STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]
+      || CONTAINER_REFS_TO_FIELDS[key]
+      || key;
     if (!compatibleTypes.includes(translatedKey) && compatibleTypes.includes(`attribute_${translatedKey}`)) {
       translatedKey = `attribute_${translatedKey}`;
     }
@@ -862,16 +859,16 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
   }
   if (isStixCyberObservable(toType)) {
     if (
-      R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, R.keys(stixCoreRelationshipsMapping)) &&
-      R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`])
+      R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, R.keys(stixCoreRelationshipsMapping))
+      && R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`])
     ) {
       return true;
     }
   }
   if (isStixCyberObservable(fromType)) {
     if (
-      R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, R.keys(stixCoreRelationshipsMapping)) &&
-      R.includes(relationshipType, stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`])
+      R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, R.keys(stixCoreRelationshipsMapping))
+      && R.includes(relationshipType, stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`])
     ) {
       return true;
     }
@@ -882,7 +879,7 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
 export const stixCyberObservableRelationshipsMapping = {
   [`${ENTITY_DIRECTORY}_${ENTITY_DIRECTORY}`]: [RELATION_CONTAINS],
   [`${ENTITY_DIRECTORY}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [RELATION_CONTAINS],
-  [`${ENTITY_EMAIL_ADDR}_${ENTITY_USER_ACCOUNT}`]: ['obs_belongs-to'],
+  [`${ENTITY_EMAIL_ADDR}_${ENTITY_USER_ACCOUNT}`]: [OBS_RELATION_BELONGS_TO],
   [`${ENTITY_EMAIL_MESSAGE}_${ENTITY_EMAIL_ADDR}`]: [
     RELATION_FROM,
     RELATION_SENDER,
@@ -897,14 +894,14 @@ export const stixCyberObservableRelationshipsMapping = {
   [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_DIRECTORY}`]: [RELATION_PARENT_DIRECTORY],
   [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [RELATION_CONTAINS],
   // [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}`]: [RELATION_CONTENT],
-  [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: ['obs_content'],
-  [`${ENTITY_DOMAIN_NAME}_${ENTITY_DOMAIN_NAME}`]: [RELATION_RESOLVES_TO],
-  [`${ENTITY_DOMAIN_NAME}_${ENTITY_IPV4_ADDR}`]: [RELATION_RESOLVES_TO],
-  [`${ENTITY_DOMAIN_NAME}_${ENTITY_IPV6_ADDR}`]: [RELATION_RESOLVES_TO],
-  [`${ENTITY_IPV4_ADDR}_${ENTITY_MAC_ADDR}`]: [RELATION_RESOLVES_TO],
-  [`${ENTITY_IPV4_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: ['obs_belongs-to'],
-  [`${ENTITY_IPV6_ADDR}_${ENTITY_MAC_ADDR}`]: [RELATION_RESOLVES_TO],
-  [`${ENTITY_IPV6_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: ['obs_belongs-to'],
+  [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [OBS_RELATION_BELONGS_TO],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_DOMAIN_NAME}`]: [OBS_RELATION_RESOLVES_TO],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_IPV4_ADDR}`]: [OBS_RELATION_RESOLVES_TO],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_IPV6_ADDR}`]: [OBS_RELATION_RESOLVES_TO],
+  [`${ENTITY_IPV4_ADDR}_${ENTITY_MAC_ADDR}`]: [OBS_RELATION_RESOLVES_TO],
+  [`${ENTITY_IPV4_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [OBS_RELATION_BELONGS_TO],
+  [`${ENTITY_IPV6_ADDR}_${ENTITY_MAC_ADDR}`]: [OBS_RELATION_RESOLVES_TO],
+  [`${ENTITY_IPV6_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [OBS_RELATION_BELONGS_TO],
   [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_IPV4_ADDR}`]: [RELATION_SRC, RELATION_DST],
   [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_IPV6_ADDR}`]: [RELATION_SRC, RELATION_DST],
   [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_MAC_ADDR}`]: [RELATION_SRC, RELATION_DST],

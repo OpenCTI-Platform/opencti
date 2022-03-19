@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import {
   assoc,
   compose,
@@ -43,7 +42,7 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -222,7 +221,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         query={stixCyberObservablesLinesAttributesQuery}
         variables={{ elementType: stixCyberObservable.entity_type }}
         render={({ props }) => {
-          if (props && props.attributes) {
+          if (props && props.schemaAttributes) {
             const createdBy = pathOr(null, ['createdBy', 'name'], stixCyberObservable) === null
               ? ''
               : {
@@ -262,7 +261,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                 (n) => !includes(n.value, ignoredAttributes)
                   && !n.value.startsWith('i_'),
               ),
-            )(props.attributes.edges);
+            )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {
                 initialValues[attribute.value] = stixCyberObservable[
@@ -270,7 +269,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                 ]
                   ? dateFormat(stixCyberObservable[attribute.value])
                   : null;
-              } else if (includes(attribute.value, dateAttributes)) {
+              } else if (includes(attribute.value, multipleAttributes)) {
                 initialValues[attribute.value] = stixCyberObservable[
                   attribute.value
                 ]
@@ -299,6 +298,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
                       component={TextField}
+                      variant="standard"
                       name="x_opencti_score"
                       label={t('Score')}
                       fullWidth={true}
@@ -335,6 +335,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                           <div key={attribute.value}>
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="hashes_MD5"
                               label={t('hash_md5')}
                               fullWidth={true}
@@ -350,6 +351,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             />
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="hashes_SHA-1"
                               label={t('hash_sha-1')}
                               fullWidth={true}
@@ -365,6 +367,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             />
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="hashes_SHA-256"
                               label={t('hash_sha-256')}
                               fullWidth={true}
@@ -380,6 +383,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             />
                             <Field
                               component={TextField}
+                              variant="standard"
                               name="hashes.SHA-512"
                               label={t('hash_sha-512')}
                               fullWidth={true}
@@ -402,20 +406,23 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                             component={DatePickerField}
                             key={attribute.value}
                             name={attribute.value}
-                            label={attribute.value}
                             invalidDateMessage={t(
-                              'The value must be a date (YYYY-MM-DD)',
+                              'The value must be a date (mm/dd/yyyy)',
                             )}
-                            fullWidth={true}
-                            style={{ marginTop: 20 }}
                             onFocus={this.handleChangeFocus.bind(this)}
                             onSubmit={this.handleSubmitField.bind(this)}
-                            helperText={
-                              <SubscriptionFocus
-                                context={context}
-                                fieldName={attribute.value}
-                              />
-                            }
+                            TextFieldProps={{
+                              label: attribute.value,
+                              variant: 'standard',
+                              fullWidth: true,
+                              style: { marginTop: 20 },
+                              helperText: (
+                                <SubscriptionFocus
+                                  context={context}
+                                  fieldName={attribute.value}
+                                />
+                              ),
+                            }}
                           />
                         );
                       }
@@ -423,6 +430,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                         return (
                           <Field
                             component={TextField}
+                            variant="standard"
                             key={attribute.value}
                             name={attribute.value}
                             label={attribute.value}
@@ -455,6 +463,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                       return (
                         <Field
                           component={TextField}
+                          variant="standard"
                           key={attribute.value}
                           name={attribute.value}
                           label={attribute.value}

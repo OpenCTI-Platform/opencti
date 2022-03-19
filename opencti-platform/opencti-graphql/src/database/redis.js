@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import Redis from 'ioredis';
 import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
@@ -68,20 +68,20 @@ const createRedisClient = (provider, database = BASE_DATABASE) => {
   client.on('reconnecting', () => logApp.info(`[REDIS] '${provider}' Redis client reconnecting`));
   client.defineCommand('cacheGet', {
     lua:
-      'local index = 1\n' +
-      "local resolvedKeys = redis.call('mget', unpack(KEYS))\n" +
-      'for p, k in pairs(resolvedKeys) do \n' +
-      '    if (k==nil or (type(k) == "boolean" and not k)) then \n' +
-      '        index = index+1\n' +
-      '    elseif (k:sub(0, 1) == "@") then \n' +
-      '        local subKey = "cache:" .. k:sub(2, #k)\n' +
-      "        resolvedKeys[index] = redis.call('get', subKey)\n" +
-      '        index = index+1\n' +
-      '    else \n' +
-      '        index = index+1\n' +
-      '    end\n' +
-      'end\n' +
-      'return resolvedKeys\n',
+      'local index = 1\n'
+      + "local resolvedKeys = redis.call('mget', unpack(KEYS))\n"
+      + 'for p, k in pairs(resolvedKeys) do \n'
+      + '    if (k==nil or (type(k) == "boolean" and not k)) then \n'
+      + '        index = index+1\n'
+      + '    elseif (k:sub(0, 1) == "@") then \n'
+      + '        local subKey = "cache:" .. k:sub(2, #k)\n'
+      + "        resolvedKeys[index] = redis.call('get', subKey)\n"
+      + '        index = index+1\n'
+      + '    else \n'
+      + '        index = index+1\n'
+      + '    end\n'
+      + 'end\n'
+      + 'return resolvedKeys\n',
   });
   return client;
 };
@@ -317,7 +317,6 @@ export const cacheGet = async (id) => {
   if (ENABLED_CACHING) {
     const result = {};
     if (ids.length > 0) {
-      // eslint-disable-next-line prettier/prettier
       const keyValues = await clientCache.cacheGet(
         ids.length,
         ids.map((i) => `cache:${i}`)
@@ -346,7 +345,7 @@ const mapJSToStream = (event) => {
   });
   return cmdArgs;
 };
-export const buildEvent = (eventType, user, markings, message, data, commitMessage = null, references = []) => {
+export const buildEvent = (eventType, user, markings, message, data, commitMessage = undefined, references = []) => {
   if (!data.id || !data.x_opencti_id || !data.type) {
     throw UnsupportedError('Stream event requires id, type and x_opencti_id');
   }
@@ -536,7 +535,6 @@ export const buildCreateEvent = async (user, instance, input, loaders, opts = {}
     }
     const key = STIX_EMBEDDED_RELATION_TO_FIELD[instance.entity_type];
     if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
-      // eslint-disable-next-line prettier/prettier
       const inputVal = { key, value: [instance.to], previous: null };
       const patch = updateInputsToPatch([inputVal]);
       return buildUpdateEvent(user, publishedInstance, patch, opts);

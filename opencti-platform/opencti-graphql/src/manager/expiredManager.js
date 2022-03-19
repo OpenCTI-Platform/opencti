@@ -1,7 +1,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { Promise } from 'bluebird';
 import { lockResource } from '../database/redis';
-import { elList, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
+import { elList, ES_MAX_CONCURRENCY } from '../database/engine';
 import { READ_DATA_INDICES } from '../database/utils';
 import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
@@ -17,12 +17,10 @@ const SCHEDULE_TIME = conf.get('expiration_scheduler:interval');
 const EXPIRED_MANAGER_KEY = conf.get('expiration_scheduler:lock_key');
 
 const expireHandler = async () => {
-  logApp.debug('[OPENCTI] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([EXPIRED_MANAGER_KEY]);
-    logApp.debug('[OPENCTI] Expiration manager lock acquired');
     // Execute the cleaning
     const callback = async (elements) => {
       logApp.info(`[OPENCTI] Expiration manager will revoke ${elements.length} elements`);
@@ -44,9 +42,9 @@ const expireHandler = async () => {
     await elList(SYSTEM_USER, READ_DATA_INDICES, opts);
   } catch (e) {
     // We dont care about failing to get the lock.
-    logApp.info('[OPENCTI] Expiration manager already in progress by another API');
+    logApp.info('[OPENCTI-MODULE] Expiration manager already in progress by another API');
   } finally {
-    logApp.debug('[OPENCTI] Expiration manager done');
+    logApp.debug('[OPENCTI-MODULE] Expiration manager done');
     if (lock) await lock.unlock();
   }
 };
@@ -55,15 +53,10 @@ const initExpiredManager = () => {
   let scheduler;
   return {
     start: () => {
+      logApp.info('[OPENCTI-MODULE] Running Expiration manager');
       scheduler = setIntervalAsync(async () => {
         await expireHandler();
       }, SCHEDULE_TIME);
-      // Handle hot module replacement resource dispose
-      if (module.hot) {
-        module.hot.dispose(async () => {
-          await clearIntervalAsync(scheduler);
-        });
-      }
     },
     shutdown: async () => {
       if (scheduler) {

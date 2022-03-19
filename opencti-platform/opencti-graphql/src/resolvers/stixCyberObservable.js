@@ -48,8 +48,7 @@ const stixCyberObservableResolvers = {
       }
       return stixCyberObservableDistribution(user, args);
     },
-    stixCyberObservablesExportFiles: (_, { first }, { user }) =>
-      filesListing(user, first, 'export/Stix-Cyber-Observable/'),
+    stixCyberObservablesExportFiles: (_, { first }, { user }) => filesListing(user, first, 'export/Stix-Cyber-Observable/'),
   },
   StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
   HashedObservable: {
@@ -66,22 +65,18 @@ const stixCyberObservableResolvers = {
     indicators: (stixCyberObservable, _, { user }) => indicatorsLoader.load(stixCyberObservable.id, user),
     stixCoreRelationships: (rel, args, { user }) => stixCoreRelationships(user, rel.id, args),
     toStix: (stixCyberObservable, _, { user }) => convertDataToRawStix(user, stixCyberObservable.id),
-    importFiles: (stixCyberObservable, { first }, { user }) =>
-      filesListing(user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
-    exportFiles: (stixCyberObservable, { first }, { user }) =>
-      filesListing(user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
+    importFiles: (stixCyberObservable, { first }, { user }) => filesListing(user, first, `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
+    exportFiles: (stixCyberObservable, { first }, { user }) => filesListing(user, first, `export/${stixCyberObservable.entity_type}/${stixCyberObservable.id}/`),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, { user }) => ({
       delete: () => stixCyberObservableDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) =>
-        stixCyberObservableEditField(user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) => stixCyberObservableEditField(user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixCyberObservableEditContext(user, id, input),
       contextClean: () => stixCyberObservableCleanContext(user, id),
       relationAdd: ({ input }) => stixCyberObservableAddRelation(user, id, input),
       relationsAdd: ({ input }) => stixCyberObservableAddRelations(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        stixCyberObservableDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCyberObservableDeleteRelation(user, id, toId, relationshipType),
       exportAsk: (args) => stixCyberObservableExportAsk(user, assoc('stixCyberObservableId', id, args)),
       exportPush: ({ file }) => stixCyberObservableExportPush(user, id, file),
       importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
@@ -89,8 +84,7 @@ const stixCyberObservableResolvers = {
     }),
     stixCyberObservableAdd: (_, args, { user }) => addStixCyberObservable(user, args),
     stixCyberObservablesExportAsk: (_, args, { user }) => stixCyberObservablesExportAsk(user, args),
-    stixCyberObservablesExportPush: (_, { file, listFilters }, { user }) =>
-      stixCyberObservablesExportPush(user, file, listFilters),
+    stixCyberObservablesExportPush: (_, { file, listFilters }, { user }) => stixCyberObservablesExportPush(user, file, listFilters),
     artifactImport: (_, args, { user }) => artifactImport(user, args),
   },
   Subscription: {

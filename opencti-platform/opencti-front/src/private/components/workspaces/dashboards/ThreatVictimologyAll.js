@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
@@ -17,9 +17,7 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const {
-      t, startDate, endDate, widget, timeField,
-    } = this.props;
+    const { t, startDate, endDate, widget, timeField } = this.props;
     let dateAttribute = 'created_at';
     if (timeField === 'functional') {
       dateAttribute = 'start_time';

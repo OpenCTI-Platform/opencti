@@ -2,22 +2,20 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
-import {
-  compose, evolve, path, pluck,
-} from 'ramda';
+import { compose, evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogActions from '@material-ui/core/DialogActions';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -34,7 +32,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -54,8 +51,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -173,6 +169,8 @@ class NoteCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -181,8 +179,10 @@ class NoteCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
+              size="large"
+              color="primary"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Create a note')}</Typography>
           </div>
@@ -212,14 +212,18 @@ class NoteCreation extends Component {
                   <Field
                     component={DatePickerField}
                     name="created"
-                    label={t('Date')}
                     invalidDateMessage={t(
-                      'The value must be a date (YYYY-MM-DD)',
+                      'The value must be a date (mm/dd/yyyy)',
                     )}
-                    fullWidth={true}
+                    TextFieldProps={{
+                      label: t('Publication date'),
+                      variant: 'standard',
+                      fullWidth: true,
+                    }}
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
@@ -266,7 +270,7 @@ class NoteCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -284,9 +288,7 @@ class NoteCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t, classes, inputValue, display,
-    } = this.props;
+    const { t, classes, inputValue, display } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab
@@ -297,7 +299,11 @@ class NoteCreation extends Component {
         >
           <Add />
         </Fab>
-        <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+        <Dialog
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+          PaperProps={{ elevation: 1 }}
+        >
           <Formik
             enableReinitialize={true}
             initialValues={{
@@ -325,14 +331,18 @@ class NoteCreation extends Component {
                   <Field
                     component={DatePickerField}
                     name="created"
-                    label={t('Date')}
                     invalidDateMessage={t(
-                      'The value must be a date (YYYY-MM-DD)',
+                      'The value must be a date (mm/dd/yyyy)',
                     )}
-                    fullWidth={true}
+                    TextFieldProps={{
+                      label: t('Publication date'),
+                      variant: 'standard',
+                      fullWidth: true,
+                    }}
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
@@ -368,7 +378,7 @@ class NoteCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
                   >

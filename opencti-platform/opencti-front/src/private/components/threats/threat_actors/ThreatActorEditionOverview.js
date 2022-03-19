@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
-import MenuItem from '@material-ui/core/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -26,7 +25,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -116,6 +114,7 @@ const threatActorValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  status_id: Yup.object(),
 });
 
 class ThreatActorEditionOverviewComponent extends Component {
@@ -165,6 +164,10 @@ class ThreatActorEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
+      let finalValue = value;
+      if (name === 'status_id') {
+        finalValue = value.value;
+      }
       threatActorValidation(this.props.t)
         .validateAt(name, { [name]: value })
         .then(() => {
@@ -172,7 +175,7 @@ class ThreatActorEditionOverviewComponent extends Component {
             mutation: threatActorMutationFieldPatch,
             variables: {
               id: this.props.threatActor.id,
-              input: { key: name, value: value || '' },
+              input: { key: name, value: finalValue || '' },
             },
           });
         })
@@ -230,9 +233,7 @@ class ThreatActorEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, threatActor, context, enableReferences,
-    } = this.props;
+    const { t, threatActor, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], threatActor) === null
       ? ''
       : {
@@ -253,10 +254,25 @@ class ThreatActorEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(threatActor);
+    const status = R.pathOr(null, ['status', 'template', 'name'], threatActor) === null
+      ? ''
+      : {
+        label: t(
+          `status_${R.pathOr(
+            null,
+            ['status', 'template', 'name'],
+            threatActor,
+          )}`,
+        ),
+        color: R.pathOr(null, ['status', 'template', 'color'], threatActor),
+        value: R.pathOr(null, ['status', 'id'], threatActor),
+        order: R.pathOr(null, ['status', 'order'], threatActor),
+      };
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
+      R.assoc('status_id', status),
       R.assoc(
         'threat_actor_types',
         threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
@@ -269,6 +285,7 @@ class ThreatActorEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
+        'status_id',
       ]),
     )(threatActor);
     return (
@@ -288,6 +305,7 @@ class ThreatActorEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -299,6 +317,7 @@ class ThreatActorEditionOverviewComponent extends Component {
             />
             <Field
               component={SelectField}
+              variant="standard"
               name="threat_actor_types"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -461,6 +480,15 @@ const ThreatActorEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

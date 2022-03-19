@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createPaginationContainer } from 'react-relay';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
@@ -90,8 +89,8 @@ export const stixCyberObservablesLinesSubTypesQuery = graphql`
 `;
 
 export const stixCyberObservablesLinesAttributesQuery = graphql`
-  query StixCyberObservablesLinesAttributesQuery($elementType: String) {
-    attributes(elementType: $elementType) {
+  query StixCyberObservablesLinesAttributesQuery($elementType: String!) {
+    schemaAttributes(elementType: $elementType) {
       edges {
         node {
           value

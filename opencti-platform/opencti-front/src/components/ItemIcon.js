@@ -19,7 +19,7 @@ import {
   Visibility,
   PlaceOutlined,
   StorageOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import {
   Biohazard,
   DiamondOutline,
@@ -171,6 +171,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'localization':
     case 'part-of':
     case 'drops':
+    case 'delivers':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     default:
       return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
@@ -179,10 +180,8 @@ const iconSelector = (type, variant, fontSize, color) => {
 
 class ItemIcon extends Component {
   render() {
-    const {
-      type, size, variant, color,
-    } = this.props;
-    const fontSize = size || 'default';
+    const { type, size, variant, color } = this.props;
+    const fontSize = size || 'medium';
     return iconSelector(type, variant, fontSize, color);
   }
 }

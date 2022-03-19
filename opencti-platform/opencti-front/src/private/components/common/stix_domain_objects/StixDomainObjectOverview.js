@@ -1,24 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 import { InformationOutline } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip';
-import Dialog from '@material-ui/core/Dialog';
-import { DialogTitle } from '@material-ui/core';
-import DialogContent from '@material-ui/core/DialogContent';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
-import { Delete, BrushOutlined } from '@material-ui/icons';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
+import Tooltip from '@mui/material/Tooltip';
+import Dialog from '@mui/material/Dialog';
+import { DialogTitle } from '@mui/material';
+import DialogContent from '@mui/material/DialogContent';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import { Delete, BrushOutlined } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
 import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemPatternType from '../../../../components/ItemPatternType';
@@ -30,6 +30,7 @@ import ItemAuthor from '../../../../components/ItemAuthor';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
+import ItemStatus from '../../../../components/ItemStatus';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -47,8 +48,8 @@ const styles = (theme) => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: theme.palette.background.chip,
-    color: '#ffffff',
+    backgroundColor: theme.palette.background.accent,
+    color: theme.palette.text.primary,
     textTransform: 'uppercase',
     borderRadius: '0',
   },
@@ -87,9 +88,7 @@ class StixDomainObjectOverview extends Component {
   }
 
   render() {
-    const {
-      t, fldt, classes, stixDomainObject, withoutMarking, withPattern,
-    } = this.props;
+    const { t, fldt, classes, stixDomainObject, withoutMarking, withPattern } = this.props;
     const otherStixIds = stixDomainObject.x_opencti_stix_ids || [];
     const stixIds = R.filter(
       (n) => n !== stixDomainObject.standard_id,
@@ -100,7 +99,7 @@ class StixDomainObjectOverview extends Component {
         <Typography variant="h4" gutterBottom={true}>
           {t('Basic information')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
               <Typography
@@ -152,7 +151,7 @@ class StixDomainObjectOverview extends Component {
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
                 {stixIds.length > 0
-                  ? stixIds.map((stixId) => `${stixId}\n`)
+                  ? stixIds.slice(0, 2).map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>
             </Grid>
@@ -261,10 +260,22 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Processing status')}
+              </Typography>
+              <ItemStatus
+                status={stixDomainObject.status}
+                disabled={!stixDomainObject.workflowEnabled}
+              />
             </Grid>
           </Grid>
         </Paper>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.openStixIds}
           TransitionComponent={Transition}
           onClose={this.handleToggleOpenStixIds.bind(this)}
@@ -282,6 +293,7 @@ class StixDomainObjectOverview extends Component {
                           edge="end"
                           aria-label="delete"
                           onClick={this.deleteStixId.bind(this, stixId)}
+                          size="large"
                         >
                           <Delete />
                         </IconButton>

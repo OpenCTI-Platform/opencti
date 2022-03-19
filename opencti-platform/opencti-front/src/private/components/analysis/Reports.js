@@ -268,9 +268,7 @@ class Reports extends Component {
       objectId,
       authorId,
     } = this.props;
-    const {
-      view, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, filters } = this.state;
     const reportFilterClass = reportType !== 'all' && reportType !== undefined
       ? reportType.replace(/_/g, ' ')
       : '';

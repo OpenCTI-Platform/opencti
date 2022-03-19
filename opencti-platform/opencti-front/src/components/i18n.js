@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { injectIntl } from 'react-intl';
+import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
 
@@ -138,6 +138,137 @@ const inject18n = (WrappedComponent) => {
     }
   }
   return injectIntl(InjectIntl);
+};
+
+export const useFormatter = () => {
+  const intl = useIntl();
+  const translate = (message) => intl.formatMessage({ id: message });
+  const formatNumber = (number) => {
+    if (number === null || number === '') {
+      return '-';
+    }
+    return `${intl.formatNumber(numberFormat(number).number)}${
+      numberFormat(number).symbol
+    }`;
+  };
+  const formatBytes = (number) => `${intl.formatNumber(bytesFormat(number).number)}${
+    bytesFormat(number).symbol
+  }`;
+  const longDate = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  };
+  const longDateTime = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      second: 'numeric',
+      minute: 'numeric',
+      hour: 'numeric',
+    });
+  };
+  const shortDate = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+  const shortNumericDate = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    });
+  };
+  const shortNumericDateTime = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      second: 'numeric',
+      minute: 'numeric',
+      hour: 'numeric',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+  const fullNumericDateTime = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      second: 'numeric',
+      minute: 'numeric',
+      hour: 'numeric',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    });
+  };
+  const standardDate = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+  const monthDate = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, {
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+  const monthTextDate = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, { month: 'long' });
+  };
+  const yearDate = (date) => {
+    if (isNone(date)) {
+      return translate('None');
+    }
+    return intl.formatDate(date, { year: 'numeric' });
+  };
+  return {
+    t: translate,
+    n: formatNumber,
+    b: formatBytes,
+    fld: longDate,
+    fldt: longDateTime,
+    fsd: shortDate,
+    nsd: shortNumericDate,
+    nsdt: shortNumericDateTime,
+    fndt: fullNumericDateTime,
+    fd: standardDate,
+    md: monthDate,
+    mtd: monthTextDate,
+    yd: yearDate,
+  };
 };
 
 export default inject18n;

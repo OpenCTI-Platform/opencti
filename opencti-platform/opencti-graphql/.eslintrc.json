@@ -1,8 +1,27 @@
 {
-  "extends": ["airbnb-base", "plugin:prettier/recommended"],
-  "parser": "babel-eslint",
-  "env": {"jest": true},
+  "plugins": ["@typescript-eslint/eslint-plugin"],
+  "extends": [
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "project": "./tsconfig.json"
+  },
+  "env": { "jest": true },
   "rules": {
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "js": "never",
+        "ts": "never"
+      }
+    ],
     "max-len": [
       "error", 180, 2, {
         "ignoreUrls": true,
@@ -12,21 +31,23 @@
         "ignoreTemplateLiterals": true
       }
     ],
-    "no-underscore-dangle": 0,
-    "no-await-in-loop": 0
+    "camelcase": "off",
+    "no-underscore-dangle": "off",
+    "no-await-in-loop": "off",
+    "import/no-import-module-exports": "off",
+    "import/prefer-default-export": "off",
+    "arrow-body-style": "off",
+    "object-curly-newline": "off",
+    "@typescript-eslint/naming-convention": "off",
+    "@typescript-eslint/comma-dangle": "off"
   },
   "overrides": [
     {
-      "files": ["./*.js"],
+      "files": ["*.js"],
       "rules": {
-        "import/no-commonjs": "off",
-        "no-console": "off"
-      }
-    },
-    {
-      "files": ["./src/migrations/*.js"],
-      "rules": {
-        "no-await-in-loop": "off"
+        "@typescript-eslint/no-this-alias": "off",
+        "@typescript-eslint/return-await": "off",
+        "@typescript-eslint/no-use-before-define": "off"
       }
     }
   ]

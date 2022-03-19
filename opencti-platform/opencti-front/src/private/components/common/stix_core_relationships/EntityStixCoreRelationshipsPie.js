@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  PieChart, Pie, Cell, Legend, ResponsiveContainer,
-} from 'recharts';
-import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { SettingsInputComponent } from '@material-ui/icons';
+import { graphql } from 'react-relay';
+import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import { SettingsInputComponent } from '@mui/icons-material';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -92,7 +90,7 @@ class EntityStixCoreRelationshipsPie extends Component {
       t,
       entityId,
       entityType,
-      // eslint-disable-next-line camelcase
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       relationship_type,
       field,
       variant,
@@ -203,7 +201,7 @@ class EntityStixCoreRelationshipsPie extends Component {
     } = this.props;
     if (variant === 'explore') {
       return (
-        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
+        <Paper classes={{ root: classes.paperExplore }} variant="outlined">
           <Typography
             variant="h4"
             gutterBottom={true}
@@ -229,10 +227,16 @@ class EntityStixCoreRelationshipsPie extends Component {
     }
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           {this.renderContent()}
         </Paper>
       </div>

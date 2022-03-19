@@ -1,18 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import MenuItem from '@material-ui/core/MenuItem';
-import Tooltip from '@material-ui/core/Tooltip';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { Close, ArrowRightAlt } from '@material-ui/icons';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
+import { Close, ArrowRightAlt } from '@mui/icons-material';
 import { fetchQuery, commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -33,7 +34,7 @@ const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-    backgroundColor: theme.palette.navAlt.background,
+
     padding: 0,
   },
   createButton: {
@@ -50,8 +51,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -150,6 +150,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
           confidence
           start_time
           stop_time
+          created
           from {
             ... on BasicObject {
               id
@@ -163,6 +164,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
             }
             ... on StixCoreRelationship {
               relationship_type
+              created
             }
           }
           to {
@@ -178,6 +180,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
             }
             ... on StixCoreRelationship {
               relationship_type
+              created
             }
           }
           created_at
@@ -447,6 +450,7 @@ class StixCoreRelationshipCreation extends Component {
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
+                size="large"
               >
                 <Close fontSize="small" />
               </IconButton>
@@ -555,6 +559,7 @@ class StixCoreRelationshipCreation extends Component {
               </div>
               <Field
                 component={SelectField}
+                variant="standard"
                 name="relationship_type"
                 label={t('Relationship type')}
                 fullWidth={true}
@@ -578,18 +583,24 @@ class StixCoreRelationshipCreation extends Component {
               <Field
                 component={DatePickerField}
                 name="start_time"
-                label={t('Start time')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
+                TextFieldProps={{
+                  label: t('Start time'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
               />
               <Field
                 component={DatePickerField}
                 name="stop_time"
-                label={t('Stop time')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
+                TextFieldProps={{
+                  label: t('Stop time'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
               />
               <Field
                 component={MarkDownField}
@@ -628,7 +639,7 @@ class StixCoreRelationshipCreation extends Component {
                 </Button>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -644,9 +655,7 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   renderSelectRelation() {
-    const {
-      fsd, t, classes, fromObjects, toObjects, theme,
-    } = this.props;
+    const { fsd, t, classes, fromObjects, toObjects, theme } = this.props;
     const { existingRelations } = this.state;
     return (
       <div>
@@ -655,6 +664,7 @@ class StixCoreRelationshipCreation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
+            size="large"
           >
             <Close fontSize="small" />
           </IconButton>
@@ -883,14 +893,14 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   render() {
-    const {
-      open, fromObject, toObjects, classes,
-    } = this.props;
+    const { open, fromObject, toObjects, classes } = this.props;
     const { step } = this.state;
     return (
       <Drawer
         open={open}
         anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={this.handleClose.bind(this)}
       >

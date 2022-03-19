@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
@@ -42,10 +41,10 @@ class CampaignComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={campaign} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <CampaignDetails campaign={campaign} />
           </Grid>
         </Grid>
@@ -142,6 +141,15 @@ const Campaign = createFragmentContainer(CampaignComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...CampaignDetails_campaign
     }
   `,

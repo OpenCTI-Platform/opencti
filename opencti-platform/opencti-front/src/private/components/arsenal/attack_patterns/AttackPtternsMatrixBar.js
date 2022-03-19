@@ -1,25 +1,24 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import Tooltip from '@material-ui/core/Tooltip';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import {
   FilterListOutlined,
   InvertColorsOffOutlined,
-} from '@material-ui/icons';
-import Drawer from '@material-ui/core/Drawer';
-import Slide from '@material-ui/core/Slide';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
+} from '@mui/icons-material';
+import Drawer from '@mui/material/Drawer';
+import Slide from '@mui/material/Slide';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import inject18n from '../../../../components/i18n';
 
-const styles = (theme) => ({
+const styles = () => ({
   bottomNav: {
     zIndex: 1000,
-    backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     overflow: 'hidden',
   },
@@ -54,6 +53,7 @@ class AttackPtternsMatrixBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
+        PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
         <div
           style={{
@@ -103,6 +103,7 @@ class AttackPtternsMatrixBar extends Component {
                   <IconButton
                     color={currentModeOnlyActive ? 'secondary' : 'primary'}
                     onClick={handleToggleModeOnlyActive.bind(this)}
+                    size="large"
                   >
                     <FilterListOutlined />
                   </IconButton>
@@ -119,6 +120,7 @@ class AttackPtternsMatrixBar extends Component {
                   <IconButton
                     color={currentColorsReversed ? 'secondary' : 'primary'}
                     onClick={handleToggleColorsReversed.bind(this)}
+                    size="large"
                   >
                     <InvertColorsOffOutlined />
                   </IconButton>

@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import { createRefetchContainer } from 'react-relay';
-import Paper from '@material-ui/core/Paper';
+import withStyles from '@mui/styles/withStyles';
+import { graphql, createRefetchContainer } from 'react-relay';
+import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectHistoryLine from './StixCoreObjectHistoryLine';
 
@@ -19,12 +18,10 @@ const styles = () => ({
 
 class StixCoreObjectHistoryLinesComponent extends Component {
   render() {
-    const {
-      t, classes, data, isRelationLog,
-    } = this.props;
+    const { t, classes, data, isRelationLog } = this.props;
     const logs = pathOr([], ['logs', 'edges'], data);
     return (
-      <Paper classes={{ root: classes.paperHistory }} elevation={2}>
+      <Paper classes={{ root: classes.paperHistory }} variant="outlined">
         {logs.length > 0 ? (
           logs.map((logEdge) => {
             const log = logEdge.node;

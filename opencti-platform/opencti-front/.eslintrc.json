@@ -1,7 +1,14 @@
 {
-  "extends": ["airbnb-base", "plugin:react/recommended"],
+  "extends": [
+    "airbnb-base",
+    "airbnb-typescript/base",
+    "plugin:import/typescript",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "parserOptions": {
-    "ecmaVersion": 2020
+    "ecmaVersion": 2020,
+    "project": "./tsconfig.json"
   },
   "env": {
     "browser": true,
@@ -12,11 +19,7 @@
     "react/no-unused-prop-types": 0,
     "react/prop-types": 0,
     "max-classes-per-file": ["error", 2],
-    "no-unused-vars": ["warn"]
-  },
-  "settings": {
-    "react": {
-      "version": "15.0"
-    }
+    "no-unused-vars": ["warn"],
+    "object-curly-newline": "off"
   }
 }

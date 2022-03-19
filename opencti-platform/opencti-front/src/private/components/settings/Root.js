@@ -82,7 +82,7 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/attributes/:attributeKey"
+        path="/dashboard/settings/attributes/fields/:attributeKey"
         component={Attributes}
       />
     </Security>

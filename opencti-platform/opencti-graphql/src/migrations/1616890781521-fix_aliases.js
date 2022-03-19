@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
+import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import { generateStandardId, idGen, normalizeName } from '../schema/identifier';
 import { logApp } from '../config/conf';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, OPENCTI_NAMESPACE } from '../schema/general';
@@ -18,7 +18,7 @@ const generateAliases = (aliases, additionalFields = {}) => {
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Rewriting i_aliases_ids for Locations and Identities`);
+  logApp.info('[MIGRATION] Rewriting i_aliases_ids for Locations and Identities');
   const bulkOperations = [];
   const callback = (entities) => {
     const op = entities

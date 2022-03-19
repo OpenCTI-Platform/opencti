@@ -7,8 +7,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 
-export const findAll = async (user, args) =>
-  listRelations(user, propOr(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, 'relationship_type', args), args);
+export const findAll = async (user, args) => listRelations(user, propOr(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, 'relationship_type', args), args);
 
 export const findById = (user, stixCyberObservableRelationshipId) => {
   return loadById(user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
@@ -27,11 +26,13 @@ export const stixCyberObservableRelationshipDelete = async (user, stixCyberObser
   return deleteElementById(user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
 };
 
-export const stixCyberObservableRelationshipCleanContext = (user, stixCyberObservableRelationshipId) =>
-  stixCoreRelationshipCleanContext(user, stixCyberObservableRelationshipId);
+export const stixCyberObservableRelationshipCleanContext = (user, stixCyberObservableRelationshipId) => {
+  return stixCoreRelationshipCleanContext(user, stixCyberObservableRelationshipId);
+};
 
-export const stixCyberObservableRelationshipEditContext = (user, stixCyberObservableRelationshipId, input) =>
-  stixCoreRelationshipEditContext(user, stixCyberObservableRelationshipId, input);
+export const stixCyberObservableRelationshipEditContext = (user, stixCyberObservableRelationshipId, input) => {
+  return stixCoreRelationshipEditContext(user, stixCyberObservableRelationshipId, input);
+};
 
 export const stixCyberObservableRelationshipEditField = async (user, relationshipId, input) => {
   const { element } = await updateAttribute(user, relationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, input);

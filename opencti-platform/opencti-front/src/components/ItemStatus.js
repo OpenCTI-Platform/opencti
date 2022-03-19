@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
+import withStyles from '@mui/styles/withStyles';
+import Chip from '@mui/material/Chip';
 import { compose } from 'ramda';
 import inject18n from './i18n';
 import { hexToRGB } from '../utils/Colors';
@@ -29,9 +29,7 @@ const styles = () => ({
 
 class ItemStatus extends Component {
   render() {
-    const {
-      classes, t, status, variant, disabled,
-    } = this.props;
+    const { classes, t, status, variant, disabled } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (status) {
       return (

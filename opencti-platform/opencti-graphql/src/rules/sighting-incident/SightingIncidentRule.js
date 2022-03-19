@@ -8,7 +8,7 @@ import {
 } from '../../database/middleware';
 import def from './SightingIncidentDefinition';
 import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
-import { createRuleContent, RULE_MANAGER_USER, RULES_DECLARATION } from '../rules';
+import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
@@ -55,7 +55,7 @@ const ruleSightingIncidentBuilder = () => {
         }
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
-        // eslint-disable-next-line prettier/prettier
+
         const incidentToIndicator = {
           fromId: inferredEntity.element.id,
           toId: indicatorId,
@@ -66,7 +66,7 @@ const ruleSightingIncidentBuilder = () => {
           events.push(incidentToIndicatorEvent);
         }
         // Create **Incident C** `targets` **identity B**
-        // eslint-disable-next-line prettier/prettier
+
         const incidentToIdentity = {
           fromId: inferredEntity.element.id,
           toId: identityId,
@@ -104,6 +104,4 @@ const ruleSightingIncidentBuilder = () => {
 };
 const RuleSightingIncident = ruleSightingIncidentBuilder();
 
-// Declare the rule
-RULES_DECLARATION.push(RuleSightingIncident);
 export default RuleSightingIncident;

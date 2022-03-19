@@ -1,7 +1,7 @@
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import { Promise } from 'bluebird';
 import { lockResource } from '../database/redis';
-import { elList, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
+import { elList, ES_MAX_CONCURRENCY } from '../database/engine';
 import { READ_PLATFORM_INDICES } from '../database/utils';
 import { hoursAgo, minutesAgo, now, prepareDate, utcDate } from '../utils/format';
 import conf, { logApp } from '../config/conf';
@@ -21,26 +21,30 @@ const SUBSCRIPTION_MANAGER_KEY = conf.get('subscription_scheduler:lock_key');
 const defaultCrons = ['5-minutes', '1-hours', '24-hours', '1-weeks'];
 
 const subscriptionHandler = async () => {
-  logApp.debug('[OPENCTI] Running Subscription manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([SUBSCRIPTION_MANAGER_KEY]);
-    logApp.debug('[OPENCTI] Subscription manager lock acquired');
     // Execute the cleaning
     const callback = async (elements) => {
-      logApp.info(`[OPENCTI] Subscription manager will send reports for ${elements.length} subscriptions`);
+      logApp.debug(`[OPENCTI-MODULE] Subscription manager will send reports for ${elements.length} subscriptions`);
       const concurrentSend = async (element) => {
+        let mailContent;
         try {
-          const mailContent = await generateDigestForSubscription(element);
+          mailContent = await generateDigestForSubscription(element);
+        } catch (e) {
+          logApp.error('[OPENCTI-MODULE] Subscription manager failed to generate the digest', { element, error: e });
+        }
+        try {
           if (mailContent) {
             await sendMail(mailContent);
+          } else {
+            logApp.debug('[OPENCTI-MODULE] Nothing to send', { element });
           }
-          const patch = { last_run: now() };
-          await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);
         } catch (e) {
-          logApp.error('[OPENCTI] Subscription manager failed to send', { error: e });
+          logApp.error('[OPENCTI-MODULE] Subscription manager failed to send the email', { error: e });
         }
+        await patchAttribute(SYSTEM_USER, element.id, element.entity_type, { last_run: now() });
       };
       await Promise.map(elements, concurrentSend, { concurrency: ES_MAX_CONCURRENCY });
     };
@@ -74,15 +78,10 @@ const initSubscriptionManager = () => {
   let scheduler;
   return {
     start: () => {
+      logApp.info('[OPENCTI-MODULE] Running subscription manager');
       scheduler = setIntervalAsync(async () => {
         await subscriptionHandler();
       }, SCHEDULE_TIME);
-      // Handle hot module replacement resource dispose
-      if (module.hot) {
-        module.hot.dispose(async () => {
-          await clearIntervalAsync(scheduler);
-        });
-      }
     },
     shutdown: async () => {
       if (scheduler) {

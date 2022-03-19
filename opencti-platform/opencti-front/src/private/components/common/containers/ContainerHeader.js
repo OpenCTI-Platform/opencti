@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import { graphql, createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
 import { GraphOutline, VectorLink } from 'mdi-material-ui';
-import { ViewColumnOutlined } from '@material-ui/icons';
+import { ViewColumnOutlined } from '@mui/icons-material';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
@@ -129,6 +128,7 @@ class ContainerHeaderComponent extends Component {
                   color={currentMode === 'graph' ? 'secondary' : 'primary'}
                   component={Link}
                   to={`${link}/graph`}
+                  size="large"
                 >
                   <GraphOutline />
                 </IconButton>
@@ -142,6 +142,7 @@ class ContainerHeaderComponent extends Component {
                   }
                   component={Link}
                   to={`${link}/correlation`}
+                  size="large"
                 >
                   <VectorLink />
                 </IconButton>
@@ -153,6 +154,7 @@ class ContainerHeaderComponent extends Component {
                   color={currentMode === 'matrix' ? 'secondary' : 'primary'}
                   component={Link}
                   to={`${link}/matrix`}
+                  size="large"
                 >
                   <ViewColumnOutlined />
                 </IconButton>

@@ -1,41 +1,40 @@
-export default (logo = null, primary = null, secondary = null) => ({
-  fontFamily: 'Roboto, sans-serif',
+export default (
+  logo = null,
+  background = null,
+  paper = null,
+  nav = null,
+  primary = null,
+  secondary = null,
+  accent = null,
+) => ({
   logo: logo || `${window.BASE_PATH}/static/logo_text.png`,
   palette: {
-    type: 'light',
-    text: { secondary: 'rgba(0, 0, 0, 0.5)' },
-    primary: { main: primary || '#507bc8' },
-    secondary: { main: secondary || '#d84315' },
-    header: { background: primary || '#507bc8', text: '#ffffff' },
-    navAlt: {
-      background: '#ffffff',
-      backgroundHeader: primary || '#507bc8',
-      backgroundHeaderText: '#ffffff',
-    },
-    navBottom: { background: '#ffffff' },
+    mode: 'light',
+    primary: { main: primary || '#007fff' },
+    secondary: { main: secondary || '#d81b60' },
     background: {
-      paper: '#ffffff',
-      paperLight: '#f5f5f5',
-      nav: '#ffffff',
-      navLight: '#ffffff',
-      default: '#f5f5f5',
-      chip: 'rgba(80, 123, 200, 0.6)',
-      line: 'rgba(80, 123, 200, 0.05)',
+      default: background || '#ffffff',
+      paper: paper || '#f3f6f9',
+      nav: nav || '#f9feff',
+      accent: accent || '#d3eaff',
+      shadow: 'rgba(0, 0, 0, .05)',
     },
-    action: { disabled: '#ababab', grid: '#dbdbdb', expansion: '#fafafa' },
   },
   typography: {
-    useNextVariants: true,
+    fontFamily: '"IBM Plex Sans", sans-serif',
     body2: {
       fontSize: '0.8rem',
     },
     body1: {
       fontSize: '0.9rem',
     },
+    overline: {
+      fontWeight: 500,
+    },
     h1: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#507bc8',
+      color: primary || '#007fff',
       fontWeight: 400,
       fontSize: 22,
     },
@@ -49,7 +48,7 @@ export default (logo = null, primary = null, secondary = null) => ({
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: primary || '#507bc8',
+      color: primary || '#007fff',
       fontWeight: 400,
       fontSize: 13,
     },
@@ -59,7 +58,7 @@ export default (logo = null, primary = null, secondary = null) => ({
       textTransform: 'uppercase',
       fontSize: 12,
       fontWeight: 500,
-      color: '#4b4b4b',
+      color: '#505050',
     },
     h5: {
       fontWeight: 400,
@@ -70,89 +69,131 @@ export default (logo = null, primary = null, secondary = null) => ({
     h6: {
       fontWeight: 400,
       fontSize: 18,
+      color: primary || '#007fff',
     },
   },
-  overrides: {
+  components: {
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.7)',
+        },
+      },
+    },
     MuiCssBaseline: {
-      '@global': {
-        '*': {
-          scrollbarColor: '#c6c6c6 #f0f0f0',
-        },
-        '*::-webkit-scrollbar': {
-          width: 12,
-        },
-        '*::-webkit-scrollbar-track': {
-          background: '#f0f0f0',
-        },
-        '*::-webkit-scrollbar-thumb': {
-          backgroundColor: '#c6c6c6',
-          borderRadius: 20,
-          border: '3px solid #f0f0f0',
-        },
-        html: {
-          WebkitFontSmoothing: 'auto',
-        },
-        a: {
-          color: primary || '#507bc8',
-        },
-        'input:-webkit-autofill': {
-          '-webkit-animation': 'autofill 0s forwards',
-          animation: 'autofill 0s forwards',
-          '-webkit-text-fill-color': '#000000 !important',
-          caretColor: 'transparent !important',
-          '-webkit-box-shadow': '0 0 0 1000px #f8f8f8 inset !important',
-          borderTopLeftRadius: 'inherit',
-          borderTopRightRadius: 'inherit',
-        },
-        pre: {
-          background: 'rgba(0, 0, 0, 0.02)',
-        },
-        code: {
-          background: 'rgba(0, 0, 0, 0.02)',
-        },
-        '.react-mde': {
-          border: '0 !important',
-          borderBottom: '1px solid #aaaaaa !important',
-          '&:hover': {
-            borderBottom: '2px solid #000000 !important',
-            marginBottom: '-1px !important',
+      styleOverrides: {
+        body: {
+          scrollbarColor: '#6b6b6b #2b2b2b',
+          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+            backgroundColor: paper || '#f3f6f9',
           },
-        },
-        '.error .react-mde': {
-          border: '0 !important',
-          borderBottom: '2px solid #f44336 !important',
-          marginBottom: '-1px !important',
-          ':&hover': {
+          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+            borderRadius: 8,
+            backgroundColor: accent || '#d3eaff',
+            minHeight: 24,
+            border: `3px solid ${paper || '#f3f6f9'}`,
+          },
+          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus':
+            {
+              backgroundColor: accent || '#d3eaff',
+            },
+          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active':
+            {
+              backgroundColor: accent || '#d3eaff',
+            },
+          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover':
+            {
+              backgroundColor: accent || '#d3eaff',
+            },
+          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
+            backgroundColor: accent || '#d3eaff',
+          },
+          html: {
+            WebkitFontSmoothing: 'auto',
+          },
+          a: {
+            color: primary || '#007fff',
+          },
+          'input:-webkit-autofill': {
+            WebkitAnimation: 'autofill 0s forwards',
+            animation: 'autofill 0s forwards',
+            WebkitTextFillColor: '#000000 !important',
+            caretColor: 'transparent !important',
+            WebkitBoxShadow:
+              '0 0 0 1000px rgba(4, 8, 17, 0.88) inset !important',
+            borderTopLeftRadius: 'inherit',
+            borderTopRightRadius: 'inherit',
+          },
+          pre: {
+            background: `${accent || '#c0dfff'} !important`,
+            color: '#000000 !important',
+          },
+          code: {
+            fontFamily: 'Consolas, monaco, monospace',
+            background: `${accent || '#c0dfff'} !important`,
+            color: '#000000 !important',
+            padding: 3,
+            fontSize: 12,
+            fontWeight: 400,
+          },
+          '.react-mde': {
+            border: '0 !important',
+          },
+          '.error .react-mde textarea': {
             border: '0 !important',
             borderBottom: '2px solid #f44336 !important',
-            marginBottom: '-1px !important',
+            '&:hover': {
+              border: '0 !important',
+              borderBottom: '2px solid #f44336 !important',
+            },
+            '&:focus': {
+              border: '0 !important',
+              borderBottom: '2px solid #f44336 !important',
+            },
           },
-        },
-        '.mde-header': {
-          border: '1px solid #e6e6e6 !important',
-          backgroundColor: '#fafafa !important',
-          color: '#000000 !important',
-        },
-        '.mde-header-item button': {
-          color: '#000000 !important',
-        },
-        '.mde-tabs button': {
-          color: '#000000 !important',
-        },
-        '.mde-textarea-wrapper textarea': {
-          color: '#000000',
-          backgroundColor: '#ffffff',
-        },
-        '.react-grid-placeholder': {
-          backgroundColor: 'rgba(80, 123, 200, 0.8) !important',
-        },
-        '.react_time_range__track': {
-          backgroundColor: 'rgba(80, 123, 200, 0.1) !important',
-          borderLeft: '1px solid #507bc8 !important',
-          borderRight: '1px solid #507bc8 !important',
-        },
-        '.react_time_range__handle_marker': {
-          backgroundColor: '#507bc8 !important',
+          '.mde-header': {
+            border: '0 !important',
+            backgroundColor: 'transparent !important',
+            color: '#000000 !important',
+          },
+          '.mde-header-item button': {
+            color: '#000000 !important',
+          },
+          '.mde-tabs button': {
+            color: '#000000 !important',
+          },
+          '.mde-textarea-wrapper textarea': {
+            fontFamily: '"IBM Plex Sans", sans-serif',
+            fontSize: 13,
+            color: 'rgba(0, 0, 0, 0.87)',
+            background: 'transparent',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.87) !important',
+            transition: 'borderBottom .3s',
+            '&:hover': {
+              borderBottom: '2px solid #000000 !important',
+            },
+            '&:focus': {
+              borderBottom: `2px solid #${primary || '#007fff'} !important`,
+            },
+          },
+          '.react-grid-placeholder': {
+            backgroundColor: `${accent || '#c0dfff'} !important`,
+          },
+          '.react_time_range__track': {
+            backgroundColor: 'rgba(1, 226, 255, 0.1) !important',
+            borderLeft: '1px solid #00bcd4 !important',
+            borderRight: '1px solid #00bcd4 !important',
+          },
+          '.react_time_range__handle_marker': {
+            backgroundColor: '#00bcd4 !important',
+          },
+          '.leaflet-container': {
+            backgroundColor: `${paper || '#f3f6f9'} !important`,
+          },
+          '.react-grid-item .react-resizable-handle::after': {
+            borderRight: '2px solid rgba(0, 0, 0, 0.6) !important',
+            borderBottom: '2px solid rgba(0, 0, 0, 0.6) !important',
+          },
         },
       },
     },

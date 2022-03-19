@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import { graphql, createPaginationContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
@@ -50,9 +49,7 @@ const styles = (theme) => ({
 
 class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component {
   render() {
-    const {
-      t, classes, entityId, data, paginationOptions,
-    } = this.props;
+    const { t, classes, entityId, data, paginationOptions } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -65,7 +62,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
           paginationOptions={paginationOptions}
         />
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List classes={{ root: classes.list }}>
             {data.stixCoreRelationships.edges.map(
               (stixCoreRelationshipEdge) => {

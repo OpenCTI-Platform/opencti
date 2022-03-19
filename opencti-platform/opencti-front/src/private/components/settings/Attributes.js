@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -14,12 +14,11 @@ import LabelsAttributesMenu from './LabelsAttributesMenu';
 import AttributesLines, {
   attributesLinesQuery,
 } from './attributes/AttributesLines';
-import AttributeCreation from './attributes/AttributeCreation';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: '0 200px 50px 0',
   },
 });
 
@@ -78,7 +77,7 @@ class Attributes extends Component {
       >
         <QueryRenderer
           query={attributesLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ count: 200, orderMode: 'asc', ...paginationOptions }}
           render={({ props }) => (
             <AttributesLines
               data={props}
@@ -101,17 +100,14 @@ class Attributes extends Component {
     } = this.props;
     const { view, searchTerm } = this.state;
     const paginationOptions = {
-      key: attributeKey,
+      attributeName: attributeKey,
       search: searchTerm,
+      orderMode: 'asc',
     };
     return (
       <div className={classes.container}>
         <LabelsAttributesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <AttributeCreation
-          paginationOptions={paginationOptions}
-          attributeKey={attributeKey}
-        />
       </div>
     );
   }

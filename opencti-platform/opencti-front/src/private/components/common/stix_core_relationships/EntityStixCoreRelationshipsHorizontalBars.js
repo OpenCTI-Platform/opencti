@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, map, assoc } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import {
   BarChart,
   XAxis,
@@ -12,10 +12,11 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -216,7 +217,7 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
                   />
                   <CartesianGrid
                     strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
+                    stroke={theme.palette.background.default}
                   />
                   <Tooltip
                     cursor={{
@@ -282,16 +283,20 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant,
-    } = this.props;
+    const { t, classes, title, variant } = this.props;
     return (
       <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('StixDomainObjects distribution')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

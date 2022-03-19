@@ -2,18 +2,17 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { ArrowRightAltOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { ArrowRightAltOutlined } from '@mui/icons-material';
 import { interval } from 'rxjs';
-import Slide from '@material-ui/core/Slide';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { createRefetchContainer } from 'react-relay';
-import Chip from '@material-ui/core/Chip';
+import Slide from '@mui/material/Slide';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import { graphql, createRefetchContainer } from 'react-relay';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import SubTypePopover from './SubTypePopover';
@@ -124,9 +123,7 @@ class WorkflowLinesComponent extends Component {
   }
 
   render() {
-    const {
-      classes, data, keyword, t,
-    } = this.props;
+    const { classes, data, keyword, t } = this.props;
     const filterByKeyword = (n) => keyword === ''
       || n.label.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || n.tlabel.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;

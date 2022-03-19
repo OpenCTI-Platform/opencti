@@ -1,14 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import {
-  assoc, compose, pick, pipe, propOr,
-} from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import { assoc, compose, pick, pipe, propOr } from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@material-ui/core/MenuItem';
+import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
@@ -21,7 +18,7 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -136,6 +133,7 @@ class AttackPatternEditionDetailsComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="x_mitre_id"
               label={t('External ID')}
               fullWidth={true}
@@ -147,6 +145,7 @@ class AttackPatternEditionDetailsComponent extends Component {
             />
             <Field
               component={SelectField}
+              variant="standard"
               name="x_mitre_platforms"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
@@ -168,6 +167,7 @@ class AttackPatternEditionDetailsComponent extends Component {
             </Field>
             <Field
               component={SelectField}
+              variant="standard"
               name="x_mitre_permissions_required"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
@@ -187,6 +187,7 @@ class AttackPatternEditionDetailsComponent extends Component {
             </Field>
             <Field
               component={TextField}
+              variant="standard"
               name="x_mitre_detection"
               label={t('Detection')}
               fullWidth={true}

@@ -1,23 +1,22 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import { createPaginationContainer } from 'react-relay';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import { graphql, createPaginationContainer } from 'react-relay';
+import Typography from '@mui/material/Typography';
 import { Field, Form, Formik } from 'formik';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import {
   EditOutlined,
   ExpandMoreOutlined,
   RateReviewOutlined,
-} from '@material-ui/icons';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
+} from '@mui/icons-material';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
 import * as Yup from 'yup';
 import { ConnectionHandler } from 'relay-runtime';
-import IconButton from '@material-ui/core/IconButton';
+import IconButton from '@mui/material/IconButton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrStixCoreRelationshipNoteCard from './StixCoreObjectOrStixCoreRelationshipNoteCard';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -48,7 +47,7 @@ const styles = (theme) => ({
   },
   createButton: {
     float: 'left',
-    margin: '-15px 0 0 10px',
+    marginTop: -15,
   },
 });
 
@@ -124,13 +123,11 @@ class StixCoreObjectNotesCardsContainer extends Component {
   }
 
   render() {
-    const {
-      t, classes, stixCoreObjectId, marginTop, data,
-    } = this.props;
+    const { t, classes, stixCoreObjectId, marginTop, data } = this.props;
     const { open } = this.state;
     const notes = R.pathOr([], ['stixCoreObject', 'notes', 'edges'], data);
     return (
-      <div style={{ marginTop: marginTop || 40 }}>
+      <div style={{ marginTop: marginTop || 50 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes about this entity')}
         </Typography>
@@ -139,6 +136,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
             color="secondary"
             onClick={this.handleToggleWrite.bind(this)}
             classes={{ root: classes.createButton }}
+            size="large"
           >
             <EditOutlined fontSize="small" />
           </IconButton>
@@ -159,11 +157,12 @@ class StixCoreObjectNotesCardsContainer extends Component {
           );
         })}
         <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '5'}px 0 30px 0` }}
+          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
           expanded={open}
           onChange={this.handleToggleWrite.bind(this)}
+          variant="outlined"
         >
-          <AccordionSummary expandIcon={<ExpandMoreOutlined />} style={{}}>
+          <AccordionSummary expandIcon={<ExpandMoreOutlined />}>
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;
@@ -193,6 +192,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
                 <Form style={{ width: '100%' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
@@ -232,7 +232,7 @@ class StixCoreObjectNotesCardsContainer extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}

@@ -1,19 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import {
-  compose, pick, pipe, assoc,
-} from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import { compose, pick, pipe, assoc } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
-import MenuItem from '@material-ui/core/MenuItem';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import MenuItem from '@mui/material/MenuItem';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -23,8 +20,7 @@ import { statusCreationStatusTemplatesQuery } from './StatusCreation';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -51,8 +47,6 @@ const styles = (theme) => ({
   appBar: {
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.header.text,
     borderBottom: '1px solid #5c5c5c',
   },
   title: {
@@ -100,9 +94,7 @@ class StatusEditionContainer extends Component {
   }
 
   render() {
-    const {
-      t, handleClose, open, status,
-    } = this.props;
+    const { t, handleClose, open, status } = this.props;
     const initialValues = pipe(
       assoc('template_id', status.template.id),
       pick(['template_id', 'order']),
@@ -117,6 +109,7 @@ class StatusEditionContainer extends Component {
           <Form>
             <Dialog
               open={open}
+              PaperProps={{ elevation: 1 }}
               onClose={handleClose.bind(this)}
               fullWidth={true}
             >
@@ -134,6 +127,7 @@ class StatusEditionContainer extends Component {
                       return (
                         <Field
                           component={SelectField}
+                          variant="standard"
                           name="template_id"
                           onChange={this.handleSubmitField.bind(this)}
                           label={t('Name')}
@@ -156,6 +150,7 @@ class StatusEditionContainer extends Component {
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="order"
                   label={t('Order')}
                   fullWidth={true}

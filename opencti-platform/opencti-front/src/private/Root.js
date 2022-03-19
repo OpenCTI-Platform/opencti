@@ -1,13 +1,12 @@
 import React from 'react';
 import * as R from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import { QueryRenderer } from '../relay/environment';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+import CssBaseline from '@mui/material/CssBaseline';
+import { StyledEngineProvider } from '@mui/material/styles';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import Index from './Index';
 import { UserContext } from '../utils/Security';
-import AuthBoundaryComponent from './components/AuthBoundary';
 
 const rootPrivateQuery = graphql`
   query RootPrivateQuery {
@@ -59,34 +58,23 @@ const buildHelper = (settings) => ({
   isFeatureEnable: (id) => isFeatureEnable(settings, id),
   isRuntimeFieldEnable: () => isFeatureEnable(settings, 'RUNTIME_SORTING'),
 });
-const Root = () => (
-  <AuthBoundaryComponent>
-    <QueryRenderer
-      query={rootPrivateQuery}
-      variables={{}}
-      render={({ props }) => {
-        if (props) {
-          return (
-            <UserContext.Provider
-              value={{
-                me: props.me,
-                settings: props.settings,
-                helper: buildHelper(props.settings),
-              }}
-            >
-              <ConnectedThemeProvider settings={props.settings}>
-                <CssBaseline />
-                <ConnectedIntlProvider settings={props.settings}>
-                  <Index me={props.me} />
-                </ConnectedIntlProvider>
-              </ConnectedThemeProvider>
-            </UserContext.Provider>
-          );
-        }
-        return <div />;
-      }}
-    />
-  </AuthBoundaryComponent>
-);
+
+const Root = () => {
+  const data = useLazyLoadQuery(rootPrivateQuery);
+  const { me, settings } = data;
+  const helper = buildHelper(settings);
+  return (
+    <UserContext.Provider value={{ me, settings, helper }}>
+      <StyledEngineProvider injectFirst={true}>
+        <ConnectedThemeProvider settings={settings}>
+          <CssBaseline />
+          <ConnectedIntlProvider settings={settings}>
+            <Index me={me} />
+          </ConnectedIntlProvider>
+        </ConnectedThemeProvider>
+      </StyledEngineProvider>
+    </UserContext.Provider>
+  );
+};
 
 export default Root;

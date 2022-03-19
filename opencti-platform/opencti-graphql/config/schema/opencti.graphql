@@ -138,7 +138,7 @@ Retrieve the application information version add dependencies
 """
 type AppInfo {
   """
-  The OpenCTI aplication version
+  The OpenCTI application version
   """
   version: String!
   """
@@ -309,11 +309,6 @@ type Attribute {
   id: ID!
   key: String!
   value: String!
-}
-input AttributeAddInput {
-  key: String!
-  value: String!
-  clientMutationId: String
 }
 input WorkErrorInput {
   error: String
@@ -512,6 +507,7 @@ input StatusesFiltering {
 }
 type Status {
   id: ID!
+  template_id: String!
   template: StatusTemplate
   type: String!
   order: Int!
@@ -862,12 +858,20 @@ type Settings implements InternalObject & BasicObject {
   platform_providers: [Provider]
   platform_language: String
   platform_theme: String
+  platform_theme_dark_background: String
+  platform_theme_dark_paper: String
+  platform_theme_dark_nav: String
   platform_theme_dark_primary: String
   platform_theme_dark_secondary: String
+  platform_theme_dark_accent: String
   platform_theme_dark_logo: String
   platform_theme_dark_logo_login: String
+  platform_theme_light_background: String
+  platform_theme_light_paper: String
+  platform_theme_light_nav: String
   platform_theme_light_primary: String
   platform_theme_light_secondary: String
+  platform_theme_light_accent: String
   platform_theme_light_logo: String
   platform_theme_light_logo_login: String
   platform_map_tile_server_dark: String
@@ -1801,7 +1805,7 @@ input AttackPatternAddInput {
   stix_id: String
   x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   aliases: [String]
   revoked: Boolean
   lang: String
@@ -8582,17 +8586,13 @@ type Query {
     filters: [WorksFiltering]
     filterMode: FilterMode
   ): WorkConnection @auth(for: [MODULES])
-  attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
-  attributes(
+  runtimeAttributes(
     first: Int
-    after: ID
-    orderBy: AttributesOrdering
-    orderMode: OrderingMode
-    key: String
-    elementType: String
-    fieldKey: String
     search: String
+    orderMode: OrderingMode
+    attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
+  schemaAttributes(elementType: String!) : AttributeConnection @auth(for: [KNOWLEDGE])
   workspace(id: String): Workspace @auth(for: [EXPLORE])
   workspaces(
     first: Int
@@ -8749,7 +8749,7 @@ type Query {
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
-    endDate: DateTime!
+    endDate: DateTime
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
@@ -9959,8 +9959,7 @@ type Mutation {
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
-  attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
-  attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
+  runtimeAttributeEdit(id: String!, previous: String!, current: String!): ID! @auth(for: [SETTINGS])
   workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
   workspaceEdit(id: ID!): WorkspaceEditMutations @auth(for: [EXPLORE_EXUPDATE])
   taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])

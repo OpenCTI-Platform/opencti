@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
 import { interval } from 'rxjs';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles/index';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import Grid from '@material-ui/core/Grid';
-import { createRefetchContainer } from 'react-relay';
-import { MultilineChart } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Grid';
+import { graphql, createRefetchContainer } from 'react-relay';
+import { MultilineChart } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 
@@ -69,9 +68,7 @@ class WorkersStatusComponent extends Component {
   }
 
   render() {
-    const {
-      classes, t, n, data,
-    } = this.props;
+    const { classes, t, n, data } = this.props;
     const { consumers, overview } = data.rabbitMQMetrics;
     const { docs, search, indexing } = data.elasticSearchMetrics;
     const currentReadOperations = search.query_total;
@@ -86,6 +83,7 @@ class WorkersStatusComponent extends Component {
       <Card
         classes={{ root: classes.card }}
         style={{ maxHeight: '100vh', height: '100%' }}
+        variant="outlined"
       >
         <CardHeader
           avatar={<MultilineChart className={classes.icon} />}

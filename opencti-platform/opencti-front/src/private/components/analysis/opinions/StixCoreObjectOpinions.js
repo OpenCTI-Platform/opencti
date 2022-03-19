@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOpinionsRadar, {
@@ -16,9 +17,7 @@ const styles = () => ({
 
 class StixCoreObjectOpinions extends Component {
   render() {
-    const {
-      title, variant, height, marginTop, stixCoreObjectId, field,
-    } = this.props;
+    const { title, variant, height, marginTop, stixCoreObjectId, field } = this.props;
     const opinionsDistributionVariables = {
       objectId: stixCoreObjectId,
       field: field || 'opinion',

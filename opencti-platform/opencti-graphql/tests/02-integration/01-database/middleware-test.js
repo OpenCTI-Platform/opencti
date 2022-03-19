@@ -8,7 +8,6 @@ import {
   distributionRelations,
   fullLoadById,
   internalLoadById,
-  listEntities,
   listRelations,
   loadById,
   mergeEntities,
@@ -18,9 +17,9 @@ import {
   timeSeriesRelations,
   updateAttribute,
 } from '../../../src/database/middleware';
-import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { el, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
-import { ADMIN_USER, sleep } from '../../utils/testQuery';
+import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
+import { searchClient, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
+import { ADMIN_USER } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -52,6 +51,7 @@ import { INTERNAL_FROM_FIELD } from '../../../src/schema/identifier';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
+import { listEntities } from '../../../src/database/repository';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -501,42 +501,36 @@ describe('Element loader', () => {
 
 describe('Attribute updated and indexed correctly', () => {
   it('should entity report attribute updated', async () => {
-    const entityTypes = await findAllAttributes(ADMIN_USER, { type: 'report_types' });
-    expect(entityTypes).not.toBeNull();
-    expect(entityTypes.edges.length).toEqual(2);
-    const typeMap = new Map(entityTypes.edges.map((i) => [i.node.value, i]));
+    const attrValues = await getRuntimeAttributeValues(ADMIN_USER, { attributeName: 'report_types' });
+    expect(attrValues).not.toBeNull();
+    expect(attrValues.edges.length).toEqual(1);
+    const typeMap = new Map(attrValues.edges.map((i) => [i.node.value, i]));
     const threatReportAttribute = typeMap.get('threat-report');
     expect(threatReportAttribute).not.toBeUndefined();
-    const attributeId = threatReportAttribute.node.id;
+    const attributeName = threatReportAttribute.node.key;
     // 01. Get the report directly and test if type is "Threat report".
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
     let report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
     // 02. Update attribute "Threat report" to "Threat test"
-    let updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, [
-      {
-        key: 'value',
-        value: ['threat-test'],
-      },
-    ]);
+    let updatedAttribute = await attributeEditField({
+      id: attributeName,
+      previous: 'threat-report',
+      current: 'threat-test',
+    });
     expect(updatedAttribute).not.toBeNull();
-    // Wait a bit for elastic refresh
-    await sleep(2000);
     // 03. Get the report directly and test if type is Threat test
     report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-test']);
     // 04. Back to original configuration
-    updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, [
-      {
-        key: 'value',
-        value: ['threat-report'],
-      },
-    ]);
+    updatedAttribute = await attributeEditField({
+      id: attributeName,
+      previous: 'threat-test',
+      current: 'threat-report',
+    });
     expect(updatedAttribute).not.toBeNull();
-    // Wait a bit for elastic refresh
-    await sleep(2000);
     report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
@@ -769,7 +763,7 @@ const isOneOfThisIdsExists = async (ids) => {
       },
     },
   };
-  const looking = await el.search(query);
+  const looking = await searchClient().search(query);
   const numberOfResult = looking.body.hits.total.value;
   return numberOfResult > 0;
 };
@@ -1001,7 +995,9 @@ describe('Upsert and merge entities', () => {
     // eslint-disable-next-line prettier/prettier
     const patchSha1 = updateAttribute(SYSTEM_USER, sha1.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);
     // eslint-disable-next-line prettier/prettier
-    const patchSha256 = updateAttribute(SYSTEM_USER, sha256.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [md5Input]);
+    const patchSha256 = updateAttribute(SYSTEM_USER, sha256.internal_id, ENTITY_HASHED_OBSERVABLE_STIX_FILE, [
+      md5Input,
+    ]);
     await Promise.all([patchSha1, patchSha256]);
     // Check
     const idsThatShouldNotExists = [sha1.internal_id, sha256.internal_id];

@@ -62,13 +62,11 @@ const observedDataResolvers = {
   Mutation: {
     observedDataEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) =>
-        stixDomainObjectEditField(user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
     observedDataAdd: (_, { input }, { user }) => addObservedData(user, input),
   },

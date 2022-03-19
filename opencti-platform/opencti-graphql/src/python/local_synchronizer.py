@@ -1,13 +1,24 @@
 import json
 import logging
-import sys
 import os
+import sys
 
-from pycti import OpenCTIConnectorHelper, OpenCTIApiClient
+from pycti import OpenCTIApiClient, OpenCTIConnectorHelper
 
 
+# pylint: disable-next=too-few-public-methods
+# pylint: disable-next=too-many-instance-attributes
 class TestLocalSynchronizer:
-    def __init__(self, source_url, source_token, target_url, target_token, consuming_count, start_timestamp, live_stream_id=None):
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        source_url,
+        source_token,
+        target_url,
+        target_token,
+        consuming_count,
+        start_timestamp,
+        live_stream_id=None,
+    ):
         self.source_url = source_url
         self.source_token = source_token
         self.target_url = target_url
@@ -28,25 +39,24 @@ class TestLocalSynchronizer:
             "log_level": "info",
         }
         self.opencti_source_client = OpenCTIApiClient(source_url, source_token)
-        self.opencti_source_helper = OpenCTIConnectorHelper({
-            "opencti": {"url": self.source_url, "token": self.source_token},
-            "connector": config,
-        })
+        self.opencti_source_helper = OpenCTIConnectorHelper(
+            {
+                "opencti": {"url": self.source_url, "token": self.source_token},
+                "connector": config,
+            }
+        )
         # Target
         self.opencti_target_client = OpenCTIApiClient(target_url, target_token)
-        self.opencti_target_helper = OpenCTIConnectorHelper({
-            "opencti": {"url": self.target_url, "token": self.target_token},
-            "connector": config,
-        })
+        self.opencti_target_helper = OpenCTIConnectorHelper(
+            {
+                "opencti": {"url": self.target_url, "token": self.target_token},
+                "connector": config,
+            }
+        )
 
     def _process_message(self, msg):
-        if (
-            msg.event == "create"
-            or msg.event == "update"
-            or msg.event == "merge"
-            or msg.event == "delete"
-        ):
-            logging.info("Processing event " + msg.id)
+        if msg.event in ("create", "update", "merge", "delete"):
+            logging.info("%s", f"Processing event {msg.id}")
             self.count_number += 1
             data = json.loads(msg.data)
             if msg.event == "create":
@@ -76,29 +86,32 @@ class TestLocalSynchronizer:
 
     def sync(self):
         # Reset the connector state if exists
-        self.opencti_source_helper.set_state({"connectorLastEventId": self.start_timestamp})
+        self.opencti_source_helper.set_state(
+            {"connectorLastEventId": self.start_timestamp}
+        )
         # Start to listen the stream from start specified parameter
         self.stream = self.opencti_source_helper.listen_stream(
-            self._process_message, self.source_url, self.source_token, False, self.start_timestamp
+            self._process_message,
+            self.source_url,
+            self.source_token,
+            False,
+            self.start_timestamp,
         )
         self.stream.join()
 
 
 if __name__ == "__main__":
     try:
-        source_url = sys.argv[1]
-        source_token = sys.argv[2]
-        target_url = sys.argv[3]
-        target_token = sys.argv[4]
-        consuming_count = int(sys.argv[5])
-        start_timestamp = sys.argv[6]
-        live_stream_id = sys.argv[7] if len(sys.argv) > 7 else None
-
-        testLocalSynchronizer = TestLocalSynchronizer(
-            source_url, source_token, target_url, target_token, consuming_count, start_timestamp, live_stream_id
-        )
-        testLocalSynchronizer.sync()
-        os._exit(0)
-    except Exception as e:
+        TestLocalSynchronizer(
+            source_url=sys.argv[1],
+            source_token=sys.argv[2],
+            target_url=sys.argv[3],
+            target_token=sys.argv[4],
+            consuming_count=int(sys.argv[5]),
+            start_timestamp=sys.argv[6],
+            live_stream_id=sys.argv[7] if len(sys.argv) > 7 else None,
+        ).sync()
+        os._exit(0)  # pylint: disable=protected-access
+    except Exception as e:  # pylint: disable=broad-except
         logging.exception(str(e))
-        exit(1)
+        sys.exit(1)

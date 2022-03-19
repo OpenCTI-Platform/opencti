@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
 import Markdown from 'react-markdown';
 import { withRouter } from 'react-router-dom';
@@ -45,6 +46,7 @@ class StixSightingRelationshipInference extends Component {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
       this.graph.current.d3Force('link').distance(80);
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const currentContext = this;
       setTimeout(
         () => currentContext.graph
@@ -92,7 +94,7 @@ class StixSightingRelationshipInference extends Component {
     return (
       <Paper
         classes={{ root: classes.paper }}
-        elevation={2}
+        variant="outlined"
         key={inference.rule.id}
       >
         <Typography variant="h3" gutterBottom={true}>

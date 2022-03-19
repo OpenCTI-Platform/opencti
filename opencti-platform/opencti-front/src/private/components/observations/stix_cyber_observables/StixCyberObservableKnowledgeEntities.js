@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -12,6 +12,7 @@ import StixCyberObservableEntitiesLines, {
 } from './StixCyberObservableEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import SearchInput from '../../../../components/SearchInput';
 
 const styles = () => ({
   paper: {
@@ -88,10 +89,8 @@ class StixCyberObservableKnowledgeEntities extends Component {
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
         displayImport={true}
         secondaryAction={true}
-        searchVariant="inDrawer2"
       >
         <QueryRenderer
           query={stixCyberObservableEntitiesLinesQuery}
@@ -112,9 +111,7 @@ class StixCyberObservableKnowledgeEntities extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm, relationReversed,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm, relationReversed } = this.state;
     const { classes, t, entityId } = this.props;
     const paginationOptions = {
       elementId: entityId,
@@ -156,8 +153,15 @@ class StixCyberObservableKnowledgeEntities extends Component {
             targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
           />
         </Security>
+        <div style={{ float: 'right', marginTop: -10 }}>
+          <SearchInput
+            variant="thin"
+            onSubmit={this.handleSearch.bind(this)}
+            keyword={searchTerm}
+          />
+        </div>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         </Paper>
       </div>

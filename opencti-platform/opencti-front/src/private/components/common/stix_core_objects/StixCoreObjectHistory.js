@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectHistoryLines, {
   stixCoreObjectHistoryLinesQuery,
@@ -35,9 +35,7 @@ class StixCoreObjectHistory extends Component {
   }
 
   render() {
-    const {
-      classes, t, stixCoreObjectId, withoutRelations,
-    } = this.props;
+    const { classes, t, stixCoreObjectId, withoutRelations } = this.props;
     const { entitySearchTerm, relationsSearchTerm } = this.state;
     return (
       <Grid
@@ -45,7 +43,11 @@ class StixCoreObjectHistory extends Component {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={withoutRelations ? 12 : 6}>
+        <Grid
+          item={true}
+          xs={withoutRelations ? 12 : 6}
+          style={{ paddingTop: 0 }}
+        >
           <Typography
             variant="h4"
             gutterBottom={true}
@@ -55,7 +57,7 @@ class StixCoreObjectHistory extends Component {
           </Typography>
           <div style={{ float: 'right' }}>
             <SearchInput
-              variant="small"
+              variant="thin"
               onSubmit={this.handleSearchEntity.bind(this)}
               keyword={entitySearchTerm}
             />
@@ -91,7 +93,7 @@ class StixCoreObjectHistory extends Component {
           />
         </Grid>
         {!withoutRelations ? (
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 0 }}>
             <Typography
               variant="h4"
               gutterBottom={true}
@@ -101,7 +103,7 @@ class StixCoreObjectHistory extends Component {
             </Typography>
             <div style={{ float: 'right' }}>
               <SearchInput
-                variant="small"
+                variant="thin"
                 onSubmit={this.handleSearchRelations.bind(this)}
                 keyword={entitySearchTerm}
               />

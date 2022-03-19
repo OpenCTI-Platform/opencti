@@ -25,7 +25,7 @@ from pycti.connector.opencti_connector_helper import (
 )
 from requests.exceptions import RequestException, Timeout
 
-PROCESSING_COUNT: int = 5
+PROCESSING_COUNT: int = 3
 MAX_PROCESSING_COUNT: int = 30
 
 
@@ -308,7 +308,13 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 
     # Start the main loop
     def start(self) -> None:
+        sleep_delay = 60
         while True:
+            if sleep_delay == 0:
+                sleep_delay = 1
+            else:
+                sleep_delay <<= 1
+            sleep_delay = min(60, sleep_delay)
             try:
                 # Fetch queue configuration from API
                 self.connectors = self.api.connector.list()
@@ -336,6 +342,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.opencti_ssl_verify,
                                 self.opencti_json_logging,
                             )
+                            sleep_delay = 0
                             self.consumer_threads[queue].start()
                     else:
                         self.consumer_threads[queue] = Consumer(
@@ -346,6 +353,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.opencti_ssl_verify,
                             self.opencti_json_logging,
                         )
+                        sleep_delay = 0
                         self.consumer_threads[queue].start()
 
                 # Check if some threads must be stopped
@@ -358,6 +366,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         try:
                             self.consumer_threads[thread].terminate()
                             self.consumer_threads.pop(thread, None)
+                            sleep_delay = 1
                         except:  # TODO: remove bare except
                             logging.info(
                                 "%s",
@@ -366,7 +375,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                     ", an operation is running, keep trying..."
                                 ),
                             )
-                time.sleep(60)
+                time.sleep(sleep_delay)
             except KeyboardInterrupt:
                 # Graceful stop
                 for thread in self.consumer_threads:

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectNotesCards, {
   stixCoreObjectNotesCardsQuery,
@@ -65,7 +65,7 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
             );
           }
           return (
-            <div style={{ height: '100%', marginTop: marginTop || 40 }}>
+            <div style={{ height: '100%', marginTop: marginTop || 50 }}>
               <Typography
                 variant="h4"
                 gutterBottom={true}

@@ -1,16 +1,23 @@
 import React from 'react';
-import MuiTextField from '@material-ui/core/TextField';
+import MuiTextField from '@mui/material/TextField';
 import { SketchPicker } from 'react-color';
-import IconButton from '@material-ui/core/IconButton';
-import Popover from '@material-ui/core/Popover';
-import InputAdornment from '@material-ui/core/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import Popover from '@mui/material/Popover';
+import InputAdornment from '@mui/material/InputAdornment';
 import { useField } from 'formik';
-import { fieldToTextField } from 'formik-material-ui';
-import { ColorLens } from '@material-ui/icons';
+import { fieldToTextField } from 'formik-mui';
+import { ColorLens } from '@mui/icons-material';
 
 const ColorPickerField = (props) => {
-  const anchorEl = React.createRef();
-  const [open, setOpen] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const id = open ? 'color-popover' : undefined;
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const {
     form: { setFieldValue, setTouched },
     field: { name },
@@ -54,10 +61,10 @@ const ColorPickerField = (props) => {
       onSubmit(name, color && color.hex ? color.hex : '');
     }
   };
-
   return (
     <div>
       <MuiTextField
+        variant="standard"
         {...fieldToTextField(props)}
         ref={anchorEl}
         onChange={internalOnChange}
@@ -66,7 +73,7 @@ const ColorPickerField = (props) => {
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton aria-label="open" onClick={() => setOpen(true)}>
+              <IconButton aria-label="open" onClick={handleClick} size="large">
                 <ColorLens />
               </IconButton>
             </InputAdornment>
@@ -74,16 +81,13 @@ const ColorPickerField = (props) => {
         }}
       />
       <Popover
+        id={id}
         open={open}
-        anchorEl={anchorEl.current}
-        onClose={() => setOpen(false)}
+        anchorEl={anchorEl}
+        onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
+          horizontal: 'left',
         }}
       >
         <SketchPicker

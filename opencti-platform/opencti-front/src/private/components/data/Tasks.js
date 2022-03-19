@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
 import inject18n from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import TasksList, { tasksListQuery } from './tasks/TasksList';

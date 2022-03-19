@@ -1,11 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, map, take, sortWith, prop, ascend, pipe,
-} from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
-import Slide from '@material-ui/core/Slide';
+import { compose, map, take, sortWith, prop, ascend, pipe } from 'ramda';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Chip from '@mui/material/Chip';
+import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
 
@@ -43,9 +42,7 @@ const styles = () => ({
 
 class StixCoreObjectLabels extends Component {
   render() {
-    const {
-      classes, labels, t, onClick, variant, theme,
-    } = this.props;
+    const { classes, labels, t, onClick, variant, theme } = this.props;
     let style = classes.label;
     if (variant === 'inList') {
       style = classes.labelInList;
@@ -87,11 +84,11 @@ class StixCoreObjectLabels extends Component {
             variant="outlined"
             label={t('No label')}
             style={{
-              color: theme.palette.type === 'dark' ? '#ffffff' : '#000000',
+              color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
               borderColor:
-                theme.palette.type === 'dark' ? '#ffffff' : '#000000',
+                theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
               backgroundColor: hexToRGB(
-                theme.palette.type === 'dark' ? '#ffffff' : 'transparent',
+                theme.palette.mode === 'dark' ? '#ffffff' : 'transparent',
               ),
             }}
             onClick={

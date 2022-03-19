@@ -2,13 +2,13 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
+import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import { logApp } from '../config/conf';
 import { SYSTEM_USER } from '../utils/access';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logApp.info(`[MIGRATION] Cleaning aliases and STIX IDs (pass 2) of Attack Patterns`);
+  logApp.info('[MIGRATION] Cleaning aliases and STIX IDs (pass 2) of Attack Patterns');
   const bulkOperations = [];
   const callback = (attacks) => {
     const op = attacks

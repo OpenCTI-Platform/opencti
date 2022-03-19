@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import { ArrowUpward, ArrowDownward, ArrowForward } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import { ArrowUpward, ArrowDownward, ArrowForward } from '@mui/icons-material';
 
 import inject18n from './i18n';
 
 const styles = (theme) => ({
   diff: {
     float: 'left',
-    margin: '21px 0 0 10px',
+    margin: '23px 0 0 10px',
     padding: '2px 5px 2px 5px',
     fontSize: 12,
   },
@@ -46,9 +46,7 @@ const inlineStyles = {
 
 class ItemNumberDifference extends Component {
   render() {
-    const {
-      t, difference, classes, description,
-    } = this.props;
+    const { t, difference, classes, description } = this.props;
     if (difference < 0) {
       return (
         <div className={classes.diff} style={inlineStyles.red}>

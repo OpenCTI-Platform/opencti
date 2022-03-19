@@ -2,11 +2,11 @@ import React from 'react';
 import ReactMde from 'react-mde';
 import { useField } from 'formik';
 import Markdown from 'react-markdown';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormHelperText from '@material-ui/core/FormHelperText';
+import InputLabel from '@mui/material/InputLabel';
+import FormHelperText from '@mui/material/FormHelperText';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import { isNil } from 'ramda';
+import * as R from 'ramda';
 import inject18n from './i18n';
 
 const MarkDownField = (props) => {
@@ -42,11 +42,11 @@ const MarkDownField = (props) => {
   return (
     <div
       style={style}
-      className={!isNil(meta.error) ? 'error' : 'main'}
+      className={!R.isNil(meta.error) ? 'error' : 'main'}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
     >
-      <InputLabel style={{ fontSize: 10, marginBottom: 10 }}>
+      <InputLabel shrink={true} variant="standard">
         {label}
       </InputLabel>
       <ReactMde
@@ -71,7 +71,7 @@ const MarkDownField = (props) => {
           pasteDropSelect: t('Paste'),
         }}
       />
-      {!isNil(meta.error) && (
+      {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}
     </div>

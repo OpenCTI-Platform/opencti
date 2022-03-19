@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -74,6 +73,7 @@ class UserEditionPasswordComponent extends Component {
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={TextField}
+                variant="standard"
                 name="password"
                 label={t('Password')}
                 type="password"
@@ -81,6 +81,7 @@ class UserEditionPasswordComponent extends Component {
               />
               <Field
                 component={TextField}
+                variant="standard"
                 name="confirmation"
                 label={t('Confirmation')}
                 type="password"

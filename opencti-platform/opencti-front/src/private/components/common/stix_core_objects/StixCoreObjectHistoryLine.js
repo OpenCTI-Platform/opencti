@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import {
   green,
   pink,
@@ -11,12 +11,12 @@ import {
   yellow,
   indigo,
   teal,
-} from '@material-ui/core/colors';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Badge from '@material-ui/core/Badge';
-import Avatar from '@material-ui/core/Avatar';
+  red,
+} from '@mui/material/colors';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Badge from '@mui/material/Badge';
+import Avatar from '@mui/material/Avatar';
 import {
   AddOutlined,
   EditOutlined,
@@ -24,22 +24,23 @@ import {
   LinkOffOutlined,
   HelpOutlined,
   LanguageOutlined,
-} from '@material-ui/icons';
+  DeleteOutlined,
+} from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip/Tooltip';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
+import Tooltip from '@mui/material/Tooltip';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import List from '@material-ui/core/List';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItem from '@material-ui/core/ListItem';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import Slide from '@material-ui/core/Slide';
+import List from '@mui/material/List';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItem from '@mui/material/ListItem';
+import DialogContentText from '@mui/material/DialogContentText';
+import Slide from '@mui/material/Slide';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 
@@ -59,19 +60,16 @@ const styles = (theme) => ({
     top: 50,
     left: 20,
     width: 1,
+    height: 18,
   },
   avatar: {
     float: 'left',
     width: 40,
     height: 40,
-    marginRight: 20,
-  },
-  avatarReference: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
+    margin: '5px 10px 0 0',
   },
   content: {
+    height: 40,
     width: 'auto',
     overflow: 'hidden',
   },
@@ -83,8 +81,8 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.line,
-    padding: 15,
+    padding: '8px 15px 0 15px',
+    backgroundColor: theme.palette.background.shadow,
   },
   description: {
     height: '100%',
@@ -96,6 +94,7 @@ const styles = (theme) => ({
     float: 'right',
     textAlign: 'right',
     width: 180,
+    paddingTop: 2,
   },
 });
 
@@ -135,8 +134,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -150,8 +150,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'delete') {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepPurple[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -166,8 +167,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -181,8 +183,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'merge') {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: teal[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -196,8 +199,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -211,8 +215,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -226,8 +231,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: indigo[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -241,8 +247,9 @@ class StixCoreObjectHistoryLineComponent extends Component {
       if (eventType === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 2,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepOrange[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
@@ -253,11 +260,24 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
+      if (eventType === 'delete') {
+        return (
+          <Avatar
+            sx={{
+              width: 30,
+              height: 30,
+              backgroundColor: red[500],
+              color: '#ffffff',
+            }}
+          >
+            <DeleteOutlined fontSize="small" />
+          </Avatar>
+        );
+      }
     }
     return (
       <Avatar
         style={{
-          marginTop: 2,
           backgroundColor: yellow[800],
           color: '#ffffff',
           cursor: commit ? 'pointer' : 'auto',
@@ -270,15 +290,13 @@ class StixCoreObjectHistoryLineComponent extends Component {
   }
 
   render() {
-    const {
-      nsdt, classes, node, isRelation, t,
-    } = this.props;
+    const { nsdt, classes, node, isRelation, t } = this.props;
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
           <Badge
             color="secondary"
-            overlap="circle"
+            overlap="circular"
             badgeContent="M"
             invisible={node.context_data.commit === null}
           >
@@ -384,6 +402,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
         </div>
         <div className={classes.line} />
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.open}
           onClose={this.handleClose.bind(this)}
           fullWidth={true}
@@ -405,6 +424,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </DialogActions>
         </Dialog>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.displayExternalLink}
           keepMounted={true}
           TransitionComponent={Transition}

@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import {
   AutoSizer,
   ColumnSizer,
@@ -101,9 +101,7 @@ class ListCardsContent extends Component {
     return !this.props.hasMore() || index < this.props.dataList.length;
   }
 
-  _cellRenderer({
-    columnIndex, key, rowIndex, style,
-  }) {
+  _cellRenderer({ columnIndex, key, rowIndex, style }) {
     const {
       classes,
       dataList,
@@ -113,12 +111,13 @@ class ListCardsContent extends Component {
       initialLoading,
       onLabelClick,
     } = this.props;
+    const finalStyle = { ...style, width: style.width + 10 };
     const bookmarksIds = R.map((n) => n.node.id, bookmarkList || []);
     const index = rowIndex * numberOfCardsPerLine + columnIndex;
     const className = classes.defaultCard;
     if (initialLoading || !this._isCellLoaded({ index })) {
       return (
-        <div className={className} key={key} style={style}>
+        <div className={className} key={key} style={finalStyle}>
           {React.cloneElement(DummyCardComponent)}
         </div>
       );
@@ -126,14 +125,14 @@ class ListCardsContent extends Component {
     const edge = dataList[index];
     if (!edge) {
       return (
-        <div key={key} style={style}>
+        <div key={key} style={finalStyle}>
           &nbsp;
         </div>
       );
     }
     const { node } = edge;
     return (
-      <div className={className} key={key} style={style}>
+      <div className={className} key={key} style={finalStyle}>
         {React.cloneElement(CardComponent, {
           node,
           bookmarksIds,
@@ -160,9 +159,7 @@ class ListCardsContent extends Component {
     const rowCount = initialLoading ? nbOfLinesToLoad : nbLinesWithLoading;
     return (
       <WindowScroller ref={this._setRef} scrollElement={window}>
-        {({
-          height, isScrolling, onChildScroll, scrollTop,
-        }) => (
+        {({ height, isScrolling, onChildScroll, scrollTop }) => (
           <div className={styles.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isCellLoaded}

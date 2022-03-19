@@ -1,61 +1,68 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter } from 'ramda';
-import { withStyles, withTheme } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import {
-  Google, KeyOutline, Facebook, Github,
-} from 'mdi-material-ui';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import Button from '@mui/material/Button';
+import { Google, KeyOutline, Facebook, Github } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
-import Paper from '@material-ui/core/Paper';
+import Paper from '@mui/material/Paper';
 import { APP_BASE_PATH } from '../../relay/environment';
-import logo from '../../resources/images/logo_opencti.png';
+import logo from '../../resources/images/logo.png';
 import LoginForm from './LoginForm';
-
-const loginHeight = 450;
 
 const styles = (theme) => ({
   container: {
     textAlign: 'center',
     margin: '0 auto',
     width: 400,
-    height: loginHeight,
+  },
+  appBar: {
+    borderTopLeftRadius: '10px',
+    borderTopRightRadius: '10px',
   },
   logo: {
-    height: 130,
-    margin: '0 auto',
-    marginBottom: 20,
+    width: 200,
+    margin: '0px 0px 50px 0px',
   },
   button: {
     margin: theme.spacing(1),
-    color: '#ffffff',
-    backgroundColor: '#009688',
+    color: '#009688',
+    borderColor: '#009688',
     '&:hover': {
-      backgroundColor: '#00796b',
+      backgroundColor: 'rgba(0, 121, 107, .1)',
+      borderColor: '#00796b',
+      color: '#00796b',
     },
   },
   buttonGoogle: {
     margin: theme.spacing(1),
-    color: '#ffffff',
-    backgroundColor: '#f44336',
+    color: '#f44336',
+    borderColor: '#f44336',
     '&:hover': {
-      backgroundColor: '#bd332e',
+      backgroundColor: 'rgba(189, 51, 46, .1)',
+      borderColor: '#bd332e',
+      color: '#bd332e',
     },
   },
   buttonFacebook: {
     margin: theme.spacing(1),
-    color: '#ffffff',
-    backgroundColor: '#4267b2',
+    color: '#4267b2',
+    borderColor: '#4267b2',
     '&:hover': {
-      backgroundColor: '#374a88',
+      backgroundColor: 'rgba(55, 74, 136, .1)',
+      borderColor: '#374a88',
+      color: '#374a88',
     },
   },
   buttonGithub: {
     margin: theme.spacing(1),
-    color: '#ffffff',
-    backgroundColor: '#222222',
+    color: '#5b5b5b',
+    borderColor: '#5b5b5b',
     '&:hover': {
-      backgroundColor: '#121212',
+      backgroundColor: 'rgba(54, 54, 54, .1)',
+      borderColor: '#363636',
+      color: '#363636',
     },
   },
   iconSmall: {
@@ -75,7 +82,6 @@ const Login = ({ classes, theme, settings }) => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const marginTop = dimension.height / 2 - loginHeight / 2;
   const updateWindowDimensions = () => {
     setDimension({ width: window.innerWidth, height: window.innerHeight });
   };
@@ -83,7 +89,6 @@ const Login = ({ classes, theme, settings }) => {
     window.addEventListener('resize', updateWindowDimensions);
     return () => window.removeEventListener('resize', updateWindowDimensions);
   });
-
   const renderExternalAuthButton = (provider) => {
     switch (provider) {
       case 'facebook':
@@ -111,12 +116,12 @@ const Login = ({ classes, theme, settings }) => {
   };
 
   const renderExternalAuth = (authButtons) => (
-    <div>
+    <div style={{ marginTop: 10 }}>
       {authButtons.map((value, index) => (
         <Button
           key={`${value.provider}_${index}`}
           type="submit"
-          variant="contained"
+          variant="outlined"
           size="small"
           component="a"
           href={`${APP_BASE_PATH}/auth/${value.provider}`}
@@ -129,32 +134,45 @@ const Login = ({ classes, theme, settings }) => {
     </div>
   );
   const loginMessage = settings.platform_login_message;
-  const loginLogo = theme.palette.type === 'dark'
+  const loginLogo = theme.palette.mode === 'dark'
     ? settings.platform_theme_dark_logo_login
     : settings.platform_theme_light_logo_login;
   const providers = settings.platform_providers;
   const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
   const authSSOs = filter((p) => p.type === 'SSO', providers);
   const isAuthButtons = authSSOs.length > 0;
+  let loginHeight = 280;
+  if (isAuthButtons && isAuthForm) {
+    loginHeight = 350;
+  } else if (isAuthButtons) {
+    loginHeight = 150;
+  }
+  const marginTop = dimension.height / 2 - loginHeight / 2 - 200;
   return (
-    <div style={{ marginTop, textAlign: 'center' }}>
+    <div className={classes.container} style={{ marginTop }}>
       <img
-        src={loginLogo && loginLogo.length > 0 ? loginLogo : logo}
+        src={`${
+          loginLogo && loginLogo.length > 0
+            ? loginLogo
+            : `/${window.BASE_PATH ? `${window.BASE_PATH}/` : ''}${logo}`
+        }`}
         alt="logo"
         className={classes.logo}
       />
-      <div className={classes.container}>
-        {loginMessage && loginMessage.length > 0 && (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
-            <Markdown>{loginMessage}</Markdown>
-          </Paper>
-        )}
-        {isAuthForm && <LoginForm />}
-        {isAuthButtons && renderExternalAuth(authSSOs)}
-        {providers.length === 0 && (
-          <div>No authentication provider available</div>
-        )}
-      </div>
+      {loginMessage && loginMessage.length > 0 && (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Markdown>{loginMessage}</Markdown>
+        </Paper>
+      )}
+      {isAuthForm && (
+        <Paper variant="outlined">
+          <LoginForm />
+        </Paper>
+      )}
+      {isAuthButtons && renderExternalAuth(authSSOs)}
+      {providers.length === 0 && (
+        <div>No authentication provider available</div>
+      )}
     </div>
   );
 };

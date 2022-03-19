@@ -1,32 +1,24 @@
 /* eslint-disable camelcase */
 import express from 'express';
 import * as R from 'ramda';
-import { URL } from 'url';
-// noinspection NodeCoreCodingAssistance
-import { readFileSync } from 'fs';
-// noinspection NodeCoreCodingAssistance
-import path from 'path';
+import { URL } from 'node:url';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import bodyParser from 'body-parser';
 import prometheus from 'express-prometheus-middleware';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import showdown from 'showdown';
-import RateLimit from 'express-rate-limit';
-import sanitize from 'sanitize-filename';
+import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { basePath, booleanConf, DEV_MODE, formatPath, logApp, logAudit } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, loadFile } from '../database/minio';
-import { checkSystemDependencies } from '../initialization';
-import { getSettings } from '../domain/settings';
 import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
-import { initializeSession } from '../database/session';
 import { LOGIN_ACTION } from '../config/audit';
-
-const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -42,9 +34,8 @@ const extractRefererPathFromReq = (req) => {
   return refererUrl.pathname;
 };
 
-const createApp = async (apolloServer) => {
-  const appSessionHandler = initializeSession();
-  const limiter = new RateLimit({
+const createApp = async (app) => {
+  const limiter = rateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     max: nconf.get('app:rate_protection:max_requests'),
     handler: (req, res /* , next */) => {
@@ -58,7 +49,11 @@ const createApp = async (apolloServer) => {
   const securityMiddleware = helmet({
     expectCt: { enforce: true, maxAge: 30 },
     referrerPolicy: { policy: 'unsafe-url' },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
     contentSecurityPolicy: {
+      useDefaults: false,
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc,
@@ -68,7 +63,13 @@ const createApp = async (apolloServer) => {
           'http://cdn.jsdelivr.net/npm/@apollographql/',
           'https://fonts.googleapis.com/',
         ],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com/'],
+        scriptSrcAttr: [
+          "'self'",
+          "'unsafe-inline'",
+          'http://cdn.jsdelivr.net/npm/@apollographql/',
+          'https://fonts.googleapis.com/',
+        ],
+        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com/'],
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
         objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
@@ -77,7 +78,6 @@ const createApp = async (apolloServer) => {
     },
   });
   // Init the http server
-  const app = express();
   app.use(limiter);
   if (DEV_MODE) {
     app.set('json spaces', 2);
@@ -100,28 +100,12 @@ const createApp = async (apolloServer) => {
       })
     );
   }
-  // -- Generated CSS with correct base path
-  app.get(`${basePath}/static/css/*`, (req, res) => {
-    const cssFileName = R.last(req.url.split('/'));
-    const data = readFileSync(path.join(__dirname, `../../public/static/css/${sanitize(cssFileName)}`), 'utf8');
-    const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
-    res.header('Content-Type', 'text/css');
-    res.send(withBasePath);
-  });
-  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../../public/static')));
-  // -- Session and data middlewares
-  app.use(appSessionHandler.session);
+
+  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
+  app.use(`${basePath}/media`, express.static(path.join(__dirname, '../public/static/media')));
+
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
   app.use(bodyParser.json({ limit: requestSizeLimit }));
-  apolloServer.applyMiddleware({
-    app,
-    cors: true,
-    bodyParserConfig: {
-      limit: requestSizeLimit,
-    },
-    onHealthCheck,
-    path: `${basePath}/graphql`,
-  });
 
   const seeMiddleware = createSeeMiddleware();
   seeMiddleware.applyMiddleware({ app });
@@ -268,7 +252,7 @@ const createApp = async (apolloServer) => {
 
   // Other routes - Render index.html
   app.get('*', (req, res) => {
-    const data = readFileSync(`${__dirname}/../../public/index.html`, 'utf8');
+    const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
     const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
     res.header('Expires', '-1');
@@ -278,11 +262,11 @@ const createApp = async (apolloServer) => {
 
   // Error handling
   app.use((err, req, res, next) => {
-    logApp.error(`[EXPRESS] Error http call`, { error: err, referer: req.headers.referer });
+    logApp.error('[EXPRESS] Error http call', { error: err, referer: req.headers.referer });
     res.redirect('/');
     next();
   });
-  return { app, seeMiddleware };
+  return { seeMiddleware };
 };
 
 export default createApp;

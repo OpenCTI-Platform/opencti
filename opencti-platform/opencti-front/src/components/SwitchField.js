@@ -1,9 +1,9 @@
 import React from 'react';
-import MuiSwitch from '@material-ui/core/Switch';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import FormGroup from '@material-ui/core/FormGroup';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import { fieldToSwitch } from 'formik-material-ui';
+import MuiSwitch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
+import FormHelperText from '@mui/material/FormHelperText';
+import { fieldToSwitch } from 'formik-mui';
 
 const SwitchField = (props) => {
   const {

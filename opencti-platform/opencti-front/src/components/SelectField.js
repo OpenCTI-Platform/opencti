@@ -1,11 +1,11 @@
 import React from 'react';
 import { isNil } from 'ramda';
 import { useField } from 'formik';
-import MuiSelect from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import FormHelperText from '@material-ui/core/FormHelperText';
-import { fieldToSelect } from 'formik-material-ui';
+import MuiSelect from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import { fieldToSelect } from 'formik-mui';
 
 const SelectField = (props) => {
   const {
@@ -46,7 +46,10 @@ const SelectField = (props) => {
       style={props.containerstyle}
       error={meta.touched && !isNil(meta.error)}
     >
-      <InputLabel style={{ color: props.disabled ? '#4f4f4f' : '' }}>
+      <InputLabel
+        style={{ color: props.disabled ? '#4f4f4f' : '' }}
+        variant={props.variant}
+      >
         {props.label}
       </InputLabel>
       <MuiSelect
@@ -56,6 +59,7 @@ const SelectField = (props) => {
         onBlur={internalOnBlur}
       />
       <FormHelperText
+        variant={props.variant}
         style={{
           display:
             (meta.touched && !isNil(meta.error))

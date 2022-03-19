@@ -2,9 +2,8 @@ import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 
 const id = 'localization_of_targets';
 const name = 'Location of targets';
-const description =
-  'If **entity A** `targets` **entity B** through **relation X**, and **relation X** is `located-at` **entity C**,' +
-  ' then **entity A** `targets` **entity C**.';
+const description = 'If **entity A** `targets` **entity B** through **relation X**, and **relation X** is `located-at` **entity C**,'
+  + ' then **entity A** `targets` **entity C**.';
 
 // For rescan
 const scan = { types: [RELATION_LOCATED_AT] };

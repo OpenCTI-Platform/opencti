@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import {
   assoc,
   compose,
@@ -14,21 +14,21 @@ import {
   isNil,
 } from 'ramda';
 import * as Yup from 'yup';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import MenuItem from '@material-ui/core/MenuItem';
-import { Add, ArrowRightAlt, Close } from '@material-ui/icons';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Fab from '@material-ui/core/Fab';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import { Add, ArrowRightAlt, Close } from '@mui/icons-material';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Fab from '@mui/material/Fab';
+import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
-import Skeleton from '@material-ui/lab/Skeleton';
+import Skeleton from '@mui/material/Skeleton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -60,7 +60,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -86,8 +85,7 @@ const styles = (theme) => ({
     float: 'right',
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -486,7 +484,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             <ListItemIcon>
               <Skeleton
                 animation="wave"
-                variant="circle"
+                variant="circular"
                 width={30}
                 height={30}
               />
@@ -495,7 +493,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               primary={
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height={15}
                   style={{ marginBottom: 10 }}
@@ -504,7 +502,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               secondary={
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height={15}
                 />
@@ -518,9 +516,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
 
   renderSelectEntity() {
     const { search } = this.state;
-    const {
-      classes, t, targetStixDomainObjectTypes, onlyObservables,
-    } = this.props;
+    const { classes, t, targetStixDomainObjectTypes, onlyObservables } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search,
       types: targetStixDomainObjectTypes
@@ -539,6 +535,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
+            size="large"
           >
             <Close fontSize="small" />
           </IconButton>
@@ -617,9 +614,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   renderForm(sourceEntity) {
-    const {
-      t, classes, isRelationReversed, allowedRelationshipTypes,
-    } = this.props;
+    const { t, classes, isRelationReversed, allowedRelationshipTypes } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
@@ -662,15 +657,14 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         onSubmit={this.onSubmit.bind(this)}
         onReset={this.handleClose.bind(this)}
       >
-        {({
-          submitForm, handleReset, isSubmitting, setFieldValue, values,
-        }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Form>
             <div className={classes.header}>
               <IconButton
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
+                size="large"
               >
                 <Close fontSize="small" />
               </IconButton>
@@ -779,6 +773,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               </div>
               <Field
                 component={SelectField}
+                variant="standard"
                 name="relationship_type"
                 label={t('Relationship type')}
                 fullWidth={true}
@@ -802,18 +797,24 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               <Field
                 component={DatePickerField}
                 name="start_time"
-                label={t('Start time')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
+                TextFieldProps={{
+                  label: t('Start time'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
               />
               <Field
                 component={DatePickerField}
                 name="stop_time"
-                label={t('Stop time')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
+                TextFieldProps={{
+                  label: t('Stop time'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
               />
               <Field
                 component={MarkDownField}
@@ -861,7 +862,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 </Button>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -894,9 +895,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   render() {
-    const {
-      classes, entityId, variant, paddingRight,
-    } = this.props;
+    const { classes, entityId, variant, paddingRight } = this.props;
     const { open, step } = this.state;
     return (
       <div>
@@ -906,6 +905,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            size="large"
           >
             <Add fontSize="small" />
           </IconButton>
@@ -926,6 +926,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         <Drawer
           open={open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: this.props.classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >

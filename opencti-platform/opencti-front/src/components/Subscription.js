@@ -1,11 +1,9 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-import Tooltip from '@material-ui/core/Tooltip';
-import Avatar from '@material-ui/core/Avatar';
-import {
-  compose, filter, find, insert, pipe, propEq,
-} from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import Tooltip from '@mui/material/Tooltip';
+import Avatar from '@mui/material/Avatar';
+import { compose, filter, find, insert, pipe, propEq } from 'ramda';
 import inject18n from './i18n';
 import { stringToColour } from '../utils/Colors';
 import { UserContext } from '../utils/Security';

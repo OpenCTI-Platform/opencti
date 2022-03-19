@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
+import { graphql, createRefetchContainer } from 'react-relay';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import Drawer from '@mui/material/Drawer';
+import Fab from '@mui/material/Fab';
 import {
   Edit,
   GroupOutlined,
@@ -16,40 +16,32 @@ import {
   DeleteForeverOutlined,
   SecurityOutlined,
   ReceiptOutlined,
-} from '@material-ui/icons';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import {
-  AreaChart,
-  ResponsiveContainer,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from 'recharts';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import IconButton from '@material-ui/core/IconButton';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
+} from '@mui/icons-material';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
 import * as R from 'ramda';
+import Chart from 'react-apexcharts';
 import inject18n from '../../../../components/i18n';
 import UserEdition from './UserEdition';
 import UserPopover, { userEditionQuery } from './UserPopover';
 import AccessesMenu from '../AccessesMenu';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
-import {
-  FIVE_SECONDS, now, timestamp, yearsAgo,
-} from '../../../../utils/Time';
+import { FIVE_SECONDS, now, timestamp, yearsAgo } from '../../../../utils/Time';
 import UserHistory from './UserHistory';
+import { areaChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -105,8 +97,8 @@ const styles = (theme) => ({
   chip: {
     fontSize: 12,
     lineHeight: '12px',
-    backgroundColor: theme.palette.background.chip,
-    color: '#ffffff',
+    backgroundColor: theme.palette.background.accent,
+    color: theme.palette.text.primary,
     textTransform: 'uppercase',
     borderRadius: '0',
   },
@@ -115,7 +107,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -233,9 +224,7 @@ class UserComponent extends Component {
   }
 
   render() {
-    const {
-      classes, theme, user, t, mtd, fsd, nsdt,
-    } = this.props;
+    const { classes, theme, user, t, fsd, nsdt } = this.props;
     const orderedSessions = R.sort(
       (a, b) => timestamp(a.created) - timestamp(b.created),
       user.sessions,
@@ -261,11 +250,11 @@ class UserComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Basic information')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={12}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -294,11 +283,11 @@ class UserComponent extends Component {
               </Grid>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Permissions')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -353,6 +342,7 @@ class UserComponent extends Component {
                     aria-label="Delete all"
                     onClick={this.handleOpenKillSessions.bind(this)}
                     classes={{ root: classes.killAllSessionsButton }}
+                    size="large"
                   >
                     <DeleteForeverOutlined fontSize="small" />
                   </IconButton>
@@ -387,6 +377,7 @@ class UserComponent extends Component {
                               this,
                               session.id,
                             )}
+                            size="large"
                           >
                             <Delete fontSize="small" />
                           </IconButton>
@@ -411,7 +402,7 @@ class UserComponent extends Component {
             </Typography>
             <Paper
               classes={{ root: classes.paper }}
-              elevation={2}
+              variant="outlined"
               style={{ height: 300 }}
             >
               <QueryRenderer
@@ -426,54 +417,29 @@ class UserComponent extends Component {
                 }}
                 render={({ props }) => {
                   if (props && props.logsTimeSeries) {
+                    const chartData = props.logsTimeSeries.map((entry) => ({
+                      x: new Date(entry.date),
+                      y: entry.value,
+                    }));
                     return (
-                      <div className={classes.graphContainer}>
-                        <ResponsiveContainer height={270} width="100%">
-                          <AreaChart
-                            data={props.logsTimeSeries}
-                            margin={{
-                              top: 0,
-                              right: 0,
-                              bottom: 0,
-                              left: -10,
-                            }}
-                          >
-                            <CartesianGrid
-                              strokeDasharray="2 2"
-                              stroke={theme.palette.action.grid}
-                            />
-                            <XAxis
-                              dataKey="date"
-                              stroke={theme.palette.text.primary}
-                              interval={0}
-                              textAnchor="end"
-                              tickFormatter={mtd}
-                            />
-                            <YAxis stroke={theme.palette.text.primary} />
-                            <Tooltip
-                              cursor={{
-                                fill: 'rgba(0, 0, 0, 0.2)',
-                                stroke: 'rgba(0, 0, 0, 0.2)',
-                                strokeWidth: 2,
-                              }}
-                              contentStyle={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                fontSize: 12,
-                                borderRadius: 10,
-                              }}
-                              labelFormatter={fsd}
-                            />
-                            <Area
-                              type="monotone"
-                              dataKey="value"
-                              stroke={theme.palette.primary.main}
-                              strokeWidth={2}
-                              fill={theme.palette.primary.main}
-                              fillOpacity={0.1}
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
+                      <Chart
+                        options={areaChartOptions(
+                          theme,
+                          true,
+                          fsd,
+                          simpleNumberFormat,
+                          undefined,
+                        )}
+                        series={[
+                          {
+                            name: t('Number of relationships'),
+                            data: chartData,
+                          },
+                        ]}
+                        type="area"
+                        width="100%"
+                        height="100%"
+                      />
                     );
                   }
                   return <Loader variant="inElement" />;
@@ -494,6 +460,8 @@ class UserComponent extends Component {
         <Drawer
           open={this.state.displayUpdate}
           anchor="right"
+          sx={{ zIndex: 1202 }}
+          elevation={1}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleCloseUpdate.bind(this)}
         >
@@ -515,6 +483,7 @@ class UserComponent extends Component {
         </Drawer>
         <Dialog
           open={this.state.displayKillSession}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseKillSession.bind(this)}
@@ -543,6 +512,7 @@ class UserComponent extends Component {
         </Dialog>
         <Dialog
           open={this.state.displayKillSessions}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseKillSessions.bind(this)}

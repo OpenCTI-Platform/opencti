@@ -2,30 +2,29 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withRouter } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
+import withStyles from '@mui/styles/withStyles';
 import { interval } from 'rxjs';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import CardActions from '@material-ui/core/CardActions';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
-import Switch from '@material-ui/core/Switch';
-import { createRefetchContainer } from 'react-relay';
-import Grid from '@material-ui/core/Grid';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardContent from '@material-ui/core/CardContent';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import CardActions from '@mui/material/CardActions';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
+import Switch from '@mui/material/Switch';
+import { graphql, createRefetchContainer } from 'react-relay';
+import Grid from '@mui/material/Grid';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import LinearProgress from '@mui/material/LinearProgress';
 import Markdown from 'react-markdown';
 import { AutoFix } from 'mdi-material-ui';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import Tooltip from '@material-ui/core/Tooltip/Tooltip';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import { FIVE_SECONDS, parse } from '../../../utils/Time';
 import inject18n from '../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
@@ -162,15 +161,13 @@ class RulesListComponent extends Component {
   }
 
   render() {
-    const {
-      classes, t, data, keyword, nsdt,
-    } = this.props;
+    const { classes, t, data, keyword, nsdt } = this.props;
     const sortByNameCaseInsensitive = R.sortBy(
       R.compose(R.toLower, R.prop('name')),
     );
     const filterByKeyword = (p) => keyword === ''
-      || p.user.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || p.user.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      || p.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || p.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     const rules = R.pipe(
       R.propOr([], 'rules'),
       R.filter(filterByKeyword),
@@ -188,7 +185,7 @@ class RulesListComponent extends Component {
           <Paper
             variant="outlined"
             classes={{ root: classes.paper }}
-            elevation={2}
+            style={{ marginTop: 20 }}
           >
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={8}>
@@ -327,6 +324,7 @@ class RulesListComponent extends Component {
         </Grid>
         <Dialog
           open={this.state.displayEnable}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseEnable.bind(this)}
@@ -345,7 +343,7 @@ class RulesListComponent extends Component {
             </Button>
             <Button
               onClick={this.submitEnableRule.bind(this)}
-              color="primary"
+              color="secondary"
               disabled={this.state.processing}
             >
               {t('Enable')}
@@ -354,6 +352,7 @@ class RulesListComponent extends Component {
         </Dialog>
         <Dialog
           open={this.state.displayDisable}
+          PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseDisable.bind(this)}

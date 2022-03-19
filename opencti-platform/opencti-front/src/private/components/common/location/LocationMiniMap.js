@@ -1,14 +1,11 @@
 import React, { useContext } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, flatten, propOr, pluck, includes, uniq, pipe,
-} from 'ramda';
-import { withTheme, withStyles } from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import {
-  Map, TileLayer, GeoJSON, Marker,
-} from 'react-leaflet';
+import { compose, flatten, propOr, pluck, includes, uniq, pipe } from 'ramda';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import { MapContainer, TileLayer, GeoJSON, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
@@ -24,9 +21,9 @@ const styles = () => ({
   },
 });
 
-const pointerIcon = new L.Icon({
-  iconUrl: '/static/city.png',
-  iconRetinaUrl: '/static/city.png',
+const pointerIcon = (dark = true) => new L.Icon({
+  iconUrl: `/static/city_${dark ? 'dark' : 'light'}.png`,
+  iconRetinaUrl: `/static/city_${dark ? 'dark' : 'light'}.png`,
   iconAnchor: [5, 55],
   popupAnchor: [10, -44],
   iconSize: [25, 25],
@@ -49,17 +46,15 @@ const LocationMiniMap = (props) => {
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const {
-    t, center, zoom, classes, theme, city,
-  } = props;
+  const { t, center, zoom, classes, theme, city } = props;
   const position = city && city.latitude ? [city.latitude, city.longitude] : null;
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 10 }}>
         {`${t('Mini map')} (lat. ${center[0]}, long. ${center[1]})`}
       </Typography>
-      <Paper classes={{ root: classes.paper }} elevation={2}>
-        <Map
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <MapContainer
           center={center}
           zoom={zoom}
           attributionControl={false}
@@ -67,14 +62,21 @@ const LocationMiniMap = (props) => {
         >
           <TileLayer
             url={
-              theme.palette.type === 'light'
+              theme.palette.mode === 'light'
                 ? settings.platform_map_tile_server_light
                 : settings.platform_map_tile_server_dark
             }
           />
           <GeoJSON data={countries} style={getStyle} />
-          {position ? <Marker position={position} icon={pointerIcon} /> : ''}
-        </Map>
+          {position ? (
+            <Marker
+              position={position}
+              icon={pointerIcon(theme.palette.mode === 'dark')}
+            />
+          ) : (
+            ''
+          )}
+        </MapContainer>
       </Paper>
     </div>
   );

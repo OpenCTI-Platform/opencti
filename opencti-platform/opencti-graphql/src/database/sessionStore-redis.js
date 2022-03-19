@@ -14,8 +14,8 @@ class RedisStore extends Store {
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
     this.ttl = options.ttl || 86400; // One day in seconds.
-    this.cache = new LRU({ maxAge: 1000, max: 1000 }); // Force refresh the session every sec
-    this.touchCache = new LRU({ maxAge: 120000, max: 1000 }); // Touch the session every 2 minutes
+    this.cache = new LRU({ ttl: 1000, max: 1000 }); // Force refresh the session every sec
+    this.touchCache = new LRU({ ttl: 120000, max: 1000 }); // Touch the session every 2 minutes
     this.locker = new AsyncLock();
   }
 
@@ -162,7 +162,7 @@ class RedisStore extends Store {
     this._scanKeys({}, 0, pattern, this.scanCount, cb);
   }
 
-  _scanKeys(keys = {}, cursor, pattern, count, cb = noop) {
+  _scanKeys(keys, cursor, pattern, count, cb = noop) {
     const args = [cursor, 'match', pattern, 'count', count];
     this.client.scan(args, (err, data) => {
       if (err) return cb(err);

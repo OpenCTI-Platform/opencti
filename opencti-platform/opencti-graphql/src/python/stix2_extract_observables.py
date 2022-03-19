@@ -1,8 +1,10 @@
-import json
 import sys
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
+
+from lib.messages import MISSING_ARGUMENT
+from lib.utils import return_data
 
 PATTERN_MAPPING = {
     "directory:path": {"type": "Directory", "attribute": "value"},
@@ -20,17 +22,9 @@ PATTERN_MAPPING = {
 }
 
 
-def return_data(data):
-    print(json.dumps(data))
-    sys.stdout.flush()
-    exit(0)
-
-
 def main():
     if len(sys.argv) <= 1:
-        return_data(
-            {"status": "error", "message": "Missing argument to the Python script"}
-        )
+        return_data(MISSING_ARGUMENT)
 
     if sys.argv[1] == "check":
         return_data({"status": "success"})

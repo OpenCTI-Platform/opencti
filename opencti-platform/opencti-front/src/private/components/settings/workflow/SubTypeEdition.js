@@ -1,18 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Avatar from '@material-ui/core/Avatar';
-import { Close } from '@material-ui/icons';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import List from '@material-ui/core/List';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Avatar from '@mui/material/Avatar';
+import { Close } from '@mui/icons-material';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import List from '@mui/material/List';
 import inject18n from '../../../../components/i18n';
 import StatusCreation from './StatusCreation';
 import StatusPopover from './StatusPopover';
@@ -20,8 +19,7 @@ import { hexToRGB } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -41,8 +39,6 @@ const styles = (theme) => ({
   appBar: {
     width: '100%',
     zIndex: theme.zIndex.drawer + 1,
-    backgroundColor: theme.palette.navAlt.background,
-    color: theme.palette.header.text,
     borderBottom: '1px solid #5c5c5c',
   },
   title: {
@@ -52,9 +48,7 @@ const styles = (theme) => ({
 
 class SubTypeEditionContainer extends Component {
   render() {
-    const {
-      t, classes, handleClose, subType,
-    } = this.props;
+    const { t, classes, handleClose, subType } = this.props;
     return (
       <div>
         <div className={classes.header}>
@@ -62,8 +56,10 @@ class SubTypeEditionContainer extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose.bind(this)}
+            size="large"
+            color="primary"
           >
-            <Close fontSize="small" />
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
             {`${t('Workflow of')} ${subType.label}`}

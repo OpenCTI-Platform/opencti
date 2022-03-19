@@ -3,19 +3,19 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogActions from '@material-ui/core/DialogActions';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import MenuItem from '@material-ui/core/MenuItem';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -27,7 +27,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -47,8 +46,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -159,6 +157,8 @@ class LocationCreation extends Component {
         <Drawer
           open={this.state.open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
@@ -167,8 +167,10 @@ class LocationCreation extends Component {
               aria-label="Close"
               className={classes.closeButton}
               onClick={this.handleClose.bind(this)}
+              size="large"
+              color="primary"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Create an entity')}</Typography>
           </div>
@@ -187,6 +189,7 @@ class LocationCreation extends Component {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
@@ -203,6 +206,7 @@ class LocationCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
@@ -227,7 +231,7 @@ class LocationCreation extends Component {
                     </Button>
                     <Button
                       variant="contained"
-                      color="primary"
+                      color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
                       classes={{ root: classes.button }}
@@ -245,9 +249,7 @@ class LocationCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t, classes, inputValue, open, onlyAuthors,
-    } = this.props;
+    const { t, inputValue, open, onlyAuthors } = this.props;
     return (
       <div>
         <Formik
@@ -264,6 +266,7 @@ class LocationCreation extends Component {
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={open}
                 onClose={this.handleClose.bind(this)}
                 fullWidth={true}
@@ -272,6 +275,7 @@ class LocationCreation extends Component {
                 <DialogContent>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
@@ -288,6 +292,7 @@ class LocationCreation extends Component {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
@@ -320,18 +325,13 @@ class LocationCreation extends Component {
                   </Field>
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

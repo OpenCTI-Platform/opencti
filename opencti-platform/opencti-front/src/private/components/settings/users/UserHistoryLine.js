@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import {
   green,
   pink,
@@ -12,11 +12,10 @@ import {
   deepPurple,
   indigo,
   red,
-} from '@material-ui/core/colors';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Avatar from '@material-ui/core/Avatar';
+} from '@mui/material/colors';
+import withStyles from '@mui/styles/withStyles';
+import Paper from '@mui/material/Paper';
+import Avatar from '@mui/material/Avatar';
 import {
   AddOutlined,
   EditOutlined,
@@ -24,14 +23,14 @@ import {
   LinkOutlined,
   LinkOffOutlined,
   DeleteOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
-import Tooltip from '@material-ui/core/Tooltip/Tooltip';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import Tooltip from '@mui/material/Tooltip';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
@@ -41,7 +40,6 @@ const styles = (theme) => ({
     marginBottom: 20,
   },
   line: {
-    backgroundColor: theme.palette.background.paperLight,
     content: ' ',
     display: 'block',
     position: 'absolute',
@@ -54,10 +52,10 @@ const styles = (theme) => ({
     float: 'left',
     width: 40,
     height: 40,
-    marginRight: 20,
+    margin: '5px 10px 0 0',
   },
   content: {
-    height: 50,
+    height: 40,
     width: 'auto',
     overflow: 'hidden',
   },
@@ -69,8 +67,8 @@ const styles = (theme) => ({
   paper: {
     width: '100%',
     height: '100%',
-    backgroundColor: theme.palette.background.paperLight,
-    padding: '17px 15px 15px 15px',
+    padding: '8px 15px 0 15px',
+    backgroundColor: theme.palette.background.shadow,
   },
   description: {
     height: '100%',
@@ -82,6 +80,7 @@ const styles = (theme) => ({
     float: 'right',
     textAlign: 'right',
     width: 180,
+    paddingTop: 2,
   },
 });
 
@@ -104,30 +103,32 @@ class UserHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOutlined />
+            <LinkOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'delete') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepPurple[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkOffOutlined />
+            <LinkOffOutlined fontSize="small" />
           </Avatar>
         );
       }
@@ -135,103 +136,110 @@ class UserHistoryLineComponent extends Component {
       if (eventType === 'create') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: pink[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <AddOutlined />
+            <AddOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'merge') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: teal[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <Merge />
+            <Merge fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('replaces')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <EditOutlined />
+            <EditOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('changes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: green[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <EditOutlined />
+            <EditOutlined fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('adds')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: indigo[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkVariantPlus />
+            <LinkVariantPlus fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'update' && eventMesage.includes('removes')) {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: deepOrange[500],
               color: '#ffffff',
               cursor: commit ? 'pointer' : 'auto',
             }}
             onClick={() => commit && this.handleOpen()}
           >
-            <LinkVariantRemove />
+            <LinkVariantRemove fontSize="small" />
           </Avatar>
         );
       }
       if (eventType === 'delete') {
         return (
           <Avatar
-            style={{
-              marginTop: 5,
+            sx={{
+              width: 30,
+              height: 30,
               backgroundColor: red[500],
               color: '#ffffff',
             }}
           >
-            <DeleteOutlined />
+            <DeleteOutlined fontSize="small" />
           </Avatar>
         );
       }
@@ -239,22 +247,19 @@ class UserHistoryLineComponent extends Component {
     return (
       <Avatar
         style={{
-          marginTop: 5,
           backgroundColor: yellow[800],
           color: '#ffffff',
           cursor: commit ? 'pointer' : 'auto',
         }}
         onClick={() => commit && this.handleOpen()}
       >
-        <HelpOutlined />
+        <HelpOutlined fontSize="small" />
       </Avatar>
     );
   }
 
   render() {
-    const {
-      nsdt, classes, node, t,
-    } = this.props;
+    const { nsdt, classes, node, t } = this.props;
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
@@ -290,6 +295,7 @@ class UserHistoryLineComponent extends Component {
         <div className={classes.line} />
         <Dialog
           open={this.state.open}
+          PaperProps={{ elevation: 1 }}
           onClose={this.handleClose.bind(this)}
           fullWidth={true}
         >

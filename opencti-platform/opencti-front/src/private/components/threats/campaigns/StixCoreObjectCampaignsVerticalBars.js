@@ -1,23 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  BarChart,
-  ResponsiveContainer,
-  CartesianGrid,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from 'recharts';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import { graphql } from 'react-relay';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now, numberOfDays } from '../../../../utils/Time';
+import { monthsAgo, now } from '../../../../utils/Time';
+import { verticalBarsChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -61,8 +56,7 @@ class CampaignsVerticalBars extends Component {
   renderContent() {
     const {
       t,
-      md,
-      nsd,
+      fsd,
       campaignType,
       startDate,
       endDate,
@@ -73,11 +67,6 @@ class CampaignsVerticalBars extends Component {
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    const days = numberOfDays(finalStartDate, finalEndDate);
-    let tickFormatter = md;
-    if (days <= 30) {
-      tickFormatter = nsd;
-    }
     const campaignsTimeSeriesVariables = {
       authorId: null,
       objectId: stixCoreObjectId,
@@ -94,50 +83,29 @@ class CampaignsVerticalBars extends Component {
         variables={campaignsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.campaignsTimeSeries) {
+            const chartData = props.campaignsTimeSeries.map((entry) => ({
+              x: new Date(entry.date),
+              y: entry.value,
+            }));
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  data={props.campaignsTimeSeries}
-                  margin={{
-                    top: 20,
-                    right: 50,
-                    bottom: 20,
-                    left: -10,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.action.grid}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke={theme.palette.text.primary}
-                    interval={interval}
-                    angle={-45}
-                    textAnchor="end"
-                    tickFormatter={tickFormatter}
-                  />
-                  <YAxis stroke={theme.palette.text.primary} />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                    labelFormatter={tickFormatter}
-                  />
-                  <Bar
-                    fill={theme.palette.primary.main}
-                    dataKey="value"
-                    barSize={5}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={verticalBarsChartOptions(
+                  theme,
+                  fsd,
+                  simpleNumberFormat,
+                  false,
+                  true,
+                )}
+                series={[
+                  {
+                    name: t('Number of campaigns'),
+                    data: chartData,
+                  },
+                ]}
+                type="bar"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
@@ -174,16 +142,20 @@ class CampaignsVerticalBars extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
+        >
           {title || t('Campaigns history')}
         </Typography>
         {variant !== 'inLine' ? (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         ) : (

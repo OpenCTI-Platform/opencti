@@ -26,6 +26,11 @@ export const numberFormat = (number, digits = 2) => {
   };
 };
 
+export const simpleNumberFormat = (number, digits = 2) => {
+  const formatted = numberFormat(number, digits);
+  return `${formatted.number} ${formatted.symbol}`;
+};
+
 export const bytesFormat = (number, digits = 2) => {
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
   const sizes = [' Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -41,7 +46,7 @@ export const bytesFormat = (number, digits = 2) => {
   const i = parseInt(Math.floor(Math.log(number) / Math.log(1024)));
   return {
     // eslint-disable-next-line no-restricted-properties
-    number: (number / Math.pow(1024, i)).toFixed(digits).replace(rx, '$1'),
+    number: (number / 1024 ** i).toFixed(digits).replace(rx, '$1'),
     symbol: sizes[i],
     original: number,
   };

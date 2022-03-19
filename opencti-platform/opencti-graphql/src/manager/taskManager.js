@@ -21,7 +21,6 @@ import {
 import conf, { logApp } from '../config/conf';
 import { resolveUserById } from '../domain/user';
 import {
-  buildFilters,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -38,13 +37,13 @@ import {
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
 } from '../database/utils';
-import { elPaginate, elUpdate } from '../database/elasticSearch';
+import { elPaginate, elUpdate } from '../database/engine';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { rulesCleanHandler, rulesApplyDerivedEvents } from './ruleManager';
-import { getRule } from '../domain/rule';
+import { rulesCleanHandler, rulesApplyDerivedEvents, getRule } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
+import { buildFilters } from '../database/repository';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -265,12 +264,10 @@ const executeProcessing = async (user, taskId, processingElements) => {
 };
 
 const taskHandler = async () => {
-  logApp.debug('[OPENCTI] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
-    logApp.debug('[OPENCTI] Task manager lock acquired');
     const task = await findTaskToExecute();
     // region Task checking
     if (!task) {
@@ -281,7 +278,7 @@ const taskHandler = async () => {
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
     if (!isQueryTask && !isListTask && !isRuleTask) {
-      logApp.error(`[OPENCTI] Task manager can't process ${task.type} type`);
+      logApp.error(`[OPENCTI-MODULE] Task manager can't process ${task.type} type`);
       return;
     }
     // endregion
@@ -317,12 +314,12 @@ const taskHandler = async () => {
   } catch (e) {
     // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
-      logApp.debug('[OPENCTI] Task manager already in progress by another API');
+      logApp.debug('[OPENCTI-MODULE] Task manager already in progress by another API');
     } else {
-      logApp.error('[OPENCTI] Task manager fail to execute', { error: e });
+      logApp.error('[OPENCTI-MODULE] Task manager fail to execute', { error: e });
     }
   } finally {
-    logApp.debug('[OPENCTI] Task manager done');
+    logApp.debug('[OPENCTI-MODULE] Task manager done');
     if (lock) await lock.unlock();
   }
 };
@@ -330,15 +327,10 @@ const initTaskManager = () => {
   let scheduler;
   return {
     start: () => {
+      logApp.info('[OPENCTI-MODULE] Running task manager');
       scheduler = setIntervalAsync(async () => {
         await taskHandler();
       }, SCHEDULE_TIME);
-      // Handle hot module replacement resource dispose
-      if (module.hot) {
-        module.hot.dispose(async () => {
-          await clearIntervalAsync(scheduler);
-        });
-      }
     },
     shutdown: async () => {
       if (scheduler) {

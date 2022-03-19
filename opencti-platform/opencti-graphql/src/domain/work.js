@@ -1,14 +1,14 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import {
-  el,
+  searchClient,
   elLoadById,
   elDeleteInstanceIds,
   elIndex,
   elPaginate,
   elUpdate,
   ES_IGNORE_THROTTLED,
-} from '../database/elasticSearch';
+} from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { READ_INDEX_HISTORY, isNotEmptyField, INDEX_HISTORY } from '../database/utils';
 import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
@@ -107,8 +107,11 @@ export const pingWork = async (user, workId) => {
 };
 
 export const deleteWorkForConnector = async (user, connectorId) => {
-  const works = await worksForConnector(user, connectorId, { first: 5000 });
-  await Promise.all(R.map((w) => deleteWorkRaw(w), works));
+  let works = await worksForConnector(user, connectorId, { first: 5000 });
+  while (works.length > 0) {
+    await Promise.all(R.map((w) => deleteWorkRaw(w), works));
+    works = await worksForConnector(user, connectorId, { first: 5000 });
+  }
   return true;
 };
 
@@ -144,12 +147,12 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
     if (searchAfter) {
       body = { ...body, search_after: [searchAfter] };
     }
-    const worksToDelete = await el
+    const worksToDelete = await searchClient()
       .search({ index: READ_INDEX_HISTORY, ignore_throttled: ES_IGNORE_THROTTLED, body })
       .catch((e) => {
         throw DatabaseError('Error searching for works to delete', { error: e });
       });
-    // eslint-disable-next-line prettier/prettier
+
     const {
       hits,
       total: { value: valTotal },
@@ -228,13 +231,13 @@ export const reportActionImport = async (user, workId, errorData) => {
     let sourceScript = '';
     if (isComplete) {
       params.completed_number = total;
-      sourceScript += `ctx._source['status'] = "complete"; 
+      sourceScript += `ctx._source['status'] = "complete";
       ctx._source['completed_number'] = params.completed_number;
       ctx._source['completed_time'] = params.now;`;
     }
     if (errorData) {
       const { error, source } = errorData;
-      sourceScript += `ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); `;
+      sourceScript += 'ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); ';
       params.source = source;
       params.error = error;
     }
@@ -250,7 +253,7 @@ export const updateReceivedTime = async (user, workId, message) => {
   let source = 'ctx._source.status = "progress";';
   source += 'ctx._source["received_time"] = params.received_time;';
   if (isNotEmptyField(message)) {
-    source += `ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); `;
+    source += 'ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); ';
   }
   await elUpdate(INDEX_HISTORY, workId, {
     script: { source, lang: 'painless', params },
@@ -264,15 +267,15 @@ export const updateProcessedTime = async (user, workId, message, inError = false
   const { isComplete, total } = await isWorkCompleted(workId);
   if (isComplete) {
     params.completed_number = total;
-    source += `ctx._source['status'] = "complete"; 
+    source += `ctx._source['status'] = "complete";
                ctx._source['completed_number'] = params.completed_number;
                ctx._source['completed_time'] = params.processed_time;`;
   }
   if (isNotEmptyField(message)) {
     if (inError) {
-      source += `ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); `;
+      source += 'ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); ';
     } else {
-      source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
+      source += 'ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); ';
     }
   }
   await elUpdate(INDEX_HISTORY, workId, {

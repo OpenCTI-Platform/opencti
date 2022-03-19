@@ -3,7 +3,8 @@ import EventSource from 'eventsource';
 import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import conf, { logApp } from '../config/conf';
-import { createRelation, deleteElementById, internalLoadById, listEntities, loadById } from '../database/middleware';
+import { createRelation, deleteElementById, internalLoadById, loadById } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { SYSTEM_USER } from '../utils/access';
 import { buildInputDataFromStix } from '../database/stix';
 import { sleep } from '../../tests/utils/testQuery';
@@ -99,7 +100,7 @@ const syncManagerInstance = (syncId) => {
     syncElement = await loadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
     const { token, ssl_verify: ssl = false } = syncElement;
     const eventSourceUri = createSyncHttpUri(syncElement);
-    logApp.info(`[OPENCTI] Starting sync manager for ${syncId} (${eventSourceUri})`);
+    logApp.info(`[OPENCTI] Running sync manager for ${syncId} (${eventSourceUri})`);
     eventSource = new EventSource(eventSourceUri, {
       rejectUnauthorized: ssl,
       headers: { authorization: `Bearer ${token}` },
@@ -230,9 +231,7 @@ const syncManagerInstance = (syncId) => {
         element = await addVulnerability(user, input);
       } else if (type === ENTITY_TYPE_INCIDENT) {
         element = await addIncident(user, input);
-      }
-      // Stix meta
-      else if (type === ENTITY_TYPE_LABEL) {
+      } else if (type === ENTITY_TYPE_LABEL) {
         element = await addLabel(user, input);
       } else if (type === ENTITY_TYPE_EXTERNAL_REFERENCE) {
         element = await addExternalReference(user, input);
@@ -307,7 +306,6 @@ const initSyncManager = () => {
     const syncs = await listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], { connectionFormat: false });
     // region Handle management of existing synchronizer
     for (let index = 0; index < syncs.length; index += 1) {
-      // eslint-disable-next-line prettier/prettier
       const { id, running } = syncs[index];
       const syncInstance = syncManagers.get(id);
       if (syncInstance) {
@@ -353,14 +351,14 @@ const initSyncManager = () => {
   const syncManagerHandler = async () => {
     let lock;
     try {
-      logApp.debug('[OPENCTI] Running sync manager');
+      logApp.debug('[OPENCTI-MODULE] Running sync manager');
       lock = await lockResource([SYNC_MANAGER_KEY]);
       await processingLoop();
     } catch (e) {
       // We dont care about failing to get the lock.
-      logApp.info('[OPENCTI] Sync manager already in progress by another API');
+      logApp.info('[OPENCTI-MODULE] Sync manager already in progress by another API');
     } finally {
-      logApp.debug('[OPENCTI] Sync manager done');
+      logApp.debug('[OPENCTI-MODULE] Sync manager done');
       if (lock) await lock.unlock();
     }
   };
@@ -378,13 +376,6 @@ const initSyncManager = () => {
       scheduler = setIntervalAsync(async () => {
         await syncManagerHandler();
       }, WAIT_TIME_ACTION);
-      // Handle hot module replacement resource dispose
-      if (module.hot) {
-        module.hot.dispose(async () => {
-          await shutdown();
-          logApp.info(`[OPENCTI] Sync hot reload dispose`);
-        });
-      }
     },
     shutdown,
   };

@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -23,7 +22,7 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -112,6 +111,7 @@ const intrusionSetValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
+  status_id: Yup.object(),
 });
 
 class IntrusionSetEditionOverviewComponent extends Component {
@@ -227,9 +227,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, intrusionSet, context, enableReferences,
-    } = this.props;
+    const { t, intrusionSet, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], intrusionSet) === null
       ? ''
       : {
@@ -281,6 +279,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -384,6 +383,15 @@ const IntrusionSetEditionOverview = createFragmentContainer(
             }
           }
         }
+        status {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+        workflowEnabled
       }
     `,
   },

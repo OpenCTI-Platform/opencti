@@ -1,14 +1,15 @@
 import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
-import IconButton from '@material-ui/core/IconButton';
-import { ImageOutlined } from '@material-ui/icons';
-import { FilePdfOutline, FileDelimitedOutline } from 'mdi-material-ui';
-import { withTheme, withStyles } from '@material-ui/core/styles';
+import IconButton from '@mui/material/IconButton';
+import { ImageOutlined } from '@mui/icons-material';
+import { FilePdfBox, FileDelimitedOutline } from 'mdi-material-ui';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import Dialog from '@material-ui/core/Dialog';
-import Tooltip from '@material-ui/core/Tooltip';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Dialog from '@mui/material/Dialog';
+import Tooltip from '@mui/material/Tooltip';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
@@ -53,7 +54,7 @@ class ExportButtons extends Component {
     this.handleCloseImage();
     const { theme: currentTheme, pixelRatio = 1 } = this.props;
     let timeout = 4000;
-    if (theme !== currentTheme.palette.type) {
+    if (theme !== currentTheme.palette.mode) {
       timeout = 6000;
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
@@ -64,7 +65,7 @@ class ExportButtons extends Component {
     setTimeout(() => {
       const container = document.getElementById(domElementId);
       const { offsetWidth, offsetHeight } = container;
-      if (theme === currentTheme.palette.type && this.adjust) {
+      if (theme === currentTheme.palette.mode && this.adjust) {
         container.setAttribute('style', 'width:3840px; height:2160px');
         this.adjust(true);
       }
@@ -83,11 +84,11 @@ class ExportButtons extends Component {
           pixelRatio,
           this.adjust,
         ).then(() => {
-          if (theme !== currentTheme.palette.type) {
+          if (theme !== currentTheme.palette.mode) {
             commitLocalUpdate((store) => {
               const me = store.getRoot().getLinkedRecord('me');
               me.setValue(false, 'exporting');
-              me.setValue(currentTheme.palette.type, 'theme');
+              me.setValue(currentTheme.palette.mode, 'theme');
             });
           } else {
             this.setState({ exporting: false });
@@ -110,7 +111,7 @@ class ExportButtons extends Component {
     this.handleClosePdf();
     const { theme: currentTheme, pixelRatio = 1 } = this.props;
     let timeout = 4000;
-    if (theme !== currentTheme.palette.type) {
+    if (theme !== currentTheme.palette.mode) {
       timeout = 6000;
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
@@ -131,11 +132,11 @@ class ExportButtons extends Component {
         pixelRatio,
         this.adjust,
       ).then(() => {
-        if (theme !== currentTheme.palette.type) {
+        if (theme !== currentTheme.palette.mode) {
           commitLocalUpdate((store) => {
             const me = store.getRoot().getLinkedRecord('me');
             me.setValue(false, 'exporting');
-            me.setValue(currentTheme.palette.type, 'theme');
+            me.setValue(currentTheme.palette.mode, 'theme');
           });
         } else {
           this.setState({ exporting: false });
@@ -146,9 +147,7 @@ class ExportButtons extends Component {
 
   render() {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
-    const {
-      classes, t, domElementId, name, csvData,
-    } = this.props;
+    const { classes, t, domElementId, name, csvData } = this.props;
     return (
       <div className={classes.exportButtons}>
         <Tooltip title={t('Export to image')}>
@@ -156,6 +155,7 @@ class ExportButtons extends Component {
             onClick={this.handleOpenImage.bind(this)}
             aria-haspopup="true"
             color="primary"
+            size="large"
           >
             <ImageOutlined />
           </IconButton>
@@ -164,7 +164,6 @@ class ExportButtons extends Component {
           anchorEl={anchorElImage}
           open={Boolean(anchorElImage)}
           onClose={this.handleCloseImage.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem
             onClick={this.exportImage.bind(
@@ -216,15 +215,15 @@ class ExportButtons extends Component {
             onClick={this.handleOpenPdf.bind(this)}
             aria-haspopup="true"
             color="primary"
+            size="large"
           >
-            <FilePdfOutline />
+            <FilePdfBox />
           </IconButton>
         </Tooltip>
         <Menu
           anchorEl={anchorElPdf}
           open={Boolean(anchorElPdf)}
           onClose={this.handleClosePdf.bind(this)}
-          style={{ marginTop: 50 }}
         >
           <MenuItem
             onClick={this.exportPdf.bind(
@@ -251,14 +250,15 @@ class ExportButtons extends Component {
         </Menu>
         {csvData && (
           <Tooltip title={t('Export to CSV')}>
-            <CSVLink data={csvData}>
-              <IconButton aria-haspopup="true" color="primary">
+            <IconButton aria-haspopup="true" color="primary" size="medium">
+              <CSVLink data={csvData}>
                 <FileDelimitedOutline />
-              </IconButton>
-            </CSVLink>
+              </CSVLink>
+            </IconButton>
           </Tooltip>
         )}
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={exporting}
           keepMounted={true}
           fullScreen={true}

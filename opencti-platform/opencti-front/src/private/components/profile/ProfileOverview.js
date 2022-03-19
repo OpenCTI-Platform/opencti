@@ -1,24 +1,23 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
-import MenuItem from '@material-ui/core/MenuItem';
-import Paper from '@material-ui/core/Paper';
-import List from '@material-ui/core/List';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
+import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
+import List from '@mui/material/List';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
-import Grid from '@material-ui/core/Grid';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Grid from '@mui/material/Grid';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import { SendClockOutline } from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItem from '@material-ui/core/ListItem';
-import Alert from '@material-ui/lab/Alert';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ListItem from '@mui/material/ListItem';
+import Alert from '@mui/material/Alert';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -76,9 +75,7 @@ const passwordValidation = (t) => Yup.object().shape({
 });
 
 const ProfileOverviewComponent = (props) => {
-  const {
-    t, me, classes, fldt, subscriptionStatus, about,
-  } = props;
+  const { t, me, classes, fldt, subscriptionStatus, about } = props;
   const external = false;
   const initialValues = pick(
     [
@@ -130,7 +127,7 @@ const ProfileOverviewComponent = (props) => {
     <div>
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} elevation={2}>
+          <Paper classes={{ root: classes.panel }} variant="outlined">
             <Typography variant="h1" gutterBottom={true}>
               {t('Profile')} {external && `(${t('external')})`}
             </Typography>
@@ -143,6 +140,7 @@ const ProfileOverviewComponent = (props) => {
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="name"
                     disabled={external}
                     label={t('Name')}
@@ -151,6 +149,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="user_email"
                     disabled={true}
                     label={t('Email address')}
@@ -160,6 +159,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="firstname"
                     label={t('Firstname')}
                     fullWidth={true}
@@ -168,6 +168,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="lastname"
                     label={t('Lastname')}
                     fullWidth={true}
@@ -176,6 +177,7 @@ const ProfileOverviewComponent = (props) => {
                   />
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="theme"
                     label={t('Theme')}
                     fullWidth={true}
@@ -192,6 +194,7 @@ const ProfileOverviewComponent = (props) => {
                   </Field>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="language"
                     label={t('Language')}
                     fullWidth={true}
@@ -205,11 +208,13 @@ const ProfileOverviewComponent = (props) => {
                     <MenuItem value="auto">
                       <em>{t('Automatic')}</em>
                     </MenuItem>
-                    <MenuItem value="en">English</MenuItem>
-                    <MenuItem value="fr">Français</MenuItem>
+                    <MenuItem value="en-us">English</MenuItem>
+                    <MenuItem value="fr-fr">Français</MenuItem>
+                    <MenuItem value="zh-cn">简化字</MenuItem>
                   </Field>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -224,7 +229,7 @@ const ProfileOverviewComponent = (props) => {
           </Paper>
         </Grid>
         <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} elevation={2}>
+          <Paper classes={{ root: classes.panel }} variant="outlined">
             <Typography variant="h1" gutterBottom={true}>
               {t('Subscriptions & digests')}
             </Typography>
@@ -294,7 +299,7 @@ const ProfileOverviewComponent = (props) => {
         </Grid>
         <Grid item={true} xs={6}>
           {!external && (
-            <Paper classes={{ root: classes.panel }} elevation={2}>
+            <Paper classes={{ root: classes.panel }} variant="outlined">
               <Typography variant="h1" gutterBottom={true}>
                 {t('Password')}
               </Typography>
@@ -308,6 +313,7 @@ const ProfileOverviewComponent = (props) => {
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
                       component={TextField}
+                      variant="standard"
                       name="password"
                       label={t('Password')}
                       type="password"
@@ -315,6 +321,7 @@ const ProfileOverviewComponent = (props) => {
                     />
                     <Field
                       component={TextField}
+                      variant="standard"
                       name="confirmation"
                       label={t('Confirmation')}
                       type="password"
@@ -340,7 +347,7 @@ const ProfileOverviewComponent = (props) => {
           )}
         </Grid>
         <Grid item={true} xs={6}>
-          <Paper classes={{ root: classes.panel }} elevation={2}>
+          <Paper classes={{ root: classes.panel }} variant="outlined">
             <Typography variant="h1" gutterBottom={true}>
               {t('API access')}
             </Typography>

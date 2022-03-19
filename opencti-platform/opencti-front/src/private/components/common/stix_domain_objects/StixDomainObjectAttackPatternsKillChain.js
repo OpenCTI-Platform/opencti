@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
-import { ViewListOutlined, ViewColumnOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import { graphql, createRefetchContainer } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import { ViewListOutlined, ViewColumnOutlined } from '@mui/icons-material';
 import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -67,6 +66,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             <IconButton
               color={currentView === 'matrix' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'matrix')}
+              size="large"
             >
               <ViewColumnOutlined />
             </IconButton>
@@ -75,6 +75,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             <IconButton
               color={currentView === 'list' ? 'secondary' : 'primary'}
               onClick={handleChangeView.bind(this, 'list')}
+              size="large"
             >
               <ViewListOutlined />
             </IconButton>
@@ -85,6 +86,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                 currentView === 'courses-of-action' ? 'secondary' : 'primary'
               }
               onClick={handleChangeView.bind(this, 'courses-of-action')}
+              size="large"
             >
               <ProgressWrench />
             </IconButton>
@@ -118,7 +120,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             data={data}
             entityLink={entityLink}
             paginationOptions={paginationOptions}
-            handleDelete={this.props.relay.refetch.bind(this)}
+            onDelete={this.props.relay.refetch.bind(this)}
             searchTerm={searchTerm}
             coursesOfAction={true}
           />
@@ -153,9 +155,8 @@ StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
 
 export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery(
-    $fromId: String
-    $toTypes: [String]
-    $relationship_type: [String]
+    $elementId: String
+    $elementWithTargetTypes: [String]
     $first: Int
   ) {
     ...StixDomainObjectAttackPatternsKillChain_data
@@ -168,9 +169,8 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
     data: graphql`
       fragment StixDomainObjectAttackPatternsKillChain_data on Query {
         stixCoreRelationships(
-          fromId: $fromId
-          toTypes: $toTypes
-          relationship_type: $relationship_type
+          elementId: $elementId
+          elementWithTargetTypes: $elementWithTargetTypes
           first: $first
         ) {
           edges {
@@ -179,6 +179,63 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
               description
               start_time
               stop_time
+              from {
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                }
+                ... on AttackPattern {
+                  id
+                  parent_types
+                  entity_type
+                  name
+                  description
+                  x_mitre_id
+                  x_mitre_platforms
+                  x_mitre_permissions_required
+                  x_mitre_detection
+                  isSubAttackPattern
+                  coursesOfAction {
+                    edges {
+                      node {
+                        id
+                        name
+                        description
+                        x_mitre_id
+                      }
+                    }
+                  }
+                  parentAttackPatterns {
+                    edges {
+                      node {
+                        id
+                        name
+                        description
+                        x_mitre_id
+                      }
+                    }
+                  }
+                  subAttackPatterns {
+                    edges {
+                      node {
+                        id
+                        name
+                        description
+                        x_mitre_id
+                      }
+                    }
+                  }
+                  killChainPhases {
+                    edges {
+                      node {
+                        id
+                        phase_name
+                        x_opencti_order
+                      }
+                    }
+                  }
+                }
+              }
               to {
                 ... on BasicRelationship {
                   id

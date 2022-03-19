@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { assoc, compose, map } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  ResponsiveContainer, PieChart, Pie, Cell, Legend,
-} from 'recharts';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import { graphql } from 'react-relay';
+import { ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -144,9 +143,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
   renderLabel(props) {
     const { theme } = this.props;
     const RADIAN = Math.PI / 180;
-    const {
-      cx, cy, midAngle, outerRadius, fill, payload, percent, value,
-    } = props;
+    const { cx, cy, midAngle, outerRadius, fill, payload, percent, value } = props;
     const sin = Math.sin(-RADIAN * midAngle);
     const cos = Math.cos(-RADIAN * midAngle);
     const sx = cx + (outerRadius + 10) * cos;
@@ -190,9 +187,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
   }
 
   renderContent() {
-    const {
-      t, entityId, variant, field, startDate, endDate, theme,
-    } = this.props;
+    const { t, entityId, variant, field, startDate, endDate, theme } = this.props;
     const stixSightingRelationshipsDistributionVariables = {
       fromId: entityId,
       startDate: startDate || null,
@@ -303,9 +298,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
   }
 
   render() {
-    const {
-      t, classes, title, variant, height,
-    } = this.props;
+    const { t, classes, title, variant, height } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
         <Typography
@@ -317,7 +310,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
         {variant === 'inLine' || variant === 'inEntity' ? (
           this.renderContent()
         ) : (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         )}

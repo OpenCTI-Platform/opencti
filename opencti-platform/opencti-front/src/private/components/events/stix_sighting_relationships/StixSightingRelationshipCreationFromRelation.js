@@ -1,25 +1,23 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  assoc, compose, includes, pipe, pluck, filter,
-} from 'ramda';
+import { graphql } from 'react-relay';
+import { assoc, compose, includes, pipe, pluck, filter } from 'ramda';
 import * as Yup from 'yup';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import { Add, ArrowRightAlt, Close } from '@material-ui/icons';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Fab from '@material-ui/core/Fab';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import { Add, ArrowRightAlt, Close } from '@mui/icons-material';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Fab from '@mui/material/Fab';
+import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
-import Skeleton from '@material-ui/lab/Skeleton';
+import Skeleton from '@mui/material/Skeleton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -47,7 +45,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -73,8 +70,7 @@ const styles = (theme) => ({
     float: 'right',
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 20px 20px 60px',
   },
   closeButton: {
@@ -453,7 +449,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
             <ListItemIcon>
               <Skeleton
                 animation="wave"
-                variant="circle"
+                variant="circular"
                 width={30}
                 height={30}
               />
@@ -462,7 +458,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
               primary={
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height={15}
                   style={{ marginBottom: 10 }}
@@ -471,7 +467,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
               secondary={
                 <Skeleton
                   animation="wave"
-                  variant="rect"
+                  variant="rectangular"
                   width="90%"
                   height={15}
                 />
@@ -484,9 +480,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
   }
 
   renderSelectEntity() {
-    const {
-      classes, t, targetStixDomainObjectTypes, onlyObservables,
-    } = this.props;
+    const { classes, t, targetStixDomainObjectTypes, onlyObservables } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
       types: targetStixDomainObjectTypes
@@ -505,6 +499,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
             aria-label="Close"
             className={classes.closeButton}
             onClick={this.handleClose.bind(this)}
+            size="large"
           >
             <Close fontSize="small" />
           </IconButton>
@@ -608,15 +603,14 @@ class StixSightingRelationshipCreationFromRelation extends Component {
         onSubmit={this.onSubmit.bind(this)}
         onReset={this.handleClose.bind(this)}
       >
-        {({
-          submitForm, handleReset, isSubmitting, setFieldValue,
-        }) => (
+        {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
           <Form>
             <div className={classes.header}>
               <IconButton
                 aria-label="Close"
                 className={classes.closeButton}
                 onClick={this.handleClose.bind(this)}
+                size="large"
               >
                 <Close fontSize="small" />
               </IconButton>
@@ -742,6 +736,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
               </div>
               <Field
                 component={TextField}
+                variant="standard"
                 name="number"
                 label={t('Count')}
                 fullWidth={true}
@@ -757,18 +752,24 @@ class StixSightingRelationshipCreationFromRelation extends Component {
               <Field
                 component={DatePickerField}
                 name="first_seen"
-                label={t('First seen')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
+                TextFieldProps={{
+                  label: t('First seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
               />
               <Field
                 component={DatePickerField}
                 name="last_seen"
-                label={t('Last seen')}
-                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
+                invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
+                TextFieldProps={{
+                  label: t('Last seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
               />
               <Field
                 component={MarkDownField}
@@ -815,7 +816,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
                 </Button>
                 <Button
                   variant="contained"
-                  color="primary"
+                  color="secondary"
                   onClick={submitForm}
                   disabled={isSubmitting}
                   classes={{ root: classes.button }}
@@ -848,9 +849,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
   }
 
   render() {
-    const {
-      classes, entityId, variant, paddingRight,
-    } = this.props;
+    const { classes, entityId, variant, paddingRight } = this.props;
     const { open, step } = this.state;
     return (
       <div>
@@ -860,6 +859,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            size="large"
           >
             <Add fontSize="small" />
           </IconButton>
@@ -880,6 +880,8 @@ class StixSightingRelationshipCreationFromRelation extends Component {
         <Drawer
           open={open}
           anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
           classes={{ paper: this.props.classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >

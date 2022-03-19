@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -120,9 +120,7 @@ class ExternalReferences extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm } = this.state;
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,

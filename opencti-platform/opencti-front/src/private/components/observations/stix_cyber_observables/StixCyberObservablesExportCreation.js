@@ -11,21 +11,20 @@ import {
   uniq,
   zip,
 } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Slide from '@material-ui/core/Slide';
-import { Add } from '@material-ui/icons';
-import { createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
+import { Add } from '@mui/icons-material';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import MenuItem from '@material-ui/core/MenuItem';
-import IconButton from '@material-ui/core/IconButton';
+import MenuItem from '@mui/material/MenuItem';
+import IconButton from '@mui/material/IconButton';
 import * as Yup from 'yup';
-import Tooltip from '@material-ui/core/Tooltip';
+import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
@@ -50,7 +49,6 @@ const styles = (theme) => ({
     width: 250,
     padding: '0 0 20px 0',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -188,6 +186,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
               color="secondary"
               aria-label="Add"
               disabled={!isExportPossible}
+              size="large"
             >
               <Add />
             </IconButton>
@@ -207,6 +206,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
             <Form>
               <Dialog
                 open={this.state.open}
+                PaperProps={{ elevation: 1 }}
                 onClose={this.handleClose.bind(this)}
                 fullWidth={true}
               >
@@ -220,6 +220,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                         <DialogContent>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
@@ -237,6 +238,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
                           </Field>
                           <Field
                             component={SelectField}
+                            variant="standard"
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}
@@ -265,18 +267,13 @@ class StixCyberObservablesExportCreationComponent extends Component {
                   }}
                 />
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

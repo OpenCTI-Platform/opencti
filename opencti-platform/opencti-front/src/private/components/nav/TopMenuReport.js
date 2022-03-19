@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
 import {
   ArrowForwardIosOutlined,
   DescriptionOutlined,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -17,15 +17,13 @@ import Security, {
 const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -56,14 +54,14 @@ class TopMenuReport extends Component {
           to="/dashboard/analysis/reports"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <DescriptionOutlined className={classes.icon} fontSize="small" />
           {t('Reports')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -78,7 +76,7 @@ class TopMenuReport extends Component {
           color={
             location.pathname === `/dashboard/analysis/reports/${reportId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -100,7 +98,7 @@ class TopMenuReport extends Component {
               `/dashboard/analysis/reports/${reportId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -120,7 +118,7 @@ class TopMenuReport extends Component {
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/content`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -140,7 +138,7 @@ class TopMenuReport extends Component {
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/entities`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -160,7 +158,7 @@ class TopMenuReport extends Component {
             location.pathname
             === `/dashboard/analysis/reports/${reportId}/observables`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -181,7 +179,7 @@ class TopMenuReport extends Component {
               location.pathname
               === `/dashboard/analysis/reports/${reportId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >

@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
-import { createPaginationContainer } from 'react-relay';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import { graphql, createPaginationContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
 import * as R from 'ramda';
 import {
   StixDomainObjectBookmark,
@@ -34,9 +33,7 @@ class StixDomainObjectBookmarksComponent extends Component {
   }
 
   render() {
-    const {
-      classes, data, t, relay,
-    } = this.props;
+    const { classes, data, t, relay } = this.props;
     const bookmarks = pathOr([], ['bookmarks', 'edges'], data);
     if (bookmarks.length > 0) {
       return (

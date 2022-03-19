@@ -1,20 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import {
-  map, filter, keys, groupBy, assoc, compose, append,
-} from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Accordion from '@material-ui/core/Accordion';
-import AccordionDetails from '@material-ui/core/AccordionDetails';
-import AccordionSummary from '@material-ui/core/AccordionSummary';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Typography from '@material-ui/core/Typography';
-import { ExpandMore, CheckCircle } from '@material-ui/icons';
+import { graphql, createPaginationContainer } from 'react-relay';
+import { map, filter, keys, groupBy, assoc, compose, append } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import { ExpandMore, CheckCircle } from '@mui/icons-material';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
@@ -26,9 +23,6 @@ import inject18n from '../../../../components/i18n';
 const styles = (theme) => ({
   investigation: {
     padding: '20px 0 20px 0',
-  },
-  expansionPanel: {
-    backgroundColor: theme.palette.action.expansion,
   },
   heading: {
     fontSize: theme.typography.pxToRem(15),
@@ -193,9 +187,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
   }
 
   render() {
-    const {
-      t, classes, data, fd,
-    } = this.props;
+    const { t, classes, data, fd } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = map((n) => n.node, data.stixCoreObjects.edges);
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
@@ -214,7 +206,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                 stixCoreObjectsTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
-              classes={{ root: classes.expansionPanel }}
+              elevation={3}
             >
               <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography className={classes.heading}>

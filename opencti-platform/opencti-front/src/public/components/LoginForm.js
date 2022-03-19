@@ -1,11 +1,11 @@
 import React from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { Form, Formik, Field } from 'formik';
-import { TextField } from 'formik-material-ui';
-import Button from '@material-ui/core/Button';
-import graphql from 'babel-plugin-relay/macro';
+import { TextField } from 'formik-mui';
+import Button from '@mui/material/Button';
+import { graphql } from 'react-relay';
 import { withRouter } from 'react-router-dom';
-import { compose, head, isEmpty } from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
 import * as PropTypes from 'prop-types';
 import { useCookies } from 'react-cookie';
@@ -14,7 +14,7 @@ import inject18n from '../../components/i18n';
 
 const styles = () => ({
   login: {
-    paddingBottom: '15px',
+    padding: 15,
   },
 });
 
@@ -42,7 +42,7 @@ const LoginForm = (props) => {
         input: values,
       },
       onError: (error) => {
-        const errorMessage = props.t(head(error.res.errors).message);
+        const errorMessage = props.t(R.head(error.res.errors).message);
         setErrors({ email: errorMessage });
         setSubmitting(false);
       },
@@ -59,21 +59,23 @@ const LoginForm = (props) => {
           email: demo ? 'demo@opencti.io' : '',
           password: demo ? 'demo' : '',
         }}
-        initialTouched={{ email: !isEmpty(flashError) }}
-        initialErrors={{ email: !isEmpty(flashError) ? t(flashError) : '' }}
+        initialTouched={{ email: !R.isEmpty(flashError) }}
+        initialErrors={{ email: !R.isEmpty(flashError) ? t(flashError) : '' }}
         validationSchema={loginValidation(t)}
         onSubmit={onSubmit}
       >
-        {({ isSubmitting }) => (
+        {({ isSubmitting, isValid }) => (
           <Form>
             <Field
               component={TextField}
+              variant="standard"
               name="email"
               label={t('Login')}
               fullWidth={true}
             />
             <Field
               component={TextField}
+              variant="standard"
               name="password"
               label={t('Password')}
               type="password"
@@ -84,7 +86,7 @@ const LoginForm = (props) => {
               type="submit"
               variant="contained"
               color="primary"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid}
               style={{ marginTop: 30 }}
             >
               {t('Sign in')}
@@ -103,4 +105,4 @@ LoginForm.propTypes = {
   demo: PropTypes.bool,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(LoginForm);
+export default R.compose(inject18n, withRouter, withStyles(styles))(LoginForm);

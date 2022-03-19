@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
-import { basePath, logApp } from '../config/conf';
+import conf, { basePath, logApp } from '../config/conf';
 import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
 import { createStreamProcessor } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
@@ -9,7 +9,7 @@ import { findById, streamCollectionGroups } from '../domain/stream';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from '../database/rabbitmq';
 import { loadStixById, loadByIdWithMetaRels } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
-import { elList, ES_MAX_CONCURRENCY } from '../database/elasticSearch';
+import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import {
   generateCreateMessage,
   isNotEmptyField,
@@ -26,11 +26,17 @@ import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { BASE_TYPE_RELATION } from '../schema/general';
 
-let heartbeat;
-const STREAM_EVENT_VERSION = 3;
 export const MIN_LIVE_STREAM_EVENT_VERSION = 2;
-const KEEP_ALIVE_INTERVAL_MS = 20000;
+
+let heartbeat;
 const broadcastClients = {};
+
+const DEFAULT_LIVE_STREAM = 'live';
+const STREAM_EVENT_VERSION = 3;
+const KEEP_ALIVE_INTERVAL_MS = 20000;
+const ONE_HOUR = 1000 * 60 * 60;
+const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
+const MAX_CACHE_SIZE = conf.get('app:live_stream:cache_max_size') ?? 5000;
 
 const isEventGranted = (event, user) => {
   const { data } = event;
@@ -41,8 +47,7 @@ const isEventGranted = (event, user) => {
   // - User have the bypass capabilities
   const clientMarkings = R.flatten(R.map((m) => [m.standard_id, m.internal_id], user.allowed_marking));
   const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-  const isUserHaveAccess =
-    (event.markings || []).length === 0 || event.markings.every((m) => clientMarkings.includes(m));
+  const isUserHaveAccess = (event.markings || []).length === 0 || event.markings.every((m) => clientMarkings.includes(m));
   const isBypass = isBypassUser(user);
   const isGrantedForData = isMarkingObject || isUserHaveAccess;
   return isBypass || isGrantedForData;
@@ -106,8 +111,6 @@ const authenticate = async (req, res, next) => {
 };
 
 const createSeeMiddleware = () => {
-  const MAX_CACHE_SIZE = 5000;
-  const ONE_HOUR = 1000 * 60 * 60;
   const queryIndices = [
     READ_INDEX_STIX_DOMAIN_OBJECTS, // Malware, ...
     READ_INDEX_STIX_META_OBJECTS, // Marking def, External ref ...
@@ -117,7 +120,7 @@ const createSeeMiddleware = () => {
   ];
   createHeartbeatProcessor();
   const wait = (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(() => resolve(), ms));
   };
   const isUserGlobalCapabilityGranted = (user) => {
     const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
@@ -127,12 +130,20 @@ const createSeeMiddleware = () => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
     const missingElements = [];
     if (refsToResolve.length > 0) {
-      const idsOpts = { ids: refsToResolve, connectionFormat: false };
-      const findMissing = await elList(req.session.user, queryIndices, idsOpts);
-      const missingIds = R.uniq(findMissing.map((f) => f.standard_id));
+      // Resolve missing element standard ids
+      const missingIds = [];
+      const groupsOfRefsToResolve = R.splitEvery(MAX_SPLIT, refsToResolve);
+      const missingRefsResolver = async (refs) => {
+        const idsOpts = { ids: refs, connectionFormat: false };
+        const findMissing = await elList(req.session.user, queryIndices, idsOpts);
+        missingIds.push(...R.uniq(findMissing.map((f) => f.standard_id)));
+      };
+      await Promise.map(groupsOfRefsToResolve, missingRefsResolver, { concurrency: ES_MAX_CONCURRENCY });
       missingElements.push(...missingIds);
+      // Resolve every missing element
+      const uniqueIds = R.uniq(missingIds);
       const elementResolver = (id) => loadStixById(req.session.user, id, { withFiles: true });
-      const resolvedElements = await Promise.map(missingIds, elementResolver, { concurrency: ES_MAX_CONCURRENCY });
+      const resolvedElements = await Promise.map(uniqueIds, elementResolver, { concurrency: ES_MAX_CONCURRENCY });
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
         const newMissing = await resolveMissingReferences(req, streamFilters, start, after, parentRefs, cache);
@@ -255,13 +266,15 @@ const createSeeMiddleware = () => {
     return isFullVisibleRelation || !isMissingRelation;
   };
   const liveStreamHandler = async (req, res) => {
+    const { id } = req.params;
     try {
-      const { id } = req.params;
       const version = STREAM_EVENT_VERSION;
       const startFrom = req.query.from || req.headers['last-event-id'];
       const listenDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'true';
+      const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
+      // Build filters
       let streamFilters = {};
-      if (id !== 'live') {
+      if (id !== DEFAULT_LIVE_STREAM) {
         const collection = await findById(req.session.user, id);
         if (!collection) {
           res.statusMessage = 'This live stream doesnt exists';
@@ -285,6 +298,7 @@ const createSeeMiddleware = () => {
         }
         streamFilters = JSON.parse(collection.filters);
       }
+      // Check rights
       if (!isUserGlobalCapabilityGranted(req.session.user)) {
         // Access to the global live stream
         res.statusMessage = 'You are not authorized, please check your credentials';
@@ -306,12 +320,12 @@ const createSeeMiddleware = () => {
       // Create channel.
       const { channel, client } = createSseChannel(req, res);
       // If stream is starting after, we need to use the main database to catchup
-      const cache = new LRU({ max: MAX_CACHE_SIZE, maxAge: ONE_HOUR });
+      const cache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
       let after = isNotEmptyField(startFrom) ? startFrom : FROM_START_STR;
       // Also handle event id with redis format stamp or stamp-index
-      if (isNotEmptyField(startFrom)) {
+      if (isNotEmptyField(startFrom) && typeof startFrom === 'string') {
         if (!startFrom.includes('-')) {
           after = utcDate(parseInt(startFrom, 10)).toISOString();
         } else if (startFrom.split('-').length === 2) {
@@ -329,27 +343,27 @@ const createSeeMiddleware = () => {
             const stixData = buildStixData(instance, { clearEmptyValues: true });
             const start = stixData.updated_at;
             const eventId = utcDate(start).toDate().getTime();
-            // Looking for elements published after
-            const refs = stixRefsExtractor(stixData, generateStandardId);
-            // eslint-disable-next-line prettier/prettier
-            const missingElements = await resolveMissingReferences(req, streamFilters, after, start, refs, cache);
             if (channel.connected()) {
               let eventIndex = 0;
-              // publish missing
-              for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
-                const missingRef = missingElements[missingIndex];
-                if (!cache.has(missingRef)) {
-                  const missingInstance = await loadByIdWithMetaRels(req.session.user, missingRef);
-                  if (isFullVisibleElement(missingInstance)) {
-                    const missingData = buildStixData(missingInstance, { clearEmptyValues: true });
-                    const markings = missingData.object_marking_refs || [];
-                    const message = generateCreateMessage(missingInstance);
-                    const content = { data: missingData, markings, message, version };
-                    channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, content);
-                    eventIndex += 1;
-                    await wait(channel.delay);
-                    cache.set(missingData.id);
-                    cache.set(`${missingData.id}-${missingData.updated_at}`);
+              // publish missing if needed
+              if (noDependencies === false) {
+                const refs = stixRefsExtractor(stixData, generateStandardId);
+                const missingElements = await resolveMissingReferences(req, streamFilters, after, start, refs, cache);
+                for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
+                  const missingRef = missingElements[missingIndex];
+                  if (!cache.has(missingRef)) {
+                    const missingInstance = await loadByIdWithMetaRels(req.session.user, missingRef);
+                    if (isFullVisibleElement(missingInstance)) {
+                      const missingData = buildStixData(missingInstance, { clearEmptyValues: true });
+                      const markings = missingData.object_marking_refs || [];
+                      const message = generateCreateMessage(missingInstance);
+                      const content = { data: missingData, markings, message, version };
+                      channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, content);
+                      eventIndex += 1;
+                      await wait(channel.delay);
+                      cache.set(missingData.id);
+                      cache.set(`${missingData.id}-${missingData.updated_at}`);
+                    }
                   }
                 }
               }
@@ -380,7 +394,8 @@ const createSeeMiddleware = () => {
       queryOptions.infinite = true;
       queryOptions.callback = queryCallback;
       // If listen delete
-      const processor = createStreamProcessor(req.session.user, req.session.user.user_email, async (elements) => {
+      const userEmail = req.session.user.user_email;
+      const processor = createStreamProcessor(req.session.user, userEmail, async (elements) => {
         // We need to keep deletion events
         if (listenDelete) {
           const stixDeletions = elements
@@ -396,7 +411,7 @@ const createSeeMiddleware = () => {
           }
         }
         // All event must invalidate the cache
-        elements.forEach((e) => cache.del(e.data.data.id));
+        elements.forEach((e) => cache.delete(e.data.data.id));
       });
       // noinspection ES6MissingAwait
       processor.start();
@@ -404,7 +419,8 @@ const createSeeMiddleware = () => {
       // Start fetching
       await elList(req.session.user, queryIndices, queryOptions);
     } catch (e) {
-      res.statusMessage = `Error in stream: ${e.message}`;
+      logApp.error(`Error executing live stream ${id}`, { error: e });
+      res.statusMessage = `Error in stream ${id}: ${e.message}`;
       res.status(500).end();
     }
   };

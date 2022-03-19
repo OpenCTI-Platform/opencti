@@ -12,14 +12,14 @@ import {
   distributionEntities,
   fullLoadById,
   internalLoadById,
-  listEntities,
   listThroughGetFrom,
   loadById,
   timeSeriesEntities,
   updateAttribute,
 } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { BUS_TOPICS, logApp } from '../config/conf';
-import { elCount } from '../database/elasticSearch';
+import { elCount } from '../database/engine';
 import { isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from './indicator';
@@ -139,26 +139,23 @@ const createIndicatorFromObservable = async (user, input, observable) => {
       await addIndicator(user, indicatorToCreate);
     }
   } catch (err) {
-    logApp.info(`[OPENCTI] Cannot create indicator`, { error: err });
+    logApp.info('[OPENCTI] Cannot create indicator', { error: err });
   }
 };
 
 export const promoteObservableToIndicator = async (user, observableId) => {
   const observable = await fullLoadById(user, observableId);
-  const objectLabel =
-    observable.i_relations_from && observable.i_relations_from['object-label']
-      ? observable.i_relations_from['object-label'].map((n) => n.internal_id)
-      : [];
-  const objectMarking =
-    observable.i_relations_from && observable.i_relations_from['object-marking']
-      ? observable.i_relations_from['object-marking'].map((n) => n.internal_id)
-      : [];
-  const createdBy =
-    observable.i_relations_from &&
-    observable.i_relations_from['created-by'] &&
-    observable.i_relations_from['created-by'].length > 0
-      ? observable.i_relations_from['created-by'].map((n) => n.internal_id)[0]
-      : [];
+  const objectLabel = observable.i_relations_from && observable.i_relations_from['object-label']
+    ? observable.i_relations_from['object-label'].map((n) => n.internal_id)
+    : [];
+  const objectMarking = observable.i_relations_from && observable.i_relations_from['object-marking']
+    ? observable.i_relations_from['object-marking'].map((n) => n.internal_id)
+    : [];
+  const createdBy = observable.i_relations_from
+    && observable.i_relations_from['created-by']
+    && observable.i_relations_from['created-by'].length > 0
+    ? observable.i_relations_from['created-by'].map((n) => n.internal_id)[0]
+    : [];
   await createIndicatorFromObservable(user, { objectLabel, objectMarking, createdBy }, observable);
   return observable;
 };
@@ -178,7 +175,7 @@ export const addStixCyberObservable = async (user, input) => {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
   if (isNotEmptyField(input.payload_bin) && isNotEmptyField(input.url)) {
-    throw FunctionalError(`Cannot create observable with both payload_bin and url filled.`);
+    throw FunctionalError('Cannot create observable with both payload_bin and url filled.');
   }
   // Convert hashes to dictionary if needed.
   if (isStixCyberObservableHashedObservable(input.type) && observableInput.hashes) {
@@ -231,9 +228,7 @@ export const stixCyberObservableAddRelations = async (user, stixCyberObservableI
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((entity) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, entity, user)
-  );
+  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, entity, user));
 };
 
 export const stixCyberObservableDeleteRelation = async (user, stixCyberObservableId, toId, relationshipType) => {
@@ -266,7 +261,7 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
         opts
       );
     }
-    throw FunctionalError(`Cannot update url when payload_bin is present.`);
+    throw FunctionalError('Cannot update url when payload_bin is present.');
   } else if (isNotEmptyField(originalStixCyberObservable.url) && input[0].key === 'payload_bin') {
     if (isNotEmptyField(originalStixCyberObservable.payload_bin)) {
       await updateAttribute(
@@ -277,7 +272,7 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
         opts
       );
     }
-    throw FunctionalError(`Cannot update payload_bin when url is present.`);
+    throw FunctionalError('Cannot update payload_bin when url is present.');
   }
   const { element: stixCyberObservable } = await updateAttribute(
     user,
@@ -287,7 +282,6 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
     opts
   );
   if (input[0].key === 'x_opencti_score') {
-    // eslint-disable-next-line prettier/prettier
     const indicators = await listThroughGetFrom(
       user,
       [stixCyberObservableId],
@@ -305,15 +299,15 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
 // region context
 export const stixCyberObservableCleanContext = (user, stixCyberObservableId) => {
   delEditContext(user, stixCyberObservableId);
-  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user)
-  );
+  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
+  });
 };
 export const stixCyberObservableEditContext = (user, stixCyberObservableId, input) => {
   setEditContext(user, stixCyberObservableId, input);
-  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user)
-  );
+  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) => {
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
+  });
 };
 // endregion
 
@@ -344,7 +338,7 @@ export const stixCyberObservableExportAsk = async (user, args) => {
   return map((w) => workToExportFile(w.work), works);
 };
 export const stixCyberObservablesExportPush = async (user, file, listFilters) => {
-  await upload(user, `export/Stix-Cyber-Observable`, file, { list_filters: listFilters });
+  await upload(user, 'export/Stix-Cyber-Observable', file, { list_filters: listFilters });
   return true;
 };
 export const stixCyberObservableExportPush = async (user, entityId, file) => {
@@ -358,8 +352,7 @@ export const stixCyberObservableExportPush = async (user, entityId, file) => {
 // endregion
 
 // region mutation
-export const stixCyberObservableDistribution = async (user, args) =>
-  distributionEntities(user, ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
+export const stixCyberObservableDistribution = async (user, args) => distributionEntities(user, ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
 
 export const stixCyberObservableDistributionByEntity = async (user, args) => {
   const { objectId } = args;

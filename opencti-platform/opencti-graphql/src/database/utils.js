@@ -13,7 +13,7 @@ import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
-import { observableValue } from '../utils/format';
+import { now, observableValue } from '../utils/format';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 
@@ -52,8 +52,7 @@ export const INDEX_INFERRED_ENTITIES = `${ES_INDEX_PREFIX}_inferred_entities`;
 export const READ_INDEX_INFERRED_ENTITIES = `${INDEX_INFERRED_ENTITIES}*`;
 export const INDEX_INFERRED_RELATIONSHIPS = `${ES_INDEX_PREFIX}_inferred_relationships`;
 export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS}*`;
-export const isInferredIndex = (index) =>
-  index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
+export const isInferredIndex = (index) => index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
 
 export const WRITE_PLATFORM_INDICES = [
   INDEX_HISTORY,
@@ -115,7 +114,7 @@ export const isEmptyField = (field) => !isNotEmptyField(field);
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment.parseZone(startDate);
-  const endDateParsed = moment.parseZone(endDate);
+  const endDateParsed = moment.parseZone(endDate ?? now());
   let dateFormat;
 
   switch (interval) {

@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
-import { ArrowForwardIosOutlined, PlaceOutlined } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Button from '@mui/material/Button';
+import { ArrowForwardIosOutlined, PlaceOutlined } from '@mui/icons-material';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -14,15 +14,13 @@ import Security, {
 const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     textTransform: 'none',
-    color: '#666666',
-    backgroundColor: '#ffffff',
   },
   button: {
     marginRight: theme.spacing(2),
-    padding: '2px 5px 2px 5px',
+    padding: '0 5px 0 5px',
     minHeight: 20,
     minWidth: 20,
     textTransform: 'none',
@@ -53,14 +51,14 @@ class TopMenuPosition extends Component {
           to="/dashboard/entities/positions"
           variant="contained"
           size="small"
-          color="inherit"
+          color="primary"
           classes={{ root: classes.buttonHome }}
         >
           <PlaceOutlined className={classes.icon} fontSize="small" />
           {t('Positions')}
         </Button>
         <ArrowForwardIosOutlined
-          color="inherit"
+          color="primary"
           classes={{ root: classes.arrow }}
         />
         <Button
@@ -75,7 +73,7 @@ class TopMenuPosition extends Component {
           color={
             location.pathname === `/dashboard/entities/positions/${positionId}`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -97,7 +95,7 @@ class TopMenuPosition extends Component {
               `/dashboard/entities/positions/${positionId}/knowledge`,
             )
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -117,7 +115,7 @@ class TopMenuPosition extends Component {
             location.pathname
             === `/dashboard/entities/positions/${positionId}/analysis`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >
@@ -138,7 +136,7 @@ class TopMenuPosition extends Component {
               location.pathname
               === `/dashboard/entities/positions/${positionId}/files`
                 ? 'secondary'
-                : 'inherit'
+                : 'primary'
             }
             classes={{ root: classes.button }}
           >
@@ -159,7 +157,7 @@ class TopMenuPosition extends Component {
             location.pathname
             === `/dashboard/entities/positions/${positionId}/history`
               ? 'secondary'
-              : 'inherit'
+              : 'primary'
           }
           classes={{ root: classes.button }}
         >

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import inject18n from '../../../../components/i18n';
 import AttackPatternsMatrix from '../../arsenal/attack_patterns/AttackPatternsMatrix';
 
@@ -15,7 +15,7 @@ class StixDomainObjectAttackPatternsKillChainMatrix extends Component {
   render() {
     const { searchTerm, data } = this.props;
     const attackPatterns = R.map(
-      (n) => n.node.to,
+      (n) => (n.node.to.entity_type === 'Attack-Pattern' ? n.node.to : n.node.from),
       data.stixCoreRelationships.edges,
     );
     return (

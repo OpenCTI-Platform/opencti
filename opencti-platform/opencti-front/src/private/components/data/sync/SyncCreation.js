@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import IconButton from '@material-ui/core/IconButton';
-import Fab from '@material-ui/core/Fab';
-import { Add, Close } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import Fab from '@mui/material/Fab';
+import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -22,7 +22,6 @@ const styles = (theme) => ({
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -42,8 +41,7 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   header: {
-    backgroundColor: theme.palette.navAlt.backgroundHeader,
-    color: theme.palette.navAlt.backgroundHeaderText,
+    backgroundColor: theme.palette.background.nav,
     padding: '20px 0px 20px 60px',
   },
   closeButton: {
@@ -170,6 +168,8 @@ const SyncCreation = (props) => {
       <Drawer
         open={open}
         anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
@@ -178,8 +178,10 @@ const SyncCreation = (props) => {
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
+            size="large"
+            color="primary"
           >
-            <Close fontSize="small" />
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a synchronizer')}</Typography>
         </div>
@@ -197,18 +199,18 @@ const SyncCreation = (props) => {
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({
-              submitForm, handleReset, isSubmitting, values,
-            }) => (
+            {({ submitForm, handleReset, isSubmitting, values }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="name"
                   label={t('Name')}
                   fullWidth={true}
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="uri"
                   label={t('Remote OpenCTI URL')}
                   fullWidth={true}
@@ -216,6 +218,7 @@ const SyncCreation = (props) => {
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="token"
                   label={t('Remote OpenCTI token')}
                   fullWidth={true}
@@ -223,6 +226,7 @@ const SyncCreation = (props) => {
                 />
                 <Field
                   component={TextField}
+                  variant="standard"
                   name="stream_id"
                   label={t('Remote OpenCTI stream ID')}
                   fullWidth={true}
@@ -261,7 +265,7 @@ const SyncCreation = (props) => {
                   </Button>
                   <Button
                     variant="contained"
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={!verified || isSubmitting}
                     classes={{ root: classes.button }}

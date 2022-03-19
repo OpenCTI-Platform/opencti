@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import Chip from '@mui/material/Chip';
 import { truncate } from '../utils/String';
 
 const styles = () => ({
@@ -70,16 +71,14 @@ const inlineStylesLight = {
 
 class ItemMarking extends Component {
   render() {
-    const {
-      classes, variant, label, color, theme,
-    } = this.props;
+    const { classes, variant, label, color, theme } = this.props;
     const tuncatedLabel = truncate(label, 20);
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (color) {
       let backgroundColor = this.props.color;
       let textColor = theme.palette.text.primary;
       let border = '0';
-      if (theme.palette.type === 'light') {
+      if (theme.palette.mode === 'light') {
         if (backgroundColor === '#ffffff') {
           backgroundColor = '#ffffff';
           textColor = '#2b2b2b';
@@ -103,7 +102,7 @@ class ItemMarking extends Component {
       );
     }
     let inlineStyles = inlineStylesDark;
-    if (theme.palette.type === 'light') {
+    if (theme.palette.mode === 'light') {
       inlineStyles = inlineStylesLight;
     }
     switch (this.props.label) {

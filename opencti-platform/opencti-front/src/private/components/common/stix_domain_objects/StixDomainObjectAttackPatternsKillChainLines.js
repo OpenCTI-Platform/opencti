@@ -3,16 +3,16 @@ import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import IconButton from '@material-ui/core/IconButton';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Collapse from '@material-ui/core/Collapse';
+import withStyles from '@mui/styles/withStyles';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Collapse from '@mui/material/Collapse';
 import { Launch, LockPattern, ProgressWrench } from 'mdi-material-ui';
-import { ExpandLess, ExpandMore } from '@material-ui/icons';
+import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { yearFormat } from '../../../../utils/Time';
@@ -75,6 +75,9 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
       || R.propOr('', 'subattackPatterns_text', n.to)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
+    const stixRelationshipsEdges = data.stixCoreRelationships.edges.map((n) => (n.node.to.entity_type === 'Attack-Pattern'
+      ? n
+      : { node: { ...n.node, to: n.node.from, from: n.node.to } }));
     const killChainPhases = R.pipe(
       // eslint-disable-next-line no-nested-ternary
       R.map((n) => (n.node.killChainPhases.edges.length > 0
@@ -84,7 +87,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
       R.uniq,
       R.indexBy(R.prop('id')),
-    )(data.stixCoreRelationships.edges);
+    )(stixRelationshipsEdges);
     const stixCoreRelationships = R.pipe(
       R.map((n) => n.node),
       R.map((n) => R.assoc('startTimeYear', yearFormat(n.start_time), n)),
@@ -122,7 +125,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
       R.mapObjIndexed((value, key) => R.assoc('attackPatterns', value, killChainPhases[key])),
       R.values,
       R.sortWith([R.ascend(R.prop('x_opencti_order'))]),
-    )(data.stixCoreRelationships.edges);
+    )(stixRelationshipsEdges);
     return (
       <div>
         <div className={classes.container} id="container">
@@ -148,6 +151,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                         stixCoreRelationship.id,
                       )}
                       aria-haspopup="true"
+                      size="large"
                     >
                       {this.state.expandedLines[stixCoreRelationship.id]
                       === false ? (
@@ -241,6 +245,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                       attackPattern.id,
                                     )}
                                     aria-haspopup="true"
+                                    size="large"
                                   >
                                     {this.state.expandedLines[
                                       attackPattern.id
@@ -337,7 +342,7 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
 StixDomainObjectAttackPatternsKillChainLines.propTypes = {
   stixDomainObjectId: PropTypes.string,
   searchTerm: PropTypes.string,
-  handleDelete: PropTypes.func,
+  onDelete: PropTypes.func,
   data: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,

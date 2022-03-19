@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -101,9 +101,7 @@ class IndicatorEntities extends Component {
   }
 
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm,
-    } = this.state;
+    const { view, sortBy, orderAsc, searchTerm } = this.state;
     const { indicatorId, relationshipType, classes } = this.props;
     const paginationOptions = {
       fromId: indicatorId,

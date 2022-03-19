@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
 import {
   ResponsiveContainer,
   RadarChart,
@@ -9,20 +8,21 @@ import {
   PolarAngleAxis,
   Radar,
 } from 'recharts';
-import { withTheme, withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import IconButton from '@material-ui/core/IconButton';
-import Slider from '@material-ui/core/Slider';
-import { ThumbsUpDownOutlined } from '@material-ui/icons';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
+import withTheme from '@mui/styles/withTheme';
+import withStyles from '@mui/styles/withStyles';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import IconButton from '@mui/material/IconButton';
+import Slider from '@mui/material/Slider';
+import { ThumbsUpDownOutlined } from '@mui/icons-material';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
-import { createRefetchContainer } from 'react-relay';
+import { graphql, createRefetchContainer } from 'react-relay';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -108,9 +108,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
 
   tickFormatter(props) {
     const { classes } = this.props;
-    const {
-      payload, x, y, textAnchor,
-    } = props;
+    const { payload, x, y, textAnchor } = props;
     const color = colors[payload.value];
     return (
       <text
@@ -184,9 +182,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
   }
 
   renderContent() {
-    const {
-      t, data, field, theme,
-    } = this.props;
+    const { t, data, field, theme } = this.props;
     if (data && data.opinionsDistribution) {
       let distributionData;
       if (field && field.includes('internal_id')) {
@@ -245,7 +241,13 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
                 left: 0,
               }}
             >
-              <PolarGrid stroke={theme.palette.navAlt.backgroundHeader} />
+              <PolarGrid
+                stroke={
+                  theme.palette.mode === 'dark'
+                    ? 'rgba(255, 255, 255, .1)'
+                    : 'rgba(0, 0, 0, .1)'
+                }
+              />
               <PolarAngleAxis
                 dataKey="label"
                 tick={(innerProps) => this.tickFormatter(innerProps)}
@@ -306,14 +308,12 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
 
   render() {
     const { currentOpinion } = this.state;
-    const {
-      t, classes, title, variant, height, marginTop, stixCoreObjectId,
-    } = this.props;
+    const { t, classes, title, variant, height, marginTop, stixCoreObjectId } = this.props;
     const marks = [
       { label: '-', value: 1 },
-      { label: 'disagree', value: 2 },
-      { label: 'neutral', value: 3 },
-      { label: 'agree', value: 4 },
+      { label: t('disagree'), value: 2 },
+      { label: t('neutral'), value: 3 },
+      { label: t('agree'), value: 4 },
       { label: '+', value: 5 },
     ];
     return (
@@ -331,10 +331,15 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
             aria-label="Label"
             onClick={this.handleOpen.bind(this)}
             style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+            size="large"
           >
             <ThumbsUpDownOutlined fontSize="small" />
           </IconButton>
-          <Dialog open={this.state.open} onClose={this.handleClose.bind(this)}>
+          <Dialog
+            PaperProps={{ elevation: 1 }}
+            open={this.state.open}
+            onClose={this.handleClose.bind(this)}
+          >
             <QueryRenderer
               query={stixCoreObjectOpinionsRadarMyOpinionQuery}
               variables={{ id: stixCoreObjectId }}
@@ -392,7 +397,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
                               {t('Cancel')}
                             </Button>
                             <Button
-                              color="primary"
+                              color="secondary"
                               onClick={submitForm}
                               disabled={isSubmitting}
                             >
@@ -413,7 +418,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
         {variant === 'inLine' || variant === 'inEntity' ? (
           this.renderContent()
         ) : (
-          <Paper classes={{ root: classes.paper }} elevation={2}>
+          <Paper classes={{ root: classes.paper }} variant="outlined">
             {this.renderContent()}
           </Paper>
         )}

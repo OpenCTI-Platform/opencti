@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, includes } from 'ramda';
-import { createRefetchContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { graphql, createRefetchContainer } from 'react-relay';
 import { interval } from 'rxjs';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import { withStyles } from '@material-ui/core';
-import List from '@material-ui/core/List';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import withStyles from '@mui/styles/withStyles';
+import List from '@mui/material/List';
 import { Field, Form, Formik } from 'formik';
-import Dialog from '@material-ui/core/Dialog';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import DialogContent from '@material-ui/core/DialogContent';
-import MenuItem from '@material-ui/core/MenuItem';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import MenuItem from '@mui/material/MenuItem';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import FileLine from '../../common/files/FileLine';
 import { TEN_SECONDS } from '../../../../utils/Time';
@@ -92,7 +91,7 @@ const ExternalReferenceFileImportViewerBase = ({
           />
         </div>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           {edges.length ? (
             <List>
               {edges.map((file) => (
@@ -134,6 +133,7 @@ const ExternalReferenceFileImportViewerBase = ({
           {({ submitForm, handleReset, isSubmitting }) => (
             <Form style={{ margin: '0 0 20px 0' }}>
               <Dialog
+                PaperProps={{ elevation: 1 }}
                 open={fileToImport}
                 keepMounted={true}
                 onClose={handleCloseImport}
@@ -143,6 +143,7 @@ const ExternalReferenceFileImportViewerBase = ({
                 <DialogContent>
                   <Field
                     component={SelectField}
+                    variant="standard"
                     name="connector_id"
                     label={t('Connector')}
                     fullWidth={true}
@@ -168,18 +169,13 @@ const ExternalReferenceFileImportViewerBase = ({
                   </Field>
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    color="primary"
+                    color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t('Create')}
                   </Button>

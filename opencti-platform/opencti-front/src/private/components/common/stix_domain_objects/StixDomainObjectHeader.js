@@ -1,27 +1,27 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-import graphql from 'babel-plugin-relay/macro';
-import { withStyles } from '@material-ui/core/styles';
-import Chip from '@material-ui/core/Chip';
-import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import Slide from '@material-ui/core/Slide';
-import { Add, Close, Delete } from '@material-ui/icons';
+import { graphql } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import Chip from '@mui/material/Chip';
+import Typography from '@mui/material/Typography';
+import IconButton from '@mui/material/IconButton';
+import Slide from '@mui/material/Slide';
+import { Add, Close, Delete } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
-import { DialogTitle } from '@material-ui/core';
-import InputLabel from '@material-ui/core/InputLabel/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select/Select';
-import MenuItem from '@material-ui/core/MenuItem';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import ListItemText from '@mui/material/ListItemText';
+import { DialogTitle } from '@mui/material';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import * as Yup from 'yup';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -57,7 +57,7 @@ const styles = () => ({
     float: 'right',
   },
   viewAsField: {
-    marginTop: -5,
+    marginTop: -3,
     float: 'left',
   },
   viewAsFieldLabel: {
@@ -283,6 +283,7 @@ class StixDomainObjectHeader extends Component {
             </InputLabel>
             <FormControl classes={{ root: classes.viewAsField }}>
               <Select
+                size="small"
                 name="view-as"
                 value={viewAs}
                 onChange={onViewAs.bind(this)}
@@ -331,6 +332,7 @@ class StixDomainObjectHeader extends Component {
                   color="secondary"
                   aria-label="Alias"
                   onClick={this.handleToggleCreateAlias.bind(this)}
+                  size="large"
                 >
                   {this.state.openAlias ? (
                     <Close fontSize="small" />
@@ -364,6 +366,7 @@ class StixDomainObjectHeader extends Component {
                     <Form style={{ float: 'right' }}>
                       <Field
                         component={TextField}
+                        variant="standard"
                         name="new_alias"
                         autoFocus={true}
                         placeholder={t('New alias')}
@@ -404,6 +407,7 @@ class StixDomainObjectHeader extends Component {
         )}
         <div className="clearfix" />
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={this.state.openAliases}
           TransitionComponent={Transition}
           onClose={this.handleToggleOpenAliases.bind(this)}
@@ -426,6 +430,7 @@ class StixDomainObjectHeader extends Component {
                 <Form style={{ float: 'right' }}>
                   <Field
                     component={TextField}
+                    variant="standard"
                     name="new_alias"
                     autoFocus={true}
                     placeholder={t('New alias')}
@@ -477,6 +482,7 @@ class StixDomainObjectHeader extends Component {
                               ? this.handleOpenCommitDelete.bind(this, label)
                               : this.deleteAlias.bind(this, label)
                           }
+                          size="large"
                         >
                           <Delete />
                         </IconButton>
@@ -505,6 +511,7 @@ class StixDomainObjectHeader extends Component {
                   <Form>
                     <Field
                       component={TextField}
+                      variant="standard"
                       name="new_alias"
                       autoFocus={true}
                       fullWidth={true}

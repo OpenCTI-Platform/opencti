@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -22,7 +21,7 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
+
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -225,9 +224,7 @@ class CityEditionOverviewComponent extends Component {
   }
 
   render() {
-    const {
-      t, city, context, enableReferences,
-    } = this.props;
+    const { t, city, context, enableReferences } = this.props;
     const createdBy = R.pathOr(null, ['createdBy', 'name'], city) === null
       ? ''
       : {
@@ -270,6 +267,7 @@ class CityEditionOverviewComponent extends Component {
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
+              variant="standard"
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -295,6 +293,7 @@ class CityEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
+              variant="standard"
               style={{ marginTop: 20 }}
               name="latitude"
               label={t('Latitude')}
@@ -307,6 +306,7 @@ class CityEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
+              variant="standard"
               style={{ marginTop: 20 }}
               name="longitude"
               label={t('Longitude')}

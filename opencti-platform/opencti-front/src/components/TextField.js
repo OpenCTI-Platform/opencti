@@ -1,6 +1,6 @@
 import React from 'react';
-import MuiTextField from '@material-ui/core/TextField';
-import { fieldToTextField } from 'formik-material-ui';
+import MuiTextField from '@mui/material/TextField';
+import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';

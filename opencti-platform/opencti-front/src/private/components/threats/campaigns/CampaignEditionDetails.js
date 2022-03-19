@@ -1,19 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import DatePickerField from '../../../../components/DatePickerField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import { dateFormat, parse } from '../../../../utils/Time';
+import { buildDate, parse } from '../../../../utils/Time';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -21,7 +20,6 @@ const styles = (theme) => ({
     width: '50%',
     position: 'fixed',
     overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -149,15 +147,12 @@ class CampaignEditionDetailsComponent extends Component {
   }
 
   render() {
-    const {
-      t, campaign, context, enableReferences,
-    } = this.props;
+    const { t, campaign, context, enableReferences } = this.props;
     const initialValues = R.pipe(
-      R.assoc('first_seen', dateFormat(campaign.first_seen)),
-      R.assoc('last_seen', dateFormat(campaign.last_seen)),
+      R.assoc('first_seen', buildDate(campaign.first_seen)),
+      R.assoc('last_seen', buildDate(campaign.last_seen)),
       R.pick(['first_seen', 'last_seen', 'objective']),
     )(campaign);
-
     return (
       <Formik
         enableReinitialize={true}
@@ -174,32 +169,43 @@ class CampaignEditionDetailsComponent extends Component {
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
-              component={DatePickerField}
+              component={DateTimePickerField}
               name="first_seen"
-              label={t('First seen')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
+              invalidDateMessage={t(
+                'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m))',
+              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="first_seen" />
-              }
+              TextFieldProps={{
+                label: t('First seen'),
+                variant: 'standard',
+                fullWidth: true,
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="first_seen" />
+                ),
+              }}
             />
             <Field
-              component={DatePickerField}
+              component={DateTimePickerField}
               name="last_seen"
-              label={t('Last seen')}
-              invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+              invalidDateMessage={t(
+                'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m)',
+              )}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="last_seen" />
-              }
+              TextFieldProps={{
+                label: t('Last seen'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="last_seen" />
+                ),
+              }}
             />
             <Field
               component={TextField}
+              variant="standard"
               name="objective"
               label={t('Objective')}
               fullWidth={true}

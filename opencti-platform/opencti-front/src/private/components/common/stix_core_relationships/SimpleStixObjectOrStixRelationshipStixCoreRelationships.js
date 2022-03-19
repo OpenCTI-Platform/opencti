@@ -1,14 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import withStyles from '@mui/styles/withStyles';
 import { compose } from 'ramda';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Skeleton from '@material-ui/lab/Skeleton';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines, {
   simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery,
@@ -91,7 +91,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
         <Typography variant="h4" gutterBottom={true}>
           {t('Latest created relationships')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <QueryRenderer
             query={
               simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery
@@ -127,7 +127,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
                       <ListItemIcon classes={{ root: classes.itemIcon }}>
                         <Skeleton
                           animation="wave"
-                          variant="circle"
+                          variant="circular"
                           width={30}
                           height={30}
                         />
@@ -136,7 +136,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
                         primary={
                           <Skeleton
                             animation="wave"
-                            variant="rect"
+                            variant="rectangular"
                             width="90%"
                             height={15}
                             style={{ marginBottom: 10 }}
@@ -145,7 +145,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
                         secondary={
                           <Skeleton
                             animation="wave"
-                            variant="rect"
+                            variant="rectangular"
                             width="90%"
                             height={15}
                           />

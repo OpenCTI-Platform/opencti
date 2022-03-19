@@ -27,7 +27,7 @@ import { distributionRelations, timeSeriesRelations, batchLoader, convertDataToR
 import { creator } from '../domain/log';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
-import { elBatchIds } from '../database/elasticSearch';
+import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 
 const loadByIdLoader = batchLoader(elBatchIds);
@@ -76,17 +76,14 @@ const stixCoreRelationshipResolvers = {
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, { user }) => ({
       delete: () => stixCoreRelationshipDelete(user, id),
-      fieldPatch: ({ input, commitMessage, references }) =>
-        stixCoreRelationshipEditField(user, id, input, { commitMessage, references }),
+      fieldPatch: ({ input, commitMessage, references }) => stixCoreRelationshipEditField(user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixCoreRelationshipEditContext(user, id, input),
       contextClean: () => stixCoreRelationshipCleanContext(user, id),
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) =>
-        stixCoreRelationshipDeleteRelation(user, id, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
     stixCoreRelationshipAdd: (_, { input }, { user }) => addStixCoreRelationship(user, input),
-    stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, { user }) =>
-      stixCoreRelationshipDeleteByFromAndTo(user, fromId, toId, relationshipType),
+    stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, { user }) => stixCoreRelationshipDeleteByFromAndTo(user, fromId, toId, relationshipType),
   },
   Subscription: {
     stixCoreRelationship: {

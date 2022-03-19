@@ -1,17 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import List from '@material-ui/core/List';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
-import ListItem from '@material-ui/core/ListItem';
+import withStyles from '@mui/styles/withStyles';
+import Typography from '@mui/material/Typography';
+import List from '@mui/material/List';
+import { graphql, createFragmentContainer } from 'react-relay';
+import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Paper from '@material-ui/core/Paper';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableRelationCreationFromEntity from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreationFromEntity';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -103,7 +102,7 @@ class StixCyberObservableLinksComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
+        <Paper classes={{ root: classes.paper }} variant="outlined">
           <List style={{ marginTop: -10 }}>
             {data
               && data.stixCyberObservableRelationships

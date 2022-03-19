@@ -1,17 +1,11 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
-import { elIndex } from '../database/elasticSearch';
+import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_USER_SUBSCRIPTION } from '../schema/internalObject';
-import {
-  deleteElementById,
-  fullLoadById,
-  internalLoadById,
-  listEntities,
-  loadById,
-  updateAttribute,
-} from '../database/middleware';
+import { deleteElementById, fullLoadById, internalLoadById, loadById, updateAttribute } from '../database/middleware';
+import { listEntities } from '../database/repository';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { baseUrl, BUS_TOPICS } from '../config/conf';
 import { FROM_START_STR, hoursAgo, minutesAgo, prepareDate } from '../utils/format';
@@ -88,15 +82,15 @@ export const userSubscriptionDelete = async (user, subscriptionId) => {
 };
 export const userSubscriptionCleanContext = async (user, subscriptionId) => {
   await delEditContext(user, subscriptionId);
-  return loadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((subscriptionToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, subscriptionToReturn, user)
-  );
+  return loadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((subscriptionToReturn) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, subscriptionToReturn, user);
+  });
 };
 export const userSubscriptionEditContext = async (user, subscriptionId, input) => {
   await setEditContext(user, subscriptionId, input);
-  return loadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((collectionToReturn) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, collectionToReturn, user)
-  );
+  return loadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((collectionToReturn) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, collectionToReturn, user);
+  });
 };
 
 export const generateDigestForSubscription = async (subscription) => {
@@ -268,10 +262,9 @@ export const generateDigestForSubscription = async (subscription) => {
   }
   // Prepare HTML data
   let htmlData = '';
-  const entities =
-    subscription.entities_ids && subscription.entities_ids.length > 0
-      ? await Promise.all(subscription.entities_ids.map((n) => internalLoadById(user, n)))
-      : [];
+  const entities = subscription.entities_ids && subscription.entities_ids.length > 0
+    ? await Promise.all(subscription.entities_ids.map((n) => internalLoadById(user, n)))
+    : [];
   const entitiesNames = entities.map((n) => n.name);
   htmlData += header(baseUrl, entitiesNames);
   if (data.containersData.length > 0) {

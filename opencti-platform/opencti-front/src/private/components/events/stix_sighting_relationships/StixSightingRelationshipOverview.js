@@ -2,18 +2,17 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import * as R from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
-import { createFragmentContainer } from 'react-relay';
+import withStyles from '@mui/styles/withStyles';
+import { graphql, createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
-import Grid from '@material-ui/core/Grid';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Fab from '@material-ui/core/Fab';
-import { ArrowRightAlt, Edit } from '@material-ui/icons';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Fab from '@mui/material/Fab';
+import { ArrowRightAlt, Edit } from '@mui/icons-material';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
-import Chip from '@material-ui/core/Chip';
+import Chip from '@mui/material/Chip';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -175,9 +174,7 @@ class StixSightingRelationshipContainer extends Component {
   }
 
   render() {
-    const {
-      t, n, nsdt, classes, stixSightingRelationship, paddingRight,
-    } = this.props;
+    const { t, n, nsdt, classes, stixSightingRelationship, paddingRight } = this.props;
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
     const linkFrom = from.relationship_type
@@ -289,13 +286,13 @@ class StixSightingRelationshipContainer extends Component {
             </div>
           </div>
         </Link>
-        <div className="clearfix" style={{ height: 20 }} />
+        <div className="clearfix" style={{ height: 40 }} />
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Information')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -372,11 +369,11 @@ class StixSightingRelationshipContainer extends Component {
               </Grid>
             </Paper>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} elevation={2}>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>

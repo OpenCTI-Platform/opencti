@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
-import { withStyles } from '@material-ui/core/styles';
-import Drawer from '@material-ui/core/Drawer';
-import MenuList from '@material-ui/core/MenuList';
-import MenuItem from '@material-ui/core/MenuItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import { BugReport } from '@material-ui/icons';
+import withStyles from '@mui/styles/withStyles';
+import Drawer from '@mui/material/Drawer';
+import MenuList from '@mui/material/MenuList';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import { BugReport } from '@mui/icons-material';
 import {
   LockPattern,
   Application,
@@ -37,9 +37,7 @@ const styles = (theme) => ({
 
 class CampaignKnowledgeBar extends Component {
   render() {
-    const {
-      t, location, classes, campaignId,
-    } = this.props;
+    const { t, location, classes, campaignId } = this.props;
     return (
       <Drawer
         variant="permanent"

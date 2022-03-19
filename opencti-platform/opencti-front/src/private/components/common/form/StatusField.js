@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
-import {
-  compose, pathOr, pipe, map, union,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
-import { withStyles } from '@material-ui/core/styles';
-import graphql from 'babel-plugin-relay/macro';
-import Avatar from '@material-ui/core/Avatar';
+import withStyles from '@mui/styles/withStyles';
+import { graphql } from 'react-relay';
+import Avatar from '@mui/material/Avatar';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
@@ -122,9 +120,7 @@ class StatusField extends Component {
   }
 
   render() {
-    const {
-      t, name, style, classes, onChange, helpertext,
-    } = this.props;
+    const { t, name, style, classes, onChange, helpertext } = this.props;
     return (
       <div>
         <Field
@@ -132,6 +128,7 @@ class StatusField extends Component {
           style={style}
           name={name}
           textfieldprops={{
+            variant: 'standard',
             label: t('Status'),
             helperText: helpertext,
             onFocus: this.searchStatuses.bind(this),
@@ -140,8 +137,8 @@ class StatusField extends Component {
           options={this.state.statuses}
           onInputChange={this.handleSearch.bind(this)}
           onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(option) => (
-            <React.Fragment>
+          renderOption={(props, option) => (
+            <li {...props}>
               <div className={classes.icon}>
                 <Avatar
                   variant="square"
@@ -155,7 +152,7 @@ class StatusField extends Component {
                 </Avatar>
               </div>
               <div className={classes.text}>{option.label}</div>
-            </React.Fragment>
+            </li>
           )}
           classes={{ clearIndicator: classes.autoCompleteIndicator }}
         />
