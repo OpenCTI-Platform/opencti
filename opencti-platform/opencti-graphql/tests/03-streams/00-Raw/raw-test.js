@@ -37,17 +37,17 @@ describe('Raw streams tests', () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       // Check the number of events
-      expect(events.length).toBe(425);
+      expect(events.length).toBe(419);
       // 01 - CHECK CREATE EVENTS
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
-      expect(createEvents.length).toBe(293);
+      expect(createEvents.length).toBe(288);
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
       expect(createEventsByTypes['marking-definition'].length).toBe(7);
       expect(createEventsByTypes.label.length).toBe(15);
       expect(createEventsByTypes.identity.length).toBe(13);
-      expect(createEventsByTypes.relationship.length).toBe(119);
-      expect(createEventsByTypes.indicator.length).toBe(30);
+      expect(createEventsByTypes.relationship.length).toBe(115);
+      expect(createEventsByTypes.indicator.length).toBe(29);
       expect(createEventsByTypes['attack-pattern'].length).toBe(6);
       expect(createEventsByTypes.report.length).toBe(3);
       expect(createEventsByTypes.tool.length).toBe(2);
@@ -116,7 +116,7 @@ describe('Raw streams tests', () => {
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
-      expect(deleteEvents.length).toBe(39);
+      expect(deleteEvents.length).toBe(38);
       // const deleteEventsByTypes = R.groupBy((e) => e.data.data.type, deleteEvents);
       for (let delIndex = 0; delIndex < deleteEvents.length; delIndex += 1) {
         const { data: insideData, origin, type } = deleteEvents[delIndex];
@@ -186,7 +186,7 @@ describe('Raw streams tests', () => {
         ])
       );
       const byTypes = R.groupBy((e) => e.type, deletions);
-      expect(byTypes.relationship.length).toBe(7); // Due to merge and sub deletions
+      expect(byTypes.relationship.length).toBe(6); // Due to merge and sub deletions
       expect(byTypes['threat-actor'].length).toBe(6); // Merge of threat actors in test
       expect(byTypes.file.length).toBe(2); // Merge of files in test
     },
