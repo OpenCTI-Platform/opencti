@@ -112,6 +112,9 @@
         ],
         "<all_SCOs>": [
             "based-on"
+        ],
+        "uses": [
+            "indicates"
         ]
     },
     "infrastructure": {
@@ -543,6 +546,11 @@
     },
     "region": {
         "region": [
+            "located-at"
+        ]
+    },
+    "targets": {
+        "location": [
             "located-at"
         ]
     }

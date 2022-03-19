@@ -57,6 +57,9 @@
     ],
     "<all_SCOs>": [
       "based-on"
+    ],
+    "uses": [
+      "indicates"
     ]
   },
   "city": {
@@ -100,6 +103,11 @@
   "intrusion-set": {
     "system": [
       "targets"
+    ]
+  },
+  "targets": {
+    "location": [
+      "located-at"
     ]
   }
 }

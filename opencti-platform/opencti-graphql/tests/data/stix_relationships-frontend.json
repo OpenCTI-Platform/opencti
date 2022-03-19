@@ -214,6 +214,9 @@
         ],
         "x-opencti-user-agent": [
             "based-on"
+        ],
+        "uses": [
+            "indicates"
         ]
     },
     "infrastructure": {
@@ -933,6 +936,11 @@
     },
     "region": {
         "region": [
+            "located-at"
+        ]
+    },
+    "targets": {
+        "location": [
             "located-at"
         ]
     }

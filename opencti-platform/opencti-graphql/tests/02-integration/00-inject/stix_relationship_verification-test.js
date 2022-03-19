@@ -1,5 +1,16 @@
 import { stixCoreRelationshipsMapping, stixCyberObservableRelationshipsMapping } from '../../../src/database/stix';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
+import {
+  ENTITY_TYPE_INDICATOR, ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_LOCATION_REGION
+} from "../../../src/schema/stixDomainObject";
+import {
+  RELATION_INDICATES,
+  RELATION_LOCATED_AT,
+  RELATION_TARGETS,
+  RELATION_USES
+} from "../../../src/schema/stixCoreRelationship";
 
 const stixRelationships = {
   // eslint-disable-next-line global-require
@@ -318,6 +329,13 @@ const frontendSDORelationships = {
   Tool_Region: ['targets'],
   Tool_Sector: ['targets'],
   Tool_Vulnerability: ['has', 'targets'],
+  // CUSTOM OPENCTI RELATIONSHIPS
+  // DISCUSS IMPLEMENTATION!!
+  Indicator_uses: ['indicates'],
+  targets_Region: ['located-at'],
+  targets_Country: ['located-at'],
+  targets_City: ['located-at'],
+  targets_Position: ['located-at'],
 };
 
 // frontend relationships (hardcoded since there is no test suite for the frontend)
