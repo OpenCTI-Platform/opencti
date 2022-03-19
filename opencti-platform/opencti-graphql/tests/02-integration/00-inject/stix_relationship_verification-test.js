@@ -1,16 +1,5 @@
 import { stixCoreRelationshipsMapping, stixCyberObservableRelationshipsMapping } from '../../../src/database/stix';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
-import {
-  ENTITY_TYPE_INDICATOR, ENTITY_TYPE_LOCATION_CITY,
-  ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION,
-  ENTITY_TYPE_LOCATION_REGION
-} from "../../../src/schema/stixDomainObject";
-import {
-  RELATION_INDICATES,
-  RELATION_LOCATED_AT,
-  RELATION_TARGETS,
-  RELATION_USES
-} from "../../../src/schema/stixCoreRelationship";
 
 const stixRelationships = {
   // eslint-disable-next-line global-require
@@ -342,9 +331,9 @@ const frontendSDORelationships = {
 const frontendSCORelationships = {
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
-  'Domain-Name_Domain-Name': ['resolves-to'],
-  'Domain-Name_IPv4-Addr': ['resolves-to'],
-  'Domain-Name_IPv6-Addr': ['resolves-to'],
+  'Domain-Name_Domain-Name': ['obs_resolves-to'],
+  'Domain-Name_IPv4-Addr': ['obs_resolves-to'],
+  'Domain-Name_IPv6-Addr': ['obs_resolves-to'],
   'Email-Addr_User-Account': ['obs_belongs-to'],
   'Email-Message_Artifact': ['raw-email'],
   'Email-Message_Email-Addr': ['from', 'sender', 'to', 'cc', 'bcc'],
@@ -352,9 +341,9 @@ const frontendSCORelationships = {
   'Email-Mime-Part-Type_Artifact': ['body-raw'],
   'Email-Mime-Part-Type_StixFile': ['body-raw'],
   'IPv4-Addr_Autonomous-System': ['obs_belongs-to'],
-  'IPv4-Addr_Mac-Addr': ['resolves-to'],
+  'IPv4-Addr_Mac-Addr': ['obs_resolves-to'],
   'IPv6-Addr_Autonomous-System': ['obs_belongs-to'],
-  'IPv6-Addr_Mac-Addr': ['resolves-to'],
+  'IPv6-Addr_Mac-Addr': ['obs_resolves-to'],
   'Network-Traffic_Artifact': ['src-payload', 'dst-payload'],
   'Network-Traffic_Domain-Name': ['src', 'dst'],
   'Network-Traffic_IPv4-Addr': ['src', 'dst'],
