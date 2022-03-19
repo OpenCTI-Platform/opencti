@@ -106,6 +106,7 @@ const openctiRelationshipException = {
 const openctiRelationshipMapping = {
   'belongs-to': 'obs_belongs-to',
   content: 'obs_content',
+  'resolves-to': 'obs_resolves-to'
 };
 
 // frontend relationships (hardcoded since there is no test suite for the frontend)
