@@ -211,6 +211,13 @@ const relationsTypesMapping = {
   Tool_Region: ['targets'],
   Tool_Sector: ['targets'],
   Tool_Vulnerability: ['has', 'targets'],
+  // CUSTOM OPENCTI RELATIONSHIPS
+  // DISCUSS IMPLEMENTATION!!
+  Indicator_uses: ['indicates'],
+  targets_Region: ['located-at'],
+  targets_Country: ['located-at'],
+  targets_City: ['located-at'],
+  targets_Position: ['located-at'],
 };
 
 const stixCyberObservableRelationshipTypesMapping = {
