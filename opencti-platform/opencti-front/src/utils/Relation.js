@@ -1,7 +1,7 @@
 import { append, keys, pipe, filter, map, split, includes } from 'ramda';
 
 const relationsTypesMapping = {
- 'Attack-Pattern_Attack-Pattern': ['subtechnique-of'],
+  'Attack-Pattern_Attack-Pattern': ['subtechnique-of'],
   'Attack-Pattern_City': ['targets'],
   'Attack-Pattern_Country': ['targets'],
   'Attack-Pattern_Individual': ['targets'],
