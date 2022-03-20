@@ -17,34 +17,36 @@ const scoList = [
   'email-addr',
   'email-message',
   'email-mime-part-type',
-  'stixfile',
-  'windows-pebinary-ext',
-  'windows-pe-optional-header-type',
-  'windows-pe-section-type',
+  'http-request-ext',
+  'imcp-ext',
   'ipv4-addr',
   'ipv6-addr',
   'mac-addr',
   'mutex',
   'network-traffic',
-  'http-request-ext',
-  'imcp-ext',
-  'socket-ext',
-  'tcp-ext',
   'process',
-  'windows-process-ext',
-  'windows-service-ext',
+  'socket-ext',
+  'software',
+  'stixfile',
+  'tcp-ext',
+  'unix-account-ext',
   'url',
   'user-account',
-  'unix-account-ext',
+  'observed-data',
+  'windows-pe-optional-header-type',
+  'windows-pe-section-type',
+  'windows-pebinary-ext',
+  'windows-process-ext',
   'windows-registry-key',
   'windows-registry-value-type',
-  'x509-certificate',
-  'x509-v3-extensions-type',
-  'x-opencti-cryptographic-key',
+  'windows-service-ext',
   'x-opencti-cryptocurrency-wallet',
+  'x-opencti-cryptographic-key',
   'x-opencti-hostname',
   'x-opencti-text',
   'x-opencti-user-agent',
+  'x509-certificate',
+  'x509-v3-extensions-type',
 ];
 
 // Translation dictionary for the translation of STIX object names into
@@ -64,7 +66,7 @@ const openctiStixMapping = {
   },
   '<all_SCOs>': {
     frontend: [...scoList],
-    backend: [ABSTRACT_STIX_CYBER_OBSERVABLE.toLowerCase()],
+    backend: ['artifact', ABSTRACT_STIX_CYBER_OBSERVABLE.toLowerCase()],
   },
   campaign: {
     frontend: ['campaign', 'incident'],
@@ -74,23 +76,23 @@ const openctiStixMapping = {
 
 // SCOs which aren't yet implemented in OpenCTI
 const openctiSCOException = [
-  'malware-analysis',
-  'archive-ext',
-  'ntfs-ext',
   'alternate-data-stream-type',
-  'pdf-ext',
-  'raster-image-ext',
+  'archive-ext',
   'http-request-ext',
   'icmp-ext',
-  'socket-ext',
-  'windows-service-ext',
-  'windows-process-ext',
-  'windows-pe-section-type',
-  'windows-pebinary-ext',
-  'windows-pe-optional-header-type',
+  'malware-analysis',
+  'ntfs-ext',
+  'pdf-ext',
   'pe-binary-ext',
+  'raster-image-ext',
+  'socket-ext',
   'tcp-ext',
   'unix-account-ext',
+  'windows-pe-optional-header-type',
+  'windows-pe-section-type',
+  'windows-pebinary-ext',
+  'windows-process-ext',
+  'windows-service-ext',
 ];
 
 // entire relations which are not implement in openCTI
@@ -190,6 +192,7 @@ const frontendSDORelationships = {
   'Indicator_Network-Traffic': ['based-on'],
   Indicator_Process: ['based-on'],
   'Indicator_Observed-Data': ['based-on'],
+  Indicator_Software: ['based-on'],
   Indicator_StixFile: ['based-on'],
   'Indicator_Threat-Actor': ['indicates'],
   Indicator_Tool: ['indicates'],
@@ -231,6 +234,7 @@ const frontendSDORelationships = {
   Infrastructure_Position: ['located-at'],
   Infrastructure_Process: ['consists-of'],
   Infrastructure_Region: ['located-at'],
+  Infrastructure_Software: ['consists-of'],
   Infrastructure_StixFile: ['consists-of'],
   Infrastructure_Tool: ['hosts'],
   Infrastructure_Url: ['communicates-with', 'consists-of'],
@@ -259,7 +263,6 @@ const frontendSDORelationships = {
   'Intrusion-Set_Threat-Actor': ['attributed-to'],
   'Intrusion-Set_Tool': ['uses'],
   'Intrusion-Set_Vulnerability': ['targets'],
-  Malware_Artifact: ['sample'],
   'Malware_Attack-Pattern': ['uses'],
   Malware_City: ['originates-from', 'targets'],
   Malware_Country: ['originates-from', 'targets'],
@@ -274,8 +277,7 @@ const frontendSDORelationships = {
   Malware_Position: ['originates-from', 'targets'],
   Malware_Region: ['originates-from', 'targets'],
   Malware_Sector: ['targets'],
-  Malware_Software: ['operating-system'],
-  Malware_StixFile: ['downloads', 'drops', 'sample'],
+  Malware_StixFile: ['downloads', 'drops'],
   Malware_System: ['targets'],
   'Malware_Threat-Actor': ['authored-by'],
   Malware_Tool: ['downloads', 'drops', 'uses'],
@@ -319,7 +321,7 @@ const frontendSDORelationships = {
   Tool_Region: ['targets'],
   Tool_Sector: ['targets'],
   Tool_Vulnerability: ['has', 'targets'],
-  // CUSTOM OPENCTI RELATIONSHIPS
+  // CUSTOM OPENCTI SRO RELATIONSHIPS
   // DISCUSS IMPLEMENTATION!!
   Indicator_uses: ['indicates'],
   targets_Region: ['located-at'],
@@ -330,6 +332,7 @@ const frontendSDORelationships = {
 
 // frontend relationships (hardcoded since there is no test suite for the frontend)
 const frontendSCORelationships = {
+  Artifact_Malware: ['sample'],
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
   'Domain-Name_Domain-Name': ['obs_resolves-to'],
@@ -353,8 +356,7 @@ const frontendSCORelationships = {
   'Network-Traffic_Network-Traffic': ['encapsulates', 'encapsulated-by'],
   'Process_Network-Traffic': ['opened-connection'],
   Process_Process: ['parent', 'child'],
-  Process_StixFile: ['image'],
-  'Process_User-Account': ['creator-user'],
+  Software_Malware: ['operating-system'],
   StixFile_Artifact: ['obs_content', 'contains'],
   'StixFile_Autonomous-System': ['contains'],
   StixFile_Directory: ['parent-directory', 'contains'],
@@ -365,22 +367,26 @@ const frontendSCORelationships = {
   'StixFile_IPv4-Addr': ['contains'],
   'StixFile_IPv6-Addr': ['contains'],
   'StixFile_Mac-Addr': ['contains'],
+  StixFile_Malware: ['sample'],
   StixFile_Mutex: ['contains'],
   'StixFile_Network-Traffic': ['contains'],
-  StixFile_Process: ['contains'],
+  'StixFile_Observed-Data': ['obs_content'],
+  StixFile_Process: ['contains', 'image'],
+  StixFile_Software: ['contains'],
   StixFile_StixFile: ['contains'],
   StixFile_Url: ['contains'],
   'StixFile_User-Account': ['contains'],
   'StixFile_Windows-Registry-Key': ['contains'],
   'StixFile_Windows-Registry-Value-Type': ['contains'],
-  'StixFile_x509-Certificate': ['contains'],
-  'StixFile_x509-v3-Extensions-Type': ['contains'],
-  'StixFile_X-OpenCTI-Cryptographic-Key': ['contains'],
   'StixFile_X-OpenCTI-Cryptocurrency-Wallet': ['contains'],
+  'StixFile_X-OpenCTI-Cryptographic-Key': ['contains'],
   'StixFile_X-OpenCTI-Hostname': ['contains'],
   'StixFile_X-OpenCTI-Text': ['contains'],
   'StixFile_X-OpenCTI-User-Agent': ['contains'],
-  'Windows-Registry-Key_User-Account': ['creator-user'],
+  'StixFile_x509-Certificate': ['contains'],
+  'StixFile_x509-v3-Extensions-Type': ['contains'],
+  'User-Account_Process': ['creator-user'],
+  'User-Account_Windows-Registry-Key': ['creator-user'],
   'Windows-Registry-Key_Windows-Registry-Value-Type': ['values'],
   'x509-Certificate_x509-v3-Extensions-Type': ['x509-v3-extensions'],
 };
@@ -411,6 +417,7 @@ describe('Test that all STIX relationships are correctly implemented', () => {
 
   const processedRelationships = { frontend: [], backend: [] };
   Object.entries(openctiDefinitions).forEach(([location, implementationDictionary]) => {
+    const preprocessingDictionary = {};
     Object.entries(stixRelationships[location]).forEach(([sourceObject, targetAndRelationships]) => {
       Object.entries(targetAndRelationships).forEach(([targetObject, stixRelationship]) => {
         // Translate the STIX Objects to OpenCTI object names
@@ -418,6 +425,7 @@ describe('Test that all STIX relationships are correctly implemented', () => {
         if (sourceObject in openctiStixMapping) {
           sources = openctiStixMapping[sourceObject][location];
         }
+
         let targets = [targetObject];
         if (targetObject in openctiStixMapping) {
           targets = openctiStixMapping[targetObject][location];
@@ -429,37 +437,49 @@ describe('Test that all STIX relationships are correctly implemented', () => {
             targets
               .filter((v) => !openctiSCOException.includes(v))
               .forEach((target) => {
-                const relationshipName = `${source}_${target}`;
-                // Skip if relationship is excluded
-                if (openctiRelationException.includes(relationshipName)) {
-                  return;
+                if (source in preprocessingDictionary) {
+                  if (target in preprocessingDictionary[source]) {
+                    preprocessingDictionary[source][target] = preprocessingDictionary[source][target].concat(stixRelationship);
+                  } else {
+                    preprocessingDictionary[source][target] = stixRelationship;
+                  }
+                } else {
+                  preprocessingDictionary[source] = {};
+                  preprocessingDictionary[source][target] = stixRelationship;
                 }
-
-                it(`[${location}] Verifying that the relation edge '${relationshipName}' is implemented in OpenCTI`, () => {
-                  expect(Object.keys(implementationDictionary)).toContain(relationshipName);
-                });
-
-                // Filter out relationships which are not implemented in OpenCTI
-                let ctiRelationships = stixRelationship;
-                if (relationshipName in openctiRelationshipException) {
-                  ctiRelationships = ctiRelationships.filter(
-                    (n) => !openctiRelationshipException[relationshipName].includes(n)
-                  );
-                }
-
-                // Translate certain SCO relationships
-                if (scoList.includes(source) && scoList.includes(target)) {
-                  ctiRelationships = ctiRelationships.map((n) =>
-                    n in openctiRelationshipMapping ? openctiRelationshipMapping[n] : n
-                  );
-                }
-
-                it(`[${location}] Verifying that the relationship '${relationshipName}' contains all STIX relationships (${stixRelationship})`, () => {
-                  expect(implementationDictionary[relationshipName].sort()).toEqual(ctiRelationships.sort());
-                });
-                processedRelationships[location] = [...processedRelationships[location], relationshipName];
               });
           });
+      });
+    });
+    Object.entries(preprocessingDictionary).forEach(([sourceObject, targetAndRelationships]) => {
+      Object.entries(targetAndRelationships).forEach(([targetObject, stixRelationship]) => {
+        const relationshipName = `${sourceObject}_${targetObject}`;
+        // Skip if relationship is excluded
+        if (openctiRelationException.includes(relationshipName)) {
+          return;
+        }
+
+        it(`[${location}] Verifying that the relation edge '${relationshipName}' is implemented in OpenCTI`, () => {
+          expect(Object.keys(implementationDictionary)).toContain(relationshipName);
+        });
+
+        // Filter out relationships which are not implemented in OpenCTI
+        let ctiRelationships = stixRelationship;
+        if (relationshipName in openctiRelationshipException) {
+          ctiRelationships = ctiRelationships.filter(
+            (n) => !openctiRelationshipException[relationshipName].includes(n)
+          );
+        }
+
+        // Translate certain SCO relationships
+        if (scoList.includes(sourceObject) && scoList.includes(targetObject)) {
+          ctiRelationships = ctiRelationships.map((n) => (n in openctiRelationshipMapping ? openctiRelationshipMapping[n] : n));
+        }
+
+        it(`[${location}] Verifying that the relationship '${relationshipName}' contains all STIX relationships (${ctiRelationships})`, () => {
+          expect(implementationDictionary[relationshipName].sort()).toEqual(ctiRelationships.sort());
+        });
+        processedRelationships[location] = [...processedRelationships[location], relationshipName];
       });
     });
     const difference = Object.keys(openctiDefinitions[location]).filter(
