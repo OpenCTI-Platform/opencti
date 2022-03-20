@@ -1,0 +1,38 @@
+diff --git a/lib/equality_filter.js b/lib/equality_filter.js
+index a3973e9..02c57e3 100644
+--- a/lib/equality_filter.js
++++ b/lib/equality_filter.js
+@@ -18,10 +18,10 @@ function EqualityFilter(options) {
+     if (options.raw) {
+       this.raw = options.raw;
+     } else {
+-      this.raw = new Buffer(options.value);
++      this.raw = Buffer.from(options.value);
+     }
+   } else {
+-    this.raw = new Buffer(0);
++    this.raw = Buffer.alloc(0);
+   }
+ }
+ util.inherits(EqualityFilter, helpers.Filter);
+@@ -36,9 +36,9 @@ Object.defineProperties(EqualityFilter.prototype, {
+     },
+     set: function setValue(val) {
+       if (typeof (val) === 'string') {
+-        this.raw = new Buffer(val);
++        this.raw = Buffer.from(val);
+       } else if (Buffer.isBuffer(val)) {
+-        this.raw = new Buffer(val.length);
++        this.raw = Buffer.alloc(val.length);
+         val.copy(this.raw);
+       } else {
+         this.raw = val;
+@@ -63,7 +63,7 @@ EqualityFilter.prototype.toString = function toString() {
+   if (Buffer.isBuffer(this.raw)) {
+     value = this.raw;
+     decoded = this.raw.toString('utf8');
+-    validate = new Buffer(decoded, 'utf8');
++    validate = Buffer.from(decoded, 'utf8');
+     /*
+      * Use the decoded UTF-8 if it is valid, otherwise fall back to bytes.
+      * Since Buffer.compare is missing in older versions of node, a simple
