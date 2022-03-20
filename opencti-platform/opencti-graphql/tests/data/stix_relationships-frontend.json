@@ -110,6 +110,12 @@
         "vulnerability": [
             "indicates"
         ],
+        "alternate-data-stream-type": [
+            "based-on"
+        ],
+        "archive-ext": [
+            "based-on"
+        ],
         "artifact": [
             "based-on"
         ],
@@ -134,13 +140,10 @@
         "file": [
             "based-on"
         ],
-        "windows-pebinary-ext": [
+        "http-request-ext": [
             "based-on"
         ],
-        "windows-pe-optional-header-type": [
-            "based-on"
-        ],
-        "windows-pe-section-type": [
+        "icmp-ext": [
             "based-on"
         ],
         "ipv4-addr": [
@@ -152,31 +155,40 @@
         "mac-addr": [
             "based-on"
         ],
+        "malware-analysis": [
+            "based-on"
+        ],
         "mutex": [
             "based-on"
         ],
         "network-traffic": [
             "based-on"
         ],
-        "http-request-ext": [
+        "ntfs-ext": [
             "based-on"
         ],
-        "icmp-ext": [
+        "pdf-ext": [
             "based-on"
         ],
-        "socket-ext": [
-            "based-on"
-        ],
-        "tcp-ext": [
+        "pe-binary-ext": [
             "based-on"
         ],
         "process": [
             "based-on"
         ],
-        "windows-process-ext": [
+        "raster-image-ext": [
             "based-on"
         ],
-        "windows-service-ext": [
+        "socket-ext": [
+            "based-on"
+        ],
+        "software": [
+            "based-on"
+        ],
+        "tcp-ext": [
+            "based-on"
+        ],
+        "unix-account-ext": [
             "based-on"
         ],
         "url": [
@@ -185,7 +197,16 @@
         "user-account": [
             "based-on"
         ],
-        "unix-account-ext": [
+        "windows-pe-optional-header-type": [
+            "based-on"
+        ],
+        "windows-pe-section-type": [
+            "based-on"
+        ],
+        "windows-pebinary-ext": [
+            "based-on"
+        ],
+        "windows-process-ext": [
             "based-on"
         ],
         "windows-registry-key": [
@@ -194,16 +215,13 @@
         "windows-registry-value-type": [
             "based-on"
         ],
-        "x509-certificate": [
-            "based-on"
-        ],
-        "x509-v3-extensions-type": [
-            "based-on"
-        ],
-        "x-opencti-cryptographic-key": [
+        "windows-service-ext": [
             "based-on"
         ],
         "x-opencti-cryptocurrency-wallet": [
+            "based-on"
+        ],
+        "x-opencti-cryptographic-key": [
             "based-on"
         ],
         "x-opencti-hostname": [
@@ -213,6 +231,12 @@
             "based-on"
         ],
         "x-opencti-user-agent": [
+            "based-on"
+        ],
+        "x509-certificate": [
+            "based-on"
+        ],
+        "x509-v3-extensions-type": [
             "based-on"
         ],
         "uses": [
@@ -245,6 +269,12 @@
         "observed-data": [
             "consists-of"
         ],
+        "alternate-data-stream-type": [
+            "consists-of"
+        ],
+        "archive-ext": [
+            "consists-of"
+        ],
         "artifact": [
             "consists-of"
         ],
@@ -266,16 +296,16 @@
         "file": [
             "consists-of"
         ],
-        "windows-pebinary-ext": [
+        "http-request-ext": [
             "consists-of"
         ],
-        "windows-pe-optional-header-type": [
-            "consists-of"
-        ],
-        "windows-pe-section-type": [
+        "icmp-ext": [
             "consists-of"
         ],
         "mac-addr": [
+            "consists-of"
+        ],
+        "malware-analysis": [
             "consists-of"
         ],
         "mutex": [
@@ -284,31 +314,46 @@
         "network-traffic": [
             "consists-of"
         ],
-        "http-request-ext": [
+        "ntfs-ext": [
             "consists-of"
         ],
-        "icmp-ext": [
+        "pdf-ext": [
             "consists-of"
         ],
-        "socket-ext": [
-            "consists-of"
-        ],
-        "tcp-ext": [
+        "pe-binary-ext": [
             "consists-of"
         ],
         "process": [
             "consists-of"
         ],
-        "windows-process-ext": [
+        "raster-image-ext": [
             "consists-of"
         ],
-        "windows-service-ext": [
+        "socket-ext": [
+            "consists-of"
+        ],
+        "software": [
+            "consists-of"
+        ],
+        "tcp-ext": [
+            "consists-of"
+        ],
+        "unix-account-ext": [
             "consists-of"
         ],
         "user-account": [
             "consists-of"
         ],
-        "unix-account-ext": [
+        "windows-pe-optional-header-type": [
+            "consists-of"
+        ],
+        "windows-pe-section-type": [
+            "consists-of"
+        ],
+        "windows-pebinary-ext": [
+            "consists-of"
+        ],
+        "windows-process-ext": [
             "consists-of"
         ],
         "windows-registry-key": [
@@ -317,16 +362,13 @@
         "windows-registry-value-type": [
             "consists-of"
         ],
-        "x509-certificate": [
-            "consists-of"
-        ],
-        "x509-v3-extensions-type": [
-            "consists-of"
-        ],
-        "x-opencti-cryptographic-key": [
+        "windows-service-ext": [
             "consists-of"
         ],
         "x-opencti-cryptocurrency-wallet": [
+            "consists-of"
+        ],
+        "x-opencti-cryptographic-key": [
             "consists-of"
         ],
         "x-opencti-hostname": [
@@ -336,6 +378,12 @@
             "consists-of"
         ],
         "x-opencti-user-agent": [
+            "consists-of"
+        ],
+        "x509-certificate": [
+            "consists-of"
+        ],
+        "x509-v3-extensions-type": [
             "consists-of"
         ],
         "malware": [
@@ -386,18 +434,166 @@
             "targets"
         ]
     },
-    "malware": {
-        "software": [
+    "software": {
+        "malware": [
             "operating-system"
         ],
-        "file": [
-            "sample",
-            "downloads",
-            "drops"
-        ],
-        "artifact": [
+        "malware-analysis": [
+            "host-vm",
+            "operating-system",
+            "installed-software"
+        ]
+    },
+    "file": {
+        "malware": [
             "sample"
         ],
+        "malware-analysis": [
+            "sample",
+            "contains"
+        ],
+        "directory": [
+            "parent-directory",
+            "contains"
+        ],
+        "alternate-data-stream-type": [
+            "contains"
+        ],
+        "archive-ext": [
+            "contains"
+        ],
+        "artifact": [
+            "contains",
+            "content"
+        ],
+        "autonomous-system": [
+            "contains"
+        ],
+        "domain-name": [
+            "contains"
+        ],
+        "email-addr": [
+            "contains"
+        ],
+        "email-message": [
+            "contains"
+        ],
+        "email-mime-part-type": [
+            "contains"
+        ],
+        "file": [
+            "contains"
+        ],
+        "http-request-ext": [
+            "contains"
+        ],
+        "icmp-ext": [
+            "contains"
+        ],
+        "ipv4-addr": [
+            "contains"
+        ],
+        "ipv6-addr": [
+            "contains"
+        ],
+        "mac-addr": [
+            "contains"
+        ],
+        "mutex": [
+            "contains"
+        ],
+        "network-traffic": [
+            "contains"
+        ],
+        "ntfs-ext": [
+            "contains"
+        ],
+        "pdf-ext": [
+            "contains"
+        ],
+        "pe-binary-ext": [
+            "contains"
+        ],
+        "process": [
+            "contains",
+            "image"
+        ],
+        "raster-image-ext": [
+            "contains"
+        ],
+        "socket-ext": [
+            "contains"
+        ],
+        "software": [
+            "contains"
+        ],
+        "tcp-ext": [
+            "contains"
+        ],
+        "unix-account-ext": [
+            "contains"
+        ],
+        "url": [
+            "contains"
+        ],
+        "user-account": [
+            "contains"
+        ],
+        "windows-pe-optional-header-type": [
+            "contains"
+        ],
+        "windows-pe-section-type": [
+            "contains"
+        ],
+        "windows-pebinary-ext": [
+            "contains"
+        ],
+        "windows-process-ext": [
+            "contains"
+        ],
+        "windows-registry-key": [
+            "contains"
+        ],
+        "windows-registry-value-type": [
+            "contains"
+        ],
+        "windows-service-ext": [
+            "contains"
+        ],
+        "x-opencti-cryptocurrency-wallet": [
+            "contains"
+        ],
+        "x-opencti-cryptographic-key": [
+            "contains"
+        ],
+        "x-opencti-hostname": [
+            "contains"
+        ],
+        "x-opencti-text": [
+            "contains"
+        ],
+        "x-opencti-user-agent": [
+            "contains"
+        ],
+        "x509-certificate": [
+            "contains"
+        ],
+        "x509-v3-extensions-type": [
+            "contains"
+        ],
+        "observed-data": [
+            "content"
+        ]
+    },
+    "artifact": {
+        "malware": [
+            "sample"
+        ],
+        "malware-analysis": [
+            "sample"
+        ]
+    },
+    "malware": {
         "threat-actor": [
             "authored-by"
         ],
@@ -434,6 +630,10 @@
             "drops",
             "uses"
         ],
+        "file": [
+            "downloads",
+            "drops"
+        ],
         "vulnerability": [
             "exploits",
             "targets"
@@ -453,14 +653,14 @@
         ]
     },
     "malware-analysis": {
-        "software": [
-            "host-vm",
-            "operating-system",
-            "installed-software"
+        "alternate-data-stream-type": [
+            "analysis-sco"
+        ],
+        "archive-ext": [
+            "analysis-sco"
         ],
         "artifact": [
-            "analysis-sco",
-            "sample"
+            "analysis-sco"
         ],
         "autonomous-system": [
             "analysis-sco"
@@ -481,16 +681,12 @@
             "analysis-sco"
         ],
         "file": [
-            "analysis-sco",
-            "sample"
-        ],
-        "windows-pebinary-ext": [
             "analysis-sco"
         ],
-        "windows-pe-optional-header-type": [
+        "http-request-ext": [
             "analysis-sco"
         ],
-        "windows-pe-section-type": [
+        "icmp-ext": [
             "analysis-sco"
         ],
         "ipv4-addr": [
@@ -502,32 +698,40 @@
         "mac-addr": [
             "analysis-sco"
         ],
+        "malware-analysis": [
+            "analysis-sco"
+        ],
         "mutex": [
             "analysis-sco"
         ],
         "network-traffic": [
-            "analysis-sco",
-            "sample"
-        ],
-        "http-request-ext": [
             "analysis-sco"
         ],
-        "icmp-ext": [
+        "ntfs-ext": [
             "analysis-sco"
         ],
-        "socket-ext": [
+        "pdf-ext": [
             "analysis-sco"
         ],
-        "tcp-ext": [
+        "pe-binary-ext": [
             "analysis-sco"
         ],
         "process": [
             "analysis-sco"
         ],
-        "windows-process-ext": [
+        "raster-image-ext": [
             "analysis-sco"
         ],
-        "windows-service-ext": [
+        "socket-ext": [
+            "analysis-sco"
+        ],
+        "software": [
+            "analysis-sco"
+        ],
+        "tcp-ext": [
+            "analysis-sco"
+        ],
+        "unix-account-ext": [
             "analysis-sco"
         ],
         "url": [
@@ -536,7 +740,16 @@
         "user-account": [
             "analysis-sco"
         ],
-        "unix-account-ext": [
+        "windows-pe-optional-header-type": [
+            "analysis-sco"
+        ],
+        "windows-pe-section-type": [
+            "analysis-sco"
+        ],
+        "windows-pebinary-ext": [
+            "analysis-sco"
+        ],
+        "windows-process-ext": [
             "analysis-sco"
         ],
         "windows-registry-key": [
@@ -545,16 +758,13 @@
         "windows-registry-value-type": [
             "analysis-sco"
         ],
-        "x509-certificate": [
-            "analysis-sco"
-        ],
-        "x509-v3-extensions-type": [
-            "analysis-sco"
-        ],
-        "x-opencti-cryptographic-key": [
+        "windows-service-ext": [
             "analysis-sco"
         ],
         "x-opencti-cryptocurrency-wallet": [
+            "analysis-sco"
+        ],
+        "x-opencti-cryptographic-key": [
             "analysis-sco"
         ],
         "x-opencti-hostname": [
@@ -565,6 +775,41 @@
         ],
         "x-opencti-user-agent": [
             "analysis-sco"
+        ],
+        "x509-certificate": [
+            "analysis-sco"
+        ],
+        "x509-v3-extensions-type": [
+            "analysis-sco"
+        ]
+    },
+    "network-traffic": {
+        "malware-analysis": [
+            "sample"
+        ],
+        "domain-name": [
+            "src",
+            "dst"
+        ],
+        "ipv4-addr": [
+            "src",
+            "dst"
+        ],
+        "ipv6-addr": [
+            "src",
+            "dst"
+        ],
+        "mac-addr": [
+            "src",
+            "dst"
+        ],
+        "artifact": [
+            "src-payload",
+            "dst-payload"
+        ],
+        "network-traffic": [
+            "encapsulates",
+            "encapsulated-by"
         ]
     },
     "threat-actor": {
@@ -666,115 +911,6 @@
             "body-raw"
         ]
     },
-    "file": {
-        "directory": [
-            "parent-directory",
-            "contains"
-        ],
-        "artifact": [
-            "contains",
-            "content"
-        ],
-        "autonomous-system": [
-            "contains"
-        ],
-        "domain-name": [
-            "contains"
-        ],
-        "email-addr": [
-            "contains"
-        ],
-        "email-message": [
-            "contains"
-        ],
-        "email-mime-part-type": [
-            "contains"
-        ],
-        "file": [
-            "contains"
-        ],
-        "windows-pebinary-ext": [
-            "contains"
-        ],
-        "windows-pe-optional-header-type": [
-            "contains"
-        ],
-        "windows-pe-section-type": [
-            "contains"
-        ],
-        "ipv4-addr": [
-            "contains"
-        ],
-        "ipv6-addr": [
-            "contains"
-        ],
-        "mac-addr": [
-            "contains"
-        ],
-        "mutex": [
-            "contains"
-        ],
-        "network-traffic": [
-            "contains"
-        ],
-        "http-request-ext": [
-            "contains"
-        ],
-        "icmp-ext": [
-            "contains"
-        ],
-        "socket-ext": [
-            "contains"
-        ],
-        "tcp-ext": [
-            "contains"
-        ],
-        "process": [
-            "contains"
-        ],
-        "windows-process-ext": [
-            "contains"
-        ],
-        "windows-service-ext": [
-            "contains"
-        ],
-        "url": [
-            "contains"
-        ],
-        "user-account": [
-            "contains"
-        ],
-        "unix-account-ext": [
-            "contains"
-        ],
-        "windows-registry-key": [
-            "contains"
-        ],
-        "windows-registry-value-type": [
-            "contains"
-        ],
-        "x509-certificate": [
-            "contains"
-        ],
-        "x509-v3-extensions-type": [
-            "contains"
-        ],
-        "x-opencti-cryptographic-key": [
-            "contains"
-        ],
-        "x-opencti-cryptocurrency-wallet": [
-            "contains"
-        ],
-        "x-opencti-hostname": [
-            "contains"
-        ],
-        "x-opencti-text": [
-            "contains"
-        ],
-        "x-opencti-user-agent": [
-            "contains"
-        ]
-    },
     "archive-ext": {
         "file": [
             "contains"
@@ -818,32 +954,6 @@
             "located-at"
         ]
     },
-    "network-traffic": {
-        "domain-name": [
-            "src",
-            "dst"
-        ],
-        "ipv4-addr": [
-            "src",
-            "dst"
-        ],
-        "ipv6-addr": [
-            "src",
-            "dst"
-        ],
-        "mac-addr": [
-            "src",
-            "dst"
-        ],
-        "artifact": [
-            "src-payload",
-            "dst-payload"
-        ],
-        "network-traffic": [
-            "encapsulates",
-            "encapsulated-by"
-        ]
-    },
     "http-request-ext": {
         "artifact": [
             "message-body-data"
@@ -853,15 +963,17 @@
         "network-traffic": [
             "opened-connection"
         ],
-        "user-account": [
-            "creator-user"
-        ],
-        "file": [
-            "image"
-        ],
         "process": [
             "parent",
             "child"
+        ]
+    },
+    "user-account": {
+        "process": [
+            "creator-user"
+        ],
+        "windows-registry-key": [
+            "creator-user"
         ]
     },
     "windows-service-ext": {
@@ -872,9 +984,6 @@
     "windows-registry-key": {
         "windows-registry-value-type": [
             "values"
-        ],
-        "user-account": [
-            "creator-user"
         ]
     },
     "x509-certificate": {

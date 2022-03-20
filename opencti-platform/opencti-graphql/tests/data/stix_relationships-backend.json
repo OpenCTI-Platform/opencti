@@ -190,18 +190,48 @@
             "targets"
         ]
     },
-    "malware": {
-        "software": [
+    "software": {
+        "malware": [
             "operating-system"
         ],
-        "file": [
-            "sample",
-            "downloads",
-            "drops"
-        ],
-        "artifact": [
+        "malware-analysis": [
+            "host-vm",
+            "operating-system",
+            "installed-software"
+        ]
+    },
+    "file": {
+        "malware": [
             "sample"
         ],
+        "malware-analysis": [
+            "sample"
+        ],
+        "directory": [
+            "parent-directory"
+        ],
+        "<all_SCOs>": [
+            "contains"
+        ],
+        "artifact": [
+            "content"
+        ],
+        "process": [
+            "image"
+        ],
+        "observed-data": [
+            "content"
+        ]
+    },
+    "artifact": {
+        "malware": [
+            "sample"
+        ],
+        "malware-analysis": [
+            "sample"
+        ]
+    },
+    "malware": {
         "threat-actor": [
             "authored-by"
         ],
@@ -238,6 +268,10 @@
             "drops",
             "uses"
         ],
+        "file": [
+            "downloads",
+            "drops"
+        ],
         "vulnerability": [
             "exploits",
             "targets"
@@ -257,22 +291,37 @@
         ]
     },
     "malware-analysis": {
-        "software": [
-            "host-vm",
-            "operating-system",
-            "installed-software"
-        ],
         "<all_SCOs>": [
             "analysis-sco"
-        ],
-        "file": [
+        ]
+    },
+    "network-traffic": {
+        "malware-analysis": [
             "sample"
         ],
-        "network-traffic": [
-            "sample"
+        "domain-name": [
+            "src",
+            "dst"
+        ],
+        "ipv4-addr": [
+            "src",
+            "dst"
+        ],
+        "ipv6-addr": [
+            "src",
+            "dst"
+        ],
+        "mac-addr": [
+            "src",
+            "dst"
         ],
         "artifact": [
-            "sample"
+            "src-payload",
+            "dst-payload"
+        ],
+        "network-traffic": [
+            "encapsulates",
+            "encapsulated-by"
         ]
     },
     "threat-actor": {
@@ -374,17 +423,6 @@
             "body-raw"
         ]
     },
-    "file": {
-        "directory": [
-            "parent-directory"
-        ],
-        "<all_SCOs>": [
-            "contains"
-        ],
-        "artifact": [
-            "content"
-        ]
-    },
     "archive-ext": {
         "file": [
             "contains"
@@ -428,32 +466,6 @@
             "located-at"
         ]
     },
-    "network-traffic": {
-        "domain-name": [
-            "src",
-            "dst"
-        ],
-        "ipv4-addr": [
-            "src",
-            "dst"
-        ],
-        "ipv6-addr": [
-            "src",
-            "dst"
-        ],
-        "mac-addr": [
-            "src",
-            "dst"
-        ],
-        "artifact": [
-            "src-payload",
-            "dst-payload"
-        ],
-        "network-traffic": [
-            "encapsulates",
-            "encapsulated-by"
-        ]
-    },
     "http-request-ext": {
         "artifact": [
             "message-body-data"
@@ -463,15 +475,17 @@
         "network-traffic": [
             "opened-connection"
         ],
-        "user-account": [
-            "creator-user"
-        ],
-        "file": [
-            "image"
-        ],
         "process": [
             "parent",
             "child"
+        ]
+    },
+    "user-account": {
+        "process": [
+            "creator-user"
+        ],
+        "windows-registry-key": [
+            "creator-user"
         ]
     },
     "windows-service-ext": {
@@ -482,9 +496,6 @@
     "windows-registry-key": {
         "windows-registry-value-type": [
             "values"
-        ],
-        "user-account": [
-            "creator-user"
         ]
     },
     "x509-certificate": {
