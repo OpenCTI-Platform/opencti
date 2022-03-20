@@ -1,7 +1,7 @@
 import { append, keys, pipe, filter, map, split, includes } from 'ramda';
 
 const relationsTypesMapping = {
-  'Attack-Pattern_Attack-Pattern': ['subtechnique-of'],
+ 'Attack-Pattern_Attack-Pattern': ['subtechnique-of'],
   'Attack-Pattern_City': ['targets'],
   'Attack-Pattern_Country': ['targets'],
   'Attack-Pattern_Individual': ['targets'],
@@ -80,6 +80,7 @@ const relationsTypesMapping = {
   'Indicator_Network-Traffic': ['based-on'],
   Indicator_Process: ['based-on'],
   'Indicator_Observed-Data': ['based-on'],
+  Indicator_Software: ['based-on'],
   Indicator_StixFile: ['based-on'],
   'Indicator_Threat-Actor': ['indicates'],
   Indicator_Tool: ['indicates'],
@@ -121,6 +122,7 @@ const relationsTypesMapping = {
   Infrastructure_Position: ['located-at'],
   Infrastructure_Process: ['consists-of'],
   Infrastructure_Region: ['located-at'],
+  Infrastructure_Software: ['consists-of'],
   Infrastructure_StixFile: ['consists-of'],
   Infrastructure_Tool: ['hosts'],
   Infrastructure_Url: ['communicates-with', 'consists-of'],
@@ -149,7 +151,6 @@ const relationsTypesMapping = {
   'Intrusion-Set_Threat-Actor': ['attributed-to'],
   'Intrusion-Set_Tool': ['uses'],
   'Intrusion-Set_Vulnerability': ['targets'],
-  Malware_Artifact: ['sample'],
   'Malware_Attack-Pattern': ['uses'],
   Malware_City: ['originates-from', 'targets'],
   Malware_Country: ['originates-from', 'targets'],
@@ -164,8 +165,7 @@ const relationsTypesMapping = {
   Malware_Position: ['originates-from', 'targets'],
   Malware_Region: ['originates-from', 'targets'],
   Malware_Sector: ['targets'],
-  Malware_Software: ['operating-system'],
-  Malware_StixFile: ['downloads', 'drops', 'sample'],
+  Malware_StixFile: ['downloads', 'drops'],
   Malware_System: ['targets'],
   'Malware_Threat-Actor': ['authored-by'],
   Malware_Tool: ['downloads', 'drops', 'uses'],
@@ -209,7 +209,7 @@ const relationsTypesMapping = {
   Tool_Region: ['targets'],
   Tool_Sector: ['targets'],
   Tool_Vulnerability: ['has', 'targets'],
-  // CUSTOM OPENCTI RELATIONSHIPS
+  // CUSTOM OPENCTI SRO RELATIONSHIPS
   // DISCUSS IMPLEMENTATION!!
   Indicator_uses: ['indicates'],
   targets_Region: ['located-at'],
@@ -219,7 +219,7 @@ const relationsTypesMapping = {
 };
 
 const stixCyberObservableRelationshipTypesMapping = {
-  Directory_Artifact: ['contains'], // TODO
+  Artifact_Malware: ['sample'],
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
   'Domain-Name_Domain-Name': ['obs_resolves-to'],
@@ -243,8 +243,7 @@ const stixCyberObservableRelationshipTypesMapping = {
   'Network-Traffic_Network-Traffic': ['encapsulates', 'encapsulated-by'],
   'Process_Network-Traffic': ['opened-connection'],
   Process_Process: ['parent', 'child'],
-  Process_StixFile: ['image'],
-  'Process_User-Account': ['creator-user'],
+  Software_Malware: ['operating-system'],
   StixFile_Artifact: ['obs_content', 'contains'],
   'StixFile_Autonomous-System': ['contains'],
   StixFile_Directory: ['parent-directory', 'contains'],
@@ -255,22 +254,26 @@ const stixCyberObservableRelationshipTypesMapping = {
   'StixFile_IPv4-Addr': ['contains'],
   'StixFile_IPv6-Addr': ['contains'],
   'StixFile_Mac-Addr': ['contains'],
+  StixFile_Malware: ['sample'],
   StixFile_Mutex: ['contains'],
   'StixFile_Network-Traffic': ['contains'],
-  StixFile_Process: ['contains'],
+  'StixFile_Observed-Data': ['obs_content'],
+  StixFile_Process: ['contains', 'image'],
+  StixFile_Software: ['contains'],
   StixFile_StixFile: ['contains'],
   StixFile_Url: ['contains'],
   'StixFile_User-Account': ['contains'],
   'StixFile_Windows-Registry-Key': ['contains'],
   'StixFile_Windows-Registry-Value-Type': ['contains'],
-  'StixFile_x509-Certificate': ['contains'],
-  'StixFile_x509-v3-Extensions-Type': ['contains'],
-  'StixFile_X-OpenCTI-Cryptographic-Key': ['contains'],
   'StixFile_X-OpenCTI-Cryptocurrency-Wallet': ['contains'],
+  'StixFile_X-OpenCTI-Cryptographic-Key': ['contains'],
   'StixFile_X-OpenCTI-Hostname': ['contains'],
   'StixFile_X-OpenCTI-Text': ['contains'],
   'StixFile_X-OpenCTI-User-Agent': ['contains'],
-  'Windows-Registry-Key_User-Account': ['creator-user'],
+  'StixFile_x509-Certificate': ['contains'],
+  'StixFile_x509-v3-Extensions-Type': ['contains'],
+  'User-Account_Process': ['creator-user'],
+  'User-Account_Windows-Registry-Key': ['creator-user'],
   'Windows-Registry-Key_Windows-Registry-Value-Type': ['values'],
   'x509-Certificate_x509-v3-Extensions-Type': ['x509-v3-extensions'],
 };
