@@ -16,7 +16,7 @@ esbuild.build({
     platform: 'node',
     target: ['node14'],
     minify: true,
-    keepNames: false,
+    keepNames: true,
     sourcemap: true,
     sourceRoot: 'src',
     sourcesContent: false,
