@@ -8,7 +8,7 @@ import inject18n from '../../../../components/i18n';
 import ReportContentFiles, {
   reportContentFilesRefetchQuery,
 } from './ReportContentFiles';
-import { QueryRenderer } from '../../../../relay/environment';
+import { APP_BASE_PATH, QueryRenderer } from '../../../../relay/environment';
 
 const styles = () => ({
   container: {
@@ -47,7 +47,7 @@ class ReportContentComponent extends Component {
   render() {
     const { classes, t, report } = this.props;
     const { currentFile } = this.state;
-    const currentUrl = currentFile && `/storage/view/${currentFile.id}`;
+    const currentUrl = currentFile && `${APP_BASE_PATH}/storage/view/${currentFile.id}`;
     return (
       <div className={classes.container}>
         <QueryRenderer
