@@ -166,7 +166,11 @@ class ExternalReferenceCreation extends Component {
   }
 
   onResetContextual() {
-    this.handleClose();
+    if (this.props.handleClose) {
+      this.props.handleClose();
+    } else {
+      this.handleClose();
+    }
   }
 
   renderClassic() {
@@ -307,7 +311,9 @@ class ExternalReferenceCreation extends Component {
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={!handleClose ? this.state.open : open}
-          onClose={this.handleClose.bind(this)}
+          onClose={
+            !handleClose ? this.handleClose.bind(this) : handleClose.bind(this)
+          }
         >
           <Formik
             enableReinitialize={true}
@@ -366,7 +372,9 @@ class ExternalReferenceCreation extends Component {
                     component={SimpleFileUpload}
                     name="file"
                     label={t('Associated file')}
-                    FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                    FormControlProps={{
+                      style: { marginTop: 20, width: '100%' },
+                    }}
                     InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                     InputProps={{
                       fullWidth: true,

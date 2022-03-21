@@ -241,7 +241,7 @@ class RegionOrCountryCreation extends Component {
               onClick={this.handleCloseRegion.bind(this)}
               size="large"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Create a region')}</Typography>
           </div>
@@ -324,7 +324,7 @@ class RegionOrCountryCreation extends Component {
               onClick={this.handleCloseCountry.bind(this)}
               size="large"
             >
-              <Close fontSize="small" />
+              <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">{t('Create a country')}</Typography>
           </div>

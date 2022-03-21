@@ -266,7 +266,7 @@ class IdentityCreation extends Component {
   }
 
   renderContextual() {
-    const { t, inputValue, open, onlyAuthors } = this.props;
+    const { t, inputValue, open, onlyAuthors, handleClose } = this.props;
     return (
       <div>
         <Formik
@@ -294,7 +294,7 @@ class IdentityCreation extends Component {
               <Dialog
                 PaperProps={{ elevation: 1 }}
                 open={open}
-                onClose={this.handleClose.bind(this)}
+                onClose={handleClose.bind(this)}
                 fullWidth={true}
               >
                 <DialogTitle>{t('Create an entity')}</DialogTitle>

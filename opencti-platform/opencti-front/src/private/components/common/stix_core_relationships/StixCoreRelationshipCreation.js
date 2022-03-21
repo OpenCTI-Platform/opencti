@@ -453,7 +453,7 @@ class StixCoreRelationshipCreation extends Component {
                 onClick={this.handleClose.bind(this)}
                 size="large"
               >
-                <Close fontSize="small" />
+                <Close fontSize="small" color="primary" />
               </IconButton>
               <Typography variant="h6">{t('Create a relationship')}</Typography>
             </div>
@@ -667,7 +667,7 @@ class StixCoreRelationshipCreation extends Component {
             onClick={this.handleClose.bind(this)}
             size="large"
           >
-            <Close fontSize="small" />
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Select a relationship')}</Typography>
         </div>

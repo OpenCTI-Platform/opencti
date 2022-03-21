@@ -279,17 +279,13 @@ const StixCoreObjectLabelsView = (props) => {
               </Form>
             </DialogContent>
             <DialogActions>
-              <Button
-                onClick={handleReset}
-                disabled={isSubmitting}
-                color="primary"
-              >
+              <Button onClick={handleReset} disabled={isSubmitting}>
                 {t('Close')}
               </Button>
               <Button
                 onClick={submitForm}
                 disabled={isSubmitting}
-                color="primary"
+                color="secondary"
               >
                 {t('Add')}
               </Button>

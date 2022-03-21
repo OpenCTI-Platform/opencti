@@ -183,7 +183,7 @@ class WorkspaceHeader extends Component {
                 size="large"
               >
                 {this.state.openTag ? (
-                  <Close fontSize="small" />
+                  <Close fontSize="small" color="primary" />
                 ) : (
                   <Add fontSize="small" />
                 )}

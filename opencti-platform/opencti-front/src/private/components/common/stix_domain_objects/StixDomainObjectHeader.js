@@ -335,7 +335,7 @@ class StixDomainObjectHeader extends Component {
                   size="large"
                 >
                   {this.state.openAlias ? (
-                    <Close fontSize="small" />
+                    <Close fontSize="small" color="primary" />
                   ) : (
                     <Add fontSize="small" />
                   )}

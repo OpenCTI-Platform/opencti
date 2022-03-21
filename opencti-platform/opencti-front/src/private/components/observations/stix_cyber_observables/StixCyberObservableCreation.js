@@ -478,7 +478,7 @@ class StixCyberObservableCreation extends Component {
     );
   }
 
-  renderForm() {
+  renderForm(contextual = false) {
     const { type } = this.state;
     const { classes, t } = this.props;
     return (
@@ -668,7 +668,7 @@ class StixCyberObservableCreation extends Component {
                     />
                     <div className={classes.buttons}>
                       <Button
-                        variant="contained"
+                        variant={contextual ? 'text' : 'contained'}
                         onClick={handleReset}
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
@@ -676,7 +676,7 @@ class StixCyberObservableCreation extends Component {
                         {t('Cancel')}
                       </Button>
                       <Button
-                        variant="contained"
+                        variant={contextual ? 'text' : 'contained'}
                         color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
@@ -766,7 +766,7 @@ class StixCyberObservableCreation extends Component {
         >
           <DialogTitle>{t('Create an observable')}</DialogTitle>
           <DialogContent style={{ paddingTop: 0 }}>
-            {!type ? this.renderList() : this.renderForm()}
+            {!type ? this.renderList() : this.renderForm(true)}
           </DialogContent>
         </Dialog>
       </div>

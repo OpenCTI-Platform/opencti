@@ -54,7 +54,6 @@ const styles = (theme) => ({
     color: theme.palette.text.primary,
     fontSize: 15,
     zIndex: -5,
-    backgroundColor: theme.palette.background.default,
   },
 });
 

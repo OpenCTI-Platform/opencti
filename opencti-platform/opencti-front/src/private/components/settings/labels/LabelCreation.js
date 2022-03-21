@@ -280,15 +280,10 @@ class LabelCreation extends Component {
                   />
                 </DialogContent>
                 <DialogActions>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                  >
+                  <Button onClick={handleReset} disabled={isSubmitting}>
                     {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
