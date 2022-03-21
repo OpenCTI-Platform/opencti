@@ -364,7 +364,9 @@ class ExternalReferenceCreation extends Component {
                   />
                   <Field
                     component={SimpleFileUpload}
-                    FormControlProps={{ style: { marginTop: 20 } }}
+                    name="file"
+                    label={t('Associated file')}
+                    FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
                     InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                     InputProps={{
                       fullWidth: true,

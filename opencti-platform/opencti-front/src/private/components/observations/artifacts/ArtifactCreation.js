@@ -230,6 +230,12 @@ class ArtifactCreation extends Component {
                     component={SimpleFileUpload}
                     name="file"
                     label={t('File')}
+                    FormControlProps={{ style: { width: '100%' } }}
+                    InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                    InputProps={{
+                      fullWidth: true,
+                      variant: 'standard',
+                    }}
                     fullWidth={true}
                   />
                   <Field

@@ -117,8 +117,6 @@ jobs:
           at: ~/
       - add_ssh_keys
       - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
-      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
-      - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push --force opencti master
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
