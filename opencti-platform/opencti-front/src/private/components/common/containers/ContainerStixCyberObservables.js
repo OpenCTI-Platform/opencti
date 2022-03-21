@@ -167,14 +167,12 @@ class ContainerStixCyberObservablesComponent extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
+    const filters = [{ key: 'containedBy', values: [container.id] }];
+    if (types.length > 0) {
+      filters.push({ key: 'entity_type', values: types });
+    }
     const exportPaginationOptions = {
-      filters: [
-        { key: 'containedBy', values: [container.id] },
-        {
-          key: 'entity_type',
-          values: types.length > 0 ? types : ['Stix-Cyber-Observable'],
-        },
-      ],
+      filters,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,
