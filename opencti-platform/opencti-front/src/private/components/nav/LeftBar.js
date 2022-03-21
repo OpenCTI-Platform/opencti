@@ -43,6 +43,7 @@ import {
   getAccount
 } from '../../../services/account.service';
 import Dialog from "@material-ui/core/Dialog";
+import FeatureFlag from "../../../components/feature/FeatureFlag";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -221,18 +222,20 @@ const LeftBar = ({
                 </ListItemIcon>
                 <ListItemText primary={t('Vulnerability Assessment')} />
               </MenuItem>
-              <MenuItem
-                component={Link}
-                to="/dashboard/risk-assessment"
-                selected={location.pathname.includes('/dashboard/risk-assessment')}
-                dense={false}
-                classes={{ root: classes.menuItemNested }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
-                </ListItemIcon>
-                <ListItemText primary={t('Risk Assessment')} />
-              </MenuItem>
+              <FeatureFlag tag={"RISK_ASSESSMENT"}>
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/risk-assessment"
+                  selected={location.pathname.includes('/dashboard/risk-assessment')}
+                  dense={false}
+                  classes={{ root: classes.menuItemNested }}
+                >
+                  <ListItemIcon style={{ minWidth: 35 }}>
+                    <FiberManualRecordIcon style={{ fontSize: '0.55rem' }} />
+                  </ListItemIcon>
+                  <ListItemText primary={t('Risk Assessment')} />
+                </MenuItem>
+              </FeatureFlag>
             </MenuList>
         </Security>
       </MenuList>
