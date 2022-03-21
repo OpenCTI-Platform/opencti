@@ -3,14 +3,19 @@ import { useIntl, injectIntl } from 'react-intl';
 import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
 
+export const isDateStringNone = (dateString) => {
+  if (!dateString) return true;
+  return (
+    dateString.startsWith('Invalid')
+      || dateString.startsWith('1970')
+      || dateString.startsWith('5138')
+  );
+};
+
 export const isNone = (date) => {
   if (!date) return true;
   const parsedDate = moment(date).format();
-  return (
-    parsedDate.startsWith('Invalid')
-    || parsedDate.startsWith('1970')
-    || parsedDate.startsWith('5138')
-  );
+  return isDateStringNone(parsedDate);
 };
 
 const inject18n = (WrappedComponent) => {

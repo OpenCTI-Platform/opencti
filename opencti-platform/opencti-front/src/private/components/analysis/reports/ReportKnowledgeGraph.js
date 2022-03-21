@@ -267,17 +267,18 @@ class ReportKnowledgeGraphComponent extends Component {
       R.map((n) => n.entity_type),
       R.uniq,
     )(this.graphData.nodes);
+    const nodesAndLinks = [...this.graphData.nodes, ...this.graphData.links];
     const allMarkedBy = R.pipe(
       R.map((n) => n.markedBy),
       R.flatten,
       R.uniqBy(R.prop('id')),
       sortByDefinition,
-    )(R.union(this.graphData.nodes, this.graphData.links));
+    )(nodesAndLinks);
     const allCreatedBy = R.pipe(
       R.map((n) => n.createdBy),
       R.uniqBy(R.prop('id')),
       sortByName,
-    )(R.union(this.graphData.nodes, this.graphData.links));
+    )(nodesAndLinks);
     const stixCoreObjectsTypes = R.propOr(
       allStixCoreObjectsTypes,
       'stixCoreObjectsTypes',
@@ -293,11 +294,19 @@ class ReportKnowledgeGraphComponent extends Component {
       'createdBy',
       params,
     );
+    const graphWithFilters = applyFilters(
+      this.graphData,
+      stixCoreObjectsTypes,
+      markedBy,
+      createdBy,
+      ignoredStixCoreObjectsTypes,
+    );
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
+      initialTimeRangeInterval: timeRangeInterval,
       selectedTimeRangeInterval: timeRangeInterval,
       allStixCoreObjectsTypes,
       allMarkedBy,
@@ -305,13 +314,7 @@ class ReportKnowledgeGraphComponent extends Component {
       stixCoreObjectsTypes,
       markedBy,
       createdBy,
-      graphData: applyFilters(
-        this.graphData,
-        stixCoreObjectsTypes,
-        markedBy,
-        createdBy,
-        ignoredStixCoreObjectsTypes,
-      ),
+      graphData: graphWithFilters,
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
       width: null,
@@ -961,6 +964,7 @@ class ReportKnowledgeGraphComponent extends Component {
       numberOfSelectedNodes,
       numberOfSelectedLinks,
       displayTimeRange,
+      initialTimeRangeInterval,
       selectedTimeRangeInterval,
       width,
       height,
@@ -968,9 +972,8 @@ class ReportKnowledgeGraphComponent extends Component {
     const graphWidth = width || window.innerWidth - 210;
     const graphHeight = height || window.innerHeight - 180;
     const displayLabels = graphData.links.length < 200;
-    const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
-      timeRangeInterval,
+      initialTimeRangeInterval,
       this.graphObjects,
     );
     return (
@@ -1023,7 +1026,7 @@ class ReportKnowledgeGraphComponent extends Component {
           handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
             this,
           )}
-          timeRangeInterval={timeRangeInterval}
+          timeRangeInterval={initialTimeRangeInterval}
           selectedTimeRangeInterval={selectedTimeRangeInterval}
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}

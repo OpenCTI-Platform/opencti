@@ -42,7 +42,7 @@ import {
   minutesBetweenDates,
   timestamp,
 } from './Time';
-import { isNone } from '../components/i18n';
+import { isDateStringNone, isNone } from '../components/i18n';
 
 const genImage = (src) => {
   const img = new Image();
@@ -231,25 +231,25 @@ export const decodeGraphData = (encodedGraphData) => {
 
 export const defaultDate = (n) => {
   if (!n) return '';
-  if (!isNone(n.start_time)) {
+  if (!isDateStringNone(n.start_time)) {
     return n.start_time;
   }
-  if (!isNone(n.first_seen)) {
+  if (!isDateStringNone(n.first_seen)) {
     return n.first_seen;
   }
-  if (!isNone(n.first_observed)) {
+  if (!isDateStringNone(n.first_observed)) {
     return n.first_observed;
   }
-  if (!isNone(n.valid_from)) {
+  if (!isDateStringNone(n.valid_from)) {
     return n.valid_from;
   }
-  if (!isNone(n.published)) {
+  if (!isDateStringNone(n.published)) {
     return n.published;
   }
-  if (!isNone(n.created)) {
+  if (!isDateStringNone(n.created)) {
     return n.created;
   }
-  if (!isNone(n.created_at)) {
+  if (!isDateStringNone(n.created_at)) {
     return n.created_at;
   }
   return null;
@@ -335,11 +335,11 @@ export const defaultSecondaryValue = (n) => {
 };
 
 export const computeTimeRangeInterval = (objects) => {
-  const elementsDates = R.map((n) => defaultDate(n), objects);
-  const orderedElementsDate = R.sort(
-    (a, b) => timestamp(a) - timestamp(b),
-    R.filter((n) => !R.isNil(n) && !isNone(n), elementsDates),
-  );
+  const filteredDates = objects.filter((o) => {
+    const n = defaultDate(o);
+    return !R.isNil(n) && !isDateStringNone(n);
+  }).map((n) => jsDate(defaultDate(n)));
+  const orderedElementsDate = R.sort((a, b) => a - b, filteredDates);
   let startDate = jsDate(daysAgo(1));
   let endDate = jsDate(dayEndDate());
   if (orderedElementsDate.length >= 1) {
