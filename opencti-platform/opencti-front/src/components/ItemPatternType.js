@@ -61,6 +61,11 @@ const inlineStyles = {
     color: '#f31919',
     border: '1px solid #f31919',
   },
+  spl: {
+    backgroundColor: 'rgba(239, 108, 0, 0.08)',
+    color: '#ef6c00',
+    border: '1px solid #ef6c00',
+  },
 };
 
 class ItemPatternType extends Component {

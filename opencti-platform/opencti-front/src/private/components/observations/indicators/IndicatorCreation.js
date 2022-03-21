@@ -269,6 +269,7 @@ class IndicatorCreation extends Component {
                     <MenuItem value="suricata">Suricata</MenuItem>
                     <MenuItem value="yara">YARA</MenuItem>
                     <MenuItem value="tanium-signal">Tanium Signal</MenuItem>
+                    <MenuItem value="spl">Splunk SPL</MenuItem>
                   </Field>
                   <Field
                     component={TextField}

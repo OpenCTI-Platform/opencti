@@ -167,6 +167,19 @@ class IndicatorsRightBar extends Component {
             />
             <ListItemText primary="Tanium Signal" />
           </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleIndicatorType.bind(this, 'spl')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={indicatorTypes.includes('spl')}
+              disableRipple={true}
+              size="small"
+            />
+            <ListItemText primary="Splunk SPL" />
+          </ListItem>
         </List>
         <QueryRenderer
           query={stixCyberObservablesLinesSubTypesQuery}

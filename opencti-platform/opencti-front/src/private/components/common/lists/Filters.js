@@ -414,6 +414,7 @@ class Filters extends Component {
           'suricata',
           'yara',
           'tanium-signal',
+          'spl',
         ]);
         this.setState({
           entities: {
