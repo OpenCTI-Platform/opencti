@@ -119,7 +119,8 @@ const SyncCreation = (props) => {
           setVerified(true);
         }
       },
-      onError: () => {
+      onError: (e, messages) => {
+        MESSAGING$.messages.next(messages);
         setVerified(false);
       },
     });

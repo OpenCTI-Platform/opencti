@@ -270,7 +270,7 @@ const createSeeMiddleware = () => {
     try {
       const version = STREAM_EVENT_VERSION;
       const startFrom = req.query.from || req.headers['last-event-id'];
-      const listenDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'true';
+      const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
       const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
       // Build filters
       let streamFilters = {};
@@ -397,7 +397,7 @@ const createSeeMiddleware = () => {
       const userEmail = req.session.user.user_email;
       const processor = createStreamProcessor(req.session.user, userEmail, async (elements) => {
         // We need to keep deletion events
-        if (listenDelete) {
+        if (!noDelete) {
           const stixDeletions = elements
             .filter((e) => e.topic === EVENT_TYPE_DELETE)
             .filter((d) => {

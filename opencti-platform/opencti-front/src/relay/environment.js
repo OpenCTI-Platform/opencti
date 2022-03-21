@@ -97,6 +97,14 @@ QueryRenderer.propTypes = {
   query: PropTypes.object,
 };
 
+const buildErrorMessages = (error) => map(
+  (e) => ({
+    type: 'error',
+    text: pathOr(e.message, ['data', 'reason'], e),
+  }),
+  error.res.errors,
+);
+
 // Relay functions
 export const commitMutation = ({
   mutation,
@@ -122,19 +130,12 @@ export const commitMutation = ({
         error.res.errors,
       );
       if (!isEmpty(authRequired)) {
-        MESSAGING$.notifyError(
-          'Unauthorized action, please refresh your browser',
-        );
+        MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
       } else if (onError) {
-        onError(error);
+        const messages = buildErrorMessages(error);
+        onError(error, messages);
       } else {
-        const messages = map(
-          (e) => ({
-            type: 'error',
-            text: pathOr(e.message, ['data', 'reason'], e),
-          }),
-          error.res.errors,
-        );
+        const messages = buildErrorMessages(error);
         MESSAGING$.messages.next(messages);
       }
     }

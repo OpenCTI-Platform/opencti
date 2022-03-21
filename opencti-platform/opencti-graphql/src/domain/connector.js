@@ -10,7 +10,7 @@ import { READ_INDEX_HISTORY } from '../database/utils';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 
 // region connectors
@@ -70,7 +70,9 @@ export const findAllSync = async (user, opts = {}) => {
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
 export const createSyncHttpUri = (sync) => {
   const { uri, stream_id: stream, current_state: state, listen_deletion: deletion } = sync;
-  return `${httpBase(uri)}stream/${stream}?from=${state ?? FROM_START_STR}&listen-delete=${deletion}`;
+  const streamUri = `${httpBase(uri)}stream/${stream}?from=${state ?? FROM_START_STR}&listen-delete=${deletion}`;
+  logApp.debug(`[OPENCTI] Testing sync url with ${streamUri}`);
+  return streamUri;
 };
 export const testSync = async (user, sync) => {
   const eventSourceUri = createSyncHttpUri(sync);
