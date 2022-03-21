@@ -101,6 +101,7 @@ class IncidentCreation extends Component {
 
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const finalValues = R.pipe(
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),

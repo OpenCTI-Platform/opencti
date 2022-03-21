@@ -2,17 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
 import { graphql } from 'react-relay';
-import {
-  assoc,
-  compose,
-  head,
-  includes,
-  map,
-  pipe,
-  pluck,
-  filter,
-  isNil,
-} from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
@@ -414,24 +404,25 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     const { targetEntity } = this.state;
     const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
     const toEntityId = isRelationReversed ? entityId : targetEntity.id;
-    const finalValues = pipe(
-      assoc('fromId', fromEntityId),
-      assoc('toId', toEntityId),
-      assoc(
+    const finalValues = R.pipe(
+      R.assoc('confidence', parseInt(values.confidence, 10)),
+      R.assoc('fromId', fromEntityId),
+      R.assoc('toId', toEntityId),
+      R.assoc(
         'start_time',
         values.start_time && values.start_time.length > 0
           ? parse(values.start_time).format()
           : null,
       ),
-      assoc(
+      R.assoc(
         'stop_time',
         values.stop_time && values.stop_time.length > 0
           ? parse(values.stop_time).format()
           : null,
       ),
-      assoc('createdBy', values.createdBy?.value),
-      assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
+      R.assoc('createdBy', values.createdBy?.value),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
       mutation: isRelationReversed
@@ -520,7 +511,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     const stixDomainObjectsPaginationOptions = {
       search,
       types: targetStixDomainObjectTypes
-        ? filter(
+        ? R.filter(
           (n) => n !== 'Stix-Cyber-Observable',
           targetStixDomainObjectTypes,
         )
@@ -622,20 +613,20 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       fromEntity = targetEntity;
       toEntity = sourceEntity;
     }
-    const relationshipTypes = filter(
-      (n) => isNil(allowedRelationshipTypes)
+    const relationshipTypes = R.filter(
+      (n) => R.isNil(allowedRelationshipTypes)
         || allowedRelationshipTypes.length === 0
         || allowedRelationshipTypes.includes(n),
       resolveRelationsTypes(
-        includes('Stix-Cyber-Observable', fromEntity.parent_types)
+        R.includes('Stix-Cyber-Observable', fromEntity.parent_types)
           ? 'observable'
           : fromEntity.entity_type,
         toEntity.entity_type,
       ),
     );
     // eslint-disable-next-line no-nested-ternary
-    const defaultRelationshipType = head(relationshipTypes)
-      ? head(relationshipTypes)
+    const defaultRelationshipType = R.head(relationshipTypes)
+      ? R.head(relationshipTypes)
       : relationshipTypes.includes('related-to')
         ? 'related-to'
         : '';
@@ -705,7 +696,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                     <span className={classes.name}>
                       {truncate(
                         /* eslint-disable-next-line no-nested-ternary */
-                        includes(
+                        R.includes(
                           'Stix-Cyber-Observable',
                           fromEntity.parent_types,
                         )
@@ -757,7 +748,10 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                     <span className={classes.name}>
                       {truncate(
                         /* eslint-disable-next-line no-nested-ternary */
-                        includes('Stix-Cyber-Observable', toEntity.parent_types)
+                        R.includes(
+                          'Stix-Cyber-Observable',
+                          toEntity.parent_types,
+                        )
                           ? toEntity.observable_value
                           : toEntity.entity_type === 'stix_relation'
                             || toEntity.entity_type === 'stix-relation'
@@ -779,7 +773,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 fullWidth={true}
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
-                {map(
+                {R.map(
                   (type) => (
                     <MenuItem key={type} value={type}>
                       {t(`relationship_${type}`)}
@@ -969,7 +963,7 @@ StixCoreRelationshipCreationFromRelation.propTypes = {
   paddingRight: PropTypes.bool,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreRelationshipCreationFromRelation);

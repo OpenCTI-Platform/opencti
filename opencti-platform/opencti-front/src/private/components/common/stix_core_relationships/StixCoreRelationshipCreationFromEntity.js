@@ -366,6 +366,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
       const toEntityId = isRelationReversed ? entityId : targetEntity.id;
       const finalValues = R.pipe(
+        R.assoc('confidence', parseInt(values.confidence, 10)),
         R.assoc('fromId', fromEntityId),
         R.assoc('toId', toEntityId),
         R.assoc(

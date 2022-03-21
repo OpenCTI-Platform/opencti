@@ -392,6 +392,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
     const fromEntityId = isFrom ? entityId : targetEntity.id;
     const toEntityId = isFrom ? targetEntity.id : entityId;
     const finalValues = pipe(
+      assoc('confidence', parseInt(values.confidence, 10)),
       assoc('number', parseInt(values.number, 10)),
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),

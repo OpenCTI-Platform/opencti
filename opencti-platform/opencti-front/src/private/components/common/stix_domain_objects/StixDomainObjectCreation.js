@@ -236,6 +236,7 @@ class StixDomainObjectCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     let finalValues = pipe(
+      assoc('confidence', parseInt(values.confidence, 10)),
       assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('objectLabel', pluck('value', values.objectLabel)),

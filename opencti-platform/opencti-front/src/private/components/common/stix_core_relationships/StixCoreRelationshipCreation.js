@@ -298,6 +298,7 @@ class StixCoreRelationshipCreation extends Component {
     R.forEach((fromObject) => {
       R.forEach((toObject) => {
         const finalValues = R.pipe(
+          R.assoc('confidence', parseInt(values.confidence, 10)),
           R.assoc('fromId', fromObject.id),
           R.assoc('toId', toObject.id),
           R.assoc(

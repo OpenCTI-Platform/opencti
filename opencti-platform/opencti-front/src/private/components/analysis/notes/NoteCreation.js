@@ -115,6 +115,7 @@ class NoteCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
+        confidence: () => parseInt(values.confidence, 10),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),

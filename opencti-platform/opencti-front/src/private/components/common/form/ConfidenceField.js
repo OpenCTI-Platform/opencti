@@ -45,17 +45,18 @@ class ConfidenceField extends Component {
     return (
       <Field
         component={SelectField}
+        type="number"
         variant="standard"
         name={name}
         label={label}
         fullWidth={true}
         containerstyle={containerstyle}
       >
-        <MenuItem value={0}>{t('None')}</MenuItem>
-        <MenuItem value={15}>{t('Low')}</MenuItem>
-        <MenuItem value={50}>{t('Moderate')}</MenuItem>
-        <MenuItem value={75}>{t('Good')}</MenuItem>
-        <MenuItem value={85}>{t('Strong')}</MenuItem>
+        <MenuItem value="0">{t('None')}</MenuItem>
+        <MenuItem value="15">{t('Low')}</MenuItem>
+        <MenuItem value="50">{t('Moderate')}</MenuItem>
+        <MenuItem value="75">{t('Good')}</MenuItem>
+        <MenuItem value="85">{t('Strong')}</MenuItem>
       </Field>
     );
   }

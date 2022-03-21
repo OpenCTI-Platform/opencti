@@ -131,6 +131,7 @@ class ReportCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
+      R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('published', parse(values.published).format()),
       R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('createdBy', values.createdBy?.value),

@@ -3,16 +3,7 @@ import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Formik, Field, Form } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
+import * as R from 'ramda';
 import * as Yup from 'yup';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -143,16 +134,16 @@ class OpinionEditionOverviewComponent extends Component {
 
   handleChangeObjectMarking(name, values) {
     const { opinion } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const currentMarkingDefinitions = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(opinion);
 
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
+    const added = R.difference(values, currentMarkingDefinitions);
+    const removed = R.difference(currentMarkingDefinitions, values);
 
     if (added.length > 0) {
       commitMutation({
@@ -160,7 +151,7 @@ class OpinionEditionOverviewComponent extends Component {
         variables: {
           id: this.props.opinion.id,
           input: {
-            toId: head(added).value,
+            toId: R.head(added).value,
             relationship_type: 'object-marking',
           },
         },
@@ -172,7 +163,7 @@ class OpinionEditionOverviewComponent extends Component {
         mutation: opinionMutationRelationDelete,
         variables: {
           id: this.props.opinion.id,
-          toId: head(removed).value,
+          toId: R.head(removed).value,
           relationship_type: 'object-marking',
         },
       });
@@ -181,23 +172,23 @@ class OpinionEditionOverviewComponent extends Component {
 
   render() {
     const { t, opinion, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], opinion) === null
+    const createdBy = R.pathOr(null, ['createdBy', 'name'], opinion) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], opinion),
-        value: pathOr(null, ['createdBy', 'id'], opinion),
+        label: R.pathOr(null, ['createdBy', 'name'], opinion),
+        value: R.pathOr(null, ['createdBy', 'id'], opinion),
       };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
+    const objectMarking = R.pipe(
+      R.pathOr([], ['objectMarking', 'edges']),
+      R.map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
     )(opinion);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      pick([
+    const initialValues = R.pipe(
+      R.assoc('createdBy', createdBy),
+      R.assoc('objectMarking', objectMarking),
+      R.pick([
         'attribute_abstract',
         'content',
         'confidence',
@@ -316,7 +307,7 @@ const OpinionEditionOverview = createFragmentContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
 )(OpinionEditionOverview);

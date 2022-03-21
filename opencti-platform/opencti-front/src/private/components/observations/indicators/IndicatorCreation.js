@@ -135,6 +135,7 @@ class IndicatorCreation extends Component {
   onSubmit(values, { setSubmitting, setErrors, resetForm }) {
     const adaptedValues = evolve(
       {
+        confidence: () => parseInt(values.confidence, 10),
         killChainPhases: pluck('value'),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
