@@ -25,6 +25,7 @@ import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
 import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
 import { getAccount } from '../services/account.service';
+import FeatureFlag from '../components/feature/FeatureFlag';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -101,7 +102,9 @@ const Index = (me) => {
           <Route path="/dashboard/observations" component={RootObservations} />
           <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
           <BoundaryRoute path="/dashboard/assets" component={RootAssets} />
-          <BoundaryRoute path="/dashboard/risk-assessment" component={RootRiskAssessment} />
+          <FeatureFlag tag={"RISK_ASSESSMENT"}>
+            <BoundaryRoute path="/dashboard/risk-assessment" component={RootRiskAssessment} />
+          </FeatureFlag>
           <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
           <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
           <BoundaryRoute path="/dashboard/data" render={RootData} />
