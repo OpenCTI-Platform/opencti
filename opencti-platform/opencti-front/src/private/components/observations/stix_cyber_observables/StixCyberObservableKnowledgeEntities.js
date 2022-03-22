@@ -19,7 +19,7 @@ const styles = () => ({
     height: '100%',
     minHeight: '100%',
     margin: 0,
-    padding: '25px 15px 15px 15px',
+    padding: '0 15px 15px 15px',
     borderRadius: 6,
   },
 });
@@ -91,6 +91,7 @@ class StixCyberObservableKnowledgeEntities extends Component {
         handleSort={this.handleSort.bind(this)}
         displayImport={true}
         secondaryAction={true}
+        noFilters={true}
       >
         <QueryRenderer
           query={stixCyberObservableEntitiesLinesQuery}

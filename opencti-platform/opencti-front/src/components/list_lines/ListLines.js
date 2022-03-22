@@ -171,6 +171,7 @@ class ListLines extends Component {
       searchVariant,
       message,
       noTopMargin,
+      noFilters,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -198,7 +199,7 @@ class ListLines extends Component {
             />
           )}
           {(!availableFilterKeys || availableFilterKeys.length === 0)
-            && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
+            && !noHeaders && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
           <div className={classes.filters}>
             {map((currentFilter) => {
               const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;

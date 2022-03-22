@@ -91,7 +91,7 @@ class StixCyberObservableRelationshipEdition extends Component {
 }
 
 StixCyberObservableRelationshipEdition.propTypes = {
-  stixCyberObservableRelationshipId: PropTypes.string,
+  stixCyberObservableRelationship: PropTypes.string,
   stixDomainObject: PropTypes.object,
   open: PropTypes.bool,
   handleClose: PropTypes.func,

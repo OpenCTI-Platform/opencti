@@ -9,7 +9,7 @@ import {
   stixCyberObservableRelationshipEditContext,
   stixCyberObservableRelationshipEditField,
 } from '../domain/stixCyberObservableRelationship';
-import { pubsub } from '../database/redis';
+import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader } from '../database/middleware';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
@@ -25,6 +25,7 @@ const stixCyberObservableRelationshipResolvers = {
   StixCyberObservableRelationship: {
     from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
     to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
+    editContext: (rel) => fetchEditContext(rel.id),
   },
   Mutation: {
     stixCyberObservableRelationshipEdit: (_, { id }, { user }) => ({

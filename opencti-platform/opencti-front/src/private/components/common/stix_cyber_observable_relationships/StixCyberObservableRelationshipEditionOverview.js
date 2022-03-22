@@ -107,7 +107,7 @@ const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class StixCyberObservableRelationshipEditionContainer extends Component {
+class StixCyberObservableRelationshipEditionOverview extends Component {
   constructor(props) {
     super(props);
     this.sub = requestSubscription({
@@ -270,7 +270,7 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
   }
 }
 
-StixCyberObservableRelationshipEditionContainer.propTypes = {
+StixCyberObservableRelationshipEditionOverview.propTypes = {
   handleClose: PropTypes.func,
   handleDelete: PropTypes.func,
   classes: PropTypes.object,
@@ -281,7 +281,7 @@ StixCyberObservableRelationshipEditionContainer.propTypes = {
 };
 
 const StixCyberObservableRelationshipEditionFragment = createFragmentContainer(
-  StixCyberObservableRelationshipEditionContainer,
+  StixCyberObservableRelationshipEditionOverview,
   {
     stixCyberObservableRelationship: graphql`
       fragment StixCyberObservableRelationshipEditionOverview_stixCyberObservableRelationship on StixCyberObservableRelationship {

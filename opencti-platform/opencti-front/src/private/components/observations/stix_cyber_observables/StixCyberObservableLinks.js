@@ -23,7 +23,7 @@ const styles = (theme) => ({
     height: '100%',
     minHeight: '100%',
     margin: 0,
-    padding: '25px 15px 15px 15px',
+    padding: 15,
     borderRadius: 6,
   },
   item: {
@@ -108,11 +108,11 @@ class StixCyberObservableLinksComponent extends Component {
               && data.stixCyberObservableRelationships
               && data.stixCyberObservableRelationships.edges.map(
                 (stixCyberObservableRelationEdge) => {
-                  const stixCyberObservableRelationshipId = stixCyberObservableRelationEdge.node;
-                  const stixCyberObservable = stixCyberObservableRelationshipId.from.id
+                  const stixCyberObservableRelationship = stixCyberObservableRelationEdge.node;
+                  const stixCyberObservable = stixCyberObservableRelationship.from.id
                     === stixCyberObservableId
-                    ? stixCyberObservableRelationshipId.to
-                    : stixCyberObservableRelationshipId.from;
+                    ? stixCyberObservableRelationship.to
+                    : stixCyberObservableRelationship.from;
                   const link = `${resolveLink(
                     stixCyberObservable.entity_type,
                   )}/${stixCyberObservable.id}`;
@@ -136,7 +136,7 @@ class StixCyberObservableLinksComponent extends Component {
                               style={{ width: '15%' }}
                             >
                               {t(
-                                `relationship_${stixCyberObservableRelationshipId.relationship_type}`,
+                                `relationship_${stixCyberObservableRelationship.relationship_type}`,
                               )}
                             </div>
                             <div
@@ -155,15 +155,13 @@ class StixCyberObservableLinksComponent extends Component {
                               className={classes.bodyItem}
                               style={{ width: '15%' }}
                             >
-                              {fsd(
-                                stixCyberObservableRelationshipId.start_time,
-                              )}
+                              {fsd(stixCyberObservableRelationship.start_time)}
                             </div>
                             <div
                               className={classes.bodyItem}
                               style={{ width: '15%' }}
                             >
-                              {fsd(stixCyberObservableRelationshipId.stop_time)}
+                              {fsd(stixCyberObservableRelationship.stop_time)}
                             </div>
                           </div>
                         }
@@ -171,7 +169,7 @@ class StixCyberObservableLinksComponent extends Component {
                       <ListItemSecondaryAction>
                         <StixCyberObservableRelationPopover
                           stixCyberObservableRelationshipId={
-                            stixCyberObservableRelationshipId.id
+                            stixCyberObservableRelationship.id
                           }
                           paginationOptions={paginationOptions}
                         />
