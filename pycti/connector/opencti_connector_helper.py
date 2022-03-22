@@ -252,7 +252,15 @@ class PingAlive(threading.Thread):
 
 class ListenStream(threading.Thread):
     def __init__(
-        self, helper, callback, url, token, verify_ssl, start_timestamp, live_stream_id
+        self,
+        helper,
+        callback,
+        url,
+        token,
+        verify_ssl,
+        start_timestamp,
+        live_stream_id,
+        listen_delete,
     ) -> None:
         threading.Thread.__init__(self)
         self.helper = helper
@@ -262,6 +270,7 @@ class ListenStream(threading.Thread):
         self.verify_ssl = verify_ssl
         self.start_timestamp = start_timestamp
         self.live_stream_id = live_stream_id
+        self.listen_delete = listen_delete if listen_delete is not None else True
         self.exit = False
 
     def run(self) -> None:  # pylint: disable=too-many-branches
@@ -308,12 +317,15 @@ class ListenStream(threading.Thread):
                 "%s",
                 (
                     "Starting listening stream events (URL: "
-                    f"{live_stream_url}, SSL verify: {opencti_ssl_verify})"
+                    f"{live_stream_url}, SSL verify: {opencti_ssl_verify}, Listen Delete: {self.listen_delete})"
                 ),
             )
             messages = SSEClient(
                 live_stream_url,
-                headers={"authorization": "Bearer " + self.token},
+                headers={
+                    "authorization": "Bearer " + self.token,
+                    "listen-delete": self.listen_delete,
+                },
                 verify=opencti_ssl_verify,
             )
         else:
@@ -342,12 +354,15 @@ class ListenStream(threading.Thread):
                 "%s",
                 (
                     f"Starting listening stream events (URL: {live_stream_url}"
-                    f", SSL verify: {self.helper.opencti_ssl_verify})"
+                    f", SSL verify: {self.helper.opencti_ssl_verify}, Listen Delete: {self.helper.connect_live_stream_listen_delete})"
                 ),
             )
             messages = SSEClient(
                 live_stream_url,
-                headers={"authorization": "Bearer " + self.helper.opencti_token},
+                headers={
+                    "authorization": "Bearer " + self.helper.opencti_token,
+                    "listen-delete": self.helper.connect_live_stream_listen_delete,
+                },
                 verify=self.helper.opencti_ssl_verify,
             )
         # Iter on stream messages
@@ -406,6 +421,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             False,
             None,
+        )
+        self.connect_live_stream_listen_delete = get_config_variable(
+            "CONNECTOR_LIVE_STREAM_LISTEN_DELETE",
+            ["connector", "live_stream_listen_delete"],
+            config,
+            False,
+            True,
         )
         self.connect_name = get_config_variable(
             "CONNECTOR_NAME", ["connector", "name"], config
