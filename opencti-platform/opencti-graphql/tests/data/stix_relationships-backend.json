@@ -207,20 +207,20 @@
         "malware-analysis": [
             "sample"
         ],
+        "email-mime-part-type": [
+            "body-raw"
+        ],
         "directory": [
             "parent-directory"
         ],
         "<all_SCOs>": [
             "contains"
         ],
-        "artifact": [
-            "content"
-        ],
         "process": [
             "image"
         ],
-        "observed-data": [
-            "content"
+        "windows-service-ext": [
+            "service-dll"
         ]
     },
     "artifact": {
@@ -229,6 +229,22 @@
         ],
         "malware-analysis": [
             "sample"
+        ],
+        "email-message": [
+            "raw-email"
+        ],
+        "email-mime-part-type": [
+            "body-raw"
+        ],
+        "file": [
+            "content"
+        ],
+        "network-traffic": [
+            "src-payload",
+            "dst-payload"
+        ],
+        "http-request-ext": [
+            "message-body-data"
         ]
     },
     "malware": {
@@ -298,26 +314,6 @@
     "network-traffic": {
         "malware-analysis": [
             "sample"
-        ],
-        "domain-name": [
-            "src",
-            "dst"
-        ],
-        "ipv4-addr": [
-            "src",
-            "dst"
-        ],
-        "ipv6-addr": [
-            "src",
-            "dst"
-        ],
-        "mac-addr": [
-            "src",
-            "dst"
-        ],
-        "artifact": [
-            "src-payload",
-            "dst-payload"
         ],
         "network-traffic": [
             "encapsulates",
@@ -393,34 +389,27 @@
         ],
         "ipv6-addr": [
             "resolves-to"
+        ],
+        "network-traffic": [
+            "src",
+            "dst"
         ]
     },
     "email-addr": {
         "user-account": [
             "belongs-to"
-        ]
-    },
-    "email-message": {
-        "email-addr": [
+        ],
+        "email-message": [
             "from",
             "sender",
             "to",
             "cc",
             "bcc"
-        ],
-        "email-mime-part-type": [
-            "body-multipart"
-        ],
-        "artifact": [
-            "raw-email"
         ]
     },
     "email-mime-part-type": {
-        "artifact": [
-            "body-raw"
-        ],
-        "file": [
-            "body-raw"
+        "email-message": [
+            "body-multipart"
         ]
     },
     "archive-ext": {
@@ -431,16 +420,18 @@
             "contains"
         ]
     },
-    "ntfs-ext": {
-        "alternate-data-stream-type": [
+    "alternate-data-stream-type": {
+        "ntfs-ext": [
             "alternate-data-streams"
         ]
     },
-    "windows-pebinary-ext": {
-        "windows-pe-optional-header-type": [
+    "windows-pe-optional-header-type": {
+        "windows-pebinary-ext": [
             "optional-header"
-        ],
-        "windows-pe-section-type": [
+        ]
+    },
+    "windows-pe-section-type": {
+        "windows-pebinary-ext": [
             "sections"
         ]
     },
@@ -450,6 +441,10 @@
         ],
         "mac-addr": [
             "resolves-to"
+        ],
+        "network-traffic": [
+            "src",
+            "dst"
         ],
         "location": [
             "located-at"
@@ -462,13 +457,18 @@
         "mac-addr": [
             "resolves-to"
         ],
+        "network-traffic": [
+            "src",
+            "dst"
+        ],
         "location": [
             "located-at"
         ]
     },
-    "http-request-ext": {
-        "artifact": [
-            "message-body-data"
+    "mac-addr": {
+        "network-traffic": [
+            "src",
+            "dst"
         ]
     },
     "process": {
@@ -488,18 +488,13 @@
             "creator-user"
         ]
     },
-    "windows-service-ext": {
-        "file": [
-            "service-dll"
-        ]
-    },
     "windows-registry-key": {
         "windows-registry-value-type": [
             "values"
         ]
     },
-    "x509-certificate": {
-        "x509-v3-extensions-type": [
+    "x509-v3-extensions-type": {
+        "x509-certificate": [
             "x509-v3-extensions"
         ]
     },
@@ -535,6 +530,11 @@
     "incident": {
         "campaign": [
             "attributed-to"
+        ]
+    },
+    "observed-data": {
+        "file": [
+            "content"
         ]
     },
     "city": {

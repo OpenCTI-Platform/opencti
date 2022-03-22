@@ -97,6 +97,25 @@ inverse_relationships = [
     "operating-system",
     "installed-software",
     "sample",
+    "content",
+    "src",
+    "dst",
+    "src-payload",
+    "dst-payload",
+    "from",
+    "sender",
+    "to",
+    "cc",
+    "bcc",
+    "body-multipart",
+    "raw-email",
+    "body-raw",
+    "alternate-data-streams",
+    "optional-header",
+    "sections",
+    "message-body-data",
+    "service-dll",
+    "x509-v3-extensions"
 ]
 
 # STIX documentation

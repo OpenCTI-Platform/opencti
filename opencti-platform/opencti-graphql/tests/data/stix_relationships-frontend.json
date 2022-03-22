@@ -452,6 +452,10 @@
             "sample",
             "contains"
         ],
+        "email-mime-part-type": [
+            "body-raw",
+            "contains"
+        ],
         "directory": [
             "parent-directory",
             "contains"
@@ -463,8 +467,7 @@
             "contains"
         ],
         "artifact": [
-            "contains",
-            "content"
+            "contains"
         ],
         "autonomous-system": [
             "contains"
@@ -476,9 +479,6 @@
             "contains"
         ],
         "email-message": [
-            "contains"
-        ],
-        "email-mime-part-type": [
             "contains"
         ],
         "file": [
@@ -558,7 +558,8 @@
             "contains"
         ],
         "windows-service-ext": [
-            "contains"
+            "contains",
+            "service-dll"
         ],
         "x-opencti-cryptocurrency-wallet": [
             "contains"
@@ -580,9 +581,6 @@
         ],
         "x509-v3-extensions-type": [
             "contains"
-        ],
-        "observed-data": [
-            "content"
         ]
     },
     "artifact": {
@@ -591,6 +589,22 @@
         ],
         "malware-analysis": [
             "sample"
+        ],
+        "email-message": [
+            "raw-email"
+        ],
+        "email-mime-part-type": [
+            "body-raw"
+        ],
+        "file": [
+            "content"
+        ],
+        "network-traffic": [
+            "src-payload",
+            "dst-payload"
+        ],
+        "http-request-ext": [
+            "message-body-data"
         ]
     },
     "malware": {
@@ -787,26 +801,6 @@
         "malware-analysis": [
             "sample"
         ],
-        "domain-name": [
-            "src",
-            "dst"
-        ],
-        "ipv4-addr": [
-            "src",
-            "dst"
-        ],
-        "ipv6-addr": [
-            "src",
-            "dst"
-        ],
-        "mac-addr": [
-            "src",
-            "dst"
-        ],
-        "artifact": [
-            "src-payload",
-            "dst-payload"
-        ],
         "network-traffic": [
             "encapsulates",
             "encapsulated-by"
@@ -881,34 +875,27 @@
         ],
         "ipv6-addr": [
             "resolves-to"
+        ],
+        "network-traffic": [
+            "src",
+            "dst"
         ]
     },
     "email-addr": {
         "user-account": [
             "belongs-to"
-        ]
-    },
-    "email-message": {
-        "email-addr": [
+        ],
+        "email-message": [
             "from",
             "sender",
             "to",
             "cc",
             "bcc"
-        ],
-        "email-mime-part-type": [
-            "body-multipart"
-        ],
-        "artifact": [
-            "raw-email"
         ]
     },
     "email-mime-part-type": {
-        "artifact": [
-            "body-raw"
-        ],
-        "file": [
-            "body-raw"
+        "email-message": [
+            "body-multipart"
         ]
     },
     "archive-ext": {
@@ -919,16 +906,18 @@
             "contains"
         ]
     },
-    "ntfs-ext": {
-        "alternate-data-stream-type": [
+    "alternate-data-stream-type": {
+        "ntfs-ext": [
             "alternate-data-streams"
         ]
     },
-    "windows-pebinary-ext": {
-        "windows-pe-optional-header-type": [
+    "windows-pe-optional-header-type": {
+        "windows-pebinary-ext": [
             "optional-header"
-        ],
-        "windows-pe-section-type": [
+        ]
+    },
+    "windows-pe-section-type": {
+        "windows-pebinary-ext": [
             "sections"
         ]
     },
@@ -938,6 +927,10 @@
         ],
         "mac-addr": [
             "resolves-to"
+        ],
+        "network-traffic": [
+            "src",
+            "dst"
         ],
         "location": [
             "located-at"
@@ -950,13 +943,18 @@
         "mac-addr": [
             "resolves-to"
         ],
+        "network-traffic": [
+            "src",
+            "dst"
+        ],
         "location": [
             "located-at"
         ]
     },
-    "http-request-ext": {
-        "artifact": [
-            "message-body-data"
+    "mac-addr": {
+        "network-traffic": [
+            "src",
+            "dst"
         ]
     },
     "process": {
@@ -976,18 +974,13 @@
             "creator-user"
         ]
     },
-    "windows-service-ext": {
-        "file": [
-            "service-dll"
-        ]
-    },
     "windows-registry-key": {
         "windows-registry-value-type": [
             "values"
         ]
     },
-    "x509-certificate": {
-        "x509-v3-extensions-type": [
+    "x509-v3-extensions-type": {
+        "x509-certificate": [
             "x509-v3-extensions"
         ]
     },
@@ -1023,6 +1016,11 @@
     "incident": {
         "campaign": [
             "attributed-to"
+        ]
+    },
+    "observed-data": {
+        "file": [
+            "content"
         ]
     },
     "city": {
