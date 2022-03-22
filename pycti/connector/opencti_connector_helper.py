@@ -324,7 +324,7 @@ class ListenStream(threading.Thread):
                 live_stream_url,
                 headers={
                     "authorization": "Bearer " + self.token,
-                    "listen-delete": self.listen_delete,
+                    "listen-delete": "false" if self.listen_delete is False else "true",
                 },
                 verify=opencti_ssl_verify,
             )
@@ -361,7 +361,9 @@ class ListenStream(threading.Thread):
                 live_stream_url,
                 headers={
                     "authorization": "Bearer " + self.helper.opencti_token,
-                    "listen-delete": self.helper.connect_live_stream_listen_delete,
+                    "listen-delete": "false"
+                    if self.helper.connect_live_stream_listen_delete is False
+                    else "true",
                 },
                 verify=self.helper.opencti_ssl_verify,
             )
