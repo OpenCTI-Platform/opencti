@@ -39,6 +39,8 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { dateFormat, parse } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
+import RelatedResponse from '../../common/form/RelatedResponse';
+import LoggedBy from '../../common/form/LoggedBy';
 
 const styles = (theme) => ({
   container: {
@@ -447,7 +449,7 @@ class RiskTrackingPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
+                        {/* <Field
                           component={SelectField}
                           variant='outlined'
                           name="logged_by"
@@ -455,15 +457,14 @@ class RiskTrackingPopover extends Component {
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                        />
-                        <Field
-                          component={SelectField}
+                        /> */}
+                        <LoggedBy
                           variant='outlined'
                           name="logged_by"
                           size='small'
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                         />
                       </div>
                       <div style={{ marginBottom: '15px' }}>
@@ -482,7 +483,7 @@ class RiskTrackingPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
+                        {/* <Field
                           component={SelectField}
                           name="related_responses"
                           fullWidth={true}
@@ -496,7 +497,15 @@ class RiskTrackingPopover extends Component {
                               {value.name}
                             </MenuItem>
                           ))}
-                        </Field>
+                        </Field> */}
+                        <RelatedResponse
+                          variant='outlined'
+                          name="related_responses"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>

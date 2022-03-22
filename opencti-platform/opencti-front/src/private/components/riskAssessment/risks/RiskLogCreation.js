@@ -40,6 +40,8 @@ import { insertNode } from '../../../../utils/Store';
 import { dateFormat, parse } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
+import RelatedResponse from '../../common/form/RelatedResponse';
+import LoggedBy from '../../common/form/LoggedBy';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -342,7 +344,7 @@ class RiskLogCreation extends Component {
               description: '',
               event_start: '',
               event_end: '',
-              logged_by: [],
+              logged_by: '',
               status_change: '',
               related_responses: [],
             }}
@@ -505,21 +507,13 @@ class RiskLogCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="logged_by"
-                          fullWidth={true}
+                        <LoggedBy
                           variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '50%' }}
-                        />
-                        <Field
-                          component={SelectField}
                           name="logged_by"
+                          size='small'
                           fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '50%' }}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                         />
                       </div>
                       <div style={{ marginBottom: '15px' }}>
@@ -537,7 +531,7 @@ class RiskLogCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
+                        {/* <Field
                           component={SelectField}
                           name="related_responses"
                           fullWidth={true}
@@ -551,7 +545,15 @@ class RiskLogCreation extends Component {
                               {value.name}
                             </MenuItem>
                           ))}
-                        </Field>
+                        </Field> */}
+                        <RelatedResponse
+                          variant='outlined'
+                          name="related_responses"
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
