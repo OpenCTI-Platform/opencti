@@ -16,7 +16,6 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import { deleteNode } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   container: {

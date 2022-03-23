@@ -18,11 +18,11 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 243px)',
-    minHeight: 'calc(100vh - 205px)',
+    minHeight: 'calc(100vh - 220px)',
     width: 'calc(100vw - 243px)',
-    height: 'calc(100vh - 205px)',
+    height: 'calc(100vh - 220px)',
     maxWidth: 'calc(100vw - 243px)',
-    maxHeight: 'calc(100vh - 205px)',
+    maxHeight: 'calc(100vh - 220px)',
   },
   containerWithMarginRight: {
     margin: '15px 0 -24px 0',
@@ -30,11 +30,11 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     paddingBottom: 20,
     minWidth: 'calc(100vw - 430px)',
-    minHeight: 'calc(100vh - 235px)',
+    minHeight: 'calc(100vh - 250px)',
     width: 'calc(100vw - 430px)',
-    height: 'calc(100vh - 235px)',
+    height: 'calc(100vh - 250px)',
     maxWidth: 'calc(100vw - 430px)',
-    maxHeight: 'calc(100vh - 235px)',
+    maxHeight: 'calc(100vh - 250px)',
   },
   header: {
     borderBottom: theme.palette.divider,
@@ -322,16 +322,16 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                         style={{
                           border: `1px solid ${
                             modeColorsReversed
-                              ? colorsReversed(theme.palette.background.chip)[
+                              ? colorsReversed(theme.palette.background.accent)[
                                 level
                               ][0]
-                              : colors(theme.palette.background.chip)[level][0]
+                              : colors(theme.palette.background.accent)[level][0]
                           }`,
                           backgroundColor: modeColorsReversed
-                            ? colorsReversed(theme.palette.background.chip)[
+                            ? colorsReversed(theme.palette.background.accent)[
                               level
                             ][position]
-                            : colors(theme.palette.background.chip)[level][
+                            : colors(theme.palette.background.accent)[level][
                               position
                             ],
                         }}

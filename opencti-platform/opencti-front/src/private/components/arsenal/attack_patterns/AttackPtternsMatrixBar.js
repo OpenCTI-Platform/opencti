@@ -12,15 +12,14 @@ import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
+import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
   bottomNav: {
     zIndex: 1000,
+    padding: '10px 200px 10px 205px',
     display: 'flex',
-    overflow: 'hidden',
   },
   divider: {
     display: 'inline-block',
@@ -55,80 +54,59 @@ class AttackPtternsMatrixBar extends Component {
         classes={{ paper: classes.bottomNav }}
         PaperProps={{ variant: 'elevation', elevation: 1 }}
       >
-        <div
-          style={{
-            height: 54,
-            verticalAlign: 'top',
-            transition: 'height 0.2s linear',
-          }}
-        >
-          <div
-            style={{
-              verticalAlign: 'top',
-              width: '100%',
-              height: 54,
-              paddingTop: 3,
-            }}
-          >
-            <div
-              style={{
-                float: 'left',
-                marginLeft: 200,
-                height: '100%',
-                display: 'flex',
-              }}
+        <Grid container={true} spacing={1}>
+          <Grid item={true} xs="auto">
+            <Select
+              size="small"
+              value={currentKillChain}
+              onChange={handleChangeKillChain.bind(this)}
             >
-              <FormControl style={{ margin: '5px 15px 0 0' }}>
-                <InputLabel>{t('Kill chain')}</InputLabel>
-                <Select
-                  value={currentKillChain}
-                  onChange={handleChangeKillChain.bind(this)}
-                  style={{ marginTop: 10 }}
+              {killChains.map((killChainName) => (
+                <MenuItem key={killChainName} value={killChainName}>
+                  {killChainName}
+                </MenuItem>
+              ))}
+            </Select>
+          </Grid>
+          <Grid item={true} xs="auto">
+            <Tooltip
+              title={
+                currentModeOnlyActive
+                  ? t('Display the whole matrix')
+                  : t('Display only used techniques')
+              }
+            >
+              <span>
+                <IconButton
+                  color={currentModeOnlyActive ? 'secondary' : 'primary'}
+                  onClick={handleToggleModeOnlyActive.bind(this)}
+                  size="small"
                 >
-                  {killChains.map((killChainName) => (
-                    <MenuItem key={killChainName} value={killChainName}>
-                      {killChainName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <Tooltip
-                title={
-                  currentModeOnlyActive
-                    ? t('Display the whole matrix')
-                    : t('Display only used techniques')
-                }
-              >
-                <span>
-                  <IconButton
-                    color={currentModeOnlyActive ? 'secondary' : 'primary'}
-                    onClick={handleToggleModeOnlyActive.bind(this)}
-                    size="large"
-                  >
-                    <FilterListOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Tooltip
-                title={
-                  currentColorsReversed
-                    ? t('Disable invert colors')
-                    : t('Enable invert colors')
-                }
-              >
-                <span>
-                  <IconButton
-                    color={currentColorsReversed ? 'secondary' : 'primary'}
-                    onClick={handleToggleColorsReversed.bind(this)}
-                    size="large"
-                  >
-                    <InvertColorsOffOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </div>
-          </div>
-        </div>
+                  <FilterListOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Grid>
+          <Grid item={true} xs="auto">
+            <Tooltip
+              title={
+                currentColorsReversed
+                  ? t('Disable invert colors')
+                  : t('Enable invert colors')
+              }
+            >
+              <span>
+                <IconButton
+                  color={currentColorsReversed ? 'secondary' : 'primary'}
+                  onClick={handleToggleColorsReversed.bind(this)}
+                  size="small"
+                >
+                  <InvertColorsOffOutlined />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Grid>
+        </Grid>
       </Drawer>
     );
   }
