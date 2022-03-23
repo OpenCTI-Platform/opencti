@@ -136,8 +136,6 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-const tickFormatter = (title) => truncate(title.replace(/\[(.*?)\]/gi, ''), 100);
-
 class EntityStixCoreRelationshipsHorizontalBars extends Component {
   renderContent() {
     const {
