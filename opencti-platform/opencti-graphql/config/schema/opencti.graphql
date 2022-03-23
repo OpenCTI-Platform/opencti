@@ -673,6 +673,7 @@ enum TaskActionType {
 enum TaskContextType {
   ATTRIBUTE
   RELATION
+  REVERSED_RELATION
 }
 enum TasksOrdering {
   id
@@ -9595,6 +9596,7 @@ type KillChainPhaseEditMutations {
 ######## STIX CORE OBJECT ENTITIES
 
 type StixCoreObjectEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
   relationDelete(toId: String!, relationship_type: String!): StixCoreObject

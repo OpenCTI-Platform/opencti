@@ -242,6 +242,7 @@ class ContainerStixCyberObservablesComponent extends Component {
                 this,
               )}
               withPaddingRight={true}
+              container={container}
             />
             <StixCyberObservablesRightBar
               types={types}

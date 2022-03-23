@@ -53,6 +53,7 @@ const TASK_MANAGER_KEY = conf.get('task_scheduler:lock_key');
 
 const ACTION_TYPE_ATTRIBUTE = 'ATTRIBUTE';
 const ACTION_TYPE_RELATION = 'RELATION';
+const ACTION_TYPE_REVERSED_RELATION = 'REVERSED_RELATION';
 
 const findTaskToExecute = async () => {
   const tasks = await findAll(SYSTEM_USER, {
@@ -170,6 +171,12 @@ const executeAdd = async (user, context, element) => {
       await createRelation(user, { fromId: element.id, toId: target, relationship_type: field });
     }
   }
+  if (contextType === ACTION_TYPE_REVERSED_RELATION) {
+    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+      const target = values[indexCreate];
+      await createRelation(user, { fromId: target, toId: element.id, relationship_type: field });
+    }
+  }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {
     const patch = { [field]: values };
     await patchAttribute(user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_ADD });
@@ -181,6 +188,12 @@ const executeRemove = async (user, context, element) => {
     for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
       const target = values[indexCreate];
       await deleteRelationsByFromAndTo(user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
+    }
+  }
+  if (contextType === ACTION_TYPE_REVERSED_RELATION) {
+    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+      const target = values[indexCreate];
+      await deleteRelationsByFromAndTo(user, target, element.id, field, ABSTRACT_BASIC_RELATIONSHIP);
     }
   }
   if (contextType === ACTION_TYPE_ATTRIBUTE) {

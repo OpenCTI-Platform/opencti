@@ -33,6 +33,7 @@ import {
   BrushOutlined,
   CenterFocusStrong,
   CancelOutlined,
+  LinkOffOutlined,
 } from '@mui/icons-material';
 import { Label, Merge } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -334,6 +335,22 @@ class ToolBar extends Component {
 
   handleLaunchDelete() {
     const actions = [{ type: 'DELETE', context: null }];
+    this.setState({ actions }, () => {
+      this.handleOpenTask();
+    });
+  }
+
+  handleLaunchRemove() {
+    const actions = [
+      {
+        type: 'REMOVE',
+        context: {
+          type: 'REVERSED_RELATION',
+          field: 'object',
+          values: [this.props.container],
+        },
+      },
+    ];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
@@ -754,6 +771,7 @@ class ToolBar extends Component {
       search,
       withPaddingRight,
       theme,
+      container,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -865,6 +883,25 @@ class ToolBar extends Component {
               </span>
             </Tooltip>
           </Security>
+          {container && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <Tooltip title={t('Remove from the container')}>
+                <span>
+                  <IconButton
+                    aria-label="remove"
+                    disabled={
+                      numberOfSelectedElements === 0 || this.state.processing
+                    }
+                    onClick={this.handleLaunchRemove.bind(this)}
+                    color="primary"
+                    size="large"
+                  >
+                    <LinkOffOutlined />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            </Security>
+          )}
           <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <Tooltip title={t('Delete')}>
               <span>
@@ -1361,6 +1398,7 @@ ToolBar.propTypes = {
   search: PropTypes.string,
   handleClearSelectedElements: PropTypes.func,
   withPaddingRight: PropTypes.bool,
+  container: PropTypes.object,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);

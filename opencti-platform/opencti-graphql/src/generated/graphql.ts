@@ -10794,6 +10794,7 @@ export type StixCoreObjectEdge = {
 export type StixCoreObjectEditMutations = {
   __typename?: 'StixCoreObjectEditMutations';
   askEnrichment?: Maybe<Work>;
+  delete?: Maybe<Scalars['ID']>;
   exportAsk?: Maybe<Array<Maybe<File>>>;
   exportPush?: Maybe<Scalars['Boolean']>;
   importPush?: Maybe<File>;
@@ -12717,7 +12718,8 @@ export type TaskContextInput = {
 
 export enum TaskContextType {
   Attribute = 'ATTRIBUTE',
-  Relation = 'RELATION'
+  Relation = 'RELATION',
+  ReversedRelation = 'REVERSED_RELATION'
 }
 
 export type TaskError = {
@@ -19777,6 +19779,7 @@ export type StixCoreObjectEdgeResolvers<ContextType = any, ParentType extends Re
 
 export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectEditMutations'] = ResolversParentTypes['StixCoreObjectEditMutations']> = {
   askEnrichment?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentArgs, 'connectorId'>>;
+  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   exportAsk?: Resolver<Maybe<Array<Maybe<ResolversTypes['File']>>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'exportType' | 'format'>>;
   exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportPushArgs, 'file'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsImportPushArgs, 'file'>>;

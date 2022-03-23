@@ -36,6 +36,8 @@ const i18n = {
       'Advanced search': 'Recherche avancée',
       'Global keyword': 'Mot-clé global',
       'Search for a threat...': 'Rechercher une menace...',
+      'Do you want to delete this entity?':
+        'Souhaitez-vous supprimer cette entité ?',
       'Do you want to delete this user?':
         'Souahitez-vous supprimer cet utilisateur ?',
       'Do you want to delete this group?':
@@ -225,7 +227,7 @@ const i18n = {
       'Add an action': 'Ajouter une action',
       Export: 'Exporter',
       Delete: 'Supprimer',
-      Remove: 'Supprimer',
+      Remove: 'Retirer',
       Merge: 'Fusionner',
       Cancel: 'Annuler',
       Import: 'Importer',
@@ -248,6 +250,7 @@ const i18n = {
         'Cette individualne est maintenant un utilisateur',
       'This relation is inferred': 'Cette relation est inférée',
       'This field is required': 'Ce champ est requis',
+      'Remove from the container': 'Retirer de ce conteneur',
       'This field must only contain alphanumeric chars, dashes and space':
         'Ce champ ne peut contenir que des caractères alphanumériques, des tirets et des espaces',
       'The value is too short': 'La valeur est trop courte',
@@ -2374,6 +2377,8 @@ const i18n = {
         '相关实体(通用关系"related-to")',
       'This panel shows by default the latest created entities, use the search to find more.':
         '此面板默认显示最新创建的实体，请使用搜索查找更多信息。',
+      'Remove from the container': '从容器中取出',
+      'Do you want to delete this entity?': '是否要删除此实体？',
       Platforms: '平台',
       Platform: '平台',
       'Commit message': '提交消息',

@@ -243,6 +243,7 @@ class ContainerStixDomainObjectsComponent extends Component {
                 this,
               )}
               withPaddingRight={true}
+              container={container}
             />
             <StixDomainObjectsRightBar
               types={types}

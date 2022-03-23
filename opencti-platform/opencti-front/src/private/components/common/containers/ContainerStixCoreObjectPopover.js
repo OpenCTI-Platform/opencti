@@ -16,6 +16,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import { deleteNode } from '../../../../utils/Store';
 
 const styles = (theme) => ({
   container: {
@@ -39,8 +40,8 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-export const containerStixCoreObjectPopoverDeletionMutation = graphql`
-  mutation ContainerStixCoreObjectPopoverDeletionMutation(
+export const containerStixCoreObjectPopoverRemoveMutation = graphql`
+  mutation ContainerStixCoreObjectPopoverRemoveMutation(
     $id: ID!
     $toId: String!
     $relationship_type: String!
@@ -53,12 +54,22 @@ export const containerStixCoreObjectPopoverDeletionMutation = graphql`
   }
 `;
 
+export const containerStixCoreObjectPopoverDeleteMutation = graphql`
+  mutation ContainerStixCoreObjectPopoverDeleteMutation($id: ID!) {
+    stixCoreObjectEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
 class ContainerStixCoreObjectPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
       anchorEl: null,
+      displayRemove: false,
       displayDelete: false,
+      removing: false,
       deleting: false,
     };
   }
@@ -72,6 +83,15 @@ class ContainerStixCoreObjectPopover extends Component {
     this.setState({ anchorEl: null });
   }
 
+  handleOpenRemove() {
+    this.setState({ displayRemove: true });
+    this.handleClose();
+  }
+
+  handleCloseRemove() {
+    this.setState({ removing: false, displayRemove: false });
+  }
+
   handleOpenDelete() {
     this.setState({ displayDelete: true });
     this.handleClose();
@@ -81,7 +101,7 @@ class ContainerStixCoreObjectPopover extends Component {
     this.setState({ deleting: false, displayDelete: false });
   }
 
-  submitDelete() {
+  submitRemove() {
     const {
       containerId,
       toId,
@@ -89,13 +109,37 @@ class ContainerStixCoreObjectPopover extends Component {
       paginationKey,
       paginationOptions,
     } = this.props;
-    this.setState({ deleting: true });
+    this.setState({ removing: true });
     commitMutation({
-      mutation: containerStixCoreObjectPopoverDeletionMutation,
+      mutation: containerStixCoreObjectPopoverRemoveMutation,
       variables: {
         id: containerId,
         toId,
         relationship_type: relationshipType,
+      },
+      updater: (store) => {
+        if (toId) {
+          const conn = ConnectionHandler.getConnection(
+            store.get(containerId),
+            paginationKey,
+            paginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, toId);
+        }
+      },
+      onCompleted: () => {
+        this.handleCloseRemove();
+      },
+    });
+  }
+
+  submitDelete() {
+    const { containerId, toId, paginationKey, paginationOptions } = this.props;
+    this.setState({ deleting: true });
+    commitMutation({
+      mutation: containerStixCoreObjectPopoverDeleteMutation,
+      variables: {
+        id: toId,
       },
       updater: (store) => {
         if (toId) {
@@ -130,10 +174,41 @@ class ContainerStixCoreObjectPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+          <MenuItem onClick={this.handleOpenRemove.bind(this)}>
             {t('Remove')}
           </MenuItem>
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
+          </MenuItem>
         </Menu>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.displayRemove}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseRemove.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to remove the entity from this container?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseRemove.bind(this)}
+              disabled={this.state.removing}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={this.submitRemove.bind(this)}
+              disabled={this.state.removing}
+            >
+              {t('Remove')}
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={this.state.displayDelete}
@@ -143,7 +218,7 @@ class ContainerStixCoreObjectPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to remove the entity from this container?')}
+              {t('Do you want to delete this entity?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -158,7 +233,7 @@ class ContainerStixCoreObjectPopover extends Component {
               onClick={this.submitDelete.bind(this)}
               disabled={this.state.deleting}
             >
-              {t('Remove')}
+              {t('Delete')}
             </Button>
           </DialogActions>
         </Dialog>
