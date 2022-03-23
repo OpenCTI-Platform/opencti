@@ -1,26 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, assoc } from 'ramda';
+import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import {
-  BarChart,
-  XAxis,
-  YAxis,
-  Cell,
-  CartesianGrid,
-  Bar,
-  ResponsiveContainer,
-  Tooltip,
-} from 'recharts';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { truncate } from '../../../../utils/String';
+import { horizontalBarsChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -181,72 +174,29 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
             && props.stixCoreRelationshipsDistribution
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
-            const data = map(
-              (n) => assoc(
-                'label',
-                `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`,
-                n,
-              ),
-              props.stixCoreRelationshipsDistribution,
-            );
+            const data = props.stixCoreRelationshipsDistribution.map((n) => ({
+              x: n.entity.name,
+              y: n.value,
+              fillColor: itemColor(n.entity.entity_type),
+            }));
+            const chartData = [
+              {
+                name: t('Number of relationships'),
+                data,
+              },
+            ];
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  layout="vertical"
-                  data={data}
-                  margin={{
-                    top: 20,
-                    right: 20,
-                    bottom: 0,
-                    left: 0,
-                  }}
-                >
-                  <XAxis
-                    type="number"
-                    dataKey="value"
-                    stroke={theme.palette.text.primary}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    stroke={theme.palette.text.primary}
-                    dataKey="label"
-                    type="category"
-                    angle={-30}
-                    textAnchor="end"
-                    tickFormatter={tickFormatter}
-                  />
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.background.default}
-                  />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                  />
-                  <Bar
-                    fill={theme.palette.primary.main}
-                    dataKey="value"
-                    barSize={15}
-                  >
-                    {props.stixCoreRelationshipsDistribution.map(
-                      (entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={itemColor(entry.entity.entity_type)}
-                        />
-                      ),
-                    )}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={horizontalBarsChartOptions(
+                  theme,
+                  true,
+                  simpleNumberFormat,
+                )}
+                series={chartData}
+                type="bar"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
