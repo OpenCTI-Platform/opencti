@@ -19,6 +19,8 @@ import {
   Checkbox,
 } from '@material-ui/core';
 import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardMedia from '@material-ui/core/CardMedia';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
@@ -35,6 +37,7 @@ import {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
+import RiskAssessmentPopover from './RiskAssessmentPopover';
 
 const styles = (theme) => ({
   card: {
@@ -110,6 +113,7 @@ class RiskCardComponent extends Component {
       fsd,
       classes,
       node,
+      history,
       selectAll,
       onToggleEntity,
       bookmarksIds,
@@ -157,7 +161,11 @@ class RiskCardComponent extends Component {
             }
           /> */}
           <CardContent className={classes.content}>
-            <Grid item={true} className={classes.header}>
+            <Grid
+              item={true}
+              onClick={(event) => event.preventDefault()}
+              className={classes.header}
+            >
               <div>
                 <Typography
                   variant="h3"
@@ -168,19 +176,8 @@ class RiskCardComponent extends Component {
                 </Typography>
                 {node.id && t(node.id)}
               </div>
-              {/* <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Name')}
-                </Typography>
-                <Typography>
-                  {node.name && t(node.name)}
-                </Typography>
-              </div> */}
-              <div>
+              <div style={{ display: 'flex' }}>
+                <RiskAssessmentPopover history={history} nodeId={node.id} />
                 <Checkbox
                   disableRipple={true}
                   onClick={onToggleEntity.bind(this, node)}
