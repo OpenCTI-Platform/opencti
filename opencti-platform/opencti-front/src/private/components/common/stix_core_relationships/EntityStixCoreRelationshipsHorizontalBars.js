@@ -11,7 +11,6 @@ import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { truncate } from '../../../../utils/String';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 
