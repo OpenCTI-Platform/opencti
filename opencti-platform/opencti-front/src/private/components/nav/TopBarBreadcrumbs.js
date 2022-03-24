@@ -34,7 +34,6 @@ import Security, {
 import Filters from '../common/lists/Filters';
 import Typography from '@material-ui/core/Typography';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
-import Export from '../../../components/Export';
 
 const styles = (theme) => ({
   appBar: {
@@ -134,7 +133,6 @@ const TopBarBreadcrumbs = ({
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-  
   const handleLogout = () => {
     commitMutation({
       mutation: logoutMutation,
@@ -290,7 +288,13 @@ const TopBarBreadcrumbs = ({
               </IconButton>
             </Tooltip>
             <Tooltip title={t('Add Note')}>
-              <Export />
+              <IconButton
+                disabled={true}
+                component={Link}
+                classes={{ root: classes.button }}
+              >
+                <NoteAddIcon fontSize="default" />
+              </IconButton>
             </Tooltip>
             <IconButton
               size="medium"
@@ -321,7 +325,6 @@ const TopBarBreadcrumbs = ({
           </div>
         </div>
       </Toolbar>
-      {/* {noteOpen && <Export />} */}
     </AppBar>
   );
 };
