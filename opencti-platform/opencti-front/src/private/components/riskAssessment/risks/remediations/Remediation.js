@@ -80,18 +80,21 @@ class RemediationComponent extends Component {
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               // OperationsComponent={<RiskDeletion />}
             />
-            <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true}/>
+            <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true} />
             <Grid
               container={true}
               spacing={3}
               classes={{ container: classes.gridContainer }}
             >
-              <Grid item={true} xs={6}>
-                <RemediationGeneralOverview remediation={remediation} />
+              <Grid item={true} xs={12}>
+                <RemediationGeneralOverview
+                  remediation={remediation}
+                  risk={risk}
+                />
               </Grid>
-              <Grid item={true} xs={6}>
+              {/* <Grid item={true} xs={6}>
                 <RemediationGeneralDetails remediation={remediation} />
-              </Grid>
+              </Grid> */}
             </Grid>
             <Grid
               container={true}

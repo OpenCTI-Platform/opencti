@@ -34,7 +34,6 @@ import Security, {
   EXPLORE,
 } from '../../../utils/Security';
 import Filters from '../common/lists/Filters';
-import Export from '../../../components/Export';
 
 const styles = (theme) => ({
   appBar: {
@@ -282,7 +281,13 @@ const TopBarBreadcrumbs = ({
               </IconButton>
             </Tooltip>
             <Tooltip title={t('Add Note')}>
-              <Export />
+              <IconButton
+                disabled={true}
+                component={Link}
+                classes={{ root: classes.button }}
+              >
+                <NoteAddIcon fontSize="default" />
+              </IconButton>
             </Tooltip>
             <IconButton
               size="medium"
@@ -313,7 +318,6 @@ const TopBarBreadcrumbs = ({
           </div>
         </div>
       </Toolbar>
-      {/* {noteOpen && <Export />} */}
     </AppBar>
   );
 };

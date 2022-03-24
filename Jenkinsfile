@@ -33,8 +33,10 @@ node {
       dir('opencti-front') {
         dir('src/relay') {
           sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
+          archiveArtifacts artifacts: 'environmentDarkLight.js', fingerprint: true, followSymlinks: false
         }
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
+        archiveArtifacts artifacts: 'package.json', fingerprint: true, followSymlinks: false
         sh 'yarn schema-compile'
         sh 'yarn install'
       }
@@ -43,18 +45,22 @@ node {
 
   parallel test: {
     stage('Test') {
-      dir('opencti-worker/src') {
-        sh 'pip install --no-cache-dir -r requirements.txt'
-        sh 'pip install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master'
-      }
-      
-      dir('opencti-platform') {
-        dir('opencti-graphql') {
-          sh 'yarn test'
+      try {
+        dir('opencti-worker/src') {
+          sh 'pip install --no-cache-dir -r requirements.txt'
+          sh 'pip install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master'
         }
-        dir('opencti-front') {
-          sh 'yarn test'
+
+        dir('opencti-platform') {
+          dir('opencti-graphql') {
+            sh 'yarn test'
+          }
+          dir('opencti-front') {
+            sh 'yarn test'
+          }
         }
+      } catch(Exception e) {
+        // NO-OP
       }
     }
   }, build: {
@@ -85,7 +91,7 @@ void docker_steps(String registry, String image, String tag, String buildArgs) {
   }
 
   stage('Push') {
-    docker.withRegistry("https://${registry}", "docker-registry-credentials") {
+    docker.withRegistry("https://${registry}", 'docker-registry-credentials') {
       app.push("${tag}")
     }
   }
