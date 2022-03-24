@@ -338,7 +338,8 @@ class SoftwareCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push('/dashboard/assets/software')}
+              // onClick={() => history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
