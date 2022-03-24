@@ -80,12 +80,14 @@ class RiskAssessmentPopover extends Component {
       anchorEl: null,
       displayPoamId: false,
       deleting: false,
+      isOpen: false,
       displayRiskLevel: false,
     };
   }
 
   handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
+    this.setState({ anchorEl: event.currentTarget, isOpen: true });
+    this.props.handleOpenMenu(this.state.isOpen);
   }
 
   handleClose() {
@@ -125,12 +127,14 @@ class RiskAssessmentPopover extends Component {
   }
 
   handleOpenPoam() {
-    this.setState({ displayPoamId: true });
+    this.setState({ displayPoamId: true, isOpen: true });
     this.handleClose();
+    this.props.handleOpenMenu(this.state.isOpen);
   }
 
   handleClosePoam() {
-    this.setState({ displayPoamId: false });
+    this.setState({ displayPoamId: false, isOpen: false });
+    this.props.handleOpenMenu(this.state.isOpen);
   }
 
   onResetPoam() {
@@ -142,12 +146,14 @@ class RiskAssessmentPopover extends Component {
   }
 
   handleOpenRiskLevel() {
-    this.setState({ displayRiskLevel: true });
+    this.setState({ displayRiskLevel: true, isOpen: true });
     this.handleClose();
+    this.props.handleOpenMenu(this.state.isOpen);
   }
 
   handleCloseRiskLevel() {
-    this.setState({ displayRiskLevel: false });
+    this.setState({ displayRiskLevel: false, isOpen: false });
+    this.props.handleOpenMenu(this.state.isOpen);
   }
 
   render() {
@@ -345,6 +351,7 @@ class RiskAssessmentPopover extends Component {
 
 RiskAssessmentPopover.propTypes = {
   nodeId: PropTypes.string,
+  handleOpenMenu: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
