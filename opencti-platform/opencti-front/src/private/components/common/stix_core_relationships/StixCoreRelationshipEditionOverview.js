@@ -283,6 +283,9 @@ const StixCoreRelationshipEditionContainer = ({
     });
   };
   const handleSubmitField = (name, value) => {
+    console.log(enableReferences);
+    console.log(name);
+    console.log(value);
     if (!enableReferences) {
       stixCoreRelationshipValidation(t)
         .validateAt(name, { [name]: value })
@@ -407,7 +410,7 @@ const StixCoreRelationshipEditionContainer = ({
             <Form style={{ margin: '20px 0 20px 0' }}>
               <ConfidenceField
                 component={SelectField}
-                variant="standard"
+                variant="edit"
                 name="confidence"
                 onFocus={handleChangeFocus}
                 onChange={handleSubmitField}
