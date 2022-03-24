@@ -154,20 +154,25 @@ const TopBarMenu = ({
   };
   return (
     <div
-    position="relative"
-    className={classes.appBar}
-    elevation={1}
-    style={{ backgroundColor: theme.palette.header.background }}
-  >
-    <Toolbar style={{ display: location.pathname === '/dashboard/risk-assessment/risks' ? 'none' : 'block' }} className={classes.toolbar}>
+      position="relative"
+      className={classes.appBar}
+      elevation={1}
+      style={{ backgroundColor: theme.palette.header.background }}
+    >
+      <Toolbar
+        style={{
+          display: location.pathname.includes('/dashboard/risk-assessment/risks') ? 'none' : 'block'
+        }}
+        className={classes.toolbar}
+      >
         <div className={classes.menuContainer}>
           {(location.pathname === '/dashboard'
             || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
-            <TopMenuAnalysis />
-          )}
+              <TopMenuAnalysis />
+            )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -182,8 +187,8 @@ const TopBarMenu = ({
           ) && <TopMenuExternalReference />}
           {(location.pathname === '/dashboard/events'
             || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
-            <TopMenuEvents />
-          )}
+              <TopMenuEvents />
+            )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuIncident />
           )}
@@ -195,8 +200,8 @@ const TopBarMenu = ({
           )}
           {(location.pathname === '/dashboard/observations'
             || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
-            <TopMenuObservations />
-          )}
+              <TopMenuObservations />
+            )}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
           ) && <TopMenuIndicator />}
@@ -211,8 +216,8 @@ const TopBarMenu = ({
           )}
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
-            <TopMenuThreats />
-          )}
+              <TopMenuThreats />
+            )}
           {location.pathname.includes('/dashboard/threats/threat_actors/') && (
             <TopMenuThreatActor />
           )}
@@ -224,20 +229,20 @@ const TopBarMenu = ({
           )}
           {(location.pathname === '/dashboard/vsac/scans/exploreresults'
             || location.pathname.match('/dashboard/vsac/scans/exploreresults')) && (
-            <TopMenuVsacExploreResults />
-          )}
+              <TopMenuVsacExploreResults />
+            )}
           {(location.pathname === '/dashboard/vsac/scans/viewcharts'
             || location.pathname.match('/dashboard/vsac/scans/viewcharts')) && (
-            <TopMenuVsacViewCharts />
-          )}
+              <TopMenuVsacViewCharts />
+            )}
           {(location.pathname === '/dashboard/vsac/scans/compare'
             || location.pathname.match('/dashboard/vsac/scans/compare')) && (
-            <TopMenuVsacCompare />
-          )}
+              <TopMenuVsacCompare />
+            )}
           {(location.pathname === '/dashboard/assets'
             || location.pathname.match('/dashboard/assets/[a-z_]+$')) && (
-            <TopMenuAssets />
-          )}
+              <TopMenuAssets />
+            )}
           {location.pathname.includes('/dashboard/assets/devices/') && (
             <TopMenuDevice />
           )}
@@ -247,18 +252,10 @@ const TopBarMenu = ({
           {location.pathname.includes('/dashboard/assets/software/') && (
             <TopMenuSoftware />
           )}
-          {console.log('location.pathname', location.pathname)}
-          {/* {(location.pathname === '/dashboard/risk-assessment'
-            || location.pathname.match('/dashboard/risk-assessment/[a-z_]+$')) && (
-            <TopMenuRiskAssessment />
-          )} */}
-          {location.pathname.includes('/dashboard/risk-assessment/risks/') && (
-            <TopMenuRisk />
-          )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
-            <TopMenuArsenal />
-          )}
+              <TopMenuArsenal />
+            )}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && (
             <TopMenuMalware />
           )}
@@ -276,8 +273,8 @@ const TopBarMenu = ({
           ) && <TopMenuVulnerability />}
           {(location.pathname === '/dashboard/entities'
             || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
-            <TopMenuEntities />
-          )}
+              <TopMenuEntities />
+            )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
           )}
@@ -314,8 +311,8 @@ const TopBarMenu = ({
           ) && <TopMenuWorkspacesInvestigations />}
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
-    </Toolbar>
-  </div>
+      </Toolbar>
+    </div>
   );
 };
 
