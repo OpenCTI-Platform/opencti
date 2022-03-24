@@ -34,7 +34,6 @@ import Security, {
 import Filters from '../common/lists/Filters';
 import Typography from '@material-ui/core/Typography';
 import Breadcrumbs from '@material-ui/core/Breadcrumbs';
-import Export from '../../../components/Export';
 
 const styles = (theme) => ({
   appBar: {
@@ -301,8 +300,14 @@ const TopBarRiskBreadcrumbs = ({
               </IconButton>
             </Tooltip>
             <Tooltip title={t('Add Note')}>
-                <Export />
-              </Tooltip>
+              <IconButton
+                disabled={true}
+                component={Link}
+                classes={{ root: classes.button }}
+              >
+                <NoteAddIcon fontSize="default" />
+              </IconButton>
+            </Tooltip>
             <IconButton
               size="medium"
               classes={{ root: classes.button }}
