@@ -23,6 +23,8 @@ import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
+import Typography from '@material-ui/core/Typography';
+import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { commitMutation } from '../../../relay/environment';
@@ -32,8 +34,6 @@ import Security, {
   EXPLORE,
 } from '../../../utils/Security';
 import Filters from '../common/lists/Filters';
-import Typography from '@material-ui/core/Typography';
-import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import Export from '../../../components/Export';
 
 const styles = (theme) => ({
@@ -105,28 +105,21 @@ const logoutMutation = graphql`
 const TopBarBreadcrumbs = ({
   t, classes, location, history, keyword, theme,
 }) => {
-
-  const pathParts = location.pathname.split("/").filter(entry => entry !== "");
+  const pathParts = location.pathname.split('/').filter((entry) => entry !== '');
 
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
 
   const buildBreadCrumbs = (array) => {
-
-    let url = "/";
-    let crumbArry = [];
-
-    for (let x = 0; x < array.length; x++) {
-
-      url += array[x] + "/";
-      let obj = { label: array[x], path: url }
-
+    let url = '/';
+    const crumbArry = [];
+    for (let x = 0; x < array.length; x += 1) {
+      url += array[x].concat('/');
+      const obj = { label: array[x], path: url };
       crumbArry.push(obj);
-
     }
-
     return crumbArry;
+  };
 
-  }
   const handleOpenMenu = (event) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
@@ -134,7 +127,6 @@ const TopBarBreadcrumbs = ({
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-  
   const handleLogout = () => {
     commitMutation({
       mutation: logoutMutation,
@@ -173,16 +165,16 @@ const TopBarBreadcrumbs = ({
           <Breadcrumbs aria-label="breadcrumb">
             {breadCrumbs.map((crumb, i, array) => {
               if (i === array.length - 1) {
-                return (<Typography color="textPrimary" style={{ textTransform: 'capitalize' }}>{crumb.label}</Typography>)
-              } else {
-                return (<Link color="inherit"
-                  to={crumb.path}
-                  onClick={(e) => { e.preventDefault(); history.push(crumb.path); }}
-                  style={{ textTransform: 'capitalize' }}
-                >
-                  {crumb.label}
-                </Link>)
+                return (<Typography color="textPrimary" style={{ textTransform: 'capitalize' }}>{crumb.label}</Typography>);
               }
+              return (<Link color="inherit"
+                key={i}
+                to={crumb.path}
+                onClick={(e) => { e.preventDefault(); history.push(crumb.path); }}
+                style={{ textTransform: 'capitalize' }}
+              >
+                {crumb.label}
+              </Link>);
             })}
           </Breadcrumbs>
         </div>
@@ -262,12 +254,12 @@ const TopBarBreadcrumbs = ({
                 </IconButton>
               </Tooltip>
             </Security>
-              <Tooltip title={t('Dashboard')}>
-                <IconButton
-                  component={Link}
-                  to='/dashboard'
-                  classes={{ root: classes.button }}
-                >
+            <Tooltip title={t('Dashboard')}>
+              <IconButton
+                component={Link}
+                to='/dashboard'
+                classes={{ root: classes.button }}
+              >
                 <DashboardIcon fontSize="default" />
               </IconButton>
             </Tooltip>
