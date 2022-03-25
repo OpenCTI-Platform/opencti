@@ -34,9 +34,6 @@ const assetCommonResolvers = {
           queryId: "Select Asset List",
           singularizeSchema
         });
-          // args.first,       // limit
-          // args.offset,      // offset
-          // args.filter       // filter
       } catch (e) {
         console.log(e)
         throw e
@@ -156,9 +153,6 @@ const assetCommonResolvers = {
           queryId: "Select IT Asset List",
           singularizeSchema
         });
-          // args.first,       // limit
-          // args.offset,      // offset
-          // args.filter       // filter
       } catch (e) {
         console.log(e)
         throw e
@@ -276,7 +270,6 @@ const assetCommonResolvers = {
           queryId: "Select Asset Location List",
           singularizeSchema
         });
-        // args.filter
       } catch (e) {
         console.log(e)
         throw e

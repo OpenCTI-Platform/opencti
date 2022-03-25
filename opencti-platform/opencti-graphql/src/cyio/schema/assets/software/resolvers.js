@@ -5,7 +5,11 @@ import {addToInventoryQuery, deleteQuery, removeFromInventoryQuery} from "../ass
 import {
   getSelectSparqlQuery,
   getReducer,
-  insertQuery, predicateMap
+  // insertQuery, 
+  insertSoftwareQuery,
+  selectSoftwareQuery,
+  selectSoftwareByIriQuery,
+  softwarePredicateMap,
 } from './sparql-query.js';
 import {
   selectLabelByIriQuery,
@@ -122,33 +126,87 @@ const softwareResolvers = {
     }
   },
   Mutation: {
-    createSoftwareAsset: async ( _, {input}, {dbName, dataSources}) => {
-      const {iri, id, query} = insertQuery(input);
+    createSoftwareAsset: async ( _, {input}, {dbName, dataSources, selectMap}) => {
+      const {iri, id, query} = insertSoftwareQuery(input);
       await dataSources.Stardog.create({dbName, queryId: "Insert Software Asset",sparqlQuery: query});
       const connectQuery = addToInventoryQuery(iri);
       await dataSources.Stardog.create({dbName, queryId: "Insert to Inventory", sparqlQuery: connectQuery});
-      return {...input, id};
+
+      // retrieve information about the newly created Software to return to the user
+      const select = selectSoftwareByIriQuery(iri, selectMap.getNode("createSoftwareAsset"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: select,
+          queryId: "Select Software",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("SOFTWARE");
+      return reducer(response[0]);
     },
     deleteSoftwareAsset: async ( _, {id}, {dbName, dataSources}) => {
+      // check that the ComputingDevice exists
+      const sparqlQuery = selectSoftwareQuery(id, null );
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Software",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const relationshipQuery = removeFromInventoryQuery(id);
       await dataSources.Stardog.delete({dbName, sparqlQuery:relationshipQuery, queryId: "Remove from Inventory"});
       const query = deleteQuery(id);
       await dataSources.Stardog.delete({dbName, sparqlQuery: query, queryId: "Delete Software Asset"});
       return id;
     },
-    editSoftwareAsset: async ( _, {id, input}, {dbName, dataSources}) => {
+    editSoftwareAsset: async ( _, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the ComputingDevice exists
+      const sparqlQuery = selectSoftwareQuery(id, null );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Computing Device",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Software-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Software",
         input,
-        predicateMap
+        softwarePredicateMap
       );
-      await dataSources.Stardog.edit({dbName, sparqlQuery: query, queryId: "Update Software Asset"});
-      return {id};
+      await dataSources.Stardog.edit({
+        dbName, 
+        sparqlQuery: query, 
+        queryId: "Update Software Asset"
+      });
+      const select = selectSoftwareQuery(id, selectMap.getNode("editSoftwareAsset"));
+      let result;
+      try {
+        result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: select,
+          queryId: "Select Software",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("SOFTWARE");
+      return reducer(result[0]);
     },
   },
+  // field-level resolvers
   SoftwareAsset: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return null;
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -188,6 +246,7 @@ const softwareResolvers = {
       }
     },
     external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return null;
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -227,6 +286,7 @@ const softwareResolvers = {
       }
     },
     notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return null;
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -281,4 +341,4 @@ const softwareResolvers = {
 } ;
   
   
-export default softwareResolvers ;
+export default softwareResolvers;

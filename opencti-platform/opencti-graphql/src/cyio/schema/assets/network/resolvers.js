@@ -7,7 +7,7 @@ import {
   getReducer,
   insertQuery,
   deleteNetworkAssetQuery,
-  predicateMap,
+  networkPredicateMap,
 } from './sparql-query.js';
 import {
   deleteIpAddressRange,
@@ -35,7 +35,6 @@ const networkResolvers = {
           queryId: "Select Network Asset List",
           singularizeSchema,
         });
-        // args.filter);    // filter
 
       if (response === undefined) return;
       if (Array.isArray(response) && response.length > 0) {
@@ -258,14 +257,14 @@ const networkResolvers = {
         sparqlQuery: deleteQuery,
         queryId: "Delete Network Asset"
       });
-      return id
+      return id;
     },
     editNetworkAsset: async (_, { id, input }, {dbName, dataSources}) => {
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Network-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Network",
         input,
-        predicateMap
+        networkPredicateMap
       )
       await dataSources.Stardog.edit({
         dbName,

@@ -74,6 +74,7 @@ const objectTypeMapping = {
   "it-asset": "ItAsset",
   "load-balancer": "NetworkDeviceAsset",
   "location": "AssetLocation",
+  "mac-addr": "MACAddress",
   "network-device": "NetworkDeviceAsset",
   "network": "NetworkAsset",
   "operating-system": "OperatingSystemAsset",
