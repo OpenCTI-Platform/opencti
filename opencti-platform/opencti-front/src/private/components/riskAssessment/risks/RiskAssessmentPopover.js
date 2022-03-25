@@ -87,7 +87,9 @@ class RiskAssessmentPopover extends Component {
 
   handleOpen(event) {
     this.setState({ anchorEl: event.currentTarget, isOpen: true });
-    this.props.handleOpenMenu(this.state.isOpen);
+    if (this.props.handleOpenMenu) {
+      this.props.handleOpenMenu(this.state.isOpen);
+    }
   }
 
   handleClose() {
@@ -129,12 +131,16 @@ class RiskAssessmentPopover extends Component {
   handleOpenPoam() {
     this.setState({ displayPoamId: true, isOpen: true });
     this.handleClose();
-    this.props.handleOpenMenu(this.state.isOpen);
+    if (this.props.handleOpenMenu) {
+      this.props.handleOpenMenu(this.state.isOpen);
+    }
   }
 
   handleClosePoam() {
     this.setState({ displayPoamId: false, isOpen: false });
-    this.props.handleOpenMenu(this.state.isOpen);
+    if (this.props.handleOpenMenu) {
+      this.props.handleOpenMenu(this.state.isOpen);
+    }
   }
 
   onResetPoam() {
@@ -148,12 +154,16 @@ class RiskAssessmentPopover extends Component {
   handleOpenRiskLevel() {
     this.setState({ displayRiskLevel: true, isOpen: true });
     this.handleClose();
-    this.props.handleOpenMenu(this.state.isOpen);
+    if (this.props.handleOpenMenu) {
+      this.props.handleOpenMenu(this.state.isOpen);
+    }
   }
 
   handleCloseRiskLevel() {
     this.setState({ displayRiskLevel: false, isOpen: false });
-    this.props.handleOpenMenu(this.state.isOpen);
+    if (this.props.handleOpenMenu) {
+      this.props.handleOpenMenu(this.state.isOpen);
+    }
   }
 
   render() {
@@ -271,9 +281,9 @@ class RiskAssessmentPopover extends Component {
             initialValues={{
               risk_level: '',
             }}
-          // validationSchema={RelatedTaskValidation(t)}
-          onSubmit={this.onRiskLevelSubmit.bind(this)}
-          onReset={this.onResetRiskLevel.bind(this)}
+            // validationSchema={RelatedTaskValidation(t)}
+            onSubmit={this.onRiskLevelSubmit.bind(this)}
+            onReset={this.onResetRiskLevel.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form style={{ padding: '10px 15px 20px 5px' }}>
