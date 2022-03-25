@@ -8,6 +8,18 @@ export const FIRST_NS = '941e7013-5670-5552-895c-e97149d1b61c';
 export const OSCAL_NS = 'b2b5f319-6363-57ec-9557-3c271fe709c7';
 export const FEDRAMP_NS = '4a6eb7bc-ed64-527a-a762-5e6f92b3c94f';
 
+// converts string to Pascal case (aka UpperCamelCase)
+export function toPascalCase(string) {
+  return `${string}`
+    .replace(new RegExp(/[-_]+/, 'g'), ' ')
+    .replace(new RegExp(/[^\w\s]/, 'g'), '')
+    .replace(
+      new RegExp(/\s+(.)(\w*)/, 'g'),
+      ($1, $2, $3) => `${$2.toUpperCase() + $3.toLowerCase()}`
+    )
+    .replace(new RegExp(/\w/), s => s.toUpperCase());
+}
+
 // Generates a deterministic ID value based on a JSON structure and a namespace
 export function generateId( materials, namespace ) {
   if (materials !== undefined ) {
@@ -144,16 +156,16 @@ export const buildSelectVariables = (predicateMap, selects) => {
 export const updateQuery = (iri, type, input, predicateMap) => {
   let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [];
   for(const {key, value, operation} of input) {
-    if(!predicateMap.hasOwnProperty(key)) continue;
+    if (!predicateMap.hasOwnProperty(key)) continue;
     for(const itr of value) {
-      const predicate = predicateMap[key].binding(iri, itr);
+      const predicate = predicateMap[key].binding(`<${iri}>`, itr);
       switch (operation) {
         case UpdateOps.ADD:
           insertPredicates.push(predicate);
           break;
         case UpdateOps.REPLACE:
           insertPredicates.push(predicate);
-          replaceBindingPredicates.push(predicateMap[key].binding(iri))
+          replaceBindingPredicates.push(predicateMap[key].binding(`<${iri}>`))
           break;
         case UpdateOps.REMOVE:
           deletePredicates.push(predicate);

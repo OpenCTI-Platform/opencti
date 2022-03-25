@@ -50,7 +50,7 @@ const styles = (theme) => ({
 class SearchInput extends Component {
   render() {
     const {
-      t, classes, onChange, onSubmit, variant, keyword, fullWidth,
+      t, classes, onChange, onSubmit, variant, keyword, fullWidth, disabled,
     } = this.props;
     let classRoot = classes.searchRoot;
     if (variant === 'inDrawer') {
@@ -64,6 +64,7 @@ class SearchInput extends Component {
       <Input
         fullWidth={fullWidth}
         name="keyword"
+        disabled={disabled}
         defaultValue={keyword}
         placeholder={`${t('Search')}...`}
         onChange={(event) => {
@@ -103,6 +104,7 @@ class SearchInput extends Component {
 SearchInput.propTypes = {
   keyword: PropTypes.string,
   t: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
   classes: PropTypes.object.isRequired,
   onChange: PropTypes.func,
   onSubmit: PropTypes.func,

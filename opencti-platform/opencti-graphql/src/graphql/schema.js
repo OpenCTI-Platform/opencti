@@ -93,6 +93,7 @@ import stixResolvers from '../resolvers/stix';
 // Import Cyio resolvers
 import assetCommonResolvers from '../cyio/schema/assets/asset-common/resolvers.js';
 import computingDeviceResolvers from '../cyio/schema/assets/computing-device/resolvers.js';
+import hardwareResolvers from '../cyio/schema/assets/hardware/resolvers.js';
 import networkResolvers from '../cyio/schema/assets/network/resolvers.js';
 import softwareResolvers from '../cyio/schema/assets/software/resolvers.js';
 import cyioGlobalTypeResolvers from '../cyio/schema/global/resolvers/cyioGlobalTypes.js';
@@ -213,6 +214,7 @@ const createSchema = () => {
     cyioNoteResolvers,
     assetCommonResolvers,
     computingDeviceResolvers,
+    hardwareResolvers,
     networkResolvers,
     softwareResolvers,
 ]);
