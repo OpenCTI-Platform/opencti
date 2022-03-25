@@ -292,7 +292,7 @@ export const insertQuery = (propValues) => {
   } ;
   const id = generateId( id_material, OASIS_SCO_NS );
   const timestamp = new Date().toISOString()
-  const iri = `<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => computingDevicePredicateMap.hasOwnProperty(propPair[0]))
     .map((propPair) => computingDevicePredicateMap[propPair[0]].binding(iri, propPair[1]))
@@ -317,7 +317,7 @@ export const insertQuery = (propValues) => {
 }
 export const selectObjectRefsQuery = (id, properties) => {
   const { selectClause ,predicates } = buildSelectVariables(computingDevicePredicateMap, ["ports", "ip_address"])
-  const iri = `<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`
   return `
   SELECT ${selectClause} 
   FROM <tag:stardog:api:context:named>
@@ -336,7 +336,7 @@ export const insertComputingDeviceQuery = (propValues) => {
   } ;
   const id = generateId( id_material, OASIS_SCO_NS );
   const timestamp = new Date().toISOString()
-  const iri = `<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => computingDevicePredicateMap.hasOwnProperty(propPair[0]))
     .map((propPair) => computingDevicePredicateMap[propPair[0]].binding(iri, propPair[1]))
@@ -360,7 +360,7 @@ export const insertComputingDeviceQuery = (propValues) => {
   return {iri, id, query}  
 }
 export const selectComputingDeviceQuery = (id, select) => {
-  return selectComputingDeviceByIriQuery(`http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}`, select);
+  return selectComputingDeviceByIriQuery(`http://scap.nist.gov/ns/asset-identification#Hardware-${id}`, select);
 }
 export const selectComputingDeviceByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
@@ -397,7 +397,7 @@ export const selectAllComputingDevices = (select, filters) => {
   `
 }
 export const deleteComputingDeviceQuery = (id) => {
-  const iri = `http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}`;
+  const iri = `http://scap.nist.gov/ns/asset-identification#Hardware-${id}`;
   return deleteComputingDeviceByIriQuery(iri);
 }
 export const deleteComputingDeviceByIriQuery = (iri) => {
@@ -415,7 +415,7 @@ export const deleteComputingDeviceByIriQuery = (iri) => {
   `
 }
 export const attachToComputingDeviceQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   if (!computingDevicePredicateMap.hasOwnProperty(field)) return null;
   const predicate = computingDevicePredicateMap[field].predicate;
   let statements;
@@ -436,7 +436,7 @@ export const attachToComputingDeviceQuery = (id, field, itemIris) => {
   `
 }
 export const detachFromComputingDeviceQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}>`;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   if (!computingDevicePredicateMap.hasOwnProperty(field)) return null;
   const predicate = computingDevicePredicateMap[field].predicate;
   let statements;

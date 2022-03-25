@@ -123,7 +123,7 @@ export const insertHardwareQuery = (propValues) => {
     let iriTemplate = deviceMap[propValues.asset_type].iriTemplate;
     insertPredicates.push(`${iri} a <${deviceMap[propValues.asset_type].iriTemplate}>`);
     if (deviceMap[propValues.asset_type].parent !== undefined) {
-      parent = deviceMap[propValues.asset_type].parent;
+      let parent = deviceMap[propValues.asset_type].parent;
       insertPredicates.push(`${iri} a <${deviceMap[parent].iriTemplate}>`);
     }
   }
