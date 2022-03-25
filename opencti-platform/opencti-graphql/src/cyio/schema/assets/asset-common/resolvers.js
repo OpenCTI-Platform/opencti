@@ -405,6 +405,16 @@ const assetCommonResolvers = {
       });
     },
     createAssetLocation: async (_, {input}, {dbName, selectMap, dataSources}) => {
+      // remove input fields with null or empty values
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
       const {id, query} = insertLocationQuery(input);
       await dataSources.Stardog.create({
         dbName,

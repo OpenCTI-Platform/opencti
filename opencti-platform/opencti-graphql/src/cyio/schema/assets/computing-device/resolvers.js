@@ -151,7 +151,17 @@ const computingDeviceResolvers = {
   },
   Mutation: {
     createComputingDeviceAsset: async (_, {input}, {dbName, selectMap, dataSources}) => {
-      let ports, ipv4, ipv6, mac, connectedNetwork, installedOS, installedSoftware = [];
+      let ports, ipv4, ipv6, mac, connectedNetwork, installedOS, installedSoftware;
+      // remove input fields with null or empty values
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
       if (input.ports !== undefined) {
         ports = input.ports
         delete input.ports;
@@ -194,6 +204,7 @@ const computingDeviceResolvers = {
         delete input.installed_operating_system;
       }
       if (input.installed_software !== undefined && input.installed_software !== null) {
+        let softwareList = []
         for (let softwareId of input.installed_software) {
           let query = selectObjectIriByIdQuery( softwareId, 'software');
           let result = await dataSources.Stardog.queryById({
@@ -203,8 +214,9 @@ const computingDeviceResolvers = {
             singularizeSchema
           });
           if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${softwareId}`);
-          installedSoftware.push(`<${result[0].iri}>`);
+          softwareList.push(`<${result[0].iri}>`);
         }
+        installedSoftware = softwareList;
         delete input.installed_software;
       }
 

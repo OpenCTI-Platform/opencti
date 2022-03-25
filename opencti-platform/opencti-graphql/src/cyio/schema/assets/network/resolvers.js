@@ -128,6 +128,16 @@ const networkResolvers = {
   },
   Mutation: {
     createNetworkAsset: async (_, { input }, {dbName, dataSources}) => {
+      // remove input fields with null or empty values
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
       let ipv4RelIri = null, ipv6RelIri = null;
       if (input.network_ipv4_address_range !== undefined) {
         const ipv4Range = input.network_ipv4_address_range;

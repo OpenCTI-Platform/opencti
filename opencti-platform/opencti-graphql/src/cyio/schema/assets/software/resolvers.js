@@ -127,6 +127,16 @@ const softwareResolvers = {
   },
   Mutation: {
     createSoftwareAsset: async ( _, {input}, {dbName, dataSources, selectMap}) => {
+      // remove input fields with null or empty values
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
       const {iri, id, query} = insertSoftwareQuery(input);
       await dataSources.Stardog.create({dbName, queryId: "Insert Software Asset",sparqlQuery: query});
       const connectQuery = addToInventoryQuery(iri);
