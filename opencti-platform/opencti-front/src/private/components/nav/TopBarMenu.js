@@ -46,7 +46,6 @@ import TopMenuVSAC from './TopMenuVSAC';
 //import TopMenuVsacViewCharts from './TopMenuVsacViewCharts';
 import TopMenuAssets from './TopMenuAssets';
 import TopMenuRiskAssessment from './TopMenuRiskAssessment';
-import TopMenuRisk from './TopMenuRisk';
 import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuDevice from './TopMenuDevice';
 import TopMenuOverviews from './TopMenuOverviews';
@@ -161,7 +160,7 @@ const TopBarMenu = ({
     >
       <Toolbar
         style={{
-          display: location.pathname.includes('/dashboard/risk-assessment/risks') ? 'none' : 'block'
+          display: location.pathname.includes('/activities/risk assessment/risks') ? 'none' : 'block'
         }}
         className={classes.toolbar}
       >
@@ -227,29 +226,29 @@ const TopBarMenu = ({
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
           )}
-          {(location.pathname === '/dashboard/vsac/scans/exploreresults'
-            || location.pathname.match('/dashboard/vsac/scans/exploreresults')) && (
+          {(location.pathname === '/activities/vulnerability assessment/scans/explore results'
+            || location.pathname.match('/activities/vulnerability assessment/scans/explore results')) && (
               <TopMenuVsacExploreResults />
             )}
-          {(location.pathname === '/dashboard/vsac/scans/viewcharts'
-            || location.pathname.match('/dashboard/vsac/scans/viewcharts')) && (
+          {(location.pathname === '/activities/vulnerability assessment/scans/view charts'
+            || location.pathname.match('/activities/vulnerability assessment/scans/view charts')) && (
               <TopMenuVsacViewCharts />
             )}
-          {(location.pathname === '/dashboard/vsac/scans/compare'
-            || location.pathname.match('/dashboard/vsac/scans/compare')) && (
+          {(location.pathname === '/activities/vulnerability assessment/scans/compare analysis'
+            || location.pathname.match('/activities/vulnerability assessment/scans/compare analysis')) && (
               <TopMenuVsacCompare />
             )}
-          {(location.pathname === '/dashboard/assets'
-            || location.pathname.match('/dashboard/assets/[a-z_]+$')) && (
+          {(location.pathname === '/defender HQ/assets'
+            || location.pathname.match('/defender HQ/assets/[a-z_]+$')) && (
               <TopMenuAssets />
             )}
-          {location.pathname.includes('/dashboard/assets/devices/') && (
+          {location.pathname.includes('/defender HQ/assets/devices/') && (
             <TopMenuDevice />
           )}
-          {location.pathname.includes('/dashboard/assets/network/') && (
+          {location.pathname.includes('/defender HQ/assets/network/') && (
             <TopMenuNetwork />
           )}
-          {location.pathname.includes('/dashboard/assets/software/') && (
+          {location.pathname.includes('/defender HQ/assets/software/') && (
             <TopMenuSoftware />
           )}
           {(location.pathname === '/dashboard/arsenal'

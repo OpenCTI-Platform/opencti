@@ -49,7 +49,7 @@ class RiskComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/risk-assessment/risks',
+      pathname: '/activities/risk assessment/risks',
       openNewCreation: true,
     });
   }
@@ -76,7 +76,7 @@ class RiskComponent extends Component {
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
-            <TopMenuRisk risk={risk}/>
+            <TopMenuRisk risk={risk.name}/>
             <Grid
               container={true}
               spacing={3}

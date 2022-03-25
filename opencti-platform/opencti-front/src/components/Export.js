@@ -141,7 +141,11 @@ class Export extends Component {
     } = this.props;
     return (
       <>
-        <IconButton classes={{ root: classes.button }} onClick={this.handleClickOpen.bind(this)}>
+        <IconButton
+          disabled={true}
+          classes={{ root: classes.button }}
+          onClick={this.handleClickOpen.bind(this)}
+        >
           <NoteAddIcon fontSize="default" />
         </IconButton>
         <Formik

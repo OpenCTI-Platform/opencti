@@ -44,7 +44,7 @@ class NetworkComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/assets/network',
+      pathname: '/defender HQ/assets/network',
       openNewCreation: true,
     });
   }

@@ -132,7 +132,7 @@ class RiskCardComponent extends Component {
           classes={{ root: classes.area }}
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
-          to={`/dashboard/risk-assessment/risks/${node.id}`}
+          to={`/activities/risk assessment/risks/${node.id}`}
         >
           {/* <CardHeader
             classes={{ root: classes.header }}

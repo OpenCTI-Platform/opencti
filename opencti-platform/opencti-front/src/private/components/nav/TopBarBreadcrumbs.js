@@ -103,17 +103,25 @@ const logoutMutation = graphql`
 `;
 
 const TopBarBreadcrumbs = ({
-  t, classes, location, history, keyword, theme,
+  t,
+  classes,
+  location,
+  history,
+  keyword,
+  theme,
+  risk,
+  remediation,
+  riskId,
 }) => {
   const pathParts = location.pathname.split('/').filter((entry) => entry !== '');
 
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
 
   const buildBreadCrumbs = (array) => {
-    let url = '/';
+    let url = '';
     const crumbArry = [];
     for (let x = 0; x < array.length; x += 1) {
-      url += array[x].concat('/');
+      url += ('/').concat(array[x]);
       const obj = { label: array[x], path: url };
       crumbArry.push(obj);
     }
@@ -163,6 +171,14 @@ const TopBarBreadcrumbs = ({
         <div className={classes.menuContainer}>
           <Breadcrumbs aria-label="breadcrumb">
             {breadCrumbs.map((crumb, i, array) => {
+              if (crumb.label === riskId) {
+                crumb.label = risk;
+              }
+              if (remediation) {
+                if (crumb.label === 'remediation' && breadCrumbs.length === 6) {
+                  breadCrumbs[i + 1].label = remediation.name;
+                }
+              }
               if (i === array.length - 1) {
                 return (<Typography color="textPrimary" style={{ textTransform: 'capitalize' }}>{crumb.label}</Typography>);
               }
@@ -280,7 +296,9 @@ const TopBarBreadcrumbs = ({
                 <PublishIcon fontSize="default" />
               </IconButton>
             </Tooltip>
-            <Tooltip title={t('Add Note')}>
+            <Tooltip
+              title={t('Add Note')}
+            >
               <Export />
             </Tooltip>
             <IconButton
@@ -317,6 +335,9 @@ const TopBarBreadcrumbs = ({
 };
 
 TopBarBreadcrumbs.propTypes = {
+  riskId: PropTypes.string,
+  risk: PropTypes.string,
+  remediation: PropTypes.object,
   keyword: PropTypes.string,
   theme: PropTypes.object,
   classes: PropTypes.object,

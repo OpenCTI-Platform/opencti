@@ -166,7 +166,7 @@ class NetworkEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/assets/network');
+        this.props.history.push('/defender HQ/assets/network');
       },
       onError: (err) => console.log('NetworkEditionDarkLightMutationError', err),
     });

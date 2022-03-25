@@ -101,7 +101,7 @@ class DeviceDetailsComponent extends Component {
                     component="button"
                     variant="body2"
                     className={classes.link}
-                    onClick={() => (history.push(`/dashboard/assets/software/${device.installed_operating_system.id}`))}
+                    onClick={() => (history.push(`/defender HQ/assets/software/${device.installed_operating_system.id}`))}
                   >
                     <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.installed_operating_system.name)}
                   </Link>}
@@ -132,7 +132,7 @@ class DeviceDetailsComponent extends Component {
                           variant="body2"
                           className={classes.link}
                           onClick={() => (
-                            software.id && history.push(`/dashboard/assets/software/${software.id}`)
+                            software.id && history.push(`/defender HQ/assets/software/${software.id}`)
                           )}
                         >
                           <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(software.name)}
@@ -216,7 +216,7 @@ class DeviceDetailsComponent extends Component {
                     variant="body2"
                     className={classes.link}
                     onClick={() => (
-                      device.connected_to_network.id && history.push(`/dashboard/assets/network/${device.connected_to_network.id}`)
+                      device.connected_to_network.id && history.push(`/defender HQ/assets/network/${device.connected_to_network.id}`)
                     )}
                   >
                     <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{t(device.connected_to_network.name)}
@@ -361,7 +361,7 @@ class DeviceDetailsComponent extends Component {
                       component="button"
                       variant="body2"
                       className={classes.link}
-                      onClick={() => ( history.push(`/dashboard/assets/devices/${data.id}`))}
+                      onClick={() => ( history.push(`/defender HQ/assets/devices/${data.id}`))}
                     >
                       <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data?.name && t(data.name)}
                     </Link>

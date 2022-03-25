@@ -188,7 +188,7 @@ class RiskEditionContainer extends Component {
         resetForm();
         this.handleClose();
         console.log('RiskEditionDarkLightMutationData', data);
-        this.props.history.push('/dashboard/risk-assessment/risks');
+        this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.log('RiskEditionDarkLightMutationError', err),
     });

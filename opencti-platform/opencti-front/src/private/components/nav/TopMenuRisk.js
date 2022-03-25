@@ -10,7 +10,6 @@ import ManageSearchIcon from '@material-ui/icons/SearchOutlined';
 import AddModeratorIcon from '@material-ui/icons/AddToQueueRounded';
 import HistoryIcon from '@material-ui/icons/History';
 import TopBarBreadcrumbs from './TopBarBreadcrumbs';
-import TopBarRiskBreadcrumbs from './TopBarRiskBreadcrumbs';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -56,23 +55,23 @@ class TopMenuRisk extends Component {
       <>
         {
           location.pathname.includes('/remediation/')
-            ? <TopBarBreadcrumbs />
+            ? <TopBarBreadcrumbs riskId={riskId} risk={risk} remediation={remediation}/>
             : (
               <div className={classes.riskMenuContainer}>
-                <TopBarBreadcrumbs />
+                <TopBarBreadcrumbs risk={risk} riskId={riskId}/>
                 <Button
                   component={Link}
-                  to={`/dashboard/risk-assessment/risks/${riskId}`}
+                  to={`/activities/risk assessment/risks/${riskId}`}
                   variant={
                     location.pathname
-                      === `/dashboard/risk-assessment/risks/${riskId}`
+                      === `/activities/risk assessment/risks/${riskId}`
                       ? 'contained'
                       : 'text'
                   }
                   size="small"
                   color={
                     location.pathname
-                      === `/dashboard/risk-assessment/risks/${riskId}`
+                      === `/activities/risk assessment/risks/${riskId}`
                       ? 'secondary'
                       : 'inherit'
                   }
@@ -84,17 +83,17 @@ class TopMenuRisk extends Component {
                 {/* <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}> */}
                 <Button
                   component={Link}
-                  to={`/dashboard/risk-assessment/risks/${riskId}/analysis`}
+                  to={`/activities/risk assessment/risks/${riskId}/analysis`}
                   variant={
                     location.pathname
-                      === `/dashboard/risk-assessment/risks/${riskId}/analysis`
+                      === `/activities/risk assessment/risks/${riskId}/analysis`
                       ? 'contained'
                       : 'text'
                   }
                   size="small"
                   color={
                     location.pathname
-                      === `/dashboard/risk-assessment/risks/${riskId}/analysis`
+                      === `/activities/risk assessment/risks/${riskId}/analysis`
                       ? 'secondary'
                       : 'inherit'
                   }
@@ -107,17 +106,17 @@ class TopMenuRisk extends Component {
                 {/* </Security> */}
                 <Button
                   component={Link}
-                  to={`/dashboard/risk-assessment/risks/${riskId}/remediation`}
+                  to={`/activities/risk assessment/risks/${riskId}/remediation`}
                   variant={
                     location.pathname
-                      === `/dashboard/risk-assessment/risks/${riskId}/remediation`
+                      === `/activities/risk assessment/risks/${riskId}/remediation`
                       ? 'contained'
                       : 'text'
                   }
                   size="small"
                   color={
                     location.pathname
-                      === `/dashboard/risk-assessment/risks/${riskId}/remediation`
+                      === `/activities/risk assessment/risks/${riskId}/remediation`
                       ? 'secondary'
                       : 'inherit'
                   }
@@ -129,10 +128,10 @@ class TopMenuRisk extends Component {
                 </Button>
                 {/* <Button
                   component={Link}
-                  to={`/dashboard/risk-assessment/risks/${riskId}/indicators`}
+                  to={`/activities/risk assessment/risks/${riskId}/indicators`}
                   variant={
                     location.pathname.includes(
-                      `/dashboard/risk-assessment/risks/${riskId}/indicators`,
+                      `/activities/risk assessment/risks/${riskId}/indicators`,
                     )
                       ? 'contained'
                       : 'text'
@@ -140,7 +139,7 @@ class TopMenuRisk extends Component {
                   size="small"
                   color={
                     location.pathname.includes(
-                      `/dashboard/risk-assessment/risks/${riskId}/indicators`,
+                      `/activities/risk assessment/risks/${riskId}/indicators`,
                     )
                       ? 'secondary'
                       : 'inherit'
@@ -151,17 +150,17 @@ class TopMenuRisk extends Component {
                 </Button> */}
                 {/* <Button
                   component={Link}
-                  to={`/dashboard/risk-assessment/risks/${riskId}/history`}
+                  to={`/activities/risk assessment/risks/${riskId}/history`}
                   variant={
                     location.pathname
-                    === `/dashboard/risk-assessment/risks/${riskId}/history`
+                    === `/activities/risk assessment/risks/${riskId}/history`
                       ? 'contained'
                       : 'text'
                   }
                   size="small"
                   color={
                     location.pathname
-                    === `/dashboard/risk-assessment/risks/${riskId}/history`
+                    === `/activities/risk assessment/risks/${riskId}/history`
                       ? 'secondary'
                       : 'inherit'
                   }
@@ -171,10 +170,10 @@ class TopMenuRisk extends Component {
                 </Button> */}
                 <Button
                   component={Link}
-                  to={`/dashboard/risk-assessment/risks/${riskId}/tracking`}
+                  to={`/activities/risk assessment/risks/${riskId}/tracking`}
                   variant={
                     location.pathname.includes(
-                      `/dashboard/risk-assessment/risks/${riskId}/tracking`,
+                      `/activities/risk assessment/risks/${riskId}/tracking`,
                     )
                       ? 'contained'
                       : 'text'
@@ -182,7 +181,7 @@ class TopMenuRisk extends Component {
                   size="small"
                   color={
                     location.pathname.includes(
-                      `/dashboard/risk-assessment/risks/${riskId}/tracking`,
+                      `/activities/risk assessment/risks/${riskId}/tracking`,
                     )
                       ? 'secondary'
                       : 'inherit'
@@ -203,8 +202,8 @@ class TopMenuRisk extends Component {
 TopMenuRisk.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  risk: PropTypes.object,
   breadcrumbs: PropTypes.bool,
+  risk: PropTypes.string,
   remediation: PropTypes.object,
   match: PropTypes.object,
   t: PropTypes.func,

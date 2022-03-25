@@ -74,7 +74,7 @@ class DeviceLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/dashboard/assets/devices/${node.id}`}
+        to={`/defender HQ/assets/devices/${node.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />
