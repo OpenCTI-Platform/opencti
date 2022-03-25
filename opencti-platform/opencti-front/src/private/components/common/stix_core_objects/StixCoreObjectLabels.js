@@ -5,8 +5,10 @@ import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
 import Slide from '@mui/material/Slide';
+import Tooltip from '@mui/material/Tooltip';
 import inject18n from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
+import { truncate } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -59,22 +61,24 @@ class StixCoreObjectLabels extends Component {
         {labelsNodes.length > 0 ? (
           map(
             (label) => (
-              <Chip
-                key={label.id}
-                variant="outlined"
-                classes={{ root: style }}
-                label={label.value}
-                style={{
-                  color: label.color,
-                  borderColor: label.color,
-                  backgroundColor: hexToRGB(label.color),
-                }}
-                onClick={
-                  typeof onClick === 'function'
-                    ? onClick.bind(this, 'labelledBy', label.id, label.value)
-                    : null
-                }
-              />
+              <Tooltip title={label.value}>
+                <Chip
+                  key={label.id}
+                  variant="outlined"
+                  classes={{ root: style }}
+                  label={truncate(label.value, 25)}
+                  style={{
+                    color: label.color,
+                    borderColor: label.color,
+                    backgroundColor: hexToRGB(label.color),
+                  }}
+                  onClick={
+                    typeof onClick === 'function'
+                      ? onClick.bind(this, 'labelledBy', label.id, label.value)
+                      : null
+                  }
+                />
+              </Tooltip>
             ),
             take(3, labelsNodes),
           )

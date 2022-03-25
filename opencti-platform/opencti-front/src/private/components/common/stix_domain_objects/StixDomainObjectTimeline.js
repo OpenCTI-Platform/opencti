@@ -10,6 +10,7 @@ import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
+import Tooltip from '@mui/material/Tooltip';
 import TimelineDot from '@mui/lab/TimelineDot';
 import { graphql, createRefetchContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -67,18 +68,23 @@ class StixDomainObjectTimelineComponent extends Component {
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     <Link to={link}>
+                      <Tooltip title={defaultValue(stixRelationship.targetEntity)}>
                       <TimelineDot color="primary" variant="outlined">
-                        <ItemIcon
-                          type={stixRelationship.targetEntity.entity_type}
-                        />
+                          <ItemIcon
+                            type={stixRelationship.targetEntity.entity_type}
+                          />
                       </TimelineDot>
+                      </Tooltip>
                     </Link>
                     <TimelineConnector />
                   </TimelineSeparator>
                   <TimelineContent>
                     <Paper variant="outlined" className={classes.paper}>
                       <Typography variant="h2">
-                        {defaultValue(stixRelationship.targetEntity)}
+                        {truncate(
+                          defaultValue(stixRelationship.targetEntity),
+                          50,
+                        )}
                       </Typography>
                       <span style={{ color: '#a8a8a8' }}>
                         {truncate(

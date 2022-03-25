@@ -18,6 +18,7 @@ import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -38,6 +39,7 @@ import Security, {
   UserContext,
 } from '../../../../utils/Security';
 import { hexToRGB } from '../../../../utils/Colors';
+import { truncate } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -210,26 +212,28 @@ const StixCoreObjectLabelsView = (props) => {
       <div className={classes.objectLabel}>
         {map(
           (label) => (
-            <Chip
-              key={label.id}
-              variant="outlined"
-              classes={{ root: classes.label }}
-              label={label.value}
-              style={{
-                color: label.color,
-                borderColor: label.color,
-                backgroundColor: hexToRGB(label.color),
-              }}
-              onDelete={() => handleRemoveLabel(label.id)}
-              deleteIcon={
-                <CancelOutlined
-                  className={classes.deleteIcon}
-                  style={{
-                    color: label.color,
-                  }}
-                />
-              }
-            />
+            <Tooltip title={label.value}>
+              <Chip
+                key={label.id}
+                variant="outlined"
+                classes={{ root: classes.label }}
+                label={truncate(label.value, 25)}
+                style={{
+                  color: label.color,
+                  borderColor: label.color,
+                  backgroundColor: hexToRGB(label.color),
+                }}
+                onDelete={() => handleRemoveLabel(label.id)}
+                deleteIcon={
+                  <CancelOutlined
+                    className={classes.deleteIcon}
+                    style={{
+                      color: label.color,
+                    }}
+                  />
+                }
+              />
+            </Tooltip>
           ),
           labelsNodes,
         )}

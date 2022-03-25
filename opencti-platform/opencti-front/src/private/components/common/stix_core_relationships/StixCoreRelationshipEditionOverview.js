@@ -283,9 +283,6 @@ const StixCoreRelationshipEditionContainer = ({
     });
   };
   const handleSubmitField = (name, value) => {
-    console.log(enableReferences);
-    console.log(name);
-    console.log(value);
     if (!enableReferences) {
       stixCoreRelationshipValidation(t)
         .validateAt(name, { [name]: value })
