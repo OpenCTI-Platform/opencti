@@ -315,7 +315,7 @@ const hardwareResolvers = {
         }
 
       // retrieve information about the newly created ComputingDevice to return to the user
-      const select = selectHardwareQuery(id, selectMap.getNode("hardwareAsset"));
+      const select = selectHardwareQuery(id, selectMap.getNode("createHardwareAsset"));
       let response;
       try {
         response = await dataSources.Stardog.queryById({

@@ -143,6 +143,7 @@ class DeviceCreation extends Component {
     const finalValues = R.pipe(
       R.dissoc('port_number'),
       R.dissoc('protocols'),
+      R.dissoc('labels'),
       R.dissoc('installed_operating_system'),
       R.dissoc('installed_hardware'),
       R.dissoc('installed_software'),
@@ -334,13 +335,17 @@ class DeviceCreation extends Component {
                   {/* <StixCoreObjectExternalReferences
                       stixCoreObjectId={device.id}
                     /> */}
-                  <CyioCoreObjectAssetCreationExternalReferences />
+                  <div style={{ pointerEvents: 'none', opacity: '0.4', height: '100%' }}>
+                    <CyioCoreObjectAssetCreationExternalReferences />
+                  </div>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory />
                 </Grid>
               </Grid>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' />
+              <div style={{ pointerEvents: 'none', opacity: '0.4', height: '100%' }}>
+                <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' />
+              </div>
             </>
           )}
         </Formik>
