@@ -342,7 +342,7 @@ export const polarAreaChartOptions = (
 export const donutChartOptions = (
   theme,
   labels,
-  legendPosition = 'right',
+  legendPosition = 'bottom',
   reversed = false,
 ) => {
   const temp = theme.palette.mode === 'dark' ? 400 : 600;
@@ -393,7 +393,6 @@ export const donutChartOptions = (
     legend: {
       show: true,
       position: legendPosition,
-      floating: legendPosition === 'bottom',
       fontFamily: '"IBM Plex Sans", sans-serif',
     },
     tooltip: {

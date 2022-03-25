@@ -2665,6 +2665,10 @@ const i18n = {
       wait: 'Waiting',
       complete: 'Complete',
       Nonee: 'None',
+      Malwares: 'Malware',
+      malwares: 'Malware',
+      Infrastructures: 'Infrastructure',
+      infrastructures: 'infrastructure',
       // Types
       entity_All: 'All entities',
       'entity_Stix-Domain-Object': 'Entity',

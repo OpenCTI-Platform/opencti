@@ -859,7 +859,7 @@ class WidgetCreation extends Component {
         );
       case 1:
         return (
-          <div>
+          <div style={{ paddingTop: 5 }}>
             <SearchInput
               keyword={this.state.searchTerm}
               onSubmit={this.handleSearch.bind(this)}

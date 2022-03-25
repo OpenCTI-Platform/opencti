@@ -18,6 +18,12 @@ import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = () => ({
+  container: {
+    width: '100%',
+    height: '100%',
+    overflow: 'auto',
+    paddingBottom: 10,
+  },
   paper: {
     height: '100%',
     margin: '10px 0 0 0',
@@ -147,6 +153,7 @@ class EntityStixCoreRelationshipsList extends Component {
       isTo,
       startDate,
       endDate,
+      classes,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
       fromId: stixCoreObjectId,
@@ -181,41 +188,43 @@ class EntityStixCoreRelationshipsList extends Component {
               );
             }
             return (
-              <TableContainer component={Paper}>
-                <Table size="small" style={{ width: '100%' }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell style={{ width: 50 }} align="center">
-                        {' '}
-                        #{' '}
-                      </TableCell>
-                      <TableCell>{t('Entity')}</TableCell>
-                      <TableCell align="right">{t('Number')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {data.map((row) => (
-                      <TableRow key={row.label}>
-                        <TableCell align="center" style={{ width: 50 }}>
-                          <ItemIcon
-                            type={
-                              field === 'internal_id'
-                                ? row.entity.entity_type
-                                : 'Stix-Cyber-Observable'
-                            }
-                          />
+              <div id="container" className={classes.container}>
+                <TableContainer>
+                  <Table size="small" style={{ width: '100%' }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell style={{ width: 50 }} align="center">
+                          {' '}
+                          #{' '}
                         </TableCell>
-                        <TableCell align="left">
-                          {field === 'internal_id'
-                            ? row.entity.name
-                            : row.label}
-                        </TableCell>
-                        <TableCell align="right">{row.value}</TableCell>
+                        <TableCell>{t('Entity')}</TableCell>
+                        <TableCell align="right">{t('Number')}</TableCell>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    </TableHead>
+                    <TableBody>
+                      {data.map((row) => (
+                        <TableRow key={row.label}>
+                          <TableCell align="center" style={{ width: 50 }}>
+                            <ItemIcon
+                              type={
+                                field === 'internal_id'
+                                  ? row.entity.entity_type
+                                  : 'Stix-Cyber-Observable'
+                              }
+                            />
+                          </TableCell>
+                          <TableCell align="left">
+                            {field === 'internal_id'
+                              ? row.entity.name
+                              : row.label}
+                          </TableCell>
+                          <TableCell align="right">{row.value}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
             );
           }
           if (props) {

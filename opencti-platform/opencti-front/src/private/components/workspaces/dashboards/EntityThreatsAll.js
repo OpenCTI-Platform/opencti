@@ -7,6 +7,7 @@ import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_re
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityStixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
 import EntityStixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
+import EntityStixCoreRelationshipsTimeline from '../../common/stix_core_relationships/EntityStixCoreRelationshipsTimeline';
 
 const styles = () => ({
   container: {
@@ -68,6 +69,19 @@ class EntityThreatsAll extends Component {
       case 'vertical-bar':
         return (
           <EntityStixCoreRelationshipsVerticalBars
+            title={`${t('Threats')} - ${widget.entity.name}`}
+            entityId={widget.entity.id}
+            toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
+            relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            field={dateAttribute}
+            variant="inLine"
+          />
+        );
+      case 'timeline':
+        return (
+          <EntityStixCoreRelationshipsTimeline
             title={`${t('Threats')} - ${widget.entity.name}`}
             entityId={widget.entity.id}
             toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}

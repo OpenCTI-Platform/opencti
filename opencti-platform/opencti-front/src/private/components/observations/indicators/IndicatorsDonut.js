@@ -83,7 +83,7 @@ class IndicatorsDonut extends Component {
                 options={donutChartOptions(
                   theme,
                   labels,
-                  'right',
+                  'bottom',
                   field === 'revoked',
                 )}
                 series={chartData}
