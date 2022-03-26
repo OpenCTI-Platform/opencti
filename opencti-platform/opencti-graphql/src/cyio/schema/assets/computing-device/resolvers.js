@@ -346,29 +346,36 @@ const computingDeviceResolvers = {
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer('COMPUTING-DEVICE');
       const asset = (reducer(response[0]));
-      for (const portIri in asset.ports_iri) {
-        const portQuery = deletePortQuery(portIri);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: portQuery,
-          queryId: "Delete Port from Computing Device Asset"
-        });
+
+      if (asset.hasOwnProperty('ports_iri')) {
+        for (const portIri in asset.ports_iri) {
+          const portQuery = deletePortQuery(portIri);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: portQuery,
+            queryId: "Delete Port from Computing Device Asset"
+          });
+        }
       }
-      for (const ipId in asset.ip_addr_iri) {
-        const ipQuery = deleteIpQuery(ipId);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: ipQuery,
-          queryId: "Delete IP from Computing Asset"
-        });
+      if (asset.hasOwnProperty('ip_addr_iri')) {
+        for (const ipId in asset.ip_addr_iri) {
+          const ipQuery = deleteIpQuery(ipId);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: ipQuery,
+            queryId: "Delete IP from Computing Asset"
+          });
+        }
       }
-      for (const macId in asset.mac_addr_iri) {
-        const macQuery = deleteMacQuery(macId);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: macQuery,
-          queryId: "Delete MAC from Computing Device Asset"
-        });
+      if (asset.hasOwnProperty('mac_addr_iri')) {
+        for (const macId in asset.mac_addr_iri) {
+          const macQuery = deleteMacQuery(macId);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: macQuery,
+            queryId: "Delete MAC from Computing Device Asset"
+          });
+        }
       }
 
       const relationshipQuery = removeFromInventoryQuery(id);

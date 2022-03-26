@@ -121,7 +121,7 @@ export const objectMap = {
     attachQuery: attachToHardwareQuery,
     detachQuery: detachFromHardwareQuery,
     graphQLType: "HardwareAsset",
-    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Hardware"
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Hardware"
   },
   "label": {
     predicateMap: labelPredicateMap,

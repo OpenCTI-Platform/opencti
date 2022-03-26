@@ -344,7 +344,7 @@ const hardwareResolvers = {
       return reducer(response[0]);
     },
     deleteHardwareAsset: async (_, {id}, {dbName, dataSources} ) => {
-      // check that the ComputingDevice exists
+      // check that the Hardware asset exists
       const sparqlQuery = selectHardwareQuery(id, null );
       const response = await dataSources.Stardog.queryById({
         dbName,
@@ -356,31 +356,37 @@ const hardwareResolvers = {
       const reducer = getReducer('HARDWARE-DEVICE');
       const asset = (reducer(response[0]));
 
-      for (const portIri in asset.ports_iri) {
-        const portQuery = deletePortQuery(portIri);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: portQuery,
-          queryId: "Delete Port from Hardware Asset"
-        });
+      if (asset.hasOwnProperty('ports_iri')) {
+        for (const portIri of asset.ports_iri) {
+          const portQuery = deletePortQuery(portIri);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: portQuery,
+            queryId: "Delete Port from Hardware Asset"
+          });
+        }
       }
-      for (const ipId in asset.ip_addr_iri) {
-        const ipQuery = deleteIpQuery(ipId);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: ipQuery,
-          queryId: "Delete IP from HardwareAsset"
-        });
+      if (asset.hasOwnProperty('ip_addr_iri')) {
+        for (const ipId of asset.ip_addr_iri) {
+          const ipQuery = deleteIpQuery(ipId);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: ipQuery,
+            queryId: "Delete IP from HardwareAsset"
+          });
+        }
       }
-      for (const macId in asset.mac_addr_iri) {
-        const macQuery = deleteMacQuery(macId);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: macQuery,
-          queryId: "Delete MAC from Hardware Asset"
-        });
+      if (asset.hasOwnProperty('mac_addr_iri')) {
+        for (const macId of asset.mac_addr_iri) {
+          const macQuery = deleteMacQuery(macId);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: macQuery,
+            queryId: "Delete MAC from Hardware Asset"
+          });
+        }
       }
-
+      
       const relationshipQuery = removeFromInventoryQuery(id);
       await dataSources.Stardog.delete({
         dbName,
