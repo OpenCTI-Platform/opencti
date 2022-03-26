@@ -97,6 +97,7 @@ export const objectMap = {
     attachQuery: attachToSoftwareQuery,
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "ApplicationSoftwareAsset",
+    parent: "software",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
   },
   "computing-device": {
@@ -104,6 +105,7 @@ export const objectMap = {
     attachQuery: attachToComputingDeviceQuery,
     detachQuery: detachFromComputingDeviceQuery,
     graphQLType: "ComputingDeviceAsset",
+    parent: "hardware",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#ComputingDevice"
   },
   "external-reference": {
@@ -148,6 +150,7 @@ export const objectMap = {
     attachQuery: attachToSoftwareQuery,
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "OperatingSystemAsset",
+    parent: "software",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem"
   },
   "software": {

@@ -355,7 +355,8 @@ const hardwareResolvers = {
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer('HARDWARE-DEVICE');
       const asset = (reducer(response[0]));
-      for (const portIri of asset.ports_iri) {
+
+      for (const portIri in asset.ports_iri) {
         const portQuery = deletePortQuery(portIri);
         await dataSources.Stardog.delete({
           dbName,
@@ -363,7 +364,7 @@ const hardwareResolvers = {
           queryId: "Delete Port from Hardware Asset"
         });
       }
-      for (const ipId of asset.ip_addr_iri) {
+      for (const ipId in asset.ip_addr_iri) {
         const ipQuery = deleteIpQuery(ipId);
         await dataSources.Stardog.delete({
           dbName,
@@ -371,7 +372,7 @@ const hardwareResolvers = {
           queryId: "Delete IP from HardwareAsset"
         });
       }
-      for (const macId of asset.mac_addr_iri) {
+      for (const macId in asset.mac_addr_iri) {
         const macQuery = deleteMacQuery(macId);
         await dataSources.Stardog.delete({
           dbName,

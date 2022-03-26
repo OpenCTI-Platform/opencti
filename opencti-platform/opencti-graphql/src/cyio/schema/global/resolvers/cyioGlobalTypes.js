@@ -251,7 +251,7 @@ const cyioGlobalTypeResolvers = {
         let found = false;
         for (let [key, value] of Object.entries(objectMap)) {
           // check for alternate key
-          if (value.alternateKey != undefined && type == value.alternateKey) {
+          if (value.alternateKey != undefined && input.from_type == value.alternateKey) {
             input.from_type = key;
             found = true;
             break;
@@ -268,6 +268,12 @@ const cyioGlobalTypeResolvers = {
       if (!objectMap.hasOwnProperty(input.to_type)) {
         let found = false;
         for (let [key, value] of Object.entries(objectMap)) {
+          // check for alternate key
+          if (value.alternateKey != undefined && input.to_type == value.alternateKey) {
+            input.to_type = key;
+            found = true;
+            break;
+          }
           // check if the GraphQL type name was supplied
           if (input.to_type == value.graphQLType) {
             input.to_type = key;
@@ -284,8 +290,16 @@ const cyioGlobalTypeResolvers = {
       const predicate = predicateMap[input.field_name].predicate;
 
       // construct the IRIs for source (from) and target (to)
-      const sourceIri = `<${objectMap[input.from_type].iriTemplate}-${input.from_id}>`;
-      const targetIri = `<${objectMap[input.to_type].iriTemplate}-${input.to_id}>`;
+      let from_type = input.from_type;
+      while (objectMap[from_type].parent !== undefined) {
+        from_type = objectMap[from_type].parent;
+      }
+      let to_type = input.to_type;
+      while (objectMap[to_type].parent !== undefined) {
+        to_type = objectMap[to_type].parent;
+      }
+      const sourceIri = `<${objectMap[from_type].iriTemplate}-${input.from_id}>`;
+      const targetIri = `<${objectMap[to_type].iriTemplate}-${input.to_id}>`;
 
       const query = `
       INSERT DATA {
@@ -318,7 +332,7 @@ const cyioGlobalTypeResolvers = {
         let found = false;
         for (let [key, value] of Object.entries(objectMap)) {
           // check for alternate key
-          if (value.alternateKey != undefined && type == value.alternateKey) {
+          if (value.alternateKey != undefined && input.from_type == value.alternateKey) {
             input.from_type = key;
             found = true;
             break;
@@ -336,7 +350,7 @@ const cyioGlobalTypeResolvers = {
         let found = false;
         for (let [key, value] of Object.entries(objectMap)) {
           // check for alternate key
-          if (value.alternateKey != undefined && type == value.alternateKey) {
+          if (value.alternateKey != undefined && input.to_type == value.alternateKey) {
             input.from_type = key;
             found = true;
             break;
@@ -357,9 +371,16 @@ const cyioGlobalTypeResolvers = {
       const predicate = predicateMap[input.field_name].predicate;
 
       // construct the IRIs for source (from) and target (to)
-      const sourceIri = `<${objectMap[input.from_type].iriTemplate}-${input.from_id}>`;
-      const targetIri = `<${objectMap[input.to_type].iriTemplate}-${input.to_id}>`;
-
+      let from_type = input.from_type;
+      while (objectMap[from_type].parent !== undefined) {
+        from_type = objectMap[from_type].parent;
+      }
+      let to_type = input.to_type;
+      while (objectMap[to_type].parent !== undefined) {
+        to_type = objectMap[to_type].parent;
+      }
+      const sourceIri = `<${objectMap[from_type].iriTemplate}-${input.from_id}>`;
+      const targetIri = `<${objectMap[to_type].iriTemplate}-${input.to_id}>`;
 
       const query = `
       DELETE DATA {
