@@ -318,6 +318,7 @@ const frontendSDORelationships = {
   'Threat-Actor_Threat-Actor': ['part-of'],
   'Threat-Actor_Tool': ['uses'],
   'Threat-Actor_Vulnerability': ['targets'],
+  'Tool_Attack-Pattern': ['uses'],
   Tool_City: ['targets'],
   Tool_Country: ['targets'],
   Tool_Individual: ['targets'],

@@ -856,6 +856,9 @@
         ],
         "location": [
             "targets"
+        ],
+        "attack-pattern": [
+            "uses"
         ]
     },
     "directory": {
