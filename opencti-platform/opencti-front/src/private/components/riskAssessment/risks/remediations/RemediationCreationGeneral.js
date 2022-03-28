@@ -141,8 +141,8 @@ class RemediationCreationOverviewComponent extends Component {
                   name='name'
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
-                  // onFocus={this.handleChangeFocus.bind(this)}
-                  // onSubmit={this.handleSubmitField.bind(this)}
+                // onFocus={this.handleChangeFocus.bind(this)}
+                // onSubmit={this.handleSubmitField.bind(this)}
                 />
               </Grid>
               <Grid style={{ marginBottom: '20px' }} item={true}>
@@ -175,49 +175,30 @@ class RemediationCreationOverviewComponent extends Component {
                 />
               </Grid>
               <Grid style={{ marginBottom: '20px' }} item={true}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ float: 'left' }}
-                >
-                  {t('Source')}
-                </Typography>
-                <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                  <Tooltip title={t('Source')}>
-                    <Information fontSize='inherit' color='disabled' />
-                  </Tooltip>
-                </div>
-                <AddIcon fontSize='small' style={{ margin: '-4px 0 0 0' }} />
-                <div className='clearfix' />
-                <div className={classes.container}>
-                  <div
-                    className={classes.actors}
-                    style={{ float: 'left', margin: '-1px 0 0 4px' }}
+                <div>
+                  <Typography
+                    variant='h3'
+                    color='textSecondary'
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
                   >
-                    <Source
-                      component={SelectField}
-                      variant='outlined'
-                      name='actorTarget'
-                      type='actorTarget'
-                      size='small'
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%', padding: '0 0 12px 0' }}
-                    />
+                    {t('Source')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                    <Tooltip title={t('Source')}>
+                      <Information fontSize='inherit' color='disabled' />
+                    </Tooltip>
                   </div>
-                  <div className={classes.oscalParties}>
-                    <Source
-                      component={SelectField}
-                      variant='outlined'
-                      name='oscalParties'
-                      type='oscalParties'
-                      size='small'
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%', padding: '0 0 12px 0' }}
-                    />
-                  </div>
+                  <div className='clearfix' />
+                  <Source
+                    variant='outlined'
+                    values={values}
+                    setFieldValue={setFieldValue}
+                    size='small'
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '50%', padding: '0 0 12px 0' }}
+                  />
                 </div>
                 <div>
                   <Typography
@@ -269,9 +250,6 @@ class RemediationCreationOverviewComponent extends Component {
                   fullWidth={true}
                   disabled={true}
                   containerstyle={{ width: '100%' }}
-                  // helperText={
-                  //   <SubscriptionFocus fieldName="name" />
-                  // }
                 />
               </Grid>
               <Grid style={{ marginBottom: '20px' }} item={true}>
@@ -343,16 +321,14 @@ class RemediationCreationOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className='clearfix' />
-              <div className={classes.scrollBg}>
-                <Field
-                  component={TextField}
-                  name='description'
-                  fullWidth={true}
-                  multiline={true}
-                  rows='15'
-                  variant='outlined'
-                />
-              </div>
+              <Field
+                component={TextField}
+                name='description'
+                fullWidth={true}
+                multiline={true}
+                rows='15'
+                variant='outlined'
+              />
             </Grid>
           </Grid>
         </Paper>

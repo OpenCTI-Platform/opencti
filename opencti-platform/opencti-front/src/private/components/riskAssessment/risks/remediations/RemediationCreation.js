@@ -155,7 +155,7 @@ class RemediationCreation extends Component {
     )(values);
     console.log('RemdiationCreationFinal', finalValues);
     CM(environmentDarkLight, {
-      mutation: remediationCreationMutation,
+      // mutation: remediationCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -215,6 +215,8 @@ class RemediationCreation extends Component {
             description: '',
             lifecycle: '',
             response_type: '',
+            actor_target: '',
+            oscal_party: '',
           }}
           // validationSchema={remediationValidation(t)}
           onSubmit={this.onSubmit.bind(this)}

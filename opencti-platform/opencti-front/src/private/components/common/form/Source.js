@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component, useState } from 'react';
 import * as R from 'ramda';
 import { Field } from 'formik';
@@ -71,74 +69,74 @@ class Source extends Component {
   }
 
   componentDidMount() {
-    {
-      this.props.type === 'actorTarget' &&
-        fetchDarklightQuery(SourceActorTypeQuery)
-          .toPromise()
-          .then((data) => {
-            const actorTypeEntities = R.pipe(
-              R.pathOr([], ['__type', 'enumValues']),
-              R.map((n) => ({
-                label: n.description,
-                value: n.name,
-              }))
-            )(data);
-            this.setState({
-              actorTypeList: {
-                ...this.state.entities,
-                actorTypeEntities,
-              },
-            });
-          });
-    }
-    {
-      this.props.type === 'oscalParties' &&
-        fetchDarklightQuery(SourceOscalPartiesQuery)
-          .toPromise()
-          .then((data) => {
-            const oscalPartiesEntities = R.pipe(
-              R.pathOr([], ['oscalParties', 'edges']),
-              R.map((n) => ({
-                label: n.node.description,
-                value: n.node.name,
-              }))
-            )(data);
-            this.setState({
-              oscalPartiesList: {
-                ...this.state.entities,
-                oscalPartiesEntities,
-              },
-            });
-          });
-    }
+    fetchDarklightQuery(SourceActorTypeQuery)
+      .toPromise()
+      .then((data) => {
+        const actorTypeEntities = R.pipe(
+          R.pathOr([], ['__type', 'enumValues']),
+          R.map((n) => ({
+            label: n.description,
+            value: n.name,
+          })),
+        )(data);
+        this.setState({
+          actorTypeList: {
+            ...this.state.entities,
+            actorTypeEntities,
+          },
+        });
+      });
+    fetchDarklightQuery(SourceOscalPartiesQuery)
+      .toPromise()
+      .then((data) => {
+        const oscalPartiesEntities = R.pipe(
+          R.pathOr([], ['oscalParties', 'edges']),
+          R.map((n) => ({
+            label: n.node.description,
+            value: n.node.name,
+          })),
+        )(data);
+        this.setState({
+          oscalPartiesList: {
+            ...this.state.entities,
+            oscalPartiesEntities,
+          },
+        });
+      });
   }
 
-  renderActorTarget() {
+  render() {
     const {
       t,
       name,
       size,
       label,
+      values,
+      setFieldValue,
       style,
       variant,
-      onChange,
-      onFocus,
       containerstyle,
       editContext,
       disabled,
       helperText,
     } = this.props;
+
     const actorTypeList = R.pathOr(
       [],
       ['actorTypeEntities'],
-      this.state.actorTypeList
+      this.state.actorTypeList,
+    );
+    const oscalPartiesList = R.pathOr(
+      [],
+      ['oscalPartiesEntities'],
+      this.state.oscalPartiesList,
     );
     return (
       <div>
         <div className='clearfix' />
         <Field
           component={SelectField}
-          name={name}
+          name='actor_target'
           label={label}
           fullWidth={true}
           containerstyle={containerstyle}
@@ -149,45 +147,16 @@ class Source extends Component {
           helperText={helperText}
         >
           {actorTypeList.map(
-            (et, key) =>
-              et.label && (
-                <Tooltip title={et.label} value={et.value} key={et.label}>
-                  <MenuItem value={et.value}>{et.value}</MenuItem>
-                </Tooltip>
-              )
+            (et, key) => et.label && (
+              <Tooltip title={et.label} value={et.value} key={et.label}>
+                <MenuItem value={et.value}>{et.value}</MenuItem>
+              </Tooltip>
+            ),
           )}
         </Field>
-      </div>
-    );
-  }
-
-  renderOscalParties() {
-    const {
-      t,
-      name,
-      size,
-      label,
-      style,
-      variant,
-      onChange,
-      onFocus,
-      containerstyle,
-      editContext,
-      disabled,
-      helperText,
-    } = this.props;
-
-    const oscalPartiesList = R.pathOr(
-      [],
-      ['oscalPartiesEntities'],
-      this.state.oscalPartiesList
-    );
-    return (
-      <div>
-        <div className='clearfix' />
         <Field
           component={SelectField}
-          name={name}
+          name='oscal_party'
           label={label}
           fullWidth={true}
           containerstyle={containerstyle}
@@ -198,26 +167,13 @@ class Source extends Component {
           helperText={helperText}
         >
           {oscalPartiesList.map(
-            (et, key) =>
-              et.label && (
-                <Tooltip title={et.label} value={et.value} key={et.label}>
-                  <MenuItem value={et.value}>{et.value}</MenuItem>
-                </Tooltip>
-              )
+            (et, key) => et.label && (
+              <MenuItem key={key} value={et.value}>{et.value}</MenuItem>
+            ),
           )}
         </Field>
       </div>
     );
-  }
-
-  render() {
-    if (this.props.type === 'actorTarget') {
-      return this.renderActorTarget();
-    }
-    if (this.props.type === 'oscalParties') {
-      return this.renderOscalParties();
-    }
-    return <></>;
   }
 }
 
