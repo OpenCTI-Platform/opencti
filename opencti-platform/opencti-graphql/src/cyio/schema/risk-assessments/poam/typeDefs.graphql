@@ -109,6 +109,7 @@
   }
 
   input POAMAddInput {
+    # Metadata
     "Identifies the name given to the document."
     name: String!
     "Identifies the date and time the document was published."
@@ -123,6 +124,14 @@
     revisions: [RevisionAddInput]
     "Identifies references to previous versions of this document."
     document_ids: [ID]
+    "Identifies one or more references to a function assumed or expected to be assumed by a party in a specific situation."
+    roles: [OscalRoleAddInput]
+    "Identifies one or more references to a location."
+    locations: [OscalLocationAddInput]
+    "Identifies one or more references to a responsible entity which is either a person or an organization."
+    parties: [OscalPartyAddInput]
+    "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
+    responsible_parties: [OscalResponsiblePartyAddInput]
     # POAM Item
     system_id: String
     "Identifies the identification system from which the provided identifier was assigned."
