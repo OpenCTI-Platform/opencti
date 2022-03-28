@@ -64,6 +64,7 @@ class CyioCoreObjectExternalReferences extends Component {
     const {
       t,
       classes,
+      disableAdd,
       cyioCoreObjectId,
       refreshQuery,
       typename,
@@ -82,6 +83,7 @@ class CyioCoreObjectExternalReferences extends Component {
             externalReferences
             // externalReference.externalReference
           }
+          disableAdd={disableAdd}
           refreshQuery={refreshQuery}
           typename={typename}
         />
@@ -134,6 +136,7 @@ CyioCoreObjectExternalReferences.propTypes = {
   typename: PropTypes.string,
   cyioCoreObjectId: PropTypes.string,
   refreshQuery: PropTypes.func,
+  disableAdd: PropTypes.bool,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,

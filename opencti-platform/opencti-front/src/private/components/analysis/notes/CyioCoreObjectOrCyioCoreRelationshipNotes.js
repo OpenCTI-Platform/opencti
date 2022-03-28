@@ -17,6 +17,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
       cyioCoreObjectOrCyioCoreRelationshipId,
       isRelationship,
       marginTop,
+      disableAdd,
       height,
       typename,
       refreshQuery,
@@ -59,6 +60,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
         <CyioCoreObjectNotesCards
           cyioCoreObjectId={cyioCoreObjectOrCyioCoreRelationshipId}
           data={notes}
+          disableAdd={disableAdd}
           refreshQuery={refreshQuery}
           height={height}
           typename={typename}
@@ -73,7 +75,9 @@ CyioCoreObjectOrCyioCoreRelationshipNotes.propTypes = {
   notes: PropTypes.array,
   typename: PropTypes.string,
   refreshQuery: PropTypes.func,
+  disabled: PropTypes.bool,
   t: PropTypes.func,
+  disableAdd: PropTypes.bool,
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   isRelationship: PropTypes.bool,
   marginTop: PropTypes.number,
