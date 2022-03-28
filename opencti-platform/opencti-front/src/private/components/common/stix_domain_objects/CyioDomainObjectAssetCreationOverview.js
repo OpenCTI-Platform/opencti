@@ -346,7 +346,7 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                   containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
                 />
               </div>
-              <div>
+              <div style={{pointerEvents: 'none', opacity: '0.4'}}>
                 <CyioCoreObjectLabelsView
                   labels={objectLabel}
                   marginTop={20}

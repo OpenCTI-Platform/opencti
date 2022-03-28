@@ -140,6 +140,7 @@ class SoftwareCreation extends Component {
     const finalValues = R.pipe(
       R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
+      R.dissoc('labels'),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: softwareCreationMutation,
@@ -292,22 +293,26 @@ class SoftwareCreation extends Component {
                 </Grid>
               </Form>
               <Grid
-                  container={true}
-                  spacing={3}
-                  classes={{ container: classes.gridContainer }}
-                  style={{ marginTop: 25 }}
-                >
-              <Grid item={true} xs={6}>
-                    {/* <StixCoreObjectExternalReferences
+                container={true}
+                spacing={3}
+                classes={{ container: classes.gridContainer }}
+                style={{ marginTop: 25 }}
+              >
+                <Grid item={true} xs={6}>
+                  {/* <StixCoreObjectExternalReferences
                       stixCoreObjectId={software.id}
                     /> */}
+                  <div style={{ pointerEvents: 'none', opacity: '0.4', height: '100%' }}>
                     <CyioCoreObjectAssetCreationExternalReferences />
-                  </Grid>
-              <Grid item={true} xs={6}>
-                    <CyioCoreObjectLatestHistory />
-                  </Grid>
+                  </div>
                 </Grid>
+                <Grid item={true} xs={6}>
+                  <CyioCoreObjectLatestHistory />
+                </Grid>
+              </Grid>
+              <div style={{ pointerEvents: 'none', opacity: '0.4', height: '100%' }}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' />
+              </div>
             </>
           )}
         </Formik>

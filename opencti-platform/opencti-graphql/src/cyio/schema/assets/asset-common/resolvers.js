@@ -34,9 +34,6 @@ const assetCommonResolvers = {
           queryId: "Select Asset List",
           singularizeSchema
         });
-          // args.first,       // limit
-          // args.offset,      // offset
-          // args.filter       // filter
       } catch (e) {
         console.log(e)
         throw e
@@ -156,9 +153,6 @@ const assetCommonResolvers = {
           queryId: "Select IT Asset List",
           singularizeSchema
         });
-          // args.first,       // limit
-          // args.offset,      // offset
-          // args.filter       // filter
       } catch (e) {
         console.log(e)
         throw e
@@ -276,7 +270,6 @@ const assetCommonResolvers = {
           queryId: "Select Asset Location List",
           singularizeSchema
         });
-        // args.filter
       } catch (e) {
         console.log(e)
         throw e
@@ -412,6 +405,16 @@ const assetCommonResolvers = {
       });
     },
     createAssetLocation: async (_, {input}, {dbName, selectMap, dataSources}) => {
+      // remove input fields with null or empty values
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
       const {id, query} = insertLocationQuery(input);
       await dataSources.Stardog.create({
         dbName,

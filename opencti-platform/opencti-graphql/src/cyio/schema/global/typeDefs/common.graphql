@@ -29,6 +29,26 @@
       filterMode: FilterMode
       search: String
     ): CyioLabelConnection
+    civicAddress(id: ID!): CivicAddress
+    civicAddresses(
+      first: Int
+      offset: Int
+      orderBy: CivicAddressOrdering
+      orderMode: OrderingMode
+      filters: [CivicAddressFiltering]
+      filterMode: FilterMode
+      search: String
+    ): CivicAddressConnection
+    telephoneNumber(id: ID!): TelephoneNumber
+    telephoneNumbers(
+      first: Int
+      offset: Int
+      orderBy: TelephoneNumberOrdering
+      orderMode: OrderingMode
+      filters: [TelephoneNumberFiltering]
+      filterMode: FilterMode
+      search: String
+    ): TelephoneNumberConnection
   }
 
   # declares the mutation entry-points for this type
@@ -44,6 +64,11 @@
     createCyioLabel(input: CyioLabelAddInput): CyioLabel
     deleteCyioLabel(id: ID!): String!
     editCyioLabel(id: ID!, input: [EditInput]!, commitMessage: String): CyioLabel
+  }
+
+  type TargetObjectAddInput {
+    object_type: String!
+    target_id: ID!
   }
 
   "Defines the identifying information about a lifecycle object"
@@ -71,6 +96,41 @@
   }
 
   ############## CyioExternalReferences
+  type CyioExternalReference implements BasicObject & LifecycleObject {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # LifecycleObject
+    "Identities the date and time at which the object was originally created."
+    created: Timestamp
+    "Identifies the date and time at which the object was last modified."
+    modified: Timestamp
+    # CyioExternalReference
+    source_name: String
+    description: String
+    url: URL
+    hashes: [HashInfo]
+    external_id: String
+    # OSCAL Link
+    reference_purpose: ReferencePurposeType
+    media_type: String
+  }
+  input CyioExternalReferenceAddInput {
+    source_name: String!
+    description: String
+    url: URL
+    hashes: [HashInfoAddInput]
+    external_id: String
+    # OSCAL Link
+    reference_purpose: ReferencePurposeType
+    media_type: String
+  }
   enum CyioExternalReferencesOrdering {
     "Source Name"
     source_name
@@ -99,7 +159,6 @@
     operator: String
     filterMode: FilterMode
   }
-
   # Pagination Types
   type CyioExternalReferenceConnection {
     pageInfo: PageInfo!
@@ -110,48 +169,15 @@
     node: CyioExternalReference!
   }
 
-  type CyioExternalReference implements BasicObject & LifecycleObject {
-    # BasicObject
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the parent types of this object."
-    parent_types: [String]!
-    # LifecycleObject
-    "Identities the date and time at which the object was originally created."
-    created: Timestamp
-    "Identifies the date and time at which the object was last modified."
-    modified: Timestamp
-    # CyioExternalReference
-    source_name: String
-    description: String
-    url: URL
-    hashes: [HashInfo]
-    external_id: String
-    # OSCAL Link
-    reference_purpose: ReferencePurposeType
-    media_type: String
-  }
-
-  input CyioExternalReferenceAddInput {
-    source_name: String!
-    description: String
-    url: URL
-    hashes: [HashInfoAddInput]
-    external_id: String
-    # OSCAL Link
-    reference_purpose: ReferencePurposeType
-    media_type: String
-  }
 
   type HashInfo {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     algorithm: HashAlgorithm!
     value: String!
   }
-
   input HashInfoAddInput {
     algorithm: HashAlgorithm!
     value: String!
@@ -205,17 +231,15 @@
     "Identifies the text value of the label."
     name: String!
     "Identifies the color to be applied to the label."
-    color: String
+    color: String!
     "Identifies a human-readable description of the meaning of the label"
     description: String
   }
-
   input CyioLabelAddInput {
     name: String!
-    color: String
+    color: String!
     description: String
   }
-
   enum CyioLabelsOrdering {
     "Name"
     name
@@ -226,7 +250,6 @@
     "Modified"
     modified
   }
-
   enum CyioLabelsFilter {
     "Name"
     name
@@ -266,14 +289,14 @@
     content: String!
     authors: [String]
   }
-
+  # Mutation
   input CyioNoteAddInput {
     # CyioNote
     abstract: String
     content: String!
     authors: [String]
   }
-
+  # slicing 
   enum CyioNotesOrdering {
     "Created"
     created
@@ -282,7 +305,7 @@
     "Label"
     labels
   }
-
+  # filtering
   enum CyioNotesFilter {
     "Abstract"
     abstract
@@ -295,25 +318,23 @@
     "Label"
     label_name
   }
-
   input CyioNotesFiltering {
     key: CyioNotesFilter!
     values: [String]!
     operator: String
     filterMode: FilterMode
   }
-
   # Pagination Types
   type CyioNoteConnection {
     pageInfo: PageInfo!
     edges: [CyioNoteEdge]
   }
-
   type CyioNoteEdge {
     cursor: String!
     node: CyioNote!
   }
 
+  # Cyio Location
   interface CyioLocation {
     # BasicObject
     "Uniquely identifies this object."
@@ -334,14 +355,12 @@
     name: String!
     description: String
   }
-  
   input CyioLocationAddInput {
     # CyioLocation
     location_type: CyioLocationType
     name: String!
     description: String
   }
-
   interface CyioIdentity {
     # BasicObject
     "Uniquely identifies this object."
@@ -359,7 +378,6 @@
     name: String!
     description: String
   }
-
   enum CyioLocationType {
     "GeoLocation"
     geo_location
@@ -435,7 +453,512 @@
     polynesia
   }
 
+  #  ISO 3166-ALPHA2 Country Code
+  "Defines the ISO 3166-ALPHA2 country code"
+  enum Iso3166CountryCode {
+    "Andorra"
+    AD
+    "United Arab Emirates"
+    AE
+    "Afghanistan"
+    AF
+    "Antigua and Barbuda"
+    AG
+    "Anguilla"
+    AI
+    "Albania"
+    AL
+    "Armenia"
+    AM
+    "Angola"
+    AO
+    "Antarctica"
+    AQ
+    "Argentina"
+    AR
+    "American Samoa"
+    AS
+    "Austria"
+    AT
+    "Australia"
+    AU
+    "Aruba"
+    AW
+    "Aland Islands"
+    AX
+    "Azerbaijan"
+    AZ
+    "Bosnia and Herzegovina"
+    BA
+    "Barbados"
+    BB
+    "Bangladesh"
+    BD
+    "Belgium"
+    BE
+    "Burkina Faso"
+    BF
+    "Bulgaria"
+    BG
+    "Bahrain"
+    BH
+    "Burundi"
+    BI
+    "Benin"
+    BJ
+    "Saint Barthelemy"
+    BL
+    "Bermuda"
+    BM
+    "Brunei Darussalam"
+    BN
+    "Bolivia"
+    BO
+    "Bonaire, Saint Eustatius and Saba "
+    BQ
+    "Brazil"
+    BR
+    "Bahamas"
+    BS
+    "Bhutan"
+    BT
+    "Bouvet Island"
+    BV
+    "Botswana"
+    BW
+    "Belarus"
+    BY
+    "Belize"
+    BZ
+    "Canada"
+    CA
+    "Cocos Islands"
+    CC
+    "Democratic Republic of the Congo"
+    CD
+    "Central African Republic"
+    CF
+    "Congo"
+    CG
+    "Switzerland"
+    CH
+    "Côte d’Ivoire"
+    CI
+    "Cook Islands"
+    CK
+    "Chile"
+    CL
+    "Cameroon"
+    CM
+    "China"
+    CN
+    "Colombia"
+    CO
+    "Costa Rica"
+    CR
+    "Cuba"
+    CU
+    "Cape Verde"
+    CV
+    "Curacao"
+    CW
+    "Christmas Island"
+    CX
+    "Cyprus"
+    CY
+    "Czechia"
+    CZ
+    "Germany"
+    DE
+    "Djibouti"
+    DJ
+    "Denmark"
+    DK
+    "Dominica"
+    DM
+    "Dominican Republic"
+    DO
+    "Algeria"
+    DZ
+    "Ecuador"
+    EC
+    "Estonia"
+    EE
+    "Egypt"
+    EG
+    "Western Sahara"
+    EH
+    "Eritrea"
+    ER
+    "Spain"
+    ES
+    "Ethiopia"
+    ET
+    "Finland"
+    FI
+    "Fiji"
+    FJ
+    "Falkland Islands"
+    FK
+    "Micronesia"
+    FM
+    "Faroe Islands"
+    FO
+    "France"
+    FR
+    "Gabon"
+    GA
+    "United Kingdom of Great Britain and Norther Ireland"
+    GB
+    "Grenada"
+    GD
+    "Georgia"
+    GE
+    "French Guiana"
+    GF
+    "Guernsey"
+    GG
+    "Ghana"
+    GH
+    "Gibraltar"
+    GI
+    "Greenland"
+    GL
+    "Gambia"
+    GM
+    "Guinea"
+    GN
+    "Guadeloupe"
+    GP
+    "Equatorial Guinea"
+    GQ
+    "Greece"
+    GR
+    "South Georgia and the South Sandwich Islands"
+    GS
+    "Guatemala"
+    GT
+    "Guam"
+    GU
+    "Guinea-Bissau"
+    GW
+    "Guyana"
+    GY
+    "Hong Kong"
+    HK
+    "Heard Island and McDonald Islands"
+    HM
+    "Honduras"
+    HN
+    "Croatia"
+    HR
+    "Haiti"
+    HT
+    "Hungary"
+    HU
+    "Indonesia"
+    ID
+    "Ireland"
+    IE
+    "Israel"
+    IL
+    "Isle of Man"
+    IM
+    "India"
+    IN
+    "British Indian Ocean Territory"
+    IO
+    "Iraq"
+    IQ
+    "Iran"
+    IR
+    "Iceland"
+    IS
+    "Italy"
+    IT
+    "Jersey"
+    JE
+    "Jamaica"
+    JM
+    "Jordan"
+    JO
+    "Japan"
+    JP
+    "Kenya"
+    KE
+    "Kyrgyzstan"
+    KG
+    "Cambodia"
+    KH
+    "Kiribati"
+    KI
+    "Comoros"
+    KM
+    "Saint Kitts and Nevis"
+    KN
+    "Democratic People's Republic of Korea"
+    KP
+    "Republic of Korea"
+    KR
+    "Kuwait"
+    KW
+    "Cayman Islands"
+    KY
+    "Kazakhstan"
+    KZ
+    "Laos People's Democratic Republic"
+    LA
+    "Lebanon"
+    LB
+    "Saint Lucia"
+    LC
+    "Liechtenstein"
+    LI
+    "Sri Lanka"
+    LK
+    "Liberia"
+    LR
+    "Lesotho"
+    LS
+    "Lithuania"
+    LT
+    "Luxembourg"
+    LU
+    "Latvia"
+    LV
+    "Libya"
+    LY
+    "Morocco"
+    MA
+    "Monaco"
+    MC
+    "Republic of Moldova"
+    MD
+    "Montenegro"
+    ME
+    "Saint Martin"
+    MF
+    "Madagascar"
+    MG
+    "Marshall Islands"
+    MH
+    "North Macedonia"
+    MK
+    "Mali"
+    ML
+    "Myanmar"
+    MM
+    "Mongolia"
+    MN
+    "Macao"
+    MO
+    "Northern Mariana Islands"
+    MP
+    "Martinique"
+    MQ
+    "Mauritania"
+    MR
+    "Montserrat"
+    MS
+    "Malta"
+    MT
+    "Mauritius"
+    MU
+    "Maldives"
+    MV
+    "Malawi"
+    MW
+    "Mexico"
+    MX
+    "Malaysia"
+    MY
+    "Mozambique"
+    MZ
+    "Namibia"
+    NA
+    "New Caledonia"
+    NC
+    "Niger"
+    NE
+    "Norfolk Island"
+    NF
+    "Nigeria"
+    NG
+    "Nicaragua"
+    NI
+    "Netherlands"
+    NL
+    "Norway"
+    NO
+    "Nepal"
+    NP
+    "Nauru"
+    NR
+    "Niue"
+    NU
+    "New Zealand"
+    NZ
+    "Oman"
+    OM
+    "Panama"
+    PA
+    "Peru"
+    PE
+    "French Polynesia"
+    PF
+    "Papua New Guinea"
+    PG
+    "Philippines"
+    PH
+    "Pakistan"
+    PK
+    "Poland"
+    PL
+    "Saint Pierre and Miquelon"
+    PM
+    "Pitcairn"
+    PN
+    "Puerto Rico"
+    PR
+    "State of Palestine"
+    PS
+    "Portugal"
+    PT
+    "Palau"
+    PW
+    "Paraguay"
+    PY
+    "Qatar"
+    QA
+    "Reunion"
+    RE
+    "Romania"
+    RO
+    "Serbia"
+    RS
+    "Russian Federation"
+    RU
+    "Rwanda"
+    RW
+    "Saudi Arabia"
+    SA
+    "Solomon Islands"
+    SB
+    "Seychelles"
+    SC
+    "Sudan"
+    SD
+    "Sweden"
+    SE
+    "Singapore"
+    SG
+    "Saint Helena"
+    SH
+    "Slovenia"
+    SI
+    "Svalbard and Jan Mayen Islands"
+    SJ
+    "Slovakia"
+    SK
+    "Sierra Leone"
+    SL
+    "San Marino"
+    SM
+    "Senegal"
+    SN
+    "Somalia"
+    SO
+    "Suriname"
+    SR
+    "South Sudan"
+    SS
+    "Sao Tome and Principe"
+    ST
+    "El Salvador"
+    SV
+    "Sint Maarten"
+    SX
+    "Syria Arab Republic"
+    SY
+    "Eswatini"
+    SZ
+    "Turks and Caicos Islands"
+    TC
+    "Chad"
+    TD
+    "French Southern Territories"
+    TF
+    "Togo"
+    TG
+    "Thailand"
+    TH
+    "Tajikistan"
+    TJ
+    "Tokelau"
+    TK
+    "Timor-Leste"
+    TL
+    "Turkmenistan"
+    TM
+    "Tunisia"
+    TN
+    "Tonga"
+    TO
+    "Turkey"
+    TR
+    "Trinidad and Tobago"
+    TT
+    "Tuvalu"
+    TV
+    "Taiwan, Province of China"
+    TW
+    "United Republic of Tanzania"
+    TZ
+    "Ukraine"
+    UA
+    "Uganda"
+    UG
+    "United States Minor Outlying Islands"
+    UM
+    "United States"
+    US
+    "Uruguay"
+    UY
+    "Uzbekistan"
+    UZ
+    "Holy See"
+    VA
+    "Saint Vincent and the Grenadines"
+    VC
+    "Venezuela"
+    VE
+    "British Virgin Islands"
+    VG
+    "United States Virgin Islands"
+    VI
+    "Viet Nam"
+    VN
+    "Vanuatu"
+    VU
+    "Wallis and Futuna Islands"
+    WF
+    "Samoa"
+    WS
+    "Republic of Kosovo"
+    XK
+    "Yemen"
+    YE
+    "Mayotte"
+    YT
+    "South Africa"
+    ZA
+    "Zambia"
+    ZM
+    "Zimbabwe"
+    ZW  
+  }
 
+  # Page Info
   type PageInfo {
     startCursor: String!
     endCursor: String!
@@ -443,17 +966,14 @@
     hasPreviousPage: Boolean!
     globalCount: Int!
   }
-  
   enum OrderingMode {
     asc
     desc
   }
-
   enum FilterMode {
     and
     or
   }
-
   enum EditOperation {
     add
     replace
@@ -479,52 +999,141 @@
     "other"
     other
   }
-
   enum ImplementationPoint {
     "internal"
     internal
     "external"
     external
   }
-
-  type CivicAddress {
-    address_type: UsageType
-    street_address: String
-    city: String
-    administrative_area: String
-    country: String
-    postal_code: PostalCode
-  }
-
-  input CivicAddressAddInput {
-    address_type: UsageType
-    street_address: String
-    city: String
-    administrative_area: String
-    country: String
-    postal_code: PostalCode
-  }
-
   enum UsageType {
-    "home"
+    "Home"
     home
-    "office"
+    "Office"
     office
-    "mobile"
+    "Mobile"
     mobile
   }
 
-  type TelephoneNumber {
-    usage_type: UsageType
-    phone_number: PhoneNumber
+  "Defines the identifying information about a civic street address"
+  type CivicAddress {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the type of the address."
+    address_type: UsageType
+    "Identifies the street address, including number as a single line."
+    street_address: String
+    "Identfiies the city, town or geographical region for the mailing address."
+    city: String
+    "Identifes the state, province or analogous geographical region for mailing address"
+    administrative_area: String
+    "Identifies the ISO 3166-1 alpha-2 country code for the mailing address."
+    country_code: Iso3166CountryCode!
+    "Identifies the postal or ZIP code for mailing address"
+    postal_code: PostalCode
+  }
+  input CivicAddressAddInput {
+    "Identifies the type of the address."
+    address_type: UsageType!
+    "Identifies the street address, including number as a single line."
+    street_address: String
+    "Identfiies the city, town or geographical region for the mailing address."
+    city: String
+    "Identifes the state, province or analogous geographical region for mailing address"
+    administrative_area: String
+    "Identifies the ISO 3166-1 alpha-2 country code for the mailing address."
+    country_code: Iso3166CountryCode
+    "Identifies the postal or ZIP code for mailing address"
+    postal_code: PostalCode
+  }
+  # Ordering type
+  enum CivicAddressOrdering {
+    "Address Type"
+    address_type
+    "City"
+    city
+    "Administrative Area"
+    administrative_area
+    "Country"
+    country_code
+  }
+  # Filtering Types
+  enum CivicAddressFilter {
+    "Address Type"
+    address_type
+    "City"
+    city
+    "Administrative Area"
+    administrative_area
+    "Country"
+    country_code
+  }
+  input CivicAddressFiltering {
+    key: CivicAddressFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  # Pagination Types
+  type CivicAddressConnection {
+    pageInfo: PageInfo!
+    edges: [CivicAddressEdge]
+  }
+  type CivicAddressEdge {
+    cursor: String!
+    node: CivicAddress!
   }
 
-  input TelephoneNumberAddInput {
+
+  type TelephoneNumber {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the type of usage"
     usage_type: UsageType
+    "Identifies the phone number"
     phone_number: PhoneNumber
+  }
+  input TelephoneNumberAddInput {
+    "Identifies the type of usage"
+    usage_type: UsageType!
+    "Identifies the phone number"
+    phone_number: PhoneNumber!
+  }
+  # Ordering Type
+  enum TelephoneNumberOrdering {
+    "Usage Type"
+    usage_type
+  }
+  #Filtering Types
+  enum TelephoneNumberFilter {
+    "Usage Type"
+    usage_type
+  }
+  input TelephoneNumberFiltering{
+    key: TelephoneNumberFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+
+  }
+  # Pagination Types
+  type TelephoneNumberConnection {
+    pageInfo: PageInfo!
+    edges: [TelephoneNumberEdge]
+  }
+  type TelephoneNumberEdge {
+    cursor: String!
+    node: TelephoneNumber!
   }
 
   type ContactInfo {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     email_addresses: [EmailAddress]
     telephone_numbers: [TelephoneNumber]
   }

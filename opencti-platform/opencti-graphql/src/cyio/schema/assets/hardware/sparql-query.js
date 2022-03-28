@@ -1,102 +1,17 @@
-import {buildSelectVariables, optionalizePredicate, parameterizePredicate, generateId, OASIS_SCO_NS} from "../../utils.js";
-
-const selectClause = `
-SELECT DISTINCT ?iri ?id
-  ?asset_id ?name ?description ?locations
-  ?asset_type ?asset_tag ?serial_number ?vendor_name ?version ?release_date
-  ?function ?cpe_identifier ?model ?motherboard_id ?installation_id ?installed_hardware ?installed_operating_system 
-  ?is_publicly_accessible ?is_scanned ?is_virtual ?bios_id ?fqdn ?hostname ?netbios_name ?network_id ?default_gateway ?vlan_id ?uri ?installed_software ?ip_address ?mac_address ?ports
-FROM <tag:stardog:api:context:named>
-WHERE {
-`;
-const bindIRIClause = `\tBIND(<{iri}> AS ?iri)\n`;
-const typeConstraint = `\t?iri a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .\n`;
-const byIdClause = `\t?iri <http://darklight.ai/ns/common#id> "{id}" .`;
-const predicateBody = `
-?iri <http://darklight.ai/ns/common#id> ?id .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_id> ?asset_id } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#name> ?name } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#description> ?description } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#locations> ?locations } .
-  # OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#responsible_parties> ?responsible_party } .
-  # ItAsset
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_type> ?asset_type } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#asset_tag> ?asset_tag } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#serial_number> ?serial_number } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#vendor_name> ?vendor_name }.
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#version> ?version } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#release_date> ?release_date } .
-  # Hardware - ComputingDevice - NetworkDevice
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#function> ?function } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#cpe_identifier> ?cpe_identifier } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#model> ?model } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#motherboard_id> ?motherboard_id }
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installation_id> ?installation_id }
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_hardware> ?installed_hardware } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_operating_system> ?installed_operating_system } .
-  # ComputingDevice - Server - Workstation
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#is_publicly_accessible> ?is_publicly_accessible } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#is_scanned> ?is_scanned } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#is_virtual> ?is_virtual } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#bios_id> ?bios_id }.
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#fqdn> ?fqdn } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#hostname> ?hostname } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#netbios_name> ?netbios_name } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#network_id> ?network_id } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#default_gateway> ?default_gateway } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#vlan_id> ?vlan_id } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#uri> ?uri } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#installed_software> ?installed_software } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#ip_address> ?ip_address } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#mac_address> ?mac_address } .
-  OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#ports> ?ports } .
-`;
-const inventoryConstraint = `
-  {
-    SELECT DISTINCT ?iri
-    WHERE {
-        ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
-              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
-    }
-  }` ;
-  const ipAddr = `
-  SELECT DISTINCT ?id ?object_type ?ip_address_value ?defanged ?stix_value
-  FROM <tag:stardog:api:context:named>
-  WHERE {
-    <{iri}> a <http://scap.nist.gov/ns/asset-identification#{ipAddrType}> ;
-        <http://darklight.ai/ns/common#id> ?id  ;
-        <http://scap.nist.gov/ns/asset-identification#ip_address_value> ?ip_address_value .
-    OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
-    OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix#defanged> ?defanged } .
-    OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value } .
-  }`;
-  const macAddr = `
-  SELECT DISTINCT ?iri ?id ?object_type ?mac_address_value ?is_virtual ?stix_value
-  FROM <tag:stardog:api:context:named>
-  WHERE {
-    <{iri}> a <http://scap.nist.gov/ns/asset-identification#MACAddress> ;
-        <http://darklight.ai/ns/common#id> ?id  ;
-        <http://scap.nist.gov/ns/asset-identification#mac_address_value> ?mac_address_value .
-    OPTIONAL { <{iri}> <http://scap.nist.gov/ns/asset-identification#is_virtual> ?is_virtual } .
-    OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
-    OPTIONAL { <{iri}> <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value } .
-  }`;  
-  const portInfo = `
-  SELECT DISTINCT ?id ?object_type ?port_number ?protocols 
-  FROM <tag:stardog:api:context:named>
-  WHERE {
-    <{iri}> a <http://scap.nist.gov/ns/asset-identification#Port> ;
-        <http://darklight.ai/ns/common#id> ?id  ;
-        <http://scap.nist.gov/ns/asset-identification#port_number> ?port_number ;
-        <http://scap.nist.gov/ns/asset-identification#protocols> ?protocols .
-    OPTIONAL { <{iri}> <http://darklight.ai/ns/common#object_type> ?object_type } .
-  }`;
-  
+import {
+  buildSelectVariables, optionalizePredicate, parameterizePredicate, 
+  generateId, OASIS_SCO_NS
+} from "../../utils.js";
+import {
+  ipAddressReducer,
+  macAddressReducer,
+  portReducer
+} from '../computing-device/sparql-query.js'
 
 export function getReducer( type ) {
   switch( type ) {
-    case 'COMPUTING-DEVICE':
-      return computingDeviceAssetReducer;
+    case 'HARDWARE-DEVICE':
+      return hardwareAssetReducer;
     case 'IPV4-ADDR':
     case 'IPV6-ADDR':
       return ipAddressReducer;
@@ -110,7 +25,7 @@ export function getReducer( type ) {
 }
 
 // Reducers
-export const computingDeviceAssetReducer = (item) => {
+const hardwareAssetReducer = (item) => {
   // this code is to work around an issue in the data where we sometimes get multiple operating systems
   // when there shouldn't be but just one
   if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
@@ -129,7 +44,7 @@ export const computingDeviceAssetReducer = (item) => {
       item.object_type = item.asset_type;
     }
   } else {
-    item.object_type = 'computing-device';
+    item.object_type = 'hardware';
   }
   
   return {
@@ -184,200 +99,88 @@ export const computingDeviceAssetReducer = (item) => {
     ...(item.connected_to_network && {conn_network_iri: item.connected_to_network}),
   }
 }
-export const ipAddressReducer = (item) => {
-  if ( item.object_type === undefined || item.object_type == null ) {
-    item.ip_address_value.includes(':') ? item.object_type = 'ipv6-addr' : item.object_type = 'ipv4-addr';
-  }
 
-  return {
-    id: item.id,
-    ...(item.object_type && {entity_type: item.object_type}),
-    ...(item.created && {created: item.created}),
-    ...(item.modified && {modified: item.modified}),
-    ...(item.ip_address_value && {ip_address_value: item.ip_address_value}),
-    // Hints
-    ...(item.iri && {parent_iri: item.iri}),
-  }
-}
-export const macAddressReducer = (item) => {
-  // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined || item.object_type == null ) item.object_type = 'mac-addr';
-  return {
-    id: item.id,
-    ...(item.object_type && {entity_type: item.object_type}),
-    ...(item.created && {created: item.created}),
-    ...(item.modified && {modified: item.modified}),
-    ...(item.mac_address_value && {mac_address_value: item.mac_address_value}),
-    ...(item.is_virtual !== undefined && {is_virtual: item.is_virtual}),
-    // Hints
-    ...(item.iri && {parent_iri: item.iri}),
-  }
-}
-export const portReducer = (item) => {
-  // if no object type was returned, compute the type from the IRI
-  if ( item.object_type === undefined || item.object_type == null) item.object_type = 'port';
-  return {
-    id: item.id,
-    ...(item.object_type && {entity_type: item.object_type}),
-    ...(item.created && {created: item.created}),
-    ...(item.modified && {modified: item.modified}),
-    ...(item.port_number && {port_number: item.port_number}),
-    ...(item.protocols && {protocols: item.protocols}),
-    // Hints
-    ...(item.iri && {parent_iri: item.iri}),
-  }
-}
-
-// ComputingDevice resolver support functions
-export function getSelectSparqlQuery( type, select, id, filters, ) {
-  // TODO: [DL] Need to convert this to the utils.buildSelectVariables() method. No more string replacement strategy
-  var sparqlQuery;
+// Hardware resolver support functions
+export const insertHardwareQuery = (propValues) => {
+  const id_material = {
+    ...(propValues.name && { "name": propValues.name}),
+    ...(propValues.cpe_identifier && {"cpe": propValues.cpe_identifier}),
+    ...(propValues.vendor_name && {"vendor": propValues.vendor_name}),
+    ...(propValues.version && {"version": propValues.version})
+  } ;
+  const id = generateId( id_material, OASIS_SCO_NS );
+  const timestamp = new Date().toISOString();
   
-  // Adjust select to deal with difference between ontology and GraphQL object definition
-  if (type == 'COMPUTING-DEVICE' && select !== null) {
+  if (!deviceMap.hasOwnProperty(propValues.asset_type)) throw new UserInputError(`Unsupported hardware type ' ${propValues.asset_type}'`);
+
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
+  const selectPredicates = Object.entries(propValues)
+    .filter((propPair) => hardwarePredicateMap.hasOwnProperty(propPair[0]))
+    .map((propPair) => hardwarePredicateMap[propPair[0]].binding(iri, propPair[1]))
+    .join('.\n      ');
+  const insertPredicates = [];
+  if (propValues.asset_type !== 'hardware') {
+    let iriTemplate = deviceMap[propValues.asset_type].iriTemplate;
+    insertPredicates.push(`${iri} a <${deviceMap[propValues.asset_type].iriTemplate}>`);
+    if (deviceMap[propValues.asset_type].parent !== undefined) {
+      let parent = deviceMap[propValues.asset_type].parent;
+      insertPredicates.push(`${iri} a <${deviceMap[parent].iriTemplate}>`);
+    }
+  }
+  insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> `);
+  insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> `);
+  insertPredicates.push(`${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> `);
+  insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#Object> `);
+  insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}" `);
+  insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "${propValues.asset_type}" `);
+  insertPredicates.push(`${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime `);
+  insertPredicates.push(`${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime `);
+  const query = `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${insertPredicates.join(".\n        ")} .
+      ${selectPredicates} .
+    }
+  }`;
+
+  return {iri, id, query}
+}
+export const selectHardwareQuery = (id, select) => {
+  return selectHardwareByIriQuery(`http://scap.nist.gov/ns/asset-identification#Hardware-${id}`, select);
+}
+export const selectHardwareByIriQuery = (iri, select) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select != null) {
     select = select.filter(i => i !== 'ipv4_address')
     select = select.filter(i => i !== 'ipv6_address')
     select.push('ip_address')
-
-    if ( filters !== undefined && id === undefined ) {
-      for( const filter of filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
   }
-
-  let { selectionClause, predicates } = buildSelectVariables(computingDevicePredicateMap, select);
-  selectionClause = `SELECT ${select.includes("id") ? "DISTINCT ?iri" : "?iri"} ${selectionClause}`;
-  const selectPortion = `
-${selectionClause}
-FROM <tag:stardog:api:context:named>
-WHERE {
-  `;
-  let re = /{iri}/g;  // using regex with 'g' switch to replace all instances of a marker
-  switch( type ) {
-    case 'COMPUTING-DEVICE':
-      let byId = '';
-      let filterStr = '';
-      if (id !== undefined) {
-        byId = byIdClause.replace("{id}", id);
-      }
-      sparqlQuery = selectPortion + typeConstraint + byId + predicates + inventoryConstraint + filterStr + '}';
-      break;
-    case 'IPV4-ADDR':
-      sparqlQuery = ipAddr.replace("{ipAddrType}", "IpV4Address").replace(re, id);
-      break;
-    case 'IPV6-ADDR':
-      sparqlQuery = ipAddr.replace("{ipAddrType}", "IpV6Address").replace(re, id);
-      break;
-    case 'MAC-ADDR':
-      sparqlQuery = selectPortion +
-          bindIRIClause.replace('{iri}', id) + 
-          predicates + '\n}';
-      break;
-    case 'PORT-INFO':
-      sparqlQuery = portInfo.replace(re, id)
-      break;
-    default:
-      throw new Error(`Unsupported query type ' ${type}'`)
-  }
-
-  return sparqlQuery ;
-}
-export const insertQuery = (propValues) => {
-  const id_material = {
-    ...(propValues.name && { "name": propValues.name}),
-    ...(propValues.cpe_identifier && {"cpe": propValues.cpe_identifier}),
-    ...(propValues.vendor_name && {"vendor": propValues.vendor_name}),
-    ...(propValues.version && {"version": propValues.version})
-  } ;
-  const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString()
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
-  const insertPredicates = Object.entries(propValues)
-    .filter((propPair) => computingDevicePredicateMap.hasOwnProperty(propPair[0]))
-    .map((propPair) => computingDevicePredicateMap[propPair[0]].binding(iri, propPair[1]))
-    .join('.\n      ')
-  const query = `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
-      ${iri} a <http://darklight.ai/ns/common#Object> .
-      ${iri} <http://darklight.ai/ns/common#id> "${id}".
-      ${iri} <http://darklight.ai/ns/common#object_type> "computing-device" . 
-      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
-      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates}
-    }
-  }
-  `
-  return {iri, id, query}
-}
-export const selectObjectRefsQuery = (id, properties) => {
-  const { selectClause ,predicates } = buildSelectVariables(computingDevicePredicateMap, ["ports", "ip_address"])
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`
-  return `
-  SELECT ${selectClause} 
-  FROM <tag:stardog:api:context:named>
-  WHERE {
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
-      ${predicates} 
-  }`
-}
-// TODO: Update resolvers to utilize these functions in place of the above; delete the above
-export const insertComputingDeviceQuery = (propValues) => {
-  const id_material = {
-    ...(propValues.name && { "name": propValues.name}),
-    ...(propValues.cpe_identifier && {"cpe": propValues.cpe_identifier}),
-    ...(propValues.vendor_name && {"vendor": propValues.vendor_name}),
-    ...(propValues.version && {"version": propValues.version})
-  } ;
-  const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString()
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
-  const insertPredicates = Object.entries(propValues)
-    .filter((propPair) => computingDevicePredicateMap.hasOwnProperty(propPair[0]))
-    .map((propPair) => computingDevicePredicateMap[propPair[0]].binding(iri, propPair[1]))
-    .join('.\n      ');
-  const query = `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
-      ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
-      ${iri} a <http://darklight.ai/ns/common#Object> . 
-      ${iri} <http://darklight.ai/ns/common#id> "${id}" .
-      ${iri} <http://darklight.ai/ns/common#object_type> "computing-device" . 
-      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
-      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates}
-    }
-  }
-  `;
-  return {iri, id, query}  
-}
-export const selectComputingDeviceQuery = (id, select) => {
-  return selectComputingDeviceByIriQuery(`http://scap.nist.gov/ns/asset-identification#Hardware-${id}`, select);
-}
-export const selectComputingDeviceByIriQuery = (iri, select) => {
-  if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === null) select = Object.keys(computingDevicePredicateMap);
-  const { selectionClause, predicates } = buildSelectVariables(computingDevicePredicateMap, select);
+  if (select === null) select = Object.keys(hardwarePredicateMap);
+  const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
   return `
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
-    ?iri a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
+    ?iri a <http://scap.nist.gov/ns/asset-identification#Hardware> .
     ${predicates}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    }
   }
   `
 }
-export const selectAllComputingDevices = (select, filters) => {
-  if (select === null) select =Object.keys(computingDevicePredicateMap);
+export const selectAllHardware = (select, filters) => {
+  if (select != null) {
+    select = select.filter(i => i !== 'ipv4_address')
+    select = select.filter(i => i !== 'ipv6_address')
+    select.push('ip_address')
+  }
+  if (select === null) select =Object.keys(hardwarePredicateMap);
 
   // add value of filter's key to cause special predicates to be included
   if ( filters !== undefined ) {
@@ -386,38 +189,46 @@ export const selectAllComputingDevices = (select, filters) => {
     }
   }
 
-  const { selectionClause, predicates } = buildSelectVariables(computingDevicePredicateMap, select);
+  const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
-    ?iri a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> . 
+    ?iri a <http://scap.nist.gov/ns/asset-identification#Hardware> . 
     ${predicates}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+          ?inventory a <http://csrc.nist.gov/ns/oscal/common#AssetInventory> ;
+              <http://csrc.nist.gov/ns/oscal/common#assets> ?iri .
+      }
+    }
   }
   `
 }
-export const deleteComputingDeviceQuery = (id) => {
-  const iri = `http://scap.nist.gov/ns/asset-identification#Hardware-${id}`;
-  return deleteComputingDeviceByIriQuery(iri);
+export const deleteHardwareQuery = (id) => {
+  const iri = `http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}`;
+  return deleteHardwareByIriQuery(iri);
 }
-export const deleteComputingDeviceByIriQuery = (iri) => {
+export const deleteHardwareByIriQuery = (iri) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
   return `
   DELETE {
-    GRAPH <${iri}> {
+    GRAPH ${iri} {
       ?iri ?p ?o
     }
   } WHERE {
-    GRAPH <${iri}> {
-      ?iri a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
+    GRAPH ${iri} {
+      ?iri a <http://scap.nist.gov/ns/asset-identification#Hardware> .
       ?iri ?p ?o
     }
   }
   `
 }
-export const attachToComputingDeviceQuery = (id, field, itemIris) => {
+export const attachToHardwareQuery = (id, field, itemIris) => {
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
-  if (!computingDevicePredicateMap.hasOwnProperty(field)) return null;
-  const predicate = computingDevicePredicateMap[field].predicate;
+  if (!hardwarePredicateMap.hasOwnProperty(field)) return null;
+  const predicate = hardwarePredicateMap[field].predicate;
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -435,10 +246,10 @@ export const attachToComputingDeviceQuery = (id, field, itemIris) => {
   }
   `
 }
-export const detachFromComputingDeviceQuery = (id, field, itemIris) => {
+export const detachFromHardwareQuery = (id, field, itemIris) => {
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
-  if (!computingDevicePredicateMap.hasOwnProperty(field)) return null;
-  const predicate = computingDevicePredicateMap[field].predicate;
+  if (!hardwarePredicateMap.hasOwnProperty(field)) return null;
+  const predicate = hardwarePredicateMap[field].predicate;
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -457,8 +268,150 @@ export const detachFromComputingDeviceQuery = (id, field, itemIris) => {
   `
 }
 
+// DeviceMap that maps asset_type values to class
+const deviceMap = {
+  "account": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Account"
+  },
+  "appliance": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Appliance",
+    parent: "network-device",
+  },
+  "application-software": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ApplicationSoftware",
+    parent: "software",
+  },
+  "circuit": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Circuit",
+  },
+  "computer-account": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#ComputerAccount",
+    parent: "account"
+  },
+  "computing-device": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#ComputingDevice",
+    parent: "hardware",
+  },
+  "database": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Database",
+  },
+  "directory-server": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#DirectoryServer",
+    parent: "system",
+  },
+  "dns-server": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#DnsServer",
+    parent: "system",
+  },
+  "documentary-asset": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#DocumentaryAsset",
+  },
+  "email-server": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#EmailServer",
+    parent: "system",
+  },
+  "firewall": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Firewall",
+    parent: "network-device",
+  },
+  "guidance": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Guidance",
+    parent: "documentary-asset",
+  },
+  "hardware": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Hardware",
+  },
+  "network": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Network",
+  },
+  "network-device": {
+    iriTemplate:"http://scap.nist.gov/ns/asset-identification#ComputingDevice",
+    parent: "hardware",
+  },
+  "network-switch": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#NetworkSwitch",
+    parent: "network-device",
+  },
+  "operating-system": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem",
+    parent: "software",
+  },
+  "physical-device": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Hardware",
+    parent: "hardware",
+  },
+  "plan": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Plan",
+    parent: "documentary-asset",
+  },
+  "policy": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Policy",
+    parent: "policy",
+  },
+  "procedure": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Procedure",
+    parent: "procedure"
+  },
+  "router": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Router",
+    parent: "network-device",
+  },
+  "server": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Server",
+    parent: "computing-device",
+  },
+  "service": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Service",
+  },
+  "software": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software",
+  },
+  "standard": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Standard",
+    parent: "documentary-asset",
+  },
+  "storage-array": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#StorageArray",
+    parent: "network-device",
+  },
+  "system": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#System",
+  },
+  "user-account": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#UserAccount",
+    parent: "computer-account",
+  },
+  "validation": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Validation",
+    parent: "documentary-asset",
+  },
+  "voip-device": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#VoIPDevice",
+    parent: "network-device",
+  },
+  "voip-handset": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#VoIPHandset",
+    parent: "voip-device",
+  },
+  "voip-router": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#VoIPRouter",
+    parent: "voip-device",      
+  },
+  "web-server": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#WebServer",
+    parent: "system",
+  },
+  "web-site": {
+    iriTemplate: "http://scap.nist.gov/ns/asset-identification#Website",
+  },
+  "workstation": {
+    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Workstation",
+    parent: "computing-device",
+  },
+}
+
 // Predicate Maps
-export const computingDevicePredicateMap = {
+export const hardwarePredicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},
@@ -499,11 +452,6 @@ export const computingDevicePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "external_references");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  asset_id: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
-    binding: function (iri, value) { return  parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_id");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
   name: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "name");},
@@ -522,6 +470,11 @@ export const computingDevicePredicateMap = {
   location_name: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#locations>/<http://darklight.ai/ns/common#name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "location_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  asset_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
+    binding: function (iri, value) { return  parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_id");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   asset_type: {
@@ -710,6 +663,4 @@ export const computingDevicePredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   }
 }
-
-
 
