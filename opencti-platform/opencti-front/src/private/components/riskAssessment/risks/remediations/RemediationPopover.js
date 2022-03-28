@@ -4,6 +4,7 @@ import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
 import Menu from '@material-ui/core/Menu';
+import { QueryRenderer as QR } from 'react-relay';
 import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
@@ -16,8 +17,10 @@ import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
+import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
 // import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
+import RemediationDetailsPopover from './RemediationDetailsPopover';
 
 const styles = (theme) => ({
   container: {
@@ -68,6 +71,38 @@ const remediationPopoverDeletionMutation = graphql`
   }
 `;
 
+const remediationPopoverQuery = graphql`
+  query RemediationPopoverQuery($id: ID!) {
+    riskResponse(id: $id) {
+      id
+      name                # Title
+      description         # Description
+      created             # Created
+      modified            # Last Modified
+      lifecycle           # Lifecycle
+      response_type       # Response Type
+      origins{            # Detection Source
+        id
+        origin_actors {
+          actor_type
+          actor {
+            ... on Component {
+              id
+              component_type
+              name          # Source
+            }
+            ... on OscalParty {
+              id
+              party_type
+              name            # Source
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 class RemediationPopover extends Component {
   constructor(props) {
     super(props);
@@ -76,6 +111,7 @@ class RemediationPopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
+      displayEdit: false,
     };
   }
 
@@ -95,6 +131,11 @@ class RemediationPopover extends Component {
 
   handleCloseUpdate() {
     this.setState({ displayUpdate: false });
+  }
+
+  handleDisplayEdit() {
+    this.setState({ displayEdit: !this.state.displayEdit });
+    this.handleClose();
   }
 
   handleOpenDelete() {
@@ -164,17 +205,17 @@ class RemediationPopover extends Component {
           </MenuItem> */}
           <MenuItem
             className={classes.menuItem}
-            divider={true}
+            onClick={this.handleDisplayEdit.bind(this)}
           >
-            {t('Remove')}
+            {t('Edit Remediation')}
           </MenuItem>
-          <MenuItem
+          {/* <MenuItem
             className={classes.menuItem}
             divider={true}
             onClick={this.handleOpenDelete.bind(this)}
           >
             {t('Delete')}
-          </MenuItem>
+          </MenuItem> */}
         </Menu>
         {/* <StixCoreRelationshipEdition
           variant="noGraph"
@@ -218,6 +259,23 @@ class RemediationPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
+        <QR
+          environment={QueryRendererDarkLight}
+          query={remediationPopoverQuery}
+          variables={{ id: cyioCoreRelationshipId }}
+          render={({ error, props, retry }) => {
+            if (props) {
+              return (
+                <RemediationDetailsPopover
+                  displayEdit={this.state.displayEdit}
+                  handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+                  remediation={props.riskResponse}
+                />
+              );
+            }
+            return <></>;
+          }}
+        />
       </div>
     );
   }

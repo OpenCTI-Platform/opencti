@@ -122,16 +122,14 @@ class RemediationDetailsPopover extends Component {
     } = this.props;
     const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
-      R.assoc('id', risk?.id || ''),
       R.assoc('description', remediation?.description || ''),
       R.assoc('name', remediation?.name || ''),
       R.assoc('source', remediationOriginData?.name || []),
-      R.assoc('modified', dateFormat(risk?.modified)),
-      R.assoc('created', dateFormat(risk?.created)),
+      R.assoc('modified', dateFormat(remediation?.modified)),
+      R.assoc('created', dateFormat(remediation?.created)),
       R.assoc('lifecycle', remediation?.lifecycle || []),
       R.assoc('response_type', remediation?.response_type || ''),
       R.pick([
-        'id',
         'name',
         'description',
         'source',
@@ -140,35 +138,15 @@ class RemediationDetailsPopover extends Component {
         'lifecycle',
         'response_type',
       ]),
-    )(risk);
+    )(remediation);
     console.log('remediation', remediation);
     return (
-      <span className={classes.container}>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          disabled={disabled}
-        >
-          <MoreVertOutlined />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
-          <MenuItem
-            className={classes.menuItem}
-            onClick={this.handleOpenDetails.bind(this)}
-          >
-            {t('Details')}
-          </MenuItem>
-        </Menu>
+      <>
         <Dialog
-          open={this.state.details}
+          open={this.props.displayEdit}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDetails.bind(this)}
+          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
@@ -363,7 +341,7 @@ class RemediationDetailsPopover extends Component {
                       </Grid>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <Grid style={{ marginTop: '80px' }} item={true}>
+                      <Grid style={{ marginTop: '90px' }} item={true}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -399,7 +377,7 @@ class RemediationDetailsPopover extends Component {
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
-                    onClick={this.handleCloseUpdate.bind(this)}
+                    onClick={() => this.props.handleDisplayEdit()}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -419,13 +397,15 @@ class RemediationDetailsPopover extends Component {
             )}
           </Formik>
         </Dialog>
-      </span>
+      </>
     );
   }
 }
 
 RemediationDetailsPopover.propTypes = {
   cyioCoreRelationshipId: PropTypes.string,
+  handleDisplayEdit: PropTypes.func,
+  displayEdit: PropTypes.bool,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
