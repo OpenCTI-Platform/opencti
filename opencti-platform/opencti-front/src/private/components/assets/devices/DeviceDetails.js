@@ -568,7 +568,7 @@ const DeviceDetails = createFragmentContainer(
   DeviceDetailsComponent,
   {
     device: graphql`
-      fragment DeviceDetails_device on ComputingDeviceAsset {
+      fragment DeviceDetails_device on HardwareAsset {
         id
         installed_software {
           id

@@ -85,7 +85,7 @@ const deviceEditionMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editComputingDeviceAsset(id: $id, input: $input) {
+    editHardwareAsset(id: $id, input: $input) {
       id
     }
   }
@@ -456,7 +456,7 @@ const DeviceEditionFragment = createFragmentContainer(
   DeviceEditionContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ComputingDeviceAsset {
+      fragment DeviceEditionContainer_device on HardwareAsset {
         __typename
         id
         name
