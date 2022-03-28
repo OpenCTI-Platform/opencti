@@ -287,13 +287,19 @@ const RiskDetails = createFragmentContainer(
           id
           origin_actors {       # only use if UI support Detection Source
             actor_type
-            actor {
+            actor_ref {
+              ... on AssessmentPlatform {
+                id
+                name
+              }
               ... on Component {
                 id
+                component_type
                 name
               }
               ... on OscalParty {
                 id
+                party_type
                 name
               }
             }
@@ -337,7 +343,11 @@ const RiskDetails = createFragmentContainer(
                   id
                   origin_actors {
                     actor_type
-                    actor {
+                    actor_ref {
+                      ... on AssessmentPlatform {
+                        id
+                        name
+                      }
                       ... on Component {
                         id
                         component_type
