@@ -28,7 +28,7 @@ const cyioExternalReferenceResolvers = {
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("EXTERNAL-REFERENCE");
@@ -41,7 +41,7 @@ const cyioExternalReferenceResolvers = {
           externalRefList = response;
         }
 
-        if (offset > externalRefList.length) return
+        if (offset > externalRefList.length) return null;
 
         // for each asset in the result set
         for (let externalRef of externalRefList) {
@@ -92,7 +92,7 @@ const cyioExternalReferenceResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return ;
+          return null;
         }
       }
     },

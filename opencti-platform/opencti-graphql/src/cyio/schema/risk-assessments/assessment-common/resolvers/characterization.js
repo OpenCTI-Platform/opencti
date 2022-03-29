@@ -588,6 +588,7 @@ const characterizationResolvers = {
   },
   Characterization: {
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -629,6 +630,7 @@ const characterizationResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -670,6 +672,7 @@ const characterizationResolvers = {
       }
     },
     facets: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.facets_iri === undefined) return [];
       let iriArray = parent.facets_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -732,6 +735,7 @@ const characterizationResolvers = {
       }
     },
     origins:async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

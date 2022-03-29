@@ -655,7 +655,7 @@ const oscalPartyResolvers = {
       }
     },
     telephone_numbers: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.telephone_numbers_iri === undefined) return null;
+      if (parent.telephone_numbers_iri === undefined) return [];
       let iriArray = parent.telephone_numbers_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -736,7 +736,7 @@ const oscalPartyResolvers = {
     },
     email_addresses: async (parent, args, {dbName, dataSources, selectMap}) => {
       // this is necessary to work around an issue were an array a strings is returned as a single value.
-      if (parent.email_addresses === undefined) return null;
+      if (parent.email_addresses === undefined) return [];
       const results = [];
       let phoneNumbers = parent.email_addresses[0].split(",")
       for (let phoneNumber of phoneNumbers) {
