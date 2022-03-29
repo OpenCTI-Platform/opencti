@@ -221,7 +221,7 @@ class RiskDetailsComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {t(riskDetectionSource.actor.name)}
+              {t(riskDetectionSource.actor_ref.name)}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
