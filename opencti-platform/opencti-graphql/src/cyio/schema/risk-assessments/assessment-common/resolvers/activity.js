@@ -29,7 +29,6 @@ import {
   getReducer as getCommonReducer,
   selectResponsiblePartyByIriQuery,  
 } from '../../oscal-common/resolvers/sparql-query.js';
-import { isParenthesizedTypeNode } from 'typescript';
 
 
 const activityResolvers = {

@@ -21,6 +21,7 @@ import {
   selectRiskLogEntryByIriQuery,
   selectOriginByIriQuery,
 } from './sparql-query.js';
+import { isNullableType } from 'graphql';
 
 
 const riskResolvers = {
@@ -675,7 +676,7 @@ const riskResolvers = {
       }
     },
     related_observations: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.related_observations_iri === undefined) return [];
+      if (parent.related_observations_iri === undefined) return null;
       let iriArray = parent.related_observations_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
@@ -696,7 +697,7 @@ const riskResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {
@@ -717,7 +718,7 @@ const riskResolvers = {
             }
           }  
         }
-        if (edges.length === 0 ) return [];
+        if (edges.length === 0 ) return null;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
@@ -729,7 +730,7 @@ const riskResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
   }
