@@ -74,9 +74,10 @@ class RemediationComponent extends Component {
           <CyioDomainObjectHeader
             cyioDomainObject={remediation}
             history={history}
+            disablePopover={false}
             PopoverComponent={<RiskPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+            // handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
             OperationsComponent={<RiskDeletion />}
           />
           <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true} />
@@ -135,13 +136,14 @@ class RemediationComponent extends Component {
           {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <RemediationEdition riskId={remediation.id} />
               </Security> */}
+          <RemediationDetailsPopover
+            displayEdit={this.state.displayEdit}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+            remediation={remediation}
+            history={history}
+            risk={risk}
+          />
         </div>
-        <RemediationDetailsPopover
-          displayEdit={this.state.displayEdit}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-          remediation={remediation}
-          risk={risk}
-        />
         {/* <RemediationEdition
             open={this.state.openEdit}
             riskId={riskId}

@@ -90,6 +90,7 @@ const Remediations = (props) => {
             </IconButton>
             {/* </Security> */}
             <RemediationEntities
+              history={history}
               entityId={remediation.id}
             />
           </Grid>

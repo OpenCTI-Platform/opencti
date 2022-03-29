@@ -56,6 +56,7 @@ class RemediationEntitiesLines extends Component {
       dataColumns,
       relay,
       classes,
+      history,
       t,
       data,
       entityLink,
@@ -139,6 +140,7 @@ class RemediationEntitiesLines extends Component {
             node={remediationEdge}
             key={remediationEdge.id}
             entityId={entityId}
+            history={history}
           />,
         )) : <>
           No Record Found </>)}
@@ -154,6 +156,7 @@ RemediationEntitiesLines.propTypes = {
   entityId: PropTypes.string,
   t: PropTypes.func,
   data: PropTypes.object,
+  history: PropTypes.object,
   relay: PropTypes.object,
   stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,

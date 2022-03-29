@@ -85,7 +85,7 @@ const remediationPopoverQuery = graphql`
         id
         origin_actors {
           actor_type
-          actor {
+          actor_ref {
             ... on Component {
               id
               component_type
@@ -179,7 +179,7 @@ class RemediationPopover extends Component {
 
   render() {
     const {
-      classes, t, cyioCoreRelationshipId, disabled,
+      classes, t, cyioCoreRelationshipId, disabled, history,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -268,6 +268,7 @@ class RemediationPopover extends Component {
               return (
                 <RemediationDetailsPopover
                   displayEdit={this.state.displayEdit}
+                  history={history}
                   handleDisplayEdit={this.handleDisplayEdit.bind(this)}
                   remediation={props.riskResponse}
                 />
@@ -287,6 +288,7 @@ RemediationPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  history: PropTypes.object,
   onDelete: PropTypes.func,
   connectionKey: PropTypes.string,
 };

@@ -70,6 +70,7 @@ class RemediationEntityLineComponent extends Component {
       fsd,
       t,
       fldt,
+      history,
       classes,
       dataColumns,
       node,
@@ -198,6 +199,7 @@ class RemediationEntityLineComponent extends Component {
           <RemediationPopover
             cyioCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
+            history={history}
           // disabled={restricted}
           />
           {/* </Security> */}
@@ -213,6 +215,7 @@ RemediationEntityLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
+  history: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
   fsd: PropTypes.func,

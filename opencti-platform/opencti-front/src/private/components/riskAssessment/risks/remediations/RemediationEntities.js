@@ -121,7 +121,9 @@ class RemediationEntities extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
-    const { entityId, classes, t } = this.props;
+    const {
+      entityId, classes, t, history,
+    } = this.props;
     const dataColumns = {
       relationship_type: {
         label: 'Title',
@@ -183,6 +185,7 @@ class RemediationEntities extends Component {
                 <RemediationEntitiesLines
                   data={props}
                   paginationOptions={paginationOptions}
+                  history={history}
                   dataColumns={dataColumns}
                   initialLoading={props === null}
                   displayRelation={true}
