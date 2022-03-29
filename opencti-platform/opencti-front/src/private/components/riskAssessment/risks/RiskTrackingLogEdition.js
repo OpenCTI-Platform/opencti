@@ -561,14 +561,17 @@ const RiskTrackingLogEdition = createFragmentContainer(
               event_end         # End Date
               status_change     # Status Change
               logged_by {
-                ... on OscalParty {
+                id
+                party {
                   id
+                  party_type
                   name
                 }
-                # ... on OscalOrganization {
-                #   id
-                #   name
-                # }
+                role {
+                  id
+                  role_identifier
+                  name
+                }
               }
               related_responses {
                 id
