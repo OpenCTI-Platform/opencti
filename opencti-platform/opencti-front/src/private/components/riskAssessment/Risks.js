@@ -302,6 +302,7 @@ class Risks extends Component {
         label: 'Occurrences',
         width: '10%',
         isSortable: true,
+        paddingLeft: '85px',
       },
       deadline: {
         label: 'Deadline',
