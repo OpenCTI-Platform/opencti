@@ -290,7 +290,7 @@ const assessmentPlatformResolvers = {
 	},
 	AssessmentPlatform :{
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.labels_iri === undefined) return null;
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -332,7 +332,7 @@ const assessmentPlatformResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return null;
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -374,7 +374,7 @@ const assessmentPlatformResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return null;
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -416,7 +416,7 @@ const assessmentPlatformResolvers = {
       }
     },
 		uses_components: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.uses_components_iri === undefined) return null;
+      if (parent.uses_components_iri === undefined) return [];
       let iriArray = parent.uses_components_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

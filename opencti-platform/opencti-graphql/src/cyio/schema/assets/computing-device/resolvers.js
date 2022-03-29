@@ -55,7 +55,7 @@ const computingDeviceResolvers = {
         console.log(e)
         throw e
       }
-      if (response === undefined) return;
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -63,7 +63,7 @@ const computingDeviceResolvers = {
         let offset = (args.offset === undefined ? 0 : args.offset);
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
-        if (offset > assetList.length) return
+        if (offset > assetList.length) return null;
 
         // for each asset in the result set
         for (let asset of assetList) {

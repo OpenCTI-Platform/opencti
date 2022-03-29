@@ -227,8 +227,7 @@ class RiskCardComponent extends Component {
                   {t('Risk')}
                 </Typography>
                 <Typography>
-                  {t('Medium')}
-                  {node.risk && t(node.risk)}
+                  {riskData.node.risk_level && riskData.node.risk_level}
                 </Typography>
               </Grid>
             </Grid>
@@ -349,15 +348,14 @@ const RiskCardFragment = createFragmentContainer(
         related_risks {
           edges {
             node {
+              __typename
+              id
+              name
               risk_status
+              risk_level
               deadline
-              # characterizations {
-              #   ... on RiskCharacterization {
-              #     id
-              #     risk
-              #   }
-              # }
               remediations {
+                id
                 response_type
                 lifecycle
               }
