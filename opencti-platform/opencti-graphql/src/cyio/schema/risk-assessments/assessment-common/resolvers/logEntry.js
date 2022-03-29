@@ -442,7 +442,8 @@ const logEntryResolvers = {
       }
     },
     related_tasks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      let iriArray = parent.related_task_iri;
+      if (parent.related_tasks_iri === undefined) return [];
+      let iriArray = parent.related_tasks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getReducer("TASK");
@@ -611,7 +612,7 @@ const logEntryResolvers = {
       }
     },
     logged_by: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.logged_by_iri === undefined) return null;
+      if (parent.logged_by_iri === undefined) return [];
       let iriArray = parent.logged_by_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
