@@ -64,7 +64,11 @@ const remediationEntitiesQuery = graphql`
           id
           origin_actors {
             actor_type
-            actor {
+            actor_ref {
+              ... on AssessmentPlatform {
+                id
+                name          # Source
+              }
               ... on Component {
                 id
                 component_type

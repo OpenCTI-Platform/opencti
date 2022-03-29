@@ -240,16 +240,20 @@ const RemediationEntityLineFragment = createFragmentContainer(
             id
             origin_actors {
               actor_type
-              actor {
+              actor_ref {
+                ... on AssessmentPlatform {
+                  id
+                  name
+                }
                 ... on Component {
                   id
                   component_type
                   name          # Source
                 }
                 ... on OscalParty {
-                id
-                party_type
-                name            # Source
+                  id
+                  party_type
+                  name            # Source
                 }
               }
             }

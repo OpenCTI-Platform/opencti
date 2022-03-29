@@ -383,6 +383,7 @@ class DeviceEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={device.external_references}
                     cyioCoreObjectId={device?.id}
+                    disableAdd={true}
                     typename={device.__typename}
                     refreshQuery={refreshQuery}
                   />
@@ -394,6 +395,7 @@ class DeviceEditionContainer extends Component {
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={device.__typename}
                 refreshQuery={refreshQuery}
+                disableAdd={true}
                 notes={device.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />

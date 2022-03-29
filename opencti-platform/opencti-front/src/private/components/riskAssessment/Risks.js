@@ -218,6 +218,7 @@ class Risks extends Component {
               data={props}
               extra={props}
               selectAll={selectAll}
+              history={this.props.history}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
               selectedElements={selectedElements}
@@ -269,12 +270,12 @@ class Risks extends Component {
     const dataColumns = {
       poam_id: {
         label: 'POAM ID',
-        width: '13%',
+        width: '12%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '15%',
+        width: '16%',
         isSortable: false,
       },
       risk_level: {
@@ -284,7 +285,7 @@ class Risks extends Component {
       },
       risk_status: {
         label: 'Status',
-        width: '17%',
+        width: '16%',
         isSortable: true,
       },
       risk_response: {
@@ -294,17 +295,17 @@ class Risks extends Component {
       },
       lifecycle: {
         label: 'Lifecycle',
-        width: '15%',
+        width: '13%',
         isSortable: true,
       },
       occurrences: {
         label: 'Occurrences',
-        width: '11%',
+        width: '10%',
         isSortable: true,
       },
       deadline: {
         label: 'Deadline',
-        width: '11%',
+        width: '10%',
         isSortable: false,
       },
     };
@@ -355,6 +356,7 @@ class Risks extends Component {
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
+                history={this.props.history}
                 initialLoading={props === null}
                 selectedElements={selectedElements}
                 paginationOptions={paginationOptions}

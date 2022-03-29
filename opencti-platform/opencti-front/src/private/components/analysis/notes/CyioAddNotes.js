@@ -202,6 +202,7 @@ class CyioAddNotes extends Component {
       t,
       classes,
       typename,
+      disableAdd,
       cyioCoreObjectOrStixCoreRelationshipId,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     } = this.props;
@@ -213,6 +214,7 @@ class CyioAddNotes extends Component {
         <IconButton
           color="secondary"
           aria-label="Add"
+          disabled={disableAdd}
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
         >
@@ -348,6 +350,7 @@ CyioAddNotes.propTypes = {
   cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
   refreshQuery: PropTypes.func,
   typename: PropTypes.string,
+  disableAdd: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

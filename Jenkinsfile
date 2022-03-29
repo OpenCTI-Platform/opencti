@@ -46,6 +46,8 @@ node {
   parallel test: {
     stage('Test') {
       try {
+        sh(returnStdout: true, script: 'printenv')
+
         dir('opencti-worker/src') {
           sh 'pip install --no-cache-dir -r requirements.txt'
           sh 'pip install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master'

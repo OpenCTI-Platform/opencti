@@ -87,7 +87,7 @@
 #####  Component 
 ##
   "Defines identifying information about an OSCAL component"
-  interface Component {
+  type Component implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -170,7 +170,7 @@
     # "Identifies the component as it was assigned in the leveraged system's SSP."
     # inherited_identifier: String
   }
-
+  # Mutation Type
   input ComponentAddInput {
     # Component
     "Indicates the type of the component"
@@ -219,23 +219,7 @@
     # "Identifies the component as it was assigned in the leveraged system's SSP."
     # inherited_identifier: String
   }
-
-  # Pagination Types
-    type ComponentConnection {
-    pageInfo: PageInfo!
-    edges: [ComponentEdge]
-  }
-  type ComponentEdge {
-    cursor: String!
-    node: Component!
-  }
-  # Filtering Types
-  input ComponentsFiltering {
-    key: ComponentsFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
+  # Ordering types
   enum ComponentsOrdering {
     "Component Type"
     component_type
@@ -247,6 +231,13 @@
     modified
     "Label"
     labels
+  }
+  # Filtering Types
+  input ComponentsFiltering {
+    key: ComponentsFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
   }
   enum ComponentsFilter {
     "Component Type"
@@ -260,11 +251,21 @@
     "Label"
     label_name
   }
+  # Pagination Types
+  type ComponentConnection {
+    pageInfo: PageInfo!
+    edges: [ComponentEdge]
+  }
+  type ComponentEdge {
+    cursor: String!
+    node: Component!
+  }
+
 
 #####   Hardware Component 
 ##
   "Defines identifying information about an OSCAL hardware component"
-  type HardwareComponent implements BasicObject & LifecycleObject & OscalObject & Component {
+  type HardwareComponent implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -458,7 +459,7 @@
 
 #####   Network Component 
 ##
-  type NetworkComponent implements BasicObject & LifecycleObject & OscalObject & Component {
+  type NetworkComponent implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -513,6 +514,8 @@
     version: String
     "Identifies date the component was released, such as a software release date or policy publication date."
     release_date: Timestamp
+    "Indicates the operational status of the system component."
+    operational_status: OperationalStatus!
     "Indicates relative placement of component ('internal' or 'external') to the system."
     implementation_point: ImplementationPoint!
     "Identifies whether the asset can be check with an authenticated scan"
@@ -529,8 +532,6 @@
     baseline_configuration_name: String
     "Identifies the function provided by the asset for the system."
     function: String
-    "Indicates the operational status of the system component."
-    operational_status: OperationalStatus!
     "Indicates references to one or more roles with responsibility for performing a function relative to the containing object."
     responsible_roles: [OscalResponsibleParty]
     "Indicates the physical location of the asset's hardware (e.g., Data Center ID, Cage#, Rack#, or other meaningful location identifiers)."
@@ -659,7 +660,7 @@
 #####   Service Component 
 ##
 "Defines identifying information about a Service Component"
-  type ServiceComponent implements BasicObject & LifecycleObject & OscalObject & Component {
+  type ServiceComponent implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -849,7 +850,7 @@
 #####   Software Component 
 ##
   "Defines identifying information about a Software Component"
-  type SoftwareComponent implements BasicObject & LifecycleObject & OscalObject & Component {
+  type SoftwareComponent implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
@@ -1054,7 +1055,7 @@
 #####   System Component 
 ##
 "Defines identifying information about a System Component"
-  type SystemComponent implements BasicObject & LifecycleObject & OscalObject & Component {
+  type SystemComponent implements BasicObject & LifecycleObject & OscalObject {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!

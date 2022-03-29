@@ -13,16 +13,19 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import LayersIcon from '@material-ui/icons/Layers';
 import Button from '@material-ui/core/Button';
 import WindowsIcon from '@material-ui/icons/LaptopWindows';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
+import { KeyboardArrowRight, MoreVert, PublicOutlined } from '@material-ui/icons';
+import IconButton from '@material-ui/core/IconButton';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
+import RiskAssessmentPopover from './RiskAssessmentPopover';
 
 const styles = (theme) => ({
   item: {
@@ -36,7 +39,7 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 35,
+    height: 36,
     fontSize: 13,
     paddingLeft: 24,
     float: 'left',
@@ -48,8 +51,7 @@ const styles = (theme) => ({
     alignItems: 'center',
   },
   goIcon: {
-    position: 'absolute',
-    right: -10,
+    minWidth: '0px',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -73,6 +75,7 @@ class RiskLineComponent extends Component {
       t,
       fd,
       classes,
+      history,
       node,
       selectAll,
       dataColumns,
@@ -151,7 +154,7 @@ class RiskLineComponent extends Component {
                   variant="outlined"
                   size="small"
                   color="default"
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
                   {riskData.node.risk_status && t(riskData.node.risk_status)}
                 </Button>
@@ -164,22 +167,22 @@ class RiskLineComponent extends Component {
                   variant="outlined"
                   size="small"
                   color="default"
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
-                {riskRemediation.response_type && t(riskRemediation.response_type)}
+                  {riskRemediation.response_type && t(riskRemediation.response_type)}
                 </Button>
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.lifecycle.width }}
               >
-              <Button
+                <Button
                   variant="outlined"
                   size="small"
                   color="default"
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
-                {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
+                  {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
                 </Button>
               </div>
               <div
@@ -207,9 +210,9 @@ class RiskLineComponent extends Component {
             </div>
           }
         />
-        {/* <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon> */}
+        <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
+          <RiskAssessmentPopover history={history} nodeId={node.id}/>
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }

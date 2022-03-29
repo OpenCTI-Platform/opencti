@@ -32,7 +32,7 @@ const cyioNoteResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("NOTE");
-        let limit = (args.first === undefined ? response.length : args.first) ;
+        let limit = (args.limit === undefined ? response.length : args.limit) ;
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         let noteList ;
         if (args.orderedBy !== undefined ) {
@@ -78,7 +78,7 @@ const cyioNoteResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > noteList.length),
+            hasNextPage: (args.limit > noteList.length),
             hasPreviousPage: (args.offset > 0),
             globalCount: noteList.length,
           },

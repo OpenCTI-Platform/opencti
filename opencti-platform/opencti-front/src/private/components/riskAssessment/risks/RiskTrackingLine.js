@@ -492,14 +492,20 @@ const RiskTrackingLineFragment = createFragmentContainer(
       event_end         # End Date
       status_change     # Status Change
       logged_by {
-        ... on OscalParty {
+        id
+        entity_type
+        party {
+          __typename
           id
+          entity_type
           name
         }
-        # ... on OscalOrganization {
-        #   id
-        #   name
-        # }
+        role {
+          id
+          entity_type
+          role_identifier
+          name
+        }
       }
       related_responses {
         id

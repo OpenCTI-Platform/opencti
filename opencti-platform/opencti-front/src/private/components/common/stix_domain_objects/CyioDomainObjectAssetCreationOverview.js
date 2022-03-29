@@ -350,13 +350,14 @@ class CyioDomainObjectAssetCreationOverviewComponent extends Component {
                 <CyioCoreObjectLabelsView
                   labels={objectLabel}
                   marginTop={20}
+                  disableAdd={true}
                   // id={cyioDomainObject?.id}
                 />
                 <div className="clearfix" />
                 <ObjectLabelField
                   variant='outlined'
                   name="labels"
-                  style={{ marginTop: 10, width: '100%' }}
+                  style={{ marginTop: 10, width: '100%', pointerEvents: 'none', opacity: '0.4' }}
                   setFieldValue={setFieldValue}
                   values={values.objectLabel}
                 />
