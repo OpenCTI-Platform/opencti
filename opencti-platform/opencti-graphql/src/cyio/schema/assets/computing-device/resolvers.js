@@ -435,6 +435,7 @@ const computingDeviceResolvers = {
   // field-level query
   ComputingDeviceAsset: {
     installed_software: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.installed_sw_iri === undefined) return [];
       let iriArray = parent.installed_sw_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -475,6 +476,7 @@ const computingDeviceResolvers = {
       }
     },
     installed_operating_system: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.installed_os_iri === undefined) return null;
       var iri = parent.installed_os_iri
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
@@ -513,6 +515,7 @@ const computingDeviceResolvers = {
       }
     },
     ipv4_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -552,6 +555,7 @@ const computingDeviceResolvers = {
       }
     },
     ipv6_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -591,6 +595,7 @@ const computingDeviceResolvers = {
       }
     },
     mac_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.mac_addr_iri === undefined) return [];
       let iriArray = parent.mac_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -636,6 +641,7 @@ const computingDeviceResolvers = {
       }
     },
     ports: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ports_iri === undefined) return [];
       let iriArray = parent.ports_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -674,6 +680,7 @@ const computingDeviceResolvers = {
       }
     },
     connected_to_network: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.conn_network_iri === undefined) return null;
       let iri = parent.conn_network_iri;
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
@@ -707,6 +714,7 @@ const computingDeviceResolvers = {
       }
     },
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -746,6 +754,7 @@ const computingDeviceResolvers = {
       }
     },
     external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -785,6 +794,7 @@ const computingDeviceResolvers = {
       }
     },
     notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
