@@ -46,7 +46,8 @@ node {
   parallel test: {
     stage('Test') {
       try {
-        sh(returnStdout: true, script: 'printenv')
+        const commit = sh(returnStdout: true, script: 'git rev-parse HEAD')
+        echo commit
 
         dir('opencti-worker/src') {
           sh 'pip install --no-cache-dir -r requirements.txt'
