@@ -46,7 +46,7 @@ const poamResolvers = {
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("POAM");
@@ -59,7 +59,7 @@ const poamResolvers = {
           poamList = response;
         }
 
-        if (offset > poamList.length) return
+        if (offset > poamList.length) return null;
 
         // for each POAM in the result set
         for (let poam of poamList) {
@@ -318,6 +318,7 @@ const poamResolvers = {
   // field-level resolvers
   POAM: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -357,6 +358,7 @@ const poamResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -396,6 +398,7 @@ const poamResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -459,7 +462,7 @@ const poamResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {
@@ -492,7 +495,7 @@ const poamResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
     locations: async (parent, args, {dbName, dataSources, selectMap}) => {
@@ -508,6 +511,7 @@ const poamResolvers = {
       // TODO: Add implementation location definition retrieval
     },
     observations: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.observations_iri === undefined) return null;
       let iriArray = parent.observations_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
@@ -528,7 +532,7 @@ const poamResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {
@@ -561,10 +565,11 @@ const poamResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
     risks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.risks_iri === undefined) return null;
       let iriArray = parent.risks_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
@@ -585,7 +590,7 @@ const poamResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {
@@ -618,10 +623,11 @@ const poamResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
     poam_items: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.poam_items_iri === undefined) return null;
       let iriArray = parent.poam_items_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
@@ -642,7 +648,7 @@ const poamResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {
@@ -675,7 +681,7 @@ const poamResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
     resources: async (parent, args, {dbName, dataSources, selectMap}) => {

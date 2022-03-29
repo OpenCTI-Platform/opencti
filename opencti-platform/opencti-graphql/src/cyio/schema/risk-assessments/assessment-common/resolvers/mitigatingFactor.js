@@ -327,6 +327,7 @@ const mitigatingFactorResolvers = {
   },
   MitigatingFactor: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -368,6 +369,7 @@ const mitigatingFactorResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -409,6 +411,7 @@ const mitigatingFactorResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -450,6 +453,7 @@ const mitigatingFactorResolvers = {
       }
     },
     subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
