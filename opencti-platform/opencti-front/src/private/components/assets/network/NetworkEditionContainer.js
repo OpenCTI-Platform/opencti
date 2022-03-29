@@ -354,6 +354,7 @@ class NetworkEditionContainer extends Component {
                     externalReferences={network.external_references}
                     cyioCoreObjectId={network.id}
                     refreshQuery={refreshQuery}
+                    disableAdd={true}
                     typename={network.__typename}
                   />
                 </Grid>
@@ -364,6 +365,7 @@ class NetworkEditionContainer extends Component {
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={network.__typename}
                 refreshQuery={refreshQuery}
+                disableAdd={true}
                 notes={network.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={network.id}
               />

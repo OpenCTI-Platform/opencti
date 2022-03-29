@@ -49,7 +49,7 @@ const styles = (theme) => ({
 
 class CyioCoreObjectAssetCreationExternalReferences extends Component {
   render() {
-    const { t, classes } = this.props;
+    const { t, classes, disableAdd } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
@@ -64,6 +64,7 @@ class CyioCoreObjectAssetCreationExternalReferences extends Component {
             // cyioCoreObjectOrCyioCoreRelationshipReferences={
             //   data.cyioCoreObject.externalReferences.edges
             // }
+            disableAdd={disableAdd}
           />
         {/* </Security> */}
         <div className="clearfix" />
@@ -82,6 +83,7 @@ CyioCoreObjectAssetCreationExternalReferences.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
+  disableAdd: PropTypes.bool,
   t: PropTypes.func,
   fld: PropTypes.func,
 };

@@ -302,16 +302,16 @@ class SoftwareCreation extends Component {
                   {/* <StixCoreObjectExternalReferences
                       stixCoreObjectId={software.id}
                     /> */}
-                  <div style={{ pointerEvents: 'none', opacity: '0.4', height: '100%' }}>
-                    <CyioCoreObjectAssetCreationExternalReferences />
+                  <div>
+                    <CyioCoreObjectAssetCreationExternalReferences disableAdd={true}/>
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory />
                 </Grid>
               </Grid>
-              <div style={{ pointerEvents: 'none', opacity: '0.4', height: '100%' }}>
-                <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' />
+              <div>
+                <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' disableAdd={true}/>
               </div>
             </>
           )}

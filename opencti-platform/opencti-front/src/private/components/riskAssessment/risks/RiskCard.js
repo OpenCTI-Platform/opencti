@@ -19,6 +19,8 @@ import {
   Checkbox,
 } from '@material-ui/core';
 import CardActionArea from '@material-ui/core/CardActionArea';
+import CardActions from '@material-ui/core/CardActions';
+import CardMedia from '@material-ui/core/CardMedia';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import IconButton from '@material-ui/core/IconButton';
@@ -35,6 +37,7 @@ import {
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
+import RiskAssessmentPopover from './RiskAssessmentPopover';
 
 const styles = (theme) => ({
   card: {
@@ -101,15 +104,30 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  buttonRipple: {
+    opacity: 0,
+  },
 });
 
 class RiskCardComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openMenu: false,
+    };
+  }
+
+  handleOpenMenu(isOpen) {
+    this.setState({ openMenu: isOpen });
+  }
+
   render() {
     const {
       t,
       fsd,
       classes,
       node,
+      history,
       selectAll,
       onToggleEntity,
       bookmarksIds,
@@ -124,7 +142,6 @@ class RiskCardComponent extends Component {
       pathOr([], ['remediations']),
       mergeAll,
     )(riskData.node);
-    console.log('RiskCardnode', riskRemediation);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
@@ -132,6 +149,7 @@ class RiskCardComponent extends Component {
           classes={{ root: classes.area }}
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
+          TouchRippleProps={ this.state.openMenu && { classes: { root: classes.buttonRipple } }}
           to={`/dashboard/risk-assessment/risks/${node.id}`}
         >
           {/* <CardHeader
@@ -157,7 +175,10 @@ class RiskCardComponent extends Component {
             }
           /> */}
           <CardContent className={classes.content}>
-            <Grid item={true} className={classes.header}>
+            <Grid
+              item={true}
+              className={classes.header}
+            >
               <div>
                 <Typography
                   variant="h3"
@@ -168,26 +189,22 @@ class RiskCardComponent extends Component {
                 </Typography>
                 {node.id && t(node.id)}
               </div>
-              {/* <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Name')}
-                </Typography>
-                <Typography>
-                  {node.name && t(node.name)}
-                </Typography>
-              </div> */}
-              <div>
+              <Grid
+                item={true}
+                onClick={(event) => event.preventDefault()}
+                style={{ display: 'flex' }}
+              >
+                <RiskAssessmentPopover
+                  handleOpenMenu={this.handleOpenMenu.bind(this)}
+                  history={history} nodeId={node.id}
+                />
                 <Checkbox
                   disableRipple={true}
                   onClick={onToggleEntity.bind(this, node)}
                   checked={selectAll || node.id in (selectedElements || {})}
                   color='primary'
                 />
-              </div>
+              </Grid>
             </Grid>
             <Grid container={true} >
               <Grid item={true} xs={6} className={classes.body}>

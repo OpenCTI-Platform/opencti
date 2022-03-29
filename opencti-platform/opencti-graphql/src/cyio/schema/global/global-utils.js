@@ -16,6 +16,47 @@ import {
   notePredicateMap, attachToNoteQuery, detachFromNoteQuery,
   phoneNumberPredicateMap,attachToPhoneNumberQuery, detachFromPhoneNumberQuery,
 } from '../global/resolvers/sparql-query.js';
+import {
+  activityPredicateMap, attachToActivityQuery, detachFromActivityQuery,
+  actorPredicateMap, attachToActorQuery, detachFromActorQuery,
+  assessmentPlatformPredicateMap, attachToAssessmentPlatformQuery, detachFromAssessmentPlatformQuery,
+  assessmentSubjectPredicateMap, attachToAssessmentSubjectQuery, detachFromAssessmentSubjectQuery,
+  associatedActivityPredicateMap, attachToAssociatedActivityQuery, detachFromAssociatedActivityQuery,
+  characterizationPredicateMap, attachToCharacterizationQuery, detachFromCharacterizationQuery,
+  evidencePredicateMap, attachToEvidenceQuery, detachFromEvidenceQuery,
+  facetPredicateMap, attachToFacetQuery, detachFromFacetQuery,
+  logEntryAuthorPredicateMap, attachToLogEntryAuthorQuery, detachFromLogEntryAuthorQuery,
+  mitigatingFactorPredicateMap, attachToMitigatingFactorQuery, detachFromMitigatingFactorQuery,
+  observationPredicateMap, attachToObservationQuery, detachFromObservationQuery,
+  originPredicateMap, attachToOriginQuery, detachFromOriginQuery,
+  oscalTaskPredicateMap, attachToOscalTaskQuery, detachFromOscalTaskQuery,
+  requiredAssetPredicateMap, attachToRequiredAssetQuery, detachFromRequiredAssetQuery,
+  riskPredicateMap, attachToRiskQuery, detachFromRiskQuery,
+  riskLogPredicateMap, attachToRiskLogEntryQuery, detachFromRiskLogEntryQuery,
+  riskResponsePredicateMap, attachToRiskResponseQuery, detachFromRiskResponseQuery,
+  subjectPredicateMap, attachToSubjectQuery, detachFromSubjectQuery,
+ } from '../risk-assessments/assessment-common/resolvers/sparql-query.js';
+// import {
+
+// } from '../risk-assessments/assessment-results/resolvers/sparql-query.js';
+import {
+  componentPredicateMap, attachToComponentQuery, detachFromComponentQuery,
+} from '../risk-assessments/component/resolvers/sparql-query.js';
+import {
+  inventoryItemPredicateMap, attachToInventoryItemQuery, detachFromInventoryItemQuery
+} from '../risk-assessments/inventory-item/resolvers/sparql-query.js';
+import {
+  externalIdentifierPredicateMap, attachToExternalIdentifierQuery, detachFromExternalIdentifierQuery,
+  locationPredicateMap as oscalLocationPredicateMap, attachToLocationQuery, detachFromLocationQuery,
+  partyPredicateMap, attachToPartyQuery, detachFromPartyQuery,
+  responsiblePartyPredicateMap, attachToResponsiblePartyQuery, detachFromResponsiblePartyQuery,
+  rolePredicateMap, attachToRoleQuery, detachFromRoleQuery,
+} from '../risk-assessments/oscal-common/resolvers/sparql-query.js';
+import {
+  poamPredicateMap, attachToPOAMQuery, detachFromPOAMQuery,
+  poamItemPredicateMap, attachToPOAMItemQuery, detachFromPOAMItemQuery,
+  poamLocalDefinitionPredicateMap, 
+} from '../risk-assessments/poam/resolvers/sparql-query.js';
 
 // Replacement for getSubjectIriByIdQuery
 export const selectObjectIriByIdQuery = (id, type) => {
@@ -85,6 +126,20 @@ export const selectObjectByIriQuery = (iri, type, select) => {
 
 export const objectMap = {
   // key is the entity_type/object_type
+  "activity": {
+    predicateMap: activityPredicateMap,
+    attachQuery: attachToActivityQuery,
+    detachQuery: detachFromActivityQuery,
+    graphQLType: "Activity",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Activity"
+  },
+  "actor": {
+    predicateMap: actorPredicateMap,
+    attachQuery: attachToActorQuery,
+    detachQuery: detachFromActorQuery,
+    graphQLType: "Actor",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Actor"
+  },
   "address": {
     predicateMap: addressPredicateMap,
     attachQuery: attachToAddressQuery,
@@ -100,6 +155,41 @@ export const objectMap = {
     parent: "software",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
   },
+  "assessment-platform": {
+    predicateMap: assessmentPlatformPredicateMap,
+    attachQuery: attachToAssessmentPlatformQuery,
+    detachQuery: detachFromAssessmentPlatformQuery,
+    graphQLType: "AssessmentPlatform",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform",
+  },
+  "assessment-subject": {
+    predicateMap: assessmentSubjectPredicateMap,
+    attachQuery: attachToAssessmentSubjectQuery,
+    detachQuery: detachFromAssessmentSubjectQuery,
+    graphQLType: "AssessmentSubject",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject",
+  }, 
+  "associated-activity": {
+    predicateMap: associatedActivityPredicateMap,
+    attachQuery: attachToAssociatedActivityQuery,
+    detachQuery: detachFromAssociatedActivityQuery,
+    graphQLType: "AssociatedActivity",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#AssociatedActivity",
+  },
+  "characterization": {
+    predicateMap: characterizationPredicateMap,
+    attachQuery: attachToCharacterizationQuery,
+    detachQuery: detachFromCharacterizationQuery,
+    graphQLType: "Characterization",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Characterization"
+  },
+  "component": {
+    predicateMap: componentPredicateMap,
+    attachQuery: attachToComponentQuery,
+    detachQuery: detachFromComponentQuery,
+    graphQLType: "Component",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Component"
+  },
   "computing-device": {
     predicateMap: computingDevicePredicateMap,
     attachQuery: attachToComputingDeviceQuery,
@@ -107,6 +197,20 @@ export const objectMap = {
     graphQLType: "ComputingDeviceAsset",
     parent: "hardware",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#ComputingDevice"
+  },
+  "evidence": {
+    predicateMap: evidencePredicateMap,
+    attachQuery: attachToEvidenceQuery,
+    detachQuery: detachFromEvidenceQuery,
+    graphQLType: "Evidence",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Evidence"
+  },
+  "external-identifier": {
+    predicateMap: externalIdentifierPredicateMap,
+    attachQuery: attachToExternalIdentifierQuery,
+    detachQuery: detachFromExternalIdentifierQuery,
+    graphQLType: "ExternalIdentifier",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#ExternalIdentifier"
   },
   "external-reference": {
     predicateMap: externalReferencePredicateMap,
@@ -116,6 +220,13 @@ export const objectMap = {
     graphQLType: "CyioExternalReference",
     iriTemplate: "http://darklight.ai/ns/common#ExternalReference"
   },
+  "facet": {
+    predicateMap: facetPredicateMap,
+    attachQuery: attachToFacetQuery,
+    detachQuery: detachFromFacetQuery,
+    graphQLType: "Facet",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Facet"
+  },
   "hardware": {
     predicateMap: hardwarePredicateMap,
     attachQuery: attachToHardwareQuery,
@@ -123,12 +234,33 @@ export const objectMap = {
     graphQLType: "HardwareAsset",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Hardware"
   },
+  "inventory-item": {
+    predicateMap: inventoryItemPredicateMap,
+    attachQuery: attachToInventoryItemQuery,
+    detachQuery: detachFromInventoryItemQuery,
+    graphQLType: "InventoryItem",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#InventoryItem"
+  },
   "label": {
     predicateMap: labelPredicateMap,
     attachQuery: attachToLabelQuery,
     detachQuery: detachFromLabelQuery,
     graphQLType: "CyioLabel",
     iriTemplate: "http://darklight.ai/ns/common#Label"
+  },
+  "log-entry-author": {
+    predicateMap: logEntryAuthorPredicateMap,
+    attachQuery: attachToLogEntryAuthorQuery,
+    detachQuery: detachFromLogEntryAuthorQuery,
+    graphQLType: "LogEntryAuthor",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor"
+  },
+  "mitigating-factor": {
+    predicateMap: mitigatingFactorPredicateMap,
+    attachQuery: attachToMitigatingFactorQuery,
+    detachQuery: detachFromMitigatingFactorQuery,
+    graphQLType: "actor",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor"
   },
   "network": {
     predicateMap: networkPredicateMap,
@@ -145,6 +277,13 @@ export const objectMap = {
     graphQLType: "CyioNote",
     iriTemplate: "http://darklight.ai/ns/common#Note"
   },
+  "observation": {
+    predicateMap: observationPredicateMap,
+    attachQuery: attachToObservationQuery,
+    detachQuery: detachFromObservationQuery,
+    graphQLType: "Observation",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Observation"
+  },
   "operating-system": {
     predicateMap: softwarePredicateMap,
     attachQuery: attachToSoftwareQuery,
@@ -153,12 +292,116 @@ export const objectMap = {
     parent: "software",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#OperatingSystem"
   },
+  "origin": {
+    predicateMap: originPredicateMap,
+    attachQuery: attachToOriginQuery,
+    detachQuery: detachFromOriginQuery,
+    graphQLType: "Origin",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Origin",
+  },
+  "oscal-location": {
+    predicateMap: oscalLocationPredicateMap,
+    attachQuery: attachToLocationQuery,
+    detachQuery: detachFromLocationQuery,
+    alternateKey: "location",
+    graphQLType: "OscalLocation",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Location"
+  },
+  "oscal-party": {
+    predicateMap: partyPredicateMap,
+    attachQuery: attachToPartyQuery,
+    detachQuery: detachFromPartyQuery,
+    alternateKey: "party",
+    graphQLType: "OscalParty",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Party"
+  },
+  "oscal-responsible-party": {
+    predicateMap: responsiblePartyPredicateMap,
+    attachQuery: attachToResponsiblePartyQuery,
+    detachQuery: detachFromResponsiblePartyQuery,
+    alternateKey: "responsible-party",
+    graphQLType: "OscalResponsibleParty",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#ResponsibleParty"
+  },
+  "oscal-role": {
+    predicateMap: rolePredicateMap,
+    attachQuery: attachToRoleQuery,
+    detachQuery: detachFromRoleQuery,
+    alternateKey: "role",
+    graphQLType: "OscalRole",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#Role"
+  },
+  "oscal-task": {
+    predicateMap: oscalTaskPredicateMap,
+    attachQuery: attachToOscalTaskQuery,
+    detachQuery: detachFromOscalTaskQuery,
+    alternateKey: "task",
+    graphQLType: "OscalTask",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Task"
+  },
+  "poam": {
+    predicateMap: poamPredicateMap,
+    attachQuery: attachToPOAMQuery,
+    detachQuery: detachFromPOAMQuery,
+    graphQLType: "POAM",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/common#POAM"
+  },
+  "poam-item": {
+    predicateMap: poamItemPredicateMap,
+    attachQuery: attachToPOAMItemQuery,
+    detachQuery: detachFromPOAMItemQuery,
+    graphQLType: "POAMItem",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/poam#Item"
+  },
+  "poam-local-definition": {
+    predicateMap: poamLocalDefinitionPredicateMap,
+    // attachQuery: attachToPOAMLocalDefinitionQuery,
+    // detachQuery: detachFromPOAMLocalDefinitionQuery,
+    graphQLType: "POAMLocalDefinition",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/poam#LocalDefinition"
+  },
+  "required-asset": {
+    predicateMap: requiredAssetPredicateMap,
+    attachQuery: attachToRequiredAssetQuery,
+    detachQuery: detachFromRequiredAssetQuery,
+    graphQLType: "RequiredAsset",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset"
+  },
+  "risk": {
+    predicateMap: riskPredicateMap,
+    attachQuery: attachToRiskQuery,
+    detachQuery: detachFromRiskQuery,
+    graphQLType: "Risk",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Risk"
+  },
+  "risk-log-entry": {
+    predicateMap: riskLogPredicateMap,
+    attachQuery: attachToRiskLogEntryQuery,
+    detachQuery: detachFromRiskLogEntryQuery,
+    graphQLType: "RiskLogEntry",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry"
+  },
+  "risk-response": {
+    predicateMap: riskResponsePredicateMap,
+    attachQuery: attachToRiskResponseQuery,
+    detachQuery: detachFromRiskResponseQuery,
+    alternateKey: "remediation",
+    graphQLType: "RiskResponse",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse"
+  },
   "software": {
     predicateMap: softwarePredicateMap,
     attachQuery: attachToSoftwareQuery,
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "SoftwareAsset",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
+  },
+  "subject": {
+    predicateMap: subjectPredicateMap,
+    attachQuery: attachToSubjectQuery,
+    detachQuery: detachFromSubjectQuery,
+    graphQLType: "Subject",
+    iriTemplate: "http://csrc.nist.gov/ns/oscal/assessment/common#Subjec"
   },
   "telephone-number": {
     predicateMap: phoneNumberPredicateMap,

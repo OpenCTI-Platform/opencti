@@ -453,9 +453,19 @@ const RemediationEditionFragment = createFragmentContainer(
           id
           origin_actors {
             actor_type
-            actor {
+            actor_ref {
+              ... on AssessmentPlatform {
+                id
+                name
+              }
+              ... on Component {
+                id
+                component_type
+                name
+              }
               ... on OscalParty {
                 id
+                party_type
                 name      # source
               }
             }
