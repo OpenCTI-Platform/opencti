@@ -113,125 +113,23 @@ class RiskDetailsComponent extends Component {
       R.mergeAll,
     )(risk);
     return (
-      <div style={{ height: '45%' }}>
+      <div style={{ height: '47.5%' }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Name')}
-              </Typography>
-              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                <Tooltip
-                  title={t(
-                    'Name',
-                  )}
-                >
-                  <Information fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {/* {risk.name && t(risk.name)} */}
-              {relatedRisksEdges.name && t(relatedRisksEdges.name)}
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Created')}
-              </Typography>
-              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                <Tooltip
-                  title={t(
-                    'Created',
-                  )}
-                >
-                  <Information fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {relatedRisksEdges.created && fd(relatedRisksEdges.created)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Last Modified')}
-              </Typography>
-              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                <Tooltip
-                  title={t(
-                    'Last Modified',
-                  )}
-                >
-                  <Information fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {relatedRisksEdges.modified && fd(relatedRisksEdges.modified)}
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Description')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Description',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {/* {risk.description && t(risk.description)} */}
-                      {relatedRisksEdges.description && t(relatedRisksEdges.description)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Statement')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                   <Tooltip
                     title={t(
                       'Statement',
@@ -250,6 +148,193 @@ class RiskDetailsComponent extends Component {
                     </div>
                   </div>
                 </div>
+              </div>
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 5 }}
+              >
+                {t('Risk Status')}
+              </Typography>
+              <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Risk Status',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {risk.risk_status && t(risk.risk_status)} */}
+              <Button
+                variant="outlined"
+                size="small"
+                className={classes.statusButton}
+              >
+                {relatedRisksEdges.risk_status && t(relatedRisksEdges.risk_status)}
+              </Button>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 5 }}
+              >
+                {t('Deadline')}
+              </Typography>
+              <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Deadline',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {/* {risk.deadline && fd(risk.deadline)} */}
+              {relatedRisksEdges.deadline && fd(relatedRisksEdges.deadline)}
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 5 }}
+              >
+                {t('Detection Source')}
+              </Typography>
+              <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Detection Source',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {t(riskDetectionSource.actor.name)}
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('False Positive')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'False Positive',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {relatedRisksEdges.false_positive && t(relatedRisksEdges.false_positive)}
+                </Button>
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 21 }}
+                >
+                  {t('Risk Adjusted')}
+                </Typography>
+                <div style={{ float: 'left', margin: '22px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Risk Adjusted',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {relatedRisksEdges.risk_adjusted && t(relatedRisksEdges.risk_adjusted)}
+                </Button>
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Operationally Required')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Operationally Required',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {relatedRisksEdges.risk_adjusted && t(relatedRisksEdges.risk_adjusted)}
+                </Button>
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Vendor Dependency')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Vendor Dependency',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {relatedRisksEdges.vendor_dependency && t(relatedRisksEdges.vendor_dependency)}
+                </Button>
               </div>
             </Grid>
           </Grid>
