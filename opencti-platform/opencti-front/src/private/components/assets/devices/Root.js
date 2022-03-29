@@ -42,7 +42,7 @@ const subscription = graphql`
 
 const deviceQuery = graphql`
   query RootDeviceQuery($id: ID!) {
-    computingDeviceAsset(id: $id) {
+    hardwareAsset(id: $id) {
       id
       name
       ...Device_device
@@ -105,7 +105,7 @@ class RootDevice extends Component {
           variables={{ id: deviceId }}
           render={({ error, props, retry }) => {
             if (props) {
-              if (props.computingDeviceAsset) {
+              if (props.hardwareAsset) {
                 return (
                   <Switch>
                     <Route
@@ -115,7 +115,7 @@ class RootDevice extends Component {
                         <Device
                           {...routeProps}
                           refreshQuery={retry}
-                          device={props.computingDeviceAsset}
+                          device={props.hardwareAsset}
                         />
                       )}
                     />

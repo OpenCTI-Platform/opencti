@@ -95,8 +95,8 @@ const styles = (theme) => ({
 });
 
 const deviceCreationMutation = graphql`
-  mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
-    createComputingDeviceAsset (input: $input) {
+  mutation DeviceCreationMutation($input: HardwareAssetAddInput) {
+    createHardwareAsset (input: $input) {
       id
       # ...DeviceCard_node
       # ...DeviceDetails_device

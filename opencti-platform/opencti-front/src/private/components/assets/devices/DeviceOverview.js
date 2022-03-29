@@ -102,7 +102,7 @@ const DeviceOverview = createFragmentContainer(
   DeviceOverviewComponent,
   {
     device: graphql`
-      fragment DeviceOverview_device on ComputingDeviceAsset {
+      fragment DeviceOverview_device on HardwareAsset {
         id
         asset_id
         asset_type

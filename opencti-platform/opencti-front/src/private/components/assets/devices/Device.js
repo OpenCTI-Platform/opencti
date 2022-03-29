@@ -137,7 +137,7 @@ DeviceComponent.propTypes = {
 
 const Device = createFragmentContainer(DeviceComponent, {
   device: graphql`
-    fragment Device_device on ComputingDeviceAsset {
+    fragment Device_device on HardwareAsset {
       __typename
       id
       name
