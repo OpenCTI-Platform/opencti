@@ -122,6 +122,10 @@
 
   "Defines identifying information about a system privilege held by the user."
   type AuthorizedPrivilege {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Identifies a human readable name for the privilege."
     name: String!
     "Identifies a summary of the privilege's purpose within the system."
@@ -140,6 +144,10 @@
 
   "Defines identifying information about Base64 Content"
   type Base64Content {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Identifies the name of the file before it was encoded as Base64 to be embedded in a resource. This is the name that will be assigned to the file when the file is decoded."
     filename: String
     "Identifies the media type as defined by the Internet Assigned Numbers Authority (IANA)."
@@ -155,6 +163,10 @@
 
   "Defines identifying information about a citation."
   type Citation {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
     "Identifies a line of citation text."
     text: String!
     "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
@@ -259,7 +271,7 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # LifecycleObject
     "Indicates the date and time at which the object was originally created."
     created: Timestamp
     "Indicates the date and time that this particular version of the object was last modified."
@@ -404,7 +416,7 @@
     "Identifies a short common name, abbreviation, or acronym for the party."
     short_name: String
     "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids: [CyioExternalReference]
+    external_identifiers: [ExternalIdentifier]
     "Identifies a postal addresses for the location."
     addresses: [CivicAddress]
     "Identifies one or more email addresses for the location."
@@ -423,23 +435,23 @@
     job_title: String
   }
   input OscalPartyAddInput {
-    "Identifies the name given to the party."
-    name: String!
-    "Identifies a brief description of the Party."
-    description: String
     # OscalParty
     "Identifies the kind of party the object describes."
     party_type: PartyType!
+    "Identifies the name given to the party."
+    name: String!
     "Identifies a short common name, abbreviation, or acronym for the party."
     short_name: String
-      "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
-    external_ids: [CyioExternalReferenceAddInput]
-    "Identifies a postal addresses for the location."
-    addresses: [CivicAddressAddInput]
+    "Identifies a brief description of the Party."
+    description: String
+    "Identifies one or more external identifiers for a person or organization using a designated scheme. e.g. an Open Researcher and Contributor ID (ORCID)."
+    external_identifiers: [ExternalIdentifierAddInput]
     "Identifies one or more email addresses for the location."
     email_addresses: [EmailAddress]
     "Identifies one or more telephone numbers used to contact the the location."
     telephone_numbers: [TelephoneNumberAddInput]
+    "Identifies a postal addresses for the location."
+    addresses: [CivicAddressAddInput]
     "Identifies one or more references to a location."
     locations: [ID]
     "Identifies a mail stop associated with the party."
@@ -804,6 +816,14 @@
     "Identifies one or more references to the parties that are responsible for performing the associated role."
     parties: [ID!]!
   }
+  "Defines identifying information about a Responsible Role in OSCAL"
+  input OscalResponsibleRoleAddInput {
+    # ResponsibleRole
+    "Identifies a reference to the role that the party is responsible for."
+    role: ID!
+    "Identifies one or more references to the parties that are responsible for performing the associated role."
+    parties: [ID]
+  }
   # Ordering
   enum OscalResponsiblePartyOrdering {
     "Label"
@@ -817,10 +837,6 @@
     filterMode: FilterMode
   }
   enum OscalResponsiblePartyFilter {
-    "Created"
-    created
-    "Modified"
-    modified
     "Label"
     label_name
     "Role Identifier"
@@ -835,7 +851,6 @@
     cursor: String!
     node: OscalResponsibleParty!
   }
-
 
   "Defines identifying information about a function assumed or expected to be assumed by a party in a specific situation."
   type OscalRole implements BasicObject & LifecycleObject & OscalObject {
@@ -927,24 +942,58 @@
   # Object-specific Enumerations
   "Defines the identifier for a specific role."
   enum RoleType {
-    "Accountable for ensuring the asset is managed in accordance with organizational policies and procedures."
-    asset_owner
     "Responsible for administering a set of assets."
     asset_administrator
+    "Accountable for ensuring the asset is managed in accordance with organizational policies and procedures."
+    asset_owner
+    "The authorizing official for this system."
+    authorizing_official
+    "The authorizing official's designated point of contact (POC) for this system."
+    authorizing_official_poc
     "Responsible for the configuration management processes governing changes to the asset."
     configuration_management
+    "Indicates the organization to contact for questions or support related to this content."
+    contact
+    "Indicates the organization responsible for all content represented in the 'document'."
+    content_approver
+    "Indicates the organization that created this content."
+    creator
     "Responsible for providing information and support to users."
     help_desk
     "Responsible for responding to an event that could lead to loss of, or disruption to, an organization's operations, services or functions."
     incident_response
-    "Member of the network operations center (NOC)."
-    network_operations
-    "Member of the security operations center (SOC)."
-    security_operations
+    "The primary role responsible for ensuring the organization operates the system securely."
+    information_system_security_officer
+    "Interconnection Security Agreement (ISA) authorizing official for this system."
+    isa_authorizing_official_local
+    "Interconnection Security Agreement (ISA) authorizing official for the remote interconnected system."
+    isa_authorizing_official_remote
+    "Interconnection Security Agreement (ISA) point of contact (POC) for this system."
+    isa_poc_local
+    "Interconnection Security Agreement (ISA) point of contact (POC) for the remote interconnected system."
+    isa_poc_remote
     "Responsible for the creation and maintenance of a component."
     maintainer
+    "Member of the network operations center (NOC)."
+    network_operations
+    "Indicates the organization that prepared this content."
+    prepared_by
+    "Indicates the organization for which this content was created."
+    prepared_for
+    "The point of contact (POC) responsible for identifying privacy information within the system, and ensuring its protection if present."
+    privacy_poc
     "Organization responsible for providing the component, if this is different from the 'maintainer' (e.g., a reseller)."
     provider
+    "Member of the security operations center (SOC)."
+    security_operations
+    "The executive ultimately accountable for the system."
+    system_owner
+    "The primary management-level point of contact (POC) for the system."
+    system_poc_management
+    "Other point of contact (POC) for the system that is not the management or technical POC."
+    system_poc_other
+    "The primary technical point of contact (POC) for the system."
+    system_poc_technical
   }
 
 
@@ -985,7 +1034,7 @@
     "Identifies type of user, such as internal, external, or general-public."
     user_type: UserType
     "Identifies a name given to the user, which may be used by a tool for display and navigation."
-    name: String
+    name: String!
     "Identifies a short common name, abbreviation, or acronym for the user."
     short_name: String
     "Identifies a summary of the user's purpose within the system."
@@ -1002,7 +1051,7 @@
     "Identifies type of user, such as internal, external, or general-public."
     user_type: UserType
     "Identifies a name given to the user, which may be used by a tool for display and navigation."
-    name: String
+    name: String!
     "Identifies a short common name, abbreviation, or acronym for the user."
     short_name: String
     "Identifies a summary of the user's purpose within the system."
@@ -1116,8 +1165,21 @@
     oscal_version: String
   }
 
-
-
-
-
-
+  "Defines an external identifier associated with a party"
+  type ExternalIdentifier {
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the type or scheme of the external identifier"
+    scheme: URL!
+    "Identifies the external identifier"
+    identifier: String!
+  }
+  input ExternalIdentifierAddInput {
+    "Identifies the type or scheme of an external identifier as a URI."
+    scheme: URL!
+    "Identifies the external identifier within a specified scheme."
+    identifier: String!
+  }
+  

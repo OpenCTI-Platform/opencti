@@ -209,11 +209,15 @@ const RemediationGeneralDetails = createFragmentContainer(
           id
           origin_actors {
             actor_type
-            actor {
+            actor_ref {
               ... on Component {
                 id
                 component_type
                 name          # Source
+              }
+              ... on AssessmentPlatform {
+                id
+                name
               }
               ... on OscalParty {
                 id

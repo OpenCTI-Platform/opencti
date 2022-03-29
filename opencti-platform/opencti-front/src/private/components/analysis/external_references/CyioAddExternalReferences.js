@@ -209,6 +209,7 @@ class CyioAddExternalReferences extends Component {
     const {
       t,
       classes,
+      disableAdd,
       cyioCoreObjectOrCyioCoreRelationshipId,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
       typename,
@@ -223,6 +224,7 @@ class CyioAddExternalReferences extends Component {
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}
+          disabled={disableAdd}
         >
           <Add fontSize="small" />
         </IconButton>
@@ -355,6 +357,7 @@ CyioAddExternalReferences.propTypes = {
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
   refreshQuery: PropTypes.func,
+  disableAdd: PropTypes.bool,
   typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

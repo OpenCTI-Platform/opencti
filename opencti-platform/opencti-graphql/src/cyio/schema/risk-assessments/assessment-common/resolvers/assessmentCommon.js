@@ -133,6 +133,10 @@ const assessmentCommonResolvers = {
     low: 'low',
     very_low: 'very-low',
   },
+  SubjectContext: {
+    target: 'target',
+    secondary_target: 'secondary-target'
+  },
 };
 
 export default assessmentCommonResolvers;

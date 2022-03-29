@@ -1,0 +1,225 @@
+  extend type Query {
+      hardwareAsset(id: ID!): HardwareAsset
+      hardwareAssetList(
+          first: Int
+          offset: Int
+          orderedBy: HardwareAssetOrdering
+          orderMode: OrderingMode
+          filters: [HardwareAssetFiltering]
+          filterMode: FilterMode
+          search: String
+        ): HardwareAssetConnection
+  }
+
+  extend type Mutation {
+      createHardwareAsset(input: HardwareAssetAddInput): HardwareAsset
+      deleteHardwareAsset(id: ID!): String!
+      editHardwareAsset(id: ID!, input: [EditInput]!, commitMessage: String): HardwareAsset
+  }
+
+#####  HardwareAsset
+##
+  type HardwareAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # LifecycleObject
+    "Identities the date and time at which the object was originally created."
+    created: Timestamp
+    "Identifies the date and time at which the object was last modified."
+    modified: Timestamp
+    # CoreObject
+    labels: [CyioLabel]
+    external_references: [CyioExternalReference]
+    notes: [CyioNote]
+    # Asset
+    asset_id: String
+    name: String!
+    description: String
+    locations: [AssetLocation]
+    # ItAsset
+    asset_tag: String
+    asset_type: AssetType!
+    serial_number: String
+    vendor_name: String
+    version: String
+    release_date: Timestamp
+    implementation_point: ImplementationPoint
+    operational_status: OperationalStatus
+    # responsible_parties: [ResponsibleParty]
+    # HardwareAsset
+    cpe_identifier: String
+    installation_id: String
+    installed_hardware: [ComputingDeviceAsset]
+    installed_operating_system: OperatingSystemAsset
+    model: String
+    motherboard_id: String
+    baseline_configuration_name: String
+    function: String
+    # Computing Device
+    installed_software: [SoftwareAsset]
+    bios_id: String
+    connected_to_network: NetworkAsset
+    default_gateway: String
+    fqdn: String
+    hostname: String
+    netbios_name: String
+    ipv4_address: [IpV4Address]
+    ipv6_address: [IpV6Address]
+    #    mac_address: [MACAddress]     this is what it should be because MAC address are objects
+    mac_address: [MAC]
+    network_id: String
+    vlan_id: String
+    uri: URL
+    ports: [PortInfo]
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    is_virtual: Boolean
+    last_scanned: Timestamp
+  }
+  # Mutation
+  input HardwareAssetAddInput {
+    # Asset
+    asset_id: String
+    name: String!
+    description: String
+    # ItAsset
+    asset_tag: String
+    asset_type: AssetType!
+    serial_number: String
+    vendor_name: String
+    version: String
+    release_date: Timestamp
+    implementation_point: ImplementationPoint
+    operational_status: OperationalStatus
+    # responsible_parties: [ResponsibleParty]
+    # HardwareAsset
+    cpe_identifier: String
+    installation_id: String
+    installed_hardware: [ID]
+    installed_operating_system: ID
+    model: String
+    motherboard_id: String
+    baseline_configuration_name: String
+    function: String
+    # Computing Device
+    installed_software: [ID]
+    bios_id: String
+    connected_to_network: ID
+    default_gateway: String
+    fqdn: String
+    hostname: String
+    netbios_name: String
+    ipv4_address: [IpV4AddressAddInput]
+    ipv6_address: [IpV6AddressAddInput]
+    # mac_address: [MACAddressAddInput]     this is what it should be because MAC address are objects
+    mac_address: [MAC]
+    network_id: String
+    vlan_id: String
+    uri: URL
+    ports: [PortInfoAddInput]
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    is_virtual: Boolean
+    last_scanned: Timestamp
+  }
+  # Pagination Types
+  type HardwareAssetConnection {
+    pageInfo: PageInfo!
+    edges: [HardwareAssetEdge]
+  }
+  type HardwareAssetEdge {
+    cursor: String!
+    node: HardwareAsset!
+  }
+  # Slicing Types
+  enum HardwareAssetOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    labels
+    "Location"
+    locations
+    "Asset ID"
+    asset_id
+    "Name"
+    name
+    "Asset Tag"
+    asset_tag
+    "Asset Type"
+    asset_type
+    "Vendor"
+    vendor_name
+    "Version"
+    version
+    "Release Date"
+    release_date
+    "Implementation Point"
+    implementation_point
+    "Operational Status"
+    operational_status
+    "CPE Identifier"
+    cpe_identifier
+    "Installation ID"
+    installation_id
+    "Model"
+    model
+    "Baseline Configuration"
+    baseline_configuration_name
+  }
+  # Filtering Types
+  input HardwareAssetFiltering {
+    key: HardwareAssetFilter!
+    values: [String]!
+    operator: String
+    filterMode: FilterMode
+  }
+  "Defines the list of fields that can be filtered upon for Hardware Assets."
+  enum HardwareAssetFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
+    "Location"
+    location_name
+    "Asset ID"
+    asset_id
+    "Name"
+    name
+    "Asset Tag"
+    asset_tag
+    "Asset Type"
+    asset_type
+    "Vendor"
+    vendor_name
+    "Version"
+    version
+    "Release Date"
+    release_date
+    "Implementation Point"
+    implementation_point
+    "Operating System"
+    installed_os_name
+    "Operational Status"
+    operational_status
+    "CPE Identifier"
+    cpe_identifier
+    "Installation ID"
+    installation_id
+    "Model"
+    model
+    "Baseline Configuration"
+    baseline_configuration_name
+  }
+
+

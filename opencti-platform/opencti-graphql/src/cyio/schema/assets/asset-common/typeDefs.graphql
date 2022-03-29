@@ -29,16 +29,16 @@
       filterMode: FilterMode
       search: String
     ): ItAssetConnection
-    hardware(id: ID!): HardwareAsset
-    hardwareList(
-      first: Int
-      offset: Int
-      orderedBy: HardwareAssetsOrdering
-      orderMode: OrderingMode
-      filters: [HardwareAssetsFiltering]
-      filterMode: FilterMode
-      search: String
-    ): HardwareAssetConnection
+    # hardware(id: ID!): HardwareAsset
+    # hardwareList(
+    #   first: Int
+    #   offset: Int
+    #   orderedBy: HardwareAssetsOrdering
+    #   orderMode: OrderingMode
+    #   filters: [HardwareAssetsFiltering]
+    #   filterMode: FilterMode
+    #   search: String
+    # ): HardwareAssetConnection
   }
 
   extend type Mutation {
@@ -205,7 +205,6 @@
     country: String
     postal_code: PostalCode
   }
-  
   input AssetLocationAddInput {
     # AssetLocation
     name: String!
@@ -216,8 +215,7 @@
     country: String
     postal_code: PostalCode
   }
-
-# Pagination Types
+  # Pagination Types
   type AssetLocationConnection {
     pageInfo: PageInfo!
     edges: [AssetLocationEdge]
@@ -279,17 +277,18 @@
     entity_type: String!
     "Identifies the parent types of this object."
     parent_types: [String]!
-    # CoreObject
+    # LifecycleObject
     created: Timestamp
     modified: Timestamp
+    # CoreObject
     labels: [CyioLabel]
+    external_references: [CyioExternalReference]
+    notes: [CyioNote]
     # Asset
     asset_id: String
     name: String!
     description: String
     locations: [AssetLocation]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
   }
 
   # Pagination Types
@@ -443,138 +442,137 @@
   }
 
 
-#####  HardwareAsset
-##
-  interface HardwareAsset {
-    # BasicObject
-    "Uniquely identifies this object."
-    id: ID!
-    "Identifies the identifier defined by the standard."
-    standard_id: String!
-    "Identifies the type of the Object."
-    entity_type: String!
-    "Identifies the parent types of this object."
-    parent_types: [String]!
-    # CoreObject
-    created: Timestamp
-    modified: Timestamp
-    labels: [CyioLabel]
-    # Asset
-    asset_id: String
-    name: String!
-    description: String
-    locations: [AssetLocation]
-    external_references: [CyioExternalReference]
-    notes: [CyioNote]
-    # ItAsset
-    asset_tag: String
-    asset_type: AssetType!
-    serial_number: String
-    vendor_name: String
-    version: String
-    release_date: Timestamp
-    implementation_point: ImplementationPoint
-    operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
-    # HardwareAsset
-    cpe_identifier: String
-    installation_id: String
-    installed_hardware: [ComputingDeviceAsset]
-    installed_operating_system: OperatingSystemAsset
-    model: String
-    motherboard_id: String
-    baseline_configuration_name: String
-    function: String
-  }
-
-  # Pagination Types
-  type HardwareAssetConnection {
-    pageInfo: PageInfo!
-    edges: [HardwareAssetEdge]
-  }
-  type HardwareAssetEdge {
-    cursor: String!
-    node: HardwareAsset!
-  }
-  # Filtering Types
-  input HardwareAssetsFiltering {
-    key: HardwareAssetsFilter!
-    values: [String]!
-    operator: String
-    filterMode: FilterMode
-  }
-  enum HardwareAssetsOrdering {
-    "Created"
-    created
-    "Modified"
-    modified
-    "Label"
-    labels
-    "Location"
-    locations
-    "Asset ID"
-    asset_id
-    "Name"
-    name
-    "Asset Tag"
-    asset_tag
-    "Asset Type"
-    asset_type
-    "Vendor"
-    vendor_name
-    "Version"
-    version
-    "Release Date"
-    release_date
-    "Implementation Point"
-    implementation_point
-    "Operational Status"
-    operational_status
-    "CPE Identifier"
-    cpe_identifier
-    "Installation ID"
-    installation_id
-    "Model"
-    model
-    "Baseline Configuration"
-    baseline_configuration_name
-  }
-  enum HardwareAssetsFilter {
-    "Created"
-    created
-    "Modified"
-    modified
-    "Label"
-    label_name
-    "Location"
-    location_name
-    "Asset ID"
-    asset_id
-    "Name"
-    name
-    "Asset Tag"
-    asset_tag
-    "Asset Type"
-    asset_type
-    "Vendor"
-    vendor_name
-    "Version"
-    version
-    "Release Date"
-    release_date
-    "Implementation Point"
-    implementation_point
-    "Operational Status"
-    operational_status
-    "CPE Identifier"
-    cpe_identifier
-    "Installation ID"
-    installation_id
-    "Model"
-    model
-    "Baseline Configuration"
-    baseline_configuration_name
-  }
+# #####  HardwareAsset
+# ##
+#   interface HardwareAsset {
+#     # BasicObject
+#     "Uniquely identifies this object."
+#     id: ID!
+#     "Identifies the identifier defined by the standard."
+#     standard_id: String!
+#     "Identifies the type of the Object."
+#     entity_type: String!
+#     "Identifies the parent types of this object."
+#     parent_types: [String]!
+#     # CoreObject
+#     created: Timestamp
+#     modified: Timestamp
+#     labels: [CyioLabel]
+#     # Asset
+#     asset_id: String
+#     name: String!
+#     description: String
+#     locations: [AssetLocation]
+#     external_references: [CyioExternalReference]
+#     notes: [CyioNote]
+#     # ItAsset
+#     asset_tag: String
+#     asset_type: AssetType!
+#     serial_number: String
+#     vendor_name: String
+#     version: String
+#     release_date: Timestamp
+#     implementation_point: ImplementationPoint
+#     operational_status: OperationalStatus
+#     # responsible_parties: [ResponsibleParty]
+#     # HardwareAsset
+#     cpe_identifier: String
+#     installation_id: String
+#     installed_hardware: [ComputingDeviceAsset]
+#     installed_operating_system: OperatingSystemAsset
+#     model: String
+#     motherboard_id: String
+#     baseline_configuration_name: String
+#     function: String
+#   }
+#   # Pagination Types
+#   type HardwareAssetConnection {
+#     pageInfo: PageInfo!
+#     edges: [HardwareAssetEdge]
+#   }
+#   type HardwareAssetEdge {
+#     cursor: String!
+#     node: HardwareAsset!
+#   }
+#   # Filtering Types
+#   input HardwareAssetsFiltering {
+#     key: HardwareAssetsFilter!
+#     values: [String]!
+#     operator: String
+#     filterMode: FilterMode
+#   }
+#   enum HardwareAssetsOrdering {
+#     "Created"
+#     created
+#     "Modified"
+#     modified
+#     "Label"
+#     labels
+#     "Location"
+#     locations
+#     "Asset ID"
+#     asset_id
+#     "Name"
+#     name
+#     "Asset Tag"
+#     asset_tag
+#     "Asset Type"
+#     asset_type
+#     "Vendor"
+#     vendor_name
+#     "Version"
+#     version
+#     "Release Date"
+#     release_date
+#     "Implementation Point"
+#     implementation_point
+#     "Operational Status"
+#     operational_status
+#     "CPE Identifier"
+#     cpe_identifier
+#     "Installation ID"
+#     installation_id
+#     "Model"
+#     model
+#     "Baseline Configuration"
+#     baseline_configuration_name
+#   }
+#   enum HardwareAssetsFilter {
+#     "Created"
+#     created
+#     "Modified"
+#     modified
+#     "Label"
+#     label_name
+#     "Location"
+#     location_name
+#     "Asset ID"
+#     asset_id
+#     "Name"
+#     name
+#     "Asset Tag"
+#     asset_tag
+#     "Asset Type"
+#     asset_type
+#     "Vendor"
+#     vendor_name
+#     "Version"
+#     version
+#     "Release Date"
+#     release_date
+#     "Implementation Point"
+#     implementation_point
+#     "Operational Status"
+#     operational_status
+#     "CPE Identifier"
+#     cpe_identifier
+#     "Installation ID"
+#     installation_id
+#     "Model"
+#     model
+#     "Baseline Configuration"
+#     baseline_configuration_name
+#   }
 
   type IpAddressRange {
       starting_ip_address: IpAddress!

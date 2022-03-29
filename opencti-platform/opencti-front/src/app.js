@@ -8,9 +8,10 @@ import RedirectManager from './components/RedirectManager';
 import RootPrivate from './private/Root';
 import 'react-toastify/dist/ReactToastify.css';
 import './resources/css/toast-override.css';
+import FeatureProvider from './components/feature/FeatureProvider';
 
 const App = () => (
-  <div>
+  <FeatureProvider>
     <BrowserRouter basename={APP_BASE_PATH}>
       <RedirectManager>
         <Switch>
@@ -31,7 +32,7 @@ const App = () => (
       draggable={false}
       pauseOnHover
     />
-  </div>
+  </FeatureProvider>
 );
 
 export default App;

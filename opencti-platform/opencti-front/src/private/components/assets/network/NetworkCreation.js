@@ -139,7 +139,7 @@ class NetworkCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const network_ipv4_address_range= {
+    const network_ipv4_address_range = {
       starting_ip_address: {
         ip_address_value: values?.starting_address
       },
@@ -148,14 +148,15 @@ class NetworkCreation extends Component {
       }
     }
     const adaptedValues = R.evolve(
-        {
-          release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
-        },
-        values,
-      );
+      {
+        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
+      },
+      values,
+    );
     const finalValues = R.pipe(
       R.dissoc('starting_address'),
       R.dissoc('ending_address'),
+      R.dissoc('labels'),
       // R.assoc('network_ipv4_address_range', network_ipv4_address_range),
     )(adaptedValues);
     CM(environmentDarkLight, {
@@ -310,13 +311,17 @@ class NetworkCreation extends Component {
                   {/* <StixCoreObjectExternalReferences
                     stixCoreObjectId={device.id}
                   /> */}
-                  <CyioCoreObjectAssetCreationExternalReferences />
+                  <div>
+                    <CyioCoreObjectAssetCreationExternalReferences disableAdd={true}/>
+                  </div>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory />
                 </Grid>
               </Grid>
-              <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' />
+              <div>
+                <CyioCoreObjectOrCyioCoreRelationshipNotes disableAdd={true} height='100px' />
+              </div>
             </>
           )}
         </Formik>

@@ -37,6 +37,7 @@ class RisksLines extends Component {
   render() {
     const {
       relay,
+      history,
       selectAll,
       dataColumns,
       onLabelClick,
@@ -58,7 +59,7 @@ class RisksLines extends Component {
           this.props.data,
         )}
         offset={this.state.offset}
-        LineComponent={<RiskLine />}
+        LineComponent={<RiskLine history={history}/>}
         DummyLineComponent={<RiskLineDummy />}
         selectAll={selectAll}
         dataColumns={dataColumns}
