@@ -32,7 +32,7 @@ const softwareResolvers = {
             }
         );
 
-      if (response === undefined) return;
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -40,7 +40,7 @@ const softwareResolvers = {
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
-        if (offset > assetList.length) return
+        if (offset > assetList.length) return null;
 
         for (const asset of assetList) {
           // skip down past the offset
@@ -93,7 +93,7 @@ const softwareResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return ;
+          return null;
         }
       }
     },

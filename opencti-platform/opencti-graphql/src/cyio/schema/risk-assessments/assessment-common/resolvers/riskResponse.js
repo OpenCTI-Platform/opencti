@@ -299,6 +299,7 @@ const riskResponseResolvers = {
   // field-level resolvers
   RiskResponse: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -340,6 +341,7 @@ const riskResponseResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -381,6 +383,7 @@ const riskResponseResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -422,6 +425,7 @@ const riskResponseResolvers = {
       }
     },
     origins:async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -463,6 +467,7 @@ const riskResponseResolvers = {
       }
     },
     required_assets: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.required_assets_iri === undefined) return [];
       let iriArray = parent.required_assets_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -504,6 +509,7 @@ const riskResponseResolvers = {
       }
     },
     tasks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.tasks_iri === undefined) return [];
       let iriArray = parent.tasks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

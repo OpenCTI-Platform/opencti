@@ -41,7 +41,7 @@ const poamItemResolvers = {
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("POAM-ITEM");
@@ -54,7 +54,7 @@ const poamItemResolvers = {
           itemList = response;
         }
 
-        if (offset > itemList.length) return
+        if (offset > itemList.length) return null;
 
         // for each POAM in the result set
         for (let item of itemList) {
@@ -105,7 +105,7 @@ const poamItemResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return ;
+          return null;
         }
       }
     },
@@ -225,7 +225,7 @@ const poamItemResolvers = {
   // field-level resolvers
   POAMItem: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.labels_iri === undefined) return null;
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -265,7 +265,7 @@ const poamItemResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return null;
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -305,7 +305,7 @@ const poamItemResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return null;
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -366,7 +366,7 @@ const poamItemResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {
@@ -399,7 +399,7 @@ const poamItemResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
     related_risks: async (parent, args, {dbName, dataSources, selectMap}) => {
@@ -425,7 +425,7 @@ const poamItemResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             let risk = response[0];
 
@@ -483,7 +483,7 @@ const poamItemResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
     occurrences:  async (parent, args, {dbName, dataSources, selectMap}) => {

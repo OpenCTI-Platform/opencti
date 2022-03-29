@@ -156,7 +156,7 @@ class RiskOverviewComponent extends Component {
               </div>
               <div className="clearfix" />
               {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {riskEdges.created && fd(riskEdges.created)}
+              {riskEdges.created && fldt(riskEdges.created)}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography
@@ -178,7 +178,7 @@ class RiskOverviewComponent extends Component {
               </div>
               <div className="clearfix" />
               {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {riskEdges.modified && fd(riskEdges.modified)}
+              {riskEdges.modified && fldt(riskEdges.modified)}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>

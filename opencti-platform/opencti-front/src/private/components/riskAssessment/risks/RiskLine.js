@@ -41,7 +41,7 @@ const styles = (theme) => ({
   bodyItem: {
     height: 36,
     fontSize: 13,
-    paddingLeft: 24,
+    paddingLeft: 32,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -145,6 +145,7 @@ class RiskLineComponent extends Component {
                 style={{ width: dataColumns.risk_level.width }}
               >
                 {/* {riskCharacterization.risk && riskCharacterization.risk} */}
+                {riskData.node.risk_level && riskData.node.risk_level}
               </div>
               <div
                 className={classes.bodyItem}
@@ -187,7 +188,10 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.occurrences.width }}
+                style={{
+                  width: dataColumns.occurrences.width,
+                  paddingLeft: dataColumns.occurrences.paddingLeft,
+                }}
               >
                 {node.occurrences && node.occurrences}
               </div>
@@ -239,15 +243,14 @@ const RiskLineFragment = createFragmentContainer(
         related_risks {
           edges {
             node {
+              __typename
+              id
+              name
               risk_status
+              risk_level
               deadline
-              # characterizations {
-              #   ... on RiskCharacterization {
-              #     id
-              #     risk
-              #   }
-              # }
               remediations {
+                id
                 response_type
                 lifecycle
               }
