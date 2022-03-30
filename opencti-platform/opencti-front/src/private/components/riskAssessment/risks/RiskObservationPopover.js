@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 // import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -170,7 +170,17 @@ class RiskObservationPopover extends Component {
                     {t('Source Of Observation')}
                   </DialogContentText>
                   <Typography style={{ alignItems: 'center', display: 'flex' }} color="primary">
-                    <LaunchIcon fontSize='small' /> &nbsp; {t('Nessus Scanner')}
+                    {data.origins.map((origin, i) => {
+                      const originActor = R.pipe(
+                        R.pathOr([], ['origin_actors']),
+                        R.mergeAll,
+                      )(origin);
+                      return (
+                        <>
+                          <LaunchIcon key={i} fontSize='small' /> {t(originActor.actor_ref.name)}
+                        </>
+                      );
+                    })}
                   </Typography>
                   <Grid style={{ marginTop: '20px' }} spacing={3} container={true}>
                     <Grid item={true} xs={6}>
@@ -183,7 +193,7 @@ class RiskObservationPopover extends Component {
                           size="small"
                           key={i}
                           style={{ margin: '1px' }}
-                          className={ classes.statusButton }
+                          className={classes.statusButton}
                         >
                           {value}
                         </Button>
@@ -202,7 +212,7 @@ class RiskObservationPopover extends Component {
                           size="small"
                           key={i}
                           style={{ margin: '1px' }}
-                          className={ classes.statusButton }
+                          className={classes.statusButton}
                         >
                           {value}
                         </Button>
@@ -239,7 +249,7 @@ class RiskObservationPopover extends Component {
                         {t('Expiration Date')}
                       </DialogContentText>
                       <Typography variang="h2" style={{ color: 'white' }}>
-                      {data.expires && fd(data.expires)}
+                        {data.expires && fd(data.expires)}
                       </Typography>
                     </Grid>
                   </Grid>
@@ -259,12 +269,16 @@ class RiskObservationPopover extends Component {
                   <DialogContentText>
                     {t('Observation Target(s)')}
                   </DialogContentText>
-                  <Typography variant="h2" color="primary">
-                    {t('192.168. 0.12')}
-                  </Typography>
-                  <Typography variant="h2" color="primary">
-                    {t('KK-HWELL-001')}
-                  </Typography>
+                  {/* {data?.subjects?.map((subject, i) => {
+                    if (subject?.subject_context === 'target') {
+                      return (
+                        <Typography key={i} variant="h2" color="primary">
+                          {subject?.name}
+                        </Typography>
+                      );
+                    }
+                    return <></>;
+                  })} */}
                 </Grid>
               </Grid>
               <Divider />
@@ -281,12 +295,16 @@ class RiskObservationPopover extends Component {
                   <DialogContentText>
                     {t('Component(s)')}
                   </DialogContentText>
-                  <Typography variant="h2" style={{ alignItems: 'center', display: 'flex', textTransform: 'capitalize' }} color="primary">
-                    <LaunchIcon fontSize='small' /> &nbsp; {t('Adobe Acrobat 7.1.05')}
-                  </Typography>
-                  <Typography variant="h2" style={{ alignItems: 'center', display: 'flex', textTransform: 'capitalize' }} color="primary">
-                    <LaunchIcon fontSize='small' /> &nbsp; {t('Adobe Acrobat 2.0.3')}
-                  </Typography>
+                  {/* {data.subjects.map((subject, i) => {
+                    if (subject.subject_context === 'secondary_target') {
+                      return (
+                        <Typography key={i} variant="h2" color="primary">
+                          {t(subject?.name)}
+                        </Typography>
+                      );
+                    }
+                    return <></>;
+                  })} */}
                 </Grid>
               </Grid>
               <Divider />
@@ -315,4 +333,4 @@ RiskObservationPopover.propTypes = {
   handleRemove: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(RiskObservationPopover);
+export default R.compose(inject18n, withStyles(styles))(RiskObservationPopover);

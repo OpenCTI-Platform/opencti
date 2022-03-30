@@ -229,7 +229,6 @@ class RiskTrackingLinesContainer extends Component {
         name: n.name,
       })),
     )(data);
-    console.log('riskStatusResponse', riskStatusResponse);
     const expandable = riskLogEdges.length > 7;
     const paginationOptions = {
       search: this.state.search,
@@ -260,7 +259,7 @@ class RiskTrackingLinesContainer extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          {(riskLogEdges.length > 0 ? (riskLogEdges.map((riskTrackingEdge, key) => {
+          {/* {(riskLogEdges.length > 0 ? (riskLogEdges.map((riskTrackingEdge, key) => {
             const riskLogItem = riskTrackingEdge.node;
             return <RiskTrackingLine
               history={history}
@@ -273,7 +272,7 @@ class RiskTrackingLinesContainer extends Component {
             : <>
               {t('No Record Found')}
             </>
-          )}
+          )} */}
         </Paper>
       </div>
     );
@@ -292,8 +291,9 @@ RiskTrackingLinesContainer.propTypes = {
 
 export const RiskTrackingLinesQuery = graphql`
   query RiskTrackingLinesQuery($id: ID!) {
-    ...RiskTrackingLines_data
-      @arguments(id: $id)
+    risk(id: $id) {
+      ...RiskTrackingLines_data
+    }
   }
 `;
 
@@ -301,26 +301,43 @@ const RiskTrackingLines = createFragmentContainer(
   RiskTrackingLinesContainer,
   {
     data: graphql`
-      fragment RiskTrackingLines_data on Query
-      @argumentDefinitions(
-        id: { type: "ID!" }
-      ) {
-        risk(id: $id) {
-          id
-          created
-          modified
-          risk_log {
-            edges {
-              node {
+      fragment RiskTrackingLines_data on Risk {
+        id
+        risk_log {
+          edges {
+            node {
+              id
+              entity_type
+              entry_type     # used to determine icon
+              name           # title
+              description    # description under title
+              logged_by {
+                __typename
                 id
-                ...RiskTrackingLine_node
+                entity_type
+                party {
+                  __typename
+                  id
+                  entity_type
+                  name
+                }
+                role {
+                  id
+                  entity_type
+                  role_identifier
+                  name
+                }
+              }
+              # needed for expanded view
+              event_start    # start date
+              event_end      # end date
+              status_change  # status change
+              related_responses {
+                id
+                entity_type
+                name
               }
             }
-          }
-          remediations {
-            id
-            name
-            description
           }
         }
       }

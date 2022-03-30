@@ -87,10 +87,10 @@ class RemediationComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={12}>
-                <RemediationGeneralOverview
+                {/* <RemediationGeneralOverview
                   remediation={remediation}
                   risk={risk}
-                />
+                /> */}
               </Grid>
               {/* <Grid item={true} xs={6}>
                 <RemediationGeneralDetails remediation={remediation} />

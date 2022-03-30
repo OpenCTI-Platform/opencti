@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import {
   Route, Redirect, withRouter, Switch,
 } from 'react-router-dom';
@@ -47,8 +48,16 @@ const riskQuery = graphql`
     poamItem(id: $id) {
       id
       name
-      standard_id
-      ...Risk_risk
+      related_risks {
+        edges {
+          node {
+            id
+            ...Risk_risk
+            ...RiskAnalysisContainer_risk
+            # ...Remediations_risk
+          }
+        }
+      }
     }
   }
 `;
@@ -109,6 +118,10 @@ class RootRisk extends Component {
             console.log('riskError', error);
             if (props) {
               console.log('RiskData', props);
+              const RelatedRisks = R.pipe(
+                R.pathOr([], ['related_risks', 'edges']),
+                R.mergeAll,
+              )(props.poamItem);
               if (props.poamItem) {
                 return (
                   <Switch>
@@ -119,7 +132,7 @@ class RootRisk extends Component {
                         <Risk
                           {...routeProps}
                           refreshQuery={retry}
-                          risk={props.poamItem}
+                          risk={RelatedRisks.node}
                         />
                       )}
                     />
@@ -130,7 +143,7 @@ class RootRisk extends Component {
                           <RiskAnalysisContainer
                             {...routeProps}
                             refreshQuery={retry}
-                            risk={props.poamItem}
+                            risk={RelatedRisks.node}
                             riskId={riskId}
                           />
                       )}
@@ -152,7 +165,8 @@ class RootRisk extends Component {
                         <Remediations
                             {...routeProps}
                             refreshQuery={retry}
-                            remediation={props.poamItem}
+                            remediation={RelatedRisks.node}
+                            riskId={props.poamItem}
                         />
                       )}
                     />
@@ -173,7 +187,7 @@ class RootRisk extends Component {
                           <RiskTracking
                             {...routeProps}
                             risk={props.poamItem}
-                            riskId={riskId}
+                            riskId={RelatedRisks.node.id}
                           />
                       )}
                     />
