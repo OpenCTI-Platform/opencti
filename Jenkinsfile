@@ -4,7 +4,8 @@ node {
   String registry = 'docker.darklight.ai'
   String product = 'opencti'
   String branch = "${env.BRANCH_NAME}"
-  String commit = env.GIT_COMMIT
+  String commit = "${sh(returnStdout: true, script: 'git rev-parse HEAD')}"
+  String commitMessage = "${env.COMMIT_MESSAGE}"
   String tag = 'latest'
   String graphql = 'https://cyio.darklight.ai/graphql'
   String api = 'api'
@@ -12,6 +13,9 @@ node {
   stage('Setup') {
     // Note: The default settings are configured for the master/main branch
     switch (branch) {
+      case 'master':
+      case 'main':
+        break
       case 'staging':
         tag = branch
         graphql = 'https://cyio-staging.darklight.ai/graphql'
@@ -31,8 +35,7 @@ node {
         }
 
         // Check for the build flag in the commit message
-        String commitMessage = "${env.COMMIT_MESSAGE}"
-        if (branch != 'develop' && !commitMessage.contains('ci-build')) {
+        if (branch != 'develop' && (!commitMessage.contains('ci-build') || commitMessage.contains('ci-skip'))) {
           currentBuild.result = 'ABORTED'
           error('Skipping build...')
         }
@@ -40,7 +43,6 @@ node {
     }
 
     println "Commit: ${commit}"
-    println "Env: ${env}"
 
     dir('opencti-platform') {
       dir('opencti-graphql') {
