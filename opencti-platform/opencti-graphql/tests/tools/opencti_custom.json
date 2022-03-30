@@ -1,11 +1,9 @@
 {
-    "ipv4-addr": {"location": ["located-at"]},
-    "ipv6-addr": {"location": ["located-at"]},
     "attack-pattern": {"attack-pattern": ["subtechnique-of"]},
-    "individual": {"individual": ["part-of"], "organization": ["part-of"]},
-    "organization": {"organization": ["part-of"], "sector": ["part-of"]},
-    "sector": {"sector": ["part-of"]},
-    "system": {"organization": ["belongs-to"], "region": ["located-at"]},
+    "campaign": {"system": ["targets"]},
+    "city": {"country": ["located-at"], "region": ["located-at"]},
+    "country": {"region": ["located-at"]},
+    "file": {"observed-data": ["content"]},
     "incident": {"campaign": ["attributed-to"]},
     "indicator": {
         "indicator": ["derived-from"],
@@ -13,14 +11,18 @@
         "<all_SCOs>": ["based-on"],
         "uses": ["indicates"]
     },
-    "file": {"observed-data": ["content"]},
-    "city": {"country": ["located-at"], "region": ["located-at"]},
-    "country": {"region": ["located-at"]},
+    "individual": {"individual": ["part-of"], "organization": ["part-of"]},
+    "intrusion-set": {"system": ["targets"]},
+    "ipv4-addr": {"location": ["located-at"]},
+    "ipv6-addr": {"location": ["located-at"]},
+    "malware": {"system": ["targets"]},
+    "organization": {"organization": ["part-of"], "sector": ["part-of"]},
     "position": {"city": ["located-at"]},
     "region": {"region": ["located-at"]},
+    "sector": {"sector": ["part-of"]},
+    "system": {"organization": ["belongs-to"], "region": ["located-at"]},
+    "targets": {"location": ["located-at"]},
     "threat-actor": {"threat-actor": ["part-of"]},
-    "campaign": {"system": ["targets"]},
-    "malware": {"system": ["targets"]},
-    "intrusion-set": {"system": ["targets"]},
-    "targets": {"location": ["located-at"]}
+    "tool": {"attack-pattern":  ["uses", "drops", "delivers"]},
+    "x-opencti-hostname": {"attack-pattern": ["uses"], "artifact": ["drops"], "file": ["drops"], "ipv4-addr": ["communicates-with"], "ipv6-addr": ["communicates-with"], "domain-name": ["communicates-with"]}
 }

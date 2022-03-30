@@ -318,7 +318,7 @@ const frontendSDORelationships = {
   'Threat-Actor_Threat-Actor': ['part-of'],
   'Threat-Actor_Tool': ['uses'],
   'Threat-Actor_Vulnerability': ['targets'],
-  'Tool_Attack-Pattern': ['uses'],
+  'Tool_Attack-Pattern': ['uses', 'drops', 'delivers'],
   Tool_City: ['targets'],
   Tool_Country: ['targets'],
   Tool_Individual: ['targets'],
@@ -329,6 +329,12 @@ const frontendSDORelationships = {
   Tool_Region: ['targets'],
   Tool_Sector: ['targets'],
   Tool_Vulnerability: ['has', 'targets'],
+  'X-OpenCTI-Hostname_Artifact': ['drops'],
+  'X-OpenCTI-Hostname_Attack-Pattern': ['uses'],
+  'X-OpenCTI-Hostname_Domain-Name': ['communicates-with'],
+  'X-OpenCTI-Hostname_IPv4-Addr': ['communicates-with'],
+  'X-OpenCTI-Hostname_IPv6-Addr': ['communicates-with'],
+  'X-OpenCTI-Hostname_StixFile': ['drops'],
   // CUSTOM OPENCTI SRO RELATIONSHIPS
   // DISCUSS IMPLEMENTATION!!
   Indicator_uses: ['indicates'],
