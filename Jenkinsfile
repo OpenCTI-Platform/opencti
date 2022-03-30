@@ -18,18 +18,21 @@ node {
         api = 'api-staging'
         break
       case 'develop':
+      default:
         tag = branch
         graphql = 'https://cyio-dev.darklight.ai/graphql'
         api = 'api-dev'
-        break
-      default:
+
+        // Check if it's a PR
         if (env.CHANGE_ID != null && !env.CHANGE_ID.isEmpty()) {
           tag = 'PR' + env.CHANGE_ID
           println "New PR detected, tagging with ${tag}"
+          break
         }
 
+        // Check for the build flag in the commit message
         String commitMessage = "${env.COMMIT_MESSAGE}"
-        if (!commitMessage.contains('ci-build')) {
+        if (branch != 'develop' && !commitMessage.contains('ci-build')) {
           currentBuild.result = 'ABORTED'
           error('Skipping build...')
         }
@@ -37,6 +40,7 @@ node {
     }
 
     println "Commit: ${commit}"
+    println "Env: ${env}"
 
     dir('opencti-platform') {
       dir('opencti-graphql') {
@@ -48,10 +52,8 @@ node {
       dir('opencti-front') {
         dir('src/relay') {
           sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
-          archiveArtifacts artifacts: 'environmentDarkLight.js', fingerprint: true, followSymlinks: false
         }
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
-        archiveArtifacts artifacts: 'package.json', fingerprint: true, followSymlinks: false
         sh 'yarn install && yarn schema-compile'
       }
     }
