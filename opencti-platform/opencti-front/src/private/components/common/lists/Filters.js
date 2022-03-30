@@ -654,7 +654,6 @@ class Filters extends Component {
       default:
         this.setState({ entities: R.union(this.state.entities, []) });
     }
-    return null;
   }
 
   handleChange(filterKey, event, value) {
