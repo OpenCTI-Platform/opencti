@@ -664,6 +664,12 @@ class Filters extends Component {
   }
 
   handleChangeDate(filterKey, date) {
+    this.setState({
+      inputValues: R.assoc(filterKey, date, this.state.inputValues),
+    });
+  }
+
+  handleAcceptDate(filterKey, date) {
     const { nsd } = this.props;
     if (date && date.toISOString()) {
       if (this.props.variant === 'dialog') {
@@ -674,19 +680,24 @@ class Filters extends Component {
     }
   }
 
+  handleValidateDate(filterKey, event) {
+    if (event.key === 'Enter') {
+      if (this.state.inputValues[filterKey].toString() !== 'Invalid Date') {
+        return this.handleAcceptDate(
+          filterKey,
+          this.state.inputValues[filterKey],
+        );
+      }
+    }
+    return null;
+  }
+
   handleChangeKeyword(event) {
     this.setState({ keyword: event.target.value });
   }
 
   renderFilters() {
-    const {
-      t,
-      classes,
-      availableFilterKeys,
-      currentFilters,
-      variant,
-      noDirectFilters,
-    } = this.props;
+    const { t, classes, availableFilterKeys, variant, noDirectFilters } = this.props;
     const { entities, keyword, inputValues } = this.state;
     return (
       <Grid container={true} spacing={2}>
@@ -706,9 +717,6 @@ class Filters extends Component {
           (n) => noDirectFilters || !R.includes(n, directFilters),
           availableFilterKeys,
         ).map((filterKey) => {
-          const currentValue = currentFilters[filterKey]
-            ? currentFilters[filterKey][0]
-            : null;
           if (
             filterKey.endsWith('start_date')
             || filterKey.endsWith('end_date')
@@ -717,17 +725,19 @@ class Filters extends Component {
               <Grid key={filterKey} item={true} xs={6}>
                 <DatePicker
                   label={t(`filter_${filterKey}`)}
-                  value={currentValue ? currentValue.id : null}
+                  value={inputValues[filterKey] || null}
                   variant="inline"
                   disableToolbar={false}
                   autoOk={true}
                   allowKeyboardControl={true}
                   onChange={this.handleChangeDate.bind(this, filterKey)}
+                  onAccept={this.handleAcceptDate.bind(this, filterKey)}
                   renderInput={(params) => (
                     <TextField
                       variant="outlined"
                       size="small"
                       fullWidth={variant === 'dialog'}
+                      onKeyDown={this.handleValidateDate.bind(this, filterKey)}
                       {...params}
                     />
                   )}
