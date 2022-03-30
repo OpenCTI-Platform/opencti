@@ -56,8 +56,7 @@ class RiskObservation extends Component {
       classes,
       cyioCoreObjectId,
     } = this.props;
-    const ObservationEdges = pathOr([], ['related_observations', 'edges'], risk);
-
+    const RiskObservationEdges = pathOr([], ['related_observations', 'edges'], risk);
     return (
       <div style={{ marginTop: '50px', height: '500px' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -65,8 +64,8 @@ class RiskObservation extends Component {
         </Typography>
         <div className="clearfix" />
         <Paper className={classes.paper} elevation={2}>
-          {ObservationEdges.length > 0 ? (
-            ObservationEdges.map((observationData) => (
+          {RiskObservationEdges.length > 0 ? (
+            RiskObservationEdges.map((observationData) => (
               <RiskObservationLine
                 key={observationData.node.id}
                 data={observationData.node}
@@ -104,26 +103,72 @@ const RiskObservationComponent = createFragmentContainer(
   RiskObservation,
   {
     risk: graphql`
-      fragment RiskObservation_risk on POAMItem {
+      fragment RiskObservation_risk on Risk {
         id
         related_observations {
           edges {
             node {
               id
+              entity_type
               name
               description
               methods
-              collected
-              expires
               observation_types
-              relevant_evidence {
-                id
-                entity_type
-                description
-                href
+              collected
+              origins {
+                origin_actors {
+                  # actor_type
+                  actor_ref {
+                    ... on AssessmentPlatform {
+                      id
+                      name
+                    }
+                    ... on Component {
+                      id
+                      component_type
+                      name
+                    }
+                    ... on OscalParty {
+                      id
+                      party_type
+                      name
+                    }
+                  }
+                }
               }
               subjects {
+                id
+                entity_type
+                name
+                subject_context
                 subject_type
+                subject_ref {
+                  ... on Component {
+                    id
+                    entity_type
+                    name
+                  }
+                  ... on InventoryItem {
+                    id
+                    entity_type
+                    name
+                  }
+                  ... on OscalLocation {
+                    id
+                    entity_type
+                    name
+                  }
+                  ... on OscalParty {
+                    id
+                    entity_type
+                    name
+                  }
+                  ... on OscalUser {
+                    id
+                    entity_type
+                    name
+                  }
+                }
               }
             }
           }

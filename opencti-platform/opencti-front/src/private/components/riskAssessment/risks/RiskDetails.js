@@ -75,45 +75,17 @@ class RiskDetailsComponent extends Component {
       t,
       classes,
       risk,
-      fd,
+      fldt,
       history,
     } = this.props;
-    const relatedRisksEdges = R.pipe(
-      R.pathOr([], ['related_risks', 'edges']),
-      R.map((value) => ({
-        created: value.node.created,
-        modified: value.node.modified,
-        name: value.node.name,
-        description: value.node.description,
-        statement: value.node.statement,
-        risk_status: value.node.risk_status,
-        deadline: value.node.deadline,
-        false_positive: value.node.false_positive,
-        risk_adjusted: value.node.risk_adjusted,
-        vendor_dependency: value.node.vendor_dependency,
-        impacted_control_id: value.node.impacted_control_id,
-      })),
-      R.mergeAll,
-    )(risk);
-    const relatedObservationsEdges = R.pipe(
-      R.pathOr([], ['related_observations', 'edges']),
-      R.map((value) => ({
-        impacted_component: value.node.impacted_component,
-        impacted_asset: value.node.subjects,
-      })),
-    )(risk);
     const riskDetectionSource = R.pipe(
-      R.pathOr([], ['related_risks', 'edges']),
-      R.mergeAll,
-      R.pathOr([], ['node', 'characterizations']),
-      R.mergeAll,
       R.path(['origins']),
       R.mergeAll,
       R.path(['origin_actors']),
       R.mergeAll,
     )(risk);
     return (
-      <div style={{ height: '47.5%' }}>
+      <div style={{ height: '500px' }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
@@ -143,7 +115,7 @@ class RiskDetailsComponent extends Component {
                   <div className={classes.scrollBg}>
                     <div className={classes.scrollDiv}>
                       <div className={classes.scrollObj}>
-                        {relatedRisksEdges.statement && t(relatedRisksEdges.statement)}
+                        {risk.statement && t(risk.statement)}
                       </div>
                     </div>
                   </div>
@@ -171,13 +143,12 @@ class RiskDetailsComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {risk.risk_status && t(risk.risk_status)} */}
               <Button
                 variant="outlined"
                 size="small"
                 className={classes.statusButton}
               >
-                {relatedRisksEdges.risk_status && t(relatedRisksEdges.risk_status)}
+                {risk.risk_status && t(risk.risk_status)}
               </Button>
             </Grid>
             <Grid item={true} xs={6}>
@@ -199,8 +170,7 @@ class RiskDetailsComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {risk.deadline && fd(risk.deadline)} */}
-              {relatedRisksEdges.deadline && fd(relatedRisksEdges.deadline)}
+              {risk.deadline && fldt(risk.deadline)}
             </Grid>
             <Grid item={true} xs={12}>
               <Typography
@@ -250,7 +220,7 @@ class RiskDetailsComponent extends Component {
                   size="small"
                   className={classes.statusButton}
                 >
-                  {relatedRisksEdges.false_positive && t(relatedRisksEdges.false_positive)}
+                  {risk.false_positive && t(risk.false_positive)}
                 </Button>
               </div>
               <div>
@@ -277,7 +247,7 @@ class RiskDetailsComponent extends Component {
                   size="small"
                   className={classes.statusButton}
                 >
-                  {relatedRisksEdges.risk_adjusted && t(relatedRisksEdges.risk_adjusted)}
+                  {risk.risk_adjusted && t(risk.risk_adjusted)}
                 </Button>
               </div>
             </Grid>
@@ -306,7 +276,7 @@ class RiskDetailsComponent extends Component {
                   size="small"
                   className={classes.statusButton}
                 >
-                  {relatedRisksEdges.risk_adjusted && t(relatedRisksEdges.risk_adjusted)}
+                  {risk.accepted && t(risk.accepted)}
                 </Button>
               </div>
               <div>
@@ -333,7 +303,7 @@ class RiskDetailsComponent extends Component {
                   size="small"
                   className={classes.statusButton}
                 >
-                  {relatedRisksEdges.vendor_dependency && t(relatedRisksEdges.vendor_dependency)}
+                  {risk.vendor_dependency && t(risk.vendor_dependency)}
                 </Button>
               </div>
             </Grid>
@@ -348,29 +318,30 @@ RiskDetailsComponent.propTypes = {
   risk: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const RiskDetails = createFragmentContainer(
   RiskDetailsComponent,
   {
     risk: graphql`
-      fragment RiskDetails_risk on POAMItem {
+      fragment RiskDetails_risk on Risk {
         id
-        created
-        modified
-        poam_id     # Item ID
-        name        # Weakness
+        name
+        accepted
         description
-        labels {
-          id
-          name
-          color
-          description
-        }
+        statement
+        risk_status
+        risk_level
+        deadline
+        accepted
+        risk_adjusted
+        priority
+        false_positive
+        vendor_dependency
+        impacted_control_id
         origins {
-          id
-          origin_actors {       # only use if UI support Detection Source
+          origin_actors {
             actor_type
             actor_ref {
               ... on AssessmentPlatform {
@@ -386,78 +357,6 @@ const RiskDetails = createFragmentContainer(
                 id
                 party_type
                 name
-              }
-            }
-          }
-        }
-        links {
-          id
-          created
-          modified
-          external_id     # external id
-          source_name     # Title
-          description     # description
-          url             # URL
-          media_type      # Media Type
-        }
-        remarks {
-          id
-          abstract
-          content
-          authors
-        }
-        related_risks {
-          edges {
-            node{
-              id
-              created
-              modified
-              name
-              description
-              statement
-              risk_status       # Risk Status
-              deadline
-              priority
-              impacted_control_id
-              accepted
-              false_positive    # False-Positive
-              risk_adjusted     # Operational Required
-              vendor_dependency # Vendor Dependency
-              characterizations {
-                origins {
-                  id
-                  origin_actors {
-                    actor_type
-                    actor_ref {
-                      ... on AssessmentPlatform {
-                        id
-                        name
-                      }
-                      ... on Component {
-                        id
-                        component_type
-                        name          # Detection Source
-                      }
-                      ... on OscalParty {
-                      id
-                      party_type
-                      name            # Detection Source
-                      }
-                    }
-                  }
-                }
-                facets {
-                  id
-                  source_system
-                  facet_name
-                  facet_value
-                  risk_state
-                  entity_type
-                }
-              }
-              remediations {
-                response_type
-                lifecycle
               }
             }
           }

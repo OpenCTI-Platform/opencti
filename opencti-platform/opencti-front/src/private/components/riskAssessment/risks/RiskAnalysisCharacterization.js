@@ -54,75 +54,21 @@ class RiskAnalysisCharacterizationComponent extends Component {
     const {
       t, fldt, classes, risk,
     } = this.props;
-    const riskAnalysisCharacterization = pathOr([], ['characterizations'], risk);
-    // const riskcharacterizationfacets = pathOr([], [], riskAnalysisCharacterization);
+    const riskAnalysisCharacterization = pipe(
+      pathOr([], ['characterizations']),
+    )(risk);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t('Characterization')}
         </Typography>
-        {/*  <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Marking')}
-          </Typography>
-          {risk.objectMarking.edges.length > 0 ? (
-            map(
-              (markingDefinition) => (
-                <ItemMarking
-                  key={markingDefinition.node.id}
-                  label={markingDefinition.node.definition}
-                  color={markingDefinition.node.x_opencti_color}
-                />
-              ),
-              risk.objectMarking.edges,
-            )
-          ) : (
-            <ItemMarking label="TLP:WHITE" />
-          )}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creation date')}
-          </Typography>
-          {fldt(risk.created)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Modification date')}
-          </Typography>
-          {fldt(risk.modified)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Author')}
-          </Typography>
-          <ItemAuthor createdBy={propOr(null, 'createdBy', risk)} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Description')}
-          </Typography>
-          <ExpandableMarkdown
-            className="markdown"
-            source={risk.description}
-            limit={250}
-          />
-        </Paper> */}
         <Paper className={classes.paper} elevation={2}>
-          <Grid container={true} className={ classes.header}>
+          <Grid container={true} className={classes.header}>
             <Grid item={true} xs={4}>
               <Typography
                 variant="h2"
                 gutterBottom={true}
-                className={ classes.headerText }
+                className={classes.headerText}
               >
                 {t('Name')}
               </Typography>
@@ -131,7 +77,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
               <Typography
                 variant="h2"
                 gutterBottom={true}
-                className={ classes.headerText }
+                className={classes.headerText}
               >
                 {t('Value')}
               </Typography>
@@ -140,51 +86,48 @@ class RiskAnalysisCharacterizationComponent extends Component {
               <Typography
                 variant="h2"
                 gutterBottom={true}
-                className={ classes.headerText }
+                className={classes.headerText}
               >
                 {t('Detection Source')}
               </Typography>
             </Grid>
           </Grid>
           {riskAnalysisCharacterization.map((characterizationData) => {
-            const detectionSource = pipe(
+            const DetectionSource = pipe(
               pathOr([], ['origins']),
               mergeAll,
               path(['origin_actors']),
               mergeAll,
             )(characterizationData);
-            const characterizationFacets = pipe(
-              pathOr([], ['facets']),
-              mergeAll,
-            )(characterizationData);
-            console.log('RiskAnalysisCharacterizationData', characterizationFacets);
             return (
-              <Grid key={characterizationData.id} container={true} style={{ borderBottom: '1px solid grey' }}>
+              <Grid key={characterizationData.id} container={true}
+                style={{ borderBottom: '1px solid grey' }}>
                 <Grid item={true} xs={4}>
                   <Typography
                     variant="h2"
                     gutterBottom={true}
-                    className={ classes.tableText }
+                    className={classes.tableText}
                   >
-                    {characterizationFacets.facet_name}
+                    {/* {characterizationData.facet_name} */}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>
                   <Typography
                     variant="h2"
                     gutterBottom={true}
-                    className={ classes.tableText }
+                    className={classes.tableText}
                   >
-                    {characterizationFacets?.facet_value && t(characterizationFacets?.facet_value)}
+                    {/* {characterizationFacets?.facet_value &&
+                    t(characterizationFacets?.facet_value)} */}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>
                   <Typography
                     variant="h2"
                     gutterBottom={true}
-                    className={ classes.tableText }
+                    className={classes.tableText}
                   >
-                    {detectionSource.actor.name && t(detectionSource.actor.name)}
+                    {DetectionSource.actor_ref.name && t(DetectionSource.actor_ref.name)}
                   </Typography>
                 </Grid>
               </Grid>
@@ -203,72 +146,4 @@ RiskAnalysisCharacterizationComponent.propTypes = {
   fldt: PropTypes.func,
 };
 
-const RiskAnalysisCharacterization = createFragmentContainer(
-  RiskAnalysisCharacterizationComponent,
-  {
-    risk: graphql`
-      fragment RiskAnalysisCharacterization_risk on Risk {
-        id
-        created
-        modified
-        characterizations {
-          id
-          origins{
-            id
-            origin_actors {
-              actor_type
-              actor_ref {
-                ... on AssessmentPlatform {
-                  id
-                  name
-                }
-                ... on Component {
-                  id
-                  component_type
-                  name          # Detection Source
-                }
-                ... on OscalParty {
-                id
-                party_type
-                name            # Detection Source
-                }
-              }
-            }
-          }
-          facets {
-            id
-            source_system
-            facet_name
-            facet_value
-            risk_state
-            entity_type
-          }
-        }
-        links {
-          id
-          created
-          modified
-          external_id     # external id
-          source_name     # Title
-          description     # description
-          url             # URL
-          media_type      # Media Type
-        }
-        remarks {
-          id
-          abstract
-          content
-          authors
-          labels {
-            id
-            name
-            color
-            description
-          }
-        }
-      }
-    `,
-  },
-);
-
-export default compose(inject18n, withStyles(styles))(RiskAnalysisCharacterization);
+export default compose(inject18n, withStyles(styles))(RiskAnalysisCharacterizationComponent);
