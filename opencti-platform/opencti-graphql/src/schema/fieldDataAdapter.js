@@ -181,8 +181,11 @@ export const apiAttributeToComplexFormat = (attribute, data) => {
     R.map((d) => {
       const keyValue = d[info.key];
       const isStandardHash = STANDARD_HASHES.includes(keyValue.toUpperCase());
-      const infoKey = isStandardHash ? keyValue.toUpperCase() : keyValue;
-      return [infoKey, d[info.value]];
+      const complexValue = d[info.value];
+      if (isStandardHash) {
+        return [keyValue.toUpperCase(), complexValue.toLowerCase()];
+      }
+      return [keyValue, complexValue];
     }),
     R.fromPairs
   )(inputs);
