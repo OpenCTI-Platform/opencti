@@ -11,7 +11,7 @@ const styles = () => ({
   paperHistory: {
     height: '100%',
     margin: '10px 0 0 0',
-    padding: '15px 15px 0 15px',
+    padding: 15,
     borderRadius: 6,
   },
 });
@@ -34,7 +34,13 @@ class StixCoreRelationshipHistoryLinesComponent extends Component {
             );
           })
         ) : (
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+          <div
+            style={{
+              display: 'table',
+              height: '100%',
+              width: '100%',
+            }}
+          >
             <span
               style={{
                 display: 'table-cell',

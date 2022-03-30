@@ -1036,6 +1036,8 @@ const i18n = {
       '30 days': '30 jours',
       'No entities were found for this search.':
         "Aucune entité n'a été trouvée pour cette recherche.",
+      'No reports about this entity.':
+        'Aucun rapport à propos de cette entité.',
       'API access': "Accès à l'API",
       Example: 'Exemple',
       'API key': "Clé d'API",
@@ -2327,6 +2329,7 @@ const i18n = {
       '24 hours': '24小时',
       '30 days': '30天',
       'No entities were found for this search.': '未找到此搜索的实体。',
+      'No reports about this entity.': '没有关于此实体的报告。',
       'API access': 'API访问',
       Example: '示例',
       'API key': 'API密钥',

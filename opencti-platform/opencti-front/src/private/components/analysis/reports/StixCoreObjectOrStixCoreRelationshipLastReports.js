@@ -210,7 +210,7 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                         textAlign: 'center',
                       }}
                     >
-                      {t('No entities of this type has been found.')}
+                      {t('No reports about this entity.')}
                     </span>
                   </div>
                 );
