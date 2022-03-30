@@ -163,13 +163,14 @@ export const updateQuery = (iri, type, input, predicateMap) => {
         case UpdateOps.ADD:
           insertPredicates.push(predicate);
           break;
-        case UpdateOps.REPLACE:
-          insertPredicates.push(predicate);
-          replaceBindingPredicates.push(predicateMap[key].binding(`<${iri}>`))
-          break;
         case UpdateOps.REMOVE:
           deletePredicates.push(predicate);
           break;
+        case UpdateOps.REPLACE:
+        default:
+          insertPredicates.push(predicate);
+          replaceBindingPredicates.push(predicateMap[key].binding(`<${iri}>`))
+          break;  
       }
     }
   }
