@@ -372,7 +372,8 @@ class DeviceCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push('/dashboard/assets/devices')}
+              // onClick={() => this.props.history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
