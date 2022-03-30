@@ -21,7 +21,6 @@ import {
   selectRiskLogEntryByIriQuery,
   selectOriginByIriQuery,
 } from './sparql-query.js';
-import { isNullableType } from 'graphql';
 
 
 const riskResolvers = {

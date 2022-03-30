@@ -69,48 +69,67 @@ export function filterValues( item, filters, filterMode = 'or') {
     }
 
     let match = false ;
-    for ( let value of filter.values ) {
+    for ( let filterValue of filter.values ) {
       if (match && filter.filterMode == 'or')
         continue ;
 
-      switch( filter.operator ) {
-        case FilterOps.MATCH:
-          if (item[filter.key] === value) {
-            match = true
-          }
-          break;
-        case FilterOps.NE:
-          if (item[filter.key] != value) {
-            match = true
-          }
-          break;
-        case FilterOps.LT:
-          if (item[filter.key] < value) {
-            match = true
-          }
-          break;
-        case FilterOps.LTE:
-          if (item[filter.key] <= value) {
-            match = true
-          }
-          break;
-        case FilterOps.GT:
-          if (item[filter.key] > value) {
-            match = true
-          }
-          break;
-        case FilterOps.GTE:
-          if (item[filter.key] >= value) {
-            match = true
-          }
-          break;
-        case FilterOps.WILDCARD:
-        case FilterOps.EQ:
-        default:
-            if (item[filter.key] == value) {
-            match = true
-          }
-          break;
+      let itemValues;
+      if (item[filter.key] instanceof Array) {
+        itemValues = item[filter.key];
+      } else {
+        itemValues = [item[filter.key]];
+      }
+
+      let itemValue;
+      for (let value of itemValues) {
+        if (typeof value === 'object') {
+          if (value instanceof Date) itemValue = value.toISOString();
+          if (value instanceof Number) itemValue = value.toString();
+          if (value instanceof String) itemValue = value.toString();
+        } else {
+          if (typeof value === 'number') itemValue = value.toString();
+          if (typeof value === 'string') itemValue = value;  
+        }  
+
+        switch( filter.operator ) {
+          case FilterOps.MATCH:
+            if (itemValue === filterValue) {
+              match = true
+            }
+            break;
+          case FilterOps.NE:
+            if (itemValue != filterValue) {
+              match = true
+            }
+            break;
+          case FilterOps.LT:
+            if (itemValue < filterValue) {
+              match = true
+            }
+            break;
+          case FilterOps.LTE:
+            if (itemValue <= filterValue) {
+              match = true
+            }
+            break;
+          case FilterOps.GT:
+            if (itemValue > filterValue) {
+              match = true
+            }
+            break;
+          case FilterOps.GTE:
+            if (itemValue >= filterValue) {
+              match = true
+            }
+            break;
+          case FilterOps.WILDCARD:
+          case FilterOps.EQ:
+          default:
+              if (itemValue == filterValue) {
+              match = true
+            }
+            break;
+        }
       }
     }
 
@@ -167,11 +186,11 @@ export const updateQuery = (iri, type, input, predicateMap) => {
           deletePredicates.push(predicate);
           break;
         case UpdateOps.REPLACE:
-        default:
+        default:    // replace is the default behavior when the operation is not supplied.
           insertPredicates.push(predicate);
           replaceBindingPredicates.push(predicateMap[key].binding(`<${iri}>`))
-          break;  
-      }
+          break;
+        }
     }
   }
   return `
