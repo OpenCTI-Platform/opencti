@@ -3,13 +3,13 @@ import datetime
 import json
 import logging
 import os
+import signal
 import ssl
 import sys
 import threading
-import traceback
 import time
+import traceback
 import uuid
-import signal
 from typing import Callable, Dict, List, Optional, Union
 
 import pika
