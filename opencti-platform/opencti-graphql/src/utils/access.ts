@@ -19,7 +19,7 @@ export const getBaseUrl = (req: Request): string => {
   if (req) {
     const [, port] = req.headers.host ? req.headers.host.split(':') : [];
     const isCustomPort = port !== '80' && port !== '443';
-    const httpPort = isCustomPort ? `:${port}` : '';
+    const httpPort = isCustomPort && port ? `:${port}` : '';
     return `${req.protocol}://${req.hostname}${httpPort}${basePath}`;
   }
   return basePath;
