@@ -41,7 +41,7 @@ const styles = (theme) => ({
   bodyItem: {
     height: 36,
     fontSize: 13,
-    paddingLeft: 32,
+    paddingLeft: 25,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -136,20 +136,28 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{
+                  width: dataColumns.name.width,
+                  paddingLeft: dataColumns.name.paddingLeft,
+                }}
               >
                 {node.name && node.name}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk_level.width }}
+                style={{
+                  width: dataColumns.risk_level.width,
+                  paddingLeft: dataColumns.risk_level.paddingLeft,
+                }}
               >
-                {/* {riskCharacterization.risk && riskCharacterization.risk} */}
                 {riskData.node.risk_level && riskData.node.risk_level}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk_status.width }}
+                style={{
+                  width: dataColumns.risk_status.width,
+                  paddingLeft: dataColumns.risk_status.paddingLeft,
+                }}
               >
                 <Button
                   variant="outlined"
@@ -162,7 +170,10 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk_response.width }}
+                style={{
+                  width: dataColumns.risk_response.width,
+                  paddingLeft: dataColumns.risk_response.paddingLeft,
+                }}
               >
                 <Button
                   variant="outlined"
@@ -175,7 +186,10 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.lifecycle.width }}
+                style={{
+                  width: dataColumns.lifecycle.width,
+                  paddingLeft: dataColumns.lifecycle.paddingLeft,
+                }}
               >
                 <Button
                   variant="outlined"
