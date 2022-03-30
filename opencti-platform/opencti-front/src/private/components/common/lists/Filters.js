@@ -110,7 +110,10 @@ class Filters extends Component {
 
   searchEntities(filterKey, event) {
     const { t, theme } = this.props;
-    if (event && event.target.value !== 0) {
+    if (!event) {
+      return;
+    }
+    if (event.target.value !== 0) {
       this.setState({
         inputValues: R.assoc(
           filterKey,
@@ -123,7 +126,7 @@ class Filters extends Component {
       case 'toSightingId':
         fetchQuery(identitySearchIdentitiesSearchQuery, {
           types: ['Identity'],
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
@@ -150,7 +153,7 @@ class Filters extends Component {
       case 'createdBy':
         fetchQuery(identitySearchIdentitiesSearchQuery, {
           types: ['Organization', 'Individual', 'System'],
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
@@ -184,7 +187,7 @@ class Filters extends Component {
             'Country',
             'City',
           ],
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           count: 10,
         })
           .toPromise()
@@ -210,7 +213,7 @@ class Filters extends Component {
         break;
       case 'markedBy':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
@@ -237,7 +240,7 @@ class Filters extends Component {
         break;
       case 'labelledBy':
         fetchQuery(labelsSearchQuery, {
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
@@ -429,7 +432,7 @@ class Filters extends Component {
       case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {
           attributeName: 'x_opencti_base_severity',
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
@@ -456,7 +459,7 @@ class Filters extends Component {
       case 'x_opencti_attack_vector':
         fetchQuery(attributesSearchQuery, {
           attributeName: 'x_opencti_attack_vector',
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
@@ -482,7 +485,7 @@ class Filters extends Component {
         break;
       case 'status_id':
         fetchQuery(statusFieldStatusesSearchQuery, {
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 50,
         })
           .toPromise()
@@ -511,7 +514,7 @@ class Filters extends Component {
       case 'x_opencti_organization_type':
         fetchQuery(attributesSearchQuery, {
           attributeName: 'x_opencti_organization_type',
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
@@ -538,7 +541,7 @@ class Filters extends Component {
       case 'report_types':
         fetchQuery(attributesSearchQuery, {
           attributeName: 'report_types',
-          search: event && event.target.value !== 0 ? event.target.value : '',
+          search: event.target.value !== 0 ? event.target.value : '',
           first: 10,
         })
           .toPromise()
@@ -651,6 +654,7 @@ class Filters extends Component {
       default:
         this.setState({ entities: R.union(this.state.entities, []) });
     }
+    return null;
   }
 
   handleChange(filterKey, event, value) {
@@ -1015,7 +1019,7 @@ Filters.propTypes = {
   nsd: PropTypes.func,
   availableFilterKeys: PropTypes.array,
   handleAddFilter: PropTypes.func,
-  currentFilters: PropTypes.object,
+  currentFilters: PropTypes.array,
   variant: PropTypes.string,
   disabled: PropTypes.bool,
   noDirectFilters: PropTypes.bool,
