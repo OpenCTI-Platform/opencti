@@ -24,6 +24,7 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import RiskStatus from '../../common/form/RiskStatus';
 
 const styles = (theme) => ({
   container: {
@@ -69,7 +70,7 @@ const styles = (theme) => ({
 });
 
 const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
+  <Slide direction='up' ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
@@ -168,14 +169,14 @@ class RiskAssessmentPopover extends Component {
 
   render() {
     const {
-      classes, t, history, nodeId,
+      classes,
+      t,
+      history,
+      nodeId,
     } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-        >
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup='true'>
           <MoreVertOutlined />
         </IconButton>
         <Menu
@@ -202,7 +203,7 @@ class RiskAssessmentPopover extends Component {
             className={classes.menuItem}
             onClick={this.handleOpenRiskLevel.bind(this)}
           >
-            {t('Change Risk Level')}
+            {t('Change Risk Status')}
           </MenuItem>
         </Menu>
         <Dialog
@@ -225,24 +226,22 @@ class RiskAssessmentPopover extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
-                <DialogTitle>
-                  {t('Assign POAM ID')}
-                </DialogTitle>
+                <DialogTitle>{t('Assign POAM ID')}</DialogTitle>
                 <DialogContent>
                   <Typography
-                    variant="h3"
-                    color="textSecondary"
+                    variant='h3'
+                    color='textSecondary'
                     gutterBottom={true}
                     style={{ float: 'left' }}
                   >
                     {t('POAM ID')}
                   </Typography>
-                  <div className="clearfix" />
+                  <div className='clearfix' />
                   <Field
                     component={TextField}
-                    name="poamId"
+                    name='poamId'
                     fullWidth={true}
-                    size="small"
+                    size='small'
                     containerstyle={{ width: '100%' }}
                     variant='outlined'
                   />
@@ -252,16 +251,16 @@ class RiskAssessmentPopover extends Component {
                     onClick={this.handleClosePoam.bind(this)}
                     disabled={this.state.deleting}
                     classes={{ root: classes.buttonPopover }}
-                    variant="outlined"
+                    variant='outlined'
                   >
                     {t('Cancel')}
                   </Button>
                   <Button
                     // onClick={this.submitDelete.bind(this)}
-                    color="primary"
+                    color='primary'
                     onClick={submitForm}
                     classes={{ root: classes.buttonPopover }}
-                    variant="contained"
+                    variant='contained'
                   >
                     {t('Submit')}
                   </Button>
@@ -287,9 +286,7 @@ class RiskAssessmentPopover extends Component {
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form style={{ padding: '10px 15px 20px 5px' }}>
-                <DialogTitle>
-                  {t('Risk Level')}
-                </DialogTitle>
+                <DialogTitle>{t('Risk Status')}</DialogTitle>
                 <Grid
                   style={{
                     display: 'flex',
@@ -298,53 +295,30 @@ class RiskAssessmentPopover extends Component {
                   container={true}
                 >
                   <DialogContent>
-                    <Field
-                      component={SelectField}
-                      name="risk_level"
+                    <RiskStatus
+                      variant='outlined'
+                      name='entry_type'
+                      size='small'
                       fullWidth={true}
-                      size="small"
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
-                      MenuProps={{
-                        anchorOrigin: {
-                          vertical: 'bottom',
-                          horizontal: 'left',
-                        },
-                        getContentAnchorEl: null,
-                      }}
-                    >
-                      <MenuItem value='very-low'>
-                        Very Low
-                      </MenuItem>
-                      <MenuItem value='low'>
-                        Low
-                      </MenuItem>
-                      <MenuItem value='moderate'>
-                        Moderate
-                      </MenuItem>
-                      <MenuItem value='high'>
-                        High
-                      </MenuItem>
-                      <MenuItem value='very-high'>
-                        Very High
-                      </MenuItem>
-                    </Field>
+                      style={{ height: '38.09px', marginBottom: '3px' }}
+                      containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                    />
                   </DialogContent>
                   <DialogActions className={classes.dialogRiskLevelAction}>
                     <Button
                       onClick={this.handleCloseRiskLevel.bind(this)}
                       disabled={this.state.deleting}
                       classes={{ root: classes.buttonPopover }}
-                      variant="outlined"
+                      variant='outlined'
                     >
                       {t('Cancel')}
                     </Button>
                     <Button
                       // onClick={this.submitDelete.bind(this)}
-                      color="primary"
-                      onClick={submitForm}
+                      color='primary'
+                      // onClick={submitForm}
                       classes={{ root: classes.buttonPopover }}
-                      variant="contained"
+                      variant='contained'
                     >
                       {t('Submit')}
                     </Button>
@@ -366,7 +340,4 @@ RiskAssessmentPopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(RiskAssessmentPopover);
+export default compose(inject18n, withStyles(styles))(RiskAssessmentPopover);
