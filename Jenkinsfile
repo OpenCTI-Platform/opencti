@@ -4,25 +4,40 @@ node {
   String registry = 'docker.darklight.ai'
   String product = 'opencti'
   String branch = "${env.BRANCH_NAME}"
+  String commit = env.GIT_COMMIT
   String tag = 'latest'
   String graphql = 'https://cyio.darklight.ai/graphql'
   String api = 'api'
 
-  if (branch != 'master' && branch != 'main') {
-    if (branch == 'develop') {
-      tag = branch
-      graphql = 'https://cyio-dev.darklight.ai/graphql'
-      api = 'api-dev'
-    } else if (branch == 'staging') {
-      tag = branch
-      graphql = 'https://cyio-staging.darklight.ai/graphql'
-      api = 'api-staging'
-    } else {
-      throw new Exception("Somehow a branch that was not suppose to cause a build, did. Branch: ${branch}")
-    }
-  }
-
   stage('Setup') {
+    // Note: The default settings are configured for the master/main branch
+    switch (branch) {
+      case 'staging':
+        tag = branch
+        graphql = 'https://cyio-staging.darklight.ai/graphql'
+        api = 'api-staging'
+        break
+      case 'develop':
+        tag = branch
+        graphql = 'https://cyio-dev.darklight.ai/graphql'
+        api = 'api-dev'
+        break
+      default:
+        if (env.CHANGE_ID != null && !env.CHANGE_ID.isEmpty()) {
+          tag = 'PR' + env.CHANGE_ID
+          println "New PR detected, tagging with ${tag}"
+        }
+
+        String commitMessage = "${env.COMMIT_MESSAGE}"
+        if (!commitMessage.contains('ci-build')) {
+          currentBuild.result = 'ABORTED'
+          error('Skipping build...')
+        }
+        break
+    }
+
+    println "Commit: ${commit}"
+
     dir('opencti-platform') {
       dir('opencti-graphql') {
         if (fileExists('config/schema/compiled.graphql')) {
@@ -37,8 +52,7 @@ node {
         }
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
         archiveArtifacts artifacts: 'package.json', fingerprint: true, followSymlinks: false
-        sh 'yarn schema-compile'
-        sh 'yarn install'
+        sh 'yarn install && yarn schema-compile'
       }
     }
   }
@@ -93,8 +107,10 @@ void docker_steps(String registry, String image, String tag, String buildArgs) {
   }
 
   stage('Push') {
-    docker.withRegistry("https://${registry}", 'docker-registry-credentials') {
-      app.push("${tag}")
+    if (!tag.startsWith('PR')) {
+      docker.withRegistry("https://${registry}", 'docker-registry-credentials') {
+        app.push("${tag}")
+      }
     }
   }
 
