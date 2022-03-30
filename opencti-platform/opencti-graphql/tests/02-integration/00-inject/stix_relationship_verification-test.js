@@ -1,12 +1,5 @@
 import { stixCoreRelationshipsMapping, stixCyberObservableRelationshipsMapping } from '../../../src/database/stix';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
-import {
-  ENTITY_DOMAIN_NAME,
-  ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR,
-  ENTITY_X_OPENCTI_HOSTNAME
-} from "../../../src/schema/stixCyberObservable";
-import {RELATION_COMMUNICATES_WITH, RELATION_DROPS, RELATION_USES} from "../../../src/schema/stixCoreRelationship";
-import {ENTITY_TYPE_ATTACK_PATTERN} from "../../../src/schema/stixDomainObject";
 
 const stixRelationships = {
   // eslint-disable-next-line global-require
