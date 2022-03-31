@@ -1675,9 +1675,9 @@ type OscalTaskEdge {
     "Identifies either recommended or an actual plan for addressing the risk."
     remediations: [RiskResponse]
     "log of all risk-related tasks taken."
-    risk_log(first: Int): RiskLogEntryConnection
+    risk_log(first: Int, offset: Int): RiskLogEntryConnection
     "Relates the finding to a set of referenced observations that were used to determine the risk.  This would be the Component in which the risk exists and the InventoryItem(s) in which theComponent is installed"
-    related_observations(first: Int): ObservationConnection
+    related_observations(first: Int, offset: Int): ObservationConnection
     "Identifies that the risk has been confirmed to be a false positive."
     false_positive: RiskAssertionState
     "Identifies that the risk cannot be remediated without impact to the system and must be accepted."
@@ -1950,7 +1950,7 @@ type OscalTaskEdge {
   # union StatementOrObjects = ControlStatement | ControlObjective
   union ActorTarget = OscalParty | AssessmentPlatform | Component
   union PartyOrComponent = OscalParty | HardwareComponent | NetworkComponent | ServiceComponent | SoftwareComponent | SystemComponent
-  union SubjectTarget = Component | InventoryItem | OscalLocation | OscalParty | OscalUser | OscalResource
+  union SubjectTarget = Component | InventoryItem | OscalLocation | OscalParty | OscalUser | OscalResource | SoftwareAsset | HardwareAsset
 
 ## Enumerations
 #

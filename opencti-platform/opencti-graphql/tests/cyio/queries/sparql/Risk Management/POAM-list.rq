@@ -1,0 +1,29 @@
+# Get any POAM objects
+SELECT DISTINCT ?iri ?rdf_type ?id ?created ?modified ?name ?published ?last_modified ?version ?oscal_version ?document_ids ?revisions ?roles ?locations ?parties ?system_id ?system_identifier_type ?observations ?risks ?poam_items ?resources ?labels ?links ?remarks 
+FROM <tag:stardog:api:context:local>
+WHERE {
+    ?iri a <http://csrc.nist.gov/ns/oscal/common#POAM> . 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .}
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#created> ?created . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#modified> ?modified . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#name> ?name . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#published> ?published . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#last_modified> ?last_modified . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#version> ?version . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#oscal_version> ?oscal_version . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#document_ids> ?document_ids . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#revisions> ?revisions . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#roles> ?roles . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#locations> ?locations . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#parties> ?parties . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/poam#system_id> ?system_id . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/poam#system_identifier_type> ?system_identifier_type . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/poam#observations> ?observations . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/poam#risks> ?risks . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/poam#poam_items> ?poam_items . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#resources> ?resources . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#labels> ?labels . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#links> ?links . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#remarks> ?remarks . } 
+}
