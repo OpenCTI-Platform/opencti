@@ -149,7 +149,7 @@ class RiskCardComponent extends Component {
           classes={{ root: classes.area }}
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
-          TouchRippleProps={ this.state.openMenu && { classes: { root: classes.buttonRipple } }}
+          TouchRippleProps={this.state.openMenu && { classes: { root: classes.buttonRipple } }}
           to={`/dashboard/risk-assessment/risks/${node.id}`}
         >
           {/* <CardHeader
@@ -197,6 +197,8 @@ class RiskCardComponent extends Component {
                 <RiskAssessmentPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
                   history={history} nodeId={node.id}
+                  riskNode={riskData.node}
+                  node={node}
                 />
                 <Checkbox
                   disableRipple={true}
