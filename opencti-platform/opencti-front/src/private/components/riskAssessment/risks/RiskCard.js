@@ -150,7 +150,7 @@ class RiskCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           TouchRippleProps={ this.state.openMenu && { classes: { root: classes.buttonRipple } }}
-          to={`/dashboard/risk-assessment/risks/${riskData.node.id}`}
+          to={`/dashboard/risk-assessment/risks/${riskData?.node?.id}`}
         >
           {/* <CardHeader
             classes={{ root: classes.header }}
@@ -227,7 +227,7 @@ class RiskCardComponent extends Component {
                   {t('Risk')}
                 </Typography>
                 <Typography>
-                  {riskData.node.risk_level && riskData.node.risk_level}
+                  {riskData?.node?.risk_level && riskData?.node?.risk_level}
                 </Typography>
               </Grid>
             </Grid>
