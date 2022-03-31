@@ -2146,6 +2146,8 @@ type OscalTaskEdge {
     low
     "Expected to have negligible adverse effect on organizational operations, assets, or individuals."
     very_low
+    "Unknown level of risk"
+    unknown
   }
 
   "Defines the type of status for a risk"
