@@ -406,7 +406,7 @@ const poamItemResolvers = {
       if (parent.related_risks_iri === undefined) return null;
       let iriArray = parent.related_risks_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const edges = [];
+        let edges = [];
         const reducer = getAssessmentReducer("RISK");
         let limit = (args.first === undefined ? iriArray.length : args.first) ;
         for (let iri of iriArray) {
@@ -429,19 +429,23 @@ const poamItemResolvers = {
           if (Array.isArray(response) && response.length > 0) {
             let risk = response[0];
 
-            // calculate the risk level
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
+          }
+
+          // calculate the risk level
+            risk.risk_level = 'unknown';
             if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
-              let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
               let riskLevel;
+              let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
               if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
               if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
               if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
               if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
               if (score == 0) riskLevel = 'very-low';
-
-              // add the risk level to the object
-              risk.risk_level = riskLevel;
               risk.risk_score = score;
+              risk.risk_level = riskLevel;
 
               // clean up
               delete risk.cvss20_base_score;
@@ -471,6 +475,7 @@ const poamItemResolvers = {
             }
           }  
         }
+        // return null if no edges
         if (edges.length === 0 ) return null;
         return {
           pageInfo: {

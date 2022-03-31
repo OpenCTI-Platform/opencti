@@ -25,6 +25,7 @@ export const inventoryItemReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.iri && {parent_iri: item.iri}),
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
