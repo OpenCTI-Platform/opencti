@@ -259,7 +259,7 @@ class RiskTrackingLinesContainer extends Component {
         </div>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          {/* {(riskLogEdges.length > 0 ? (riskLogEdges.map((riskTrackingEdge, key) => {
+          {(riskLogEdges.length > 0 ? (riskLogEdges.map((riskTrackingEdge, key) => {
             const riskLogItem = riskTrackingEdge.node;
             return <RiskTrackingLine
               history={history}
@@ -269,10 +269,10 @@ class RiskTrackingLinesContainer extends Component {
               riskStatusResponse={riskStatusResponse}
             />;
           }))
-            : <>
+            : <div style={{ paddingTop: '20px', textAlign: 'center' }}>
               {t('No Record Found')}
-            </>
-          )} */}
+            </div>
+          )}
         </Paper>
       </div>
     );

@@ -95,7 +95,6 @@ class RiskLineComponent extends Component {
       pathOr([], ['characterizations']),
       mergeAll,
     )(riskData.node);
-    console.log('RiskLineNode', node, '----', riskRemediation);
     // const riskCharacterization = pathOr(null, ['node', 'characterizations', 0], riskData);
     // const riskRemediation = pathOr([], ['node', 'remediations', 0], riskData);
     // console.log('RiskLineData', riskCharacterization, riskRemediation);
@@ -108,7 +107,7 @@ class RiskLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/dashboard/risk-assessment/risks/${node.id}`}
+        to={`/dashboard/risk-assessment/risks/${riskData.node.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />

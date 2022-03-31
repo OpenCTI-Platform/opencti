@@ -45,19 +45,11 @@ import RemediationRoot from './remediations/Root';
 
 const riskQuery = graphql`
   query RootRiskQuery($id: ID!) {
-    poamItem(id: $id) {
+    risk(id: $id) {
       id
-      name
-      related_risks {
-        edges {
-          node {
-            id
-            ...Risk_risk
-            ...RiskAnalysisContainer_risk
-            # ...Remediations_risk
-          }
-        }
-      }
+      ...Risk_risk
+      ...RiskAnalysisContainer_risk
+      # ...Remediations_risk
     }
   }
 `;
@@ -118,11 +110,7 @@ class RootRisk extends Component {
             console.log('riskError', error);
             if (props) {
               console.log('RiskData', props);
-              const RelatedRisks = R.pipe(
-                R.pathOr([], ['related_risks', 'edges']),
-                R.mergeAll,
-              )(props.poamItem);
-              if (props.poamItem) {
+              if (props.risk) {
                 return (
                   <Switch>
                     <Route
@@ -132,7 +120,7 @@ class RootRisk extends Component {
                         <Risk
                           {...routeProps}
                           refreshQuery={retry}
-                          risk={RelatedRisks.node}
+                          risk={props.risk}
                         />
                       )}
                     />
@@ -143,7 +131,7 @@ class RootRisk extends Component {
                           <RiskAnalysisContainer
                             {...routeProps}
                             refreshQuery={retry}
-                            risk={RelatedRisks.node}
+                            risk={props.risk}
                             riskId={riskId}
                           />
                       )}
@@ -165,8 +153,8 @@ class RootRisk extends Component {
                         <Remediations
                             {...routeProps}
                             refreshQuery={retry}
-                            remediation={RelatedRisks.node}
-                            riskId={props.poamItem}
+                            remediation={props.risk}
+                            riskId={props.risk}
                         />
                       )}
                     />
@@ -176,7 +164,7 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                         <RemediationRoot
                             {...routeProps}
-                            risk={props.poamItem}
+                            risk={props.risk}
                         />
                       )}
                     />
@@ -186,8 +174,8 @@ class RootRisk extends Component {
                       render={(routeProps) => (
                           <RiskTracking
                             {...routeProps}
-                            risk={props.poamItem}
-                            riskId={RelatedRisks.node.id}
+                            risk={props.risk}
+                            riskId={props.risk.id}
                           />
                       )}
                     />
