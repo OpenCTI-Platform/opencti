@@ -196,7 +196,7 @@ class RiskCardComponent extends Component {
               >
                 <RiskAssessmentPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
-                  history={history} nodeId={node.id}
+                  history={history} nodeId={riskData?.node?.id}
                 />
                 <Checkbox
                   disableRipple={true}
