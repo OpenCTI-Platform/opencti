@@ -1,0 +1,15 @@
+SELECT DISTINCT ?iri ?rdf_type ?id ?entity_type ?actors ?actor_id ?actor_type ?actor_ref ?role
+FROM <tag:stardog:api:context:local>
+WHERE {
+    # BIND(<http://csrc.nist.gov/ns/oscal/assessment/common#Origin-3ac357de-725b-471d-9a0b-3f5d91ea7fa3> as ?iri )
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Origin> . 
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type . }
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?entity_type . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origin_actors> ?actors . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origin_actors>/<http://darklight.ai/ns/common#id> ?actor_id . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origin_actors>/<http://csrc.nist.gov/ns/oscal/assessment/common#actor_type> ?actor_type . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origin_actors>/<http://csrc.nist.gov/ns/oscal/assessment/common#actor_ref>  ?actor_ref . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origin_actors>/<http://csrc.nist.gov/ns/oscal/common#role>  ?role . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_tasks> ?related_tasks . }
+}
