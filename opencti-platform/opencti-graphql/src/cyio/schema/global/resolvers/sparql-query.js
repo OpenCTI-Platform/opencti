@@ -31,6 +31,7 @@ const addressReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.address_type && {address_type: item.address_type}),
     ...(item.street_address && {street_address: item.street_address}),
@@ -48,6 +49,7 @@ const externalReferenceReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.created && {"created": item.created}),
     ...(item.modified && {"modified": item.modified}),
@@ -72,6 +74,7 @@ const labelReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.created && {"created": item.created}),
     ...(item.modified && {"modified": item.modified}),
@@ -89,6 +92,7 @@ const noteReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.created && {"created": item.created}),
     ...(item.modified && {"modified": item.modified}),
@@ -108,6 +112,7 @@ const phoneReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.usage_type && {usage_type: item.usage_type}),
     ...(item.phone_number && {phone_number: item.phone_number}),

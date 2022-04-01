@@ -90,6 +90,7 @@ const poamLocalDefReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     // Local Definition
     ...(item.components && {components_iri: item.components}),

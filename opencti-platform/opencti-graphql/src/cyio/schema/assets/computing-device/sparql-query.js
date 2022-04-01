@@ -134,6 +134,7 @@ export const computingDeviceAssetReducer = (item) => {
   
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -191,6 +192,7 @@ export const ipAddressReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -204,6 +206,7 @@ export const macAddressReducer = (item) => {
   if ( item.object_type === undefined || item.object_type == null ) item.object_type = 'mac-addr';
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -218,6 +221,7 @@ export const portReducer = (item) => {
   if ( item.object_type === undefined || item.object_type == null) item.object_type = 'port';
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
