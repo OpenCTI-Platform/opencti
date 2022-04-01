@@ -21,7 +21,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
-import { commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { commitMutation as CM, createPaginationContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -100,7 +100,7 @@ class RiskObservationLineContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, risk, fd,
+      t, classes, cyioCoreObjectId, risk, fd, relay,
     } = this.props;
     const RelatedObservations = R.pathOr([], ['related_observations', 'edges'], risk);
     return (
@@ -154,81 +154,64 @@ RiskObservationLineContainer.propTypes = {
   relay: PropTypes.object,
 };
 
-export const RiskObservationLineContainerComponent = createFragmentContainer(
+export const riskObservationLineQuery = graphql`
+  query RiskObservationLinePaginationQuery($id: ID!, $first: Int, $offset: Int) {
+    risk(id: $id){
+      id
+      ...RiskObservationLine_risk
+      @arguments(
+        count: $first
+        offset: $offset
+      )
+    }
+  }
+`;
+
+export const RiskObservationLineContainerComponent = createPaginationContainer(
   RiskObservationLineContainer,
   {
     risk: graphql`
-      fragment RiskObservationLine_risk on Risk {
-        related_observations (first: 15) {
+      fragment RiskObservationLine_risk on Risk
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 5 }
+        offset: { type: "Int", defaultValue: 0 }
+      ) {
+        related_observations (
+          first: $count,
+          offset: $offset
+          ) @connection(key: "Pagination_related_observations"){
           edges {
             node {
               id
               entity_type
               name
-              description
-              methods
-              observation_types
-              collected
-              origins {
-                origin_actors {
-                  # actor_type
-                  actor_ref {
-                    ... on AssessmentPlatform {
-                      id
-                      name
-                    }
-                    ... on Component {
-                      id
-                      component_type
-                      name
-                    }
-                    ... on OscalParty {
-                      id
-                      party_type
-                      name
-                    }
-                  }
-                }
-              }
-              subjects {
-                id
-                entity_type
-                name
-                subject_context
-                subject_type
-                subject_ref {
-                  ... on Component {
-                    id
-                    entity_type
-                    name
-                  }
-                  ... on InventoryItem {
-                    id
-                    entity_type
-                    name
-                  }
-                  ... on OscalLocation {
-                    id
-                    entity_type
-                    name
-                  }
-                  ... on OscalParty {
-                    id
-                    entity_type
-                    name
-                  }
-                  ... on OscalUser {
-                    id
-                    entity_type
-                    name
-                  }
-                }
-              }
+              ...RiskObservationPopover_risk
             }
           }
         }
       }
     `,
+  },
+  {
+    direction: 'forward',
+    getConnectionFromProps(props) {
+      return props.data && props.data.related_observations;
+    },
+    getFragmentVariables(prevVars, totalCount) {
+      return {
+        ...prevVars,
+        count: totalCount,
+      };
+    },
+    getVariables(props, { count, cursor }, fragmentVariables) {
+      return {
+        first: fragmentVariables.first,
+        offset: fragmentVariables.offset,
+        count,
+        cursor,
+      };
+    },
+    query: riskObservationLineQuery,
   },
 );
 
