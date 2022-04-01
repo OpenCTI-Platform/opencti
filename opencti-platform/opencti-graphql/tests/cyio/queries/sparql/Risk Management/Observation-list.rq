@@ -1,0 +1,20 @@
+SELECT DISTINCT ?iri ?rdf_type ?id ?entity_type ?created ?modified ?name ?description ?methods ?observation_types ?origins ?subjects ?relevant_evidence ?collected ?expires
+FROM <tag:stardog:api:context:local>
+WHERE {
+    # BIND (<http://csrc.nist.gov/ns/oscal/assessment/common#Observation-83909f2d-2852-4944-b520-e48e30ed4d20> as ?iri )
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Observation> . 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .}
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?entity_type . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#created> ?created . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#modified> ?modified . } 
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#name> ?name . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#description> ?description . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#methods> ?methods . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#observation_types> ?observation_types . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origins> ?origins . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#subjects> ?subjects . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#relevant_evidence> ?relevant_evidence . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#collected> ?collected . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#expires> ?expires . } 
+}

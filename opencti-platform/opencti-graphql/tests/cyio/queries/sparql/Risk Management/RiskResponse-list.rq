@@ -1,0 +1,21 @@
+# Get any Remediations
+SELECT DISTINCT ?iri ?rdf_type ?id ?entity_type ?created ?modified ?name ?description ?response_type ?lifecycle ?origins ?required_assets ?tasks
+FROM <tag:stardog:api:context:local>
+WHERE {
+    # BIND( <http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse-79191464-5c3c-54ac-a17d-cb322f8babd6> as ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse> . 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .}
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?entity_type . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#created> ?created . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#modified> ?modified . } 
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#name> ?name . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#description> ?description . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#response_type> ?response_type . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle> ?lifecycle . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origins> ?origins . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#required_assets> ?required_assets . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#tasks> ?tasks . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#links> ?links . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#remarks> ?remarks . } 
+}

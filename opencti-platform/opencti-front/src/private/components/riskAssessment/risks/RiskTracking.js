@@ -87,7 +87,7 @@ class RiskTracking extends Component {
                 <RiskTrackingLines
                   history={history}
                   riskId={riskId}
-                  data={props}
+                  data={props.risk}
                 />
               );
             }

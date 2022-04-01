@@ -100,6 +100,28 @@ import cyioGlobalTypeResolvers from '../cyio/schema/global/resolvers/cyioGlobalT
 import cyioExternalReferenceResolvers from '../cyio/schema/global/resolvers/externalReference.js';
 import cyioLabelResolvers from '../cyio/schema/global/resolvers/label.js';
 import cyioNoteResolvers from '../cyio/schema/global/resolvers/note.js';
+import oscalCommonResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscal-common.js';
+import oscalLocationResolver from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalLocation.js';
+import oscalPartyResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalParty.js';
+import oscalResponsiblePartyResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalResponsibleParty.js';
+import oscalRoleResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalRole.js';
+import assessmentCommonResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/assessmentCommon.js';
+import activityResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/activity.js';
+import actorResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/actor.js';
+import assessmentPlatformResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/assessmentPlatform.js';
+import characterizationResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/characterization.js';
+import evidenceResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/evidence.js';
+import logEntryResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/logEntry.js';
+import mitigatingFactorResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/mitigatingFactor.js';
+import observationResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/observation.js';
+import originResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/origin.js';
+import oscalTaskResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/oscalTask.js';
+import requiredAssetResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/requiredAsset.js';
+import riskResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/risk.js';
+import riskResponseResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/riskResponse.js';
+import subjectResolvers from '../cyio/schema/risk-assessments/assessment-common/resolvers/subject.js';
+import poamResolvers from '../cyio/schema/risk-assessments/poam/resolvers/poam.js';
+import poamItemResolvers from '../cyio/schema/risk-assessments/poam/resolvers/poamItem.js';
 // Cyio Extensions to support merged graphQL schema
 import { loadSchemaSync } from '@graphql-tools/load';
 import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader' ;
@@ -207,16 +229,38 @@ const createSchema = () => {
     // ALL
     organizationOrIndividualResolvers,
     stixObjectOrStixRelationshipResolvers,
-    // CYIO
-    cyioGlobalTypeResolvers,
-    cyioExternalReferenceResolvers,
-    cyioLabelResolvers,
-    cyioNoteResolvers,
-    assetCommonResolvers,
-    computingDeviceResolvers,
-    hardwareResolvers,
-    networkResolvers,
-    softwareResolvers,
+      // CYIO
+      cyioGlobalTypeResolvers,
+      cyioExternalReferenceResolvers,
+      cyioLabelResolvers,
+      cyioNoteResolvers,
+      assetCommonResolvers,
+      computingDeviceResolvers,
+      hardwareResolvers,
+      networkResolvers,
+      softwareResolvers,
+      oscalCommonResolvers,
+      oscalLocationResolver,
+      oscalPartyResolvers,
+      oscalResponsiblePartyResolvers,
+      oscalRoleResolvers,
+      assessmentCommonResolvers,
+      activityResolvers,
+      actorResolvers,
+      assessmentPlatformResolvers,
+      characterizationResolvers,
+      evidenceResolvers,
+      logEntryResolvers,
+      mitigatingFactorResolvers,
+      observationResolvers,
+      originResolvers,
+      oscalTaskResolvers,
+      requiredAssetResolvers,
+      riskResolvers,
+      riskResponseResolvers,
+      subjectResolvers,
+      poamResolvers,
+      poamItemResolvers,
 ]);
 
   // load the OpenCTI and each of the Cyio GraphQL schema files

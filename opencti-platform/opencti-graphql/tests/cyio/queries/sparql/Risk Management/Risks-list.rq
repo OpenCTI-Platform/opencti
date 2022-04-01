@@ -1,0 +1,34 @@
+# Get any Risk objects
+SELECT DISTINCT ?iri ?rdf_type 
+?id ?entity_type ?created ?modified ?risk_status ?deadline ?origins ?characterizations ?mitigating_factors ?remediations ?risk_log ?related_observations 
+?false_positive ?accepted ?risk_adjusted ?priority ?vendor_dependency ?impacted_control_id 
+?cvss2_base_score ?cvss2_temporal_score ?cvss3_base_score ?cvss3_temporal_score ?exploitability ?exploit_available
+FROM <tag:stardog:api:context:local>
+WHERE {
+    # BIND(<http://csrc.nist.gov/ns/oscal/assessment/common#Risk-c54157f9-41e5-5f22-a78f-eef82aa958d8> as ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> . 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .}
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?entity_type . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#created> ?created . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#modified> ?modified . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#risk_status> ?risk_status . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#deadline> ?deadline . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origins> ?origins . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#characterizations> ?characterizations . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#mitigating_factors> ?mitigating_factors . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#remediations> ?remediations . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#risk_log> ?risk_log . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#false_positive> ?false_positive . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#accepted> ?accepted . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#risk_adjusted> ?risk_adjusted . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#priority> ?priority . }  
+    OPTIONAL { ?iri <http://fedramp.gov/ns/oscal#vendor_dependency> ?vendor_dependency . }  
+    OPTIONAL { ?iri <http://fedramp.gov/ns/oscal#impacted_control_id> ?impacted_control_id . } 
+    # Get data needed to compute risk level
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_base_score> ?cvss2_base_score . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_base_score> ?cvss3_base_score . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploitability> ?exploitability . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploit_available> ?exploit_available . }  
+}

@@ -311,16 +311,16 @@ class NetworkCreation extends Component {
                   {/* <StixCoreObjectExternalReferences
                     stixCoreObjectId={device.id}
                   /> */}
-                  <div style={{ pointerEvents: 'none', opacity: '0.4', height: '100%' }}>
-                    <CyioCoreObjectAssetCreationExternalReferences />
+                  <div>
+                    <CyioCoreObjectAssetCreationExternalReferences disableAdd={true}/>
                   </div>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectLatestHistory />
                 </Grid>
               </Grid>
-              <div style={{ pointerEvents: 'none', opacity: '0.4', height: '100%' }}>
-                <CyioCoreObjectOrCyioCoreRelationshipNotes height='100px' />
+              <div>
+                <CyioCoreObjectOrCyioCoreRelationshipNotes disableAdd={true} height='100px' />
               </div>
             </>
           )}
@@ -352,7 +352,8 @@ class NetworkCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => history.goBack()}
+              onClick={() => this.props.history.push('/dashboard/assets/network')}
+              // onClick={() => history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"

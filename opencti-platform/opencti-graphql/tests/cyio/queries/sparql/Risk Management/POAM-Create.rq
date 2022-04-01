@@ -1,0 +1,17 @@
+INSERT DATA {
+    GRAPH <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> {
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> a <http://csrc.nist.gov/ns/oscal/common#POAM> .
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> a <http://csrc.nist.gov/ns/oscal/common#Model> .
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> a <http://csrc.nist.gov/ns/oscal/common#Object> .
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> a <http://darklight.ai/ns/common#Object> .
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://darklight.ai/ns/common#id> "22f2ad37-4f07-5182-bf4e-59ea197a73dc".
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://darklight.ai/ns/common#object_type> "poam" . 
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://darklight.ai/ns/common#created> "2022-02-18T22:15:05.455Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> . 
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://darklight.ai/ns/common#modified> "2022-02-18T22:15:05.455Z"^^<http://www.w3.org/2001/XMLSchema#dateTime> . 
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://csrc.nist.gov/ns/oscal/common#name> "Default POAM for an Organization" . 
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://csrc.nist.gov/ns/oscal/common#version> "1.0" . 
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://csrc.nist.gov/ns/oscal/common#oscal_version> "1.0.1" . 
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://csrc.nist.gov/ns/oscal/poam#system_id> "00000000-0000-0000-0000-000000000000" . 
+        <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> <http://csrc.nist.gov/ns/oscal/poam#system_identifier_type> "https://ietf.org/rfc/rfc4122"^^<http://www.w3.org/2001/XMLSchema#anyURI> .
+    }
+}

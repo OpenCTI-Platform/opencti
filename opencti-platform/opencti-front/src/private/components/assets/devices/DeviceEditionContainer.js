@@ -85,7 +85,7 @@ const deviceEditionMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editComputingDeviceAsset(id: $id, input: $input) {
+    editHardwareAsset(id: $id, input: $input) {
       id
     }
   }
@@ -383,6 +383,7 @@ class DeviceEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={device.external_references}
                     cyioCoreObjectId={device?.id}
+                    disableAdd={true}
                     typename={device.__typename}
                     refreshQuery={refreshQuery}
                   />
@@ -394,6 +395,7 @@ class DeviceEditionContainer extends Component {
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={device.__typename}
                 refreshQuery={refreshQuery}
+                disableAdd={true}
                 notes={device.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />
@@ -456,7 +458,7 @@ const DeviceEditionFragment = createFragmentContainer(
   DeviceEditionContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ComputingDeviceAsset {
+      fragment DeviceEditionContainer_device on HardwareAsset {
         __typename
         id
         name

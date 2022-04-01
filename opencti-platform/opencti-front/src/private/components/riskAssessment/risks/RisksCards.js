@@ -46,6 +46,7 @@ class RisksCards extends Component {
   render() {
     const {
       initialLoading,
+      history,
       relay,
       selectAll,
       onLabelClick,
@@ -77,7 +78,7 @@ class RisksCards extends Component {
                 this.props.data,
               )}
               offset={offset}
-              CardComponent={<RiskCard />}
+              CardComponent={<RiskCard history={history}/>}
               DummyCardComponent={<RiskCardDummy />}
               nbOfCardsToLoad={nbOfCardsToLoad}
               selectAll={selectAll}
