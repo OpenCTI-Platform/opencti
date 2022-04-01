@@ -2146,19 +2146,21 @@ type OscalTaskEdge {
     low
     "Expected to have negligible adverse effect on organizational operations, assets, or individuals."
     very_low
+    "Unknown level of risk"
+    unknown
   }
 
   "Defines the type of status for a risk"
   enum RiskStatus {
     "The risk has been identified."
     open
-    "The identified risk is being investigated. (Open risk)"
+    "The identified risk is being investigated."
     investigating
-    "Remediation activities are underway, but are not yet complete. (Open risk)"
+    "Remediation activities are underway, but are not yet complete."
     remediating
-    "A risk deviation, such as false positive, risk reduction, or operational requirement has been submitted for approval. (Open risk)"
+    "A risk deviation, such as false positive, risk reduction, or operational requirement has been submitted for approval."
     deviation_requested
-    "A risk deviation, such as false positive, risk reduction, or operational requirement has been approved. (Open risk)"
+    "A risk deviation, such as false positive, risk reduction, or operational requirement has been approved."
     deviation_approved
     "The risk has been resolved."
     closed

@@ -68,19 +68,23 @@ const riskResolvers = {
             continue;
           }
 
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
+          }
+
           // calculate the risk level
+          risk.risk_level = 'unknown';
           if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
-            let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
             let riskLevel;
+            let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
             if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
             if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
             if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
             if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
             if (score == 0) riskLevel = 'very-low';
-
-            // add the risk level to the object
-            risk.risk_level = riskLevel;
             risk.risk_score = score;
+            risk.risk_level = riskLevel;
 
             // clean up
             delete risk.cvss20_base_score;
@@ -151,17 +155,21 @@ const riskResolvers = {
         const reducer = getReducer("RISK");
         let risk = response[0];
 
+        if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+          console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+          risk.risk_status = risk.risk_status.replace('_', '-');
+        }
+
         // calculate the risk level
+        risk.risk_level = 'unknown';
         if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
-          let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
           let riskLevel;
+          let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
           if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
           if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
           if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
           if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
           if (score == 0) riskLevel = 'very-low';
-
-          // add the risk level to the object
           risk.risk_level = riskLevel;
           risk.risk_score = score;
 
