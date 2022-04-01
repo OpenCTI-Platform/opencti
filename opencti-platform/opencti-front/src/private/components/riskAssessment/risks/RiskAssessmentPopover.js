@@ -64,6 +64,9 @@ const styles = (theme) => ({
   dialogRoot: {
     padding: '24px',
   },
+  dialogContent: {
+    overflowY: 'hidden',
+  },
   menuItem: {
     padding: '15px 0',
     width: '170px',
@@ -308,6 +311,7 @@ class RiskAssessmentPopover extends Component {
                     onClick={submitForm}
                     classes={{ root: classes.buttonPopover }}
                     variant='contained'
+                    disabled={isSubmitting}
                   >
                     {t('Submit')}
                   </Button>
@@ -337,11 +341,11 @@ class RiskAssessmentPopover extends Component {
                 <Grid
                   style={{
                     display: 'flex',
-                    alignItems: 'end',
+                    alignItems: 'initial',
                   }}
                   container={true}
                 >
-                  <DialogContent>
+                  <DialogContent classes={{ root: classes.dialogContent }}>
                     <RiskStatus
                       variant='outlined'
                       name='risk_status'
@@ -351,7 +355,7 @@ class RiskAssessmentPopover extends Component {
                       containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                     />
                   </DialogContent>
-                  <DialogActions className={classes.dialogRiskLevelAction}>
+                  <DialogActions style={{ marginTop: '6px' }} className={classes.dialogRiskLevelAction}>
                     <Button
                       onClick={this.handleCloseRiskLevel.bind(this)}
                       disabled={this.state.deleting}
@@ -366,6 +370,7 @@ class RiskAssessmentPopover extends Component {
                       onClick={submitForm}
                       classes={{ root: classes.buttonPopover }}
                       variant='contained'
+                      disabled={isSubmitting}
                     >
                       {t('Submit')}
                     </Button>
