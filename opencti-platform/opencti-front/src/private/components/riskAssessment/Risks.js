@@ -23,6 +23,7 @@ import RiskCreation from './risks/RiskCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import RiskDeletion from './risks/RiskDeletion';
+import ErrorNotFound from '../../../components/ErrorNotFound';
 
 class Risks extends Component {
   constructor(props) {
@@ -214,19 +215,25 @@ class Risks extends Component {
           environment={QueryRendererDarkLight}
           query={risksCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ error, props }) => <RisksCards
-              data={props}
-              extra={props}
-              selectAll={selectAll}
-              history={this.props.history}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-            />
-          }
+          render={({ error, props }) => {
+            if (error) {
+              return <ErrorNotFound />;
+            }
+            return (
+              <RisksCards
+                data={props}
+                extra={props}
+                selectAll={selectAll}
+                history={this.props.history}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              />
+            );
+          }}
         />
         {/* <QueryRenderer
           query={risksCardsQuery}
@@ -352,7 +359,11 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`props : ${props} Error : ${error}`);
-            return (<RisksLines
+            if (error) {
+              return <ErrorNotFound />;
+            }
+            return (
+              <RisksLines
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
@@ -363,9 +374,9 @@ class Risks extends Component {
                 onLabelClick={this.handleAddFilter.bind(this)}
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />);
-          }
-          }
+              />
+            );
+          }}
         />
         {/* <QueryRenderer
           query={risksLinesQuery}

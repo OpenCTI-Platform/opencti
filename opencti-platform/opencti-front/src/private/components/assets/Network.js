@@ -1,5 +1,6 @@
 /* eslint-disable */
-/* refactor */import React, { Component } from 'react';
+/* refactor */
+import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
@@ -24,6 +25,7 @@ import NetworkCreation from './network/NetworkCreation';
 import NetworkDeletion from './network/NetworkDeletion';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
+import ErrorNotFound from '../../../components/ErrorNotFound';
 
 class Network extends Component {
   constructor(props) {
@@ -213,18 +215,23 @@ class Network extends Component {
           environment={QueryRendererDarkLight}
           query={networkCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ props }) => (
-            <NetworkCards
-              data={props}
-              selectAll={selectAll}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
+          render={({ error, props }) => {
+            if (error) {
+              return <ErrorNotFound />;
+            }
+            return (
+              <NetworkCards
+                data={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </CyioListCards>
     );
@@ -314,19 +321,24 @@ class Network extends Component {
           environment={QueryRendererDarkLight}
           query={networkLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ props }) => (
-            <NetworkLines
-              data={props}
-              selectAll={selectAll}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
+          render={({ error, props }) => {
+            if (error) {
+              return <ErrorNotFound />;
+            }
+            return (
+              <NetworkLines
+                data={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </CyioListLines>
     );
