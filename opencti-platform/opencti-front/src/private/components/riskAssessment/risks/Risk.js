@@ -182,7 +182,6 @@ const Risk = createFragmentContainer(RiskComponent, {
           description
         }
       }
-      ...RiskObservation_risk
       ...RiskOverview_risk
       ...RiskDetails_risk
     }

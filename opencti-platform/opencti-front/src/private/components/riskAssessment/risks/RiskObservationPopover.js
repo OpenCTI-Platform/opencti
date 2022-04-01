@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import { createFragmentContainer } from 'react-relay';
 // import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
 import Typography from '@material-ui/core/Typography';
@@ -23,7 +24,6 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -269,7 +269,7 @@ class RiskObservationPopover extends Component {
                   <DialogContentText>
                     {t('Observation Target(s)')}
                   </DialogContentText>
-                  {/* {data?.subjects?.map((subject, i) => {
+                  {data?.subjects?.map((subject, i) => {
                     if (subject?.subject_context === 'target') {
                       return (
                         <Typography key={i} variant="h2" color="primary">
@@ -278,7 +278,7 @@ class RiskObservationPopover extends Component {
                       );
                     }
                     return <></>;
-                  })} */}
+                  })}
                 </Grid>
               </Grid>
               <Divider />
@@ -295,7 +295,7 @@ class RiskObservationPopover extends Component {
                   <DialogContentText>
                     {t('Component(s)')}
                   </DialogContentText>
-                  {/* {data.subjects.map((subject, i) => {
+                  {data.subjects.map((subject, i) => {
                     if (subject.subject_context === 'secondary_target') {
                       return (
                         <Typography key={i} variant="h2" color="primary">
@@ -304,7 +304,7 @@ class RiskObservationPopover extends Component {
                       );
                     }
                     return <></>;
-                  })} */}
+                  })}
                 </Grid>
               </Grid>
               <Divider />
@@ -333,4 +333,73 @@ RiskObservationPopover.propTypes = {
   handleRemove: PropTypes.func,
 };
 
-export default R.compose(inject18n, withStyles(styles))(RiskObservationPopover);
+export const RiskObservationPopoverComponent = createFragmentContainer(RiskObservationPopover, {
+  data: graphql`
+    fragment RiskObservationPopover_risk on Observation {
+      id
+      entity_type
+      name
+      description
+      methods
+      observation_types
+      collected
+      origins {
+        origin_actors {
+          # actor_type
+          actor_ref {
+            ... on AssessmentPlatform {
+              id
+              name
+            }
+            ... on Component {
+              id
+              component_type
+              name
+            }
+            ... on OscalParty {
+              id
+              party_type
+              name
+            }
+          }
+        }
+      }
+      subjects {
+        id
+        entity_type
+        name
+        subject_context
+        subject_type
+        subject_ref {
+          ... on Component {
+            id
+            entity_type
+            name
+          }
+          ... on InventoryItem {
+            id
+            entity_type
+            name
+          }
+          ... on OscalLocation {
+            id
+            entity_type
+            name
+          }
+          ... on OscalParty {
+            id
+            entity_type
+            name
+          }
+          ... on OscalUser {
+            id
+            entity_type
+            name
+          }
+        }
+      }
+    }
+  `,
+});
+
+export default R.compose(inject18n, withStyles(styles))(RiskObservationPopoverComponent);

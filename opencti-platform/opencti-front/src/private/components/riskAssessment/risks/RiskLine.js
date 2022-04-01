@@ -22,6 +22,7 @@ import WindowsIcon from '@material-ui/icons/LaptopWindows';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { KeyboardArrowRight, MoreVert, PublicOutlined } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
+import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -95,7 +96,6 @@ class RiskLineComponent extends Component {
       pathOr([], ['characterizations']),
       mergeAll,
     )(riskData.node);
-    console.log('RiskLineNode', node, '----', riskRemediation);
     // const riskCharacterization = pathOr(null, ['node', 'characterizations', 0], riskData);
     // const riskRemediation = pathOr([], ['node', 'remediations', 0], riskData);
     // console.log('RiskLineData', riskCharacterization, riskRemediation);
@@ -108,7 +108,7 @@ class RiskLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/dashboard/risk-assessment/risks/${node.id}`}
+        to={`/dashboard/risk-assessment/risks/${riskData?.node?.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />
@@ -130,34 +130,25 @@ class RiskLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.poam_id.width }}
+                style={{ width: '12.3%' }}
               >
-                {node.poam_id && node.poam_id}
+                {node.poam_id && t(node.poam_id)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{
-                  width: dataColumns.name.width,
-                  paddingLeft: dataColumns.name.paddingLeft,
-                }}
+                style={{ width: '16.3%' }}
               >
-                {node.name && node.name}
+                {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{
-                  width: dataColumns.risk_level.width,
-                  paddingLeft: dataColumns.risk_level.paddingLeft,
-                }}
+                style={{ width: '6.8%' }}
               >
-                {riskData.node.risk_level && riskData.node.risk_level}
+                {riskData?.node?.risk_level && riskData?.node?.risk_level}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{
-                  width: dataColumns.risk_status.width,
-                  paddingLeft: dataColumns.risk_status.paddingLeft,
-                }}
+                style={{ width: '16.3%' }}
               >
                 <Button
                   variant="outlined"
@@ -165,15 +156,12 @@ class RiskLineComponent extends Component {
                   color="default"
                   className={classes.statusButton}
                 >
-                  {riskData.node.risk_status && t(riskData.node.risk_status)}
+                  {riskData?.node?.risk_status && t(riskData?.node?.risk_status)}
                 </Button>
               </div>
               <div
                 className={classes.bodyItem}
-                style={{
-                  width: dataColumns.risk_response.width,
-                  paddingLeft: dataColumns.risk_response.paddingLeft,
-                }}
+                style={{ width: '11.5%' }}
               >
                 <Button
                   variant="outlined"
@@ -186,10 +174,7 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{
-                  width: dataColumns.lifecycle.width,
-                  paddingLeft: dataColumns.lifecycle.paddingLeft,
-                }}
+                style={{ width: '13.2%' }}
               >
                 <Button
                   variant="outlined"
@@ -202,18 +187,15 @@ class RiskLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{
-                  width: dataColumns.occurrences.width,
-                  paddingLeft: dataColumns.occurrences.paddingLeft,
-                }}
+                style={{ width: '10.5%' }}
               >
-                {node.occurrences && node.occurrences}
+                {node.occurrences && t(node.occurrences)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.deadline.width }}
+                style={{ width: '10%' }}
               >
-                {riskData.node.deadline && t(riskData.node.deadline)}
+                {riskData?.node?.deadline && fd(riskData?.node?.deadline)}
               </div>
               {/* <div
                 className={classes.bodyItem}
@@ -231,6 +213,7 @@ class RiskLineComponent extends Component {
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
           <RiskAssessmentPopover
             history={history}
+            nodeId={riskData?.node?.id}
             riskNode={riskData.node}
             node={node}
           />

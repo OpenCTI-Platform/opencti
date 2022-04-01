@@ -277,37 +277,31 @@ class Risks extends Component {
         label: 'Name',
         width: '16%',
         isSortable: false,
-        paddingLeft: '17px',
       },
       risk_level: {
         label: 'Risk',
         width: '7%',
         isSortable: true,
-        paddingLeft: '21px',
       },
       risk_status: {
         label: 'Status',
         width: '16%',
         isSortable: true,
-        paddingLeft: '20px',
       },
       risk_response: {
         label: 'Response',
         width: '11%',
         isSortable: true,
-        paddingLeft: '28px',
       },
       lifecycle: {
         label: 'Lifecycle',
         width: '13%',
         isSortable: true,
-        paddingLeft: '31px',
       },
       occurrences: {
         label: 'Occurrences',
         width: '10%',
         isSortable: true,
-        paddingLeft: '38px',
       },
       deadline: {
         label: 'Deadline',

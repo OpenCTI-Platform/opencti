@@ -66,7 +66,6 @@ class RemediationComponent extends Component {
       history,
       location,
     } = this.props;
-    console.log('remediationRiskData', risk);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
@@ -87,10 +86,10 @@ class RemediationComponent extends Component {
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={12}>
-                {/* <RemediationGeneralOverview
+                <RemediationGeneralOverview
                   remediation={remediation}
                   risk={risk}
-                /> */}
+                />
               </Grid>
               {/* <Grid item={true} xs={6}>
                 <RemediationGeneralDetails remediation={remediation} />
@@ -197,7 +196,7 @@ const Remediation = createFragmentContainer(RemediationComponent, {
         }
       }
       ...RemediationGeneralOverview_remediation
-      ...RemediationGeneralDetails_remediation
+      # ...RemediationGeneralDetails_remediation
     }
   `,
 });

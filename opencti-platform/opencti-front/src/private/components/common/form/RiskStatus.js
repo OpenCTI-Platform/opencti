@@ -83,6 +83,13 @@ class RiskStatus extends Component {
           size={size}
           style={style}
           helperText={helperText}
+          MenuProps={{
+            anchorOrigin: {
+              vertical: 'bottom',
+              horizontal: 'left',
+            },
+            getContentAnchorEl: null,
+          }}
         >
           {riskStatusList.map((et, key) => (
             et.label
