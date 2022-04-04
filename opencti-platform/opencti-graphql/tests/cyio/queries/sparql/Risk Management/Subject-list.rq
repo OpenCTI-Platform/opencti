@@ -1,0 +1,14 @@
+SELECT DISTINCT ?iri ?rdf_type ?id ?entity_type ?subject_type ?subject_context ?subject_ref
+FROM <tag:stardog:api:context:local>
+WHERE {
+    # BIND(<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-60c04528-f169-4da9-b6bd-fa59716f71de> as ?iri)
+    # BIND(<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-526aaf48-4ab4-4c71-8e1b-ef3b3f95901e> as ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Subject> . 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .}
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?entity_type . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#name> ?name . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#subject_type> ?subject_type . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref> ?subject_ref . }
+    OPTIONAL { ?iri <http://darklight.ai/ns/oscal/assessment/common#subject_context> ?subject_context . }
+}

@@ -67,7 +67,6 @@ class RemediationComponent extends Component {
       history,
       location,
     } = this.props;
-    console.log('remediationRiskData', risk);
     return (
       <>
         <div className={classes.container}>
@@ -200,7 +199,7 @@ const Remediation = createFragmentContainer(RemediationComponent, {
         }
       }
       ...RemediationGeneralOverview_remediation
-      ...RemediationGeneralDetails_remediation
+      # ...RemediationGeneralDetails_remediation
     }
   `,
 });

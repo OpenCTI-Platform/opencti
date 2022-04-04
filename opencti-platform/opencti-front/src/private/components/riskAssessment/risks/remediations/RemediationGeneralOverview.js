@@ -85,68 +85,17 @@ class RemediationGeneralOverviewComponent extends Component {
       remediation,
       risk,
     } = this.props;
-    console.log('remediationGenreal', remediation);
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
+    const remediationOriginData = R.pipe(
+      R.pathOr([], ['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(remediation);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t('Basic Information')}
         </Typography>
-        {/*  <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Marking')}
-          </Typography>
-          {remediation.objectMarking.edges.length > 0 ? (
-            map(
-              (markingDefinition) => (
-                <ItemMarking
-                  key={markingDefinition.node.id}
-                  label={markingDefinition.node.definition}
-                  color={markingDefinition.node.x_opencti_color}
-                />
-              ),
-              remediation.objectMarking.edges,
-            )
-          ) : (
-            <ItemMarking label="TLP:WHITE" />
-          )}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creation date')}
-          </Typography>
-          {fldt(remediation.created)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Modification date')}
-          </Typography>
-          {fldt(remediation.modified)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Author')}
-          </Typography>
-          <ItemAuthor createdBy={propOr(null, 'createdBy', remediation)} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Description')}
-          </Typography>
-          <ExpandableMarkdown
-            className="markdown"
-            source={remediation.description}
-            limit={250}
-          />
-        </Paper> */}
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={3}>
@@ -198,10 +147,11 @@ class RemediationGeneralOverviewComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {remediationOriginData.name && t(remediationOriginData.name)}
+                      {remediationOriginData.actor_ref.name
+                      && t(remediationOriginData.actor_ref.name)}
                     </Typography>
                     <Typography color="textSecondary" variant="disabled">
-                      {t('Lorem Ipsum Dolor Ist')}
+                      {/* {t('Lorem Ipsum Dolor Ist')} */}
                     </Typography>
                   </div>
                 </div>

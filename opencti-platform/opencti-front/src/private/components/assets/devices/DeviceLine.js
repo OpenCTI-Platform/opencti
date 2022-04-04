@@ -189,7 +189,7 @@ const DeviceLineFragment = createFragmentContainer(
   DeviceLineComponent,
   {
     node: graphql`
-      fragment DeviceLine_node on ComputingDeviceAsset {
+      fragment DeviceLine_node on HardwareAsset {
         id
         name
         asset_id

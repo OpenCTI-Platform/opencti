@@ -1,0 +1,103 @@
+# RiskUI_create_task:
+#   performs the query needed to populate the Related Tasks model dialog
+#  as part of the Remediation page in the UI
+#
+mutation RiskUI_create_task {
+  createOscalTask(
+    input: {
+      task_type: milestone
+      name: "Testing Task"
+      description: "This is a tasks to perform a set of test"
+      timing: {
+        within_date_range: {
+          start_date: "2022-03-21T00:00:00.000Z"
+          end_date: "2022-03-31T00:00:00:.000Z"
+        }
+      }
+      task_dependencies: ["cb3d6c48-c038-4c9d-88b2-321e563a5a85"]
+      related_tasks: ["cb3d6c48-c038-4c9d-88b2-321e563a5a85"]
+      responsible_roles: [
+        {
+          role: "7cc4668b-1794-5258-941d-5c4c1f2bd1a8"
+          parties: ["7f9fa876-0a43-5199-a7be-3b11bc25578b"]
+        }
+      ]
+      # associated_activities: [
+      #   {
+      #     task_id: ""
+      #     activity_id: ""
+      #     responsible_roles: [
+      #       {
+      #         role: "7cc4668b-1794-5258-941d-5c4c1f2bd1a8"
+      #         parties: ["7f9fa876-0a43-5199-a7be-3b11bc25578b"]
+      #       }
+      #     ]
+      #   }
+      # ]
+      # subjects: [
+      #   {
+      #     subject_type: component
+      #     include_all: false
+      #     include_subjects: [
+      #       {
+
+      #       }
+      #     ]
+      #     exclude_subjects: [
+      #       {
+
+      #       }
+      #     ]
+      #   }
+      # ]
+    }
+  ) {
+    id
+    entity_type
+    created
+    modified
+    task_type
+    name
+    description
+    timing {
+      ... on DateRangeTiming {
+        start_date
+        end_date
+      }
+    }
+    task_dependencies {
+      __typename
+      id
+      name
+    }
+    associated_activities {
+      __typename
+      id
+      activity_id {
+        __typename
+        id
+        name
+      }
+      responsible_roles {
+        __typename
+        role {
+          __typename
+          id
+          role_identifier
+          name
+        }
+        parties {
+          id
+          party_type
+          name
+        }
+      }
+    }
+    subjects {
+      __typename
+      id
+      subject_type
+      description
+    }
+  }
+}

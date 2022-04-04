@@ -50,47 +50,8 @@ const remediationEntitiesQuery = graphql`
   query RemediationEntitiesQuery($id: ID!) {
     risk(id: $id) {
       id
-      created
-      modified
-      remediations {
-        id
-        name                # Title
-        description         # Description
-        created             # Created
-        modified            # Last Modified
-        lifecycle           # Lifecycle
-        response_type       # Response Type
-        origins{
-          id
-          origin_actors {
-            actor_type
-            actor_ref {
-              ... on AssessmentPlatform {
-                id
-                name          # Source
-              }
-              ... on Component {
-                id
-                component_type
-                name          # Source
-              }
-              ... on OscalParty {
-              id
-              party_type
-              name            # Source
-              }
-            }
-          }
-        }
-        tasks {             # only necessary if Start/End date is supported in UI
-          timing {
-            ... on DateRangeTiming {
-              start_date
-              end_date
-            }
-          }
-        }
-      }
+      name
+      ...RemediationEntitiesLines_risk
     }
   }
 `;
@@ -122,7 +83,11 @@ class RemediationEntities extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
     const {
-      entityId, classes, t, history,
+      entityId,
+      classes,
+      history,
+      t,
+      riskId,
     } = this.props;
     const dataColumns = {
       relationship_type: {
@@ -163,17 +128,6 @@ class RemediationEntities extends Component {
     };
     return (
       <>
-        {/* // <ListLines
-      //   sortBy={sortBy}
-      //   orderAsc={orderAsc}
-      //   dataColumns={dataColumns}
-      //   handleSort={this.handleSort.bind(this)}
-      //   // handleSearch={this.handleSearch.bind(this)}
-      //   displayImport={true}
-      //   secondaryAction={true}
-      //   searchVariant="inDrawer2"
-      // > */}
-        {/* <QueryRenderer */}
         <QR
           environment={QueryRendererDarkLight}
           query={remediationEntitiesQuery}
@@ -183,12 +137,13 @@ class RemediationEntities extends Component {
             if (props) {
               return (
                 <RemediationEntitiesLines
-                  data={props}
+                  risk={props.risk}
                   paginationOptions={paginationOptions}
                   history={history}
                   dataColumns={dataColumns}
                   initialLoading={props === null}
                   displayRelation={true}
+                  riskId={riskId}
                   entityId={entityId}
                 />
               );
@@ -286,7 +241,6 @@ class RemediationEntities extends Component {
             );
           }}
         />
-        {/* </ListLines> */}
       </>
     );
   }
@@ -321,6 +275,7 @@ RemediationEntities.propTypes = {
   entityId: PropTypes.string,
   relationship_type: PropTypes.string,
   classes: PropTypes.object,
+  riskId: PropTypes.string,
   risk: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

@@ -713,7 +713,7 @@ const subjectResolvers = {
   },
   AssessmentSubject: {
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return null;
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -755,7 +755,7 @@ const subjectResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return null;
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -797,7 +797,7 @@ const subjectResolvers = {
       }
     },    
     include_subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.include_subjects_iri === undefined) return null;
+      if (parent.include_subjects_iri === undefined) return [];
       let iriArray = parent.include_subjects_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -839,7 +839,7 @@ const subjectResolvers = {
       }
     },
     exclude_subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.exclude_subjects_iri === undefined) return null;
+      if (parent.exclude_subjects_iri === undefined) return [];
       let iriArray = parent.exclude_subjects_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

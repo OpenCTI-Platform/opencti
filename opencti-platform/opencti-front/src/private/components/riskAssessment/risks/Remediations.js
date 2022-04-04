@@ -37,6 +37,7 @@ const Remediations = (props) => {
     t,
     remediation,
     classes,
+    riskId,
     history,
   } = props;
   const [openCreation, setOpenCreation] = React.useState(false);
@@ -92,6 +93,7 @@ const Remediations = (props) => {
             <RemediationEntities
               history={history}
               entityId={remediation.id}
+              riskId={riskId.id}
             />
           </Grid>
         </>) : (
@@ -102,22 +104,9 @@ const Remediations = (props) => {
   );
 };
 
-// const RemediationFragment = createFragmentContainer(
-//   Remediations,
-//   {
-//     risk: graphql`
-//       fragment risk on StixCyberObservable {
-//         id
-//         entity_type
-//         ...risk
-//         ...risk
-//       }
-//     `,
-//   },
-// );
-
 Remediations.propTypes = {
   remediation: PropTypes.object,
+  riskId: PropTypes.object,
 };
 
 export default compose(

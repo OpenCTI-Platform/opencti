@@ -337,6 +337,7 @@ const observationResolvers = {
   // field-level resolvers
   Observation: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -378,6 +379,7 @@ const observationResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -419,6 +421,7 @@ const observationResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -460,6 +463,7 @@ const observationResolvers = {
       }
     },
     origins:async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -501,6 +505,7 @@ const observationResolvers = {
       }
     },
     subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -542,6 +547,7 @@ const observationResolvers = {
       }
     },
     relevant_evidence: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.relevant_evidence_iri === undefined) return [];
       let iriArray = parent.relevant_evidence_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

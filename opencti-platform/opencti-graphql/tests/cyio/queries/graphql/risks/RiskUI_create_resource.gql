@@ -1,0 +1,63 @@
+# RiskUI_create_resource:
+#   performs the query needed to populate the Required Resource model dialog
+#  as part of the Remediation page in the UI
+#
+mutation RiskUI_create_resource {
+  createRequiredAsset(
+    input: {
+      remediation_id: "a3106e23-8b79-4b1b-abf4-74f16c51ad0c"
+      name: "Paul Patrick"
+      description: "Need to complete the delivery of MVP"
+      subjects: [
+        {
+          name: "Paul Patrick"
+          subject_type: party
+          subject_ref: "7f9fa876-0a43-5199-a7be-3b11bc25578b"
+        }
+      ]
+    }
+  ) {
+    __typename
+    id
+    entity_type
+    created
+    modified
+    name
+    description
+    subjects {
+      __typename
+      id
+      entity_type
+      name
+      subject_type
+      subject_ref {
+        __typename
+        ... on OscalParty {
+          __typename
+          id
+          entity_type
+          name
+        }
+        ... on OscalLocation {
+          __typename
+          id
+          entity_type
+          name
+        }
+        ... on OscalResource {
+          __typename
+          id
+          entity_type
+          name
+        }
+        ... on OscalUser {
+          __typename
+          id
+          entity_type
+          name
+        }
+      }
+    }
+  }
+}
+

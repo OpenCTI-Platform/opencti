@@ -1,0 +1,55 @@
+# RiskUI_create_riskLogEntry:
+#   performs the query needed to populate the Risk Log Entry model dialog
+#   associated with the Risk Item Tracking page in the UI
+#
+mutation RiskUI_create_riskLogEntry {
+  createRiskLogEntry(
+    input: {
+      risk_id: "d67ba9c2-9421-4e3e-ba6c-8a3ab382dc3a"
+      entry_type: [status_update]
+      name: "Status Update"
+      description: "Status update for 2022-03-12"
+      event_start: "2022-03-03T16:52:57Z"
+      event_end: "2022-03-13T00:00:00Z"
+      status_change: remediating
+      logged_by: [
+        { 
+          party: "7f9fa876-0a43-5199-a7be-3b11bc25578b" 
+        }
+      ]
+      related_responses: ["ac5a1fdb-23fd-4e43-9b8d-7a7897ba91a8"]
+    }
+  ) {
+    __typename
+    id
+    entity_type
+    created
+    modified
+    name
+    description
+    entry_type
+    event_start
+    event_end
+    status_change
+    logged_by {
+      __typename
+      id
+      entity_type
+      party {
+        __typename
+        id
+        name
+      }
+      role {
+        __typename
+        id
+        name
+      }
+    }
+    related_responses {
+      id
+      entity_type
+      name
+    }
+  }
+}

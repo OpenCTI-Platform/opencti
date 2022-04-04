@@ -150,7 +150,7 @@ class RiskCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           TouchRippleProps={ this.state.openMenu && { classes: { root: classes.buttonRipple } }}
-          to={`/dashboard/risk-assessment/risks/${node.id}`}
+          to={`/dashboard/risk-assessment/risks/${riskData?.node?.id}`}
         >
           {/* <CardHeader
             classes={{ root: classes.header }}
@@ -196,7 +196,10 @@ class RiskCardComponent extends Component {
               >
                 <RiskAssessmentPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
-                  history={history} nodeId={node.id}
+                  history={history}
+                  nodeId={riskData?.node?.id}
+                  riskNode={riskData.node}
+                  node={node}
                 />
                 <Checkbox
                   disableRipple={true}
@@ -227,8 +230,7 @@ class RiskCardComponent extends Component {
                   {t('Risk')}
                 </Typography>
                 <Typography>
-                  {t('Medium')}
-                  {node.risk && t(node.risk)}
+                  {riskData?.node?.risk_level && riskData?.node?.risk_level}
                 </Typography>
               </Grid>
             </Grid>
@@ -349,15 +351,14 @@ const RiskCardFragment = createFragmentContainer(
         related_risks {
           edges {
             node {
+              __typename
+              id
+              name
               risk_status
+              risk_level
               deadline
-              # characterizations {
-              #   ... on RiskCharacterization {
-              #     id
-              #     risk
-              #   }
-              # }
               remediations {
+                id
                 response_type
                 lifecycle
               }
