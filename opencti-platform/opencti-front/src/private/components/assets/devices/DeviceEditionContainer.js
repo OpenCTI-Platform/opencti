@@ -124,7 +124,7 @@ class DeviceEditionContainer extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = R.evolve(
       {
-        release_date: () => parse(values.release_date).format(),
+        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
       },
       values,
     );
@@ -136,9 +136,10 @@ class DeviceEditionContainer extends Component {
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
-        'value': adaptFieldValue(n[1]),
+        'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(adaptedValues);
+    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: deviceEditionMutation,
       variables: {

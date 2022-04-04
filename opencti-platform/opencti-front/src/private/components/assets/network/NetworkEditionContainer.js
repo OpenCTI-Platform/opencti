@@ -141,7 +141,7 @@ class NetworkEditionContainer extends Component {
     }
     const adaptedValues = R.evolve(
       {
-        release_date: () => parse(values.release_date).format(),
+        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
       },
       values,
     );
@@ -152,7 +152,7 @@ class NetworkEditionContainer extends Component {
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
-        'value': adaptFieldValue(n[1]),
+        'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(adaptedValues);
     CM(environmentDarkLight, {
