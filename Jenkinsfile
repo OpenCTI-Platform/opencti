@@ -19,6 +19,10 @@ node {
       tag = branch
       graphql = 'https://cyio-staging.darklight.ai/graphql'
       api = 'api-staging'
+    } else if (branch == 'AB#4896') {
+      tag = 'ab4896'
+      graphql = 'https://cyio-dev.darklight.ai/graphql'
+      api = 'api-dev'
     } else {
       throw new Exception("Somehow a branch that was not suppose to cause a build, did. Branch: ${branch}")
     }
@@ -48,20 +52,16 @@ node {
   parallel test: {
     stage('Test') {
       try {
-        sh(returnStdout: true, script: 'printenv')
+        docker.image('node:16.6.0-alpine3.14').inside {
+          sh '''
+            node --version
+            npm --version
 
-        dir('opencti-worker/src') {
-          sh 'pip install --no-cache-dir -r requirements.txt'
-          sh 'pip install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master'
-        }
-
-        dir('opencti-platform') {
-          dir('opencti-graphql') {
-            sh 'yarn test'
-          }
-          dir('opencti-front') {
-            sh 'yarn test'
-          }
+            cd opencti-platform/opencti-front && \
+              yarn install --network-timeout 300000 --frozen-lockfile && \
+              yarn cache clean --all
+              yarn test
+          '''
         }
       } catch(Exception e) {
         // NO-OP
@@ -80,8 +80,8 @@ node {
       color: '00FF00',
       webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
       message: "New image built and pushed!",
-      factDefinitions: [[name: "Message", template: "${commitMessage}"],
-                        [name: "Commit", template: "${commit}"], 
+      factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
+                        [name: "Commit SHA", template: "${commit}"], 
                         [name: "Image", template: "${registry}/${product}:${tag}"]]
     )
   }
