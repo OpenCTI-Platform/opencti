@@ -91,67 +91,67 @@ RiskAnalysisThreatsComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const RiskAnalysisThreats = createFragmentContainer(
-  RiskAnalysisThreatsComponent,
-  {
-    risk: graphql`
-      fragment RiskAnalysisThreats_risk on ComputingDeviceAsset {
-        installed_software {
-          id
-          name
-        }
-        connected_to_network {
-          id
-          name
-        }
-        installed_operating_system {
-          id
-          name
-        }
-        ipv4_address  {
-          ip_address_value
-        }
-        ipv6_address  {
-          ip_address_value
-        }
-        locations {
-          city
-          country
-          description
-        }
-        ports {
-          protocols
-          port_number
-        }
-        locations{
-          city
-          country
-          postal_code
-          street_address
-          administrative_area
-        }
-        uri
-        model
-        mac_address
-        fqdn
-        baseline_configuration_name
-        bios_id
-        is_scanned
-        hostname
-        default_gateway
-        motherboard_id
-        installation_id
-        netbios_name
-        is_virtual
-        is_publicly_accessible
-        installed_hardware {
-          id
-          name
-          uri
-        }
-      }
-    `,
-  },
-);
+// const RiskAnalysisThreats = createFragmentContainer(
+//   RiskAnalysisThreatsComponent,
+//   {
+//     risk: graphql`
+//       fragment RiskAnalysisThreats_risk on ComputingDeviceAsset {
+//         installed_software {
+//           id
+//           name
+//         }
+//         connected_to_network {
+//           id
+//           name
+//         }
+//         installed_operating_system {
+//           id
+//           name
+//         }
+//         ipv4_address  {
+//           ip_address_value
+//         }
+//         ipv6_address  {
+//           ip_address_value
+//         }
+//         locations {
+//           city
+//           country
+//           description
+//         }
+//         ports {
+//           protocols
+//           port_number
+//         }
+//         locations{
+//           city
+//           country
+//           postal_code
+//           street_address
+//           administrative_area
+//         }
+//         uri
+//         model
+//         mac_address
+//         fqdn
+//         baseline_configuration_name
+//         bios_id
+//         is_scanned
+//         hostname
+//         default_gateway
+//         motherboard_id
+//         installation_id
+//         netbios_name
+//         is_virtual
+//         is_publicly_accessible
+//         installed_hardware {
+//           id
+//           name
+//           uri
+//         }
+//       }
+//     `,
+//   },
+// );
 
-export default compose(inject18n, withStyles(styles))(RiskAnalysisThreats);
+export default compose(inject18n, withStyles(styles))(RiskAnalysisThreatsComponent);
