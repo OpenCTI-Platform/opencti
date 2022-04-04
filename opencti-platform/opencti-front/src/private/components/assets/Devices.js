@@ -25,6 +25,8 @@ import DeviceCreation from './devices/DeviceCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import DeviceDeletion from './devices/DeviceDeletion';
+import ErrorNotFound from '../../../components/ErrorNotFound';
+import {toastSuccess, toastGenericError} from "../../../utils/bakedToast";
 
 class Devices extends Component {
   constructor(props) {
@@ -225,6 +227,9 @@ class Devices extends Component {
           query={devicesCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
+            if (error) {
+              return toastGenericError('Request Failed');
+            }
             return (
               <DevicesCards
                 data={props}
@@ -338,6 +343,9 @@ class Devices extends Component {
           query={devicesLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
+            if (error) {
+              return toastGenericError('Request Failed');
+            }
             return (
               <DevicesLines
                 data={props}
