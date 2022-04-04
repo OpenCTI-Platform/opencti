@@ -81,7 +81,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should list stixCyberObservables', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(2);
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
   });
   it('should update stixCyberObservable', async () => {
     const UPDATE_QUERY = gql`
