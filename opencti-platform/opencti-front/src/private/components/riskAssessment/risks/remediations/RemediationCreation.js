@@ -165,7 +165,7 @@ class RemediationCreation extends Component {
         resetForm();
         console.log('remediationCreationComplete', data);
         this.handleClose();
-        this.props.history.push('/dashboard/risk-assessment/risks');
+        this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) =>
         console.log('RemediationCreationDarkLightMutationError', err),

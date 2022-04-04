@@ -158,7 +158,7 @@ class DeviceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/assets/devices');
+        this.props.history.push('/defender HQ/assets/devices');
       },
       onError: (err => (console.log('DeviceCreation Erro', err))),
     });

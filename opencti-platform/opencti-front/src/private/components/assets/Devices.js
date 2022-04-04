@@ -90,7 +90,7 @@ class Devices extends Component {
   handleDisplayEdit(selectedElements) {
     const deviceId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/dashboard/assets/devices/${deviceId}`,
+      pathname: `/defender HQ/assets/devices/${deviceId}`,
       openEdit: true,
     });
   }

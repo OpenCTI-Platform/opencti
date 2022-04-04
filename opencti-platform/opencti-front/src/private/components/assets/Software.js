@@ -86,7 +86,7 @@ class Software extends Component {
   handleDisplayEdit(selectedElements) {
     const softwareId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/dashboard/assets/software/${softwareId}`,
+      pathname: `/defender HQ/assets/software/${softwareId}`,
       openEdit: true,
     });
   }

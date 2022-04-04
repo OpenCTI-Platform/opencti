@@ -88,7 +88,7 @@ class Risks extends Component {
   handleDisplayEdit(selectedElements) {
     const riskId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/dashboard/risk-assessment/risks/${riskId}`,
+      pathname: `/activities/risk assessment/risks/${riskId}`,
       openEdit: true,
     });
   }

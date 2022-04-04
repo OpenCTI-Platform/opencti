@@ -86,7 +86,7 @@ class Network extends Component {
   handleDisplayEdit(selectedElements) {
     const networkId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/dashboard/assets/network/${networkId}`,
+      pathname: `/defender HQ/assets/network/${networkId}`,
       openEdit: true,
     });
   }

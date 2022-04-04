@@ -44,7 +44,7 @@ class SoftwareComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/assets/software',
+      pathname: '/defender HQ/assets/software',
       openNewCreation: true,
     });
   }

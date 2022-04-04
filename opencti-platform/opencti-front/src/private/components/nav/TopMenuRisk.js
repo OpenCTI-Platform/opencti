@@ -10,7 +10,6 @@ import ManageSearchIcon from '@material-ui/icons/SearchOutlined';
 import AddModeratorIcon from '@material-ui/icons/AddToQueueRounded';
 import HistoryIcon from '@material-ui/icons/History';
 import TopBarBreadcrumbs from './TopBarBreadcrumbs';
-import TopBarRiskBreadcrumbs from './TopBarRiskBreadcrumbs';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -53,145 +52,149 @@ class TopMenuRisk extends Component {
       breadcrumbs,
     } = this.props;
     return (
-      <div className={classes.riskMenuContainer}>
-        {breadcrumbs === true ? <TopBarRiskBreadcrumbs remediation={remediation} risk={risk}/> : (
-          <>
-            <TopBarRiskBreadcrumbs risk={risk}/>
-            <Button
-              component={Link}
-              to={`/dashboard/risk-assessment/risks/${riskId}`}
-              variant={
-                location.pathname
-                  === `/dashboard/risk-assessment/risks/${riskId}`
-                  ? 'contained'
-                  : 'text'
-              }
-              size="small"
-              color={
-                location.pathname
-                  === `/dashboard/risk-assessment/risks/${riskId}`
-                  ? 'secondary'
-                  : 'inherit'
-              }
-              classes={{ root: classes.button }}
-            >
-              <NoteRoundedIcon className={classes.icon} />
-              {t('OVERVIEW')}
-            </Button>
-            {/* <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}> */}
-            <Button
-              component={Link}
-              to={`/dashboard/risk-assessment/risks/${riskId}/analysis`}
-              variant={
-                location.pathname
-                  === `/dashboard/risk-assessment/risks/${riskId}/analysis`
-                  ? 'contained'
-                  : 'text'
-              }
-              size="small"
-              color={
-                location.pathname
-                  === `/dashboard/risk-assessment/risks/${riskId}/analysis`
-                  ? 'secondary'
-                  : 'inherit'
-              }
-              classes={{ root: classes.button }}
-            >
-              {/* <ManageSearchIcon className={classes.icon} /> */}
-              <TextSearch className={classes.icon} />
-              {t('ANALYSIS')}
-            </Button>
-            {/* </Security> */}
-            <Button
-              component={Link}
-              to={`/dashboard/risk-assessment/risks/${riskId}/remediation`}
-              variant={
-                location.pathname
-                  === `/dashboard/risk-assessment/risks/${riskId}/remediation`
-                  ? 'contained'
-                  : 'text'
-              }
-              size="small"
-              color={
-                location.pathname
-                  === `/dashboard/risk-assessment/risks/${riskId}/remediation`
-                  ? 'secondary'
-                  : 'inherit'
-              }
-              classes={{ root: classes.button }}
-            >
-              {/* <AddModeratorIcon className={classes.icon} /> */}
-              <ShieldPlus className={classes.icon} />
-              {t('REMEDIATION')}
-            </Button>
-            {/* <Button
-          component={Link}
-          to={`/dashboard/risk-assessment/risks/${riskId}/indicators`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/risk-assessment/risks/${riskId}/indicators`,
+      <>
+        {
+          location.pathname.includes('/remediation/')
+            ? <TopBarBreadcrumbs riskId={riskId} risk={risk} remediation={remediation}/>
+            : (
+              <div className={classes.riskMenuContainer}>
+                <TopBarBreadcrumbs risk={risk} riskId={riskId}/>
+                <Button
+                  component={Link}
+                  to={`/activities/risk assessment/risks/${riskId}`}
+                  variant={
+                    location.pathname
+                      === `/activities/risk assessment/risks/${riskId}`
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname
+                      === `/activities/risk assessment/risks/${riskId}`
+                      ? 'secondary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <NoteRoundedIcon className={classes.icon} />
+                  {t('OVERVIEW')}
+                </Button>
+                {/* <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}> */}
+                <Button
+                  component={Link}
+                  to={`/activities/risk assessment/risks/${riskId}/analysis`}
+                  variant={
+                    location.pathname
+                      === `/activities/risk assessment/risks/${riskId}/analysis`
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname
+                      === `/activities/risk assessment/risks/${riskId}/analysis`
+                      ? 'secondary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  {/* <ManageSearchIcon className={classes.icon} /> */}
+                  <TextSearch className={classes.icon} />
+                  {t('ANALYSIS')}
+                </Button>
+                {/* </Security> */}
+                <Button
+                  component={Link}
+                  to={`/activities/risk assessment/risks/${riskId}/remediation`}
+                  variant={
+                    location.pathname
+                      === `/activities/risk assessment/risks/${riskId}/remediation`
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname
+                      === `/activities/risk assessment/risks/${riskId}/remediation`
+                      ? 'secondary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  {/* <AddModeratorIcon className={classes.icon} /> */}
+                  <ShieldPlus className={classes.icon} />
+                  {t('REMEDIATION')}
+                </Button>
+                {/* <Button
+                  component={Link}
+                  to={`/activities/risk assessment/risks/${riskId}/indicators`}
+                  variant={
+                    location.pathname.includes(
+                      `/activities/risk assessment/risks/${riskId}/indicators`,
+                    )
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname.includes(
+                      `/activities/risk assessment/risks/${riskId}/indicators`,
+                    )
+                      ? 'secondary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  {t('Indicators')}
+                </Button> */}
+                {/* <Button
+                  component={Link}
+                  to={`/activities/risk assessment/risks/${riskId}/history`}
+                  variant={
+                    location.pathname
+                    === `/activities/risk assessment/risks/${riskId}/history`
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname
+                    === `/activities/risk assessment/risks/${riskId}/history`
+                      ? 'secondary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  {t('History')}
+                </Button> */}
+                <Button
+                  component={Link}
+                  to={`/activities/risk assessment/risks/${riskId}/tracking`}
+                  variant={
+                    location.pathname.includes(
+                      `/activities/risk assessment/risks/${riskId}/tracking`,
+                    )
+                      ? 'contained'
+                      : 'text'
+                  }
+                  size="small"
+                  color={
+                    location.pathname.includes(
+                      `/activities/risk assessment/risks/${riskId}/tracking`,
+                    )
+                      ? 'secondary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <HistoryIcon className={classes.icon} />
+                  {t('TRACKING')}
+                </Button>
+              </div>
             )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/risk-assessment/risks/${riskId}/indicators`,
-            )
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Indicators')}
-        </Button> */}
-            {/* <Button
-          component={Link}
-          to={`/dashboard/risk-assessment/risks/${riskId}/history`}
-          variant={
-            location.pathname
-            === `/dashboard/risk-assessment/risks/${riskId}/history`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/risk-assessment/risks/${riskId}/history`
-              ? 'secondary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('History')}
-        </Button> */}
-            <Button
-              component={Link}
-              to={`/dashboard/risk-assessment/risks/${riskId}/tracking`}
-              variant={
-                location.pathname.includes(
-                  `/dashboard/risk-assessment/risks/${riskId}/tracking`,
-                )
-                  ? 'contained'
-                  : 'text'
-              }
-              size="small"
-              color={
-                location.pathname.includes(
-                  `/dashboard/risk-assessment/risks/${riskId}/tracking`,
-                )
-                  ? 'secondary'
-                  : 'inherit'
-              }
-              classes={{ root: classes.button }}
-            >
-              <HistoryIcon className={classes.icon} />
-              {t('TRACKING')}
-            </Button>
-          </>
-        )}
-      </div>
+        }
+      </>
     );
   }
 }
@@ -199,8 +202,8 @@ class TopMenuRisk extends Component {
 TopMenuRisk.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
-  risk: PropTypes.object,
   breadcrumbs: PropTypes.bool,
+  risk: PropTypes.string,
   remediation: PropTypes.object,
   match: PropTypes.object,
   t: PropTypes.func,
