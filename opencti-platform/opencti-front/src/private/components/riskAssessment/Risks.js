@@ -24,6 +24,7 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import RiskDeletion from './risks/RiskDeletion';
 import ErrorNotFound from '../../../components/ErrorNotFound';
+import { toastSuccess, toastGenericError } from '../../../utils/bakedToast';
 
 class Risks extends Component {
   constructor(props) {
@@ -217,7 +218,7 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return <ErrorNotFound />;
+              return toastGenericError('Request Failed');
             }
             return (
               <RisksCards
@@ -360,7 +361,7 @@ class Risks extends Component {
           render={({ error, props }) => {
             console.log(`props : ${props} Error : ${error}`);
             if (error) {
-              return <ErrorNotFound />;
+              return toastGenericError('Request Failed');
             }
             return (
               <RisksLines

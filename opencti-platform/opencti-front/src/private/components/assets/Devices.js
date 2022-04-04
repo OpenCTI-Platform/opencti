@@ -228,7 +228,7 @@ class Devices extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed!');
+              return toastGenericError('Request Failed');
             }
             return (
               <DevicesCards
@@ -344,7 +344,7 @@ class Devices extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed!');
+              return toastGenericError('Request Failed');
             }
             return (
               <DevicesLines
