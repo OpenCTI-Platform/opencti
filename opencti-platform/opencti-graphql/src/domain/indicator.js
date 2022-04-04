@@ -1,7 +1,6 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { dissoc, pipe } from 'ramda';
 import {
   createEntity,
   createRelation,
