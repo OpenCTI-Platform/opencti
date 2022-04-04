@@ -31,7 +31,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+import {
+  commitMutation,
+  QueryRenderer,
+} from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
 import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
 import RemediationCreationGeneral from './RemediationCreationGeneral';
@@ -99,36 +102,37 @@ const styles = (theme) => ({
 });
 
 const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
+  <Slide direction='up' ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
 
 // const remediationCreationMutation = graphql`
 //   mutation RemediationCreationMutation($input: RemediationTaskAddInput) {
-//     createRemediationTask (input: $input) {
+//     createRemediationTask(input: $input) {
 //       id
 //     }
 //   }
 // `;
 
-const remediationValidation = (t) => Yup.object().shape({
-  // name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
-});
+const remediationValidation = (t) =>
+  Yup.object().shape({
+    // name: Yup.string().required(t('This field is required')),
+    // asset_type: Yup.array().required(t('This field is required')),
+    // implementation_point: Yup.string().required(t('This field is required')),
+    // operational_status: Yup.string().required(t('This field is required')),
+    // first_seen: Yup.date()
+    //   .nullable()
+    //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    // last_seen: Yup.date()
+    //   .nullable()
+    //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    // sophistication: Yup.string().nullable(),
+    // resource_level: Yup.string().nullable(),
+    // primary_motivation: Yup.string().nullable(),
+    // secondary_motivations: Yup.array().nullable(),
+    // personal_motivations: Yup.array().nullable(),
+    // goals: Yup.string().nullable(),
+  });
 
 class RemediationCreation extends Component {
   constructor(props) {
@@ -145,28 +149,13 @@ class RemediationCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     console.log('remediationCreationValues', values);
-    const adaptedValues = R.evolve(
-      {
-        created: () => parse(values.created).format(),
-        modified: () => parse(values.modified).format(),
-      },
-      values,
-    );
     const finalValues = R.pipe(
-      R.assoc('task_type', values.task_type),
-    )(adaptedValues);
+      R.dissoc('created'),
+      R.dissoc('modified'),
+    )(values);
     console.log('RemdiationCreationFinal', finalValues);
     CM(environmentDarkLight, {
       // mutation: remediationCreationMutation,
-      // const adaptedValues = evolve(
-      //   {
-      //     published: () => parse(values.published).format(),
-      //     createdBy: path(['value']),
-      //     objectMarking: pluck('value'),
-      //     objectLabel: pluck('value'),
-      //   },
-      //   values,
-      // );
       variables: {
         input: finalValues,
       },
@@ -178,7 +167,8 @@ class RemediationCreation extends Component {
         this.handleClose();
         this.props.history.push('/dashboard/risk-assessment/risks');
       },
-      onError: (err) => console.log('RemediationCreationDarkLightMutationError', err),
+      onError: (err) =>
+        console.log('RemediationCreationDarkLightMutationError', err),
     });
     // commitMutation({
     //   mutation: remediationCreationMutation,
@@ -213,13 +203,7 @@ class RemediationCreation extends Component {
   }
 
   render() {
-    const {
-      t,
-      classes,
-      remediationId,
-      open,
-      history,
-    } = this.props;
+    const { t, classes, remediationId, open, history } = this.props;
     console.log('remediationCreationId', remediationId);
     return (
       <div className={classes.container}>
@@ -229,9 +213,10 @@ class RemediationCreation extends Component {
             created: null,
             modified: null,
             description: '',
-            source: '',
             lifecycle: '',
             response_type: '',
+            actor_target: '',
+            oscal_party: '',
           }}
           // validationSchema={remediationValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
@@ -247,8 +232,8 @@ class RemediationCreation extends Component {
             <>
               <div className={classes.header}>
                 <Typography
-                  variant="h1"
-                  color="secondary"
+                  variant='h1'
+                  color='secondary'
                   gutterBottom={true}
                   classes={{ root: classes.title }}
                 >
@@ -257,8 +242,8 @@ class RemediationCreation extends Component {
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
                     <Button
-                      variant="outlined"
-                      size="small"
+                      variant='outlined'
+                      size='small'
                       startIcon={<Close />}
                       color='primary'
                       // onClick={() => history.goBack()}
@@ -270,8 +255,8 @@ class RemediationCreation extends Component {
                   </Tooltip>
                   <Tooltip title={t('Create')}>
                     <Button
-                      variant="contained"
-                      color="primary"
+                      variant='contained'
+                      color='primary'
                       startIcon={<CheckCircleOutline />}
                       onClick={submitForm}
                       disabled={isSubmitting}
@@ -287,7 +272,7 @@ class RemediationCreation extends Component {
                     onClose={this.handleClose.bind(this)}
                   >
                     <DialogContent>
-                      <Typography className={classes.popoverDialog} >
+                      <Typography className={classes.popoverDialog}>
                         {t('Are you sure you’d like to cancel?')}
                       </Typography>
                       <DialogContentText>
@@ -299,18 +284,18 @@ class RemediationCreation extends Component {
                         onClick={this.handleClose.bind(this)}
                         // disabled={this.state.deleting}
                         classes={{ root: classes.buttonPopover }}
-                        variant="outlined"
-                        size="small"
+                        variant='outlined'
+                        size='small'
                       >
                         {t('Go Back')}
                       </Button>
                       <Button
-                        color="secondary"
+                        color='secondary'
                         // disabled={this.state.deleting}
                         onClick={() => history.goBack()}
                         classes={{ root: classes.buttonPopover }}
-                        variant="contained"
-                        size="small"
+                        variant='contained'
+                        size='small'
                       >
                         {t('Yes, Cancel')}
                       </Button>
@@ -324,18 +309,18 @@ class RemediationCreation extends Component {
                   spacing={3}
                   classes={{ container: classes.gridContainer }}
                 >
-                  <Grid item={true} xs={6}>
+                  <Grid item={true} xs={12}>
                     <RemediationCreationGeneral
                       setFieldValue={setFieldValue}
                       values={values}
                     />
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  {/* <Grid item={true} xs={6}>
                     <RemediationCreationDetails
                       setFieldValue={setFieldValue}
                       values={values}
                     />
-                  </Grid>
+                  </Grid> */}
                 </Grid>
               </Form>
               <Grid
@@ -344,14 +329,22 @@ class RemediationCreation extends Component {
                 classes={{ container: classes.gridContainer }}
                 style={{ marginTop: 25 }}
               >
-                <Grid item={true} xs={6}>
+                <Grid
+                  style={{ pointerEvents: 'none', opacity: '0.4' }}
+                  item={true}
+                  xs={6}
+                >
                   {/* <StixCoreObjectExternalReferences
                       stixCoreObjectId={remediation.id}
                     /> */}
                   {/* <CyioCoreObjectAssetCreationExternalReferences /> */}
                   <RequiredResources remediationId={remediationId} />
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid
+                  style={{ pointerEvents: 'none', opacity: '0.4' }}
+                  item={true}
+                  xs={6}
+                >
                   {/* <CyioCoreObjectLatestHistory /> */}
                   <RelatedTasks remediationId={remediationId} />
                 </Grid>
@@ -362,13 +355,21 @@ class RemediationCreation extends Component {
                 classes={{ container: classes.gridContainer }}
                 style={{ marginTop: 50 }}
               >
-                <Grid item={true} xs={6}>
+                <Grid
+                  style={{ pointerEvents: 'none', opacity: '0.4' }}
+                  item={true}
+                  xs={6}
+                >
                   <CyioCoreObjectAssetCreationExternalReferences />
                   {/* <CyioCoreObjectExternalReferences
                     cyioCoreObjectId={remediationId}
                   /> */}
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid
+                  style={{ pointerEvents: 'none', opacity: '0.4' }}
+                  item={true}
+                  xs={6}
+                >
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
                     cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                     marginTop='0px'
@@ -392,5 +393,5 @@ RemediationCreation.propTypes = {
 
 export default compose(
   inject18n,
-  withStyles(styles, { withTheme: true }),
+  withStyles(styles, { withTheme: true })
 )(RemediationCreation);
