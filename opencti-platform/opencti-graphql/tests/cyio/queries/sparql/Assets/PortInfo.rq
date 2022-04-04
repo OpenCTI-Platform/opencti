@@ -1,0 +1,10 @@
+SELECT DISTINCT ?iri ?rdf_type ?id ?object_type ?port_number ?protocols 
+FROM <tag:stardog:api:context:named>
+WHERE {
+    ?iri a <http://scap.nist.gov/ns/asset-identification#Port> .
+    OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type . }
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type . }
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#port_number> ?port_number . }
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#protocols> ?protocols . }
+}

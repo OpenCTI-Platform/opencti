@@ -166,7 +166,7 @@ class Risks extends Component {
     } = this.state;
     const dataColumns = {
       poam_id: {
-        label: 'Poam id',
+        label: 'POAM ID',
       },
       name: {
         label: 'Name',
@@ -207,7 +207,7 @@ class Risks extends Component {
           'created_start_date',
           'created_end_date',
           'createdBy',
-          'labelledBy',
+          'label_name',
         ]}
       >
         <QR
@@ -218,6 +218,7 @@ class Risks extends Component {
               data={props}
               extra={props}
               selectAll={selectAll}
+              history={this.props.history}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
               selectedElements={selectedElements}
@@ -268,13 +269,13 @@ class Risks extends Component {
     }
     const dataColumns = {
       poam_id: {
-        label: 'Poam id',
-        width: '13%',
+        label: 'POAM ID',
+        width: '12%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '15%',
+        width: '16%',
         isSortable: false,
       },
       risk_level: {
@@ -284,7 +285,7 @@ class Risks extends Component {
       },
       risk_status: {
         label: 'Status',
-        width: '17%',
+        width: '16%',
         isSortable: true,
       },
       risk_response: {
@@ -294,17 +295,17 @@ class Risks extends Component {
       },
       lifecycle: {
         label: 'Lifecycle',
-        width: '15%',
+        width: '13%',
         isSortable: true,
       },
       occurrences: {
         label: 'Occurrences',
-        width: '11%',
+        width: '10%',
         isSortable: true,
       },
       deadline: {
         label: 'Deadline',
-        width: '11%',
+        width: '10%',
         isSortable: false,
       },
     };
@@ -335,7 +336,6 @@ class Risks extends Component {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'assetTypeBy',
-          'labelledBy',
           'release_date',
           // 'markedBy',
           // 'created_start_date',
@@ -343,7 +343,7 @@ class Risks extends Component {
           'operation_System',
           // 'created_end_date',
           // 'createdBy',
-          'labelledBy',
+          'label_name',
         ]}
       >
         <QR
@@ -356,6 +356,7 @@ class Risks extends Component {
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
+                history={this.props.history}
                 initialLoading={props === null}
                 selectedElements={selectedElements}
                 paginationOptions={paginationOptions}

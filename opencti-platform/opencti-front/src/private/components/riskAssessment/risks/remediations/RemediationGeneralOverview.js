@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { compose, propOr, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -17,14 +18,16 @@ import inject18n from '../../../../../components/i18n';
 import ItemAuthor from '../../../../../components/ItemAuthor';
 import ItemMarking from '../../../../../components/ItemMarking';
 import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
+import RemediationDetailsPopover from './RemediationDetailsPopover';
 
 const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
     margin: '10px 0 0 0',
-    padding: '24px 24px 32px 24px',
+    padding: '45px 35px 42px 35px',
     borderRadius: 6,
+    position: 'relative',
   },
   chip: {
     color: theme.palette.header.text,
@@ -36,7 +39,7 @@ const styles = (theme) => ({
   },
   scrollBg: {
     background: theme.palette.header.background,
-    width: '100%',
+    width: '92%',
     color: 'white',
     padding: '10px 5px 10px 15px',
     borderRadius: '5px',
@@ -45,7 +48,7 @@ const styles = (theme) => ({
   scrollDiv: {
     width: '100%',
     background: theme.palette.header.background,
-    height: '78px',
+    height: '223px',
     overflow: 'hidden',
     overflowY: 'scroll',
   },
@@ -54,6 +57,28 @@ const styles = (theme) => ({
     fontFamily: 'sans-serif',
     padding: '0px',
     textAlign: 'left',
+  },
+  container: {
+    display: 'flex',
+  },
+  fixed: {
+    width: '200px',
+  },
+  flexItem: {
+    flexGrow: '1',
+    marginTop: '20px',
+  },
+  remediationPopover: {
+    position: 'absolute',
+    right: '0px',
+    top: '0px',
+    margin: '5px 20px',
+  },
+  statusButton: {
+    cursor: 'default',
+    background: '#075AD333',
+    marginBottom: '5px',
+    border: '1px solid #075AD3',
   },
 });
 
@@ -65,71 +90,22 @@ class RemediationGeneralOverviewComponent extends Component {
       fldt,
       classes,
       remediation,
+      risk,
     } = this.props;
-    console.log('remediationGenreal', remediation);
+    const remediationOriginData = R.pipe(
+      R.pathOr([], ['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(remediation);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t('Basic Information')}
         </Typography>
-        {/*  <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Marking')}
-          </Typography>
-          {remediation.objectMarking.edges.length > 0 ? (
-            map(
-              (markingDefinition) => (
-                <ItemMarking
-                  key={markingDefinition.node.id}
-                  label={markingDefinition.node.definition}
-                  color={markingDefinition.node.x_opencti_color}
-                />
-              ),
-              remediation.objectMarking.edges,
-            )
-          ) : (
-            <ItemMarking label="TLP:WHITE" />
-          )}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creation date')}
-          </Typography>
-          {fldt(remediation.created)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Modification date')}
-          </Typography>
-          {fldt(remediation.modified)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Author')}
-          </Typography>
-          <ItemAuthor createdBy={propOr(null, 'createdBy', remediation)} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Description')}
-          </Typography>
-          <ExpandableMarkdown
-            className="markdown"
-            source={remediation.description}
-            limit={250}
-          />
-        </Paper> */}
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={3}>
               <div style={{ marginBottom: '25px' }}>
                 <Typography
                   variant="h3"
@@ -156,8 +132,77 @@ class RemediationGeneralOverviewComponent extends Component {
                 {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
                 {remediation.created && fd(remediation.created)}
               </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Source')}
+                </Typography>
+                <div className="clearfix" />
+                <div style={{ display: 'flex' }}>
+                  <Badge
+                    overlap="circular"
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    badgeContent={
+                      <Avatar style={{ width: 15, height: 15, backgroundColor: 'green' }} alt="Remy Sharp" />
+                    }
+                  >
+                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                  </Badge>
+                  <div style={{ marginLeft: '20px' }}>
+                    <Typography variant="subtitle1">
+                      {remediationOriginData.actor_ref.name
+                      && t(remediationOriginData.actor_ref.name)}
+                    </Typography>
+                    <Typography color="textSecondary" variant="disabled">
+                      {/* {t('Lorem Ipsum Dolor Ist')} */}
+                    </Typography>
+                  </div>
+                </div>
+              </div>
+              <div className={classes.container}>
+                <div className={classes.fixed} style={{ marginTop: '20px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ marginTop: 5 }}
+                  >
+                    {t('Response Type')}
+                  </Typography>
+                  <div className="clearfix" />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    className={classes.statusButton}
+                  >
+                    {remediation.response_type && t(remediation.response_type)}
+                  </Button>
+                </div>
+                <div className={classes.flexItem}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ marginTop: 5 }}
+                  >
+                    {t('Lifecycle')}
+                  </Typography>
+                  <div className="clearfix" />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    className={classes.statusButton}
+                  >
+                    {remediation.lifecycle && t(remediation.lifecycle)}
+                  </Button>
+                </div>
+              </div>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={3}>
               <div style={{ marginBottom: '25px' }}>
                 <Typography
                   variant="h3"
@@ -184,25 +229,31 @@ class RemediationGeneralOverviewComponent extends Component {
                 {remediation.modified && fd(remediation.modified)}
               </div>
             </Grid>
-          </Grid>
-          <Grid xs={12}>
-            <Typography
-              variant="h3"
-              color="textSecondary"
-              gutterBottom={true}
-              style={{ float: 'left' }}
-            >
-              {t('Description')}
-            </Typography>
-            <div className="clearfix" />
-            <div className={classes.scrollBg}>
-              <div className={classes.scrollDiv}>
-                <div className={classes.scrollObj}>
-                  {remediation.description && t(remediation.description)}
+            <Grid xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Description')}
+              </Typography>
+              <div className="clearfix" />
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    {remediation.description && t(remediation.description)}
+                  </div>
                 </div>
               </div>
-            </div>
+            </Grid>
           </Grid>
+          <div className={classes.remediationPopover}>
+          <RemediationDetailsPopover
+            remediation={remediation}
+            risk={risk}
+          />
+          </div>
         </Paper>
       </div>
     );
@@ -214,6 +265,7 @@ RemediationGeneralOverviewComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
+  risk: PropTypes.risk,
 };
 
 const RemediationGeneralOverview = createFragmentContainer(
@@ -228,6 +280,28 @@ const RemediationGeneralOverview = createFragmentContainer(
         modified            # Last Modified
         lifecycle           # Lifecycle
         response_type       # Response Type
+        origins{            # Detection Source
+          id
+          origin_actors {
+            actor_type
+            actor_ref {
+              ... on AssessmentPlatform {
+                id
+                name
+              }
+              ... on Component {
+                id
+                component_type
+                name          # Source
+              }
+              ... on OscalParty {
+                id
+                party_type
+                name            # Source
+              }
+            }
+          }
+        }
       }
     `,
   },

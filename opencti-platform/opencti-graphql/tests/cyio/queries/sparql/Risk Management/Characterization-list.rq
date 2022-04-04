@@ -1,0 +1,11 @@
+SELECT DISTINCT ?iri ?rdf_type ?id ?entity_type ?origins ?facets ?source_system ?facet_name ?facet_value ?risk_state
+FROM <tag:stardog:api:context:local>
+WHERE {
+    # BIND( <http://csrc.nist.gov/ns/oscal/assessment/common#Characterization-91549293-7ce2-4499-a6fe-a1aa370e5256> as ?iri )
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Characterization> . 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .}
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?entity_type . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origins> ?origins . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#facets> ?facets . }  
+}

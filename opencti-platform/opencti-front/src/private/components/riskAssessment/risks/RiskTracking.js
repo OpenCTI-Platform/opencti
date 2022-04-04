@@ -73,7 +73,7 @@ class RiskTracking extends Component {
           PopoverComponent={<RiskPopover />}
           // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-          OperationsComponent={<RiskDeletion />}
+          // OperationsComponent={<RiskDeletion />}
         />
         <TopMenuRisk risk={risk}/>
         <QR
@@ -87,7 +87,7 @@ class RiskTracking extends Component {
                 <RiskTrackingLines
                   history={history}
                   riskId={riskId}
-                  data={props}
+                  data={props.risk}
                 />
               );
             }

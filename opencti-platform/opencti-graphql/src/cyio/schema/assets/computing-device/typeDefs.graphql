@@ -59,16 +59,16 @@
     baseline_configuration_name: String
     function: String
     # Computing Device
+    installed_software: [SoftwareAsset]
     bios_id: String
     connected_to_network: NetworkAsset
     default_gateway: String
     fqdn: String
     hostname: String
     netbios_name: String
-    installed_software: [SoftwareAsset]
     ipv4_address: [IpV4Address]
     ipv6_address: [IpV6Address]
-#    mac_address: [MACAddress]     this is what it should be because MAC address are objects
+    #    mac_address: [MACAddress]     this is what it should be because MAC address are objects
     mac_address: [MAC]
     network_id: String
     vlan_id: String
@@ -79,6 +79,107 @@
     is_virtual: Boolean
     last_scanned: Timestamp
   }
+  # Mutation Types
+  input ComputingDeviceAssetAddInput {
+    # Asset
+    asset_id: String
+    name: String!
+    description: String
+    # ItAsset
+    asset_tag: String
+    asset_type: AssetType!
+    serial_number: String
+    vendor_name: String
+    version: String
+    release_date: Timestamp
+    implementation_point: ImplementationPoint
+    operational_status: OperationalStatus
+    # responsible_parties: [ResponsibleParty]
+    # HardwareAsset
+    cpe_identifier: String
+    installation_id: String
+    installed_hardware: [ID]
+    installed_operating_system: ID
+    model: String
+    motherboard_id: String
+    baseline_configuration_name: String
+    function: String
+    # Computing Device
+    installed_software: [ID]
+    bios_id: String
+    connected_to_network: ID
+    default_gateway: String
+    fqdn: String
+    hostname: String
+    netbios_name: String
+    ipv4_address: [IpV4AddressAddInput]
+    ipv6_address: [IpV6AddressAddInput]
+    #    mac_address: [MACAddressAddInput]     this is what it should be because MAC address are objects
+    mac_address: [MAC]
+    network_id: String
+    vlan_id: String
+    uri: URL
+    ports: [PortInfoAddInput]
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    is_virtual: Boolean
+    last_scanned: Timestamp
+  }
+  # Pagination Types
+  type ComputingDeviceAssetConnection {
+    pageInfo: PageInfo!
+    edges: [ComputingDeviceAssetEdge]
+  }
+  type ComputingDeviceAssetEdge {
+    cursor: String!
+    node: ComputingDeviceAsset!
+  }
+  # Slicing Types
+  enum ComputingDeviceAssetOrdering {
+    "Name"
+    name
+    "Asset Type"
+    asset_type
+    "Asset ID"
+    asset_id
+    "IP Address"
+    ip_address
+    "Installed Operating System"
+    installed_operating_system
+    "Nework ID"
+    network_id
+    "Label"
+    labels
+  }
+  # Filtering Types
+  input ComputingDeviceAssetFiltering {
+    key: ComputingDeviceAssetFilter!
+    values: [String]
+    operator: String            # match, wildcard, gt, lt, gte, lte, eq, ne
+    filterMode: FilterMode      # unused
+  }
+  "Defines the list of fields that can be filtered upon for Device Assets."
+  enum ComputingDeviceAssetFilter {
+    "Created"
+    created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Modified"
+    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    "Name"
+    name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
+    "Asset Type"
+    asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
+    "Label"
+    label_name    # Label (key:label_names, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "Location"
+    location_name
+    "IP Address"
+    ip_address_value
+    "Installed Operating System"
+    installed_os_name
+    "Network ID"
+    network_id
+  }
+
 
   "Defines identifying information about infrastructure server device that perform generic computing capabilities."
   type ServerAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
@@ -193,7 +294,7 @@
     installed_software: [SoftwareAsset]
     ipv4_address: [IpV4Address]
     ipv6_address: [IpV6Address]
-#    mac_address: [MACAddress]     this is what it should be because MAC address are objects
+    #    mac_address: [MACAddress]     this is what it should be because MAC address are objects
     mac_address: [MAC]
     vlan_id: String
     uri: String
@@ -202,108 +303,6 @@
     is_scanned: Boolean
     is_virtual: Boolean
     last_scanned: Timestamp
-  }
-
-  # Mutation Types
-  input ComputingDeviceAssetAddInput {
-    # Asset
-    asset_id: String
-    name: String!
-    description: String
-    # ItAsset
-    asset_tag: String
-    asset_type: AssetType!
-    serial_number: String
-    vendor_name: String
-    version: String
-    release_date: Timestamp
-    implementation_point: ImplementationPoint
-    operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
-    # HardwareAsset
-    cpe_identifier: String
-    installation_id: String
-    model: String
-    motherboard_id: String
-    baseline_configuration_name: String
-    function: String
-    # Computing Device
-    bios_id: String
-    default_gateway: String
-    fqdn: String
-    hostname: String
-    netbios_name: String
-    ipv4_address: [IpV4AddressAddInput]
-    ipv6_address: [IpV6AddressAddInput]
-#    mac_address: [MACAddressAddInput]     this is what it should be because MAC address are objects
-    mac_address: [MAC]
-    network_id: String
-    vlan_id: String
-    uri: URL
-    ports: [PortInfoAddInput]
-    is_publicly_accessible: Boolean
-    is_scanned: Boolean
-    is_virtual: Boolean
-    last_scanned: Timestamp
-  }
-
-  # Pagination Types
-  type ComputingDeviceAssetConnection {
-    pageInfo: PageInfo!
-    edges: [ComputingDeviceAssetEdge]
-  }
-
-  type ComputingDeviceAssetEdge {
-    cursor: String!
-    node: ComputingDeviceAsset!
-  }
-
-  # Slicing Types
-  enum ComputingDeviceAssetOrdering {
-    "Name"
-    name
-    "Asset Type"
-    asset_type
-    "Asset ID"
-    asset_id
-    "IP Address"
-    ip_address
-    "Installed Operating System"
-    installed_operating_system
-    "Nework ID"
-    network_id
-    "Label"
-    labels
-  }
-
-  # Filtering Types
-  input ComputingDeviceAssetFiltering {
-    key: ComputingDeviceAssetFilter!
-    values: [String]
-    operator: String            # match, wildcard, gt, lt, gte, lte, eq, ne
-    filterMode: FilterMode      # unused
-  }
-
-  "Defines the list of fields that can be filtered upon for Device Assets."
-  enum ComputingDeviceAssetFilter {
-    "Created"
-    created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
-    "Modified"
-    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
-    "Name"
-    name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
-    "Asset Type"
-    asset_type    # Asset Type (key:asset_type, values: ["type1","type2","type3"], operator: "matches", filterMode: "or")
-    "Label"
-    label_name    # Label (key:label_names, values:["label1","label2"], operator: "matches", filterMode: "or")
-    "Location"
-    location_name
-    "IP Address"
-    ip_address_value
-    "Installed Operating System"
-    installed_os_name
-    "Network ID"
-    network_id
   }
 
   # this is used to restrict the set of asset_types values that are allowed in a filter

@@ -34,15 +34,12 @@ const assetCommonResolvers = {
           queryId: "Select Asset List",
           singularizeSchema
         });
-          // args.first,       // limit
-          // args.offset,      // offset
-          // args.filter       // filter
       } catch (e) {
         console.log(e)
         throw e
       }
 
-      if (response === undefined) return [];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -55,7 +52,7 @@ const assetCommonResolvers = {
           assetList = response;
         }
 
-        if (offset > assetList.length) return
+        if (offset > assetList.length) return null;
 
         // for each asset in the result set
         for (let asset of assetList) {
@@ -156,15 +153,12 @@ const assetCommonResolvers = {
           queryId: "Select IT Asset List",
           singularizeSchema
         });
-          // args.first,       // limit
-          // args.offset,      // offset
-          // args.filter       // filter
       } catch (e) {
         console.log(e)
         throw e
       }
 
-      if (response === undefined) return [];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -177,7 +171,7 @@ const assetCommonResolvers = {
           assetList = response;
         }
 
-        if (offset > assetList.length) return
+        if (offset > assetList.length) return null;
 
         // for each asset in the result set
         for (let asset of assetList) {
@@ -228,7 +222,7 @@ const assetCommonResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return [];
+          return null;
         }
       }
     },
@@ -276,13 +270,12 @@ const assetCommonResolvers = {
           queryId: "Select Asset Location List",
           singularizeSchema
         });
-        // args.filter
       } catch (e) {
         console.log(e)
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ASSET-LOCATION");
@@ -295,7 +288,7 @@ const assetCommonResolvers = {
           locationList = response;
         }
 
-        if (offset > locationList.length) return
+        if (offset > locationList.length) return null
 
         // for each asset in the result set
         for (let location of locationList) {
@@ -346,7 +339,7 @@ const assetCommonResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return [];
+          return null;
         }
       }
     },
@@ -412,6 +405,16 @@ const assetCommonResolvers = {
       });
     },
     createAssetLocation: async (_, {input}, {dbName, selectMap, dataSources}) => {
+      // remove input fields with null or empty values
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
       const {id, query} = insertLocationQuery(input);
       await dataSources.Stardog.create({
         dbName,

@@ -16,7 +16,7 @@ export const insertPortsQuery = (ports) => {
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "port"`); 
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime`); 
         insertPredicates.push(`${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime`);
-        if(port.protocols !== undefined) {
+        if (port.protocols !== undefined) {
             port.protocols.forEach((protocol) => insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#protocols> "${protocol}"`));
         }
         insertPredicates.push(`${iri} <http://scap.nist.gov/ns/asset-identification#port_number> "${port.port_number}"^^xsd:positiveInteger`)
@@ -60,7 +60,7 @@ export const insertIPQuery = (ip, version) => {
         const idMaterial = {"value": ip.ip_address_value};
         const id = generateId(idMaterial, DARKLIGHT_NS);
         let type, rdfType, iri;
-        if(version === 4){
+        if (version === 4){
             type = "ipv4-addr";
             iri = `<http://scap.nist.gov/ns/asset-identification#IpV4Address-${id}>`;
             rdfType = "<http://scap.nist.gov/ns/asset-identification#IpV4Address>";
@@ -116,7 +116,7 @@ INSERT DATA {
  export const insertMACQuery = (mac) => {
     const graphs = [], macIris = []
     const timestamp = new Date().toISOString();
-    if(Array.isArray(mac)) {
+    if (Array.isArray(mac)) {
         const macList = [];
         for (let macAddr of  mac) {
             macList.push({'mac_address_value': macAddr, 'is_virtual': false});
@@ -186,7 +186,7 @@ export const deletePortQuery = (iri) => {
 
 export const deleteIpQuery = (iri) => {
     let rdfType
-    if(iri.includes("IpV4")){
+    if (iri.includes("IpV4")){
         rdfType = "<http://scap.nist.gov/ns/asset-identification#IpV4Address>";
     } else if (iri.includes("IpV6")){
         rdfType = "<http://scap.nist.gov/ns/asset-identification#IpV6Address>";

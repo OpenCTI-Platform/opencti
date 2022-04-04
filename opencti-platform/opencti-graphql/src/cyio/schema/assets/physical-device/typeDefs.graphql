@@ -20,7 +20,7 @@
 
   # Query Types
   "Defines identifying information about a network."
-  type PhysicalDeviceAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset & HardwareAsset {
+  type PhysicalDeviceAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!

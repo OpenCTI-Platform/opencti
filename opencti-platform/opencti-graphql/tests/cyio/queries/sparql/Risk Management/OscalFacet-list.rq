@@ -1,0 +1,23 @@
+SELECT DISTINCT ?iri ?rdf_type ?id ?entity_type ?source_system ?risk_state ?facet_name ?facet_value
+?likelihood ?impact ?risk ?severity
+FROM <tag:stardog:api:context:local>
+WHERE {
+    BIND( <http://csrc.nist.gov/ns/oscal/common#OscalFacet-1efbb963-3c37-4996-bead-e77c1118170d> as ?iri )
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#OscalFacet> . 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .}
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?entity_type . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#risk_state> ?risk_state . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#source_system> ?source_system . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#facet_name> ?facet_name . }  
+    # Correct namespace 
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#likelihood> ?likelihood . } 
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#impact> ?impact . } 
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#risk> ?risk . } 
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#severity> ?severity . } 
+    # Incorrect namespace
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#likelihood> ?likelihood . } 
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#impact> ?impact . } 
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#risk> ?risk . } 
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#severity> ?severity . } 
+}

@@ -222,8 +222,13 @@ class RiskTrackingLinesContainer extends Component {
     } = this.props;
     const riskLogEdges = R.pathOr([], ['risk', 'risk_log', 'edges'], data);
     const { expanded, displayUpdate } = this.state;
-    console.log('riskTrackingData', data);
-    // const riskLogEdges = data.risk.risk_log.edges;
+    const riskStatusResponse = R.pipe(
+      R.pathOr([], ['risk', 'remediations']),
+      R.map((n) => ({
+        description: n.description,
+        name: n.name,
+      })),
+    )(data);
     const expandable = riskLogEdges.length > 7;
     const paginationOptions = {
       search: this.state.search,
@@ -244,6 +249,8 @@ class RiskTrackingLinesContainer extends Component {
             inputValue={this.state.search}
             paginationOptions={paginationOptions}
             riskId={riskId}
+            data={data}
+            riskStatusResponse={riskStatusResponse}
           // stixCoreObjectOrStixCoreRelationshipReferences={
           //   data.risk.risk_log.edges
           // }
@@ -259,11 +266,12 @@ class RiskTrackingLinesContainer extends Component {
               node={riskLogItem}
               key={riskLogItem.id}
               riskId={riskId}
+              riskStatusResponse={riskStatusResponse}
             />;
           }))
-            : <>
+            : <div style={{ paddingTop: '20px', textAlign: 'center' }}>
               {t('No Record Found')}
-            </>
+            </div>
           )}
         </Paper>
       </div>
@@ -283,8 +291,9 @@ RiskTrackingLinesContainer.propTypes = {
 
 export const RiskTrackingLinesQuery = graphql`
   query RiskTrackingLinesQuery($id: ID!) {
-    ...RiskTrackingLines_data
-      @arguments(id: $id)
+    risk(id: $id) {
+      ...RiskTrackingLines_data
+    }
   }
 `;
 
@@ -292,19 +301,41 @@ const RiskTrackingLines = createFragmentContainer(
   RiskTrackingLinesContainer,
   {
     data: graphql`
-      fragment RiskTrackingLines_data on Query
-      @argumentDefinitions(
-        id: { type: "ID!" }
-      ) {
-        risk(id: $id) {
-          id
-          created
-          modified
-          risk_log {
-            edges {
-              node {
+      fragment RiskTrackingLines_data on Risk {
+        id
+        risk_log {
+          edges {
+            node {
+              id
+              entity_type
+              entry_type     # used to determine icon
+              name           # title
+              description    # description under title
+              logged_by {
+                __typename
                 id
-                ...RiskTrackingLine_node
+                entity_type
+                party {
+                  __typename
+                  id
+                  entity_type
+                  name
+                }
+                role {
+                  id
+                  entity_type
+                  role_identifier
+                  name
+                }
+              }
+              # needed for expanded view
+              event_start    # start date
+              event_end      # end date
+              status_change  # status change
+              related_responses {
+                id
+                entity_type
+                name
               }
             }
           }

@@ -75,163 +75,33 @@ class RiskDetailsComponent extends Component {
       t,
       classes,
       risk,
-      fd,
+      fldt,
       history,
     } = this.props;
-    const relatedRisksEdges = R.pipe(
-      R.pathOr([], ['related_risks', 'edges']),
-      R.map((value) => ({
-        created: value.node.created,
-        modified: value.node.modified,
-        name: value.node.name,
-        description: value.node.description,
-        statement: value.node.statement,
-        risk_status: value.node.risk_status,
-        deadline: value.node.deadline,
-        false_positive: value.node.false_positive,
-        risk_adjusted: value.node.risk_adjusted,
-        vendor_dependency: value.node.vendor_dependency,
-        impacted_control_id: value.node.impacted_control_id,
-      })),
-      R.mergeAll,
-    )(risk);
-    const relatedObservationsEdges = R.pipe(
-      R.pathOr([], ['related_observations', 'edges']),
-      R.map((value) => ({
-        impacted_component: value.node.impacted_component,
-        impacted_asset: value.node.subjects,
-      })),
-    )(risk);
     const riskDetectionSource = R.pipe(
-      R.pathOr([], ['related_risks', 'edges']),
-      R.mergeAll,
-      R.pathOr([], ['node', 'characterizations']),
-      R.mergeAll,
       R.path(['origins']),
       R.mergeAll,
       R.path(['origin_actors']),
       R.mergeAll,
     )(risk);
     return (
-      <div style={{ height: '45%' }}>
+      <div style={{ height: '500px' }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Name')}
-              </Typography>
-              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                <Tooltip
-                  title={t(
-                    'Name',
-                  )}
-                >
-                  <Information fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {/* {risk.name && t(risk.name)} */}
-              {relatedRisksEdges.name && t(relatedRisksEdges.name)}
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Created')}
-              </Typography>
-              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                <Tooltip
-                  title={t(
-                    'Created',
-                  )}
-                >
-                  <Information fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {relatedRisksEdges.created && fd(relatedRisksEdges.created)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Last Modified')}
-              </Typography>
-              <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                <Tooltip
-                  title={t(
-                    'Last Modified',
-                  )}
-                >
-                  <Information fontSize="inherit" color="disabled" />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {relatedRisksEdges.modified && fd(relatedRisksEdges.modified)}
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
               <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('Description')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip
-                    title={t(
-                      'Description',
-                    )}
-                  >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {/* {risk.description && t(risk.description)} */}
-                      {relatedRisksEdges.description && t(relatedRisksEdges.description)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Grid>
-          </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
+                  style={{ float: 'left' }}
                 >
                   {t('Statement')}
                 </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                   <Tooltip
                     title={t(
                       'Statement',
@@ -245,11 +115,196 @@ class RiskDetailsComponent extends Component {
                   <div className={classes.scrollBg}>
                     <div className={classes.scrollDiv}>
                       <div className={classes.scrollObj}>
-                        {relatedRisksEdges.statement && t(relatedRisksEdges.statement)}
+                        {risk.statement && t(risk.statement)}
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 5 }}
+              >
+                {t('Risk Status')}
+              </Typography>
+              <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Risk Status',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {risk.risk_status && <Button
+                variant="outlined"
+                size="small"
+                className={classes.statusButton}
+              >
+                {t(risk.risk_status)}
+              </Button>}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 5 }}
+              >
+                {t('Deadline')}
+              </Typography>
+              <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Deadline',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {risk.deadline && fldt(risk.deadline)}
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 5 }}
+              >
+                {t('Detection Source')}
+              </Typography>
+              <div style={{ float: 'left', margin: '6px 0 0 5px' }}>
+                <Tooltip
+                  title={t(
+                    'Detection Source',
+                  )}
+                >
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              {t(riskDetectionSource.actor_ref.name)}
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('False Positive')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'False Positive',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {risk.false_positive && <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {t(risk.false_positive)}
+                </Button>}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 21 }}
+                >
+                  {t('Risk Adjusted')}
+                </Typography>
+                <div style={{ float: 'left', margin: '22px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Risk Adjusted',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {risk.risk_adjusted && <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {t(risk.risk_adjusted)}
+                </Button>}
+              </div>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Operationally Required')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Operationally Required',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {risk.accepted && <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {t(risk.accepted)}
+                </Button>}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Vendor Dependency')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip
+                    title={t(
+                      'Vendor Dependency',
+                    )}
+                  >
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {risk.vendor_dependency && <Button
+                  variant="outlined"
+                  size="small"
+                  className={classes.statusButton}
+                >
+                  {t(risk.vendor_dependency)}
+                </Button>}
               </div>
             </Grid>
           </Grid>
@@ -263,106 +318,45 @@ RiskDetailsComponent.propTypes = {
   risk: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const RiskDetails = createFragmentContainer(
   RiskDetailsComponent,
   {
     risk: graphql`
-      fragment RiskDetails_risk on POAMItem {
+      fragment RiskDetails_risk on Risk {
         id
-        created
-        modified
-        poam_id     # Item ID
-        name        # Weakness
+        name
+        accepted
         description
-        labels {
-          id
-          name
-          color
-          description
-        }
+        statement
+        risk_status
+        risk_level
+        deadline
+        accepted
+        risk_adjusted
+        priority
+        false_positive
+        vendor_dependency
+        impacted_control_id
         origins {
-          id
-          origin_actors {       # only use if UI support Detection Source
+          origin_actors {
             actor_type
-            actor {
+            actor_ref {
+              ... on AssessmentPlatform {
+                id
+                name
+              }
               ... on Component {
                 id
+                component_type
                 name
               }
               ... on OscalParty {
                 id
+                party_type
                 name
-              }
-            }
-          }
-        }
-        links {
-          id
-          created
-          modified
-          external_id     # external id
-          source_name     # Title
-          description     # description
-          url             # URL
-          media_type      # Media Type
-        }
-        remarks {
-          id
-          abstract
-          content
-          authors
-        }
-        related_risks {
-          edges {
-            node{
-              id
-              created
-              modified
-              name
-              description
-              statement
-              risk_status       # Risk Status
-              deadline
-              priority
-              impacted_control_id
-              accepted
-              false_positive    # False-Positive
-              risk_adjusted     # Operational Required
-              vendor_dependency # Vendor Dependency
-              characterizations {
-                origins {
-                  id
-                  origin_actors {
-                    actor_type
-                    actor {
-                      ... on Component {
-                        id
-                        component_type
-                        name          # Detection Source
-                      }
-                      ... on OscalParty {
-                      id
-                      party_type
-                      name            # Detection Source
-                      }
-                    }
-                  }
-                }
-                facets {
-                  id
-                  source_system
-                  facet_name
-                  facet_value
-                  risk_state
-                  entity_type
-                }
-              }
-              remediations {
-                response_type
-                lifecycle
               }
             }
           }

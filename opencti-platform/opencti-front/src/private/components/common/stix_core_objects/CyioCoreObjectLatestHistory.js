@@ -33,7 +33,7 @@ class CyioCoreObjectLatestHistory extends Component {
             orderBy: 'timestamp',
             orderMode: 'desc',
           }}
-          render={() => <Paper style={{ height: '100%', margin: '10px 0 0 0' }} elevation={2} /> }
+          render={() => <Paper style={{ height: '100%', margin: '13px 0 0 0' }} elevation={2} /> }
         />
       </div>
     );

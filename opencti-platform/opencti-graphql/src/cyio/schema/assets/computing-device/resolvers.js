@@ -1,8 +1,15 @@
 import { assetSingularizeSchema as singularizeSchema, objectTypeMapping } from '../asset-mappings.js';
-import { getSelectSparqlQuery, getReducer, insertQuery, predicateMap } from './sparql-query.js';
 import { UserInputError } from "apollo-server-express";
 import { compareValues, filterValues, updateQuery } from '../../utils.js';
 import { addToInventoryQuery, deleteQuery, removeFromInventoryQuery } from "../assetUtil.js";
+import { 
+  getSelectSparqlQuery, 
+  getReducer, 
+  insertQuery, 
+  selectComputingDeviceQuery,
+  computingDevicePredicateMap, 
+  attachToComputingDeviceQuery
+} from './sparql-query.js';
 import {
   getSelectSparqlQuery as getSoftwareQuery,
   getReducer as getSoftwareReducer
@@ -28,6 +35,7 @@ import {
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
 } from '../../global/resolvers/sparql-query.js';
+import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
 
 const computingDeviceResolvers = {
   Query: {
@@ -47,7 +55,7 @@ const computingDeviceResolvers = {
         console.log(e)
         throw e
       }
-      if (response === undefined) return;
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
@@ -55,7 +63,7 @@ const computingDeviceResolvers = {
         let offset = (args.offset === undefined ? 0 : args.offset);
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
-        if (offset > assetList.length) return
+        if (offset > assetList.length) return null;
 
         // for each asset in the result set
         for (let asset of assetList) {
@@ -125,7 +133,7 @@ const computingDeviceResolvers = {
         console.log(e)
         throw e
       }
-      if (response === undefined) return null;
+      if (response === undefined || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
         const first = response[0];
         if (first === undefined) return null;
@@ -142,8 +150,18 @@ const computingDeviceResolvers = {
     },
   },
   Mutation: {
-    createComputingDeviceAsset: async (_, { input }, {dbName, dataSources}) => {
-      let ports, ipv4, ipv6, mac;
+    createComputingDeviceAsset: async (_, {input}, {dbName, selectMap, dataSources}) => {
+      let ports, ipv4, ipv6, mac, connectedNetwork, installedOS, installedSoftware;
+      // remove input fields with null or empty values
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
       if (input.ports !== undefined) {
         ports = input.ports
         delete input.ports;
@@ -160,6 +178,48 @@ const computingDeviceResolvers = {
         mac = input.mac_address;
         delete input.mac_address;
       }
+      // obtain the IRIs for the referenced objects so that if one doesn't exists we have created anything yet.
+      if (input.connected_to_network !== undefined && input.connected_to_network !== null) {
+        let query = selectObjectIriByIdQuery( input.connected_to_network, 'network');
+        let result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Obtaining IRI for Network object with id",
+          singularizeSchema
+        });
+        if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${input.connected_to_network}`);
+        connectedNetwork = `<${result[0].iri}>`;
+        delete input.connected_to_network;
+      }
+      if (input.installed_operating_system !== undefined && input.installed_operating_system !== null) {
+        let query = selectObjectIriByIdQuery( input.installed_operating_system, 'operating-system');
+        let result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Obtaining IRI for Operating System object with id",
+          singularizeSchema
+        });
+        if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${input.installed_operating_system}`);
+        installedOS = `<${result[0].iri}>`;
+        delete input.installed_operating_system;
+      }
+      if (input.installed_software !== undefined && input.installed_software !== null) {
+        let softwareList = []
+        for (let softwareId of input.installed_software) {
+          let query = selectObjectIriByIdQuery( softwareId, 'software');
+          let result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Obtaining IRI for Software object with id",
+            singularizeSchema
+          });
+          if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${softwareId}`);
+          softwareList.push(`<${result[0].iri}>`);
+        }
+        installedSoftware = softwareList;
+        delete input.installed_software;
+      }
+
       const { iri, id, query } = insertQuery(input);
       await dataSources.Stardog.create({
         dbName,
@@ -229,11 +289,54 @@ const computingDeviceResolvers = {
           queryId: "Add MAC to Computing Device Asset"
         });
       }
-      return { id };
+        // attach any Network(s) to Computing Device
+        if (connectedNetwork !== undefined && connectedNetwork !== null) {
+          let networkAttachQuery = attachToComputingDeviceQuery(id, 'connected_to_network', connectedNetwork);
+          await dataSources.Stardog.create({
+            dbName,
+            sparqlQuery: networkAttachQuery,
+            queryId: "Attaching connected network to the Computing Device Asset"
+          });
+        }
+        // attach Operating System to Computing Device
+        if (installedOS !== undefined && installedOS !== null) {
+          let osAttachQuery = attachToComputingDeviceQuery(id, 'installed_operating_system', installedOS);
+          await dataSources.Stardog.create({
+            dbName,
+            sparqlQuery: osAttachQuery,
+            queryId: "Attaching Operating System to the Computing Device Asset"
+          });
+        }
+        // attach Software to Computing Device
+        if (installedSoftware !== undefined && installedSoftware !== null) {
+          let softwareAttachQuery = attachToComputingDeviceQuery(id, 'installed_software', installedSoftware);
+          await dataSources.Stardog.create({
+            dbName,
+            sparqlQuery: softwareAttachQuery,
+            queryId: "Attaching Installed Software to the Computing Device Asset"
+          });
+        }
+
+      // retrieve information about the newly created ComputingDevice to return to the user
+      const select = selectComputingDeviceQuery(id, selectMap.getNode("computingDeviceAsset"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: select,
+          queryId: "Select Computing Device",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("COMPUTING-DEVICE");
+      return reducer(response[0]);
     },
-    deleteComputingDeviceAsset: async (_, { id }, {dbName, dataSources}, input) => {
-      const sparqlQuery = getSelectSparqlQuery('COMPUTING-DEVICE', id);
-      const reducer = getReducer('COMPUTING-DEVICE');
+    deleteComputingDeviceAsset: async (_, {id}, {dbName, dataSources} ) => {
+      // check that the ComputingDevice exists
+      const sparqlQuery = selectComputingDeviceQuery(id, null );
       const response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -241,30 +344,38 @@ const computingDeviceResolvers = {
         singularizeSchema
       })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      const reducer = getReducer('COMPUTING-DEVICE');
       const asset = (reducer(response[0]));
-      for (const portIri of asset.ports_iri) {
-        const portQuery = deletePortQuery(portIri);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: portQuery,
-          queryId: "Delete Port from Computing Device Asset"
-        });
+
+      if (asset.hasOwnProperty('ports_iri')) {
+        for (const portIri in asset.ports_iri) {
+          const portQuery = deletePortQuery(portIri);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: portQuery,
+            queryId: "Delete Port from Computing Device Asset"
+          });
+        }
       }
-      for (const ipId of asset.ip_addr_iri) {
-        const ipQuery = deleteIpQuery(ipId);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: ipQuery,
-          queryId: "Delete IP from Computing Asset"
-        });
+      if (asset.hasOwnProperty('ip_addr_iri')) {
+        for (const ipId in asset.ip_addr_iri) {
+          const ipQuery = deleteIpQuery(ipId);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: ipQuery,
+            queryId: "Delete IP from Computing Asset"
+          });
+        }
       }
-      for (const macId of asset.mac_addr_iri) {
-        const macQuery = deleteMacQuery(macId);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: macQuery,
-          queryId: "Delete MAC from Computing Device Asset"
-        });
+      if (asset.hasOwnProperty('mac_addr_iri')) {
+        for (const macId in asset.mac_addr_iri) {
+          const macQuery = deleteMacQuery(macId);
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: macQuery,
+            queryId: "Delete MAC from Computing Device Asset"
+          });
+        }
       }
 
       const relationshipQuery = removeFromInventoryQuery(id);
@@ -279,21 +390,44 @@ const computingDeviceResolvers = {
         sparqlQuery: query,
         queryId: "Delete Computing Device Asset"
       })
-      return { id };
+      return id;
     },
-    editComputingDeviceAsset: async (_, { id, input }, {dbName, dataSources}) => {
+    editComputingDeviceAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
+      // check that the ComputingDevice exists
+      const sparqlQuery = selectComputingDeviceQuery(id, null );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Computing Device",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#ComputingDevice-${id}`,
         "http://scap.nist.gov/ns/asset-identification#ComputingDevice",
         input,
-        predicateMap
+        computingDevicePredicateMap
       )
       await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
         queryId: "Update Computing Device Asset"
       });
-      return { id };
+      const select = selectComputingDeviceQuery(id, selectMap.getNode("editComputingDeviceAsset"));
+      let result;
+      try {
+        result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: select,
+          queryId: "Select Computing Device",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("COMPUTING-DEVICE");
+      return reducer(result[0]);
     },
   },
   // Map enum GraphQL values to data model required values
@@ -301,6 +435,7 @@ const computingDeviceResolvers = {
   // field-level query
   ComputingDeviceAsset: {
     installed_software: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.installed_sw_iri === undefined) return [];
       let iriArray = parent.installed_sw_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -341,6 +476,7 @@ const computingDeviceResolvers = {
       }
     },
     installed_operating_system: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.installed_os_iri === undefined) return null;
       var iri = parent.installed_os_iri
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
@@ -379,6 +515,7 @@ const computingDeviceResolvers = {
       }
     },
     ipv4_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -418,6 +555,7 @@ const computingDeviceResolvers = {
       }
     },
     ipv6_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -457,6 +595,7 @@ const computingDeviceResolvers = {
       }
     },
     mac_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.mac_addr_iri === undefined) return [];
       let iriArray = parent.mac_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -482,7 +621,7 @@ const computingDeviceResolvers = {
             for (let item of response ) {
               let macAddr = reducer(item);
               // disallow duplicates since we're storing only the value of the mac value
-              if( results.includes(macAddr.mac_address_value)) { continue; }
+              if ( results.includes(macAddr.mac_address_value)) { continue; }
               results.push(macAddr.mac_address_value);  // TODO: revert back when data is returned as objects, not strings
             }
           } else {
@@ -502,6 +641,7 @@ const computingDeviceResolvers = {
       }
     },
     ports: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ports_iri === undefined) return [];
       let iriArray = parent.ports_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -540,6 +680,7 @@ const computingDeviceResolvers = {
       }
     },
     connected_to_network: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.conn_network_iri === undefined) return null;
       let iri = parent.conn_network_iri;
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
@@ -573,6 +714,7 @@ const computingDeviceResolvers = {
       }
     },
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -612,6 +754,7 @@ const computingDeviceResolvers = {
       }
     },
     external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -651,6 +794,7 @@ const computingDeviceResolvers = {
       }
     },
     notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

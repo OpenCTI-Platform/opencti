@@ -354,24 +354,29 @@ const RequiredResourcesLines = createFragmentContainer(
               description
             }
           }
-          required_assets {
+          required_assets { # Required Resources
             id
             subjects {
               subject_ref {
+                ... on Component {
+                  id
+                  component_type
+                  name # Required Resource
+                }
                 ... on InventoryItem {
                   id
                   asset_type
-                  name   # Required Resource
+                  name # Required Resource
                 }
-                ... on Component{
+                ... on OscalLocation {
                   id
-                  component_type
-                  name    # Required Resource
+                  location_type
+                  name  # Required Resource
                 }
                 ... on OscalParty {
-                id
-                party_type
-                name      # Required Resource
+                  id
+                  party_type
+                  name # Required Resource
                 }
               }
             }

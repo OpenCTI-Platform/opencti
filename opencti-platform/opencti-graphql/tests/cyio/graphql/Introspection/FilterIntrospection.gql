@@ -1,9 +1,0 @@
-query ItAssetFilterIntrospection {
-  __type(name: "ItAssetsFilter") {
-    name
-    enumValues {
-      name
-      description
-    }
-  }
-}

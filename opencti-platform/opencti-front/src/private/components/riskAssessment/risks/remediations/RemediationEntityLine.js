@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -72,10 +71,11 @@ class RemediationEntityLineComponent extends Component {
       fldt,
       classes,
       dataColumns,
+      riskData,
+      riskId,
       node,
       paginationOptions,
       displayRelation,
-      entityId,
     } = this.props;
     const remediationTiming = R.pipe(
       R.pathOr([], ['tasks']),
@@ -89,9 +89,9 @@ class RemediationEntityLineComponent extends Component {
     )(node);
     let restricted = false;
     let targetEntity = null;
-    if (node.from && node.from.id === entityId) {
+    if (node.from && node.from.id === riskId) {
       targetEntity = node.to;
-    } else if (node.to && node.to.id === entityId) {
+    } else if (node.to && node.to.id === riskId) {
       targetEntity = node.from;
     } else {
       restricted = true;
@@ -102,17 +102,23 @@ class RemediationEntityLineComponent extends Component {
     // eslint-disable-next-line no-nested-ternary
     // const link = !restricted
     //   ? targetEntity.parent_types.includes('stix-core-relationship')
-    //     ? `/dashboard/observations/observables/${entityId}/knowledge/relations/${node.id}`
+    //     ? `/dashboard/observations/observables/${riskId}/knowledge/relations/${node.id}`
     //     : `${resolveLink(targetEntity.entity_type)}/${targetEntity.id
     //     }/knowledge/relations/${node.id}`
     //   : null;
+    const SourceOfDetection = R.pipe(
+      R.pathOr([], ['origins']),
+      R.mergeAll,
+      R.path(['origin_actors']),
+      R.mergeAll,
+    )(node);
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/risk-assessment/risks/${entityId}/remediation/${node.id}`}
+        to={`/dashboard/risk-assessment/risks/${riskId}/remediation/${node.id}`}
       // disabled={restricted}
       >
         <ListItemText
@@ -131,7 +137,7 @@ class RemediationEntityLineComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {remediationSource.actor.name && t(remediationSource.actor.name)}
+                      {SourceOfDetection.actor_ref.name && t(SourceOfDetection.actor_ref.name)}
                     </Typography>
                     <Typography color="textSecondary" variant="disabled">
                       {t('Lorem Ipsum Dolor Ist')}
@@ -145,11 +151,11 @@ class RemediationEntityLineComponent extends Component {
                 </Typography>
               </div>
               <div className={classes.bodyItem}>
-              <Button
+                <Button
                   variant='outlined'
                   size="small"
                   color='default'
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
                   {node.response_type && t(node.response_type)}
                 </Button>
@@ -159,49 +165,30 @@ class RemediationEntityLineComponent extends Component {
                   variant='outlined'
                   size="small"
                   color='default'
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
                   {node.lifecycle && t(node.lifecycle)}
                 </Button>
               </div>
               <div className={classes.bodyItem}>
                 <Typography align="left">
-                  {/* {node.tasks.edges[0].node.timing.start_date
-                  && fldt(node.tasks.edges[0].node.timing.start_date)} */}
-                  {remediationTiming?.timing?.start_date
-                    && fldt(remediationTiming?.timing?.start_date)}
+                  {node.created && fldt(node.created)}
                 </Typography>
               </div>
               <div className={classes.bodyItem}>
                 <Typography align="left">
-                  {remediationTiming?.timing?.end_date
-                    && fldt(remediationTiming?.timing?.end_date)}
-                  {/* {node.tasks.edges[0].node.timing.end_date
-                  && fldt(node.tasks.edges[0].node.timing.end_date)} */}
+                  {node.modified && fldt(node.modified)}
                 </Typography>
               </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          {/* {node.is_inferred ? (
-            <Tooltip
-              title={
-                t('Inferred knowledge based on the rule ')
-                + R.head(node.x_opencti_inferences).rule.name
-              }
-            >
-              <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-            </Tooltip> */}
-          {/* ) : ( */}
-          {/*  <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
           <RemediationPopover
             cyioCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
           // disabled={restricted}
           />
-          {/* </Security> */}
-          {/* )} */}
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -214,52 +201,168 @@ RemediationEntityLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  riskData: PropTypes.object,
+  riskId: PropTypes.string,
   fldt: PropTypes.func,
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
-  entityId: PropTypes.string,
 };
 
 const RemediationEntityLineFragment = createFragmentContainer(
   RemediationEntityLineComponent,
   {
     node: graphql`
-      fragment RemediationEntityLine_node on Risk {
+      fragment RemediationEntityLine_node on RiskResponse {
         id
-        created
-        modified
-        remediations {
+        name                # Title
+        description         # Description
+        created             # Created
+        modified            # Last Modified
+        response_type       # Response Type
+        lifecycle           # Lifecycle
+        origins{            # source of detection
           id
-          name                # Title
-          description         # Description
-          created             # Created
-          modified            # Last Modified
-          lifecycle           # Lifecycle
-          response_type       # Response Type
-          origins{
+          origin_actors {
+            actor_type
+            actor_ref {
+              ... on AssessmentPlatform {
+                id
+                name          # Source
+              }
+              ... on Component {
+                id
+                component_type
+                name
+              }
+              ... on OscalParty {
+              id
+              party_type
+              name            # Source
+              }
+            }
+          }
+        }
+        tasks {             # only necessary if Start/End date is supported in UI
+          __typename
+          id
+          entity_type
+          task_type
+          name
+          description
+          timing {
+            ... on DateRangeTiming {
+              start_date
+              end_date
+            }
+          }
+          task_dependencies {
+            __typename
             id
-            origin_actors {
-              actor_type
-              actor {
+            entity_type
+            task_type
+            name
+          }
+          associated_activities {
+            __typename
+            id
+            entity_type
+            activity_id {
+              __typename
+              id
+              entity_type
+              name
+              description
+              methods
+            }
+          }
+          subjects {
+            __typename
+            id
+            entity_type
+            subject_type
+            include_all
+            include_subjects {
+              id
+              subject_type
+              subject_context
+              subject_ref {
                 ... on Component {
                   id
-                  component_type
-                  name          # Source
+                  entity_type
+                  name
+                }
+                ... on InventoryItem {
+                  id
+                  entity_type
+                  name
+                }
+                ... on OscalLocation {
+                  id
+                  entity_type
+                  name
                 }
                 ... on OscalParty {
-                id
-                party_type
-                name            # Source
+                  id
+                  entity_type
+                  name
+                }
+                ... on OscalUser {
+                  id
+                  entity_type
+                  name
+                }
+              }
+            }
+            exclude_subjects {
+              id
+              subject_type
+              subject_context
+              subject_ref {
+                ... on Component {
+                  id
+                  entity_type
+                  name
+                }
+                ... on InventoryItem {
+                  id
+                  entity_type
+                  name
+                }
+                ... on OscalLocation {
+                  id
+                  entity_type
+                  name
+                }
+                ... on OscalParty {
+                  id
+                  entity_type
+                  name
+                }
+                ... on OscalUser {
+                  id
+                  entity_type
+                  name
                 }
               }
             }
           }
-          tasks {             # only necessary if Start/End date is supported in UI
-            timing {
-              ... on DateRangeTiming {
-                start_date
-                end_date
-              }
+          responsible_roles {
+            __typename
+            id
+            entity_type
+            role {
+              __typename
+              id
+              entity_type
+              role_identifier
+              name
+            }
+            parties {
+              __typename
+              id
+              entity_type
+              party_type
+              name
             }
           }
         }
@@ -268,7 +371,7 @@ const RemediationEntityLineFragment = createFragmentContainer(
   },
 );
 
-export const RemediationEntityLine = compose(
+export const RemediationEntityLine = R.compose(
   inject18n,
   withStyles(styles),
 )(RemediationEntityLineFragment);
@@ -369,7 +472,7 @@ RemediationEntityLineDummyComponent.propTypes = {
   displayRelation: PropTypes.bool,
 };
 
-export const RemediationEntityLineDummy = compose(
+export const RemediationEntityLineDummy = R.compose(
   inject18n,
   withStyles(styles),
 )(RemediationEntityLineDummyComponent);

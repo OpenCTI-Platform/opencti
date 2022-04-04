@@ -66,7 +66,6 @@ class RemediationComponent extends Component {
       history,
       location,
     } = this.props;
-    console.log('remediationRiskData', risk);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
@@ -76,22 +75,25 @@ class RemediationComponent extends Component {
               history={history}
               disabled={true}
               PopoverComponent={<RiskPopover />}
-              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              OperationsComponent={<RiskDeletion />}
+              // OperationsComponent={<RiskDeletion />}
             />
-            <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true}/>
+            <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true} />
             <Grid
               container={true}
               spacing={3}
               classes={{ container: classes.gridContainer }}
             >
-              <Grid item={true} xs={6}>
-                <RemediationGeneralOverview remediation={remediation} />
+              <Grid item={true} xs={12}>
+                <RemediationGeneralOverview
+                  remediation={remediation}
+                  risk={risk}
+                />
               </Grid>
-              <Grid item={true} xs={6}>
+              {/* <Grid item={true} xs={6}>
                 <RemediationGeneralDetails remediation={remediation} />
-              </Grid>
+              </Grid> */}
             </Grid>
             <Grid
               container={true}
@@ -194,7 +196,7 @@ const Remediation = createFragmentContainer(RemediationComponent, {
         }
       }
       ...RemediationGeneralOverview_remediation
-      ...RemediationGeneralDetails_remediation
+      # ...RemediationGeneralDetails_remediation
     }
   `,
 });

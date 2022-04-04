@@ -74,6 +74,7 @@ const objectTypeMapping = {
   "it-asset": "ItAsset",
   "load-balancer": "NetworkDeviceAsset",
   "location": "AssetLocation",
+  "mac-addr": "MACAddress",
   "network-device": "NetworkDeviceAsset",
   "network": "NetworkAsset",
   "operating-system": "OperatingSystemAsset",
@@ -142,7 +143,7 @@ const assetSingularizeSchema = { singularizeVariables: {
     "implementation_point": true,
     "installation_id": true,
     "installed_hardware": false,
-    "installed_operating_system": true,
+    "installed_operating_system": false,  // should be true
     "installed_software": false,
     "ip_address": false,
     "ip_address_value": true,

@@ -31,13 +31,14 @@ const addressReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.address_type && {address_type: item.address_type}),
     ...(item.street_address && {street_address: item.street_address}),
     ...(item.city && {city: item.city}),
     ...(item.administrative_area && {administrative_area: item.administrative_area}),
     ...(item.postal_code && {postal_code: item.postal_code}),
-    ...(item.country && {country: item.country}),
+    ...(item.country_code && {country_code: item.country_code}),
   }
 }
 const externalReferenceReducer = (item) => {
@@ -48,6 +49,7 @@ const externalReferenceReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.created && {"created": item.created}),
     ...(item.modified && {"modified": item.modified}),
@@ -72,6 +74,7 @@ const labelReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.created && {"created": item.created}),
     ...(item.modified && {"modified": item.modified}),
@@ -89,6 +92,7 @@ const noteReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {"entity_type": item.object_type}),
     ...(item.created && {"created": item.created}),
     ...(item.modified && {"modified": item.modified}),
@@ -108,6 +112,7 @@ const phoneReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.usage_type && {usage_type: item.usage_type}),
     ...(item.phone_number && {phone_number: item.phone_number}),
@@ -152,9 +157,9 @@ export const addressPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "postal_code")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
-  country: {
+  country_code: {
     predicate: "<http://darklight.ai/ns/common#country_code>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "country")},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "country_code")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
 }
@@ -355,7 +360,7 @@ export const insertAddressesQuery = (addresses) => {
     const id = generateId( );
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/common#Address-${id}>`;
-    facetIris.push(iri);
+    addrIris.push(iri);
     insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#Address>`);
     insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype>`);
     insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#ComplexDatatype>`);
@@ -374,8 +379,8 @@ export const insertAddressesQuery = (addresses) => {
     if (addr.postal_code !== undefined && addr.postal_code !== null) {
       insertPredicates.push(`${iri} <http://darklight.ai/ns/common#postal_code> "${addr.postal_code}"`);
     }
-    if (addr.country !== undefined && addr.country !== null) {
-      insertPredicates.push(`${iri} <http://darklight.ai/ns/common#country_code> "${addr.country}"`);
+    if (addr.country_code !== undefined && addr.country_code !== null) {
+      insertPredicates.push(`${iri} <http://darklight.ai/ns/common#country_code> "${addr.country_code}"`);
     }
 
     graphs.push(`
@@ -394,21 +399,21 @@ export const selectAddressQuery = (id, select) => {
   return selectAddressByIriQuery(`http://csrc.nist.gov/ns/oscal/common#Address-${id}`, select);
 }
 export const selectAddressByIriQuery = (iri, select) => {
-  // IRI is expected to not include < or >
-  if(select === null) select = Object.keys(addressPredicateMap);
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === null) select = Object.keys(addressPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(addressPredicateMap, select);
   return `
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
-    BIND(<${iri}> AS ?iri)
+    BIND(${iri} AS ?iri)
     ?iri a <http://csrc.nist.gov/ns/oscal/common#Address> .
     ${predicates}
   }
   `
 }
 export const selectAllAddresses = (select, filters) => {
-  if(select === null) select =Object.keys(addressPredicateMap);
+  if (select === null) select =Object.keys(addressPredicateMap);
 
   // add value of filter's key to cause special predicates to be included
   if ( filters !== undefined ) {
@@ -519,21 +524,21 @@ export const selectLabelQuery = (id, select) => {
   return selectLabelByIriQuery(`http://darklight.ai/ns/common#Label-${id}`, select);
 }
 export const selectLabelByIriQuery = (iri, select) => {
-  // IRI is expected to not include < or >
-  if(select === null) select = Object.keys(labelPredicateMap);
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === null) select = Object.keys(labelPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(labelPredicateMap, select);
   return `
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
-    BIND(<${iri}> AS ?iri)
+    BIND(${iri} AS ?iri)
     ?iri a <http://darklight.ai/ns/common#Label> .
     ${predicates}
   }
   `
 }
 export const selectAllLabels = (select, filters) => {
-  if(select === null) select =Object.keys(labelPredicateMap);
+  if (select === null) select =Object.keys(labelPredicateMap);
 
   // add value of filter's key to cause special predicates to be included
   if ( filters !== undefined ) {
@@ -563,6 +568,48 @@ export const deleteLabelQuery = (id) => {
     GRAPH ${iri}{
       ?iri a <http://darklight.ai/ns/common#Label> .
       ?iri ?p ?o
+    }
+  }
+  `
+}
+export const attachToLabelQuery = (id, field, itemIris) => {
+  const iri = `<http://darklight.ai/ns/common#Label-${id}>`;
+  if (!labelPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = labelPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `
+}
+export const detachFromLabelQuery = (id, field, itemIris) => {
+  const iri = `<http://darklight.ai/ns/common#Label-${id}>`;
+  if (!labelPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = labelPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  DELETE DATA {
+    GRAPH ${iri} {
+      ${statements}
     }
   }
   `
@@ -597,25 +644,66 @@ export const insertExternalReferenceQuery = (propValues) => {
   `;
   return {iri, id, query}
 }
+export const insertExternalReferencesQuery = (externalReferences) => {
+  const graphs = [], extRefIris = [];
+  externalReferences.forEach((extRef) => {
+    const id_material = {
+      ...(extRef.source_name && {"source_name": extRef.source_name}),
+      ...(extRef.external_id && {"external_id": extRef.external_id}),
+      ...(extRef.url && {"url": extRef.url}),
+    } ;
+    const id = generateId( id_material, OASIS_NS );
+    const insertPredicates = [];
+    const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
+    extRefIris.push(iri);
+    insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#ExternalReference>`);
+    insertPredicates.push(`${iri} a <http://darklight.ai/ns/common#ComplexDatatype>`);
+    insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`);
+    insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "external-reference"`); 
+    if (extRef.source_name !== undefined && extRef.source_name !== null) {
+      insertPredicates.push(`${iri} <http://darklight.ai/ns/common#source_name> "${extRef.source_name}"`);
+    }
+    if (extRef.description !== undefined && extRef.description !== null) {
+      insertPredicates.push(`${iri} <http://darklight.ai/ns/common#description> "${extRef.description}"`);
+    }
+    if (extRef.external_id !== undefined && extRef.external_id !== null) {
+      insertPredicates.push(`${iri} <http://darklight.ai/ns/common#external_id> "${extRef.external_id}"`);
+    }
+    if (extRef.url !== undefined && extRef.url !== null) {
+      insertPredicates.push(`${iri} <http://darklight.ai/ns/common#url> "${extRef.url}"^^xsd:anyURI`);
+    }
+
+    graphs.push(`
+  GRAPH ${iri} {
+    ${insertPredicates.join(".\n        ")}
+  }
+    `)
+  })
+  const query = `
+  INSERT DATA {
+    ${graphs.join("\n")}
+  }`;
+  return {extRefIris, query};
+}
 export const selectExternalReferenceQuery = (id, select) => {
   return selectExternalReferenceByIriQuery(`http://darklight.ai/ns/common#ExternalReference-${id}`, select);
 }
 export const selectExternalReferenceByIriQuery = (iri, select) => {
-  // IRI is expected to not include < or >
-  if(select === null) select = Object.keys(externalReferencePredicateMap);
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === null) select = Object.keys(externalReferencePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(externalReferencePredicateMap, select);
   return `
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
-    BIND(<${iri}> AS ?iri)
+    BIND(${iri} AS ?iri)
     ?iri a <http://darklight.ai/ns/common#ExternalReference> .
     ${predicates}
   }
   `
 }
 export const selectAllExternalReferences = (select, filters) => {
-  if(select === null) select =Object.keys(externalReferencePredicateMap);
+  if (select === null) select =Object.keys(externalReferencePredicateMap);
 
   // add value of filter's key to cause special predicates to be included
   if ( filters !== undefined ) {
@@ -645,6 +733,48 @@ export const deleteExternalReferenceQuery = (id) => {
     GRAPH ${iri}{
       ?iri a <http://darklight.ai/ns/common#ExternalReference> .
       ?iri ?p ?o
+    }
+  }
+  `
+}
+export const attachToExternalReferenceQuery = (id, field, itemIris) => {
+  const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
+  if (!externalReferencePredicateMap.hasOwnProperty(field)) return null;
+  const predicate = externalReferencePredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `
+}
+export const detachFromExternalReferenceQuery = (id, field, itemIris) => {
+  const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
+  if (!externalReferencePredicateMap.hasOwnProperty(field)) return null;
+  const predicate = externalReferencePredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  DELETE DATA {
+    GRAPH ${iri} {
+      ${statements}
     }
   }
   `
@@ -683,21 +813,21 @@ export const selectNoteQuery = (id, select) => {
   return selectNoteByIriQuery(`http://darklight.ai/ns/common#Note-${id}`, select);
 }
 export const selectNoteByIriQuery = (iri, select) => {
-  // IRI is expected to not include < or >
-  if(select === null) select = Object.keys(notePredicateMap);
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === null) select = Object.keys(notePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(notePredicateMap, select);
   return `
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
-    BIND(<${iri}> AS ?iri)
+    BIND(${iri} AS ?iri)
     ?iri a <http://darklight.ai/ns/common#Note> .
     ${predicates}
   }
   `
 }
 export const selectAllNotes = (select, filters) => {
-  if(select === null) select =Object.keys(notePredicateMap);
+  if (select === null) select =Object.keys(notePredicateMap);
 
   // add value of filter's key to cause special predicates to be included
   if ( filters !== undefined ) {
@@ -727,6 +857,48 @@ export const deleteNoteQuery = (id) => {
     GRAPH ${iri}{
       ?iri a <http://darklight.ai/ns/common#Note> .
       ?iri ?p ?o
+    }
+  }
+  `
+}
+export const attachToNoteQuery = (id, field, itemIris) => {
+  const iri = `<http://darklight.ai/ns/common#Note-${id}>`;
+  if (!notePredicateMap.hasOwnProperty(field)) return null;
+  const predicate = notePredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${statements}
+    }
+  }
+  `
+}
+export const detachFromNoteQuery = (id, field, itemIris) => {
+  const iri = `<http://darklight.ai/ns/common#Note-${id}>`;
+  if (!notePredicateMap.hasOwnProperty(field)) return null;
+  const predicate = notePredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    statements = `${iri} ${predicate} ${itemIris}`;
+  }
+  return `
+  DELETE DATA {
+    GRAPH ${iri} {
+      ${statements}
     }
   }
   `
@@ -784,21 +956,21 @@ export const selectPhoneNumberQuery = (id, select) => {
   return selectPhoneNumberByIriQuery(`http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-${id}`, select);
 }
 export const selectPhoneNumberByIriQuery = (iri, select) => {
-  // IRI is expected to not include < or >
-  if(select === null) select = Object.keys(phoneNumberPredicateMap);
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === null) select = Object.keys(phoneNumberPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(phoneNumberPredicateMap, select);
   return `
   SELECT ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
-    BIND(<${iri}> AS ?iri)
+    BIND(${iri} AS ?iri)
     ?iri a <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber> .
     ${predicates}
   }
   `
 }
 export const selectAllPhoneNumbers = (select, filters) => {
-  if(select === null) select =Object.keys(phoneNumberPredicateMap);
+  if (select === null) select =Object.keys(phoneNumberPredicateMap);
 
   // add value of filter's key to cause special predicates to be included
   if ( filters !== undefined ) {
@@ -836,7 +1008,7 @@ export const deletePhoneNumberByIriQuery = (iri) => {
   `
 }
 export const attachToPhoneNumberQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#TelepohoneNumber-${id}>`;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-${id}>`;
   if (!phoneNumberPredicateMap.hasOwnProperty(field)) return null;
   const predicate = phoneNumberPredicateMap[field].predicate;
   let statements;

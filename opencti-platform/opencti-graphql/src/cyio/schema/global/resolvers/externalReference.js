@@ -28,11 +28,11 @@ const cyioExternalReferenceResolvers = {
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("EXTERNAL-REFERENCE");
-        let limit = (args.first === undefined ? response.length : args.first) ;
+        let limit = (args.limit === undefined ? response.length : args.limit) ;
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         let externalRefList ;
         if (args.orderedBy !== undefined ) {
@@ -41,7 +41,7 @@ const cyioExternalReferenceResolvers = {
           externalRefList = response;
         }
 
-        if (offset > externalRefList.length) return
+        if (offset > externalRefList.length) return null;
 
         // for each asset in the result set
         for (let externalRef of externalRefList) {
@@ -78,7 +78,7 @@ const cyioExternalReferenceResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > externalRefList.length),
+            hasNextPage: (args.limit > externalRefList.length),
             hasPreviousPage: (args.offset > 0),
             globalCount: externalRefList.length,
           },
@@ -92,7 +92,7 @@ const cyioExternalReferenceResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return ;
+          return null;
         }
       }
     },

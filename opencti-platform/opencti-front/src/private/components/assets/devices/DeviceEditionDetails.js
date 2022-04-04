@@ -642,7 +642,7 @@ const DeviceEditionDetails = createFragmentContainer(
   DeviceEditionDetailsComponent,
   {
     device: graphql`
-      fragment DeviceEditionDetails_device on ComputingDeviceAsset {
+      fragment DeviceEditionDetails_device on HardwareAsset {
         installed_software {
           name
         }

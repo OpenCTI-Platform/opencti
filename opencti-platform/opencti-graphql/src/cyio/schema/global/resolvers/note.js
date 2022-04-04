@@ -28,11 +28,11 @@ const cyioNoteResolvers = {
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("NOTE");
-        let limit = (args.first === undefined ? response.length : args.first) ;
+        let limit = (args.limit === undefined ? response.length : args.limit) ;
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         let noteList ;
         if (args.orderedBy !== undefined ) {
@@ -41,7 +41,7 @@ const cyioNoteResolvers = {
           noteList = response;
         }
 
-        if (offset > noteList.length) return
+        if (offset > noteList.length) return null;
 
         // for each asset in the result set
         for (let note of noteList) {
@@ -78,7 +78,7 @@ const cyioNoteResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > noteList.length),
+            hasNextPage: (args.limit > noteList.length),
             hasPreviousPage: (args.offset > 0),
             globalCount: noteList.length,
           },
@@ -92,7 +92,7 @@ const cyioNoteResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return ;
+          return null;
         }
       }
     },

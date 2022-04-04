@@ -295,7 +295,7 @@ class DeviceCreationDetailsComponent extends Component {
                 <Field
                   component={TextField}
                   variant='outlined'
-                  name="bios_id"
+                  name="netbios_name"
                   size='small'
                   fullWidth={true}
                 // helperText={
@@ -398,7 +398,7 @@ class DeviceCreationDetailsComponent extends Component {
                 <Field
                   component={TextField}
                   variant='outlined'
-                  name="fqdn"
+                  name="ipv4_address"
                   size='small'
                   multiline={true}
                   fullWidth={true}
@@ -421,7 +421,7 @@ class DeviceCreationDetailsComponent extends Component {
                 <Field
                   component={TextField}
                   variant='outlined'
-                  name="fqdn"
+                  name="ipv6_address"
                   size='small'
                   multiline={true}
                   fullWidth={true}

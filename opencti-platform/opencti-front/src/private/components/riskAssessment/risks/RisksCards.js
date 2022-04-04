@@ -46,6 +46,7 @@ class RisksCards extends Component {
   render() {
     const {
       initialLoading,
+      history,
       relay,
       selectAll,
       onLabelClick,
@@ -66,7 +67,8 @@ class RisksCards extends Component {
     //       />
             <CyioListCardsContent
               initialLoading={initialLoading}
-              loadMore={this.handleOffsetChange.bind(this)}
+              loadMore={relay.loadMore.bind(this)}
+              handleOffsetChange={this.handleOffsetChange.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
               dataList={pathOr([], ['poamItems', 'edges'], this.props.data)}
@@ -76,7 +78,7 @@ class RisksCards extends Component {
                 this.props.data,
               )}
               offset={offset}
-              CardComponent={<RiskCard />}
+              CardComponent={<RiskCard history={history}/>}
               DummyCardComponent={<RiskCardDummy />}
               nbOfCardsToLoad={nbOfCardsToLoad}
               selectAll={selectAll}

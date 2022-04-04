@@ -28,11 +28,11 @@ const cyioLabelResolvers = {
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("LABEL");
-        let limit = (args.first === undefined ? response.length : args.first) ;
+        let limit = (args.limit === undefined ? response.length : args.limit) ;
         let offset = (args.offset === undefined ? 0 : args.offset) ;
         let labelList ;
         if (args.orderedBy !== undefined ) {
@@ -41,7 +41,7 @@ const cyioLabelResolvers = {
           labelList = response;
         }
 
-        if (offset > labelList.length) return
+        if (offset > labelList.length) return null;
 
         // for each asset in the result set
         for (let label of labelList) {
@@ -78,7 +78,7 @@ const cyioLabelResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > labelList.length),
+            hasNextPage: (args.limit > labelList.length),
             hasPreviousPage: (args.offset > 0),
             globalCount: labelList.length,
           },
@@ -92,7 +92,7 @@ const cyioLabelResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return ;
+          return null;
         }
       }
     },

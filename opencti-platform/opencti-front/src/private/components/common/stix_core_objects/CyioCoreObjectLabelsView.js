@@ -96,7 +96,7 @@ const cyioCoreObjectMutationRelationDelete = graphql`
 
 const CyioCoreObjectLabelsView = (props) => {
   const {
-    classes, labels, t, marginTop, id, typename, refreshQuery,
+    classes, labels, t, marginTop, id, typename, refreshQuery, disableAdd,
   } = props;
   const { me } = useContext(UserContext);
   // const isLabelManager = granted(me, [SETTINGS_SETLABELS]);
@@ -229,6 +229,7 @@ const CyioCoreObjectLabelsView = (props) => {
       {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
       <IconButton
         color="secondary"
+        disabled={disableAdd}
         aria-label="Label"
         size="small"
         onClick={handleOpenAdd}
@@ -375,6 +376,7 @@ const CyioCoreObjectLabelsView = (props) => {
 
 CyioCoreObjectLabelsView.propTypes = {
   classes: PropTypes.object.isRequired,
+  disableAdd: PropTypes.bool,
   typename: PropTypes.string,
   t: PropTypes.func,
   id: PropTypes.string,

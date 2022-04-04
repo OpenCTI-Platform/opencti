@@ -223,7 +223,7 @@ class Filters extends Component {
             });
           });
         break;
-      case 'labels_or':
+      case 'label_name':
         // eslint-disable-next-line no-case-declarations
         fetchDarklightQuery(labelsSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
@@ -242,9 +242,9 @@ class Filters extends Component {
             this.setState({
               entities: {
                 ...this.state.entities,
-                labels_or: R.union(
+                label_name: R.union(
                   cyioLabelEntities,
-                  this.state.entities.labels_or,
+                  this.state.entities.label_name,
                 ),
               },
             });
@@ -1032,7 +1032,7 @@ class Filters extends Component {
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
-            style={{ color: theme.palette.header.text }}
+            // style={{ color: theme.palette.header.text }}
           >
             <ToyBrickSearchOutline fontSize="default" />
           </IconButton>

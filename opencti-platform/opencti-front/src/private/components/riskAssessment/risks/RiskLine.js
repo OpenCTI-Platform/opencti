@@ -13,16 +13,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
 import LayersIcon from '@material-ui/icons/Layers';
 import Button from '@material-ui/core/Button';
 import WindowsIcon from '@material-ui/icons/LaptopWindows';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
+import { KeyboardArrowRight, MoreVert, PublicOutlined } from '@material-ui/icons';
+import IconButton from '@material-ui/core/IconButton';
+import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
+import RiskAssessmentPopover from './RiskAssessmentPopover';
 
 const styles = (theme) => ({
   item: {
@@ -36,9 +40,9 @@ const styles = (theme) => ({
     color: theme.palette.primary.main,
   },
   bodyItem: {
-    height: 35,
+    height: 36,
     fontSize: 13,
-    paddingLeft: 24,
+    paddingLeft: 25,
     float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -48,8 +52,7 @@ const styles = (theme) => ({
     alignItems: 'center',
   },
   goIcon: {
-    position: 'absolute',
-    right: -10,
+    minWidth: '0px',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -73,6 +76,7 @@ class RiskLineComponent extends Component {
       t,
       fd,
       classes,
+      history,
       node,
       selectAll,
       dataColumns,
@@ -92,7 +96,6 @@ class RiskLineComponent extends Component {
       pathOr([], ['characterizations']),
       mergeAll,
     )(riskData.node);
-    console.log('RiskLineNode', node, '----', riskRemediation);
     // const riskCharacterization = pathOr(null, ['node', 'characterizations', 0], riskData);
     // const riskRemediation = pathOr([], ['node', 'remediations', 0], riskData);
     // console.log('RiskLineData', riskCharacterization, riskRemediation);
@@ -105,7 +108,7 @@ class RiskLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/dashboard/risk-assessment/risks/${node.id}`}
+        to={`/dashboard/risk-assessment/risks/${riskData?.node?.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />
@@ -127,72 +130,72 @@ class RiskLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.poam_id.width }}
+                style={{ width: '12.3%' }}
               >
-                {node.poam_id && node.poam_id}
+                {node.poam_id && t(node.poam_id)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: '16.3%' }}
               >
-                {node.name && node.name}
+                {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk_level.width }}
+                style={{ width: '6.8%' }}
               >
-                {/* {riskCharacterization.risk && riskCharacterization.risk} */}
+                {riskData?.node?.risk_level && riskData?.node?.risk_level}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk_status.width }}
+                style={{ width: '16.3%' }}
               >
                 <Button
                   variant="outlined"
                   size="small"
                   color="default"
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
-                  {riskData.node.risk_status && t(riskData.node.risk_status)}
+                  {riskData?.node?.risk_status && t(riskData?.node?.risk_status)}
                 </Button>
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.risk_response.width }}
+                style={{ width: '11.5%' }}
               >
                 <Button
                   variant="outlined"
                   size="small"
                   color="default"
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
-                {riskRemediation.response_type && t(riskRemediation.response_type)}
+                  {riskRemediation.response_type && t(riskRemediation.response_type)}
                 </Button>
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.lifecycle.width }}
+                style={{ width: '13.2%' }}
               >
-              <Button
+                <Button
                   variant="outlined"
                   size="small"
                   color="default"
-                  className={ classes.statusButton }
+                  className={classes.statusButton}
                 >
-                {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
+                  {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
                 </Button>
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.occurrences.width }}
+                style={{ width: '10.5%' }}
               >
-                {node.occurrences && node.occurrences}
+                {node.occurrences && t(node.occurrences)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.deadline.width }}
+                style={{ width: '10%' }}
               >
-                {riskData.node.deadline && t(riskData.node.deadline)}
+                {riskData?.node?.deadline && fd(riskData?.node?.deadline)}
               </div>
               {/* <div
                 className={classes.bodyItem}
@@ -207,9 +210,14 @@ class RiskLineComponent extends Component {
             </div>
           }
         />
-        {/* <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon> */}
+        <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
+          <RiskAssessmentPopover
+            history={history}
+            nodeId={riskData?.node?.id}
+            riskNode={riskData.node}
+            node={node}
+          />
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
@@ -236,15 +244,14 @@ const RiskLineFragment = createFragmentContainer(
         related_risks {
           edges {
             node {
+              __typename
+              id
+              name
               risk_status
+              risk_level
               deadline
-              # characterizations {
-              #   ... on RiskCharacterization {
-              #     id
-              #     risk
-              #   }
-              # }
               remediations {
+                id
                 response_type
                 lifecycle
               }
