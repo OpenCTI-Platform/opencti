@@ -13,16 +13,7 @@ import Typography from '@material-ui/core/Typography';
 import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { QueryRenderer } from '../../../../relay/environment';
-import RiskObservationLine from './RiskObservationLine';
-
-const riskObservationQuery = graphql`
-  query RiskObservationPaginationQuery($id: ID!) {
-    risk(id: $id){
-      id
-      ...RiskObservationLine_risk
-    }
-  }
-`;
+import RiskObservationLine, { riskObservationLineQuery } from './RiskObservationLine';
 
 const styles = (theme) => ({
   paper: {
@@ -95,8 +86,8 @@ class RiskObservation extends Component {
         <Paper className={classes.paper} elevation={2}>
           <QR
             environment={QueryRendererDarkLight}
-            query={riskObservationQuery}
-            variables={{ id: risk.id }}
+            query={riskObservationLineQuery}
+            variables={{ id: risk.id, first: 10, offset: 0 }}
             render={({ error, props }) => {
               if (props) {
                 return (

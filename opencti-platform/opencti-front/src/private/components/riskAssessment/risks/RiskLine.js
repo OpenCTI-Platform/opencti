@@ -211,7 +211,12 @@ class RiskLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
-          <RiskAssessmentPopover history={history} nodeId={riskData?.node?.id}/>
+          <RiskAssessmentPopover
+            history={history}
+            nodeId={riskData?.node?.id}
+            riskNode={riskData.node}
+            node={node}
+          />
         </ListItemSecondaryAction>
       </ListItem>
     );
