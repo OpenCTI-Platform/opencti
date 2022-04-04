@@ -138,7 +138,6 @@ class SoftwareCreation extends Component {
       values,
     );
     const finalValues = R.pipe(
-      R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
       R.dissoc('labels'),
     )(adaptedValues);
@@ -208,7 +207,7 @@ class SoftwareCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello World',
+            name: '',
             asset_id: '',
             version: '',
             serial_number: '',

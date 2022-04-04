@@ -218,7 +218,7 @@ class NetworkCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello',
+            name: '',
             asset_id: '',
             asset_type: 'network',
             asset_tag: '',

@@ -145,7 +145,6 @@ class DeviceCreation extends Component {
       R.dissoc('protocols'),
       R.dissoc('labels'),
       R.dissoc('locations'),
-      R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
     )(adaptedValues);
     CM(environmentDarkLight, {
@@ -214,7 +213,7 @@ class DeviceCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello World',
+            name: '',
             operational_status: 'other',
             // id: '',
             asset_id: '',
