@@ -26,6 +26,7 @@ import NetworkDeletion from './network/NetworkDeletion';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import ErrorNotFound from '../../../components/ErrorNotFound';
+import {toastSuccess, toastGenericError} from "../../../utils/bakedToast";
 
 class Network extends Component {
   constructor(props) {
@@ -217,7 +218,7 @@ class Network extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return <ErrorNotFound />;
+              return toastGenericError('Request Failed!');
             }
             return (
               <NetworkCards
@@ -323,7 +324,7 @@ class Network extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return <ErrorNotFound />;
+              return toastGenericError('Request Failed!');
             }
             return (
               <NetworkLines
