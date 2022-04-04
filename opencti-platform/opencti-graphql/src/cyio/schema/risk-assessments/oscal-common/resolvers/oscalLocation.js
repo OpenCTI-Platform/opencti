@@ -316,6 +316,7 @@ const oscalLocationResolvers = {
   },
   OscalLocation: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -355,6 +356,7 @@ const oscalLocationResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -394,6 +396,7 @@ const oscalLocationResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -433,46 +436,38 @@ const oscalLocationResolvers = {
       }
     },
     address: async (parent, args, {dbName, dataSources, selectMap}) => {
-      let iriArray = parent.addresses_iri;
-      const results = [];
-      // TODO: Add implementation to handle a single Address
-      if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("ADDRESS");
-        for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Address')) continue;
-          const sparqlQuery = selectAddressByIriQuery(iri, selectMap.getNode("addresses"));
-          let response;
-          try {
-            response = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Select Address",
-              singularizeSchema
-            });
-          } catch (e) {
-            console.log(e)
-            throw e
-          }
-          if (response === undefined) return [];
-          if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
-          }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
-        }
-        return results;
-      } else {
-        return [];
+      if (parent.address_iri === undefined) return [];
+      let iri = parent.address_iri[0];
+      const sparqlQuery = selectAddressByIriQuery(iri, selectMap.getNode("addresses"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Address",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
       }
+      if (response === undefined || response.length === 0) return null;
+      if (Array.isArray(response) && response.length > 0) {
+        const reducer = getGlobalReducer("ADDRESS");
+        results.push(reducer(response[0]))
+      }
+      else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        }
+      }  
     },
     telephone_numbers: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.telephone_numbers_iri === undefined) return [];
       let iriArray = parent.telephone_numbers_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

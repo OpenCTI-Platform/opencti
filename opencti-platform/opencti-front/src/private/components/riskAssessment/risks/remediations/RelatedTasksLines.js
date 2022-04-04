@@ -385,54 +385,11 @@ const RelatedTasksLines = createFragmentContainer(
               description
             }
           }
-          tasks {
+          tasks {   # Related Tasks
             id
-            created
-            modified
-            labels {
-              __typename
-              id
-              name
-              color
-              entity_type
-              description
-            }
             task_type
             name
             description
-            timing {
-              ... on DateRangeTiming {
-                start_date          # Start Date
-                end_date            # End Date
-              }
-              ... on OnDateTiming {
-                on_date             # Start Date
-              }
-            }
-            task_dependencies {
-              id
-              name
-            }
-            responsible_roles {
-              id
-              # created
-              # modified
-              labels {
-                __typename
-                id
-                name
-                color
-                entity_type
-                description
-              }
-              role {
-                id
-                created
-                modified
-                role_identifier
-                name
-              }
-            }
           }
         }
       }

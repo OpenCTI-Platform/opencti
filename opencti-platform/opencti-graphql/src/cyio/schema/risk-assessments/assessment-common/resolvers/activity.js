@@ -577,6 +577,7 @@ const activityResolvers = {
   // field-level resolvers
   Activity: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.label_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -618,6 +619,7 @@ const activityResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -659,6 +661,7 @@ const activityResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -700,7 +703,8 @@ const activityResolvers = {
       }
     },
     responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
-      let iriArray = parent.notes_iri;
+      if (parent.responsible_roles_iri === undefined) return [];
+      let iriArray = parent.responsible_roles_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getCommonReducer("RESPONSIBLE-PARTY");
@@ -743,6 +747,7 @@ const activityResolvers = {
   },
   AssociatedActivity: {
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -784,6 +789,7 @@ const activityResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -825,7 +831,8 @@ const activityResolvers = {
       }
     },
     responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
-      let iriArray = parent.notes_iri;
+      if (parent.responsible_roles_iri === undefined) return [];
+      let iriArray = parent.responsible_roles_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getCommonReducer("RESPONSIBLE-PARTY");
@@ -866,6 +873,7 @@ const activityResolvers = {
       }
     },
     subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

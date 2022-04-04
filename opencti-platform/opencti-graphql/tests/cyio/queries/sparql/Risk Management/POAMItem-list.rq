@@ -1,0 +1,22 @@
+# Get any POAM Items
+SELECT DISTINCT ?iri ?rdf_type ?id ?entity_type ?created ?modified ?name ?description ?poam_id ?accepted_risk ?origins ?related_observations ?related_risks ?labels ?links ?remarks 
+FROM <tag:stardog:api:context:local>
+WHERE {
+    # BIND(<http://csrc.nist.gov/ns/oscal/poam#Item-fe2ad885-fd95-5cec-94fe-d6b093aa2b69> as ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/poam#Item> . 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type .}
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?entity_type . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#created> ?created . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#modified> ?modified . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#name> ?name . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#description> ?description . }  
+    OPTIONAL { ?iri <http://fedramp.gov/ns/oscal#poam_id> ?poam_id . }  
+    # OPTIONAL { ?iri <http://darklight.ai/ns/oscal#accepted_risk> ?accepted_risk . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#origins> ?origins . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#related_risks> ?related_risks . }  
+    # OPTIONAL { ?iri <http://darklight.ai/ns/common#labels> ?labels . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#links> ?links . }  
+    # OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#remarks> ?remarks . } 
+}

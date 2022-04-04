@@ -21,7 +21,7 @@ class DevicesLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'computingDeviceAssetList',
+      'hardwareAssetList',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -51,10 +51,10 @@ class DevicesLines extends Component {
         handleOffsetChange={this.handleOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['computingDeviceAssetList', 'edges'], this.props.data)}
+        dataList={pathOr([], ['hardwareAssetList', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['computingDeviceAssetList', 'pageInfo', 'globalCount'],
+          ['hardwareAssetList', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         offset={this.state.offset}
@@ -90,9 +90,9 @@ export const devicesLinesQuery = graphql`
     $first: Int!
     $offset: Int!
     $cursor: ID
-    $orderedBy: ComputingDeviceAssetOrdering
+    $orderedBy: HardwareAssetOrdering
     $orderMode: OrderingMode
-    $filters: [ComputingDeviceAssetFiltering]
+    $filters: [HardwareAssetFiltering]
   ) {
     ...DevicesLines_data
       @arguments(
@@ -117,18 +117,18 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "ComputingDeviceAssetOrdering", defaultValue: name }
+        orderedBy: { type: "HardwareAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[ComputingDeviceAssetFiltering]" }
+        filters: { type: "[HardwareAssetFiltering]" }
       ) {
-        computingDeviceAssetList(
+        hardwareAssetList(
           search: $search
           first: $first
           offset: $offset
           orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_computingDeviceAssetList") {
+        ) @connection(key: "Pagination_hardwareAssetList") {
           edges {
             node {
               id
@@ -149,7 +149,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.computingDeviceAssetList;
+      return props.data && props.data.hardwareAssetList;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

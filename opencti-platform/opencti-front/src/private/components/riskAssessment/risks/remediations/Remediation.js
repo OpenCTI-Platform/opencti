@@ -66,7 +66,6 @@ class RemediationComponent extends Component {
       history,
       location,
     } = this.props;
-    console.log('remediationRiskData', risk);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
@@ -197,7 +196,7 @@ const Remediation = createFragmentContainer(RemediationComponent, {
         }
       }
       ...RemediationGeneralOverview_remediation
-      ...RemediationGeneralDetails_remediation
+      # ...RemediationGeneralDetails_remediation
     }
   `,
 });

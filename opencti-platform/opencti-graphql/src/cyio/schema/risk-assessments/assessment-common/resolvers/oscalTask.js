@@ -376,6 +376,7 @@ const oscalTaskResolvers = {
   // field-level resolvers
   OscalTask: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -417,6 +418,7 @@ const oscalTaskResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -458,6 +460,7 @@ const oscalTaskResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -500,6 +503,7 @@ const oscalTaskResolvers = {
     },
     // tasks: async (parent, args, {dbName, dataSources, selectMap}) => {},
     task_dependencies: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.task_dependencies_iri === undefined) return [];
       let iriArray = parent.task_dependencies_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -541,6 +545,7 @@ const oscalTaskResolvers = {
       }
     },
     associated_activities: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.associated_activities_iri === undefined) return [];
       let iriArray = parent.associated_activities_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -582,6 +587,7 @@ const oscalTaskResolvers = {
       }
     },
     subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -623,7 +629,8 @@ const oscalTaskResolvers = {
       }
     },
     responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
-      let iriArray = parent.notes_iri;
+      if (parent.responsible_roles_iri === undefined) return [];
+      let iriArray = parent.responsible_roles_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getCommonReducer("RESPONSIBLE-PARTY");
