@@ -4,6 +4,8 @@ node {
   String registry = 'docker.darklight.ai'
   String product = 'opencti'
   String branch = "${env.BRANCH_NAME}"
+  String commit = "${sh(returnStdout: true, script: 'git rev-parse HEAD')}"
+  String commitMessage = "${env.COMMIT_MESSAGE}"
   String tag = 'latest'
   String graphql = 'https://cyio.darklight.ai/graphql'
   String api = 'api'
@@ -76,7 +78,11 @@ node {
     office365ConnectorSend(
       status: 'Completed',
       color: '00FF00',
-      webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}"
+      webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+      message: "New image built and pushed!",
+      factDefinitions: [[name: "Message", template: "${commitMessage}"],
+                        [name: "Commit", template: "${commit}"], 
+                        [name: "Image", template: "${registry}/${product}:${tag}"]]
     )
   }
 }
