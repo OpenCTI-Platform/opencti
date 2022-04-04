@@ -95,8 +95,8 @@ const styles = (theme) => ({
 });
 
 const deviceCreationMutation = graphql`
-  mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
-    createComputingDeviceAsset (input: $input) {
+  mutation DeviceCreationMutation($input: HardwareAssetAddInput) {
+    createHardwareAsset (input: $input) {
       id
       # ...DeviceCard_node
       # ...DeviceDetails_device
@@ -144,11 +144,7 @@ class DeviceCreation extends Component {
       R.dissoc('port_number'),
       R.dissoc('protocols'),
       R.dissoc('labels'),
-      R.dissoc('installed_operating_system'),
-      R.dissoc('installed_hardware'),
-      R.dissoc('installed_software'),
       R.dissoc('locations'),
-      R.dissoc('connected_to_network'),
       R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
     )(adaptedValues);
@@ -376,7 +372,8 @@ class DeviceCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push('/dashboard/assets/devices')}
+              // onClick={() => this.props.history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"

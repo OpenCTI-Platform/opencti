@@ -312,7 +312,7 @@ const DeviceCardFragment = createFragmentContainer(
   DeviceCardComponent,
   {
     node: graphql`
-      fragment DeviceCard_node on ComputingDeviceAsset {
+      fragment DeviceCard_node on HardwareAsset {
         id
         name
         asset_id

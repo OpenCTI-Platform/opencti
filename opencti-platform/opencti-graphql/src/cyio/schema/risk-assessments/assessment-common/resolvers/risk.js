@@ -68,19 +68,23 @@ const riskResolvers = {
             continue;
           }
 
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
+          }
+
           // calculate the risk level
+          risk.risk_level = 'unknown';
           if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
-            let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
             let riskLevel;
+            let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
             if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
             if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
             if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
             if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
             if (score == 0) riskLevel = 'very-low';
-
-            // add the risk level to the object
-            risk.risk_level = riskLevel;
             risk.risk_score = score;
+            risk.risk_level = riskLevel;
 
             // clean up
             delete risk.cvss20_base_score;
@@ -151,17 +155,21 @@ const riskResolvers = {
         const reducer = getReducer("RISK");
         let risk = response[0];
 
+        if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+          console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+          risk.risk_status = risk.risk_status.replace('_', '-');
+        }
+
         // calculate the risk level
+        risk.risk_level = 'unknown';
         if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
-          let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
           let riskLevel;
+          let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
           if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
           if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
           if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
           if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
           if (score == 0) riskLevel = 'very-low';
-
-          // add the risk level to the object
           risk.risk_level = riskLevel;
           risk.risk_score = score;
 
@@ -319,7 +327,7 @@ const riskResolvers = {
   // field-level resolvers
   Risk: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.labels_iri === undefined) return null;
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -361,7 +369,7 @@ const riskResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return null;
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -403,7 +411,7 @@ const riskResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return null;
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -445,7 +453,7 @@ const riskResolvers = {
       }
     },
     origins:async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.origins_iri === undefined) return null;
+      if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -488,10 +496,10 @@ const riskResolvers = {
     },
     threats: async (parent, args, {dbName, dataSources, selectMap}) => {
       // this is a No-Op for MVP until we get threat intelligence integrated 
-      return null;
+      return [];
     },
     characterizations: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.characterizations_iri === undefined) return null;
+      if (parent.characterizations_iri === undefined) return [];
       let iriArray = parent.characterizations_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -533,7 +541,7 @@ const riskResolvers = {
       }
     },
     mitigating_factors: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.mitigating_factors_iri === undefined) return null;
+      if (parent.mitigating_factors_iri === undefined) return [];
       let iriArray = parent.mitigating_factors_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -575,7 +583,7 @@ const riskResolvers = {
       }
     },
     remediations: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.remediations_iri === undefined) return null;
+      if (parent.remediations_iri === undefined) return [];
       let iriArray = parent.remediations_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -638,7 +646,7 @@ const riskResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {
@@ -696,7 +704,7 @@ const riskResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {

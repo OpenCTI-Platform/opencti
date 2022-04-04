@@ -41,7 +41,7 @@ const poamItemResolvers = {
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("POAM-ITEM");
@@ -54,7 +54,7 @@ const poamItemResolvers = {
           itemList = response;
         }
 
-        if (offset > itemList.length) return
+        if (offset > itemList.length) return null;
 
         // for each POAM in the result set
         for (let item of itemList) {
@@ -105,7 +105,7 @@ const poamItemResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return ;
+          return null;
         }
       }
     },
@@ -225,7 +225,7 @@ const poamItemResolvers = {
   // field-level resolvers
   POAMItem: {
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.labels_iri === undefined) return null;
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -265,7 +265,7 @@ const poamItemResolvers = {
       }
     },
     links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return null;
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -305,7 +305,7 @@ const poamItemResolvers = {
       }
     },
     remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return null;
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -366,7 +366,7 @@ const poamItemResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             if ( limit ) {
               let edge = {
@@ -399,14 +399,14 @@ const poamItemResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
     related_risks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.related_risks_iri === undefined) return null;
       let iriArray = parent.related_risks_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const edges = [];
+        let edges = [];
         const reducer = getAssessmentReducer("RISK");
         let limit = (args.first === undefined ? iriArray.length : args.first) ;
         for (let iri of iriArray) {
@@ -425,23 +425,27 @@ const poamItemResolvers = {
             console.log(e)
             throw e
           }
-          if (response === undefined) return [];
+          if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
             let risk = response[0];
 
-            // calculate the risk level
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
+          }
+
+          // calculate the risk level
+            risk.risk_level = 'unknown';
             if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
-              let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
               let riskLevel;
+              let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
               if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
               if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
               if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
               if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
               if (score == 0) riskLevel = 'very-low';
-
-              // add the risk level to the object
-              risk.risk_level = riskLevel;
               risk.risk_score = score;
+              risk.risk_level = riskLevel;
 
               // clean up
               delete risk.cvss20_base_score;
@@ -471,6 +475,7 @@ const poamItemResolvers = {
             }
           }  
         }
+        // return null if no edges
         if (edges.length === 0 ) return null;
         return {
           pageInfo: {
@@ -483,7 +488,7 @@ const poamItemResolvers = {
           edges: edges,
         }
       } else {
-        return [];
+        return null;
       }
     },
     occurrences:  async (parent, args, {dbName, dataSources, selectMap}) => {

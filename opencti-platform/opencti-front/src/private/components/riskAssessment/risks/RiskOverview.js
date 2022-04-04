@@ -78,33 +78,6 @@ class RiskOverviewComponent extends Component {
     const {
       t, fldt, classes, risk, refreshQuery,
     } = this.props;
-    // console.log('RiskOverview', risk);
-    const riskEdges = R.pipe(
-      R.pathOr([], ['related_risks', 'edges']),
-      R.map((value) => ({
-        id: value.node.id,
-        created: value.node.created,
-        modified: value.node.modified,
-        name: value.node.name,
-        description: value.node.description,
-        deadline: value.node.deadline,
-        priority: value.node.priority,
-      })),
-      R.mergeAll,
-    )(risk);
-    const relatedRiskData = R.pipe(
-      R.pathOr([], ['related_risks', 'edges']),
-      R.map((relatedRisk) => ({
-        characterization: relatedRisk.node.characterizations,
-      })),
-      R.mergeAll,
-      R.path(['characterization']),
-      R.mergeAll,
-    )(risk);
-    const riskFacets = R.pipe(
-      R.pathOr([], ['facets']),
-      R.mergeAll,
-    )(relatedRiskData);
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <div style={{ height: '100%' }} className="break">
@@ -132,7 +105,7 @@ class RiskOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {riskEdges.id && t(riskEdges.id)}
+              {risk.id && t(risk.id)}
             </Grid>
           </Grid>
           <Grid style={{ marginTop: '10px' }} container={true} spacing={3}>
@@ -155,8 +128,7 @@ class RiskOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {riskEdges.created && fd(riskEdges.created)}
+              {risk.created && fldt(risk.created)}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography
@@ -177,8 +149,7 @@ class RiskOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {t('Jun 11, 2021, 9:14:22 AM')} */}
-              {riskEdges.modified && fd(riskEdges.modified)}
+              {risk.modified && fldt(risk.modified)}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
@@ -204,7 +175,7 @@ class RiskOverviewComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {riskEdges.description && t(riskEdges.description)}
+                    {risk.description && t(risk.description)}
                   </div>
                 </div>
               </div>
@@ -231,7 +202,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {riskFacets.facet_name && t(riskFacets.facet_name)}
+                {risk.risk_level && t(risk.risk_level)}
               </div>
               <div style={{ marginTop: '25px' }}>
                 <Typography
@@ -252,7 +223,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {riskFacets.risk_state && t(riskFacets.risk_state)}
+                {/* {risk.impact && t(risk.impact)} */}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -275,8 +246,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {/* {risk.priority && t(risk.priority)} */}
-                {riskEdges.priority && t(riskEdges.priority)}
+                {risk.priority && t(risk.priority)}
               </div>
               <div style={{ marginBottom: '20px', marginTop: '25px' }}>
                 <Typography
@@ -297,7 +267,7 @@ class RiskOverviewComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {riskFacets.facet_value && t(riskFacets.facet_value)}
+                {/* {risk.likelihood && t(risk.likelihood)} */}
               </div>
             </Grid>
           </Grid>
@@ -330,24 +300,23 @@ const RiskOverview = createFragmentContainer(
   RiskOverviewComponent,
   {
     risk: graphql`
-      fragment RiskOverview_risk on POAMItem {
-        __typename
+      fragment RiskOverview_risk on Risk {
         id
+        name
         created
         modified
-        name        # Weakness
         description
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
+        statement
+        risk_status
+        risk_level
+        deadline
+        accepted
+        risk_adjusted
+        priority
+        vendor_dependency
+        impacted_control_id
         origins {
-          id
-          origin_actors {       # only use if UI support Detection Source
+          origin_actors {
             actor_type
             actor_ref {
               ... on AssessmentPlatform {
@@ -367,80 +336,13 @@ const RiskOverview = createFragmentContainer(
             }
           }
         }
-        links {
+        labels {
           __typename
           id
-          created
-          modified
+          name
+          color
           entity_type
-          external_id     # external id
-          source_name     # Title
-          description     # description
-          url             # URL
-          media_type      # Media Type
-        }
-        remarks {
-          __typename
-          id
-          abstract
-          content
-          authors
-        }
-        related_risks {
-          edges {
-            node{
-              id
-              created
-              modified
-              name
-              description
-              statement
-              risk_status       # Risk Status
-              deadline
-              priority
-              impacted_control_id
-              accepted
-              false_positive    # False-Positive
-              risk_adjusted     # Operational Required
-              vendor_dependency # Vendor Dependency
-              characterizations {
-                origins {
-                  id
-                  origin_actors {
-                    actor_type
-                    actor_ref {
-                      ... on AssessmentPlatform {
-                        id
-                        name
-                      }
-                      ... on Component {
-                        id
-                        component_type
-                        name          # Detection Source
-                      }
-                      ... on OscalParty {
-                      id
-                      party_type
-                      name            # Detection Source
-                      }
-                    }
-                  }
-                }
-                facets {
-                  id
-                  source_system
-                  facet_name
-                  facet_value
-                  risk_state
-                  entity_type
-                }
-              }
-              remediations {
-                response_type
-                lifecycle
-              }
-            }
-          }
+          description
         }
       }
     `,

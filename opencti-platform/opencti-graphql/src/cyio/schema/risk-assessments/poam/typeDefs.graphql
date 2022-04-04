@@ -225,7 +225,7 @@
     "Identifies the name for this POA&M item."
     name: String!
     "Identifies a human-readable description of the POA&M item."
-    description: String!
+    description: String
     "Identifies one or more sources of the finding, such as a tool, interviewed person, or activity."
     origins: [Origin]
     # "Identifies an assessor's conclusions regarding the degree to which an objective is satisfied."
@@ -250,7 +250,7 @@
     "Identifies the name for this POA&M item."
     name: String!
     "Identifies a human-readable description of the POA&M item."
-    description: String!
+    description: String
     # POAM Item
     "Indicates a CSP-assigned unique POA&M ID to allow for compliance with FedRAMP."
     poam_id: String
@@ -285,6 +285,8 @@
     modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Label"
     labels
+    "Name"
+    name
     "Risk Level"
     risk_level
     "Risk Status"

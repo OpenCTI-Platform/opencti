@@ -1,0 +1,37 @@
+# RiskUI_risks:
+#   performs the query needed to populate the Risks page in the UI
+#
+query RiskUI_risks {
+  poamItems(first: 100) {
+    pageInfo {
+      globalCount
+    }
+    edges {
+      node {
+        __typename
+        id
+        poam_id
+        name
+        occurrences
+        related_risks {
+          edges {
+            node {
+              __typename
+              id
+              name
+              risk_status
+              risk_level
+              deadline
+              remediations {
+                __typename
+                id
+                response_type
+                lifecycle
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

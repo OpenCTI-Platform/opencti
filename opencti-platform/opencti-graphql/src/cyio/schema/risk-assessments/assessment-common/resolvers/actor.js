@@ -1,6 +1,6 @@
-import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
+import { riskSingularizeSchema as singularizeSchema, } from '../../risk-mappings.js';
 import { compareValues, updateQuery, filterValues } from '../../../utils.js';
-import { selectObjectIriByIdQuery, selectObjectByIriQuery } from '../../../global/global-utils.js';
+import { objectMap, selectObjectIriByIdQuery, selectObjectByIriQuery } from '../../../global/global-utils.js';
 import { UserInputError } from "apollo-server-express";
 import {
   selectExternalReferenceByIriQuery,
@@ -420,6 +420,14 @@ const actorResolvers = {
           });
         }
       }  
+    },
+    __resolveType: ( item ) => {
+      return objectMap[item.entity_type].graphQLType;
+    },
+  },
+  ActorTarget: {
+    __resolveType: ( item ) => {
+      return objectMap[item.entity_type].graphQLType;
     },
   },
 }

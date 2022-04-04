@@ -77,7 +77,7 @@ const DeviceDeletionMutation = graphql`
 
 const DeviceDeletionDarkLightMutation = graphql`
   mutation DeviceDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteHardwareAsset(id: $id)
 }
 `;
 

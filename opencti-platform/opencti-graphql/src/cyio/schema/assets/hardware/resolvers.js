@@ -228,7 +228,6 @@ const hardwareResolvers = {
         delete input.installed_software;
       }
 
-      // const { iri, id, query } = insertQuery(input);
       const { iri, id, query } = insertHardwareQuery(input)
       await dataSources.Stardog.create({
         dbName,
@@ -442,6 +441,7 @@ const hardwareResolvers = {
   // field-level query
   HardwareAsset: {
     installed_software: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.installed_sw_iri === undefined) return [];
       let iriArray = parent.installed_sw_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -482,6 +482,7 @@ const hardwareResolvers = {
       }
     },
     installed_operating_system: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.installed_os_iri === undefined) return null;
       var iri = parent.installed_os_iri
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
@@ -520,6 +521,7 @@ const hardwareResolvers = {
       }
     },
     ipv4_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -559,6 +561,7 @@ const hardwareResolvers = {
       }
     },
     ipv6_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -598,6 +601,7 @@ const hardwareResolvers = {
       }
     },
     mac_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.mac_addr_iri === undefined) return [];
       let iriArray = parent.mac_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -643,6 +647,7 @@ const hardwareResolvers = {
       }
     },
     ports: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ports_iri === undefined) return [];
       let iriArray = parent.ports_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const results = [];
@@ -681,6 +686,7 @@ const hardwareResolvers = {
       }
     },
     connected_to_network: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.conn_network_iri === undefined) return null;
       let iri = parent.conn_network_iri;
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
@@ -714,6 +720,7 @@ const hardwareResolvers = {
       }
     },
     labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -753,6 +760,7 @@ const hardwareResolvers = {
       }
     },
     external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -792,6 +800,7 @@ const hardwareResolvers = {
       }
     },
     notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+      if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

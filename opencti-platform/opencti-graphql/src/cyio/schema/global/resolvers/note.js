@@ -28,7 +28,7 @@ const cyioNoteResolvers = {
         throw e
       }
 
-      if (response === undefined) return[];
+      if (response === undefined) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("NOTE");
@@ -41,7 +41,7 @@ const cyioNoteResolvers = {
           noteList = response;
         }
 
-        if (offset > noteList.length) return
+        if (offset > noteList.length) return null;
 
         // for each asset in the result set
         for (let note of noteList) {
@@ -92,7 +92,7 @@ const cyioNoteResolvers = {
             error_code: (response.body.code ? response.body.code : 'N/A')
           });
         } else {
-          return ;
+          return null;
         }
       }
     },

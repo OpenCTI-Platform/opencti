@@ -2,7 +2,7 @@
 /* refactor */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import * as R from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { Redirect } from 'react-router-dom';
@@ -142,7 +142,7 @@ RiskComponent.propTypes = {
 
 const Risk = createFragmentContainer(RiskComponent, {
   risk: graphql`
-    fragment Risk_risk on POAMItem {
+    fragment Risk_risk on Risk {
       __typename
       id
       name
@@ -184,9 +184,8 @@ const Risk = createFragmentContainer(RiskComponent, {
       }
       ...RiskOverview_risk
       ...RiskDetails_risk
-      ...RiskObservation_risk
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Risk);
+export default R.compose(inject18n, withStyles(styles))(Risk);

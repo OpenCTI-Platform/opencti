@@ -53,7 +53,7 @@ class RootRemediation extends Component {
     super(props);
     const {
       match: {
-        params: { riskId },
+        params: { riskId, remediationId },
       },
     } = props;
     this.sub = requestSubscription({
@@ -70,7 +70,7 @@ class RootRemediation extends Component {
     const {
       me,
       match: {
-        params: { riskId },
+        params: { riskId, remediationId },
       },
       risk,
     } = this.props;
@@ -101,7 +101,7 @@ class RootRemediation extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={remediationQuery}
-          variables={{ id: riskId }}
+          variables={{ id: remediationId }}
           render={({ error, props, retry }) => {
             console.log('RemediationRootQuery', props);
             if (props) {

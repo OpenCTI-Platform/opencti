@@ -1,0 +1,32 @@
+# This approach gathers the list of risks in a single query
+SELECT DISTINCT ?iri ?poam_id ?id ?created ?modified ?name ?risk_status ?deadline ?occurrences ?response_type ?lifecycle ?risk_level
+FROM <tag:stardog:api:context:local>
+WHERE {
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Risk> .
+    ?iri <http://darklight.ai/ns/common#id> ?id .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type } .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#created> ?created } .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#modified> ?modified } .
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#name> ?name } .
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#risk_status> ?risk_status } .
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#deadline> ?deadline } .
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#response_type> ?response_type }.
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle> ?lifecycle }.
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#risk> ?risk_level }.
+    {
+        SELECT DISTINCT ?iri ?poam_id (COUNT(?related_observations) AS ?occurrences)
+        WHERE {
+            ?itemIri a <http://csrc.nist.gov/ns/oscal/poam#Item> ;
+                <http://fedramp.gov/ns/oscal#poam_id> ?poam_id ;
+                <http://csrc.nist.gov/ns/oscal/assessment/common#related_risks> ?iri ;
+                <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
+            {
+                SELECT DISTINCT ?itemIrI
+                WHERE {
+                    ?poam a <http://csrc.nist.gov/ns/oscal/common#POAM> ;
+                        <http://csrc.nist.gov/ns/oscal/poam#poam_items>  ?itemIri .
+                }
+            }
+        } GROUP BY ?iri ?poam_id
+    }
+}
