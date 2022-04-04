@@ -30,7 +30,7 @@
     "@elastic/elasticsearch": "7.17.0",
     "@graphql-tools/schema": "8.3.1",
     "@graphql-tools/utils": "8.6.1",
-    "@opensearch-project/opensearch": "1.0.2",
+    "@opensearch-project/opensearch": "1.1.0",
     "amqplib": "0.8.0",
     "apollo-errors": "1.9.0",
     "apollo-server-core": "3.6.3",

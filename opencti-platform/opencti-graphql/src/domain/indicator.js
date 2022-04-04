@@ -1,6 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
+import { dissoc, pipe } from 'ramda';
 import {
   createEntity,
   createRelation,
@@ -23,6 +24,7 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../
 import { now } from '../utils/format';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { extractObservablesFromIndicatorPattern } from '../utils/syntax';
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
@@ -121,6 +123,35 @@ export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_INDICATOR], args);
 };
 
+export const createObservablesFromIndicator = async (user, input, indicator) => {
+  const { pattern } = indicator;
+  const observables = extractObservablesFromIndicatorPattern(pattern);
+  const observablesToLink = [];
+  for (let index = 0; index < observables.length; index += 1) {
+    const observable = observables[index];
+    const observableInput = {
+      ...R.dissoc('type', observable),
+      x_opencti_description: indicator.description
+        ? indicator.description
+        : `Simple observable of indicator {${indicator.indicator_name}}`,
+      x_opencti_score: indicator.x_opencti_score,
+      createdBy: input.createdBy,
+      objectMarking: input.objectMarking,
+      objectLabel: input.objectLabel,
+      externalReferences: input.externalReferences,
+      update: true,
+    };
+    const createdObservable = await createEntity(user, observableInput, observable.type);
+    observablesToLink.push(createdObservable.id);
+  }
+  await Promise.all(
+    observablesToLink.map((observableToLink) => {
+      const relationInput = { fromId: indicator.id, toId: observableToLink, relationship_type: RELATION_BASED_ON };
+      return createRelation(user, relationInput);
+    })
+  );
+};
+
 export const addIndicator = async (user, indicator) => {
   if (
     indicator.x_opencti_main_observable_type !== 'Unknown'
@@ -164,6 +195,9 @@ export const addIndicator = async (user, indicator) => {
       return createRelation(user, input);
     })
   );
+  if (observablesToLink.length === 0) {
+    await createObservablesFromIndicator(user, indicator, created);
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
