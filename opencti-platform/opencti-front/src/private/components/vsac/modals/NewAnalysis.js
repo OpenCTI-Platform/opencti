@@ -197,16 +197,17 @@ class NewAnalysis extends Component {
 		}
 
 		const handleNotify = (event) => {
-			this.setState({notify: event.target.value});
+			this.setState({notify: event.target.checked});
 		};
 
 		const handleSubmit = () => {
+			console.log(notify)
 			const params = {
 			    scan_id: scan.id,
 			    vulnerability_range: selectedVulnRange,
 			    weakness_range: selectedWeakCount,
 			    vignette: selectedVignette,
-					notify: notify || false
+					notify
 			  };
 
 			this.props.action(id, client, params )
