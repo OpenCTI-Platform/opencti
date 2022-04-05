@@ -9,6 +9,27 @@ from stix2 import (
     properties,
 )
 
+STIX_CYBER_OBSERVABLE_MAPPING = {
+    "autonomous-system": "Autonomous-System",
+    "directory": "Directory",
+    "domain-name": "Domain-Name",
+    "email-addr": "Email-Addr",
+    "file": "StixFile",
+    "email-message": "Email-Message",
+    "ipv4-addr": "IPv4-Addr",
+    "ipv6-addr": "IPv6-Addr",
+    "mac-addr": "Mac-Addr",
+    "mutex": "Mutex",
+    "network-traffic": "Network-Traffic",
+    "process": "Process",
+    "software": "Software",
+    "url": "Url",
+    "user-account": "User-Account",
+    "windows-registry-key": "Windows-Registry-Key",
+    "windows-registry-value-type": "Windows-Registry-Value-Type",
+    "x-opencti-hostname": "X-OpenCTI-Hostname",
+}
+
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],
     "Directory": ["path"],
