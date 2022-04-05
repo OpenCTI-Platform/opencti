@@ -44,7 +44,6 @@ describe('Live streams tests', () => {
       expect(number === dbNumber).toBeTruthy();
     }
   };
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should consume init live stream',
     async () => {

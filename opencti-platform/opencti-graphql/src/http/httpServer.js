@@ -81,7 +81,7 @@ const createHttpServer = async () => {
     },
   });
   await apolloServer.start();
-  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '10mb';
+  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(graphqlUploadExpress());
   apolloServer.applyMiddleware({
     app,

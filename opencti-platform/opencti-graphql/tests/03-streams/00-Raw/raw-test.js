@@ -30,7 +30,6 @@ describe('Raw streams tests', () => {
     await shutdownModules();
   });
   // We need to check the event format to be sure that everything is setup correctly
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should stream correctly formatted',
     async () => {
@@ -143,7 +142,6 @@ describe('Raw streams tests', () => {
     FIVE_MINUTES
   );
   // Based on all events of a specific element, can we reconstruct the final state correctly?
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should events rebuild succeed',
     async () => {
@@ -169,15 +167,13 @@ describe('Raw streams tests', () => {
     FIVE_MINUTES
   );
   // Based on all events of a specific element, can we reconstruct the final state correctly?
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should events context available',
     async () => {
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       const contextWithDeletionEvents = events.filter(
-        (e) =>
-          (e.data.data.x_opencti_context?.deletions || []).length > 0 ||
-          (e.data.data.x_opencti_context?.sources || []).length > 0
+        (e) => (e.data.data.x_opencti_context?.deletions || []).length > 0
+          || (e.data.data.x_opencti_context?.sources || []).length > 0
       );
       const deletions = R.flatten(
         contextWithDeletionEvents.map((e) => [

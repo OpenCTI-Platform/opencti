@@ -3751,6 +3751,7 @@ export type IndicatorStixCoreRelationshipsArgs = {
 export type IndicatorAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  createObservables?: InputMaybe<Scalars['Boolean']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;

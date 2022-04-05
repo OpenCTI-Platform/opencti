@@ -164,6 +164,7 @@ export const addIndicator = async (user, indicator) => {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
   const indicatorToCreate = R.pipe(
+    R.dissoc('createObservables'),
     R.dissoc('basedOn'),
     R.assoc(
       'x_opencti_main_observable_type',
@@ -194,7 +195,7 @@ export const addIndicator = async (user, indicator) => {
       return createRelation(user, input);
     })
   );
-  if (observablesToLink.length === 0) {
+  if (observablesToLink.length === 0 && indicator.createObservables) {
     await createObservablesFromIndicator(user, indicator, created);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

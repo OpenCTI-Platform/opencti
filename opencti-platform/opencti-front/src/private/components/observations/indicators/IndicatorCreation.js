@@ -105,6 +105,7 @@ const indicatorValidation = (t) => Yup.object().shape({
     t('This field is required'),
   ),
   x_opencti_detection: Yup.boolean(),
+  createObservables: Yup.boolean(),
   x_mitre_platforms: Yup.array(),
 });
 
@@ -367,6 +368,13 @@ class IndicatorCreation extends Component {
                     type="checkbox"
                     name="x_opencti_detection"
                     label={t('Detection')}
+                    containerstyle={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={SwitchField}
+                    type="checkbox"
+                    name="createObservables"
+                    label={t('Create observables from this indicator')}
                     containerstyle={{ marginTop: 20 }}
                   />
                   <div className={classes.buttons}>

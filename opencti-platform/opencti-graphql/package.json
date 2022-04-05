@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "5.2.4",
+  "version": "5.2.5",
   "main": "src/index.js",
   "license": "Apache-2.0",
   "scripts": {

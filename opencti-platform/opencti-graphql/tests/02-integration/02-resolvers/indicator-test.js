@@ -2,46 +2,46 @@ import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 
 const LIST_QUERY = gql`
-  query indicators(
-    $first: Int
-    $after: ID
-    $orderBy: IndicatorsOrdering
-    $orderMode: OrderingMode
-    $filters: [IndicatorsFiltering]
-    $filterMode: FilterMode
-    $search: String
-  ) {
-    indicators(
-      first: $first
-      after: $after
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-      filterMode: $filterMode
-      search: $search
+    query indicators(
+        $first: Int
+        $after: ID
+        $orderBy: IndicatorsOrdering
+        $orderMode: OrderingMode
+        $filters: [IndicatorsFiltering]
+        $filterMode: FilterMode
+        $search: String
     ) {
-      edges {
-        node {
-          id
-          standard_id
-          name
-          description
+        indicators(
+            first: $first
+            after: $after
+            orderBy: $orderBy
+            orderMode: $orderMode
+            filters: $filters
+            filterMode: $filterMode
+            search: $search
+        ) {
+            edges {
+                node {
+                    id
+                    standard_id
+                    name
+                    description
+                }
+            }
         }
-      }
     }
-  }
 `;
 
 const READ_QUERY = gql`
-  query indicator($id: String!) {
-    indicator(id: $id) {
-      id
-      standard_id
-      name
-      description
-      toStix
+    query indicator($id: String!) {
+        indicator(id: $id) {
+            id
+            standard_id
+            name
+            description
+            toStix
+        }
     }
-  }
 `;
 
 describe('Indicator resolver standard behavior', () => {
@@ -49,21 +49,21 @@ describe('Indicator resolver standard behavior', () => {
   const indicatorStixId = 'indicator--f6ad652c-166a-43e6-98b8-8ff078e2349f';
   it('should indicator created', async () => {
     const CREATE_QUERY = gql`
-      mutation IndicatorAdd($input: IndicatorAddInput) {
-        indicatorAdd(input: $input) {
-          id
-          name
-          description
-          observables {
-            edges {
-              node {
+        mutation IndicatorAdd($input: IndicatorAddInput) {
+            indicatorAdd(input: $input) {
                 id
-                standard_id
-              }
+                name
+                description
+                observables {
+                    edges {
+                        node {
+                            id
+                            standard_id
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     `;
     // Create the indicator
     const INDICATOR_TO_CREATE = {
@@ -105,14 +105,14 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should update indicator', async () => {
     const UPDATE_QUERY = gql`
-      mutation IndicatorEdit($id: ID!, $input: [EditInput]!) {
-        indicatorEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            name
-          }
+        mutation IndicatorEdit($id: ID!, $input: [EditInput]!) {
+            indicatorEdit(id: $id) {
+                fieldPatch(input: $input) {
+                    id
+                    name
+                }
+            }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
@@ -122,13 +122,13 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should context patch indicator', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation IndicatorEdit($id: ID!, $input: EditContext) {
-        indicatorEdit(id: $id) {
-          contextPatch(input: $input) {
-            id
-          }
+        mutation IndicatorEdit($id: ID!, $input: EditContext) {
+            indicatorEdit(id: $id) {
+                contextPatch(input: $input) {
+                    id
+                }
+            }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
@@ -138,13 +138,13 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should context clean indicator', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation IndicatorEdit($id: ID!) {
-        indicatorEdit(id: $id) {
-          contextClean {
-            id
-          }
+        mutation IndicatorEdit($id: ID!) {
+            indicatorEdit(id: $id) {
+                contextClean {
+                    id
+                }
+            }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
@@ -154,24 +154,24 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should add relation in indicator', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation IndicatorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
-        indicatorEdit(id: $id) {
-          relationAdd(input: $input) {
-            id
-            from {
-              ... on Indicator {
-                objectMarking {
-                  edges {
-                    node {
-                      id
+        mutation IndicatorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+            indicatorEdit(id: $id) {
+                relationAdd(input: $input) {
+                    id
+                    from {
+                        ... on Indicator {
+                            objectMarking {
+                                edges {
+                                    node {
+                                        id
+                                    }
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
             }
-          }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
@@ -187,20 +187,20 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should delete relation in indicator', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation IndicatorEdit($id: ID!, $toId: String!, $relationship_type: String!) {
-        indicatorEdit(id: $id) {
-          relationDelete(toId: $toId, relationship_type: $relationship_type) {
-            id
-            objectMarking {
-              edges {
-                node {
-                  id
+        mutation IndicatorEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+            indicatorEdit(id: $id) {
+                relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                    id
+                    objectMarking {
+                        edges {
+                            node {
+                                id
+                            }
+                        }
+                    }
                 }
-              }
             }
-          }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: RELATION_DELETE_QUERY,
@@ -214,11 +214,11 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should indicator deleted', async () => {
     const DELETE_QUERY = gql`
-      mutation indicatorDelete($id: ID!) {
-        indicatorEdit(id: $id) {
-          delete
+        mutation indicatorDelete($id: ID!) {
+            indicatorEdit(id: $id) {
+                delete
+            }
         }
-      }
     `;
     // Delete the indicator
     await queryAsAdmin({

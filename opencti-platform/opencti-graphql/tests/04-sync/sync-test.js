@@ -124,7 +124,6 @@ describe('Database provision', () => {
     expect(diffElements.length).toBe(0);
   };
 
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should python raw sync succeed',
     async () => {
@@ -132,7 +131,8 @@ describe('Database provision', () => {
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
       // Sync
       await startModules();
-      const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, 425, '0'];
+      // TODO understand why we have more than live stream
+      const syncOpts = [API_URI, API_TOKEN, SYNC_RAW_START_REMOTE_URI, API_TOKEN, 538, '0'];
       const execution = await execPython3(PYTHON_PATH, 'local_synchronizer.py', syncOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
@@ -143,7 +143,6 @@ describe('Database provision', () => {
     FIFTEEN_MINUTES
   );
 
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should python live sync succeed',
     async () => {
@@ -170,7 +169,6 @@ describe('Database provision', () => {
     FIFTEEN_MINUTES
   );
 
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should direct sync succeed',
     async () => {
@@ -278,7 +276,6 @@ describe('Database provision', () => {
       (message) => message.includes('restore run completed')
     );
   };
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should backup/restore sync succeed',
     async () => {

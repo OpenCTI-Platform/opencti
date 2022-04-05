@@ -3600,6 +3600,7 @@ input IndicatorAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  createObservables: Boolean
 }
 
 ############## Infrastructures
