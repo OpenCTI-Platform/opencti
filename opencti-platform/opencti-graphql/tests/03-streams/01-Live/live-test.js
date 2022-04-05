@@ -44,6 +44,7 @@ describe('Live streams tests', () => {
       expect(number === dbNumber).toBeTruthy();
     }
   };
+
   it(
     'Should consume init live stream',
     async () => {
