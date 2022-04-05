@@ -11,6 +11,7 @@ import {
   evolve,
   pipe,
 } from 'ramda';
+import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -108,26 +109,25 @@ const RiskLogCreationMutation = graphql`
   ) {
     createRiskLogEntry(input: $input) {
       id
-      standard_id
-      entity_type
-      parent_types
-      entry_type
     }
   }
 `;
 
-const RiskLogValidation = (t) => Yup.object().shape({
-  source_name: Yup.string().required(t('This field is required')),
-  external_id: Yup.string(),
-  url: Yup.string().url(t('The value must be an URL')),
-  description: Yup.string(),
-});
+// const RiskLogValidation = (t) => Yup.object().shape({
+//   source_name: Yup.string().required(t('This field is required')),
+//   external_id: Yup.string(),
+//   url: Yup.string().url(t('The value must be an URL')),
+//   description: Yup.string(),
+// });
 
 class RiskLogCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
+      logged_by:[{
+        party: '',
+      }],
     };
   }
 
@@ -140,36 +140,33 @@ class RiskLogCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+     this.setState({
+      logged_by:[{
+        party: values.logged_by,
+      }],
+    })
     const adaptedValues = evolve(
       {
         event_end: () => values.event_end === null ? null : parse(values.event_end).format(),
         event_start: () => values.event_end === null ? null : parse(values.event_end).format(),
+        entry_type: () => values.entry_type.split(),
       },
       values,
     );
-    // const finalValues = pipe(
-    //   dissoc('related_response'),
-    //   assoc('related_responses', this.state.related_responses),
-    // )(values);
+    const finalValues = R.pipe(
+      R.assoc('logged_by', this.state.logged_by),
+    )(adaptedValues)
     CM(environmentDarkLight, {
       mutation: RiskLogCreationMutation,
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
-      // updater: (store) => insertNode(
-      //   store,
-      //   'Pagination_externalReferences',
-      //   this.props.paginationOptions,
-      //   'externalReferenceAdd',
-      // ),
       setSubmitting,
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        if (this.props.onCreate) {
-          this.props.onCreate(response.externalReferenceAdd, true);
-        }
+        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/tracking`);
       },
       onError: (err) => console.log('riskLogCreationValueError', err),
     });
@@ -310,7 +307,7 @@ class RiskLogCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, display, riskStatusResponse
+      t, classes, inputValue, display, riskStatusResponse, riskId
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -338,6 +335,7 @@ class RiskLogCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
+              risk_id: riskId,
               entry_type: [],
               name: '',
               description: '',
@@ -380,31 +378,6 @@ class RiskLogCreation extends Component {
                           style={{ height: '38.09px', marginBottom: '3px' }}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                         />
-                        {/* <Field
-                          component={SelectField}
-                          name="entry_type"
-                          fullWidth={true}
-                          multiple={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='remediated'>
-                            remediated
-                          </MenuItem>
-                          <MenuItem value='mitigation'>
-                            mitigation
-                          </MenuItem>
-                          <MenuItem value='closed'>
-                            closed
-                          </MenuItem>
-                          <MenuItem value='vendor_check_in'>
-                            vendor_check_in
-                          </MenuItem>
-                          <MenuItem value='status_update'>
-                            status_update
-                          </MenuItem>
-                        </Field> */}
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -618,7 +591,7 @@ class RiskLogCreation extends Component {
                         </Field> */}
                         <RiskStatus
                           variant='outlined'
-                          name="entry_type"
+                          name="status_change"
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px', marginBottom: '3px' }}
@@ -710,6 +683,7 @@ RiskLogCreation.propTypes = {
   inputValue: PropTypes.string,
   onCreate: PropTypes.func,
   riskStatusResponse: PropTypes.array,
+  riskId: PropTypes.string,
 };
 
 export default compose(

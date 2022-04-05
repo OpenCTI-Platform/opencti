@@ -250,6 +250,7 @@ class RiskTrackingLinesContainer extends Component {
             paginationOptions={paginationOptions}
             riskId={riskId}
             data={data}
+            history={history}
             riskStatusResponse={riskStatusResponse}
           // stixCoreObjectOrStixCoreRelationshipReferences={
           //   data.risk.risk_log.edges
