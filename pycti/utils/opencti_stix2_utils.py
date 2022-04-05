@@ -65,6 +65,13 @@ OBSERVABLES_VALUE_INT = [
 
 class OpenCTIStix2Utils:
     @staticmethod
+    def stix_observable_opencti_type(observable_type):
+        if observable_type in STIX_CYBER_OBSERVABLE_MAPPING:
+            return STIX_CYBER_OBSERVABLE_MAPPING[observable_type]
+        else:
+            return "Unknown"
+
+    @staticmethod
     def create_stix_pattern(observable_type, observable_value):
         if observable_type in PATTERN_MAPPING:
             lhs = ObjectPath(
