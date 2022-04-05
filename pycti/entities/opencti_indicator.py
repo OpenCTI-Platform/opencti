@@ -196,11 +196,11 @@ class Indicator:
         )
         query = (
             """
-            query Indicators($filters: [IndicatorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IndicatorsOrdering, $orderMode: OrderingMode) {
-                indicators(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
-                    edges {
-                        node {
-                            """
+                query Indicators($filters: [IndicatorsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IndicatorsOrdering, $orderMode: OrderingMode) {
+                    indicators(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                        edges {
+                            node {
+                                """
             + (custom_attributes if custom_attributes is not None else self.properties)
             + """
                         }
@@ -277,9 +277,9 @@ class Indicator:
             self.opencti.log("info", "Reading Indicator {" + id + "}.")
             query = (
                 """
-                query Indicator($id: String!) {
-                    indicator(id: $id) {
-                        """
+                    query Indicator($id: String!) {
+                        indicator(id: $id) {
+                            """
                 + (
                     custom_attributes
                     if custom_attributes is not None
@@ -341,6 +341,7 @@ class Indicator:
         x_mitre_platforms = kwargs.get("x_mitre_platforms", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        create_observables = kwargs.get("x_opencti_create_observables", False)
         update = kwargs.get("update", False)
 
         if (
@@ -400,6 +401,7 @@ class Indicator:
                         "x_mitre_platforms": x_mitre_platforms,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "killChainPhases": kill_chain_phases,
+                        "createObservables": create_observables,
                         "update": update,
                     }
                 },
@@ -547,6 +549,9 @@ class Indicator:
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,
+                x_opencti_create_observables=stix_object["x_opencti_create_observables"]
+                if "x_opencti_create_observables" in stix_object
+                else False,
                 update=update,
             )
         else:
