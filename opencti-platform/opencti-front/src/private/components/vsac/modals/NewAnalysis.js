@@ -201,7 +201,6 @@ class NewAnalysis extends Component {
 		};
 
 		const handleSubmit = () => {
-			console.log(notify)
 			const params = {
 			    scan_id: scan.id,
 			    vulnerability_range: selectedVulnRange,
