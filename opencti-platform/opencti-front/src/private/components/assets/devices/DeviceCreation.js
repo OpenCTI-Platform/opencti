@@ -95,8 +95,8 @@ const styles = (theme) => ({
 });
 
 const deviceCreationMutation = graphql`
-  mutation DeviceCreationMutation($input: ComputingDeviceAssetAddInput) {
-    createComputingDeviceAsset (input: $input) {
+  mutation DeviceCreationMutation($input: HardwareAssetAddInput) {
+    createHardwareAsset (input: $input) {
       id
       # ...DeviceCard_node
       # ...DeviceDetails_device
@@ -144,12 +144,7 @@ class DeviceCreation extends Component {
       R.dissoc('port_number'),
       R.dissoc('protocols'),
       R.dissoc('labels'),
-      R.dissoc('installed_operating_system'),
-      R.dissoc('installed_hardware'),
-      R.dissoc('installed_software'),
       R.dissoc('locations'),
-      R.dissoc('connected_to_network'),
-      R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
     )(adaptedValues);
     CM(environmentDarkLight, {
@@ -162,7 +157,7 @@ class DeviceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/assets/devices');
+        this.props.history.push('/defender HQ/assets/devices');
       },
       onError: (err => (console.log('DeviceCreation Erro', err))),
     });
@@ -218,7 +213,7 @@ class DeviceCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello World',
+            name: '',
             operational_status: 'other',
             // id: '',
             asset_id: '',
@@ -376,7 +371,8 @@ class DeviceCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push('/dashboard/assets/devices')}
+              // onClick={() => this.props.history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"

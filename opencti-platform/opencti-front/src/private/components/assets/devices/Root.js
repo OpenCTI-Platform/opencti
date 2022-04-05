@@ -42,7 +42,7 @@ const subscription = graphql`
 
 const deviceQuery = graphql`
   query RootDeviceQuery($id: ID!) {
-    computingDeviceAsset(id: $id) {
+    hardwareAsset(id: $id) {
       id
       name
       ...Device_device
@@ -75,11 +75,11 @@ class RootDevice extends Component {
         params: { deviceId },
       },
     } = this.props;
-    const link = `/dashboard/assets/devices/${deviceId}/knowledge`;
+    const link = `/defender HQ/assets/devices/${deviceId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
-        <Route path="/dashboard/assets/devices/:deviceId/knowledge">
+        <Route path="/defender HQ/assets/devices/:deviceId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -105,17 +105,17 @@ class RootDevice extends Component {
           variables={{ id: deviceId }}
           render={({ error, props, retry }) => {
             if (props) {
-              if (props.computingDeviceAsset) {
+              if (props.hardwareAsset) {
                 return (
                   <Switch>
                     <Route
                       exact
-                      path="/dashboard/assets/devices/:deviceId"
+                      path="/defender HQ/assets/devices/:deviceId"
                       render={(routeProps) => (
                         <Device
                           {...routeProps}
                           refreshQuery={retry}
-                          device={props.computingDeviceAsset}
+                          device={props.hardwareAsset}
                         />
                       )}
                     />

@@ -37,6 +37,7 @@ const Remediations = (props) => {
     t,
     remediation,
     classes,
+    riskId,
     history,
   } = props;
   const [openCreation, setOpenCreation] = React.useState(false);
@@ -53,7 +54,7 @@ const Remediations = (props) => {
 
   const handleOpenNewCreation = () => {
     props.history.push({
-      pathname: '/dashboard/risk-assessment/risks',
+      pathname: '/activities/risk assessment/risks',
       openNewCreation: true,
     });
   };
@@ -71,7 +72,7 @@ const Remediations = (props) => {
             handleOpenNewCreation={handleOpenNewCreation.bind(this)}
             // OperationsComponent={<RiskDeletion />}
           />
-          <TopMenuRisk risk={remediation}/>
+          <TopMenuRisk risk={remediation.name}/>
           <Grid item={true} xs={12}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t('Remediations')}
@@ -91,6 +92,7 @@ const Remediations = (props) => {
             {/* </Security> */}
             <RemediationEntities
               entityId={remediation.id}
+              riskId={riskId.id}
             />
           </Grid>
         </>) : (
@@ -101,22 +103,9 @@ const Remediations = (props) => {
   );
 };
 
-// const RemediationFragment = createFragmentContainer(
-//   Remediations,
-//   {
-//     risk: graphql`
-//       fragment risk on StixCyberObservable {
-//         id
-//         entity_type
-//         ...risk
-//         ...risk
-//       }
-//     `,
-//   },
-// );
-
 Remediations.propTypes = {
   remediation: PropTypes.object,
+  riskId: PropTypes.object,
 };
 
 export default compose(

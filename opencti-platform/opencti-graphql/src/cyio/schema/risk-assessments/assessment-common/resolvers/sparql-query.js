@@ -109,6 +109,7 @@ const activityReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -132,6 +133,7 @@ const actorReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.links && {links_iri: item.links}),
     ...(item.actor_type && {actor_type: item.actor_type} ),
@@ -147,6 +149,7 @@ const assessmentPlatformReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -165,6 +168,7 @@ const assessmentSubjectReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
@@ -183,6 +187,7 @@ const associatedActivityReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
@@ -199,6 +204,7 @@ const characterizationReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -216,6 +222,7 @@ const evidenceReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -233,6 +240,7 @@ const facetReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
@@ -250,6 +258,7 @@ const logEntryAuthorReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.party && {party_iri: item.party}),
     ...(item.role && {role_id: item.role}),
@@ -263,6 +272,7 @@ const mitigatingFactorReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -287,6 +297,7 @@ const observationReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -313,6 +324,7 @@ const originReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.origin_actors && {origin_actors_iri: item.origin_actors}),
     ...(item.related_tasks && {related_tasks_iri: item.related_tasks}),
@@ -327,6 +339,7 @@ const requiredAssetReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
@@ -343,6 +356,7 @@ const riskReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -379,6 +393,7 @@ const riskLogReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -404,6 +419,7 @@ const riskResponseReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -428,6 +444,7 @@ const subjectReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),
@@ -445,6 +462,7 @@ const taskReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -475,6 +493,7 @@ const vulnerabilityFacetReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.links && {links_iri: item.links}),
     ...(item.remarks && {remarks_iri: item.remarks}),

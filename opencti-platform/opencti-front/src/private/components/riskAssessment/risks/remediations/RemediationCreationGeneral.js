@@ -42,6 +42,9 @@ import AssetType from '../../../common/form/AssetType';
 // import Ports from '../../../common/form/Ports';
 import CommitMessage from '../../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../../utils/String';
+import ResponseType from '../../../common/form/ResponseType';
+import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
+import Source from '../../../common/form/Source';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -73,6 +76,19 @@ const styles = (theme) => ({
     top: 30,
     right: 30,
   },
+  scrollBg: {
+    color: 'white',
+    padding: '10px 0px -1px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  container: {
+    display: 'flex',
+  },
+  actors: {
+  },
+  oscalParties: {
+  },
 });
 
 class RemediationCreationOverviewComponent extends Component {
@@ -96,17 +112,17 @@ class RemediationCreationOverviewComponent extends Component {
       enableReferences,
     } = this.props;
     return (
-      <div style={{ height: '100%' }} className="break">
-        <Typography variant="h4" gutterBottom={true}>
+      <div style={{ height: '100%' }} className='break'>
+        <Typography variant='h4' gutterBottom={true}>
           {t('Basic Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid xs={6} item={true}>
+            <Grid xs={3} item={true}>
               <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
@@ -114,15 +130,15 @@ class RemediationCreationOverviewComponent extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip title={t('Name')}>
-                    <Information fontSize="inherit" color="disabled" />
+                    <Information fontSize='inherit' color='disabled' />
                   </Tooltip>
                 </div>
-                <div className="clearfix" />
+                <div className='clearfix' />
                 <Field
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  name="name"
+                  name='name'
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                 // onFocus={this.handleChangeFocus.bind(this)}
@@ -131,8 +147,8 @@ class RemediationCreationOverviewComponent extends Component {
               </Grid>
               <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
@@ -140,15 +156,16 @@ class RemediationCreationOverviewComponent extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip title={t('Created')}>
-                    <Information fontSize="inherit" color="disabled" />
+                    <Information fontSize='inherit' color='disabled' />
                   </Tooltip>
                 </div>
-                <div className="clearfix" />
+                <div className='clearfix' />
                 <Field
                   component={DatePickerField}
                   variant='outlined'
                   size='small'
-                  name="created"
+                  name='created'
+                  disabled={true}
                   fullWidth={true}
                   containerstyle={{ width: '100%' }}
                   invalidDateMessage={t(
@@ -157,12 +174,63 @@ class RemediationCreationOverviewComponent extends Component {
                   style={{ height: '38.09px' }}
                 />
               </Grid>
+              <Grid style={{ marginBottom: '20px' }} item={true}>
+                <div>
+                  <Typography
+                    variant='h3'
+                    color='textSecondary'
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Source')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                    <Tooltip title={t('Source')}>
+                      <Information fontSize='inherit' color='disabled' />
+                    </Tooltip>
+                  </div>
+                  <div className='clearfix' />
+                  <Source
+                    variant='outlined'
+                    values={values}
+                    setFieldValue={setFieldValue}
+                    size='small'
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '50%', padding: '0 0 12px 0' }}
+                  />
+                </div>
+                <div>
+                  <Typography
+                    variant='h3'
+                    color='textSecondary'
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Response Type')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                    <Tooltip title={t('Response type')}>
+                      <Information fontSize='inherit' color='disabled' />
+                    </Tooltip>
+                  </div>
+                  <div className='clearfix' />
+                  <ResponseType
+                    variant='outlined'
+                    name='response_type'
+                    size='small'
+                    fullWidth={true}
+                    style={{ height: '38.09px' }}
+                    containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                  />
+                </div>
+              </Grid>
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={3}>
               <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
@@ -170,26 +238,24 @@ class RemediationCreationOverviewComponent extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip title={t('ID')}>
-                    <Information fontSize="inherit" color="disabled" />
+                    <Information fontSize='inherit' color='disabled' />
                   </Tooltip>
                 </div>
-                <div className="clearfix" />
+                <div className='clearfix' />
                 <Field
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  name="id"
+                  name='id'
                   fullWidth={true}
+                  disabled={true}
                   containerstyle={{ width: '100%' }}
-                // helperText={
-                //   <SubscriptionFocus fieldName="name" />
-                // }
                 />
               </Grid>
               <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography
-                  variant="h3"
-                  color="textSecondary"
+                  variant='h3'
+                  color='textSecondary'
                   gutterBottom={true}
                   style={{ float: 'left' }}
                 >
@@ -197,15 +263,16 @@ class RemediationCreationOverviewComponent extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                   <Tooltip title={t('Last Modified')}>
-                    <Information fontSize="inherit" color="disabled" />
+                    <Information fontSize='inherit' color='disabled' />
                   </Tooltip>
                 </div>
-                <div className="clearfix" />
+                <div className='clearfix' />
                 <Field
                   component={DatePickerField}
                   variant='outlined'
                   size='small'
-                  name="modified"
+                  name='modified'
+                  disabled={true}
                   invalidDateMessage={t(
                     'The value must be a date (YYYY-MM-DD)',
                   )}
@@ -214,31 +281,55 @@ class RemediationCreationOverviewComponent extends Component {
                   containerstyle={{ width: '100%' }}
                 />
               </Grid>
+              <div>
+                <Typography
+                  variant='h3'
+                  color='textSecondary'
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Lifecycle')}
+                </Typography>
+                <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                  <Tooltip title={t('Lifecycle')}>
+                    <Information fontSize='inherit' color='disabled' />
+                  </Tooltip>
+                </div>
+                <div className='clearfix' />
+                <RiskLifeCyclePhase
+                  variant='outlined'
+                  name='lifecycle'
+                  size='small'
+                  fullWidth={true}
+                  style={{ height: '38.09px' }}
+                  containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                />
+              </div>
             </Grid>
-          </Grid>
-          <Grid style={{ marginTop: '10px' }} item={true}>
-            <Typography
-              variant="h3"
-              color="textSecondary"
-              gutterBottom={true}
-              style={{ float: 'left' }}
-            >
-              {t('Description')}
-            </Typography>
-            <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-              <Tooltip title={t('Label')}>
-                <Information fontSize="inherit" color="disabled" />
-              </Tooltip>
-            </div>
-            <div className="clearfix" />
-            <Field
-              component={TextField}
-              name="description"
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              variant='outlined'
-            />
+            <Grid item={true} xs={6}>
+              <Typography
+                variant='h3'
+                color='textSecondary'
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Description')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                <Tooltip title={t('Description')}>
+                  <Information fontSize='inherit' color='disabled' />
+                </Tooltip>
+              </div>
+              <div className='clearfix' />
+              <Field
+                component={TextField}
+                name='description'
+                fullWidth={true}
+                multiline={true}
+                rows='15'
+                variant='outlined'
+              />
+            </Grid>
           </Grid>
         </Paper>
       </div>
@@ -262,12 +353,12 @@ const RemediationCreationOverview = createFragmentContainer(
     remediation: graphql`
       fragment RemediationCreationGeneral_remediation on RiskResponse {
         id
-        name              # Title
-        description       # Description
-        created           # Created
-        modified          # Last Modified
-        lifecycle         # Lifecycle
-        response_type     # Response Type
+        name # Title
+        description # Description
+        created # Created
+        modified # Last Modified
+        lifecycle # Lifecycle
+        response_type # Response Type
         origins {
           id
           origin_actors {

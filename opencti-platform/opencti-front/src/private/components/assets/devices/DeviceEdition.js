@@ -38,7 +38,7 @@ const styles = (theme) => ({
 
 export const deviceEditionQuery = graphql`
   query DeviceEditionContainerQuery($id: ID!) {
-    computingDeviceAsset(id: $id) {
+    hardwareAsset(id: $id) {
       ...DeviceEditionContainer_device
     }
     # settings {
@@ -86,7 +86,7 @@ class DeviceEdition extends Component {
             if (props) {
               return (
                 <DeviceEditionContainer
-                  device={props.computingDeviceAsset}
+                  device={props.hardwareAsset}
                   // enableReferences={props.settings.platform_enable_reference?.includes(
                   //   'Device',
                   // )}

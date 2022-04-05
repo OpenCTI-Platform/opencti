@@ -121,7 +121,7 @@ class DeviceCardComponent extends Component {
           classes={{ root: classes.area }}
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
-          to={`/dashboard/assets/devices/${node.id}`}
+          to={`/defender HQ/assets/devices/${node.id}`}
         >
           {/* <CardHeader
             classes={{ root: classes.header }}
@@ -312,7 +312,7 @@ const DeviceCardFragment = createFragmentContainer(
   DeviceCardComponent,
   {
     node: graphql`
-      fragment DeviceCard_node on ComputingDeviceAsset {
+      fragment DeviceCard_node on HardwareAsset {
         id
         name
         asset_id

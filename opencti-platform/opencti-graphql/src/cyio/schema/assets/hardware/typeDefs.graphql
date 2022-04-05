@@ -144,36 +144,20 @@
     created
     "Modified"
     modified
-    "Label"
-    labels
-    "Location"
-    locations
-    "Asset ID"
-    asset_id
     "Name"
     name
-    "Asset Tag"
-    asset_tag
     "Asset Type"
     asset_type
-    "Vendor"
-    vendor_name
-    "Version"
-    version
-    "Release Date"
-    release_date
-    "Implementation Point"
-    implementation_point
-    "Operational Status"
-    operational_status
-    "CPE Identifier"
-    cpe_identifier
-    "Installation ID"
-    installation_id
-    "Model"
-    model
-    "Baseline Configuration"
-    baseline_configuration_name
+    "Asset ID"
+    asset_id
+    "IP Address"
+    ip_address
+    "Installed Operating System"
+    installed_operating_system
+    "Nework ID"
+    network_id
+    "Label"
+    labels
   }
   # Filtering Types
   input HardwareAssetFiltering {

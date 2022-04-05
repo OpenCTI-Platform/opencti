@@ -138,7 +138,6 @@ class SoftwareCreation extends Component {
       values,
     );
     const finalValues = R.pipe(
-      R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
       R.dissoc('labels'),
     )(adaptedValues);
@@ -152,7 +151,7 @@ class SoftwareCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/assets/software');
+        this.props.history.push('/defender HQ/assets/software');
       },
     });
     // commitMutation({
@@ -208,7 +207,7 @@ class SoftwareCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello World',
+            name: '',
             asset_id: '',
             version: '',
             serial_number: '',
@@ -343,7 +342,8 @@ class SoftwareCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push('/dashboard/assets/software')}
+              // onClick={() => history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"

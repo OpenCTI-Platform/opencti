@@ -53,7 +53,7 @@ class RootRemediation extends Component {
     super(props);
     const {
       match: {
-        params: { riskId },
+        params: { riskId, remediationId },
       },
     } = props;
     this.sub = requestSubscription({
@@ -70,15 +70,15 @@ class RootRemediation extends Component {
     const {
       me,
       match: {
-        params: { riskId },
+        params: { riskId, remediationId },
       },
       risk,
     } = this.props;
-    const link = `/dashboard/risk-assessment/risks/${riskId}/knowledge`;
+    const link = `/activities/risk assessment/risks/${riskId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
-        <Route path="/dashboard/risk-assessment/risks/:riskId/knowledge">
+        <Route path="/activities/risk assessment/risks/:riskId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -101,7 +101,7 @@ class RootRemediation extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={remediationQuery}
-          variables={{ id: riskId }}
+          variables={{ id: remediationId }}
           render={({ error, props, retry }) => {
             console.log('RemediationRootQuery', props);
             if (props) {
@@ -110,7 +110,7 @@ class RootRemediation extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/dashboard/risk-assessment/risks/:riskId/remediation/:remediationId"
+                      path="/activities/risk assessment/risks/:riskId/remediation/:remediationId"
                       render={(routeProps) => (
                         <Remediation
                           {...routeProps}

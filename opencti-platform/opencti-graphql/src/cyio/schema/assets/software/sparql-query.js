@@ -58,6 +58,7 @@ const softwareAssetReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),

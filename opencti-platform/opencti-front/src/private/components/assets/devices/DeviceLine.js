@@ -74,7 +74,7 @@ class DeviceLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/dashboard/assets/devices/${node.id}`}
+        to={`/defender HQ/assets/devices/${node.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />
@@ -189,7 +189,7 @@ const DeviceLineFragment = createFragmentContainer(
   DeviceLineComponent,
   {
     node: graphql`
-      fragment DeviceLine_node on ComputingDeviceAsset {
+      fragment DeviceLine_node on HardwareAsset {
         id
         name
         asset_id

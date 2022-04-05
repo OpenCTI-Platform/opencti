@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, pathOr } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import Skeleton from '@material-ui/lab/Skeleton';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
+import List from '@material-ui/core/List';
+import { createFragmentContainer, QueryRenderer as QR } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-// import { QueryRenderer as QR } from 'react-relay';
-// import DarkLightEnvironment from '../../../../relay/environmentDarkLight';
+import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { QueryRenderer } from '../../../../relay/environment';
-import RiskObservationLine from './RiskObservationLine';
+import RiskObservationLine, { riskObservationLineQuery } from './RiskObservationLine';
 
 const styles = (theme) => ({
   paper: {
@@ -46,6 +49,23 @@ const styles = (theme) => ({
       backgroundColor: 'rgba(255, 255, 255, .5)',
     },
   },
+  bodyItem: {
+    height: 55,
+    fontSize: 13,
+    paddingLeft: 24,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: 'flex',
+    justifyContent: 'left',
+    alignItems: 'center',
+  },
+  ListItem: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
 });
 
 class RiskObservation extends Component {
@@ -56,8 +76,7 @@ class RiskObservation extends Component {
       classes,
       cyioCoreObjectId,
     } = this.props;
-    const ObservationEdges = pathOr([], ['related_observations', 'edges'], risk);
-
+    const RiskObservationEdges = pathOr([], ['related_observations', 'edges'], risk);
     return (
       <div style={{ marginTop: '50px', height: '500px' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -65,26 +84,62 @@ class RiskObservation extends Component {
         </Typography>
         <div className="clearfix" />
         <Paper className={classes.paper} elevation={2}>
-          {ObservationEdges.length > 0 ? (
-            ObservationEdges.map((observationData) => (
-              <RiskObservationLine
-                key={observationData.node.id}
-                data={observationData.node}
-              />
-            ))
-          ) : (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No Observations.')}
-              </span>
-            </div>
-          )}
+          <QR
+            environment={QueryRendererDarkLight}
+            query={riskObservationLineQuery}
+            variables={{ id: risk.id, first: 10, offset: 0 }}
+            render={({ error, props }) => {
+              if (props) {
+                return (
+                  <RiskObservationLine
+                    risk={props.risk}
+                  />
+                );
+              }
+              return (
+                <div style={{ height: '100%' }}>
+                  <List>
+                    {Array.from(Array(6), (e, i) => (
+                      <ListItem
+                        key={i}
+                        dense={true}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemText
+                          primary={
+                            <div className={classes.ListItem}>
+                              <div
+                                className={classes.bodyItem}
+                              >
+                                <Skeleton
+                                  animation="wave"
+                                  variant="rect"
+                                  width={800}
+                                  height="100%"
+                                />
+                              </div>
+                              <div
+                                className={classes.bodyItem}
+                              >
+                                <Skeleton
+                                  animation="wave"
+                                  variant="circle"
+                                  width={30}
+                                  height={30}
+                                />
+                              </div>
+                            </div>
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </div>
+              );
+            }
+            }
+          />
         </Paper>
       </div>
     );
@@ -100,40 +155,25 @@ RiskObservation.propTypes = {
   fld: PropTypes.func,
 };
 
-const RiskObservationComponent = createFragmentContainer(
-  RiskObservation,
-  {
-    risk: graphql`
-      fragment RiskObservation_risk on POAMItem {
-        id
-        related_observations {
-          edges {
-            node {
-              id
-              name
-              description
-              methods
-              collected
-              expires
-              observation_types
-              relevant_evidence {
-                id
-                entity_type
-                description
-                href
-              }
-              subjects {
-                subject_type
-              }
-            }
-          }
-        }
-      }
-    `,
-  },
-);
+// const RiskObservationComponent = createFragmentContainer(
+//   RiskObservation,
+//   {
+//     risk: graphql`
+//       fragment RiskObservation_risk on Risk {
+//         related_observations {
+//           edges {
+//             node {
+//               id
+//               ...RiskObservationLine_risk
+//             }
+//           }
+//         }
+//       }
+//     `,
+//   },
+// );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(RiskObservationComponent);
+)(RiskObservation);

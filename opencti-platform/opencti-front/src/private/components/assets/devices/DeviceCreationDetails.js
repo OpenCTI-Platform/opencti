@@ -295,7 +295,7 @@ class DeviceCreationDetailsComponent extends Component {
                 <Field
                   component={TextField}
                   variant='outlined'
-                  name="bios_id"
+                  name="netbios_name"
                   size='small'
                   fullWidth={true}
                 // helperText={

@@ -85,7 +85,7 @@ const deviceEditionMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editComputingDeviceAsset(id: $id, input: $input) {
+    editHardwareAsset(id: $id, input: $input) {
       id
     }
   }
@@ -150,7 +150,7 @@ class DeviceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/assets/devices');
+        this.props.history.push('/defender HQ/assets/devices');
       },
       onError: (err) => console.log('DeviceEditionContainerError', err),
     });
@@ -458,7 +458,7 @@ const DeviceEditionFragment = createFragmentContainer(
   DeviceEditionContainer,
   {
     device: graphql`
-      fragment DeviceEditionContainer_device on ComputingDeviceAsset {
+      fragment DeviceEditionContainer_device on HardwareAsset {
         __typename
         id
         name

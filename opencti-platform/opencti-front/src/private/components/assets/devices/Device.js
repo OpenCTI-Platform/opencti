@@ -47,7 +47,7 @@ class DeviceComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/assets/devices',
+      pathname: '/defender HQ/assets/devices',
       openNewCreation: true,
     });
   }
@@ -137,7 +137,7 @@ DeviceComponent.propTypes = {
 
 const Device = createFragmentContainer(DeviceComponent, {
   device: graphql`
-    fragment Device_device on ComputingDeviceAsset {
+    fragment Device_device on HardwareAsset {
       __typename
       id
       name

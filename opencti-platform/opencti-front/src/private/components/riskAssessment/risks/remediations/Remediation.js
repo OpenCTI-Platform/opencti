@@ -51,7 +51,7 @@ class RemediationComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/risk-assessment/risks',
+      pathname: '/activities/risk assessment/risks',
       openNewCreation: true,
     });
   }
@@ -66,7 +66,6 @@ class RemediationComponent extends Component {
       history,
       location,
     } = this.props;
-    console.log('remediationRiskData', risk);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
@@ -80,7 +79,7 @@ class RemediationComponent extends Component {
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               // OperationsComponent={<RiskDeletion />}
             />
-            <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true} />
+            <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
             <Grid
               container={true}
               spacing={3}
@@ -197,7 +196,7 @@ const Remediation = createFragmentContainer(RemediationComponent, {
         }
       }
       ...RemediationGeneralOverview_remediation
-      ...RemediationGeneralDetails_remediation
+      # ...RemediationGeneralDetails_remediation
     }
   `,
 });

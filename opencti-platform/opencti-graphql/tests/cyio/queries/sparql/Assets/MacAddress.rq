@@ -1,0 +1,11 @@
+SELECT DISTINCT ?iri ?rdf_type ?id ?object_type ?mac_address_value ?is_virtual ?stix_value
+FROM <tag:stardog:api:context:named>
+WHERE {
+    ?iri a <http://scap.nist.gov/ns/asset-identification#MACAddress> .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . }  
+    OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type . }
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type . }  
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#mac_address_value> ?mac_address_value } .
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#is_virtual> ?is_virtual . }
+    OPTIONAL { ?iri <http://docs.oasis-open.org/ns/cti/stix/ip-address#value> ?stix_value . }
+}

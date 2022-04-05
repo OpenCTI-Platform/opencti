@@ -2,9 +2,15 @@
 /* refactor */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  compose,
+  pipe,
+  map,
+  pathOr,
+  mergeAll,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
+import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import { Redirect } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -48,44 +54,6 @@ const styles = () => ({
   },
 });
 
-export const riskAnalysisContainerQuery = graphql`
-  query RiskAnalysisContainerQuery($id: ID!) {
-    risk(id: $id) {
-      __typename
-      id
-      links {
-        __typename
-        id
-        created
-        modified
-        external_id     # external id
-        source_name     # Title
-        description     # description
-        url             # URL
-        media_type      # Media Type
-        entity_type
-      }
-      remarks {
-        __typename
-        id
-        abstract
-        content
-        authors
-        entity_type
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
-      }
-      ...RiskAnalysisCharacterization_risk
-    }
-  }
-`;
-
 class RiskAnalysisContainerComponent extends Component {
   constructor(props) {
     super(props);
@@ -100,7 +68,7 @@ class RiskAnalysisContainerComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/risk-assessment/risks',
+      pathname: '/activities/risk assessment/risks',
       openNewCreation: true,
     });
   }
@@ -114,6 +82,10 @@ class RiskAnalysisContainerComponent extends Component {
       riskId,
       location,
     } = this.props;
+    const riskCharacterizations = pipe(
+      pathOr([], ['characterizations']),
+      mergeAll,
+    )(risk);
     return (
       <>
         {!this.state.displayEdit && !location.openEdit ? (
@@ -127,84 +99,15 @@ class RiskAnalysisContainerComponent extends Component {
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
-            <TopMenuRisk risk={risk}/>
+            <TopMenuRisk risk={risk.name}/>
             <Grid
               container={true}
               spacing={3}
               classes={{ container: classes.gridContainer }}
             >
               <Grid item={true} xs={6}>
-                <QR
-                  environment={environmentDarkLight}
-                  query={riskAnalysisContainerQuery}
-                  variables={{ id: riskId }}
-                  render={({ error, props }) => {
-                    console.log('RiskAnalysisCharacterizationProps', props);
-                    if (props) {
-                      return (
-                        <RiskAnalysisCharacterization
-                          risk={props.risk}
-                        />
-                      );
-                    }
-                    return (
-                      <div style={{ height: '100%' }}>
-                        <Typography
-                          variant="h4"
-                          gutterBottom={true}
-                        >
-                          {t('Characterization')}
-                        </Typography>
-                        <div className="clearfix" />
-                        <Paper className={classes.paper} elevation={2}>
-                          <List>
-                            {Array.from(Array(7), (e, i) => (
-                              <ListItem
-                                key={i}
-                                dense={true}
-                                divider={true}
-                                button={false}
-                              >
-                                <ListItemText
-                                  primary={
-                                    <Grid container={true} spacing={3} style={{ padding: '5px 0' }}>
-                                      <Grid item={true} xs={4}>
-                                        <Skeleton
-                                          animation="wave"
-                                          variant="rect"
-                                          width="100%"
-                                          height={40}
-                                          style={{ marginBottom: 10 }}
-                                        />
-                                      </Grid>
-                                      <Grid item={true} xs={4}>
-                                        <Skeleton
-                                          animation="wave"
-                                          variant="rect"
-                                          width="100%"
-                                          height={40}
-                                          style={{ marginBottom: 10 }}
-                                        />
-                                      </Grid>
-                                      <Grid item={true} xs={4}>
-                                        <Skeleton
-                                          animation="wave"
-                                          variant="rect"
-                                          width="100%"
-                                          height={40}
-                                          style={{ marginBottom: 10 }}
-                                        />
-                                      </Grid>
-                                    </Grid>
-                                  }
-                                />
-                              </ListItem>
-                            ))}
-                          </List>
-                        </Paper>
-                      </div>
-                    );
-                  }}
+                <RiskAnalysisCharacterization
+                  risk={risk}
                 />
               </Grid>
               <Grid item={true} xs={6}>
@@ -218,69 +121,21 @@ class RiskAnalysisContainerComponent extends Component {
               style={{ marginTop: 25 }}
             >
               <Grid item={true} xs={6}>
-                <QR
-                  environment={environmentDarkLight}
-                  query={riskAnalysisContainerQuery}
-                  variables={{ id: riskId }}
-                  render={({ error, props, retry }) => {
-                    if (props) {
-                      return (
-                        <CyioCoreObjectExternalReferences
-                          typename={risk.__typename}
-                          externalReferences={props.risk.links}
-                          cyioCoreObjectId={risk.id}
-                          refreshQuery={retry}
-                        />
-                      );
-                    }
-                    return (
-                      <>
-                        <Typography
-                          variant="h4"
-                          gutterBottom={true}
-                        >
-                          {t('External Reference')}
-                        </Typography>
-                        <div className="clearfix" />
-                        <Paper style={{ height: '100%' }}>
-                        </Paper>
-                      </>
-                    );
-                  }}
+                <CyioCoreObjectExternalReferences
+                  typename={risk.__typename}
+                  externalReferences={riskCharacterizations.links}
+                  cyioCoreObjectId={risk.id}
+                // refreshQuery={retry}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
-                <QR
-                  environment={environmentDarkLight}
-                  query={riskAnalysisContainerQuery}
-                  variables={{ id: riskId }}
-                  render={({ error, props, retry }) => {
-                    if (props) {
-                      return (
-                        <CyioCoreObjectOrCyioCoreRelationshipNotes
-                          typename={risk.__typename}
-                          notes={props.risk.remarks}
-                          cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
-                          marginTop='0px'
-                          refreshQuery={retry}
-                        />
-                      );
-                    }
-                    return (
-                      <>
-                        <Typography
-                          variant="h4"
-                          gutterBottom={true}
-                        >
-                          {t('Notes')}
-                        </Typography>
-                        <div className="clearfix" />
-                        <Paper style={{ height: '100%' }}>
-                        </Paper>
-                      </>
-                    );
-                  }}
+                <CyioCoreObjectOrCyioCoreRelationshipNotes
+                  typename={risk.__typename}
+                  notes={riskCharacterizations.remarks}
+                  cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
+                  marginTop='0px'
+                // refreshQuery={retry}
                 />
               </Grid>
             </Grid>
@@ -309,4 +164,73 @@ RiskAnalysisContainerComponent.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(RiskAnalysisContainerComponent);
+const RiskAnalysisContainerFragment = createFragmentContainer(
+  RiskAnalysisContainerComponent,
+  {
+    risk: graphql`
+      fragment RiskAnalysisContainer_risk on Risk {
+        __typename
+        id
+        name
+        characterizations {
+          id
+          entity_type
+          created
+          modified
+          origins {
+            # source of detection
+            id
+            origin_actors {
+              actor_type
+              actor_ref {
+                ... on AssessmentPlatform {
+                  id
+                  name # Source
+                }
+                ... on Component {
+                  id
+                  component_type
+                  name
+                }
+                ... on OscalParty {
+                  id
+                  party_type
+                  name # Source
+                }
+              }
+            }
+          }
+          facets {
+            id
+            entity_type
+            risk_state
+            source_system
+            facet_name
+            facet_value
+          }
+          links {
+            id
+            source_name
+            external_id
+            url
+          }
+          remarks {
+            id
+            created
+            modified
+            abstract
+            content
+            authors
+          }
+        }
+        # threats {
+        # }
+      }
+    `,
+  },
+);
+
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(RiskAnalysisContainerFragment);

@@ -1,0 +1,12 @@
+SELECT DISTINCT ?iri ?rdf_type ?id ?object_type ?starting_ip_address ?ending_ip_address
+FROM <tag:stardog:api:context:named>
+WHERE {
+    # BIND(<http://scap.nist.gov/ns/asset-identification#IpAddressRange-1dc36d31-5d86-46f4-b096-b3603700403c> AS ?iri)
+    ?iri a <http://scap.nist.gov/ns/asset-identification#IpAddressRange> ;
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id  . }
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type } .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type . }  
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#starting_ip_address> ?starting_ip_address . }
+    OPTIONAL { ?iri <http://scap.nist.gov/ns/asset-identification#ending_ip_address> ?ending_ip_address . }
+}
+

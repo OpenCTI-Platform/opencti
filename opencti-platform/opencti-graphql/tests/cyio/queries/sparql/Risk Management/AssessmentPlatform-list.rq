@@ -1,0 +1,18 @@
+SELECT DISTINCT  ?iri ?id ?object_type ?created ?modified ?labels ?label_name ?links ?remarks ?name ?description ?subject_ref
+FROM <tag:stardog:api:context:local>
+WHERE {
+    # BIND(<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-57853743-fc7d-5967-a1b6-f09a4fc73b15> AS ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform> .
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#id> ?id . } 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#object_type> ?object_type . } 
+    # OPTIONAL { ?iri <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> ?rdf_type . }
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#created> ?created . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#modified> ?modified . }  
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#labels> ?labels . } 
+    OPTIONAL { ?iri <http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name> ?label_name . }  
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#links> ?links . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#remarks> ?remarks . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#name> ?name . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/common#description> ?description . }
+    OPTIONAL { ?iri <http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref> ?subject_ref . }
+}

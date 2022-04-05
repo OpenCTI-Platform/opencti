@@ -77,7 +77,7 @@ const DeviceDeletionMutation = graphql`
 
 const DeviceDeletionDarkLightMutation = graphql`
   mutation DeviceDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteHardwareAsset(id: $id)
 }
 `;
 
@@ -134,7 +134,7 @@ class DeviceDeletion extends Component {
   //     onCompleted: () => {
   //       this.setState({ deleting: false });
   //       this.handleClose();
-  //       this.props.history.push('/dashboard/assets/devices');
+  //       this.props.history.push('/defender HQ/assets/devices');
   //     },
   //   });
   // }
@@ -149,7 +149,7 @@ class DeviceDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/assets/devices');
+        this.props.history.push('/defender HQ/assets/devices');
       },
       onError: (err) => console.log('DeviceDeletionDarkLightMutationError', err),
     });
@@ -167,7 +167,7 @@ class DeviceDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/dashboard/assets/devices');
+    //     this.props.history.push('/defender HQ/assets/devices');
     //   },
     // });
   }

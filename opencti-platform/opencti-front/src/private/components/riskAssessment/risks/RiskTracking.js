@@ -50,7 +50,7 @@ const styles = (theme) => ({
 class RiskTracking extends Component {
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/risk-assessment/risks',
+      pathname: '/activities/risk assessment/risks',
       openNewCreation: true,
     });
   }
@@ -75,7 +75,7 @@ class RiskTracking extends Component {
           handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
           // OperationsComponent={<RiskDeletion />}
         />
-        <TopMenuRisk risk={risk}/>
+        <TopMenuRisk risk={risk.name}/>
         <QR
           environment={QueryRendererDarkLight}
           query={RiskTrackingLinesQuery}
@@ -87,7 +87,7 @@ class RiskTracking extends Component {
                 <RiskTrackingLines
                   history={history}
                   riskId={riskId}
-                  data={props}
+                  data={props.risk}
                 />
               );
             }
