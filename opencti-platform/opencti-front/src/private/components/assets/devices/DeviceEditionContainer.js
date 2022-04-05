@@ -129,6 +129,7 @@ class DeviceEditionContainer extends Component {
       values,
     );
     const finalValues = R.pipe(
+      R.dissoc('id'),
       R.dissoc('locations'),
       R.dissoc('protocols'),
       R.dissoc('port_number'),

@@ -146,6 +146,7 @@ class NetworkEditionContainer extends Component {
       values,
     );
     const finalValues = R.pipe(
+      R.dissoc('id'),
       R.dissoc('starting_address'),
       R.dissoc('ending_address'),
       R.assoc('network_ipv4_address_range', network_ipv4_address_range),

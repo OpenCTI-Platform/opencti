@@ -149,6 +149,7 @@ class SoftwareEditionContainer extends Component {
       values,
     );
     const finalValues = R.pipe(
+      R.dissoc('id'),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
