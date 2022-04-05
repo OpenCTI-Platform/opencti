@@ -85,6 +85,7 @@ class RemediationEntities extends Component {
     const {
       entityId,
       classes,
+      history,
       t,
       riskId,
     } = this.props;
@@ -138,6 +139,7 @@ class RemediationEntities extends Component {
                 <RemediationEntitiesLines
                   risk={props.risk}
                   paginationOptions={paginationOptions}
+                  history={history}
                   dataColumns={dataColumns}
                   initialLoading={props === null}
                   displayRelation={true}

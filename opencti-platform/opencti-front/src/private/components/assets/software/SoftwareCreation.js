@@ -342,7 +342,7 @@ class SoftwareCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push('/dashboard/assets/software')}
+              onClick={() => this.props.history.push('/defender HQ/assets/software')}
               // onClick={() => history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
