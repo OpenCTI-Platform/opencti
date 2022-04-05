@@ -145,7 +145,7 @@ class RiskAssessmentPopover extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClosePoam();
-        this.props.history.push('/dashboard/risk-assessment/risks');
+        this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.log('riskPoamMutationError', err),
     });
@@ -171,7 +171,7 @@ class RiskAssessmentPopover extends Component {
         setSubmitting(false);
         resetForm();
         this.handleCloseRiskLevel();
-        this.props.history.push('/dashboard/risk-assessment/risks');
+        this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.log('riskStatusMutationError', err),
     });
@@ -238,7 +238,7 @@ class RiskAssessmentPopover extends Component {
           <MenuItem
             className={classes.menuItem}
             divider={true}
-            onClick={() => history.push(`/dashboard/risk-assessment/risks/${nodeId}`)}
+            onClick={() => history.push(`/activities/risk assessment/risks/${nodeId}`)}
           >
             {t('Details')}
           </MenuItem>
