@@ -27,6 +27,7 @@ import RequiredResources from './RequiredResources';
 import RelatedTasks from './RelatedTasks';
 import TopMenuRisk from '../../../nav/TopMenuRisk';
 import RemediationGeneralDetails from './RemediationGeneralDetails';
+import RemediationDetailsPopover from './RemediationDetailsPopover';
 
 const styles = () => ({
   container: {
@@ -68,85 +69,87 @@ class RemediationComponent extends Component {
     } = this.props;
     return (
       <>
-        {!this.state.displayEdit && !location.openEdit ? (
-          <div className={classes.container}>
-            <CyioDomainObjectHeader
-              cyioDomainObject={remediation}
-              history={history}
-              disabled={true}
-              PopoverComponent={<RiskPopover />}
-              // handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-              // OperationsComponent={<RiskDeletion />}
-            />
-            <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-            >
-              <Grid item={true} xs={12}>
-                <RemediationGeneralOverview
-                  remediation={remediation}
-                  risk={risk}
-                />
-              </Grid>
-              {/* <Grid item={true} xs={6}>
+      <div className={classes.container}>
+          <CyioDomainObjectHeader
+            cyioDomainObject={remediation}
+            history={history}
+            disablePopover={false}
+            PopoverComponent={<RiskPopover />}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+            // handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+            OperationsComponent={<RiskDeletion />}
+          />
+          <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+          >
+            <Grid item={true} xs={12}>
+              <RemediationGeneralOverview
+                remediation={remediation}
+                risk={risk}
+              />
+            </Grid>
+            {/* <Grid item={true} xs={6}>
                 <RemediationGeneralDetails remediation={remediation} />
               </Grid> */}
+          </Grid>
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 25 }}
+          >
+            <Grid item={true} xs={6}>
+              <RequiredResources history={history} remediationId={remediation.id} />
             </Grid>
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 25 }}
-            >
-              <Grid item={true} xs={6}>
-                <RequiredResources history={history} remediationId={remediation.id} />
-              </Grid>
-              <Grid item={true} xs={6}>
-                <RelatedTasks history={history} remediationId={remediation.id} />
-              </Grid>
+            <Grid item={true} xs={6}>
+              <RelatedTasks history={history} remediationId={remediation.id} />
             </Grid>
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 50 }}
-            >
-              <Grid item={true} xs={6}>
-                <CyioCoreObjectExternalReferences
-                  typename={remediation.__typename}
-                  externalReferences={remediation.links}
-                  cyioCoreObjectId={remediation.id}
-                  refreshQuery={refreshQuery}
-                />
-              </Grid>
-              <Grid item={true} xs={6}>
-                <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  typename={remediation.__typename}
-                  notes={remediation.remarks}
-                  cyioCoreObjectOrCyioCoreRelationshipId={remediation.id}
-                  marginTop='0px'
-                  refreshQuery={refreshQuery}
-                />
-              </Grid>
+          </Grid>
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 50 }}
+          >
+            <Grid item={true} xs={6}>
+              <CyioCoreObjectExternalReferences
+                typename={remediation.__typename}
+                externalReferences={remediation.links}
+                cyioCoreObjectId={remediation.id}
+                refreshQuery={refreshQuery}
+              />
             </Grid>
-            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Grid item={true} xs={6}>
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                typename={remediation.__typename}
+                notes={remediation.remarks}
+                cyioCoreObjectOrCyioCoreRelationshipId={remediation.id}
+                marginTop='0px'
+                refreshQuery={refreshQuery}
+              />
+            </Grid>
+          </Grid>
+          {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <RemediationEdition riskId={remediation.id} />
               </Security> */}
-          </div>
-        ) : (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <RemediationEdition
+          <RemediationDetailsPopover
+            displayEdit={this.state.displayEdit}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+            remediation={remediation}
+            history={history}
+            risk={risk}
+          />
+        </div>
+        {/* <RemediationEdition
             open={this.state.openEdit}
             riskId={riskId}
             remediationId={remediation.id}
             history={history}
             remediation={remediation}
-          />
-          // </Security>
-        )}
+          /> */}
       </>
     );
   }

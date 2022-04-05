@@ -352,7 +352,7 @@ class NetworkCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push('/dashboard/assets/network')}
+              onClick={() => this.props.history.push('/defender HQ/assets/network')}
               // onClick={() => history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}
