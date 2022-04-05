@@ -28,15 +28,15 @@ class TopMenuRiskAssessment extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/risk-assessment/risks"
+          to="/activities/risk assessment/risks"
           variant={
-            location.pathname.includes('/dashboard/risk-assessment/risks')
+            location.pathname.includes('/activities/risk assessment/risks')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/risk-assessment/risks')
+            location.pathname.includes('/activities/risk assessment/risks')
               ? 'secondary'
               : 'inherit'
           }

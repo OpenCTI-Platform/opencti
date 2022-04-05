@@ -23,6 +23,8 @@ import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
+import Typography from '@material-ui/core/Typography';
+import Breadcrumbs from '@material-ui/core/Breadcrumbs';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import { commitMutation } from '../../../relay/environment';
@@ -32,8 +34,7 @@ import Security, {
   EXPLORE,
 } from '../../../utils/Security';
 import Filters from '../common/lists/Filters';
-import Typography from '@material-ui/core/Typography';
-import Breadcrumbs from '@material-ui/core/Breadcrumbs';
+import Export from '../../../components/Export';
 
 const styles = (theme) => ({
   appBar: {
@@ -102,30 +103,31 @@ const logoutMutation = graphql`
 `;
 
 const TopBarBreadcrumbs = ({
-  t, classes, location, history, keyword, theme,
+  t,
+  classes,
+  location,
+  history,
+  keyword,
+  theme,
+  risk,
+  remediation,
+  riskId,
 }) => {
-
-  const pathParts = location.pathname.split("/").filter(entry => entry !== "");
+  const pathParts = location.pathname.split('/').filter((entry) => entry !== '');
 
   const [menuOpen, setMenuOpen] = useState({ open: false, anchorEl: null });
 
   const buildBreadCrumbs = (array) => {
-
-    let url = "/";
-    let crumbArry = [];
-
-    for (let x = 0; x < array.length; x++) {
-
-      url += array[x] + "/";
-      let obj = { label: array[x], path: url }
-
+    let url = '';
+    const crumbArry = [];
+    for (let x = 0; x < array.length; x += 1) {
+      url += ('/').concat(array[x]);
+      const obj = { label: array[x], path: url };
       crumbArry.push(obj);
-
     }
-
     return crumbArry;
+  };
 
-  }
   const handleOpenMenu = (event) => {
     event.preventDefault();
     setMenuOpen({ open: true, anchorEl: event.currentTarget });
@@ -153,7 +155,6 @@ const TopBarBreadcrumbs = ({
   };
 
   const breadCrumbs = buildBreadCrumbs(pathParts);
-
   return (
     <AppBar
       position="fixed"
@@ -170,17 +171,25 @@ const TopBarBreadcrumbs = ({
         <div className={classes.menuContainer}>
           <Breadcrumbs aria-label="breadcrumb">
             {breadCrumbs.map((crumb, i, array) => {
-              if (i === array.length - 1) {
-                return (<Typography color="textPrimary" style={{ textTransform: 'capitalize' }}>{crumb.label}</Typography>)
-              } else {
-                return (<Link color="inherit"
-                  to={crumb.path}
-                  onClick={(e) => { e.preventDefault(); history.push(crumb.path); }}
-                  style={{ textTransform: 'capitalize' }}
-                >
-                  {crumb.label}
-                </Link>)
+              if (crumb.label === riskId) {
+                crumb.label = risk;
               }
+              if (remediation) {
+                if (crumb.label === 'remediation' && breadCrumbs.length === 6) {
+                  breadCrumbs[i + 1].label = remediation.name;
+                }
+              }
+              if (i === array.length - 1) {
+                return (<Typography color="textPrimary" style={{ textTransform: 'capitalize' }}>{crumb.label}</Typography>);
+              }
+              return (<Link color="inherit"
+                key={i}
+                to={crumb.path}
+                onClick={(e) => { e.preventDefault(); history.push(crumb.path); }}
+                style={{ textTransform: 'capitalize' }}
+              >
+                {crumb.label}
+              </Link>);
             })}
           </Breadcrumbs>
         </div>
@@ -260,12 +269,12 @@ const TopBarBreadcrumbs = ({
                 </IconButton>
               </Tooltip>
             </Security>
-              <Tooltip title={t('Dashboard')}>
-                <IconButton
-                  component={Link}
-                  to='/dashboard'
-                  classes={{ root: classes.button }}
-                >
+            <Tooltip title={t('Dashboard')}>
+              <IconButton
+                component={Link}
+                to='/dashboard'
+                classes={{ root: classes.button }}
+              >
                 <DashboardIcon fontSize="default" />
               </IconButton>
             </Tooltip>
@@ -287,14 +296,10 @@ const TopBarBreadcrumbs = ({
                 <PublishIcon fontSize="default" />
               </IconButton>
             </Tooltip>
-            <Tooltip title={t('Add Note')}>
-              <IconButton
-                disabled={true}
-                component={Link}
-                classes={{ root: classes.button }}
-              >
-                <NoteAddIcon fontSize="default" />
-              </IconButton>
+            <Tooltip
+              title={t('Add Note')}
+            >
+              <Export />
             </Tooltip>
             <IconButton
               size="medium"
@@ -330,6 +335,9 @@ const TopBarBreadcrumbs = ({
 };
 
 TopBarBreadcrumbs.propTypes = {
+  riskId: PropTypes.string,
+  risk: PropTypes.string,
+  remediation: PropTypes.object,
   keyword: PropTypes.string,
   theme: PropTypes.object,
   classes: PropTypes.object,

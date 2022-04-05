@@ -162,8 +162,8 @@ const LeftBar = ({
             <MenuList component="nav" disablePadding={true}>
               <MenuItem
                 component={Link}
-                to="/dashboard/assets"
-                selected={location.pathname.includes('/dashboard/assets')}
+                to="/defender HQ/assets"
+                selected={location.pathname.includes('/defender HQ/assets')}
                 dense={false}
                 classes={{ root: classes.menuItemNested }}
               >
@@ -212,8 +212,8 @@ const LeftBar = ({
               </MenuItem>
               <MenuItem
                 component={Link}
-                to="/dashboard/vsac"
-                selected={location.pathname.includes('/dashboard/vsac')}
+                to="/activities/vulnerability assessment"
+                selected={location.pathname.includes('/activities/vulnerability assessment')}
                 dense={false}
                 classes={{ root: classes.menuItemNested }}
               >
@@ -225,8 +225,8 @@ const LeftBar = ({
               <FeatureFlag tag={"RISK_ASSESSMENT"}>
                 <MenuItem
                   component={Link}
-                  to="/dashboard/risk-assessment"
-                  selected={location.pathname.includes('/dashboard/risk-assessment')}
+                  to="/activities/risk assessment"
+                  selected={location.pathname.includes('/activities/risk assessment')}
                   dense={false}
                   classes={{ root: classes.menuItemNested }}
                 >

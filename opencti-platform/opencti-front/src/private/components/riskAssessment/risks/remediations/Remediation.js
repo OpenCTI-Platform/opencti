@@ -52,7 +52,7 @@ class RemediationComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/risk-assessment/risks',
+      pathname: '/activities/risk assessment/risks',
       openNewCreation: true,
     });
   }
@@ -69,7 +69,7 @@ class RemediationComponent extends Component {
     } = this.props;
     return (
       <>
-        <div className={classes.container}>
+      <div className={classes.container}>
           <CyioDomainObjectHeader
             cyioDomainObject={remediation}
             history={history}
@@ -79,7 +79,7 @@ class RemediationComponent extends Component {
             // handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
             OperationsComponent={<RiskDeletion />}
           />
-          <TopMenuRisk risk={risk} remediation={remediation} breadcrumbs={true} />
+          <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
           <Grid
             container={true}
             spacing={3}

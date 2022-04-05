@@ -16,34 +16,34 @@ class Root extends Component {
       <Switch>
         <BoundaryRoute
           exact
-          path="/dashboard/assets"
-          render={() => <Redirect to="/dashboard/assets/devices" />}
+          path="/defender HQ/assets"
+          render={() => <Redirect to="/defender HQ/assets/devices" />}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/assets/devices"
+          path="/defender HQ/assets/devices"
           component={Devices}
         />
         <BoundaryRoute
-          path="/dashboard/assets/devices/:deviceId"
+          path="/defender HQ/assets/devices/:deviceId"
           render={(routeProps) => <RootDevice {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/assets/network"
+          path="/defender HQ/assets/network"
           component={Network}
         />
         <BoundaryRoute
-          path="/dashboard/assets/network/:networkId"
+          path="/defender HQ/assets/network/:networkId"
           render={(routeProps) => <RootNetwork {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/assets/software"
+          path="/defender HQ/assets/software"
           component={software}
         />
         <BoundaryRoute
-          path="/dashboard/assets/software/:softwareId"
+          path="/defender HQ/assets/software/:softwareId"
           render={(routeProps) => <RootSoftware {...routeProps} me={me} />}
         />
       </Switch>
