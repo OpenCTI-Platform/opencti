@@ -166,7 +166,7 @@ class SoftwareEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/assets/software');
+        this.props.history.push('/defender HQ/assets/software');
       },
     });
     // commitMutation({

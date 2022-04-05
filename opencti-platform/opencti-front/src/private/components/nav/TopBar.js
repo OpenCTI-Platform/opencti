@@ -61,7 +61,6 @@ import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
-import TopMenuRisk from './TopMenuRisk';
 import { commitMutation } from '../../../relay/environment';
 import Security, {
   KNOWLEDGE,
@@ -72,6 +71,7 @@ import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
+import Export from '../../../components/Export';
 
 const styles = (theme) => ({
   appBar: {
@@ -378,12 +378,12 @@ const TopBar = ({
                 </IconButton>
               </Tooltip>
             </Security>
-              <Tooltip title={t('Dashboard')}>
-                <IconButton
-                  component={Link}
-                  to='/dashboard'
-                  classes={{ root: classes.button }}
-                >
+            <Tooltip title={t('Dashboard')}>
+              <IconButton
+                component={Link}
+                to='/dashboard'
+                classes={{ root: classes.button }}
+              >
                 <DashboardIcon fontSize="default" />
               </IconButton>
             </Tooltip>
@@ -406,13 +406,7 @@ const TopBar = ({
               </IconButton>
             </Tooltip>
             <Tooltip title={t('Add Note')}>
-              <IconButton
-                disabled={true}
-                component={Link}
-                classes={{ root: classes.button }}
-              >
-                <NoteAddIcon fontSize="default" />
-              </IconButton>
+              <Export />
             </Tooltip>
             <IconButton
               size="medium"

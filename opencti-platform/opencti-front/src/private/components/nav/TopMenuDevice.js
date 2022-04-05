@@ -53,7 +53,7 @@ class TopMenuDevice extends Component {
         {/* {!deviceId && (
           <Button
             component={Link}
-            to="/dashboard/assets/devices"
+            to="/defender HQ/assets/devices"
             variant="contained"
             size="small"
             color="inherit"
@@ -69,17 +69,17 @@ class TopMenuDevice extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/assets/devices/${deviceId}`}
+          to={`/defender HQ/assets/devices/${deviceId}`}
           variant={
             location.pathname
-            === `/dashboard/assets/devices/${deviceId}`
+            === `/defender HQ/assets/devices/${deviceId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/devices/${deviceId}`
+            === `/defender HQ/assets/devices/${deviceId}`
               ? 'secondary'
               : 'inherit'
           }
@@ -89,10 +89,10 @@ class TopMenuDevice extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/devices/${deviceId}/knowledge`}
+          to={`/defender HQ/assets/devices/${deviceId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/assets/devices/${deviceId}/knowledge`,
+              `/defender HQ/assets/devices/${deviceId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -100,7 +100,7 @@ class TopMenuDevice extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/assets/devices/${deviceId}/knowledge`,
+              `/defender HQ/assets/devices/${deviceId}/knowledge`,
             )
               ? 'secondary'
               : 'inherit'
@@ -111,17 +111,17 @@ class TopMenuDevice extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/devices/${deviceId}/analysis`}
+          to={`/defender HQ/assets/devices/${deviceId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/assets/devices/${deviceId}/analysis`
+            === `/defender HQ/assets/devices/${deviceId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/devices/${deviceId}/analysis`
+            === `/defender HQ/assets/devices/${deviceId}/analysis`
               ? 'secondary'
               : 'inherit'
           }
@@ -131,10 +131,10 @@ class TopMenuDevice extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/devices/${deviceId}/indicators`}
+          to={`/defender HQ/assets/devices/${deviceId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/assets/devices/${deviceId}/indicators`,
+              `/defender HQ/assets/devices/${deviceId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -142,7 +142,7 @@ class TopMenuDevice extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/assets/devices/${deviceId}/indicators`,
+              `/defender HQ/assets/devices/${deviceId}/indicators`,
             )
               ? 'secondary'
               : 'inherit'
@@ -154,17 +154,17 @@ class TopMenuDevice extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/assets/devices/${deviceId}/files`}
+            to={`/defender HQ/assets/devices/${deviceId}/files`}
             variant={
               location.pathname
-              === `/dashboard/assets/devices/${deviceId}/files`
+              === `/defender HQ/assets/devices/${deviceId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/assets/devices/${deviceId}/files`
+              === `/defender HQ/assets/devices/${deviceId}/files`
                 ? 'secondary'
                 : 'inherit'
             }
@@ -175,17 +175,17 @@ class TopMenuDevice extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/assets/devices/${deviceId}/history`}
+          to={`/defender HQ/assets/devices/${deviceId}/history`}
           variant={
             location.pathname
-            === `/dashboard/assets/devices/${deviceId}/history`
+            === `/defender HQ/assets/devices/${deviceId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/devices/${deviceId}/history`
+            === `/defender HQ/assets/devices/${deviceId}/history`
               ? 'secondary'
               : 'inherit'
           }
