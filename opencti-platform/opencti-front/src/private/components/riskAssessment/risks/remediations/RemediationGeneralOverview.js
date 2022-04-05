@@ -18,7 +18,6 @@ import inject18n from '../../../../../components/i18n';
 import ItemAuthor from '../../../../../components/ItemAuthor';
 import ItemMarking from '../../../../../components/ItemMarking';
 import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
-import RemediationDetailsPopover from './RemediationDetailsPopover';
 
 const styles = (theme) => ({
   paper: {
@@ -39,7 +38,7 @@ const styles = (theme) => ({
   },
   scrollBg: {
     background: theme.palette.header.background,
-    width: '92%',
+    width: '95%',
     color: 'white',
     padding: '10px 5px 10px 15px',
     borderRadius: '5px',
@@ -67,12 +66,6 @@ const styles = (theme) => ({
   flexItem: {
     flexGrow: '1',
     marginTop: '20px',
-  },
-  remediationPopover: {
-    position: 'absolute',
-    right: '0px',
-    top: '0px',
-    margin: '5px 20px',
   },
   statusButton: {
     cursor: 'default',
@@ -248,12 +241,6 @@ class RemediationGeneralOverviewComponent extends Component {
               </div>
             </Grid>
           </Grid>
-          <div className={classes.remediationPopover}>
-          <RemediationDetailsPopover
-            remediation={remediation}
-            risk={risk}
-          />
-          </div>
         </Paper>
       </div>
     );

@@ -47,6 +47,7 @@ const riskQuery = graphql`
   query RootRiskQuery($id: ID!) {
     risk(id: $id) {
       id
+      name
       ...Risk_risk
       ...RiskAnalysisContainer_risk
       # ...Remediations_risk

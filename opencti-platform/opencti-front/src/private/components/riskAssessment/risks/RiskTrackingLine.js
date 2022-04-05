@@ -374,7 +374,7 @@ class RiskTrackingLineContainer extends Component {
                       </Typography>
                       <Button
                         variant="outlined"
-                        className={ classes.statusButton }
+                        className={classes.statusButton}
                       >
                         {node.status_change && t(node.status_change)}
                       </Button>
@@ -510,6 +510,8 @@ const RiskTrackingLineFragment = createFragmentContainer(
       related_responses {
         id
         name
+        description
+        response_type
       }
     }
     `,
