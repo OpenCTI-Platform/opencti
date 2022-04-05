@@ -3,17 +3,17 @@ import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 
 const READ_QUERY = gql`
-  query StixCoreRelationship($id: String!) {
-    stixCoreRelationship(id: $id) {
-      id
-      description
-      toStix
-      editContext {
-        focusOn
-        name
-      }
+    query StixCoreRelationship($id: String!) {
+        stixCoreRelationship(id: $id) {
+            id
+            description
+            toStix
+            editContext {
+                focusOn
+                name
+            }
+        }
     }
-  }
 `;
 
 const stixCoreRelationshipStixId = 'relationship--3d8bb13a-6cad-493d-933a-ae4ff5a203ca';
@@ -21,12 +21,12 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   let stixCoreRelationshipInternalId;
   it('should stixCoreRelationship created', async () => {
     const CREATE_QUERY = gql`
-      mutation StixDomainRelationAdd($input: StixCoreRelationshipAddInput) {
-        stixCoreRelationshipAdd(input: $input) {
-          id
-          description
+        mutation StixDomainRelationAdd($input: StixCoreRelationshipAddInput) {
+            stixCoreRelationshipAdd(input: $input) {
+                id
+                description
+            }
         }
-      }
     `;
     // Create the stixCoreRelationship
     const STIX_RELATION_TO_CREATE = {
@@ -63,11 +63,11 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   it('should stixCoreRelationship number to be accurate', async () => {
     const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const NUMBER_QUERY = gql`
-      query StixCoreRelationshipsNumber($type: String, $fromId: String) {
-        stixCoreRelationshipsNumber(type: $type, fromId: $fromId) {
-          total
+        query StixCoreRelationshipsNumber($type: String, $fromId: String) {
+            stixCoreRelationshipsNumber(type: $type, fromId: $fromId) {
+                total
+            }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: NUMBER_QUERY,
@@ -75,18 +75,18 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     });
     expect(queryResult.data.stixCoreRelationshipsNumber.total).toEqual(1);
     const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'stix_relation' } });
-    expect(queryResult2.data.stixCoreRelationshipsNumber.total).toEqual(25);
+    expect(queryResult2.data.stixCoreRelationshipsNumber.total).toEqual(22);
   });
   it('should update stixCoreRelationship', async () => {
     const UPDATE_QUERY = gql`
-      mutation StixCoreRelationshipEdit($id: ID!, $input: [EditInput]!) {
-        stixCoreRelationshipEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            description
-          }
+        mutation StixCoreRelationshipEdit($id: ID!, $input: [EditInput]!) {
+            stixCoreRelationshipEdit(id: $id) {
+                fieldPatch(input: $input) {
+                    id
+                    description
+                }
+            }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
@@ -99,13 +99,13 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should context patch stixCoreRelationship', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation StixCoreRelationshipEdit($id: ID!, $input: EditContext) {
-        stixCoreRelationshipEdit(id: $id) {
-          contextPatch(input: $input) {
-            id
-          }
+        mutation StixCoreRelationshipEdit($id: ID!, $input: EditContext) {
+            stixCoreRelationshipEdit(id: $id) {
+                contextPatch(input: $input) {
+                    id
+                }
+            }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
@@ -122,13 +122,13 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should context clean stixCoreRelationship', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation StixCoreRelationshipEdit($id: ID!) {
-        stixCoreRelationshipEdit(id: $id) {
-          contextClean {
-            id
-          }
+        mutation StixCoreRelationshipEdit($id: ID!) {
+            stixCoreRelationshipEdit(id: $id) {
+                contextClean {
+                    id
+                }
+            }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
@@ -138,24 +138,24 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should add relation in stixCoreRelationship', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation StixCoreRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
-        stixCoreRelationshipEdit(id: $id) {
-          relationAdd(input: $input) {
-            id
-            from {
-              ... on StixCoreRelationship {
-                objectMarking {
-                  edges {
-                    node {
-                      id
+        mutation StixCoreRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+            stixCoreRelationshipEdit(id: $id) {
+                relationAdd(input: $input) {
+                    id
+                    from {
+                        ... on StixCoreRelationship {
+                            objectMarking {
+                                edges {
+                                    node {
+                                        id
+                                    }
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
             }
-          }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
@@ -171,20 +171,20 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should delete relation in stixCoreRelationship', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation StixCoreRelationshipEdit($id: ID!, $toId: String!, $relationship_type: String!) {
-        stixCoreRelationshipEdit(id: $id) {
-          relationDelete(toId: $toId, relationship_type: $relationship_type) {
-            id
-            objectMarking {
-              edges {
-                node {
-                  id
+        mutation StixCoreRelationshipEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+            stixCoreRelationshipEdit(id: $id) {
+                relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                    id
+                    objectMarking {
+                        edges {
+                            node {
+                                id
+                            }
+                        }
+                    }
                 }
-              }
             }
-          }
         }
-      }
     `;
     const queryResult = await queryAsAdmin({
       query: RELATION_DELETE_QUERY,
@@ -198,11 +198,11 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should stixCoreRelationship deleted', async () => {
     const DELETE_QUERY = gql`
-      mutation stixCoreRelationshipDelete($id: ID!) {
-        stixCoreRelationshipEdit(id: $id) {
-          delete
+        mutation stixCoreRelationshipDelete($id: ID!) {
+            stixCoreRelationshipEdit(id: $id) {
+                delete
+            }
         }
-      }
     `;
     // Delete the stixCoreRelationship
     await queryAsAdmin({
