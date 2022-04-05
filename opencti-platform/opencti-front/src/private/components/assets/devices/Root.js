@@ -75,11 +75,11 @@ class RootDevice extends Component {
         params: { deviceId },
       },
     } = this.props;
-    const link = `/dashboard/assets/devices/${deviceId}/knowledge`;
+    const link = `/defender HQ/assets/devices/${deviceId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
-        <Route path="/dashboard/assets/devices/:deviceId/knowledge">
+        <Route path="/defender HQ/assets/devices/:deviceId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -110,7 +110,7 @@ class RootDevice extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/dashboard/assets/devices/:deviceId"
+                      path="/defender HQ/assets/devices/:deviceId"
                       render={(routeProps) => (
                         <Device
                           {...routeProps}

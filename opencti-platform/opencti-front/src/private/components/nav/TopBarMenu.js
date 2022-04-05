@@ -46,7 +46,6 @@ import TopMenuVSAC from './TopMenuVSAC';
 //import TopMenuVsacViewCharts from './TopMenuVsacViewCharts';
 import TopMenuAssets from './TopMenuAssets';
 import TopMenuRiskAssessment from './TopMenuRiskAssessment';
-import TopMenuRisk from './TopMenuRisk';
 import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuDevice from './TopMenuDevice';
 import TopMenuOverviews from './TopMenuOverviews';
@@ -154,20 +153,25 @@ const TopBarMenu = ({
   };
   return (
     <div
-    position="relative"
-    className={classes.appBar}
-    elevation={1}
-    style={{ backgroundColor: theme.palette.header.background }}
-  >
-    <Toolbar style={{ display: location.pathname === '/dashboard/risk-assessment/risks' ? 'none' : 'block' }} className={classes.toolbar}>
+      position="relative"
+      className={classes.appBar}
+      elevation={1}
+      style={{ backgroundColor: theme.palette.header.background }}
+    >
+      <Toolbar
+        style={{
+          display: location.pathname.includes('/activities/risk assessment/risks') ? 'none' : 'block'
+        }}
+        className={classes.toolbar}
+      >
         <div className={classes.menuContainer}>
           {(location.pathname === '/dashboard'
             || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
-            <TopMenuAnalysis />
-          )}
+              <TopMenuAnalysis />
+            )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -182,8 +186,8 @@ const TopBarMenu = ({
           ) && <TopMenuExternalReference />}
           {(location.pathname === '/dashboard/events'
             || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
-            <TopMenuEvents />
-          )}
+              <TopMenuEvents />
+            )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuIncident />
           )}
@@ -195,8 +199,8 @@ const TopBarMenu = ({
           )}
           {(location.pathname === '/dashboard/observations'
             || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
-            <TopMenuObservations />
-          )}
+              <TopMenuObservations />
+            )}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
           ) && <TopMenuIndicator />}
@@ -211,8 +215,8 @@ const TopBarMenu = ({
           )}
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
-            <TopMenuThreats />
-          )}
+              <TopMenuThreats />
+            )}
           {location.pathname.includes('/dashboard/threats/threat_actors/') && (
             <TopMenuThreatActor />
           )}
@@ -222,43 +226,35 @@ const TopBarMenu = ({
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
           )}
-          {(location.pathname === '/dashboard/vsac/scans/exploreresults'
-            || location.pathname.match('/dashboard/vsac/scans/exploreresults')) && (
-            <TopMenuVsacExploreResults />
-          )}
-          {(location.pathname === '/dashboard/vsac/scans/viewcharts'
-            || location.pathname.match('/dashboard/vsac/scans/viewcharts')) && (
-            <TopMenuVsacViewCharts />
-          )}
-          {(location.pathname === '/dashboard/vsac/scans/compare'
-            || location.pathname.match('/dashboard/vsac/scans/compare')) && (
-            <TopMenuVsacCompare />
-          )}
-          {(location.pathname === '/dashboard/assets'
-            || location.pathname.match('/dashboard/assets/[a-z_]+$')) && (
-            <TopMenuAssets />
-          )}
-          {location.pathname.includes('/dashboard/assets/devices/') && (
+          {(location.pathname === '/activities/vulnerability assessment/scans/explore results'
+            || location.pathname.match('/activities/vulnerability assessment/scans/explore results')) && (
+              <TopMenuVsacExploreResults />
+            )}
+          {(location.pathname === '/activities/vulnerability assessment/scans/view charts'
+            || location.pathname.match('/activities/vulnerability assessment/scans/view charts')) && (
+              <TopMenuVsacViewCharts />
+            )}
+          {(location.pathname === '/activities/vulnerability assessment/scans/compare analysis'
+            || location.pathname.match('/activities/vulnerability assessment/scans/compare analysis')) && (
+              <TopMenuVsacCompare />
+            )}
+          {(location.pathname === '/defender HQ/assets'
+            || location.pathname.match('/defender HQ/assets/[a-z_]+$')) && (
+              <TopMenuAssets />
+            )}
+          {location.pathname.includes('/defender HQ/assets/devices/') && (
             <TopMenuDevice />
           )}
-          {location.pathname.includes('/dashboard/assets/network/') && (
+          {location.pathname.includes('/defender HQ/assets/network/') && (
             <TopMenuNetwork />
           )}
-          {location.pathname.includes('/dashboard/assets/software/') && (
+          {location.pathname.includes('/defender HQ/assets/software/') && (
             <TopMenuSoftware />
-          )}
-          {console.log('location.pathname', location.pathname)}
-          {/* {(location.pathname === '/dashboard/risk-assessment'
-            || location.pathname.match('/dashboard/risk-assessment/[a-z_]+$')) && (
-            <TopMenuRiskAssessment />
-          )} */}
-          {location.pathname.includes('/dashboard/risk-assessment/risks/') && (
-            <TopMenuRisk />
           )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
-            <TopMenuArsenal />
-          )}
+              <TopMenuArsenal />
+            )}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && (
             <TopMenuMalware />
           )}
@@ -276,8 +272,8 @@ const TopBarMenu = ({
           ) && <TopMenuVulnerability />}
           {(location.pathname === '/dashboard/entities'
             || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
-            <TopMenuEntities />
-          )}
+              <TopMenuEntities />
+            )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
           )}
@@ -314,8 +310,8 @@ const TopBarMenu = ({
           ) && <TopMenuWorkspacesInvestigations />}
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
-    </Toolbar>
-  </div>
+      </Toolbar>
+    </div>
   );
 };
 

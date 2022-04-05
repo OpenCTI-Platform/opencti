@@ -47,7 +47,7 @@ class DeviceComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/dashboard/assets/devices',
+      pathname: '/defender HQ/assets/devices',
       openNewCreation: true,
     });
   }

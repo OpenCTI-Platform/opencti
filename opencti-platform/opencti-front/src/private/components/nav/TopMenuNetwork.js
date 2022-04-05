@@ -54,7 +54,7 @@ class TopMenuNetwork extends Component {
         {/* {!networkId && (
           <Button
             component={Link}
-            to="/dashboard/assets/network"
+            to="/defender HQ/assets/network"
             variant="contained"
             size="small"
             color="inherit"
@@ -67,17 +67,17 @@ class TopMenuNetwork extends Component {
         {/* <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}`}
+          to={`/defender HQ/assets/network/${networkId}`}
           variant={
             location.pathname
-            === `/dashboard/assets/network/${networkId}`
+            === `/defender HQ/assets/network/${networkId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/network/${networkId}`
+            === `/defender HQ/assets/network/${networkId}`
               ? 'secondary'
               : 'inherit'
           }
@@ -87,10 +87,10 @@ class TopMenuNetwork extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}/knowledge`}
+          to={`/defender HQ/assets/network/${networkId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/assets/network/${networkId}/knowledge`,
+              `/defender HQ/assets/network/${networkId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -98,7 +98,7 @@ class TopMenuNetwork extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/assets/network/${networkId}/knowledge`,
+              `/defender HQ/assets/network/${networkId}/knowledge`,
             )
               ? 'secondary'
               : 'inherit'
@@ -109,17 +109,17 @@ class TopMenuNetwork extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}/analysis`}
+          to={`/defender HQ/assets/network/${networkId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/assets/network/${networkId}/analysis`
+            === `/defender HQ/assets/network/${networkId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/network/${networkId}/analysis`
+            === `/defender HQ/assets/network/${networkId}/analysis`
               ? 'secondary'
               : 'inherit'
           }
@@ -129,10 +129,10 @@ class TopMenuNetwork extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}/indicators`}
+          to={`/defender HQ/assets/network/${networkId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/assets/network/${networkId}/indicators`,
+              `/defender HQ/assets/network/${networkId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -140,7 +140,7 @@ class TopMenuNetwork extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/assets/network/${networkId}/indicators`,
+              `/defender HQ/assets/network/${networkId}/indicators`,
             )
               ? 'secondary'
               : 'inherit'
@@ -152,17 +152,17 @@ class TopMenuNetwork extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/assets/network/${networkId}/files`}
+            to={`/defender HQ/assets/network/${networkId}/files`}
             variant={
               location.pathname
-              === `/dashboard/assets/network/${networkId}/files`
+              === `/defender HQ/assets/network/${networkId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/assets/network/${networkId}/files`
+              === `/defender HQ/assets/network/${networkId}/files`
                 ? 'secondary'
                 : 'inherit'
             }
@@ -173,17 +173,17 @@ class TopMenuNetwork extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/assets/network/${networkId}/history`}
+          to={`/defender HQ/assets/network/${networkId}/history`}
           variant={
             location.pathname
-            === `/dashboard/assets/network/${networkId}/history`
+            === `/defender HQ/assets/network/${networkId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/assets/network/${networkId}/history`
+            === `/defender HQ/assets/network/${networkId}/history`
               ? 'secondary'
               : 'inherit'
           }
