@@ -132,7 +132,7 @@ class RiskDeletion extends Component {
   //     onCompleted: () => {
   //       this.setState({ deleting: false });
   //       this.handleClose();
-  //       this.props.history.push('/dashboard/risk-assessment/risks');
+  //       this.props.history.push('/activities/risk assessment/risks');
   //     },
   //   });
   // }
@@ -147,7 +147,7 @@ class RiskDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/risk-assessment/risks');
+        this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.log('RiskDeletionDarkLightMutationError', err),
     });
@@ -165,7 +165,7 @@ class RiskDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/dashboard/risk-assessment/risks');
+    //     this.props.history.push('/activities/risk assessment/risks');
     //   },
     // });
   }

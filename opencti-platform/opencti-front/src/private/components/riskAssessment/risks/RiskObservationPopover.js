@@ -269,7 +269,7 @@ class RiskObservationPopover extends Component {
                   <DialogContentText>
                     {t('Observation Target(s)')}
                   </DialogContentText>
-                  {data?.subjects?.map((subject, i) => {
+                  {/* {data?.subjects?.map((subject, i) => {
                     if (subject?.subject_context === 'target') {
                       return (
                         <Typography key={i} variant="h2" color="primary">
@@ -278,7 +278,7 @@ class RiskObservationPopover extends Component {
                       );
                     }
                     return <></>;
-                  })}
+                  })} */}
                 </Grid>
               </Grid>
               <Divider />
@@ -295,7 +295,7 @@ class RiskObservationPopover extends Component {
                   <DialogContentText>
                     {t('Component(s)')}
                   </DialogContentText>
-                  {data.subjects.map((subject, i) => {
+                  {/* {data.subjects.map((subject, i) => {
                     if (subject.subject_context === 'secondary_target') {
                       return (
                         <Typography key={i} variant="h2" color="primary">
@@ -304,7 +304,7 @@ class RiskObservationPopover extends Component {
                       );
                     }
                     return <></>;
-                  })}
+                  })} */}
                 </Grid>
               </Grid>
               <Divider />

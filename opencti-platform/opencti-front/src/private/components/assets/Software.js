@@ -25,6 +25,8 @@ import SoftwareCreation from './software/SoftwareCreation';
 import SoftwareDeletion from './software/SoftwareDeletion';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
+import ErrorNotFound from '../../../components/ErrorNotFound';
+import {toastSuccess, toastGenericError} from "../../../utils/bakedToast";
 
 class Software extends Component {
   constructor(props) {
@@ -84,7 +86,7 @@ class Software extends Component {
   handleDisplayEdit(selectedElements) {
     const softwareId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/dashboard/assets/software/${softwareId}`,
+      pathname: `/defender HQ/assets/software/${softwareId}`,
       openEdit: true,
     });
   }
@@ -217,18 +219,23 @@ class Software extends Component {
           environment={QueryRendererDarkLight}
           query={softwareCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ props }) => (
-            <SoftwareCards
-              data={props}
-              selectAll={selectAll}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
+          render={({ error, props }) => {
+            if (error) {
+              return toastGenericError('Request Failed');
+            }
+            return (
+              <SoftwareCards
+                data={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
         />
       </CyioListCards>
     );
@@ -324,19 +331,24 @@ class Software extends Component {
           environment={QueryRendererDarkLight}
           query={softwareLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ props }) => (
-            <SoftwareLines
-              data={props}
-              selectAll={selectAll}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              paginationOptions={paginationOptions}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
+          render={({ error, props }) => {
+            if (error) {
+              return toastGenericError('Request Failed');
+            }
+            return (
+              <SoftwareLines
+                data={props}
+                selectAll={selectAll}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                paginationOptions={paginationOptions}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            )
+          }}
         />
       </CyioListLines>
     );

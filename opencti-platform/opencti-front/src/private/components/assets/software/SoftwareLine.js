@@ -74,7 +74,7 @@ class SoftwareLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/dashboard/assets/software/${node.id}`}
+        to={`/defender HQ/assets/software/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
