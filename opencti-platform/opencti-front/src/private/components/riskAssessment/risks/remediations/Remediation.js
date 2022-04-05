@@ -170,6 +170,33 @@ const Remediation = createFragmentContainer(RemediationComponent, {
       __typename
       id
       name
+      description
+      modified
+      created
+      lifecycle
+      response_type
+      origins{            # source of detection
+        id
+        origin_actors {
+          actor_type
+          actor_ref {
+            ... on AssessmentPlatform {
+              id
+              name          # Source
+            }
+            ... on Component {
+              id
+              component_type
+              name
+            }
+            ... on OscalParty {
+            id
+            party_type
+            name            # Source
+            }
+          }
+        }
+      }
       links {
         __typename
         id

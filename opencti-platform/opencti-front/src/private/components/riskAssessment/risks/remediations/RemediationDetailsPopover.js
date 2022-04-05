@@ -31,6 +31,9 @@ import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
+import ResponseType from '../../../common/form/ResponseType';
+import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
+import Source from '../../../common/form/Source';
 
 const styles = (theme) => ({
   container: {
@@ -118,7 +121,11 @@ class RemediationDetailsPopover extends Component {
 
   render() {
     const {
-      classes, t, disabled, risk, remediation,
+      classes,
+      t,
+      disabled,
+      risk,
+      remediation,
     } = this.props;
     const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
@@ -154,7 +161,13 @@ class RemediationDetailsPopover extends Component {
           // onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Edit Remediation')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
@@ -286,28 +299,16 @@ class RemediationDetailsPopover extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <AddIcon fontSize="small" style={{ margin: '-4px 0 0 0' }} />
                         <div className="clearfix" />
-                        <div>
-                          <Field
-                            component={SelectField}
-                            variant='outlined'
-                            name="source"
-                            size='small'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                          />
-                          <Field
-                            component={SelectField}
-                            variant='outlined'
-                            name="source"
-                            size='small'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                          />
-                        </div>
+                        <Source
+                          variant='outlined'
+                          values={values}
+                          setFieldValue={setFieldValue}
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '50%', padding: '0 0 12px 0' }}
+                        />
                       </Grid>
                       <Grid style={{ marginBottom: '15px' }} item={true}>
                         <Typography
@@ -328,10 +329,9 @@ class RemediationDetailsPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <ResponseType
                           variant='outlined'
-                          name="response_type"
+                          name='response_type'
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px' }}
@@ -340,7 +340,7 @@ class RemediationDetailsPopover extends Component {
                       </Grid>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <Grid style={{ marginTop: '90px' }} item={true}>
+                      <Grid style={{ marginTop: '97px' }} item={true}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -359,10 +359,9 @@ class RemediationDetailsPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <RiskLifeCyclePhase
                           variant='outlined'
-                          name="lifecycle"
+                          name='lifecycle'
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px' }}
