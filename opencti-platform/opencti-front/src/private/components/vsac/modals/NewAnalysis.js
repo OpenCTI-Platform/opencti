@@ -24,6 +24,8 @@ import {
 } from "../data";
 import {fetchAnalysis} from "../../../../services/analysis.service";
 import Skeleton from "@material-ui/lab/Skeleton";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
 
 const classes = {
 	root: {
@@ -135,6 +137,7 @@ class NewAnalysis extends Component {
 			client: props.client,
 			isScan: props.isScan || false,
 			scan: null,
+			notify: false,
 			vignettes: null,
 			selectedVignette: null,
 			selectedVulnRange: null,
@@ -175,6 +178,7 @@ class NewAnalysis extends Component {
 			client,
 			vignettes,
 			scan,
+			notify,
 			selectedVignette,
 			selectedVulnRange,
 			selectedWeakCount
@@ -192,12 +196,17 @@ class NewAnalysis extends Component {
 			this.setState({selectedVignette: event.target.value })
 		}
 
+		const handleNotify = (event) => {
+			this.setState({notify: event.target.checked});
+		};
+
 		const handleSubmit = () => {
 			const params = {
 			    scan_id: scan.id,
 			    vulnerability_range: selectedVulnRange,
 			    weakness_range: selectedWeakCount,
 			    vignette: selectedVignette,
+					notify
 			  };
 
 			this.props.action(id, client, params )
@@ -233,54 +242,54 @@ class NewAnalysis extends Component {
 								<Skeleton variant="rectangular" width="100%" height="14pt"/>
 							)
 						}
-					    <FormGroup row={true}>
-							<FormControl className={classes.formControl} style={{width: '100%'}}>
-								<InputLabel id="demo-simple-select-label">Vulnerability Range</InputLabel>
-								<Select
-								  	labelId="demo-simple-select-label"
-								  	id="demo-simple-select"
-									value={selectedVulnRange}
-								  	onChange={(event) => handleVulnerability(event)}
-								>
+						<FormGroup row={true}>
+						<FormControl className={classes.formControl} style={{width: '100%'}}>
+							<InputLabel id="demo-simple-select-label">Vulnerability Range</InputLabel>
+							<Select
+									labelId="demo-simple-select-label"
+									id="demo-simple-select"
+								value={selectedVulnRange}
+									onChange={(event) => handleVulnerability(event)}
+							>
+								{
+									vulnerabilityRanges.map((range, i) => {
+										return (
+											<MenuItem value={range.id}>{range.title}</MenuItem>
+										)
+									})
+								 }
+							</Select>
+							<FormHelperText>Choose how many years of vulnerabilities to consider</FormHelperText>
+						</FormControl>
+						</FormGroup>
+						<FormGroup row={true}>
+						<FormControl className={classes.formControl} style={{width: '100%'}}>
+							<InputLabel id="demo-simple-select-label">Weakness Count</InputLabel>
+							<Select
+									labelId="demo-simple-select-label"
+									id="demo-simple-select"
+								value={selectedWeakCount}
+									onChange={(event) => handleWeaknessesCount(event)}
+							>
 									{
-										vulnerabilityRanges.map((range, i) => {
-											return (
-												<MenuItem value={range.id}>{range.title}</MenuItem>
-											)
-										})
-									 }
-								</Select>
-								<FormHelperText>Choose how many years of vulnerabilities to consider</FormHelperText>
-							</FormControl>
-					    </FormGroup>
-					    <FormGroup row={true}>
-							<FormControl className={classes.formControl} style={{width: '100%'}}>
-								<InputLabel id="demo-simple-select-label">Weakness Count</InputLabel>
-								<Select
-								  	labelId="demo-simple-select-label"
-								  	id="demo-simple-select"
-									value={selectedWeakCount}
-								  	onChange={(event) => handleWeaknessesCount(event)}
-								>
-								  	{
-										weaknessesCount.map((count, i) => {
-											return (
-												<MenuItem value={count.id}>{count.title}</MenuItem>
-											)
-										})
-								 	}
-								</Select>
-								<FormHelperText>The number of weaknesses to rank order</FormHelperText>
-							</FormControl>
-					    </FormGroup>
-					    <FormGroup row={true}>
+									weaknessesCount.map((count, i) => {
+										return (
+											<MenuItem value={count.id}>{count.title}</MenuItem>
+										)
+									})
+								}
+							</Select>
+							<FormHelperText>The number of weaknesses to rank order</FormHelperText>
+						</FormControl>
+						</FormGroup>
+						<FormGroup row={true}>
 							<FormControl className={classes.formControl} style={{width: '100%'}}>
 								<InputLabel id="demo-simple-select-label">Influence Weakness Scores with Vignette</InputLabel>
 								<Select
-								  	labelId="demo-simple-select-label"
-								  	id="demo-simple-select"
+										labelId="demo-simple-select-label"
+										id="demo-simple-select"
 									value={selectedVignette}
-								  	onChange={(event) => handleVignette(event)}
+										onChange={(event) => handleVignette(event)}
 								>
 								{
 									vignettes && (
@@ -291,11 +300,24 @@ class NewAnalysis extends Component {
 										}
 									))
 								 }
-
 								</Select>
 								<FormHelperText>The number of weaknesses to rank order</FormHelperText>
 							</FormControl>
-					    </FormGroup>
+						</FormGroup>
+						<FormGroup row={true}>
+							<FormControlLabel
+								control={
+									<Checkbox
+										name="checkedB"
+										color="primary"
+										onChange={(event) => {
+											handleNotify(event);
+										}}
+									/>
+								}
+								label="Notify me via email when the results are ready"
+							/>
+						</FormGroup>
 					</CardContent>
 					<CardActions style={{ justifyContent: "right" }}>
 						<Button
