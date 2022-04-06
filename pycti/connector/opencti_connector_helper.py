@@ -271,6 +271,7 @@ class ListenStream(threading.Thread):
         start_timestamp,
         live_stream_id,
         listen_delete,
+        no_dependencies,
     ) -> None:
         threading.Thread.__init__(self)
         self.helper = helper
@@ -281,6 +282,7 @@ class ListenStream(threading.Thread):
         self.start_timestamp = start_timestamp
         self.live_stream_id = live_stream_id
         self.listen_delete = listen_delete if listen_delete is not None else True
+        self.no_dependencies = no_dependencies if no_dependencies is not None else False
         self.exit = False
 
     def run(self) -> None:  # pylint: disable=too-many-branches
@@ -341,6 +343,9 @@ class ListenStream(threading.Thread):
                         "listen-delete": "false"
                         if self.listen_delete is False
                         else "true",
+                        "no-dependencies": "true"
+                        if self.no_dependencies is True
+                        else "false",
                     },
                     verify=opencti_ssl_verify,
                 )
@@ -368,7 +373,7 @@ class ListenStream(threading.Thread):
                     "%s",
                     (
                         f"Starting listening stream events (URL: {live_stream_url}"
-                        f", SSL verify: {self.helper.opencti_ssl_verify}, Listen Delete: {self.helper.connect_live_stream_listen_delete})"
+                        f", SSL verify: {self.helper.opencti_ssl_verify}, Listen Delete: {self.helper.connect_live_stream_listen_delete}, No Dependencies: {self.helper.connect_live_stream_no_dependencies})"
                     ),
                 )
                 messages = SSEClient(
@@ -378,6 +383,9 @@ class ListenStream(threading.Thread):
                         "listen-delete": "false"
                         if self.helper.connect_live_stream_listen_delete is False
                         else "true",
+                        "no-dependencies": "true"
+                        if self.helper.connect_live_stream_no_dependencies is True
+                        else "false",
                     },
                     verify=self.helper.opencti_ssl_verify,
                 )
@@ -446,6 +454,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             config,
             False,
             True,
+        )
+        self.connect_live_stream_no_dependencies = get_config_variable(
+            "CONNECTOR_LIVE_STREAM_NO_DEPENDENCIES",
+            ["connector", "live_stream_no_dependencies"],
+            config,
+            False,
+            False,
         )
         self.connect_name = get_config_variable(
             "CONNECTOR_NAME", ["connector", "name"], config
