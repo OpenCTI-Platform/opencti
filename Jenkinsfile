@@ -52,7 +52,9 @@ node {
   parallel test: {
     stage('Test') {
       try {
-        docker.image('node:16.6.0-alpine3.14').inside {
+        def tmp = sh(returnStdout: true, script: "mktemp -d")
+
+        docker.image('node:16.6.0-alpine3.14').inside("-v ${tmp}:/.cache/yarn") {
           sh '''
             node --version
             npm --version
