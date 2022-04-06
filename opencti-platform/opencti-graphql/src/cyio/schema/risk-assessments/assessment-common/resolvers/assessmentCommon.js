@@ -101,6 +101,7 @@ const assessmentCommonResolvers = {
     moderate: 'moderate',
     low: 'low',
     very_low: 'very-low',
+    unknown: 'unknown',
   },
   RiskState: {
     initial: 'initial',

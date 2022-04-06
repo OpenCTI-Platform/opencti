@@ -133,7 +133,7 @@ class NetworkDeletion extends Component {
   //     onCompleted: () => {
   //       this.setState({ deleting: false });
   //       this.handleClose();
-  //       this.props.history.push('/dashboard/assets/network');
+  //       this.props.history.push('/defender HQ/assets/network');
   //     },
   //   });
   // }
@@ -148,7 +148,7 @@ class NetworkDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/assets/network');
+        this.props.history.push('/defender HQ/assets/network');
       },
       onError: (err) => console.log('NetwrokDeletionDarkLightMutationError', err),
     });
@@ -166,7 +166,7 @@ class NetworkDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/dashboard/assets/network');
+    //     this.props.history.push('/defender HQ/assets/network');
     //   },
     // });
   }

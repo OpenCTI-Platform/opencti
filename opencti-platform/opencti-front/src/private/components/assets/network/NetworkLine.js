@@ -74,7 +74,7 @@ class NetworkLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/dashboard/assets/network/${node.id}`}
+        to={`/defender HQ/assets/network/${node.id}`}
       >
         <ListItemIcon
           classes={{ root: classes.itemIcon }}

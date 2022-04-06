@@ -34,15 +34,15 @@ class TopMenuAssets extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/assets/devices"
+          to="/defender HQ/assets/devices"
           variant={
-            location.pathname.includes('/dashboard/assets/devices')
+            location.pathname.includes('/defender HQ/assets/devices')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/assets/devices')
+            location.pathname.includes('/defender HQ/assets/devices')
               ? 'secondary'
               : 'inherit'
           }
@@ -53,15 +53,15 @@ class TopMenuAssets extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/assets/network"
+          to="/defender HQ/assets/network"
           variant={
-            location.pathname.includes('/dashboard/assets/network')
+            location.pathname.includes('/defender HQ/assets/network')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/assets/network')
+            location.pathname.includes('/defender HQ/assets/network')
               ? 'secondary'
               : 'inherit'
           }
@@ -72,15 +72,15 @@ class TopMenuAssets extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/assets/software"
+          to="/defender HQ/assets/software"
           variant={
-            location.pathname.includes('/dashboard/assets/software')
+            location.pathname.includes('/defender HQ/assets/software')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/assets/software'
+            location.pathname === '/defender HQ/assets/software'
               ? 'secondary'
               : 'inherit'
           }

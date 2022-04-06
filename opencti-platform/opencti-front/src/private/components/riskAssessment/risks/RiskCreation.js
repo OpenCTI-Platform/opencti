@@ -220,7 +220,7 @@ class RiskCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/risk-assessment/risks');
+        this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.log('RiskCreationDarkLightMutationError', err),
     });

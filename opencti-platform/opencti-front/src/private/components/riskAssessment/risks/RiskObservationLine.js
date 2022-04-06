@@ -1,9 +1,6 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-// import { createPaginationContainer } from 'react-relay';
 // import { ConnectionHandler } from 'relay-runtime';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -24,7 +21,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
-import { commitMutation as CM } from 'react-relay';
+import { commitMutation as CM, createPaginationContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
@@ -103,49 +100,52 @@ class RiskObservationLineContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, data, fd,
+      t, classes, cyioCoreObjectId, risk, fd, relay,
     } = this.props;
+    const RelatedObservations = R.pathOr([], ['related_observations', 'edges'], risk);
     return (
       <div>
-        <List style={{ marginBottom: 0, padding: '0 12px 12px 12px' }}>
-          <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '90% 10%', marginBottom: '10px' }}>
-              <div style={{ padding: '10px 0 0 18px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  style={{ float: 'left' }}
-                >
-                  <strong style={{ color: '#00bcd4' }}>
-                    {data.name && t(data.name)}
-                  </strong>
-                  &nbsp; added an Observation on &nbsp;
-                  <strong style={{ color: 'white' }}>
-                    {data.collected && fd(data.collected)}
-                  </strong>
-                </Typography>
-                <br /> <br />
-                <Typography
-                  variant="h2"
-                  style={{ color: 'white' }}
-                >
-                 {data.name && t(data.name)}
-                </Typography>
+        {RelatedObservations.map((observation) => (
+          <List key={observation.node.id} style={{ marginBottom: 0, padding: '0 12px 12px 12px' }}>
+            <div>
+              <div style={{ display: 'grid', gridTemplateColumns: '90% 10%', marginBottom: '10px' }}>
+                <div style={{ padding: '10px 0 0 18px' }}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    style={{ float: 'left' }}
+                  >
+                    <strong style={{ color: '#00bcd4' }}>
+                      {observation.node.name && t(observation.node.name)}
+                    </strong>
+                    &nbsp; added an Observation on &nbsp;
+                    <strong style={{ color: 'white' }}>
+                      {observation.node.collected && fd(observation.node.collected)}
+                    </strong>
+                  </Typography>
+                  <br /> <br />
+                  <Typography
+                    variant="h2"
+                    style={{ color: 'white' }}
+                  >
+                    {observation.node.name && t(observation.node.name)}
+                  </Typography>
+                </div>
+                <div style={{ marginTop: '12px' }}>
+                  <RiskObservationPopover data={observation.node} />
+                </div>
               </div>
-              <div style={{ marginTop: '12px' }}>
-                <RiskObservationPopover data={data} />
-              </div>
+              <Divider variant="middle" light={true} />
             </div>
-            <Divider variant="middle" light={true} />
-          </div>
-        </List>
+          </List>
+        ))}
       </div>
     );
   }
 }
 
 RiskObservationLineContainer.propTypes = {
-  data: PropTypes.object,
+  risk: PropTypes.object,
   cyioCoreObjectId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -154,7 +154,68 @@ RiskObservationLineContainer.propTypes = {
   relay: PropTypes.object,
 };
 
+export const riskObservationLineQuery = graphql`
+  query RiskObservationLinePaginationQuery($id: ID!, $first: Int, $offset: Int) {
+    risk(id: $id){
+      id
+      ...RiskObservationLine_risk
+      @arguments(
+        count: $first
+        offset: $offset
+      )
+    }
+  }
+`;
+
+export const RiskObservationLineContainerComponent = createPaginationContainer(
+  RiskObservationLineContainer,
+  {
+    risk: graphql`
+      fragment RiskObservationLine_risk on Risk
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 5 }
+        offset: { type: "Int", defaultValue: 0 }
+      ) {
+        related_observations (
+          first: $count,
+          offset: $offset
+          ) @connection(key: "Pagination_related_observations"){
+          edges {
+            node {
+              id
+              entity_type
+              name
+              ...RiskObservationPopover_risk
+            }
+          }
+        }
+      }
+    `,
+  },
+  {
+    direction: 'forward',
+    getConnectionFromProps(props) {
+      return props.data && props.data.related_observations;
+    },
+    getFragmentVariables(prevVars, totalCount) {
+      return {
+        ...prevVars,
+        count: totalCount,
+      };
+    },
+    getVariables(props, { count, cursor }, fragmentVariables) {
+      return {
+        first: fragmentVariables.first,
+        offset: fragmentVariables.offset,
+        count,
+        cursor,
+      };
+    },
+    query: riskObservationLineQuery,
+  },
+);
+
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(RiskObservationLineContainer);
+)(RiskObservationLineContainerComponent);

@@ -145,7 +145,6 @@ class DeviceCreation extends Component {
       R.dissoc('protocols'),
       R.dissoc('labels'),
       R.dissoc('locations'),
-      R.assoc('name', values.name),
       R.assoc('asset_type', values.asset_type),
     )(adaptedValues);
     CM(environmentDarkLight, {
@@ -158,7 +157,7 @@ class DeviceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/assets/devices');
+        this.props.history.push('/defender HQ/assets/devices');
       },
       onError: (err => (console.log('DeviceCreation Erro', err))),
     });
@@ -214,7 +213,7 @@ class DeviceCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello World',
+            name: '',
             operational_status: 'other',
             // id: '',
             asset_id: '',
@@ -372,7 +371,7 @@ class DeviceCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push('/dashboard/assets/devices')}
+              onClick={() => this.props.history.push('/defender HQ/assets/devices')}
               // onClick={() => this.props.history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}

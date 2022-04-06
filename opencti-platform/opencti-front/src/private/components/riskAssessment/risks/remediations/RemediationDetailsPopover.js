@@ -31,6 +31,9 @@ import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
+import ResponseType from '../../../common/form/ResponseType';
+import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
+import Source from '../../../common/form/Source';
 
 const styles = (theme) => ({
   container: {
@@ -80,17 +83,13 @@ const styles = (theme) => ({
   },
 });
 
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
-
 class RemediationDetailsPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
       anchorEl: null,
       details: false,
+      close: false,
     };
   }
 
@@ -116,22 +115,28 @@ class RemediationDetailsPopover extends Component {
     this.setState({ details: false });
   }
 
+  handleCancelCloseClick() {
+    this.setState({ close: false });
+  }
+
   render() {
     const {
-      classes, t, disabled, risk, remediation,
+      classes,
+      t,
+      disabled,
+      risk,
+      remediation,
     } = this.props;
     const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
-      R.assoc('id', risk?.id || ''),
       R.assoc('description', remediation?.description || ''),
       R.assoc('name', remediation?.name || ''),
       R.assoc('source', remediationOriginData?.name || []),
-      R.assoc('modified', dateFormat(risk?.modified)),
-      R.assoc('created', dateFormat(risk?.created)),
+      R.assoc('modified', dateFormat(remediation?.modified)),
+      R.assoc('created', dateFormat(remediation?.created)),
       R.assoc('lifecycle', remediation?.lifecycle || []),
       R.assoc('response_type', remediation?.response_type || ''),
       R.pick([
-        'id',
         'name',
         'description',
         'source',
@@ -140,35 +145,14 @@ class RemediationDetailsPopover extends Component {
         'lifecycle',
         'response_type',
       ]),
-    )(risk);
+    )(remediation);
     console.log('remediation', remediation);
     return (
-      <span className={classes.container}>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          disabled={disabled}
-        >
-          <MoreVertOutlined />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}
-        >
-          <MenuItem
-            className={classes.menuItem}
-            onClick={this.handleOpenDetails.bind(this)}
-          >
-            {t('Details')}
-          </MenuItem>
-        </Menu>
+      <>
         <Dialog
-          open={this.state.details}
+          open={this.props.displayEdit}
           keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseDetails.bind(this)}
+          onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik
             enableReinitialize={true}
@@ -177,7 +161,13 @@ class RemediationDetailsPopover extends Component {
           // onSubmit={this.onSubmit.bind(this)}
           // onReset={this.onResetContextual.bind(this)}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Edit Remediation')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
@@ -272,29 +262,29 @@ class RemediationDetailsPopover extends Component {
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                      <Grid xs={12} item={true}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Description')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                          <Tooltip title={t('Description')}>
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Field
-                          component={TextField}
-                          name="description"
-                          fullWidth={true}
-                          multiline={true}
-                          rows="4"
-                          variant='outlined'
-                        />
+                    <Grid xs={12} item={true}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                        <Tooltip title={t('Description')}>
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={TextField}
+                        name="description"
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        variant='outlined'
+                      />
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
@@ -309,28 +299,16 @@ class RemediationDetailsPopover extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <AddIcon fontSize="small" style={{ margin: '-4px 0 0 0' }} />
                         <div className="clearfix" />
-                        <div>
-                          <Field
-                            component={SelectField}
-                            variant='outlined'
-                            name="source"
-                            size='small'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                          />
-                          <Field
-                            component={SelectField}
-                            variant='outlined'
-                            name="source"
-                            size='small'
-                            fullWidth={true}
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '50%', padding: '0 0 1px 0' }}
-                          />
-                        </div>
+                        <Source
+                          variant='outlined'
+                          values={values}
+                          setFieldValue={setFieldValue}
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '50%', padding: '0 0 12px 0' }}
+                        />
                       </Grid>
                       <Grid style={{ marginBottom: '15px' }} item={true}>
                         <Typography
@@ -351,10 +329,9 @@ class RemediationDetailsPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <ResponseType
                           variant='outlined'
-                          name="response_type"
+                          name='response_type'
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px' }}
@@ -363,7 +340,7 @@ class RemediationDetailsPopover extends Component {
                       </Grid>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <Grid style={{ marginTop: '80px' }} item={true}>
+                      <Grid style={{ marginTop: '97px' }} item={true}>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -382,10 +359,9 @@ class RemediationDetailsPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <RiskLifeCyclePhase
                           variant='outlined'
-                          name="lifecycle"
+                          name='lifecycle'
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px' }}
@@ -399,7 +375,10 @@ class RemediationDetailsPopover extends Component {
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
-                    onClick={this.handleCloseUpdate.bind(this)}
+                    onClick={() => {
+                      this.props.handleDisplayEdit();
+                      this.setState({ close: true });
+                    }}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
@@ -419,13 +398,54 @@ class RemediationDetailsPopover extends Component {
             )}
           </Formik>
         </Dialog>
-      </span>
+        <Dialog
+          open={this.state.close}
+          keepMounted={true}
+          // TransitionComponent={Transition}
+          onClose={this.handleCancelCloseClick.bind(this)}
+        >
+          <DialogContent>
+            <Typography className={classes.popoverDialog}>
+              {t('Are you sure you’d like to cancel?')}
+            </Typography>
+            <Typography align='left'>
+              {t('Your progress will not be saved')}
+            </Typography>
+          </DialogContent>
+          <DialogActions className={classes.dialogActions}>
+            <Button
+              // onClick={this.handleCloseDelete.bind(this)}
+              // disabled={this.state.deleting}
+              // onClick={handleReset}
+              onClick={this.handleCancelCloseClick.bind(this)}
+              classes={{ root: classes.buttonPopover }}
+              variant='outlined'
+              size='small'
+            >
+              {t('Go Back')}
+            </Button>
+            <Button
+              onClick={() => this.props.history.goBack()}
+              color='secondary'
+              // disabled={this.state.deleting}
+              classes={{ root: classes.buttonPopover }}
+              variant='contained'
+              size='small'
+            >
+              {t('Yes, Cancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </>
     );
   }
 }
 
 RemediationDetailsPopover.propTypes = {
   cyioCoreRelationshipId: PropTypes.string,
+  handleDisplayEdit: PropTypes.func,
+  displayEdit: PropTypes.bool,
+  history: PropTypes.object,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

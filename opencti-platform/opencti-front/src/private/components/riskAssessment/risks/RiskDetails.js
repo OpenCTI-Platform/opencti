@@ -143,13 +143,13 @@ class RiskDetailsComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              <Button
+              {risk.risk_status && <Button
                 variant="outlined"
                 size="small"
                 className={classes.statusButton}
               >
-                {risk.risk_status && t(risk.risk_status)}
-              </Button>
+                {t(risk.risk_status)}
+              </Button>}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography
@@ -215,13 +215,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
+                {risk.false_positive && <Button
                   variant="outlined"
                   size="small"
                   className={classes.statusButton}
                 >
-                  {risk.false_positive && t(risk.false_positive)}
-                </Button>
+                  {t(risk.false_positive)}
+                </Button>}
               </div>
               <div>
                 <Typography
@@ -242,13 +242,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
+                {risk.risk_adjusted && <Button
                   variant="outlined"
                   size="small"
                   className={classes.statusButton}
                 >
-                  {risk.risk_adjusted && t(risk.risk_adjusted)}
-                </Button>
+                  {t(risk.risk_adjusted)}
+                </Button>}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -271,13 +271,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
+                {risk.accepted && <Button
                   variant="outlined"
                   size="small"
                   className={classes.statusButton}
                 >
-                  {risk.accepted && t(risk.accepted)}
-                </Button>
+                  {t(risk.accepted)}
+                </Button>}
               </div>
               <div>
                 <Typography
@@ -298,13 +298,13 @@ class RiskDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Button
+                {risk.vendor_dependency && <Button
                   variant="outlined"
                   size="small"
                   className={classes.statusButton}
                 >
-                  {risk.vendor_dependency && t(risk.vendor_dependency)}
-                </Button>
+                  {t(risk.vendor_dependency)}
+                </Button>}
               </div>
             </Grid>
           </Grid>

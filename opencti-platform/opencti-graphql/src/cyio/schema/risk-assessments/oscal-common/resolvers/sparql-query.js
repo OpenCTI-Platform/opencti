@@ -90,6 +90,7 @@ const externalIdentifierReducer = (item) => {
   }
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.scheme && {scheme: item.scheme}),
     ...(item.identifier && {identifier: item.identifier}),
@@ -103,6 +104,7 @@ const oscalLocationReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -130,6 +132,7 @@ const oscalPartyReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
@@ -160,6 +163,7 @@ const oscalResponsiblePartyReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.labels && {labels_iri: item.labels}),
     ...(item.links && {links_iri: item.links}),
@@ -178,6 +182,7 @@ const oscalRoleReducer = (item) => {
 
   return {
     id: item.id,
+    standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),

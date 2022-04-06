@@ -56,6 +56,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
     } = this.props;
     const riskAnalysisCharacterization = pipe(
       pathOr([], ['characterizations']),
+      mergeAll,
     )(risk);
     return (
       <div style={{ height: '100%' }} className="break">
@@ -92,13 +93,13 @@ class RiskAnalysisCharacterizationComponent extends Component {
               </Typography>
             </Grid>
           </Grid>
-          {riskAnalysisCharacterization.map((characterizationData) => {
+          {riskAnalysisCharacterization.facets.map((characterizationData) => {
             const DetectionSource = pipe(
               pathOr([], ['origins']),
               mergeAll,
               path(['origin_actors']),
               mergeAll,
-            )(characterizationData);
+            )(riskAnalysisCharacterization);
             return (
               <Grid key={characterizationData.id} container={true}
                 style={{ borderBottom: '1px solid grey' }}>
@@ -108,7 +109,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
                     gutterBottom={true}
                     className={classes.tableText}
                   >
-                    {/* {characterizationData.facet_name} */}
+                    {characterizationData.facet_name && t(characterizationData.facet_name)}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>
@@ -117,8 +118,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
                     gutterBottom={true}
                     className={classes.tableText}
                   >
-                    {/* {characterizationFacets?.facet_value &&
-                    t(characterizationFacets?.facet_value)} */}
+                    {characterizationData?.facet_value && t(characterizationData?.facet_value)}
                   </Typography>
                 </Grid>
                 <Grid item={true} xs={4}>

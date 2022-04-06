@@ -23,6 +23,8 @@ import RiskCreation from './risks/RiskCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import RiskDeletion from './risks/RiskDeletion';
+import ErrorNotFound from '../../../components/ErrorNotFound';
+import { toastSuccess, toastGenericError } from '../../../utils/bakedToast';
 
 class Risks extends Component {
   constructor(props) {
@@ -86,7 +88,7 @@ class Risks extends Component {
   handleDisplayEdit(selectedElements) {
     const riskId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/dashboard/risk-assessment/risks/${riskId}`,
+      pathname: `/activities/risk assessment/risks/${riskId}`,
       openEdit: true,
     });
   }
@@ -214,19 +216,25 @@ class Risks extends Component {
           environment={QueryRendererDarkLight}
           query={risksCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ error, props }) => <RisksCards
-              data={props}
-              extra={props}
-              selectAll={selectAll}
-              history={this.props.history}
-              paginationOptions={paginationOptions}
-              initialLoading={props === null}
-              selectedElements={selectedElements}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-              onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-            />
-          }
+          render={({ error, props }) => {
+            if (error) {
+              return toastGenericError('Request Failed');
+            }
+            return (
+              <RisksCards
+                data={props}
+                extra={props}
+                selectAll={selectAll}
+                history={this.props.history}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              />
+            );
+          }}
         />
         {/* <QueryRenderer
           query={risksCardsQuery}
@@ -277,37 +285,31 @@ class Risks extends Component {
         label: 'Name',
         width: '16%',
         isSortable: false,
-        paddingLeft: '17px',
       },
       risk_level: {
         label: 'Risk',
         width: '7%',
         isSortable: true,
-        paddingLeft: '21px',
       },
       risk_status: {
         label: 'Status',
         width: '16%',
         isSortable: true,
-        paddingLeft: '20px',
       },
       risk_response: {
         label: 'Response',
         width: '11%',
         isSortable: true,
-        paddingLeft: '28px',
       },
       lifecycle: {
         label: 'Lifecycle',
         width: '13%',
         isSortable: true,
-        paddingLeft: '31px',
       },
       occurrences: {
         label: 'Occurrences',
         width: '10%',
         isSortable: true,
-        paddingLeft: '38px',
       },
       deadline: {
         label: 'Deadline',
@@ -358,7 +360,11 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             console.log(`props : ${props} Error : ${error}`);
-            return (<RisksLines
+            if (error) {
+              return toastGenericError('Request Failed');
+            }
+            return (
+              <RisksLines
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
@@ -369,9 +375,9 @@ class Risks extends Component {
                 onLabelClick={this.handleAddFilter.bind(this)}
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />);
-          }
-          }
+              />
+            );
+          }}
         />
         {/* <QueryRenderer
           query={risksLinesQuery}
