@@ -164,7 +164,7 @@ class ExploreResults extends Component {
 
   render() {
 
-    if(this.props.location.state == undefined) return <Redirect to="/dashboard/vsac/scans" />;
+    if(this.props.location.state == undefined) return <Redirect to="/activities/vulnerability assessment/scans" />;
     
     const { classes } = this.props;
     const {

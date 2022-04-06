@@ -108,7 +108,7 @@ class RiskLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/dashboard/risk-assessment/risks/${riskData?.node?.id}`}
+        to={`/activities/risk assessment/risks/${riskData?.node?.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />

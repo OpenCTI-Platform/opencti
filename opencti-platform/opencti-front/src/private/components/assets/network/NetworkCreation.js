@@ -169,7 +169,7 @@ class NetworkCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/dashboard/assets/network');
+        this.props.history.push('/defender HQ/assets/network');
       },
       onError: (err) => console.log('NetworkCreationDarkLightMutationError', err),
     });
@@ -218,7 +218,7 @@ class NetworkCreation extends Component {
       <div className={classes.container}>
         <Formik
           initialValues={{
-            name: 'Hello',
+            name: '',
             asset_id: '',
             asset_type: 'network',
             asset_tag: '',
@@ -352,7 +352,7 @@ class NetworkCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push('/dashboard/assets/network')}
+              onClick={() => this.props.history.push('/defender HQ/assets/network')}
               // onClick={() => history.goBack()}
               color="primary"
               classes={{ root: classes.buttonPopover }}

@@ -54,7 +54,7 @@ const Remediations = (props) => {
 
   const handleOpenNewCreation = () => {
     props.history.push({
-      pathname: '/dashboard/risk-assessment/risks',
+      pathname: '/activities/risk assessment/risks',
       openNewCreation: true,
     });
   };
@@ -72,7 +72,7 @@ const Remediations = (props) => {
             handleOpenNewCreation={handleOpenNewCreation.bind(this)}
             // OperationsComponent={<RiskDeletion />}
           />
-          <TopMenuRisk risk={remediation}/>
+          <TopMenuRisk risk={remediation.name}/>
           <Grid item={true} xs={12}>
             <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t('Remediations')}
@@ -91,6 +91,7 @@ const Remediations = (props) => {
             </IconButton>
             {/* </Security> */}
             <RemediationEntities
+              history={history}
               entityId={remediation.id}
               riskId={riskId.id}
             />

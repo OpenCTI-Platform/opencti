@@ -69,6 +69,7 @@ class RemediationEntityLineComponent extends Component {
       fsd,
       t,
       fldt,
+      history,
       classes,
       dataColumns,
       riskData,
@@ -118,7 +119,7 @@ class RemediationEntityLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/risk-assessment/risks/${riskId}/remediation/${node.id}`}
+        to={`/activities/risk assessment/risks/${riskId}/remediation/${node.id}`}
       // disabled={restricted}
       >
         <ListItemText
@@ -187,6 +188,7 @@ class RemediationEntityLineComponent extends Component {
           <RemediationPopover
             cyioCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
+            history={history}
           // disabled={restricted}
           />
         </ListItemSecondaryAction>
@@ -200,6 +202,7 @@ RemediationEntityLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
+  history: PropTypes.object,
   t: PropTypes.func,
   riskData: PropTypes.object,
   riskId: PropTypes.string,

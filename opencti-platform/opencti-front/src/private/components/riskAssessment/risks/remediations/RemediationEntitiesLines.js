@@ -53,6 +53,7 @@ class RemediationEntitiesLines extends Component {
   render() {
     const {
       classes,
+      history,
       t,
       risk,
       riskId,
@@ -103,6 +104,7 @@ class RemediationEntitiesLines extends Component {
             node={remediationEdge}
             riskData={risk}
             key={remediationEdge.id}
+            history={history}
             riskId={riskId}
           />,
         )) : <div style={{ textAlign: 'center', padding: '20px 0' }}>
@@ -118,6 +120,7 @@ RemediationEntitiesLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   riskId: PropTypes.string,
   t: PropTypes.func,
+  history: PropTypes.object,
   risk: PropTypes.object,
   relay: PropTypes.object,
   stixCoreRelationships: PropTypes.object,

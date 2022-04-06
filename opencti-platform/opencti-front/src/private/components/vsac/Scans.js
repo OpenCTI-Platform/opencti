@@ -882,7 +882,7 @@ class Scans extends Component {
                               >
                                 <MenuItem
                                     onClick={() =>
-                                        handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                                        handleLinkClink('/activities/vulnerability assessment/scans/explore results',
                                             {
                                               analysis: analysis,
                                               client: client_ID,
@@ -896,7 +896,7 @@ class Scans extends Component {
                                 </MenuItem>
                                 <MenuItem
                                     onClick={() =>
-                                        handleLinkClink('/dashboard/vsac/scans/viewcharts',
+                                        handleLinkClink('/activities/vulnerability assessment/scans/view charts',
                                             {
                                               analysis_id: analysis.id,
                                               analyses,
@@ -910,7 +910,7 @@ class Scans extends Component {
                                 </MenuItem>
                                 <MenuItem
                                     onClick={() =>
-                                        handleLinkClink('/dashboard/vsac/scans/compare',
+                                        handleLinkClink('/activities/vulnerability assessment/scans/compare analysis',
                                             {
                                               analyses,
                                               scatterPlotData: scatterPlotData
@@ -1117,7 +1117,7 @@ class Scans extends Component {
                             color="primary"
                             startIcon={<CloudUploadIcon/>}
                             onClick={() =>
-                                handleLinkClink('/dashboard/vsac/scans/exploreresults',
+                                handleLinkClink('/activities/vulnerability assessment/scans/explore results',
                                     {
                                       analysis,
                                       client: client_ID,
