@@ -42,7 +42,7 @@ import RiskAssessmentPopover from './RiskAssessmentPopover';
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: '319px',
+    height: '337px',
     borderRadius: 9,
   },
   cardDummy: {
