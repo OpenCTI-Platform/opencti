@@ -623,6 +623,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         start_timestamp=None,
         live_stream_id=None,
         listen_delete=True,
+        no_dependencies=False,
     ) -> ListenStream:
         """listen for messages and register callback function
 
@@ -638,6 +639,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             start_timestamp,
             live_stream_id,
             listen_delete,
+            no_dependencies,
         )
         self.listen_stream.start()
         return self.listen_stream
