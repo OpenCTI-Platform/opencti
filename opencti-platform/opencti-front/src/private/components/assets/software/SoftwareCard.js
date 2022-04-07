@@ -208,7 +208,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('KK-HWELL-011')} */}
-                    {node.asset_id && truncate(t(node.asset_id), 40)}
+                    {node.asset_id && truncate(t(node.asset_id), 30)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -234,7 +234,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 35)}
+                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
                 </Typography>
               </Grid>
               <Grid xs={6} item={true} className={classes.body}>
