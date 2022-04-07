@@ -113,12 +113,12 @@ const RiskLogCreationMutation = graphql`
   }
 `;
 
-const RiskLogValidation = (t) => Yup.object().shape({
-  entry_type: Yup.string().required(t('This field is required')),
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().required(t('This field is required')),
-  event_start: Yup.date().required(t('This field is required')),
-});
+// const RiskLogValidation = (t) => Yup.object().shape({
+//   entry_type: Yup.string().required(t('This field is required')),
+//   name: Yup.string().required(t('This field is required')),
+//   description: Yup.string().required(t('This field is required')),
+//   event_start: Yup.date().required(t('This field is required')),
+// });
 
 class RiskLogCreation extends Component {
   constructor(props) {
@@ -348,7 +348,7 @@ class RiskLogCreation extends Component {
               status_change: null,
               related_responses: [],
             }}
-            validationSchema={RiskLogValidation(t)}
+            // validationSchema={RiskLogValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -459,9 +459,6 @@ class RiskLogCreation extends Component {
                           name="event_start"
                           fullWidth={true}
                           size="small"
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -544,9 +541,6 @@ class RiskLogCreation extends Component {
                           name="event_end"
                           fullWidth={true}
                           size="small"
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
                           style={{ height: '38.09px' }}
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
@@ -567,31 +561,6 @@ class RiskLogCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        {/* <Field
-                          component={SelectField}
-                          name="status_change"
-                          fullWidth={true}
-                          size="small"
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='open'>
-                            open
-                          </MenuItem>
-                          <MenuItem value='investigating'>
-                            investigating
-                          </MenuItem>
-                          <MenuItem value='closed'>
-                            closed
-                          </MenuItem>
-                          <MenuItem value='deviation_requested'>
-                            deviation_requested
-                          </MenuItem>
-                          <MenuItem value='deviation_approved'>
-                            deviation_approved
-                          </MenuItem>
-                        </Field> */}
                         <RiskStatus
                           variant='outlined'
                           name="status_change"
