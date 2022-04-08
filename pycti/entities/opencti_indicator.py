@@ -126,6 +126,7 @@ class Indicator:
                 edges {
                     node {
                         id
+                        entity_type
                         observable_value
                     }
                 }
