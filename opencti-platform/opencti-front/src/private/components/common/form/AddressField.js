@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
@@ -50,9 +52,9 @@ const styles = (theme) => ({
   },
   textField: {
     background: theme.palette.header.background,
-    '&.MuiInputBase-root.Mui-disabled': {
-      color: 'white',
-    },
+  },
+  dialogAction: {
+    margin: '15px 20px 15px 0',
   },
 });
 
@@ -62,11 +64,15 @@ class AddressField extends Component {
     this.state = {
       open: false,
       value: '',
+      error: false,
       ipAddress: [...this.props.addressValues],
     };
   }
 
-  handleAddIP() {
+  handleAddAddress() {
+    if (!this.props.validation.test(this.state.value)) {
+     return this.setState({ error: true });
+    }
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
@@ -77,19 +83,22 @@ class AddressField extends Component {
   }
 
   handleSubmit() {
-    this.setState({ open: false }, () => (
+    this.setState({ open: false, value: '' }, () => (
       this.props.setFieldValue(this.props.name, this.state.ipAddress)
     ));
   }
 
-  handleDeleteIP(key) {
+  handleDeleteAddress(key) {
     this.setState({ ipAddress: this.state.ipAddress.filter((value, i) => i !== key) });
   }
 
   render() {
     const {
-      t, fldt, classes, device, name, title,
+      t, fldt, classes, name, title, helperText,
     } = this.props;
+    const {
+      error,
+    } = this.state;
     return (
       <>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -130,7 +139,10 @@ class AddressField extends Component {
           </DialogContent>
           <DialogContent style={{ overflow: 'hidden' }}>
             <TextField
+              error={error}
+              helperText={error ? helperText : ''}
               onChange={(event) => this.setState({ value: event.target.value })}
+              onFocus={() => this.setState({ error: false })}
               fullWidth={true}
               value={this.state.value}
               InputProps={{
@@ -139,7 +151,7 @@ class AddressField extends Component {
                     <IconButton
                       aria-label="toggle password visibility"
                       edge="end"
-                      onClick={this.handleAddIP.bind(this)}
+                      onClick={this.handleAddAddress.bind(this)}
                     >
                       <AddIcon />
                     </IconButton>
@@ -157,7 +169,7 @@ class AddressField extends Component {
                       <Typography>
                         {address}
                       </Typography>
-                      <IconButton onClick={this.handleDeleteIP.bind(this, key)}>
+                      <IconButton onClick={this.handleDeleteAddress.bind(this, key)}>
                         <Delete />
                       </IconButton>
                     </div>
@@ -166,7 +178,7 @@ class AddressField extends Component {
               </div>
             </div>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={classes.dialogAction}>
             <Button
               variant='outlined'
               onClick={() => this.setState({ open: false, value: '' })}

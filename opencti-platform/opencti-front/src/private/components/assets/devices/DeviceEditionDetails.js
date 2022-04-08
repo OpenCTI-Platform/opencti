@@ -554,6 +554,8 @@ class DeviceEditionDetailsComponent extends Component {
                   addressValues={values.mac_address}
                   title='Mac Address'
                   name='mac_address'
+                  validation={/^\w{2}:\w{2}:\w{2}:\w{2}:\w{2}:\w{2}$/}
+                  helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
                 />
               </Grid>
               <Grid item={true} xs={12}>
@@ -563,6 +565,8 @@ class DeviceEditionDetailsComponent extends Component {
                   addressValues={values.ipv4_address}
                   title='IPv4 Address'
                   name='ipv4_address'
+                  validation={/^\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}$/}
+                  helperText='​Please enter a valid iPv4 Address. Example: 69.204.156.182'
                 />
               </Grid>
               <Grid item={true} xs={12}>
@@ -572,6 +576,8 @@ class DeviceEditionDetailsComponent extends Component {
                   addressValues={values.ipv6_address}
                   title='IPv6 Address'
                   name='ipv6_address'
+                  validation={/^\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}$/}
+                  helperText='Please enter a valid iPv6 Address. Example: 2001:0db8:85a3:0000:0000:8a2e:0370:7334'
                 />
               </Grid>
             </Grid>
