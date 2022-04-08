@@ -199,7 +199,7 @@ class SoftwareCardComponent extends Component {
               </div>
             </Grid>
             <Grid xs={12} container={true} >
-              <Grid item={true} xs={6} className={classes.body}>
+              <Grid item={true} xs={7} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
@@ -208,7 +208,7 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                     {/* {t('KK-HWELL-011')} */}
-                    {node.asset_id && truncate(t(node.asset_id), 30)}
+                    {node.asset_id && truncate(t(node.asset_id), 25)}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -237,7 +237,7 @@ class SoftwareCardComponent extends Component {
                   {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
                 </Typography>
               </Grid>
-              <Grid xs={6} item={true} className={classes.body}>
+              <Grid xs={5} item={true} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
