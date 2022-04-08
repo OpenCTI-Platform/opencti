@@ -29,6 +29,7 @@ import InstalledAsset from '../../common/form/InstalledAsset';
 import ItemIcon from '../../../../components/ItemIcon';
 import PortsField from '../../common/form/PortsField';
 import AddressField from '../../common/form/AddressField';
+import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../utils/Network';
 
 const styles = (theme) => ({
   paper: {
@@ -554,7 +555,7 @@ class DeviceEditionDetailsComponent extends Component {
                   addressValues={values.mac_address}
                   title='Mac Address'
                   name='mac_address'
-                  validation={/^\w{2}:\w{2}:\w{2}:\w{2}:\w{2}:\w{2}$/}
+                  validation={macAddrRegex}
                   helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
                 />
               </Grid>
@@ -565,7 +566,7 @@ class DeviceEditionDetailsComponent extends Component {
                   addressValues={values.ipv4_address}
                   title='IPv4 Address'
                   name='ipv4_address'
-                  validation={/^\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}$/}
+                  validation={ipv4AddrRegex}
                   helperText='​Please enter a valid iPv4 Address. Example: 69.204.156.182'
                 />
               </Grid>
@@ -576,7 +577,7 @@ class DeviceEditionDetailsComponent extends Component {
                   addressValues={values.ipv6_address}
                   title='IPv6 Address'
                   name='ipv6_address'
-                  validation={/^\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}:\w{1,4}$/}
+                  validation={ipv6AddrRegex}
                   helperText='Please enter a valid iPv6 Address. Example: 2001:0db8:85a3:0000:0000:8a2e:0370:7334'
                 />
               </Grid>
