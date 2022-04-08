@@ -17,6 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import Typography from '@material-ui/core/Typography';
 
 const styles = (theme) => ({
   avatar: {
@@ -101,6 +102,7 @@ class CyioAddExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
+      t,
       classes,
       data,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
@@ -108,11 +110,13 @@ class CyioAddExternalReferencesLinesContainer extends Component {
     const cyioCoreObjectOrCyioCoreRelationshipReferencesIds = map(
       (n) => n.id,
       cyioCoreObjectOrCyioCoreRelationshipReferences || []);
-    const filteredValue = filter((value) => (value.node.source_name.toLowerCase()).includes(this.props.search), data.cyioExternalReferences.edges);
+    const filteredValue = data.cyioExternalReferences
+    ? filter((value) => (value.node.source_name.toLowerCase()).includes(this.props.search), data.cyioExternalReferences.edges)
+    : [];
     return (
       <div>
         <List className={classes.list}>
-          {filteredValue.map((externalReferenceNode) => {
+          {filteredValue.length > 0 ? filteredValue.map((externalReferenceNode) => {
             const externalReference = externalReferenceNode.node;
             const alreadyAdded = cyioCoreObjectOrCyioCoreRelationshipReferencesIds.includes(
               externalReference.id,
@@ -153,7 +157,12 @@ class CyioAddExternalReferencesLinesContainer extends Component {
                 />
               </ListItem>
             );
-          })}
+          })
+          : (
+            <Typography style={{ padding: '20px 0', textAlign: 'center' }}>
+              {t('No Entries')}
+            </Typography>
+          )}
         </List>
       </div>
     );
