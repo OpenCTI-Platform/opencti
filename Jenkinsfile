@@ -32,6 +32,9 @@ node {
         sh 'yarn install'
       }
       dir('opencti-front') {
+        String version = readJSON(file: 'package.json')['version']
+        echo "version: ${version}"
+
         dir('src/relay') {
           sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
           archiveArtifacts artifacts: 'environmentDarkLight.js', fingerprint: true, followSymlinks: false
