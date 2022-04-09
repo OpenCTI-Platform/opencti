@@ -4,7 +4,7 @@ node {
   String registry = 'docker.darklight.ai'
   String product = 'opencti'
   String branch = "${env.BRANCH_NAME}"
-  String commit = "${sh(returnStdout: true, script: 'git rev-parse HEAD')}"
+  String commit = "${sh(returnStdout: true, script: 'git rev-parse HEAD')}"[0..7]
   String commitMessage = "${sh(returnStdout: true, script: "git log --pretty=format:%s -n 1 ${commit}")}"
   String tag = 'latest'
   String graphql = 'https://cyio.darklight.ai/graphql'
@@ -33,6 +33,16 @@ node {
       }
       dir('opencti-front') {
         String version = readJSON(file: 'package.json')['version']
+        switch (branch) {
+          case 'develop':
+            version = "${version}-dev+" + "${commit}"
+            break
+          case 'staging':
+            version = "${version}-RC+" + "${commit}"
+            break
+          default:
+            break
+        }
         echo "version: ${version}"
 
         dir('src/relay') {
