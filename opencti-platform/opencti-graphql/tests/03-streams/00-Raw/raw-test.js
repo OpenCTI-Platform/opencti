@@ -37,13 +37,13 @@ describe('Raw streams tests', () => {
       // Read all events from the beginning.
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       // Check the number of events
-      expect(events.length).toBe(561);
+      expect(events.length).toBe(425);
       // 01 - CHECK CREATE EVENTS
       const createEvents = events.filter((e) => e.type === EVENT_TYPE_CREATE);
       expect(createEvents.length).toBe(293);
       // Check some events count
       const createEventsByTypes = R.groupBy((e) => e.data.data.type, createEvents);
-      expect(createEventsByTypes['marking-definition'].length).toBe(8);
+      expect(createEventsByTypes['marking-definition'].length).toBe(7);
       expect(createEventsByTypes.label.length).toBe(15);
       expect(createEventsByTypes.identity.length).toBe(13);
       expect(createEventsByTypes.relationship.length).toBe(119);

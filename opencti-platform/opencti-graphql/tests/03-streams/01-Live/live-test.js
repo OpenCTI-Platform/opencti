@@ -51,7 +51,7 @@ describe('Live streams tests', () => {
       // Check the stream rebuild
       const report = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
       const stixReport = convertInstanceToStix(report);
-      const events = await fetchStreamEvents(`http://localhost:4000/stream/live`);
+      const events = await fetchStreamEvents('http://localhost:4000/stream/live');
       expect(events.length).toBe(SYNC_LIVE_EVENTS_SIZE);
       await checkResultCounting(events);
       for (let index = 0; index < events.length; index += 1) {
