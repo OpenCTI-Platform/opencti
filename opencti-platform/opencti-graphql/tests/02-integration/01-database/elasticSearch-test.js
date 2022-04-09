@@ -553,7 +553,7 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
     expect(groupByIndices['opencti_internal_relationships-000001'].length).toEqual(14);
-    expect(groupByIndices['opencti_stix_core_relationships-000001'].length).toEqual(24);
+    expect(groupByIndices['opencti_stix_core_relationships-000001'].length).toEqual(21);
     // expect(groupByIndices['opencti_stix_meta_relationships-000001'].length).toEqual(110);
     expect(groupByIndices['opencti_stix_sighting_relationships-000001'].length).toEqual(3);
     const metas = groupByIndices['opencti_stix_meta_relationships-000001'].map((m) => m.node);
