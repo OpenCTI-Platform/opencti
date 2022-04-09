@@ -12,7 +12,8 @@ node {
 
   echo "branch: ${branch}, commit message: ${commitMessage}"
 
-  if (branch != 'master') {
+  // Configure which endpoint to use based on the branch
+  if (branch != 'master') { // already defaulted to production
     tag = branch.replace('#', '')
     if (branch == 'staging') {
       graphql = 'https://cyio-staging.darklight.ai/graphql'
@@ -23,15 +24,16 @@ node {
     }
   }
 
+  // Check version, yarn install, etc.
   stage('Setup') {
     dir('opencti-platform') {
-      dir('opencti-graphql') {
+      dir('opencti-graphql') { // GraphQL
         if (fileExists('config/schema/compiled.graphql')) {
           sh 'rm config/schema/compiled.graphql'
         }
         sh 'yarn install'
       }
-      dir('opencti-front') {
+      dir('opencti-front') { // Frontend
         String version = readJSON(file: 'package.json')['version']
         switch (branch) {
           case 'develop':
@@ -45,6 +47,9 @@ node {
         }
         echo "version: ${version}"
 
+        // TODO: investigate
+        // Hardcode the endpoints for now, should use envionment variables
+        // artifacts for debugging
         dir('src/relay') {
           sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
           archiveArtifacts artifacts: 'environmentDarkLight.js', fingerprint: true, followSymlinks: false
@@ -57,7 +62,10 @@ node {
     }
   }
 
+  // TODO: investigate
+  // Run tests and builds at the same time; builds seem to wait for tests to finish first though
   parallel test: {
+    // Run tests
     stage('Test') {
       try {
         configFileProvider([
@@ -88,13 +96,18 @@ node {
       }
     }
   }, build: {
+    // Build docker image
     stage('Build') {
+      // if main branches (master, staging, or develop) build, except if:
+      //   - commit says: 'ci:skip' then skip build
+      //   - commit says: 'ci:build' then build regardless of branch
       if (((branch.equals('master') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
         dir('opencti-platform') {
           String buildArgs = '--no-cache --progress=plain .'
           docker_steps(registry, product, tag, buildArgs)
         }
 
+        // Send the Teams message to DarkLight Development > DL Builds
         office365ConnectorSend(
           status: 'Completed',
           color: '00FF00',
@@ -109,8 +122,34 @@ node {
       }
     }
   }
+
+  // TODO: Add check for if we should deploy
+  if (commitMessage.contains('ci:deploy')) {
+    if (currentBuild.result == 'SUCCESS') {
+      echo 'Deploying...'
+      stage('Deploy') {
+        switch(branch) {
+          case 'master':
+            echo 'Deploying to production...'
+            break
+          case 'staging':
+            echo 'Deploying to staging...'
+            break
+          case 'develop':
+            echo 'Deploying to develop...'
+            break
+          default:
+            echo "Deploy flag is only supported on production, staging, or develop branches, skipping deploy..."
+            break
+        }
+      }
+    } else {
+      echo "Build status is: '${currentBuild.result}', skipping deploy..."
+    }
+  }
 }
 
+// Generic way to build a docker image and push it to our registry
 void docker_steps(String registry, String image, String tag, String buildArgs) {
   def app = docker.build("${registry}/${image}:${tag}", "${buildArgs}")
 
