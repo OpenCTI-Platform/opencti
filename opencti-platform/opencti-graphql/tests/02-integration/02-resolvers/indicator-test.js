@@ -83,7 +83,7 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator).not.toBeNull();
     expect(indicator.data.indicatorAdd).not.toBeNull();
     expect(indicator.data.indicatorAdd.name).toEqual('Indicator');
-    expect(indicator.data.indicatorAdd.observables.edges.length).toEqual(1);
+    expect(indicator.data.indicatorAdd.observables.edges.length).toEqual(0);
     indicatorInternalId = indicator.data.indicatorAdd.id;
   });
   it('should indicator loaded by internal id', async () => {
