@@ -43,6 +43,7 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
+import {toastGenericError} from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -183,9 +184,11 @@ class RiskLogCreation extends Component {
         resetForm();
         this.handleClose();
         this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/tracking`);
-        console.log('success', response);
       },
-      onError: (err) => console.log('riskLogCreationValueError', err),
+      onError: (err) => {
+        console.error('riskLogCreationValueError', err)
+        toastGenericError("Failed to create Risk Log")
+      },
     });
     // commitMutation({
     //   mutation: RiskLogCreationMutation,
@@ -220,7 +223,6 @@ class RiskLogCreation extends Component {
 
   renderClassic() {
     const { t, classes, data } = this.props;
-    console.log('remediationData', dialogActions)
     return (
       <div>
         <Fab
