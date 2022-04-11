@@ -21,10 +21,10 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-import { adaptFieldValue } from '../../../../utils/String';
 import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import { adaptFieldValue } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
@@ -106,6 +106,7 @@ class DeviceEditionContainer extends Component {
       open: false,
       onSubmit: false,
       displayCancel: false,
+      totalInitial: {},
     };
   }
 
@@ -122,12 +123,24 @@ class DeviceEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const filteredValue = {};
+    const { totalInitial } = this.state;
     const adaptedValues = R.evolve(
       {
         release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
       },
       values,
     );
+    Object.keys(totalInitial).forEach((key, j) => {
+      if (Array.isArray(adaptedValues[key])) {
+        if (adaptedValues[key].some((value, i) => value !== totalInitial[key][i])) {
+          filteredValue[key] = adaptedValues[key];
+        }
+      }
+      if (!Array.isArray(adaptedValues[key]) && totalInitial[key] !== adaptedValues[key]) {
+        filteredValue[key] = adaptedValues[key];
+      }
+    });
     const finalValues = R.pipe(
       R.dissoc('id'),
       R.dissoc('locations'),
@@ -139,7 +152,7 @@ class DeviceEditionContainer extends Component {
         'key': n[0],
         'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
-    )(adaptedValues);
+    )(filteredValue);
     console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: deviceEditionMutation,
@@ -205,7 +218,6 @@ class DeviceEditionContainer extends Component {
       R.pathOr([], ['labels']),
       R.map((n) => (n.id)),
     )(device);
-    console.log('DeviceEditionData', device);
     const initialValues = R.pipe(
       R.assoc('id', device?.id || ''),
       R.assoc('asset_id', device?.asset_id || ''),
@@ -337,7 +349,7 @@ class DeviceEditionContainer extends Component {
                       variant="contained"
                       color="primary"
                       startIcon={<CheckCircleOutline />}
-                      onClick={submitForm}
+                      onClick={() => this.setState({ totalInitial: initialValues }, submitForm)}
                       disabled={isSubmitting}
                       classes={{ root: classes.iconButton }}
                     >
