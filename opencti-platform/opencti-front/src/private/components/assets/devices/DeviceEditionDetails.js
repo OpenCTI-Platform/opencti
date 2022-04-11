@@ -1,5 +1,3 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
@@ -30,6 +28,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import InstalledAsset from '../../common/form/InstalledAsset';
 import ItemIcon from '../../../../components/ItemIcon';
 import PortsField from '../../common/form/PortsField';
+import AddressField from '../../common/form/AddressField';
+import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../utils/Network';
 
 const styles = (theme) => ({
   paper: {
@@ -334,52 +334,6 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('IPv4 Address')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('ipv4_address')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="ipv4_address"
-                    size='small'
-                    multiline={true}
-                    fullWidth={true}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('IPv6 Address')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip title={t('ipv6_address')} >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="ipv6_address"
-                    size='small'
-                    multiline={true}
-                    fullWidth={true}
-                  />
-                </div>
               </Grid>
               <Grid item={true} xs={6}>
                 <div>
@@ -411,27 +365,27 @@ class DeviceEditionDetailsComponent extends Component {
                   />
                 </div>
                 <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 15 }}
-                >
-                  {t('Location')}
-                </Typography>
-                <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
-                  <Tooltip title={t('Location')}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                <Field
-                  component={TextField}
-                  name="locations"
-                  fullWidth={true}
-                  multiline={true}
-                  rows="3"
-                  variant='outlined'
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 15 }}
+                  >
+                    {t('Location')}
+                  </Typography>
+                  <div style={{ float: 'left', margin: '16px 0 0 5px' }}>
+                    <Tooltip title={t('Location')}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  <Field
+                    component={TextField}
+                    name="locations"
+                    fullWidth={true}
+                    multiline={true}
+                    rows="3"
+                    variant='outlined'
                   />
                 </div>
                 <div>
@@ -452,32 +406,6 @@ class DeviceEditionDetailsComponent extends Component {
                     component={TextField}
                     variant='outlined'
                     name="model"
-                    size='small'
-                    fullWidth={true}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    gutterBottom={true}
-                    style={{ float: 'left', marginTop: 20 }}
-                  >
-                    {t('MAC Address')}
-                  </Typography>
-                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                    <Tooltip
-                      title={t(
-                        'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
-                      )}
-                    >
-                      <Information fontSize="inherit" color="disabled" />
-                    </Tooltip>
-                  </div>
-                  <Field
-                    component={TextField}
-                    variant='outlined'
-                    name="mac_address"
                     size='small'
                     fullWidth={true}
                   />
@@ -619,6 +547,39 @@ class DeviceEditionDetailsComponent extends Component {
                     fullWidth={true}
                   />
                 </div>
+              </Grid>
+              <Grid item={true} xs={12}>
+                <AddressField
+                  setFieldValue={setFieldValue}
+                  values={values}
+                  addressValues={values.mac_address}
+                  title='Mac Address'
+                  name='mac_address'
+                  validation={macAddrRegex}
+                  helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
+                />
+              </Grid>
+              <Grid item={true} xs={12}>
+                <AddressField
+                  setFieldValue={setFieldValue}
+                  values={values}
+                  addressValues={values.ipv4_address}
+                  title='IPv4 Address'
+                  name='ipv4_address'
+                  validation={ipv4AddrRegex}
+                  helperText='​Please enter a valid iPv4 Address. Example: 69.204.156.182'
+                />
+              </Grid>
+              <Grid item={true} xs={12}>
+                <AddressField
+                  setFieldValue={setFieldValue}
+                  values={values}
+                  addressValues={values.ipv6_address}
+                  title='IPv6 Address'
+                  name='ipv6_address'
+                  validation={ipv6AddrRegex}
+                  helperText='Please enter a valid iPv6 Address. Example: 2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+                />
               </Grid>
             </Grid>
           </Paper>
