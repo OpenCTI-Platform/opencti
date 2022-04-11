@@ -40,6 +40,8 @@ import { insertNode } from '../../../../../utils/Store';
 import { parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import TaskType from '../../../common/form/TaskType';
+import ResourceType from '../../../common/form/ResourceType';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -128,10 +130,6 @@ const RelatedTaskCreationMutation = graphql`
   ) {
     createOscalTask(input: $input) {
       id
-      entity_type
-      name
-      task_type
-      description
     }
   }
 `;
@@ -149,10 +147,12 @@ class RelatedTaskCreation extends Component {
     this.state = {
       open: false,
       close: false,
-      timings: {
-        start_date: '',
-        end_date: '',
-      },
+      timing: {
+        within_date_range: 
+        {
+          start_date: '',
+          end_date: '',
+        }},
     };
   }
 
@@ -167,19 +167,21 @@ class RelatedTaskCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     console.log('relatedTask', values);
     this.setState({
-      timings: {
+      timing: { within_date_range: {
         start_date: values.start_date === null ? null : parse(values.start_date).format(),
         end_date: values.end_date === null ? null : parse(values.end_date).format(),
-      },
+      }},
     });
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
       dissoc('related_tasks'),
-      assoc('timings', this.state.timings),
-      dissoc('timings'),
+      assoc('timing', this.state.timing),
+      dissoc('timing'),
+      dissoc('resource_type'),
       dissoc('milestone'),
-      // assoc('responsible_roles', this.state.responsible_roles),
+      dissoc('associated_activities'),
+      dissoc('responsible_roles'),
     )(values);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
@@ -371,14 +373,13 @@ class RelatedTaskCreation extends Component {
               name: '',
               description: '',
               task_type: '',
+              start_date: '',
+              end_date: '',
               task_dependencies: [],
-              start_date: null,
-              end_date: null,
               related_tasks: [],
               associated_activities: [],
+              subjects: [],
               responsible_roles: [],
-              resource_type:'',
-              resource_name:'',
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -461,8 +462,7 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <TaskType
                           name="task_type"
                           fullWidth={true}
                           variant='outlined'
@@ -523,9 +523,9 @@ class RelatedTaskCreation extends Component {
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
+                          // invalidDateMessage={t(
+                          //   'The value must be a date (YYYY-MM-DD)',
+                          // )}
                           style={{ height: '38.09px' }}
                         />
                       </div>
@@ -552,9 +552,9 @@ class RelatedTaskCreation extends Component {
                           fullWidth={true}
                           size="small"
                           variant='outlined'
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
+                          // invalidDateMessage={t(
+                          //   'The value must be a date (YYYY-MM-DD)',
+                          // )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -578,21 +578,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource_type"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='milestone'>
-                            Milestone
-                          </MenuItem>
-                          <MenuItem value='action'>
-                            Action
-                          </MenuItem>
-                        </Field>
+                          <ResourceType
+                            name="resource_type"
+                            fullWidth={true}
+                            variant='outlined'
+                            style={{ height: '38.09px' }}
+                            containerstyle={{ width: '100%' }}
+                          />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
