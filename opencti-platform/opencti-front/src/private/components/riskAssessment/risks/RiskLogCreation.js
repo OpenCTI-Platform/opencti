@@ -28,6 +28,7 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
+import Slide from '@material-ui/core/Slide';
 import { Add, Close } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -120,6 +121,11 @@ const RiskLogCreationMutation = graphql`
 //   event_start: Yup.date().required(t('This field is required')),
 // });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 class RiskLogCreation extends Component {
   constructor(props) {
     super(props);
@@ -135,6 +141,14 @@ class RiskLogCreation extends Component {
 
   handleOpen() {
     this.setState({ open: true });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
   }
 
   handleClose() {
@@ -326,7 +340,7 @@ class RiskLogCreation extends Component {
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
           onClose={this.onResetContextual.bind(this)}
-          // keepMounted={true}
+          //keepMounted={true}
           fullWidth={true}
           maxWidth='sm'
           PaperProps={{
@@ -342,8 +356,8 @@ class RiskLogCreation extends Component {
               entry_type: [],
               name: '',
               description: '',
-              event_start: null,
-              event_end: null,
+              event_start: '',
+              event_end: '',
               logged_by: '',
               status_change: null,
               related_responses: [],
@@ -462,6 +476,9 @@ class RiskLogCreation extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
                         />
                       </div>
                       <div style={{ marginBottom: '18px' }}>
@@ -544,6 +561,9 @@ class RiskLogCreation extends Component {
                           style={{ height: '38.09px' }}
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
                         />
                       </div>
                       <div style={{ marginBottom: '15px' }}>
@@ -576,8 +596,8 @@ class RiskLogCreation extends Component {
                 <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>
                   <Button
                     variant="outlined"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
+                    onClick={this.handleOpenCancelButton.bind(this)}
+                    // disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -597,10 +617,10 @@ class RiskLogCreation extends Component {
           </Formik>
         </Dialog>
         <Dialog
-          // open={this.state.displayDelete}
-          keepMounted={true}
-        // TransitionComponent={Transition}
-        // onClose={this.handleCloseDelete.bind(this)}
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          // keepMounted={true}
+          onClose={this.handleCancelButton.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >
@@ -612,7 +632,7 @@ class RiskLogCreation extends Component {
           </DialogContent>
           <DialogActions className={classes.dialogActions}>
             <Button
-              // onClick={this.handleCloseDelete.bind(this)}
+              onClick={this.handleCancelButton.bind(this)}
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
               variant="outlined"
@@ -621,7 +641,7 @@ class RiskLogCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              // onClick={this.submitDelete.bind(this)}
+              onClick={() => this.props.history.goBack()}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
