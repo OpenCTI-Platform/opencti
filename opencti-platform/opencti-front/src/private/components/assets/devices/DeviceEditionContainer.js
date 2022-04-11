@@ -228,7 +228,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('connected_to_network', device?.connected_to_network?.name || ''),
       R.assoc('netbios_name', device?.netbios_name || ''),
       R.assoc('baseline_configuration_name', device?.baseline_configuration_name || ''),
-      R.assoc('mac_address', (device?.mac_address || []).join()),
+      R.assoc('mac_address', device?.mac_address || []),
       R.assoc('model', device?.model || ''),
       R.assoc('ports', device?.ports.length > 0 ? device.ports : []),
       R.assoc('port_number', ''),

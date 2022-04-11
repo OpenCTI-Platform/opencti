@@ -159,7 +159,7 @@ class DeviceCreation extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/devices');
       },
-      onError: (err => (console.log('DeviceCreation Erro', err))),
+      onError: (err => (console.error('DeviceCreation Error', err))),
     });
     // commitMutation({
     //   mutation: deviceCreationMutation,
