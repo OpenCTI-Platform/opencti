@@ -28,11 +28,11 @@ const networkAssetQuery = `query networkAssetQuery {
     }
   }`;
 describe('Successfully Query Network Assets', () => {
-  it('Return network asset list', async () => {
-    const result = await submitOperation(networkAssetList);
+  // it('Return network asset list', async () => {
+  //   const result = await submitOperation(networkAssetList);
 
-    expect(typeof { value: result.data.networkAssetList.edges[0] }).toBe('object');
-  });
+  //   expect(typeof { value: result.data.networkAssetList.edges[0] }).toBe('object');
+  // });
 
   it('Return a single network asset', async () => {
     const result = await submitOperation(networkAssetQuery);
