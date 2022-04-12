@@ -784,11 +784,12 @@ class Filters extends Component {
   }
 
   handleChangeDate(filterKey, date, value) {
+    const newDate = date.toISOString().replace(/T\d{2}:\d{2}:\d{2}.\d{3}Z$/g, 'T00:00:00.000Z');
     if (date && value && date.toISOString()) {
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(filterKey, date.toISOString(), value);
+        this.handleAddFilter(filterKey, newDate, value);
       } else {
-        this.props.handleAddFilter(filterKey, date.toISOString(), value);
+        this.props.handleAddFilter(filterKey, newDate, value);
       }
     }
   }
