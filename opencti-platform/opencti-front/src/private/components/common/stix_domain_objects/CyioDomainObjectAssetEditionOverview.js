@@ -347,7 +347,6 @@ class CyioDomainObjectAssetEditionOverviewComponent extends Component {
               <CyioCoreObjectLabelsView
                 labels={cyioDomainObject.labels}
                 marginTop={20}
-                disableAdd={true}
                 refreshQuery={refreshQuery}
                 id={cyioDomainObject?.id}
                 typename={cyioDomainObject.__typename}

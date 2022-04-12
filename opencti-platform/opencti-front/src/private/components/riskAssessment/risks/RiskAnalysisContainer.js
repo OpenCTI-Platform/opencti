@@ -78,6 +78,7 @@ class RiskAnalysisContainerComponent extends Component {
       classes,
       risk,
       history,
+      refreshQuery,
       t,
       riskId,
       location,
@@ -99,7 +100,7 @@ class RiskAnalysisContainerComponent extends Component {
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
               OperationsComponent={<RiskDeletion />}
             />
-            <TopMenuRisk risk={risk.name}/>
+            <TopMenuRisk risk={risk.name} />
             <Grid
               container={true}
               spacing={3}
@@ -125,7 +126,7 @@ class RiskAnalysisContainerComponent extends Component {
                   typename={risk.__typename}
                   externalReferences={riskCharacterizations.links}
                   cyioCoreObjectId={risk.id}
-                // refreshQuery={retry}
+                  refreshQuery={refreshQuery}
                 />
               </Grid>
               <Grid item={true} xs={6}>
@@ -135,7 +136,7 @@ class RiskAnalysisContainerComponent extends Component {
                   notes={riskCharacterizations.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
                   marginTop='0px'
-                // refreshQuery={retry}
+                  refreshQuery={refreshQuery}
                 />
               </Grid>
             </Grid>
@@ -160,6 +161,7 @@ class RiskAnalysisContainerComponent extends Component {
 RiskAnalysisContainerComponent.propTypes = {
   risk: PropTypes.object,
   riskId: PropTypes.string,
+  refreshQuery: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

@@ -28,6 +28,7 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import AddIcon from '@material-ui/icons/Add';
 import Fab from '@material-ui/core/Fab';
+import Slide from '@material-ui/core/Slide';
 import { Add, Close } from '@material-ui/icons';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -42,6 +43,7 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
+import {toastGenericError} from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -114,17 +116,24 @@ const RiskLogCreationMutation = graphql`
 `;
 
 // const RiskLogValidation = (t) => Yup.object().shape({
-//   source_name: Yup.string().required(t('This field is required')),
-//   external_id: Yup.string(),
-//   url: Yup.string().url(t('The value must be an URL')),
-//   description: Yup.string(),
+//   entry_type: Yup.string().required(t('This field is required')),
+//   name: Yup.string().required(t('This field is required')),
+//   description: Yup.string().required(t('This field is required')),
+//   event_start: Yup.date().required(t('This field is required')),
 // });
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 class RiskLogCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       open: false,
+      onSubmit: false,
+      displayCancel: false,
       logged_by:[{
         party: '',
       }],
@@ -133,6 +142,14 @@ class RiskLogCreation extends Component {
 
   handleOpen() {
     this.setState({ open: true });
+  }
+
+  handleOpenCancelButton() {
+    this.setState({ displayCancel: true });
+  }
+
+  handleCancelButton() {
+    this.setState({ displayCancel: false });
   }
 
   handleClose() {
@@ -147,9 +164,9 @@ class RiskLogCreation extends Component {
     })
     const adaptedValues = evolve(
       {
+        event_start: () => values.event_start === null ? null : parse(values.event_start).format(),
         event_end: () => values.event_end === null ? null : parse(values.event_end).format(),
-        event_start: () => values.event_end === null ? null : parse(values.event_end).format(),
-        entry_type: () => values.entry_type.split(),
+        entry_type: () => values.entry_type.toString().split(),
       },
       values,
     );
@@ -168,7 +185,10 @@ class RiskLogCreation extends Component {
         this.handleClose();
         this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/tracking`);
       },
-      onError: (err) => console.log('riskLogCreationValueError', err),
+      onError: (err) => {
+        console.error('riskLogCreationValueError', err)
+        toastGenericError("Failed to create Risk Log")
+      },
     });
     // commitMutation({
     //   mutation: RiskLogCreationMutation,
@@ -203,7 +223,6 @@ class RiskLogCreation extends Component {
 
   renderClassic() {
     const { t, classes, data } = this.props;
-    console.log('remediationData', dialogActions)
     return (
       <div>
         <Fab
@@ -322,8 +341,8 @@ class RiskLogCreation extends Component {
         <Dialog
           open={this.state.open}
           classes={{ root: classes.dialogRoot }}
-          onClose={this.handleClose.bind(this)}
-          keepMounted={true}
+          onClose={this.onResetContextual.bind(this)}
+          //keepMounted={true}
           fullWidth={true}
           maxWidth='sm'
           PaperProps={{
@@ -342,7 +361,7 @@ class RiskLogCreation extends Component {
               event_start: '',
               event_end: '',
               logged_by: '',
-              status_change: '',
+              status_change: null,
               related_responses: [],
             }}
             // validationSchema={RiskLogValidation(t)}
@@ -456,12 +475,12 @@ class RiskLogCreation extends Component {
                           name="event_start"
                           fullWidth={true}
                           size="small"
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
                         />
                       </div>
                       <div style={{ marginBottom: '18px' }}>
@@ -484,7 +503,7 @@ class RiskLogCreation extends Component {
                           name="logged_by"
                           size='small'
                           fullWidth={true}
-                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          style={{ height: '38.09px', marginBottom: '3px', }}
                           containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                         />
                       </div>
@@ -541,12 +560,12 @@ class RiskLogCreation extends Component {
                           name="event_end"
                           fullWidth={true}
                           size="small"
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
                           style={{ height: '38.09px' }}
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
                         />
                       </div>
                       <div style={{ marginBottom: '15px' }}>
@@ -564,31 +583,6 @@ class RiskLogCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        {/* <Field
-                          component={SelectField}
-                          name="status_change"
-                          fullWidth={true}
-                          size="small"
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='open'>
-                            open
-                          </MenuItem>
-                          <MenuItem value='investigating'>
-                            investigating
-                          </MenuItem>
-                          <MenuItem value='closed'>
-                            closed
-                          </MenuItem>
-                          <MenuItem value='deviation_requested'>
-                            deviation_requested
-                          </MenuItem>
-                          <MenuItem value='deviation_approved'>
-                            deviation_approved
-                          </MenuItem>
-                        </Field> */}
                         <RiskStatus
                           variant='outlined'
                           name="status_change"
@@ -604,8 +598,8 @@ class RiskLogCreation extends Component {
                 <DialogActions style={{ float: 'left', marginLeft: '15px', marginBottom: '20px' }}>
                   <Button
                     variant="outlined"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
+                    onClick={this.handleOpenCancelButton.bind(this)}
+                    // disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -625,10 +619,10 @@ class RiskLogCreation extends Component {
           </Formik>
         </Dialog>
         <Dialog
-          // open={this.state.displayDelete}
-          keepMounted={true}
-        // TransitionComponent={Transition}
-        // onClose={this.handleCloseDelete.bind(this)}
+          open={this.state.displayCancel}
+          TransitionComponent={Transition}
+          // keepMounted={true}
+          onClose={this.handleCancelButton.bind(this)}
         >
           <DialogContent>
             <Typography className={classes.popoverDialog} >
@@ -640,7 +634,7 @@ class RiskLogCreation extends Component {
           </DialogContent>
           <DialogActions className={classes.dialogActions}>
             <Button
-              // onClick={this.handleCloseDelete.bind(this)}
+              onClick={this.handleCancelButton.bind(this)}
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
               variant="outlined"
@@ -649,7 +643,7 @@ class RiskLogCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              // onClick={this.submitDelete.bind(this)}
+              onClick={() => this.props.history.goBack()}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
@@ -669,7 +663,7 @@ class RiskLogCreation extends Component {
     if (contextual) {
       return this.renderContextual();
     }
-    return this.renderClassic();
+    // return this.renderClassic();
   }
 }
 
