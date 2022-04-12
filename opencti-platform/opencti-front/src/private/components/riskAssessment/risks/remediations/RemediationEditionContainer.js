@@ -344,12 +344,14 @@ class RemediationEditionContainer extends Component {
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
                     externalReferences={risk.links}
+                    fieldName='links'
                     cyioCoreObjectId={remediationId}
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
                     notes={risk.remarks}
+                    fieldName='remarks'
                     cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                     marginTop='0px'
                   />

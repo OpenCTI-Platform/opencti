@@ -91,6 +91,7 @@ class SoftwareComponent extends Component {
                 <CyioCoreObjectExternalReferences
                   externalReferences={software.external_references}
                   cyioCoreObjectId={software.id}
+                  fieldName='external_references'
                   refreshQuery={refreshQuery}
                   typename={software.__typename}
                 />
@@ -102,6 +103,7 @@ class SoftwareComponent extends Component {
             <CyioCoreObjectOrCyioCoreRelationshipNotes
               typename={software.__typename}
               refreshQuery={refreshQuery}
+              fieldName='notes'
               notes={software.notes}
               cyioCoreObjectOrCyioCoreRelationshipId={software.id}
             />

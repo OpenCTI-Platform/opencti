@@ -154,7 +154,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
       variables: {
         toId: externalReferenceEdge.id,
         fromId: this.props.cyioCoreObjectId,
-        fieldName: 'external_references',
+        fieldName: this.props.fieldName,
         from_type: externalReferenceEdge.entity_type,
         to_type: externalReferenceEdge.__typename,
       },
@@ -308,6 +308,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
 CyioCoreObjectExternalReferencesLinesContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   externalReference: PropTypes.object,
+  fieldName: PropTypes.string,
   refreshQuery: PropTypes.func,
   limit: PropTypes.number,
   classes: PropTypes.object,
