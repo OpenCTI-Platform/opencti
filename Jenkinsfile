@@ -40,7 +40,7 @@ node {
             version = "${version}-dev+" + "${commit}"
             sh label: 'version update', script: """
               tmp=\$(mktemp)
-              jq '.version = "\${version}"' package.json > \$tmp
+              jq '.version = "${version}"' package.json > \$tmp
               mv -f \$tmp package.json
             """
             break
