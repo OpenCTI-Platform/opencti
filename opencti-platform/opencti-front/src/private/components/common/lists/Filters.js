@@ -28,6 +28,7 @@ import {
   itAssetFiltersNetworkFieldsQuery,
   itAssetFiltersSoftwareFieldsQuery,
 } from '../../settings/ItAssetFilters';
+import { RiskFiltersFieldsQuery } from '../../settings/RiskFilters';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -1032,7 +1033,7 @@ class Filters extends Component {
           <IconButton
             onClick={this.handleOpenFilters.bind(this)}
             disabled={disabled}
-            // style={{ color: theme.palette.header.text }}
+          // style={{ color: theme.palette.header.text }}
           >
             <ToyBrickSearchOutline fontSize="default" />
           </IconButton>

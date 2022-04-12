@@ -199,16 +199,19 @@ class Risks extends Component {
         CreateItemComponent={<RiskCreation />}
         OperationsComponent={<RiskDeletion />}
         openExports={openExports}
-        exportEntityType="Risk"
+        filterEntityType="Risk"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'markedBy',
+          'risk_level',
+          'risk_status',
+          'risk_response',
+          'lifecycle',
+          'deadline',
           'created_start_date',
           'created_end_date',
-          'createdBy',
           'label_name',
         ]}
       >
@@ -337,20 +340,19 @@ class Risks extends Component {
         openExports={openExports}
         selectAll={selectAll}
         disabled={true}
-        exportEntityType="Risk"
+        filterEntityType="Risk"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
+          'risk_level',
+          'risk_status',
+          'risk_response',
+          'lifecycle',
+          'deadline',
+          'created_start_date',
+          'created_end_date',
           'label_name',
         ]}
       >
