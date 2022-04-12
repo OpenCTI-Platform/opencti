@@ -39,7 +39,7 @@ node {
           case 'develop':
             version = "${version}-dev+" + "${commit}"
             sh label: 'version update', script: """
-              tmp=$(mktemp)
+              tmp=\$(mktemp)
               jq '.version = "\${version}"' package.json > \$tmp
               mv -f \$tmp package.json
             """
