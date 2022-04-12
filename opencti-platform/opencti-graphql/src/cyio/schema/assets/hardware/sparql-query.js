@@ -120,8 +120,8 @@ export const insertHardwareQuery = (propValues) => {
     .map((propPair) => hardwarePredicateMap[propPair[0]].binding(iri, propPair[1]))
     .join('.\n      ');
   const insertPredicates = [];
+  insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#InventoryItem> .`);
   if (propValues.asset_type !== 'hardware') {
-    let iriTemplate = deviceMap[propValues.asset_type].iriTemplate;
     insertPredicates.push(`${iri} a <${deviceMap[propValues.asset_type].iriTemplate}>`);
     if (deviceMap[propValues.asset_type].parent !== undefined) {
       let parent = deviceMap[propValues.asset_type].parent;
