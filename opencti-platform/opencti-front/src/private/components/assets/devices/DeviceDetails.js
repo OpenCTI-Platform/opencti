@@ -254,7 +254,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch color="primary" defaultChecked={device?.is_virtual} size="small" />
+                <Switch disabled color="primary" defaultChecked={device?.is_virtual} size="small" />
               </div>
               <div>
                 <Typography
@@ -271,7 +271,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch color="primary" defaultChecked={device?.is_publicly_accessible} size="small" />
+                <Switch disabled color="primary" defaultChecked={device?.is_publicly_accessible} size="small" />
               </div>
               <div>
                 <Typography
@@ -443,7 +443,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch color="primary" defaultChecked={device?.is_scanned} size="small" />
+                <Switch disabled color="primary" defaultChecked={device?.is_scanned} size="small" />
               </div>
               <div>
                 <Typography

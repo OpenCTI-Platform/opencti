@@ -38,6 +38,11 @@ node {
         switch (branch) {
           case 'develop':
             version = "${version}-dev+" + "${commit}"
+            sh label: 'version update', script: """
+              tmp=\$(mktemp)
+              jq '.version = "${version}"' package.json > \$tmp
+              mv -f \$tmp package.json
+            """
             break
           case 'staging':
             version = "${version}-RC+" + "${commit}"
@@ -52,7 +57,6 @@ node {
         // artifacts for debugging
         dir('src/relay') {
           sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
-          archiveArtifacts artifacts: 'environmentDarkLight.js', fingerprint: true, followSymlinks: false
         }
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
         archiveArtifacts artifacts: 'package.json', fingerprint: true, followSymlinks: false
@@ -62,64 +66,58 @@ node {
     }
   }
 
-  // TODO: investigate
-  // Run tests and builds at the same time; builds seem to wait for tests to finish first though
-  parallel test: {
-    // Run tests
-    stage('Test') {
-      try {
-        configFileProvider([
-          configFile(fileId: "graphql-env", replaceTokens: true, targetLocation: "opencti-platform/opencti-graphql/.env")
-        ]) {
-          docker.image('node:16.6.0-alpine3.14').inside("-u root:root") {
-            sh label: 'test front', script: '''
-              cd opencti-platform/opencti-front
-              yarn test || true
-            '''
+  stage('Test') {
+    try {
+      configFileProvider([
+        configFile(fileId: "graphql-env", replaceTokens: true, targetLocation: "opencti-platform/opencti-graphql/.env")
+      ]) {
+        docker.image('node:16.6.0-alpine3.14').inside("-u root:root") {
+          sh label: 'test front', script: '''
+            cd opencti-platform/opencti-front
+            yarn test || true
+          '''
 
-            sh label: 'test graphql', script: '''
-              cd opencti-platform/opencti-graphql
-              yarn test || true
-            '''
+          sh label: 'test graphql', script: '''
+            cd opencti-platform/opencti-graphql
+            yarn test || true
+          '''
 
-            sh label: 'cleanup', script: '''
-              rm -rf opencti-platform/opencti-front/node_modules
-              rm -rf opencti-platform/opencti-graphql/node_modules
-              chown -R 997:997 .
-            '''
-          }
+          sh label: 'cleanup', script: '''
+            rm -rf opencti-platform/opencti-front/node_modules
+            rm -rf opencti-platform/opencti-graphql/node_modules
+            chown -R 997:997 .
+          '''
         }
-      } catch (Exception e) {
-        // NO-OP
-      } finally {
-        junit 'opencti-platform/opencti-graphql/test-results/jest/results.xml'
       }
+    } catch (Exception e) {
+      // NO-OP
+    } finally {
+      junit 'opencti-platform/opencti-graphql/test-results/jest/results.xml'
     }
-  }, build: {
-    // Build docker image
-    stage('Build') {
-      // if main branches (master, staging, or develop) build, except if:
-      //   - commit says: 'ci:skip' then skip build
-      //   - commit says: 'ci:build' then build regardless of branch
-      if (((branch.equals('master') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
-        dir('opencti-platform') {
-          String buildArgs = '--no-cache --progress=plain .'
-          docker_steps(registry, product, tag, buildArgs)
-        }
+  }
 
-        // Send the Teams message to DarkLight Development > DL Builds
-        office365ConnectorSend(
-          status: 'Completed',
-          color: '00FF00',
-          webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-          message: "New image built and pushed!",
-          factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
-                            [name: "Commit SHA", template: "${commit}"], 
-                            [name: "Image", template: "${registry}/${product}:${tag}"]]
-        )
-      } else {
-        echo 'Skipping build...'
+  stage('Build') {
+    // if main branches (master, staging, or develop) build, except if:
+    //   - commit says: 'ci:skip' then skip build
+    //   - commit says: 'ci:build' then build regardless of branch
+    if (((branch.equals('master') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
+      dir('opencti-platform') {
+        String buildArgs = '--no-cache --progress=plain .'
+        docker_steps(registry, product, tag, buildArgs)
       }
+
+      // Send the Teams message to DarkLight Development > DL Builds
+      office365ConnectorSend(
+        status: 'Completed',
+        color: '00FF00',
+        webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+        message: "New image built and pushed!",
+        factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
+                          [name: "Commit SHA", template: "${commit}"], 
+                          [name: "Image", template: "${registry}/${product}:${tag}"]]
+      )
+    } else {
+      echo 'Skipping build...'
     }
   }
 

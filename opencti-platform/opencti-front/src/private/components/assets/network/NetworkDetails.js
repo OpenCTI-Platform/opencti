@@ -109,7 +109,7 @@ class NetworkDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch defaultChecked={network?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
+                <Switch disabled defaultChecked={network?.is_scanned} inputProps={{ 'aria-label': 'ant design' }} />
               </div>
             </Grid>
             <Grid item={true} xs={6}>
