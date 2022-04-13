@@ -73,6 +73,9 @@ export function filterValues( item, filters, filterMode = 'or') {
       if (match && filter.filterMode == 'or')
         continue ;
 
+      // GraphQL doesn't allow '_', so need to replace
+      filterValue = filterValue.replace('_', '-');
+      
       let itemValues;
       if (item[filter.key] instanceof Array) {
         itemValues = item[filter.key];
