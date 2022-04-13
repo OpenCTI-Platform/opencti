@@ -107,8 +107,8 @@ const hardwareResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > hardwareList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < hardwareList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: hardwareList.length,
           },
           edges: edges,
@@ -440,7 +440,7 @@ const hardwareResolvers = {
   },
   // field-level query
   HardwareAsset: {
-    installed_software: async (parent, args, {dbName, dataSources, selectMap}) => {
+    installed_software: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.installed_sw_iri === undefined) return [];
       let iriArray = parent.installed_sw_iri;
       const results = [];
@@ -481,7 +481,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    installed_operating_system: async (parent, args, {dbName, dataSources, selectMap}) => {
+    installed_operating_system: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.installed_os_iri === undefined) return null;
       var iri = parent.installed_os_iri
       if (Array.isArray(iri) && iri.length > 0) {
@@ -520,7 +520,7 @@ const hardwareResolvers = {
         }
       }
     },
-    ipv4_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+    ipv4_address: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -560,7 +560,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    ipv6_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+    ipv6_address: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -600,7 +600,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    mac_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+    mac_address: async (parent, _, {dbName, dataSources, }) => {
       if (parent.mac_addr_iri === undefined) return [];
       let iriArray = parent.mac_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -646,7 +646,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    ports: async (parent, args, {dbName, dataSources, selectMap}) => {
+    ports: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ports_iri === undefined) return [];
       let iriArray = parent.ports_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -685,7 +685,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    connected_to_network: async (parent, args, {dbName, dataSources, selectMap}) => {
+    connected_to_network: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.conn_network_iri === undefined) return null;
       let iri = parent.conn_network_iri;
       if (Array.isArray(iri) && iri.length > 0) {
@@ -719,7 +719,7 @@ const hardwareResolvers = {
         }
       }
     },
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -759,7 +759,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+    external_references: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -799,7 +799,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+    notes: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
