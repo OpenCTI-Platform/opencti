@@ -28,12 +28,6 @@ node {
   stage('Setup') {
     dir('opencti-platform') {
       dir('opencti-graphql') { // GraphQL
-        if (fileExists('config/schema/compiled.graphql')) {
-          sh 'rm config/schema/compiled.graphql'
-        }
-        sh 'yarn install'
-      }
-      dir('opencti-front') { // Frontend
         String version = readJSON(file: 'package.json')['version']
         switch (branch) {
           case 'develop':
@@ -51,15 +45,19 @@ node {
             break
         }
         echo "version: ${version}"
-
+        
+        if (fileExists('config/schema/compiled.graphql')) {
+          sh 'rm config/schema/compiled.graphql'
+        }
+        sh 'yarn install'
+      }
+      dir('opencti-front') { // Frontend
         // TODO: investigate
         // Hardcode the endpoints for now, should use envionment variables
-        // artifacts for debugging
         dir('src/relay') {
           sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
         }
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
-        archiveArtifacts artifacts: 'package.json', fingerprint: true, followSymlinks: false
         sh 'yarn schema-compile'
         sh 'yarn install'
       }
