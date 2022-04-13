@@ -373,12 +373,11 @@ class RelatedTaskCreation extends Component {
               name: '',
               description: '',
               task_type: '',
-              start_date: '',
-              end_date: '',
+              start_date: null,
+              end_date: null,
               task_dependencies: [],
               related_tasks: [],
               associated_activities: [],
-              subjects: [],
               responsible_roles: [],
             }}
             // validationSchema={RelatedTaskValidation(t)}
@@ -523,9 +522,9 @@ class RelatedTaskCreation extends Component {
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
-                          // invalidDateMessage={t(
-                          //   'The value must be a date (YYYY-MM-DD)',
-                          // )}
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
                           style={{ height: '38.09px' }}
                         />
                       </div>
@@ -552,9 +551,9 @@ class RelatedTaskCreation extends Component {
                           fullWidth={true}
                           size="small"
                           variant='outlined'
-                          // invalidDateMessage={t(
-                          //   'The value must be a date (YYYY-MM-DD)',
-                          // )}
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />

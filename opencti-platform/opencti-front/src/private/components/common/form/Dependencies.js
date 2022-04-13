@@ -10,41 +10,42 @@ import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
-const TaskTypeQuery = graphql`
-  query TaskTypeQuery {
-    __type(name: "TaskType") {
-      name
-      description
-      enumValues {
-        name
-        description
+const DependenciesQuery = graphql`
+  query DependenciesQuery {
+    oscalTasks {
+      edges {
+        node {
+          name
+          description
+          task_type
+        }
       }
     }
   }
 `;
 
-class TaskType extends Component {
+class Dependencies extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      TaskTypeList: [],
+      DependenciesList: [],
     };
   }
   componentDidMount() {
-    fetchDarklightQuery(TaskTypeQuery)
+    fetchDarklightQuery(DependenciesQuery)
       .toPromise()
       .then((data) => {
-        const TaskTypeEntities = R.pipe(
-          R.pathOr([], ['__type', 'enumValues']),
+        const DependenciesEntities = R.pipe(
+          R.pathOr([], ['oscalTasks', 'edges']),
           R.map((n) => ({
-            label: n.description,
-            value: n.name,
+            label: n.node.description,
+            value: n.node.name,
           }))
         )(data);
         this.setState({
-          TaskTypeList: {
+          DependenciesList: {
             ...this.state.entities,
-            TaskTypeEntities,
+            DependenciesEntities,
           },
         });
       });
@@ -65,10 +66,10 @@ class TaskType extends Component {
       disabled,
       helperText,
     } = this.props;
-    const TaskTypeList = R.pathOr(
+    const DependenciesList = R.pathOr(
       [],
-      ['TaskTypeEntities'],
-      this.state.TaskTypeList
+      ['DependenciesEntities'],
+      this.state.DependenciesList
     );
     return (
       <div>
@@ -85,11 +86,9 @@ class TaskType extends Component {
           style={style}
           helperText={helperText}
         >
-          {TaskTypeList.map(
+          {DependenciesList.map(
             (et, key) =>
-              et.value && (
-                <MenuItem key={key} value={et.value}>{et.value}</MenuItem>
-              )
+              et.value && <MenuItem value={et.value}>{et.value}</MenuItem>
           )}
         </Field>
       </div>
@@ -97,4 +96,4 @@ class TaskType extends Component {
   }
 }
 
-export default inject18n(TaskType);
+export default inject18n(Dependencies);

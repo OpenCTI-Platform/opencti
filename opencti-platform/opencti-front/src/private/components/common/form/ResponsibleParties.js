@@ -10,41 +10,49 @@ import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
-const TaskTypeQuery = graphql`
-  query TaskTypeQuery {
-    __type(name: "TaskType") {
-      name
-      description
-      enumValues {
-        name
-        description
+const ResponsiblePartiesQuery = graphql`
+query ResponsiblePartiesQuery {
+  poam {
+    responsible_parties {
+      edges {
+        node {
+          parties {
+            name
+            description
+          }
+          role {
+            description
+            name
+          }
+        }
       }
     }
   }
+}
 `;
 
-class TaskType extends Component {
+class ResponsibleParties extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      TaskTypeList: [],
+      ResponsiblePartiesList: [],
     };
   }
   componentDidMount() {
-    fetchDarklightQuery(TaskTypeQuery)
+    fetchDarklightQuery(ResponsiblePartiesQuery)
       .toPromise()
       .then((data) => {
-        const TaskTypeEntities = R.pipe(
-          R.pathOr([], ['__type', 'enumValues']),
+        const ResponsiblePartiesEntities = R.pipe(
+          R.pathOr([], ['poam', 'responsible_parties', 'edges']),
           R.map((n) => ({
-            label: n.description,
-            value: n.name,
+            label: n.node.description,
+            value: n.node.name,
           }))
         )(data);
         this.setState({
-          TaskTypeList: {
+          ResponsiblePartiesList: {
             ...this.state.entities,
-            TaskTypeEntities,
+            ResponsiblePartiesEntities,
           },
         });
       });
@@ -65,10 +73,10 @@ class TaskType extends Component {
       disabled,
       helperText,
     } = this.props;
-    const TaskTypeList = R.pathOr(
+    const ResponsiblePartiesList = R.pathOr(
       [],
-      ['TaskTypeEntities'],
-      this.state.TaskTypeList
+      ['ResponsiblePartiesEntities'],
+      this.state.ResponsiblePartiesList
     );
     return (
       <div>
@@ -85,11 +93,9 @@ class TaskType extends Component {
           style={style}
           helperText={helperText}
         >
-          {TaskTypeList.map(
+          {ResponsiblePartiesList.map(
             (et, key) =>
-              et.value && (
-                <MenuItem key={key} value={et.value}>{et.value}</MenuItem>
-              )
+              et.value && <MenuItem value={et.value}>{et.value}</MenuItem>
           )}
         </Field>
       </div>
@@ -97,4 +103,4 @@ class TaskType extends Component {
   }
 }
 
-export default inject18n(TaskType);
+export default inject18n(ResponsibleParties);
