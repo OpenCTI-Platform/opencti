@@ -9,6 +9,7 @@ node {
   String tag = 'latest'
   String graphql = 'https://cyio.darklight.ai/graphql'
   String api = 'api'
+  String version = '0.1.0'
 
   echo "branch: ${branch}, commit message: ${commitMessage}"
 
@@ -28,11 +29,11 @@ node {
   stage('Setup') {
     dir('opencti-platform') {
       dir('opencti-graphql') { // GraphQL
-        String version = readJSON(file: 'package.json')['version']
+        version = readJSON(file: 'package.json')['version']
         switch (branch) {
           case 'develop':
             version = "${version}-dev+" + "${commit}"
-            sh label: 'version update', script: """
+            sh label: 'updating version', script: """
               tmp=\$(mktemp)
               jq '.version = "${version}"' package.json > \$tmp
               mv -f \$tmp package.json
@@ -40,12 +41,17 @@ node {
             break
           case 'staging':
             version = "${version}-RC+" + "${commit}"
+            sh label: 'updating version', script: """
+              tmp=\$(mktemp)
+              jq '.version = "${version}"' package.json > \$tmp
+              mv -f \$tmp package.json
+            """
             break
           default:
             break
         }
         echo "version: ${version}"
-        
+
         if (fileExists('config/schema/compiled.graphql')) {
           sh 'rm config/schema/compiled.graphql'
         }
@@ -100,13 +106,12 @@ node {
     //   - commit says: 'ci:build' then build regardless of branch
     if (((branch.equals('master') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
       office365ConnectorSend(
-        // status: 'Build Started',
+        status: 'Build Started',
         // color: '00FF00',
         webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-        message: "Starting build for commit [${commit}](https://github.com/champtc/opencti/commit/${sh(returnStdout: true, script: 'git rev-parse HEAD')}) in branch ${branch}"
-        // factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
-        //                   [name: "Commit SHA", template: "${commit}"], 
-        //                   [name: "Image", template: "${registry}/${product}:${tag}"]]
+        // message: "Starting build"
+        factDefinitions: [[name: "Commit", template: "[${commit}](https://github.com/champtc/opencti/commit/${sh(returnStdout: true, script: 'git rev-parse HEAD')})"],
+                          [name: "Version", template: "${version}"]]
       )
 
       dir('opencti-platform') {
