@@ -215,7 +215,7 @@ const softwareResolvers = {
   },
   // field-level resolvers
   SoftwareAsset: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -255,7 +255,7 @@ const softwareResolvers = {
         return [];
       }
     },
-    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+    external_references: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -295,7 +295,7 @@ const softwareResolvers = {
         return [];
       }
     },
-    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+    notes: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];

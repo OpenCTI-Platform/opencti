@@ -79,8 +79,8 @@ const networkResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < assetList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: assetList.length,
           },
           edges: edges,
@@ -216,7 +216,7 @@ const networkResolvers = {
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: connectQuery,
-        queryId: "Add Netowork Asset to Inventory"
+        queryId: "Add Network Asset to Inventory"
       });
       return { id }
     },
@@ -286,7 +286,7 @@ const networkResolvers = {
   },
   // Map enum GraphQL values to data model required values
   NetworkAsset: {
-    network_address_range: async (parent, args, {dbName, dataSources},) => {
+    network_address_range: async (parent, _, {dbName, dataSources},) => {
       let item = parent.netaddr_range_iri;
       if (item === undefined) return null;
       var sparqlQuery = selectIPAddressRange(`<${item}>`)
@@ -324,7 +324,7 @@ const networkResolvers = {
         });
       }
     },
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -363,7 +363,7 @@ const networkResolvers = {
         return [];
       }
     },
-    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+    external_references: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -402,7 +402,7 @@ const networkResolvers = {
         return [];
       }
     },
-    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+    notes: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
