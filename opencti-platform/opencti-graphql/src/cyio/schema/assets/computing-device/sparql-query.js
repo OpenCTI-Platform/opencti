@@ -304,6 +304,7 @@ export const insertQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#InventoryItem> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
@@ -348,6 +349,7 @@ export const insertComputingDeviceQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#InventoryItem> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#ComputingDevice> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Hardware> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .

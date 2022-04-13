@@ -3091,7 +3091,7 @@ export const selectAllOscalTasks = (select, filters) => {
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
-    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Task . 
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#Task> . 
     ${predicates}
   }
   `

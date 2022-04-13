@@ -75,9 +75,9 @@ const riskResolvers = {
 
           // calculate the risk level
           risk.risk_level = 'unknown';
-          if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
+          if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
             let riskLevel;
-            let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
+            let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
             if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
             if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
             if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
@@ -162,9 +162,9 @@ const riskResolvers = {
 
         // calculate the risk level
         risk.risk_level = 'unknown';
-        if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
+        if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
           let riskLevel;
-          let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
+          let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
           if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
           if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
           if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
@@ -326,7 +326,7 @@ const riskResolvers = {
   },
   // field-level resolvers
   Risk: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, }) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -368,7 +368,7 @@ const riskResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, {dbName, dataSources, }) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -410,7 +410,7 @@ const riskResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, {dbName, dataSources, }) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -452,7 +452,7 @@ const riskResolvers = {
         return [];
       }
     },
-    origins:async (parent, args, {dbName, dataSources, selectMap}) => {
+    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
@@ -494,11 +494,12 @@ const riskResolvers = {
         return [];
       }
     },
-    threats: async (parent, args, {dbName, dataSources, selectMap}) => {
+    threats: async (parent, _,  ) => {
+      if (parent.threats_iri === undefined) return [];
       // this is a No-Op for MVP until we get threat intelligence integrated 
       return [];
     },
-    characterizations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    characterizations: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.characterizations_iri === undefined) return [];
       let iriArray = parent.characterizations_iri;
       const results = [];
@@ -540,7 +541,7 @@ const riskResolvers = {
         return [];
       }
     },
-    mitigating_factors: async (parent, args, {dbName, dataSources, selectMap}) => {
+    mitigating_factors: async (parent, _, {dbName, dataSources, }) => {
       if (parent.mitigating_factors_iri === undefined) return [];
       let iriArray = parent.mitigating_factors_iri;
       const results = [];
@@ -582,7 +583,7 @@ const riskResolvers = {
         return [];
       }
     },
-    remediations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remediations: async (parent, _, {dbName, dataSources, }) => {
       if (parent.remediations_iri === undefined) return [];
       let iriArray = parent.remediations_iri;
       const results = [];
@@ -624,12 +625,12 @@ const riskResolvers = {
         return [];
       }
     },
-    risk_log: async (parent, args, {dbName, dataSources, selectMap}) => {
+    risk_log: async (parent, args, {dbName, dataSources, }) => {
       if (parent.risk_log_iri === undefined) return null;
       let iriArray = parent.risk_log_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
-        const reducer = getAssessmentReducer("RISK-LOG-ENTRY");
+        const reducer = getReducer("RISK-LOG-ENTRY");
         let limit = (args.first === undefined ? iriArray.length : args.first) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('RiskLogEntry')) continue ;
@@ -682,7 +683,7 @@ const riskResolvers = {
         return null;
       }
     },
-    related_observations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    related_observations: async (parent, args, {dbName, dataSources, }) => {
       if (parent.related_observations_iri === undefined) return null;
       let iriArray = parent.related_observations_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {

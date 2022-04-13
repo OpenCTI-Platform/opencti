@@ -151,6 +151,7 @@ export const insertQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Component> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Network> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
@@ -197,6 +198,7 @@ export const insertNetworkQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Component> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Network> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#ItAsset> .
       ${iri} a <http://scap.nist.gov/ns/asset-identification#Asset> .
