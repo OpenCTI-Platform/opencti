@@ -54,13 +54,13 @@ const styles = (theme) => ({
   },
   parameters: {
     // float: 'left',
-    padding: '18px',
+    padding: '18px 18px 12px 18px',
   },
   views: {
     // display: 'flex',
     float: 'right',
     marginTop: '5px',
-    padding: '14px 18px',
+    padding: '14px 18px 12px 18px',
   },
   cardsContainer: {
     marginTop: 10,
@@ -86,7 +86,7 @@ const styles = (theme) => ({
     margin: '-9px 0 0 15px',
   },
   filters: {
-    padding: '18px 0',
+    padding: '18px 0 12px 0',
   },
   filter: {
     marginRight: 10,
