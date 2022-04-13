@@ -42,6 +42,9 @@ import CyioCoreObjectExternalReferences from '../../../analysis/external_referen
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import TaskType from '../../../common/form/TaskType';
 import ResourceType from '../../../common/form/ResourceType';
+import AssociatedActivities from '../../../common/form/AssociatedActivities';
+import ResponsibleParties from '../../../common/form/ResponsibleParties';
+import Dependencies from '../../../common/form/Dependencies';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -666,24 +669,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="associated_activities"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          {/* <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem> */}
-                        </Field>
+                        <AssociatedActivities
+                           name="associated_activities"
+                           fullWidth={true}
+                           variant='outlined'
+                           style={{ height: '38.09px' }}
+                           containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                   </Grid>
@@ -703,25 +695,14 @@ class RelatedTaskCreation extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <Field
-                          component={SelectField}
+                        <ResponsibleParties
                           style={{ height: '38.09px' }}
                           variant='outlined'
                           name="responsible_roles"
                           size='small'
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
-                        >
-                          {/* <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem> */}
-                        </Field>
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -740,24 +721,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="task_dependencies"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          {/* <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem> */}
-                        </Field>
+                        <Dependencies
+                           name="task_dependencies"
+                           fullWidth={true}
+                           variant='outlined'
+                           style={{ height: '38.09px' }}
+                           containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                   </Grid>
