@@ -541,6 +541,7 @@ class RequiredResourceCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        fieldName='links'
                         typename={requiredResourceData.__typename}
                         externalReferences={requiredResourceData.links}
                         cyioCoreObjectId={remediationId}
@@ -549,6 +550,7 @@ class RequiredResourceCreation extends Component {
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
+                        fieldName='remarks'
                         typename={requiredResourceData.__typename}
                         notes={requiredResourceData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}

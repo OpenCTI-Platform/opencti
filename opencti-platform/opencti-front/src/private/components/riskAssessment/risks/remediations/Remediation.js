@@ -117,6 +117,7 @@ class RemediationComponent extends Component {
             <Grid item={true} xs={6}>
               <CyioCoreObjectExternalReferences
                 typename={remediation.__typename}
+                fieldName='links'
                 externalReferences={remediation.links}
                 cyioCoreObjectId={remediation.id}
                 refreshQuery={refreshQuery}
@@ -126,6 +127,7 @@ class RemediationComponent extends Component {
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={remediation.__typename}
                 notes={remediation.remarks}
+                fieldName='remarks'
                 cyioCoreObjectOrCyioCoreRelationshipId={remediation.id}
                 marginTop='0px'
                 refreshQuery={refreshQuery}

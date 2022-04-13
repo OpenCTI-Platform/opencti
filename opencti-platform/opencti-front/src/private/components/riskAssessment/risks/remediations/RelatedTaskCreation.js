@@ -735,6 +735,7 @@ class RelatedTaskCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        fieldName='links'
                         typename={relatedTaskData.__typename}
                         externalReferences={relatedTaskData.links}
                         cyioCoreObjectId={remediationId}
@@ -745,6 +746,7 @@ class RelatedTaskCreation extends Component {
                         refreshQuery={refreshQuery}
                         typename={relatedTaskData.__typename}
                         notes={relatedTaskData.remarks}
+                        fieldName='remarks'
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
                       // data={props}
