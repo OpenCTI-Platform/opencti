@@ -60,14 +60,10 @@ const styles = (theme) => ({
   },
   toolBar: {
     margin: '-20px -24px 20px -24px',
-    height: '64px',
-    '@media (max-width: 1063.5px)': {
-      height: '100%',
-    },
+    height: '100%',
     display: 'flex',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    alignItems: 'center',
+    alignItems: 'self-start',
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
@@ -130,16 +126,17 @@ const styles = (theme) => ({
     cursor: 'pointer',
   },
   filters: {
-    float: 'left',
-    margin: '2px 0 0 10px',
+    padding: '18px 0',
   },
   filter: {
     marginRight: 10,
+    marginBottom: 10,
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.background.chip,
     marginRight: 10,
+    marginBottom: 10,
   },
   info: {
     paddingTop: 10,
@@ -302,48 +299,48 @@ class CyioListLines extends Component {
             </IconButton>
             {(!availableFilterKeys || availableFilterKeys.length === 0)
               && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
-            <div className={classes.filters}>
-              {map((currentFilter) => {
-                const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-                const values = (
-                  <span>
-                    {map(
-                      (n) => (
-                        <span key={n.value}>
-                          {n.value && n.value.length > 0
-                            ? truncate(n.value, 15)
-                            : t('No label')}{' '}
-                          {last(currentFilter[1]).value !== n.value && (
-                            <code>OR</code>
-                          )}
-                        </span>
-                      ),
-                      currentFilter[1],
-                    )}
-                  </span>
-                );
-                return (
-                  <span>
+          </div>
+          <div className={classes.filters} style={ toPairs(filters).length > 0 ? { width: '50%' } : { width: '0%' }}>
+            {map((currentFilter) => {
+              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const values = (
+                <span>
+                  {map(
+                    (n) => (
+                      <span key={n.value}>
+                        {n.value && n.value.length > 0
+                          ? truncate(n.value, 15)
+                          : t('No label')}{' '}
+                        {last(currentFilter[1]).value !== n.value && (
+                          <code>OR</code>
+                        )}
+                      </span>
+                    ),
+                    currentFilter[1],
+                  )}
+                </span>
+              );
+              return (
+                <span>
+                  <Chip
+                    key={currentFilter[0]}
+                    classes={{ root: classes.filter }}
+                    label={
+                      <div>
+                        <strong>{label}</strong>: {values}
+                      </div>
+                    }
+                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
+                  />
+                  {last(toPairs(filters))[0] !== currentFilter[0] && (
                     <Chip
-                      key={currentFilter[0]}
-                      classes={{ root: classes.filter }}
-                      label={
-                        <div>
-                          <strong>{label}</strong>: {values}
-                        </div>
-                      }
-                      onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
+                      classes={{ root: classes.operator }}
+                      label={t('AND')}
                     />
-                    {last(toPairs(filters))[0] !== currentFilter[0] && (
-                      <Chip
-                        classes={{ root: classes.operator }}
-                        label={t('AND')}
-                      />
-                    )}
-                  </span>
-                );
-              }, toPairs(filters))}
-            </div>
+                  )}
+                </span>
+              );
+            }, toPairs(filters))}
           </div>
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
@@ -356,7 +353,7 @@ class CyioListLines extends Component {
                       onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
                       disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
-                      || disabled}
+                        || disabled}
                       color="primary"
                       size="large"
                     >
