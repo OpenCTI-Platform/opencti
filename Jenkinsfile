@@ -99,6 +99,16 @@ node {
     //   - commit says: 'ci:skip' then skip build
     //   - commit says: 'ci:build' then build regardless of branch
     if (((branch.equals('master') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
+      office365ConnectorSend(
+        // status: 'Build Started',
+        // color: '00FF00',
+        webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+        message: "Starting build for commit [${commit}](https://github.com/champtc/opencti/commit/${sh(returnStdout: true, script: 'git rev-parse HEAD')}) in branch ${branch}"
+        // factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
+        //                   [name: "Commit SHA", template: "${commit}"], 
+        //                   [name: "Image", template: "${registry}/${product}:${tag}"]]
+      )
+
       dir('opencti-platform') {
         String buildArgs = '--no-cache --progress=plain .'
         docker_steps(registry, product, tag, buildArgs)
