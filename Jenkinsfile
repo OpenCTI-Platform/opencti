@@ -126,7 +126,7 @@ node {
         webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
         message: "New image built and pushed!",
         factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
-                          [name: "Commit", template: "${commit}"],
+                          [name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
                           [name: "Image", template: "${registry}/${product}:${tag}"]]
       )
     } else {
