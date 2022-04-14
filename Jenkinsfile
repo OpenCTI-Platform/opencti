@@ -109,7 +109,7 @@ node {
         // status: 'Build Started',
         // color: '00FF00',
         webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-        message: "Build started"
+        message: "Build started",
         factDefinitions: [[name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
                           [name: "Version", template: "${version}"]]
       )
