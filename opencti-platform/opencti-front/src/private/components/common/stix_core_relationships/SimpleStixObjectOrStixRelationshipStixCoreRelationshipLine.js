@@ -169,6 +169,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
           stop_time
           description
           is_inferred
+          created_at
           x_opencti_inferences {
             rule {
               id
