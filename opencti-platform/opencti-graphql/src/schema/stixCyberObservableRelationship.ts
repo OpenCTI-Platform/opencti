@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, schemaTypes } from './general';
-import { STIX_META_RELATION_TO_FIELD } from './stixMetaRelationship';
 
 // Inputs
 export const INPUT_OPERATING_SYSTEM = 'operatingSystems';

@@ -23,7 +23,7 @@ import {
   isRuntimeSortEnable,
 } from './engine';
 import { BYPASS } from '../utils/access';
-import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import type { AuthUser } from '../types/user';
 import { runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -49,9 +49,11 @@ interface paginateFilters {
     key:string;
     operator?:string;
     filterMode?: 'and' | 'or';
+    // eslint-disable-next-line
     values?: Array<any>;
     nested?: Array<{
       key:string,
+      // eslint-disable-next-line
       values: Array<any>
       operator?:string;
     }>
@@ -253,6 +255,8 @@ const client: NewTypes = new Client({ node: 'http://localhost:9200' });
 export const elPaginate = async (user: AuthUser, indexName: string | Array<string>, options: paginateFilters = {}) : Promise<Array<BasicStoreObject>> => {
   // eslint-disable-next-line no-use-before-define
   const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc' } = options;
+  // noinspection JSUnusedLocalSymbols
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { types = null, filters = [], filterMode = 'and', search = null, connectionFormat = true } = options;
   const searchAfter = after ? cursorToOffset(after) : null;
   let must: Array<object> = [];

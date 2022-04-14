@@ -393,6 +393,7 @@ const initRuleManager = () => {
         await wait(WAIT_TIME_ACTION);
       }
       await streamProcessor.shutdown();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.info('[OPENCTI-MODULE] Rule engine already started by another API');

@@ -115,6 +115,7 @@ interface StoreConnection {
 }
 
 interface StoreRawRule {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inferred: any;
   explanation: array<string>;
 }

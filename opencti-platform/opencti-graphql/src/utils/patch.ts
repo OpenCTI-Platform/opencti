@@ -4,8 +4,10 @@ import * as R from 'ramda';
 import type { StixCoreObject, StixPatch } from '../types/stix-common';
 
 export const rebuildInstanceBeforePatch = (instance: StixCoreObject | Record<string, never>, patch: StixPatch) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rebuild = { ...instance } as any;
   if (patch.add) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const patchAdd = patch.add as any;
     const addKeys = Object.keys(patchAdd);
     for (let index = 0; index < addKeys.length; index += 1) {
@@ -27,6 +29,7 @@ export const rebuildInstanceBeforePatch = (instance: StixCoreObject | Record<str
     }
   }
   if (patch.remove) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const patchRemove = patch.remove as any;
     const removeKeys = Object.keys(patchRemove);
     for (let index = 0; index < removeKeys.length; index += 1) {
@@ -50,6 +53,7 @@ export const rebuildInstanceBeforePatch = (instance: StixCoreObject | Record<str
     }
   }
   if (patch.replace) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const patchReplace = patch.replace as any;
     const replaceKeys = Object.keys(patchReplace);
     for (let index = 0; index < replaceKeys.length; index += 1) {

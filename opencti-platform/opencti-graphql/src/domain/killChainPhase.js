@@ -49,10 +49,14 @@ export const killChainPhaseEditField = async (user, killChainPhaseId, input, opt
 
 export const killChainPhaseCleanContext = async (user, killChainPhaseId) => {
   await delEditContext(user, killChainPhaseId);
-  return storeLoadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) => notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user));
+  return storeLoadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user);
+  });
 };
 
 export const killChainPhaseEditContext = async (user, killChainPhaseId, input) => {
   await setEditContext(user, killChainPhaseId, input);
-  return storeLoadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) => notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user));
+  return storeLoadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user);
+  });
 };

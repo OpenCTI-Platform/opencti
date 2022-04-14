@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
-import {Client as ElkClient} from '@elastic/elasticsearch';
-import {Client as OpenClient} from '@opensearch-project/opensearch';
-import {Promise} from 'bluebird';
+import { Client as ElkClient } from '@elastic/elasticsearch';
+import { Client as OpenClient } from '@opensearch-project/opensearch';
+import { Promise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
-import {readFileSync} from 'node:fs';
+import { readFileSync } from 'node:fs';
 import {
   buildPagination,
   cursorToOffset,
@@ -21,8 +21,8 @@ import {
   READ_RELATIONSHIPS_INDICES,
   WRITE_PLATFORM_INDICES,
 } from './utils';
-import conf, {booleanConf, logApp} from '../config/conf';
-import {ConfigurationError, DatabaseError, FunctionalError, UnsupportedError} from '../config/errors';
+import conf, { booleanConf, logApp } from '../config/conf';
+import { ConfigurationError, DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -54,7 +54,7 @@ import {
   isUpdatedAtObject,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
-import {convertEntityTypeToStixType, getParentTypes} from '../schema/schemaUtils';
+import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
@@ -62,15 +62,15 @@ import {
   ATTRIBUTE_NAME,
   isStixObjectAliased,
 } from '../schema/stixDomainObject';
-import {isStixObject} from '../schema/stixCoreObject';
-import {isBasicRelationship, isStixRelationShipExceptMeta} from '../schema/stixRelationship';
-import {RELATION_INDICATES} from '../schema/stixCoreRelationship';
-import {getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD} from '../schema/identifier';
-import {BYPASS} from '../utils/access';
-import {cacheDel, cacheGet, cachePurge, cacheSet} from './redis';
-import {isSingleStixEmbeddedRelationship,} from '../schema/stixEmbeddedRelationship';
-import {now, runtimeFieldObservableValueScript} from '../utils/format';
-import {ENTITY_TYPE_MARKING_DEFINITION} from '../schema/stixMetaObject';
+import { isStixObject } from '../schema/stixCoreObject';
+import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
+import { BYPASS } from '../utils/access';
+import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
+import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
+import { now, runtimeFieldObservableValueScript } from '../utils/format';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 const ELK_ENGINE = 'elk';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');

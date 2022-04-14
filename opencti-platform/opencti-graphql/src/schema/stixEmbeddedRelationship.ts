@@ -42,28 +42,35 @@ export const isSingleStixEmbeddedRelationship = (type: string): boolean => isSin
 
 export const isSingleStixEmbeddedRelationshipInput = (input: string): boolean => isSingleStixMetaRelationshipInput(input) || isSingleStixCyberObservableRelationshipInput(input);
 
+// eslint-disable-next-line
 export const instanceMetaRefsExtractor = (data: any) => {
   return [...META_STIX_ATTRIBUTES].map((key) => data[key] || []).flat();
 };
 const RELATIONS_STIX_ATTRIBUTES = ['source_ref', 'target_ref', 'sighting_of_ref', 'where_sighted_refs'];
 const ALL_STIX_REFS = [...META_STIX_ATTRIBUTES, ...RELATIONS_STIX_ATTRIBUTES];
+// eslint-disable-next-line
 export const stixRefsExtractor = (data: any, idGenerator: (key: string, data: unknown) => string) => {
   return ALL_STIX_REFS.map((key) => {
     // stix embedding (label, external ref, kill chain)
     if (key === 'external_references' && data[key]) {
+      // eslint-disable-next-line
       return data[key].map((e: any) => idGenerator('External-Reference', e));
     }
     if (key === 'kill_chain_phases' && data[key]) {
+      // eslint-disable-next-line
       return data[key].map((e: any) => idGenerator('Kill-Chain-Phase', e));
     }
     if (key === 'labels' && data[key]) {
+      // eslint-disable-next-line
       return data[key].map((e: any) => idGenerator('Label', { value: e }));
     }
     // cyber embedding (x509-v3-extensions, body_multipart)
     if (key === 'x509_v3_extensions' && data[key]) {
+      // eslint-disable-next-line
       return data[key].map((e: any) => idGenerator('X509-V3-Extensions-Type', e));
     }
     if (key === 'body_multipart' && data[key]) {
+      // eslint-disable-next-line
       return data[key].map((e: any) => idGenerator('Email-Mime-Part-Type', e));
     }
     return data[key] || [];
