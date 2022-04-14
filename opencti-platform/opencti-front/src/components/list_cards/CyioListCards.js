@@ -46,18 +46,30 @@ const styles = (theme) => ({
     margin: '-20px -24px 20px -24px',
     height: '100%',
     display: 'flex',
-    justifyContent: 'space-between',
-    // flexWrap: 'wrap',
+    '@media (max-width: 1400px)': {
+      flexWrap: 'wrap',
+    },
     alignItems: 'self-start',
+    justifyContent: 'space-between',
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
   parameters: {
     // float: 'left',
-    padding: '18px 18px 12px 18px',
+    display: 'flex',
+    '@media (max-width: 1250px)': {
+      flexWrap: 'wrap',
+    },
+    padding: '18px 18px 0 18px',
+  },
+  searchBar: {
+    width: '560px',
+    minWidth: '560px',
   },
   views: {
     // display: 'flex',
+    width: '254px',
+    minWidth: '254px',
     float: 'right',
     marginTop: '5px',
     padding: '14px 18px 12px 18px',
@@ -86,7 +98,10 @@ const styles = (theme) => ({
     margin: '-9px 0 0 15px',
   },
   filters: {
-    padding: '18px 0 12px 0',
+    padding: '0 0 12px 0',
+    '@media (max-width: 1250px)': {
+      marginTop: '20px',
+    },
   },
   filter: {
     marginRight: 10,
@@ -146,107 +161,109 @@ class CyioListCards extends Component {
           style={{ backgroundColor: '#075AD333' }}
         >
           <div className={classes.parameters}>
-            <div style={{ float: 'left', marginRight: 20 }}>
-              <SearchInput
-                variant="small"
-                onSubmit={handleSearch.bind(this)}
-                keyword={keyword}
-                disabled={true}
-              />
-            </div>
-            {availableFilterKeys && availableFilterKeys.length > 0 ? (
-              <Filters
-                availableFilterKeys={availableFilterKeys}
-                handleAddFilter={handleAddFilter}
-                currentFilters={filters}
-                filterEntityType={filterEntityType}
-              />
-            ) : (
-              ''
-            )}
-            {numberOfElements ? (
-              <div style={{ float: 'left', padding: '5px' }}>
-                {t('Count:')}{' '}
-                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+            <div className={classes.searchBar}>
+              <div style={{ float: 'left', marginRight: 20 }}>
+                <SearchInput
+                  variant="small"
+                  onSubmit={handleSearch.bind(this)}
+                  keyword={keyword}
+                  disabled={true}
+                />
               </div>
-            ) : (
-              ''
-            )}
-            <InputLabel
-              classes={{ root: classes.sortFieldLabel }}
-              style={{
-                marginLeft:
-                  availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
-              }}
-            >
-              {t('Sort by')}
-            </InputLabel>
-            <FormControl classes={{ root: classes.sortField }}>
-              <Select
-                name="sort-by"
-                value={sortBy}
-                onChange={this.sortBy.bind(this)}
-                inputProps={{
-                  name: 'sort-by',
-                  id: 'sort-by',
+              {availableFilterKeys && availableFilterKeys.length > 0 ? (
+                <Filters
+                  availableFilterKeys={availableFilterKeys}
+                  handleAddFilter={handleAddFilter}
+                  currentFilters={filters}
+                  filterEntityType={filterEntityType}
+                />
+              ) : (
+                ''
+              )}
+              {numberOfElements ? (
+                <div style={{ float: 'left', padding: '5px' }}>
+                  {t('Count:')}{' '}
+                  <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+                </div>
+              ) : (
+                ''
+              )}
+              <InputLabel
+                classes={{ root: classes.sortFieldLabel }}
+                style={{
+                  marginLeft:
+                    availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
                 }}
               >
-                {toPairs(dataColumns).map((dataColumn) => (
-                  <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
-                    {t(dataColumn[1].label)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <IconButton
-              aria-label="Sort by"
-              onClick={this.reverse.bind(this)}
-              classes={{ root: classes.sortIcon }}
-            >
-              {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
-            </IconButton>
-          </div>
-          <div className={classes.filters} style={ toPairs(filters).length > 0 ? { width: '50%' } : { width: '0%' }}>
-            {map((currentFilter) => {
-              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const values = (
-                <span>
-                  {map(
-                    (n) => (
-                      <span key={n.value}>
-                        {n.value && n.value.length > 0
-                          ? truncate(n.value, 15)
-                          : t('No label')}{' '}
-                        {last(currentFilter[1]).value !== n.value && (
-                          <code>OR</code>
-                        )}{' '}
-                      </span>
-                    ),
-                    currentFilter[1],
-                  )}
-                </span>
-              );
-              return (
-                <span>
-                  <Chip
-                    key={currentFilter[0]}
-                    classes={{ root: classes.filter }}
-                    label={
-                      <div>
-                        <strong>{label}</strong>: {values}
-                      </div>
-                    }
-                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
-                  />
-                  {last(toPairs(filters))[0] !== currentFilter[0] && (
+                {t('Sort by')}
+              </InputLabel>
+              <FormControl classes={{ root: classes.sortField }}>
+                <Select
+                  name="sort-by"
+                  value={sortBy}
+                  onChange={this.sortBy.bind(this)}
+                  inputProps={{
+                    name: 'sort-by',
+                    id: 'sort-by',
+                  }}
+                >
+                  {toPairs(dataColumns).map((dataColumn) => (
+                    <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
+                      {t(dataColumn[1].label)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <IconButton
+                aria-label="Sort by"
+                onClick={this.reverse.bind(this)}
+                classes={{ root: classes.sortIcon }}
+              >
+                {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
+              </IconButton>
+            </div>
+            <div className={classes.filters}>
+              {map((currentFilter) => {
+                const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+                const values = (
+                  <span>
+                    {map(
+                      (n) => (
+                        <span key={n.value}>
+                          {n.value && n.value.length > 0
+                            ? truncate(n.value, 15)
+                            : t('No label')}{' '}
+                          {last(currentFilter[1]).value !== n.value && (
+                            <code>OR</code>
+                          )}{' '}
+                        </span>
+                      ),
+                      currentFilter[1],
+                    )}
+                  </span>
+                );
+                return (
+                  <span>
                     <Chip
-                      classes={{ root: classes.operator }}
-                      label={t('AND')}
+                      key={currentFilter[0]}
+                      classes={{ root: classes.filter }}
+                      label={
+                        <div>
+                          <strong>{label}</strong>: {values}
+                        </div>
+                      }
+                      onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
                     />
-                  )}
-                </span>
-              );
-            }, toPairs(filters))}
+                    {last(toPairs(filters))[0] !== currentFilter[0] && (
+                      <Chip
+                        classes={{ root: classes.operator }}
+                        label={t('AND')}
+                      />
+                    )}
+                  </span>
+                );
+              }, toPairs(filters))}
+            </div>
           </div>
           <div className={classes.views}>
             <div style={{ float: 'right' }}>
