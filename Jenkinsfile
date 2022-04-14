@@ -9,6 +9,7 @@ node {
   String tag = 'latest'
   String graphql = 'https://cyio.darklight.ai/graphql'
   String api = 'api'
+  String version = '0.1.0'
 
   echo "branch: ${branch}, commit message: ${commitMessage}"
 
@@ -28,17 +29,11 @@ node {
   stage('Setup') {
     dir('opencti-platform') {
       dir('opencti-graphql') { // GraphQL
-        if (fileExists('config/schema/compiled.graphql')) {
-          sh 'rm config/schema/compiled.graphql'
-        }
-        sh 'yarn install'
-      }
-      dir('opencti-front') { // Frontend
-        String version = readJSON(file: 'package.json')['version']
+        version = readJSON(file: 'package.json')['version']
         switch (branch) {
           case 'develop':
             version = "${version}-dev+" + "${commit}"
-            sh label: 'version update', script: """
+            sh label: 'updating version', script: """
               tmp=\$(mktemp)
               jq '.version = "${version}"' package.json > \$tmp
               mv -f \$tmp package.json
@@ -46,20 +41,29 @@ node {
             break
           case 'staging':
             version = "${version}-RC+" + "${commit}"
+            sh label: 'updating version', script: """
+              tmp=\$(mktemp)
+              jq '.version = "${version}"' package.json > \$tmp
+              mv -f \$tmp package.json
+            """
             break
           default:
             break
         }
         echo "version: ${version}"
 
+        if (fileExists('config/schema/compiled.graphql')) {
+          sh 'rm config/schema/compiled.graphql'
+        }
+        sh 'yarn install'
+      }
+      dir('opencti-front') { // Frontend
         // TODO: investigate
         // Hardcode the endpoints for now, should use envionment variables
-        // artifacts for debugging
         dir('src/relay') {
           sh "sed -i 's|\${hostUrl}/graphql|${graphql}|g' environmentDarkLight.js"
         }
         sh "sed -i 's|https://api-dev.|https://${api}.|g' package.json"
-        archiveArtifacts artifacts: 'package.json', fingerprint: true, followSymlinks: false
         sh 'yarn schema-compile'
         sh 'yarn install'
       }
@@ -101,6 +105,15 @@ node {
     //   - commit says: 'ci:skip' then skip build
     //   - commit says: 'ci:build' then build regardless of branch
     if (((branch.equals('master') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
+      office365ConnectorSend(
+        status: 'Build Started',
+        // color: '00FF00',
+        webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
+        // message: "Starting build"
+        factDefinitions: [[name: "Commit", template: "[${commit}](https://github.com/champtc/opencti/commit/${sh(returnStdout: true, script: 'git rev-parse HEAD')})"],
+                          [name: "Version", template: "${version}"]]
+      )
+
       dir('opencti-platform') {
         String buildArgs = '--no-cache --progress=plain .'
         docker_steps(registry, product, tag, buildArgs)
