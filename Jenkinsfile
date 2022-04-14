@@ -137,25 +137,22 @@ node {
   // TODO: Actually call the Jenkins job
   if (commitMessage.contains('ci:deploy')) {
     stage('Deploy') {
-      echo 'Deploying...'
-      stage('Deploy') {
-        switch(branch) {
-          case 'master':
-            echo 'Deploying to production...'
-            // build '/deploy/OpenCTI Frontend/main'
-            break
-          case 'staging':
-            echo 'Deploying to staging...'
-            build '/deploy/OpenCTI Frontend/staging'
-            break
-          case 'develop':
-            echo 'Deploying to develop...'
-            // build '/deploy/OpenCTI Frontend/dev'
-            break
-          default:
-            echo "Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag..."
-            break
-        }
+      switch(branch) {
+        case 'master':
+          echo 'Deploying to production...'
+          // build '/deploy/OpenCTI Frontend/main'
+          break
+        case 'staging':
+          echo 'Deploying to staging...'
+          build '/deploy/OpenCTI Frontend/staging'
+          break
+        case 'develop':
+          echo 'Deploying to develop...'
+          // build '/deploy/OpenCTI Frontend/dev'
+          break
+        default:
+          echo "Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag..."
+          break
       }
     }
   }
