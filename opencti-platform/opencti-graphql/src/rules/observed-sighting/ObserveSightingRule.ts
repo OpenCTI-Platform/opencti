@@ -13,7 +13,7 @@ import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
-import type { Rule } from '../../types/rules';
+import type { RuleRuntime } from '../../types/rules';
 import type { StixObject } from '../../types/stix-common';
 import type { StixIndicator, StixObservedData } from '../../types/stix-sdo';
 import type { StixRelation } from '../../types/stix-sro';
@@ -24,7 +24,7 @@ import type { Event } from '../../types/event';
 
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
 // 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
-const ruleObserveSightingBuilder = (): Rule => {
+const ruleObserveSightingBuilder = (): RuleRuntime => {
   const { id } = def;
   // Execution
   const generateDependencies = (

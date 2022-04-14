@@ -4,7 +4,7 @@ import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format'
 import { createRuleContent, RULE_MANAGER_USER } from './rules';
 import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
-import type { RelationTypes, Rule, RuleDefinition } from '../types/rules';
+import type { RelationTypes, RuleRuntime, RuleDefinition } from '../types/rules';
 import type { StixRelation } from '../types/stix-sro';
 import type { Event } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
@@ -12,7 +12,7 @@ import type { BasicStoreRelation } from '../types/store';
 import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import type { StixObject } from '../types/stix-common';
 
-const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): Rule => {
+const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   const resolveTypes = { [leftType]: rightType, [rightType]: leftType };

@@ -54,7 +54,6 @@ const patch = {
 };
 test('Should rebuild instance', () => {
   const rebuildInstance = rebuildInstanceBeforePatch(instance, patch);
-  console.log(rebuildInstance);
   expect(rebuildInstance.extensions[STIX_EXT_OCTI].id).toEqual('6bf6c4e3-20f0-4497-bb08-bd2cf59b1e83');
   expect(rebuildInstance.extensions[STIX_EXT_OCTI].stix_ids).toEqual([]);
   expect(rebuildInstance.extensions[STIX_EXT_OCTI].tests).toEqual(['marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41dd']);

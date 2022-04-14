@@ -37,7 +37,7 @@ import PartOfTargetsRule from '../rules/part-of-targets/PartOfTargetsRule';
 import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRule';
 import RuleSightingIncident from '../rules/sighting-incident/SightingIncidentRule';
 import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule';
-import type { Rule, RuleDefinition } from '../types/rules';
+import type { RuleRuntime, RuleDefinition } from '../types/rules';
 import type {
   BasicManagerEntity,
   BasicRuleEntity, BasicStoreCommon,
@@ -50,14 +50,14 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { Event, RuntimeEvent, StreamEvent } from '../types/event';
 
-let activatedRules: Array<Rule> = [];
+let activatedRules: Array<RuleRuntime> = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 500;
 const SCHEDULE_TIME = 10000;
 
 // region rules registration
-export const RULES_DECLARATION: Array<Rule> = [
+export const RULES_DECLARATION: Array<RuleRuntime> = [
   AttributedToAttributedRule,
   AttributionTargetsRule,
   AttributionUseRule,
@@ -81,17 +81,17 @@ for (let index = 0; index < ruleBehaviors.length; index += 1) {
 // endregion
 
 // region loaders
-export const getRules = async (): Promise<Array<Rule>> => {
+export const getRules = async (): Promise<Array<RuleRuntime>> => {
   const args = { connectionFormat: false };
   const rules = await listEntities<BasicRuleEntity>(SYSTEM_USER, [ENTITY_TYPE_RULE], args);
-  return RULES_DECLARATION.map((def: Rule) => {
+  return RULES_DECLARATION.map((def: RuleRuntime) => {
     const esRule = rules.find((e) => e.internal_id === def.id);
     const isActivated = esRule?.active === true;
     return { ...def, activated: isActivated };
   });
 };
 
-export const getActivatedRules = async (): Promise<Array<Rule>> => {
+export const getActivatedRules = async (): Promise<Array<RuleRuntime>> => {
   const rules = await getRules();
   return rules.filter((r) => r.activated);
 };
@@ -244,7 +244,7 @@ const applyCleanupOnDependencyIds = async (eventId: string, deletionIds: Array<s
 };
 
 // noinspection TypeScriptValidateTypes
-export const rulesApplyHandler = async (events: Array<RuntimeEvent>, forRules: Array<Rule> = []) => {
+export const rulesApplyHandler = async (events: Array<RuntimeEvent>, forRules: Array<RuleRuntime> = []) => {
   if (isEmptyField(events) || events.length === 0) return;
   const rules = forRules.length > 0 ? forRules : activatedRules;
   for (let index = 0; index < events.length; index += 1) {
@@ -310,13 +310,13 @@ export const rulesApplyHandler = async (events: Array<RuntimeEvent>, forRules: A
   }
 };
 
-export const rulesApplyDerivedEvents = async (eventId: string, derivedEvents: Array<Event>, forRules: Array<Rule> = []): Promise<void> => {
+export const rulesApplyDerivedEvents = async (eventId: string, derivedEvents: Array<Event>, forRules: Array<RuleRuntime> = []): Promise<void> => {
   const events = derivedEvents.map((d) => ({ eventId, ...d }));
   // eslint-disable-next-line no-use-before-define
   await rulesApplyHandler(events, forRules);
 };
 
-export const rulesCleanHandler = async (eventId: string, instances: Array<BasicStoreCommon>, rules: Array<Rule>, deletedDependencies: Array<string> = []) => {
+export const rulesCleanHandler = async (eventId: string, instances: Array<BasicStoreCommon>, rules: Array<RuleRuntime>, deletedDependencies: Array<string> = []) => {
   for (let i = 0; i < instances.length; i += 1) {
     const instance = instances[i];
     for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {

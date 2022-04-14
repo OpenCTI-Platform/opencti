@@ -39,7 +39,7 @@ interface RuleDefinition {
   behaviors: Array<RuleBehavior>;
 }
 
-interface Rule extends RuleDefinition {
+interface RuleRuntime extends RuleDefinition {
   activated?: boolean;
   insert: (element: StixEntities | StixRelation) => Promise<Array<Event>>;
   update: (element: StixEntities | StixRelation) => Promise<Array<Event>>;

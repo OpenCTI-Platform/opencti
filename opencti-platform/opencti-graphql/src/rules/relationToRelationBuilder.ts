@@ -4,7 +4,7 @@ import { createInferredRelation, deleteInferredRuleElement } from '../database/m
 import { createRuleContent, RULE_MANAGER_USER } from './rules';
 import { computeAverage } from '../database/utils';
 import { listAllRelations } from '../database/middleware-loader';
-import type { Rule, RuleDefinition, RelationTypes } from '../types/rules';
+import type { RuleRuntime, RuleDefinition, RelationTypes } from '../types/rules';
 import type { StixObject } from '../types/stix-common';
 import type { Event } from '../types/event';
 import type { BasicStoreRelation } from '../types/store';
@@ -12,7 +12,7 @@ import type { StixRelation } from '../types/stix-sro';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 
-const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): Rule => {
+const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   // Execution
