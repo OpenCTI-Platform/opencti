@@ -4,7 +4,7 @@ node {
   String registry = 'docker.darklight.ai'
   String product = 'opencti'
   String branch = "${env.BRANCH_NAME}"
-  String commit = "${sh(returnStdout: true, script: 'git rev-parse HEAD')}"[0..7]
+  String commit = "${sh(returnStdout: true, script: 'git rev-parse HEAD')}"
   String commitMessage = "${sh(returnStdout: true, script: "git log --pretty=format:%s -n 1 ${commit}")}"
   String tag = 'latest'
   String graphql = 'https://cyio.darklight.ai/graphql'
@@ -32,7 +32,7 @@ node {
         version = readJSON(file: 'package.json')['version']
         switch (branch) {
           case 'develop':
-            version = "${version}-dev+" + "${commit}"
+            version = "${version}-dev+" + "${commit}"[0..7]
             sh label: 'updating version', script: """
               tmp=\$(mktemp)
               jq '.version = "${version}"' package.json > \$tmp
@@ -40,7 +40,7 @@ node {
             """
             break
           case 'staging':
-            version = "${version}-RC+" + "${commit}"
+            version = "${version}-RC+" + "${commit}"[0..7]
             sh label: 'updating version', script: """
               tmp=\$(mktemp)
               jq '.version = "${version}"' package.json > \$tmp
@@ -106,11 +106,11 @@ node {
     //   - commit says: 'ci:build' then build regardless of branch
     if (((branch.equals('master') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
       office365ConnectorSend(
-        status: 'Build Started',
+        // status: 'Build Started',
         // color: '00FF00',
         webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
-        // message: "Starting build"
-        factDefinitions: [[name: "Commit", template: "[${commit}](https://github.com/champtc/opencti/commit/${sh(returnStdout: true, script: 'git rev-parse HEAD')})"],
+        message: "Build started"
+        factDefinitions: [[name: "Commit", template: "[${commit[0..7]}](https://github.com/champtc/opencti/commit/${commit})"],
                           [name: "Version", template: "${version}"]]
       )
 
@@ -126,7 +126,7 @@ node {
         webhookUrl: "${env.TEAMS_DOCKER_HOOK_URL}",
         message: "New image built and pushed!",
         factDefinitions: [[name: "Commit Message", template: "${commitMessage}"],
-                          [name: "Commit SHA", template: "${commit}"], 
+                          [name: "Commit", template: "${commit}"],
                           [name: "Image", template: "${registry}/${product}:${tag}"]]
       )
     } else {
@@ -134,28 +134,29 @@ node {
     }
   }
 
-  // TODO: Add check for if we should deploy
+  // TODO: Actually call the Jenkins job
   if (commitMessage.contains('ci:deploy')) {
-    if (currentBuild.result == 'SUCCESS') {
+    stage('Deploy') {
       echo 'Deploying...'
       stage('Deploy') {
         switch(branch) {
           case 'master':
             echo 'Deploying to production...'
+            // build '/deploy/OpenCTI Frontend/main'
             break
           case 'staging':
             echo 'Deploying to staging...'
+            build '/deploy/OpenCTI Frontend/staging'
             break
           case 'develop':
             echo 'Deploying to develop...'
+            // build '/deploy/OpenCTI Frontend/dev'
             break
           default:
-            echo "Deploy flag is only supported on production, staging, or develop branches, skipping deploy..."
+            echo "Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag..."
             break
         }
       }
-    } else {
-      echo "Build status is: '${currentBuild.result}', skipping deploy..."
     }
   }
 }
