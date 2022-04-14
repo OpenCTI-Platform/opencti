@@ -353,6 +353,7 @@ class NetworkEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={network.external_references}
                     cyioCoreObjectId={network.id}
+                    fieldName='external_references'
                     refreshQuery={refreshQuery}
                     typename={network.__typename}
                   />
@@ -364,6 +365,7 @@ class NetworkEditionContainer extends Component {
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={network.__typename}
                 refreshQuery={refreshQuery}
+                fieldName='notes'
                 notes={network.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={network.id}
               />

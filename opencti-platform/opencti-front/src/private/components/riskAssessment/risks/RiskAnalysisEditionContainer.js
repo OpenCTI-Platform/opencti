@@ -355,6 +355,7 @@ class RiskAnalysisEditionContainer extends Component {
                 <Grid item={true} xs={6}>
                   <CyioCoreObjectExternalReferences
                   externalReferences={risk.links}
+                  fieldName='links'
                   cyioCoreObjectId={riskId}
                   />
                 </Grid>
@@ -362,6 +363,7 @@ class RiskAnalysisEditionContainer extends Component {
                   {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk?.id} /> */}
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
                     notes={risk.remarks}
+                    fieldName='remarks'
                     cyioCoreObjectOrCyioCoreRelationshipId={riskId}
                     marginTop='0px'
                   />

@@ -102,8 +102,8 @@ const computingDeviceResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < assetList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: assetList.length,
           },
           edges: edges,

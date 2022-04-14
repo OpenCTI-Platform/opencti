@@ -99,6 +99,7 @@ class RiskComponent extends Component {
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
                 typename={risk.__typename}
+                fieldName='links'
                 externalReferences={risk.links}
                 cyioCoreObjectId={risk.id}
                 refreshQuery={refreshQuery}
@@ -108,6 +109,7 @@ class RiskComponent extends Component {
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   typename={risk.__typename}
+                  fieldName='remarks'
                   notes={risk.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
                   marginTop='0px'

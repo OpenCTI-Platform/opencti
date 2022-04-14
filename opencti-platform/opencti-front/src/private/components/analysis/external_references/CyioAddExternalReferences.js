@@ -129,7 +129,7 @@ class CyioAddExternalReferences extends Component {
           variables: {
             toId: externalReference.id,
             fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-            fieldName: 'external_references',
+            fieldName: this.props.fieldName,
             from_type: this.props.typename,
             to_type: externalReference.__typename,
           },
@@ -157,7 +157,7 @@ class CyioAddExternalReferences extends Component {
         variables: {
           toId: createExternalRef.id,
           fromId: cyioCoreObjectOrCyioCoreRelationshipId,
-          fieldName: 'external_references',
+          fieldName: this.props.fieldName,
           from_type: this.props.typename,
           to_type: createExternalRef.__typename,
         },
@@ -357,6 +357,7 @@ CyioAddExternalReferences.propTypes = {
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
   refreshQuery: PropTypes.func,
+  fieldName: PropTypes.string,
   disableAdd: PropTypes.bool,
   typename: PropTypes.string,
   classes: PropTypes.object,
