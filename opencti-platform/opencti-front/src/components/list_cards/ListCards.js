@@ -135,7 +135,7 @@ class ListCards extends Component {
           ) : (
             ''
           )}
-          {/* <InputLabel
+          <InputLabel
             classes={{ root: classes.sortFieldLabel }}
             style={{
               marginLeft:
@@ -167,7 +167,7 @@ class ListCards extends Component {
             classes={{ root: classes.sortIcon }}
           >
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
-          </IconButton> */}
+          </IconButton>
           <div className={classes.filters}>
             {map((currentFilter) => {
               const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
