@@ -3,7 +3,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, schemaTypes } from './general';
 
 const SOURCE_REF = 'source_ref';
 const TARGET_REF = 'target_ref';
-export const RELATIONSHIP_CORE_REFS_TO_FIELDS = {
+export const RELATIONSHIP_CORE_REFS_TO_FIELDS: { [k: string] : string } = {
   [SOURCE_REF]: 'fromId',
   [TARGET_REF]: 'toId',
 };
@@ -89,7 +89,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_DETECTS,
 ];
 schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
-export const isStixCoreRelationship = (type) => R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
+export const isStixCoreRelationship = (type: string): boolean => R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 // endregion
 
 export const stixCoreRelationshipsAttributes = [

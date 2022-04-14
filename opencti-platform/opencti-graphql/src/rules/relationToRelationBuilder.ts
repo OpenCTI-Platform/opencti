@@ -1,17 +1,28 @@
 /* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
-import { createInferredRelation, deleteInferredRuleElement, listAllRelations } from '../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
 import { createRuleContent, RULE_MANAGER_USER } from './rules';
 import { computeAverage } from '../database/utils';
+import { listAllRelations } from '../database/middleware-loader';
+import type { Rule, RuleDefinition, RelationTypes } from '../types/rules';
+import type { StixObject } from '../types/stix-common';
+import type { Event } from '../types/event';
+import type { BasicStoreRelation } from '../types/store';
+import type { StixRelation } from '../types/stix-sro';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 
-const buildRelationToRelationRule = (ruleDefinition, relationTypes) => {
+const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): Rule => {
   const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   // Execution
-  const applyUpsert = async (data) => {
-    const events = [];
-    const { x_opencti_id: createdId, object_marking_refs: markings, relationship_type } = data;
-    const { x_opencti_source_ref: sourceRef, x_opencti_target_ref: targetRef } = data;
+  const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
+    const events: Array<Event> = [];
+    const { extensions } = data;
+    const createdId = extensions[STIX_EXT_OCTI].id;
+    const sourceRef = extensions[STIX_EXT_OCTI].source_ref;
+    const targetRef = extensions[STIX_EXT_OCTI].target_ref;
+    const { object_marking_refs: markings, relationship_type } = data;
     const { confidence: createdConfidence = 0, start_time: startTime, stop_time: stopTime } = data;
     const creationRange = buildPeriodFromDates(startTime, stopTime);
     // Need to discover on the from and the to if attributed-to also exists
@@ -19,10 +30,10 @@ const buildRelationToRelationRule = (ruleDefinition, relationTypes) => {
     // (P) -> FIND_RELS (leftType) -> (A) -> RightType -> (B)
     // (P) -> creationType -> (B)
     if (relationship_type === rightType) {
-      const listFromCallback = async (relationships) => {
+      const listFromCallback = async (relationships: Array<BasicStoreRelation>): Promise<void> => {
         for (let sIndex = 0; sIndex < relationships.length; sIndex += 1) {
-          const { id: foundRelationId, fromId, confidence = 0 } = relationships[sIndex];
-          const { start_time, stop_time, object_marking_refs } = relationships[sIndex];
+          const { internal_id: foundRelationId, fromId, confidence = 0 } = relationships[sIndex];
+          const { start_time, stop_time, [RELATION_OBJECT_MARKING]: object_marking_refs } = relationships[sIndex];
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
           const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
@@ -54,10 +65,10 @@ const buildRelationToRelationRule = (ruleDefinition, relationTypes) => {
     // (A) -> leftType -> (B) -> FIND_RELS (RightType) -> (P)
     // (A) -> creationType -> (P)
     if (relationship_type === leftType) {
-      const listToCallback = async (relationships) => {
+      const listToCallback = async (relationships: Array<BasicStoreRelation>): Promise<void> => {
         for (let sIndex = 0; sIndex < relationships.length; sIndex += 1) {
-          const { id: foundRelationId, toId, confidence = 0 } = relationships[sIndex];
-          const { start_time, stop_time, object_marking_refs } = relationships[sIndex];
+          const { internal_id: foundRelationId, toId, confidence = 0 } = relationships[sIndex];
+          const { start_time, stop_time, [RELATION_OBJECT_MARKING]: object_marking_refs } = relationships[sIndex];
           const existingRange = buildPeriodFromDates(start_time, stop_time);
           const range = computeRangeIntersection(creationRange, existingRange);
           const elementMarkings = [...(markings || []), ...(object_marking_refs || [])];
@@ -86,9 +97,15 @@ const buildRelationToRelationRule = (ruleDefinition, relationTypes) => {
     return events;
   };
   // Contract
-  const clean = async (element, deletedDependencies) => deleteInferredRuleElement(id, element, deletedDependencies);
-  const insert = async (element) => applyUpsert(element);
-  const update = async (element) => applyUpsert(element);
+  const clean = async (element: StixObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
+    return deleteInferredRuleElement(id, element, deletedDependencies) as Promise<Array<Event>>;
+  };
+  const insert = async (element: StixRelation): Promise<Array<Event>> => {
+    return applyUpsert(element);
+  };
+  const update = async (element: StixRelation): Promise<Array<Event>> => {
+    return applyUpsert(element);
+  };
   return { ...ruleDefinition, insert, update, clean };
 };
 

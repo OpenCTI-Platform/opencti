@@ -1,16 +1,15 @@
+import type { KeyValuePair } from 'ramda';
 import * as R from 'ramda';
-import { UnsupportedError } from '../config/errors';
 import {
-  INTERNAL_IDS_ALIASES,
   IDS_STIX,
-  RULE_PREFIX,
-  INPUT_MARKINGS,
-  INPUT_OBJECTS,
-  INPUT_LABELS,
   INPUT_EXTERNAL_REFS,
   INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS,
+  INTERNAL_IDS_ALIASES,
+  RULE_PREFIX,
 } from './general';
-import { STANDARD_HASHES } from './identifier';
 import { isDatedInternalObject } from './internalObject';
 import { isStixCoreObject } from './stixCoreObject';
 import { isStixCoreRelationship } from './stixCoreRelationship';
@@ -18,6 +17,8 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
 import { MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from './stixCyberObservableRelationship';
+import type { StixArtifact } from '../types/stix-sco';
+import type { HashInput } from '../generated/graphql';
 
 const multipleAttributes = [
   IDS_STIX,
@@ -161,54 +162,33 @@ export const booleanAttributes = [
   'ssl_verify',
 ];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
-export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };
+export const dictAttributes: { [k: string]: { key: string, value: string } } = { hashes: { key: 'algorithm', value: 'hash' } };
 
-export const isDictionaryAttribute = (key) => dictAttributes[key];
-export const isBooleanAttribute = (key) => booleanAttributes.includes(key);
-export const isNumericAttribute = (key) => numericAttributes.includes(key);
-export const isDateAttribute = (key) => dateAttributes.includes(key);
-export const isMultipleAttribute = (key) => key.startsWith(RULE_PREFIX) || multipleAttributes.includes(key);
-export const isRuntimeAttribute = (key) => runtimeAttributes.includes(key);
+export const isDictionaryAttribute = (key: string): boolean => dictAttributes[key] !== undefined;
+export const isBooleanAttribute = (key: string): boolean => booleanAttributes.includes(key);
+export const isNumericAttribute = (key: string): boolean => numericAttributes.includes(key);
+export const isDateAttribute = (key: string): boolean => dateAttributes.includes(key);
+export const isMultipleAttribute = (key: string): boolean => key.startsWith(RULE_PREFIX) || multipleAttributes.includes(key);
+export const isRuntimeAttribute = (key: string): boolean => runtimeAttributes.includes(key);
 
 // Must be call as soon as possible in the according resolvers
-export const apiAttributeToComplexFormat = (attribute, data) => {
-  const info = dictAttributes[attribute];
-  if (!info) {
-    throw UnsupportedError('Cant deserialize this attribute because its not a dictionary', { attribute });
-  }
+export const inputHashesToStix = (data: Array<HashInput>) => {
   const inputs = Array.isArray(data) ? data : [data];
-  return R.pipe(
-    R.map((d) => {
-      const keyValue = d[info.key];
-      const isStandardHash = STANDARD_HASHES.includes(keyValue.toUpperCase());
-      const complexValue = d[info.value];
-      if (isStandardHash) {
-        return [keyValue.toUpperCase(), complexValue.toLowerCase()];
-      }
-      return [keyValue, complexValue];
-    }),
-    R.fromPairs
-  )(inputs);
+  const convertedInputs = inputs.map((d) => {
+    return [d.algorithm.toUpperCase(), d.hash.toLowerCase()] as KeyValuePair<string, string>;
+  });
+  return R.fromPairs(convertedInputs);
 };
 // Must only be call in generic resolvers for data output
-export const complexAttributeToApiFormat = (dataKey, instance) => {
-  const attributeValue = instance[dataKey];
-  const info = dictAttributes[dataKey];
-  if (!info) {
-    throw UnsupportedError('Cant serialize this attribute -> not a dictionary', { attributeValue });
-  }
-  const { key, value } = info;
-  return R.pipe(
-    R.toPairs,
-    R.map(([lab, val]) => {
-      const isStandardHash = STANDARD_HASHES.includes(lab.toUpperCase());
-      const labValue = isStandardHash ? lab.toUpperCase() : lab;
-      return { [key]: labValue, [value]: val };
-    })
-  )(attributeValue);
+export const stixHashesToInput = (instance: StixArtifact): Array<HashInput> => {
+  const attributeValue = instance.hashes;
+  const entries = Object.entries(attributeValue);
+  return entries.map(([lab, val]) => {
+    return { algorithm: lab.toUpperCase(), hash: val.toLowerCase() };
+  });
 };
 
-export const isUpdatedAtObject = (type) => {
+export const isUpdatedAtObject = (type: string): boolean => {
   return (
     isDatedInternalObject(type)
     || isStixMetaObject(type)
@@ -218,7 +198,7 @@ export const isUpdatedAtObject = (type) => {
   );
 };
 
-export const isModifiedObject = (type) => {
+export const isModifiedObject = (type: string): boolean => {
   return (
     isStixMetaObject(type)
     || isStixDomainObject(type)

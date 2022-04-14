@@ -1,17 +1,25 @@
-import type { UserOrigin } from './user';
-import type { StixObject } from './general';
+import { StixCoreObject, StixId } from './stix-common';
 
-interface EventCommit {
-  message?: string;
-  references: array<string>;
-}
-
+// stream
 interface Event {
   version: string;
   type: string;
-  origin: UserOrigin;
-  markings?: Array<string>;
-  message?: string;
-  commit: EventCommit;
-  data: StixObject;
+  origin: string;
+  markings: Array<StixId>;
+  message: string;
+  commit: {
+    message: string | undefined;
+    references: Array<string>;
+  };
+  data: StixCoreObject;
+}
+
+interface RuntimeEvent extends Event {
+  eventId: string;
+}
+
+interface StreamEvent {
+  id: string;
+  event: 'update' | 'create' | 'delete';
+  data: Event
 }

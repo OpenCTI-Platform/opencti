@@ -1,10 +1,8 @@
 import * as R from 'ramda';
-import dot from 'dot-object';
 import { version as uuidVersion } from 'uuid';
 import uuidTime from 'uuid-time';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { UnsupportedError } from '../config/errors';
 import {
-  CONTAINER_REFS_TO_FIELDS,
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -25,8 +23,6 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -52,11 +48,6 @@ import {
   ENTITY_X_OPENCTI_HOSTNAME,
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
-import {
-  isStixInternalMetaRelationship,
-  isStixMetaRelationship, META_FIELD_TO_STIX_ATTRIBUTE,
-  STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD,
-} from '../schema/stixMetaRelationship';
 import {
   isStixCoreRelationship,
   RELATION_ATTRIBUTED_TO,
@@ -85,18 +76,16 @@ import {
   RELATION_OWNS,
   RELATION_PART_OF,
   RELATION_RELATED_TO,
-  RELATION_RESOLVES_TO,
   RELATION_REMEDIATES,
+  RELATION_RESOLVES_TO,
   RELATION_REVOKED_BY,
   RELATION_SUBTECHNIQUE_OF,
   RELATION_TARGETS,
   RELATION_USES,
   RELATION_VARIANT_OF,
-  RELATIONSHIP_CORE_REFS_TO_FIELDS,
 } from '../schema/stixCoreRelationship';
-import { isStixSightingRelationship, SIGHTING_RELATIONSHIP_REFS_TO_FIELDS } from '../schema/stixSightingRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
-  isStixCyberObservableRelationship,
   RELATION_BCC,
   RELATION_BELONGS_TO as OBS_RELATION_BELONGS_TO,
   RELATION_BODY_MULTIPART,
@@ -126,42 +115,35 @@ import {
   RELATION_TO,
   RELATION_VALUES,
   RELATION_X509_V3_EXTENSIONS,
-  STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD,
-  STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE,
   STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD,
-  STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS
 } from '../schema/stixCyberObservableRelationship';
-import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
-  INPUT_KILLCHAIN,
-  INPUT_LABELS,
-  INPUT_MARKINGS,
-  INPUT_OBJECTS,
-  INTERNAL_PREFIX,
-  REL_INDEX_PREFIX,
-} from '../schema/general';
-import { isEmptyField, isInferredIndex, isNotEmptyField, pascalize, UPDATE_OPERATION_REPLACE } from './utils';
-import { isStixRelationship } from '../schema/stixRelationship';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, INTERNAL_PREFIX, REL_INDEX_PREFIX, } from '../schema/general';
+import { isNotEmptyField, UPDATE_OPERATION_REPLACE } from './utils';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { complexAttributeToApiFormat, isMultipleAttribute } from '../schema/fieldDataAdapter';
-import {
-  isSingleStixEmbeddedRelationship,
-  isSingleStixEmbeddedRelationshipInput,
-} from '../schema/stixEmbeddedRelationship';
+import { isMultipleAttribute, stixHashesToInput } from '../schema/fieldDataAdapter';
 import { generateInternalType } from '../schema/schemaUtils';
-import typeDefs from '../../config/schema/opencti.graphql';
 import { generateStandardId, normalizeName } from '../schema/identifier';
-import { isInternalRelationship } from '../schema/internalRelationship';
-import { isInternalObject } from '../schema/internalObject';
-import { isStixObject } from '../schema/stixCoreObject';
-import { observableValue } from '../utils/format';
+import { mergeDeepRightAll } from '../utils/format';
+import type { StoreInput, StoreInputOperation, BasicStoreObject, StorePartial } from '../types/store';
+import type { StixCoreObject, StixExternalReference, StixObject } from '../types/stix-common';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
+import type { StixMarkingDefinition } from '../types/stix-smo';
+import type {
+  ArtifactAddInput,
+  AttackPatternAddInput,
+  ExternalReferenceAddInput,
+  MarkingDefinitionAddInput,
+  StixCoreRelationshipAddInput,
+  StixSightingRelationshipAddInput
+} from '../generated/graphql';
+import type { StixRelation, StixSighting } from '../types/stix-sro';
+import type { StixAttackPattern } from '../types/stix-sdo';
+import type { StixArtifact } from '../types/stix-sco';
+import { convertPartialToStix } from './stix-converter';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -186,443 +168,162 @@ const EXCLUDED_FIELDS_FROM_STIX = [
   'x_opencti_inferences',
   'x_opencti_graph_data'
 ];
-const STIX_BASIC_FIELDS = [
-  'id',
-  'x_opencti_id',
-  'type',
-  'spec_version',
-  'source_ref',
-  'x_opencti_source_ref',
-  'target_ref',
-  'x_opencti_target_ref',
-  'start_time',
-  'stop_time',
-  'hashes',
-];
 
-export const convertTypeToStixType = (type) => {
-  if (isStixDomainObjectIdentity(type)) {
-    return 'identity';
-  }
-  if (isStixDomainObjectLocation(type)) {
-    return 'location';
-  }
-  if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-    return 'file';
-  }
-  if (isStixCoreRelationship(type)) {
-    return 'relationship';
-  }
-  if (isStixSightingRelationship(type)) {
-    return 'sighting';
-  }
-  return type.toLowerCase();
-};
-
-const isValidStix = (data) => {
-  // TODO @JRI @SAM
-  return !R.isEmpty(data);
-};
-
-const isDefinedValue = (element) => {
-  if (element) {
-    // If not in diff mode, we only take into account none empty element
-    const isArray = Array.isArray(element);
-    if (isArray) return element.length > 0;
-    // If not array, check if empty
-    return !R.isEmpty(element);
-  }
-  return false;
-};
-
-export const isTrustedStixId = (stixId) => {
-  const segments = stixId.split('--');
-  const [, uuid] = segments;
-  return uuidVersion(uuid) !== 1;
-};
-
-const cleanObject = (data) => {
-  return R.mergeAll(Object.entries(data).filter(([, v]) => isNotEmptyField(v)).map(([k, v]) => ({ [k]: v })));
-};
-
-const extractObjectExtensions = (data) => {
-  return R.mergeAll(Object.entries(data).filter(([k, v]) => {
-    return k.startsWith('x_') && isNotEmptyField(v);
-  }).map(([k, v]) => ({ [k]: v })));
-};
-
-const isStixFieldKey = (key) => {
+const isStixFieldKey = (key: string): boolean => {
   const isInternal = key.startsWith(INTERNAL_PREFIX);
   const isSpecificRels = key.startsWith(REL_INDEX_PREFIX);
-  return (isInternal || isSpecificRels || EXCLUDED_FIELDS_FROM_STIX.includes(key)) === false;
+  return !(isInternal || isSpecificRels || EXCLUDED_FIELDS_FROM_STIX.includes(key));
 };
 
-export const convertInputToStixPatchValue = ({ key, value }) => {
-  // If key is not part of stix specification, empty value
-  if (!isStixFieldKey(key)) {
-    return {};
-  }
-  // Entities
-  if (key === INPUT_OBJECTS) { // objects
-    const values = Array.isArray(value) ? value : [value];
-    const data = values.map((m) => ({ value: m.standard_id, reference: m.name, x_opencti_id: m.internal_id }));
-    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
-  }
-  if (key === INPUT_MARKINGS) { // objectMarkings
-    const values = Array.isArray(value) ? value : [value];
-    const data = values.map((m) => ({ value: m.standard_id, reference: m.definition, x_opencti_id: m.internal_id }));
-    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
-  }
-  if (key === INPUT_CREATED_BY) { // createdBy
-    const val = Array.isArray(value) ? R.head(value) : value;
-    const data = [{ value: val.standard_id, reference: val.name, x_opencti_id: val.internal_id }];
-    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
-  }
-  if (key === INPUT_LABELS) { // objectLabels
-    const values = Array.isArray(value) ? value : [value];
-    const data = values.map((m) => ({ value: m.standard_id, reference: m.value, x_opencti_id: m.internal_id }));
-    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
-  }
-  if (key === INPUT_KILLCHAIN) { // kill chains
-    const values = Array.isArray(value) ? value : [value];
-    const data = values.map((m) => ({ value: m.standard_id, reference: m.kill_chain_name, x_opencti_id: m.internal_id }));
-    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
-  }
-  if (key === INPUT_EXTERNAL_REFS) { // externalReferences
-    const values = Array.isArray(value) ? value : [value];
-    const data = values.map((m) => ({ value: m.standard_id, reference: m.source_name, x_opencti_id: m.internal_id }));
-    return { key: META_FIELD_TO_STIX_ATTRIBUTE[key], value: data };
-  }
-  // Observables
-  if (STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]) {
-    if (isSingleStixEmbeddedRelationshipInput(key)) {
-      const val = Array.isArray(value) ? R.head(value) : value;
-      const data = [{ value: val.standard_id, reference: observableValue(val), x_opencti_id: val.internal_id }];
-      return { key: STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key], value: data };
-    }
-    const values = Array.isArray(value) ? value : [value];
-    const data = values.map((m) => ({ value: m.standard_id, reference: observableValue(m), x_opencti_id: m.internal_id }));
-    return { key: STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key], value: data };
-  }
-  // No specific transform to do
-  return { key, value };
+const storeInputToStixPatch = (instance: BasicStoreObject, input: StoreInput): StixObject => {
+  const { key, value } = input;
+  const adaptedVal = !isMultipleAttribute(key) && Array.isArray(value) ? R.head(value) : value;
+  const partialData = { [key]: adaptedVal } as StorePartial;
+  return convertPartialToStix(partialData, instance.entity_type);
 };
 
-export const convertInstanceToStix = (instance) => {
-  if (isEmptyField(instance._index)) {
-    throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
+export const buildInputDataFromStix = (stix: StixCoreObject | StixMarkingDefinition | StixExternalReference): unknown => {
+  const type = generateInternalType(stix);
+  if (isStixCoreRelationship(type)) {
+    const relationship = stix as StixRelation;
+    const externalReferencesIds = (relationship.external_references ?? []).map((v) => generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, v));
+    const labelIds = relationship.labels.map((v) => {
+      const labelName = { value: normalizeName(v) };
+      return generateStandardId(ENTITY_TYPE_LABEL, labelName);
+    });
+    // noinspection UnnecessaryLocalVariableJS
+    const input:StixCoreRelationshipAddInput = {
+      confidence: relationship.confidence,
+      created: relationship.created,
+      createdBy: relationship.created_by_ref,
+      description: relationship.description,
+      externalReferences: externalReferencesIds,
+      fromId: relationship.source_ref,
+      // killChainPhases: undefined,
+      lang: relationship.lang,
+      modified: relationship.modified,
+      objectLabel: labelIds,
+      objectMarking: relationship.object_marking_refs,
+      relationship_type: relationship.relationship_type,
+      revoked: relationship.revoked,
+      start_time: relationship.start_time,
+      stix_id: relationship.id,
+      stop_time: relationship.stop_time,
+      toId: relationship.target_ref,
+      x_opencti_stix_ids: relationship.extensions[STIX_EXT_OCTI].stix_ids,
+      update: true
+    };
+    return input;
   }
-  // Instance must must valid except for patch that accept partial information.
-  if (!isStixObject(instance.entity_type) && !isStixRelationship(instance.entity_type)) {
-    throw UnsupportedError(`Type ${instance.entity_type} cannot be converted to Stix`, { instance });
+  if (isStixSightingRelationship(type)) {
+    const sightingRelationship = stix as StixSighting;
+    const externalReferencesIds = (sightingRelationship.external_references ?? []).map((v) => generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, v));
+    const labelIds = sightingRelationship.labels.map((v) => {
+      const labelName = { value: normalizeName(v) };
+      return generateStandardId(ENTITY_TYPE_LABEL, labelName);
+    });
+    // noinspection UnnecessaryLocalVariableJS
+    const input:StixSightingRelationshipAddInput = {
+      attribute_count: sightingRelationship.count,
+      confidence: sightingRelationship.confidence,
+      created: sightingRelationship.created,
+      createdBy: sightingRelationship.created_by_ref,
+      description: sightingRelationship.description,
+      externalReferences: externalReferencesIds,
+      first_seen: sightingRelationship.first_seen,
+      fromId: sightingRelationship.sighting_of_ref,
+      toId: R.head(sightingRelationship.where_sighted_refs),
+      last_seen: sightingRelationship.last_seen,
+      modified: sightingRelationship.modified,
+      objectLabel: labelIds,
+      objectMarking: sightingRelationship.object_marking_refs,
+      stix_id: sightingRelationship.id,
+      x_opencti_negative: sightingRelationship.extensions[STIX_EXT_OCTI].negative,
+      x_opencti_stix_ids: sightingRelationship.extensions[STIX_EXT_OCTI].stix_ids,
+      update: true
+    };
+    return input;
   }
-  let finalData = instance;
-  finalData.id = instance.standard_id;
-  finalData.x_opencti_id = instance.internal_id;
-  finalData.type = convertTypeToStixType(instance.entity_type);
-  finalData.x_opencti_type = instance.entity_type;
-  finalData.x_opencti_created_at = instance.created_at;
-  if (isInferredIndex(instance._index)) {
-    finalData.x_opencti_inference = true;
+  if (type === ENTITY_TYPE_EXTERNAL_REFERENCE) {
+    const ref = stix as StixExternalReference;
+    // noinspection UnnecessaryLocalVariableJS
+    const input:ExternalReferenceAddInput = {
+      description: ref.description,
+      external_id: ref.external_id,
+      // file: undefined, - TODO File upload
+      // hash: undefined - TODO remove?
+      // modified: undefined, TODO what to do?
+      source_name: ref.source_name,
+      url: ref.url,
+      x_opencti_stix_ids: ref.extensions[STIX_EXT_OCTI].stix_ids,
+      update: true
+    };
+    return input;
   }
-  // region Relationships
-  const isRelation = isStixRelationship(instance.entity_type);
-  if (isRelation && isEmptyField(finalData.from)) {
-    throw UnsupportedError(`Cannot convert relation without a resolved from: ${finalData.fromId}`);
+  if (type === ENTITY_TYPE_ATTACK_PATTERN) {
+    const attack = stix as StixAttackPattern;
+    // noinspection UnnecessaryLocalVariableJS
+    const input:AttackPatternAddInput = {
+      aliases: attack.aliases,
+      confidence: attack.confidence,
+      created: attack.created,
+      createdBy: attack.created_by_ref,
+      description: attack.description,
+      externalReferences: undefined,
+      killChainPhases: undefined,
+      lang: attack.lang,
+      modified: attack.modified,
+      name: attack.name,
+      objectLabel: undefined,
+      objectMarking: attack.object_marking_refs,
+      revoked: attack.revoked,
+      stix_id: attack.id,
+      x_mitre_detection: undefined,
+      x_mitre_id: undefined,
+      x_mitre_permissions_required: undefined,
+      x_mitre_platforms: undefined,
+      x_opencti_stix_ids: attack.extensions[STIX_EXT_OCTI].stix_ids,
+      update: true,
+    };
+    return input;
   }
-  if (isRelation && isEmptyField(finalData.to)) {
-    throw UnsupportedError(`Cannot convert relation without a resolved to: ${finalData.toId}`);
+  if (type === ENTITY_TYPE_MARKING_DEFINITION) {
+    const markingDef = stix as StixMarkingDefinition;
+    // noinspection UnnecessaryLocalVariableJS
+    const input:MarkingDefinitionAddInput = {
+      created: markingDef.created,
+      definition: markingDef.definition[markingDef.definition_type],
+      definition_type: markingDef.definition_type,
+      x_opencti_order: markingDef.extensions[STIX_EXT_OCTI].order,
+      modified: markingDef.modified,
+      stix_id: markingDef.id,
+      x_opencti_color: markingDef.extensions[STIX_EXT_OCTI].color,
+      x_opencti_stix_ids: markingDef.extensions[STIX_EXT_OCTI].stix_ids,
+      update: true
+    };
+    return input;
   }
-  if (isDefinedValue(finalData.from)) {
-    finalData = R.pipe(R.dissoc(RELATION_FROM), R.dissoc('fromId'))(finalData);
-    if (instance.type === 'sighting') {
-      finalData = R.pipe(
-        R.dissoc('source_ref'),
-        R.dissoc('relationship_type'),
-        R.assoc('sighting_of_ref', instance.from.standard_id),
-        R.assoc('x_opencti_sighting_of_ref', instance.from.internal_id),
-        R.assoc('x_opencti_sighting_of_type', instance.from.entity_type)
-      )(finalData);
-    } else {
-      finalData = R.pipe(
-        R.assoc('source_ref', instance.from.standard_id),
-        R.assoc('x_opencti_source_ref', instance.from.internal_id),
-        R.assoc('x_opencti_source_type', instance.from.entity_type)
-      )(finalData);
-    }
+  if (type === ENTITY_HASHED_OBSERVABLE_ARTIFACT) {
+    const artifact = stix as StixArtifact;
+    // noinspection UnnecessaryLocalVariableJS
+    const input:ArtifactAddInput = {
+      decryption_key: artifact.decryption_key,
+      encryption_algorithm: artifact.encryption_algorithm,
+      hashes: stixHashesToInput(artifact),
+      mime_type: artifact.mime_type,
+      payload_bin: artifact.payload_bin,
+      url: artifact.url,
+      x_opencti_additional_names: artifact.extensions[STIX_EXT_OCTI_SCO].additional_names
+    };
+    return input;
   }
-  if (isDefinedValue(finalData.to)) {
-    finalData = R.pipe(R.dissoc(RELATION_TO))(finalData);
-    if (instance.type === 'sighting') {
-      finalData = R.pipe(
-        R.dissoc('target_ref'),
-        R.dissoc('relationship_type'),
-        R.assoc('where_sighted_refs', [instance.to.standard_id]),
-        R.assoc('x_opencti_where_sighted_refs', [instance.to.internal_id]),
-        R.assoc('x_opencti_where_sighted_types', [instance.to.entity_type])
-      )(finalData);
-    } else {
-      finalData = R.pipe(
-        R.assoc('target_ref', instance.to.standard_id),
-        R.assoc('x_opencti_target_ref', instance.to.internal_id),
-        R.assoc('x_opencti_target_type', instance.to.entity_type)
-      )(finalData);
-    }
-  }
-  // endregion
-  // region Specific input cases
-  if (isDefinedValue(finalData.stix_id)) {
-    const ids = [...(finalData.x_opencti_stix_ids ?? []), finalData.stix_id];
-    finalData = R.pipe(
-      R.dissoc('stix_id'),
-      R.assoc('x_opencti_stix_ids', ids)
-    )(finalData);
-  } else {
-    finalData = R.dissoc('stix_id', finalData);
-  }
-  if (isDefinedValue(finalData.x_opencti_stix_ids)) {
-    finalData.x_opencti_stix_ids = finalData.x_opencti_stix_ids.filter((stixId) => isTrustedStixId(stixId));
-  }
-  // endregion
-  // region Inner relations
-  if (isDefinedValue(finalData.objects)) {
-    const objectSet = Array.isArray(finalData.objects) ? finalData.objects : [finalData.objects];
-    const objects = R.map((m) => m.standard_id, objectSet);
-    finalData = R.pipe(R.dissoc(INPUT_OBJECTS), R.assoc('object_refs', objects))(finalData);
-  } else {
-    finalData = R.pipe(R.dissoc(INPUT_OBJECTS), R.dissoc('object_refs'))(finalData);
-  }
-  // endregion
-  // region Markings
-  if (isDefinedValue(finalData.objectMarking)) {
-    const markingSet = Array.isArray(finalData.objectMarking) ? finalData.objectMarking : [finalData.objectMarking];
-    const markings = R.map((m) => m.standard_id, markingSet);
-    finalData = R.pipe(R.dissoc(INPUT_MARKINGS), R.assoc('object_marking_refs', markings))(finalData);
-  } else {
-    finalData = R.pipe(R.dissoc(INPUT_MARKINGS), R.dissoc('object_marking_refs'))(finalData);
-  }
-  // endregion
-  // region created by
-  if (isDefinedValue(finalData.createdBy)) {
-    const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
-    const created = creator.standard_id;
-    finalData = R.pipe(R.dissoc(INPUT_CREATED_BY), R.assoc('created_by_ref', created))(finalData);
-  } else {
-    finalData = R.pipe(R.dissoc(INPUT_CREATED_BY), R.dissoc('created_by_ref'))(finalData);
-  }
-  // endregion
-  // region Embedded relations
-  if (isDefinedValue(finalData.objectLabel)) {
-    const labelSet = Array.isArray(finalData.objectLabel) ? finalData.objectLabel : [finalData.objectLabel];
-    const labels = R.map((m) => m.value, labelSet);
-    finalData = R.pipe(R.dissoc(INPUT_LABELS), R.assoc('labels', labels))(finalData);
-  } else {
-    finalData = R.pipe(R.dissoc(INPUT_LABELS), R.dissoc('labels'))(finalData);
-  }
-  // endregion
-  // region Kill chain phases
-  if (isDefinedValue(finalData.killChainPhases)) {
-    const killSet = Array.isArray(finalData.killChainPhases) ? finalData.killChainPhases : [finalData.killChainPhases];
-    const kills = R.map((k) => {
-      const extension = extractObjectExtensions(k);
-      const attrs = ['kill_chain_name', 'phase_name'];
-      return cleanObject({ ...R.pick(attrs, k), ...extension });
-    }, killSet);
-    finalData = R.pipe(R.dissoc(INPUT_KILLCHAIN), R.assoc('kill_chain_phases', kills))(finalData);
-  } else {
-    finalData = R.pipe(R.dissoc(INPUT_KILLCHAIN), R.dissoc('kill_chain_phases'))(finalData);
-  }
-  // endregion
-  // region external references
-  if (isDefinedValue(finalData.externalReferences)) {
-    const refs = finalData.externalReferences;
-    const externalSet = Array.isArray(refs) ? refs : [refs];
-    const externals = R.map((e) => {
-      const extension = extractObjectExtensions(e);
-      const attrs = ['source_name', 'description', 'url', 'hashes', 'external_id'];
-      return cleanObject({ ...R.pick(attrs, e), ...extension });
-    }, externalSet);
-    finalData = R.pipe(R.dissoc(INPUT_EXTERNAL_REFS), R.assoc('external_references', externals))(finalData);
-  } else {
-    finalData = R.pipe(R.dissoc(INPUT_EXTERNAL_REFS), R.dissoc('external_references'))(finalData);
-  }
-  // endregion
-  // region cyber observable relationship
-  // eslint-disable-next-line no-restricted-syntax
-  for (const stixCyberObservableRelationshipInput of STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS) {
-    const cyberInput = finalData[stixCyberObservableRelationshipInput];
-    const stixKey = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[stixCyberObservableRelationshipInput];
-    if (isDefinedValue(cyberInput)) {
-      if (isSingleStixEmbeddedRelationshipInput(stixCyberObservableRelationshipInput)) {
-        const stixCyberObservable = Array.isArray(cyberInput) ? R.head(cyberInput) : cyberInput;
-        finalData = R.pipe(
-          R.dissoc(stixCyberObservableRelationshipInput),
-          R.assoc(stixKey, stixCyberObservable.standard_id)
-        )(finalData);
-      } else {
-        const stixCyberObservable = Array.isArray(cyberInput) ? cyberInput : [cyberInput];
-        const stixCyberObservables = R.map((m) => m.standard_id, stixCyberObservable);
-        finalData = R.pipe(
-          R.dissoc(stixCyberObservableRelationshipInput),
-          R.assoc(stixKey, stixCyberObservables)
-        )(finalData);
-      }
-    } else {
-      finalData = R.pipe(R.dissoc(stixCyberObservableRelationshipInput), R.dissoc(stixKey))(finalData);
-    }
-  }
-  // endregion
-  // region Attributes filtering
-  const filteredData = {};
-  const entries = Object.entries(finalData);
-  for (let index = 0; index < entries.length; index += 1) {
-    const [key, val] = entries[index];
-    const isEmpty = Array.isArray(val) ? val.length === 0 : isEmptyField(val);
-    const isInternal = !isStixFieldKey(key);
-    if (isEmpty || isInternal) {
-      // Empty or internal opencti attributes.
-    } else if (key.startsWith('attribute_')) {
-      // Stix but reserved keywords
-      const targetKey = key.replace('attribute_', '');
-      filteredData[targetKey] = val;
-    } else {
-      filteredData[key] = val;
-    }
-  }
-  // endregion
-  // region specific format for types
-  if (finalData.x_opencti_type === ENTITY_TYPE_MARKING_DEFINITION && filteredData.definition) {
-    const key = filteredData.definition_type.toLowerCase();
-    filteredData.x_opencti_name = filteredData.definition;
-    filteredData.definition_type = key;
-    filteredData.definition = { [key]: filteredData.definition.replace(/^(tlp|TLP):/g, '') };
-  }
-  // Add x_ in extension
-  // https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ct36xlv6obo7
-  const createFromPath = (path, value) => {
-    const row = { [path]: value };
-    dot.object(row);
-    return row;
-  };
-  const dataEntries = Object.entries(filteredData);
-  let openctiExtension = {};
-  for (let attr = 0; attr < dataEntries.length; attr += 1) {
-    const [key, val] = dataEntries[attr];
-    if (key.startsWith('x_')) {
-      const isOpenCTIExtension = key.startsWith('x_opencti_');
-      const path = isOpenCTIExtension ? key.replace('x_opencti_', 'opencti.') : key.substring(2);
-      const obj = createFromPath(path, val);
-      openctiExtension = R.mergeDeepRight(openctiExtension, obj);
-    }
-    if (!R.isEmpty(openctiExtension)) {
-      filteredData.extensions = openctiExtension;
-    }
-  }
-  // endregion
-  if (!isValidStix(filteredData)) {
-    throw FunctionalError('Invalid stix data conversion', { data: instance });
-  }
-  return filteredData;
+  // inputData[translatedKey] = stix[key].map((v) => generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, v));
+  // inputData[translatedKey] = stix[key].map((v) => generateStandardId(ENTITY_TYPE_KILL_CHAIN_PHASE, v));
+  // TODO JRI Generate all mapping types
+  return {};
 };
 
-export const convertInstanceToStixBase = (instance) => {
-  return R.pick(STIX_BASIC_FIELDS, convertInstanceToStix(instance));
-};
-
-export const extractFieldInputDefinition = (entityType) => {
-  // Internal doesnt have any contract
-  if (isInternalRelationship(entityType)) {
-    return [];
-  }
-  if (isInternalObject(entityType)) {
-    return [];
-  }
-  // Relations
-  if (isStixMetaRelationship(entityType)) {
-    const def = R.find((e) => e.name.value === 'StixMetaRelationshipsAddInput', typeDefs.definitions);
-    return def.fields.map((f) => f.name.value);
-  }
-  if (isStixCoreRelationship(entityType)) {
-    const def = R.find((e) => e.name.value === 'StixCoreRelationshipAddInput', typeDefs.definitions);
-    return def.fields.map((f) => f.name.value);
-  }
-  if (isStixSightingRelationship(entityType)) {
-    const def = R.find((e) => e.name.value === 'StixSightingRelationshipAddInput', typeDefs.definitions);
-    return def.fields.map((f) => f.name.value);
-  }
-  if (isStixCyberObservableRelationship(entityType)) {
-    const def = R.find((e) => e.name.value === 'StixCyberObservableRelationshipAddInput', typeDefs.definitions);
-    return def.fields.map((f) => f.name.value);
-  }
-  // Entities
-  if (isStixCyberObservable(entityType)) {
-    const baseFields = [
-      'stix_id',
-      'x_opencti_score',
-      'x_opencti_description',
-      'createIndicator',
-      'createdBy',
-      'objectMarking',
-      'objectLabel',
-      'externalReferences',
-      'clientMutationId',
-      'update',
-    ];
-    const formattedType = `${entityType.split('-').join('')}AddInput`;
-    const def = R.find((e) => e.name.value === formattedType, typeDefs.definitions);
-    const schemaFields = def.fields.map((f) => f.name.value);
-    return [...baseFields, ...schemaFields];
-  }
-  const formattedType = `${entityType.split('-').map((e) => pascalize(e)).join('')}AddInput`;
-  const def = R.find((e) => e.name.value === formattedType, typeDefs.definitions);
-  if (def) {
-    return def.fields.map((f) => f.name.value);
-  }
-  throw UnsupportedError(`Cant extract fields definition ${entityType}`);
-};
-
-export const buildInputDataFromStix = (stix) => {
-  const inputType = generateInternalType(stix);
-  const inputData = { internal_id: stix.x_opencti_id, stix_id: stix.id, type: inputType, update: true };
-  const compatibleTypes = extractFieldInputDefinition(inputType);
-  const entries = Object.entries(stix);
-  for (let index = 0; index < entries.length; index += 1) {
-    const [key] = entries[index];
-    let translatedKey = RELATIONSHIP_CORE_REFS_TO_FIELDS[key]
-      || SIGHTING_RELATIONSHIP_REFS_TO_FIELDS[key]
-      || STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[key]
-      || STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]
-      || CONTAINER_REFS_TO_FIELDS[key]
-      || key;
-    if (!compatibleTypes.includes(translatedKey) && compatibleTypes.includes(`attribute_${translatedKey}`)) {
-      translatedKey = `attribute_${translatedKey}`;
-    }
-    if (compatibleTypes.includes(translatedKey)) {
-      if (inputType === ENTITY_TYPE_MARKING_DEFINITION && translatedKey === 'definition') {
-        inputData.definition = stix.definition[stix.definition_type];
-      } else if (translatedKey === 'hashes') {
-        inputData[translatedKey] = complexAttributeToApiFormat(translatedKey, stix);
-      } else if (isStixSightingRelationship(inputType) && translatedKey === 'toId') {
-        inputData[translatedKey] = R.head(stix[key]);
-      } else if (translatedKey === INPUT_LABELS) {
-        inputData[translatedKey] = stix[key].map((v) => {
-          const labelName = { value: normalizeName(v) };
-          return generateStandardId(ENTITY_TYPE_LABEL, labelName);
-        });
-      } else if (translatedKey === INPUT_EXTERNAL_REFS) {
-        inputData[translatedKey] = stix[key].map((v) => generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, v));
-      } else if (translatedKey === INPUT_KILLCHAIN) {
-        inputData[translatedKey] = stix[key].map((v) => generateStandardId(ENTITY_TYPE_KILL_CHAIN_PHASE, v));
-      } else {
-        inputData[translatedKey] = stix[key];
-      }
-    }
-  }
-  return { type: inputType, input: inputData };
-};
-
-export const mergeDeepRightAll = R.unapply(R.reduce(R.mergeDeepRight, {}));
-export const updateInputsToPatch = (inputs) => {
+export const updateInputsToPatch = (instance: BasicStoreObject, inputs: Array<StoreInputOperation>) => {
   const convertedInputs = inputs.map((input) => {
     const { key, value, operation = UPDATE_OPERATION_REPLACE, previous = null } = input;
     if (isNotEmptyField(value) && !Array.isArray(value)) {
@@ -631,54 +332,38 @@ export const updateInputsToPatch = (inputs) => {
     if (isNotEmptyField(previous) && !Array.isArray(previous)) {
       throw UnsupportedError('previous must be an array');
     }
-    const converter = (val) => convertInputToStixPatchValue({ key, value: val });
-    const { key: keyConvert, value: convertedVal } = value ? converter(value) : value;
     // Sometime the key will be empty because the patch include a none stix modification
-    if (isEmptyField(keyConvert)) {
-      return {};
+    if (!isStixFieldKey(key)) {
+      return undefined;
     }
-    const { value: convertedPrevious } = previous ? converter(previous) : { value: previous };
-    if (isMultipleAttribute(key)) {
-      if (operation === UPDATE_OPERATION_REPLACE) {
-        return { [operation]: { [keyConvert]: { current: convertedVal, previous: convertedPrevious } } };
-      }
-      return { [operation]: { [keyConvert]: convertedVal } };
-    }
-    const onlyVal = convertedVal ? R.head(convertedVal) : convertedVal;
+    const stixPatchValue = storeInputToStixPatch(instance, input);
     if (operation === UPDATE_OPERATION_REPLACE) {
-      const onlyPrevious = convertedPrevious ? R.head(convertedPrevious) : convertedPrevious;
-      return { [operation]: { [keyConvert]: { current: onlyVal, previous: onlyPrevious } } };
+      if (previous) {
+        const prevStixPatchValue = storeInputToStixPatch(instance, { key, value: previous });
+        return { [operation]: prevStixPatchValue };
+      }
+      return { [operation]: null };
     }
-    return { [operation]: { [keyConvert]: onlyVal } };
+    return { [operation]: stixPatchValue };
+    //
+    //
+    // if (isMultipleAttribute(keyConvert)) {
+    //
+    // }
+    // const onlyVal = convertedVal ? R.head(convertedVal) : convertedVal;
+    // if (operation === UPDATE_OPERATION_REPLACE) {
+    //   const { value: convertedPrevious } = previous ? convertInputToStixPatchValue(instance, { key, value: previous }) : { value: previous };
+    //   const onlyPrevious = convertedPrevious ? R.head(convertedPrevious) : convertedPrevious;
+    //   return { [operation]: { [keyConvert]: { current: onlyVal, previous: onlyPrevious } } };
+    // }
+    // return { [operation]: { [keyConvert]: onlyVal } };
   });
   return mergeDeepRightAll(...convertedInputs);
 };
 
-export const convertStixMetaRelationshipToStix = (data) => {
-  const entityType = data.entity_type;
-  let finalData = convertInstanceToStixBase(data.from);
-  if (isStixInternalMetaRelationship(entityType)) {
-    finalData = R.assoc(entityType.replace('-', '_'), [convertInstanceToStix(data.to)], finalData);
-  } else {
-    finalData = R.assoc(
-      `${entityType.replace('-', '_')}_ref${!isSingleStixEmbeddedRelationship(entityType) ? 's' : ''}`,
-      !isSingleStixEmbeddedRelationship(entityType) ? [data.to.standard_id] : data.to.standard_id,
-      finalData
-    );
-  }
-  return finalData;
-};
-
-export const convertStixCyberObservableRelationshipToStix = (data) => {
-  const entityType = data.entity_type;
-  let finalData = convertInstanceToStixBase(data.from);
-  finalData = R.assoc(`${entityType.replace('-', '_')}_ref`, data.to.standard_id, finalData);
-  return finalData;
-};
-
 export const onlyStableStixIds = (ids = []) => R.filter((n) => uuidVersion(R.split('--', n)[1]) !== 1, ids);
 
-export const cleanStixIds = (ids, maxStixIds = MAX_TRANSIENT_STIX_IDS) => {
+export const cleanStixIds = (ids: Array<string>, maxStixIds = MAX_TRANSIENT_STIX_IDS): Array<string> => {
   const keptIds = [];
   const transientIds = [];
   const wIds = Array.isArray(ids) ? ids : [ids];
@@ -927,7 +612,7 @@ export const stixCoreRelationshipsMapping = {
   [`${RELATION_TARGETS}_${ENTITY_TYPE_LOCATION_POSITION}`]: [RELATION_LOCATED_AT],
 };
 
-export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipType) => {
+export const checkStixCoreRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
   if (relationshipType === RELATION_RELATED_TO || relationshipType === RELATION_REVOKED_BY) {
     return true;
   }
@@ -947,7 +632,7 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
       return true;
     }
   }
-  return !!R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${toType}`] || []);
+  return R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${toType}`] || []);
 };
 
 export const stixCyberObservableRelationshipsMapping = {
@@ -991,7 +676,7 @@ export const stixCyberObservableRelationshipsMapping = {
 
 export const stixCyberObservableTypeFields = () => {
   const entries = Object.entries(stixCyberObservableRelationshipsMapping);
-  const typeFields = {};
+  const typeFields: { [k: string]: Array<string> } = {};
   for (let index = 0; index < entries.length; index += 1) {
     const [fromTo, fields] = entries[index];
     const [fromType] = fromTo.split('_');
@@ -1005,9 +690,9 @@ export const stixCyberObservableTypeFields = () => {
   return typeFields;
 };
 
-export const checkStixCyberObservableRelationshipMapping = (fromType, toType, relationshipType) => {
+export const checkStixCyberObservableRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
   if (relationshipType === RELATION_LINKED || relationshipType === RELATION_LINKED) {
     return true;
   }
-  return !!R.includes(relationshipType, stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || []);
+  return R.includes(relationshipType, stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || []);
 };

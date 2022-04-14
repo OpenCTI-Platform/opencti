@@ -7,7 +7,7 @@ import { createStreamProcessor } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { findById, streamCollectionGroups } from '../domain/stream';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from '../database/rabbitmq';
-import { loadStixById, loadByIdWithMetaRels } from '../database/middleware';
+import { stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
 import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import {
@@ -18,12 +18,12 @@ import {
   READ_INDEX_STIX_META_OBJECTS,
   READ_STIX_INDICES,
 } from '../database/utils';
-import { convertInstanceToStix } from '../database/stix';
 import { BYPASS, isBypassUser } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { BASE_TYPE_RELATION } from '../schema/general';
+import { convertStoreToStix } from '../database/stix-converter';
 
 export const MIN_LIVE_STREAM_EVENT_VERSION = 2;
 
@@ -135,7 +135,7 @@ const createSeeMiddleware = () => {
       missingElements.push(...missingIds);
       // Resolve every missing element
       const uniqueIds = R.uniq(missingIds);
-      const elementResolver = (id) => loadStixById(req.session.user, id, { withFiles: true });
+      const elementResolver = (id) => stixLoadById(req.session.user, id, { withFiles: true });
       const resolvedElements = await Promise.map(uniqueIds, elementResolver, { concurrency: ES_MAX_CONCURRENCY });
       const parentRefs = resolvedElements.map((r) => stixRefsExtractor(r, generateStandardId)).flat();
       if (parentRefs.length > 0) {
@@ -342,9 +342,9 @@ const createSeeMiddleware = () => {
       const queryCallback = async (elements) => {
         for (let index = 0; index < elements.length; index += 1) {
           const { internal_id: elemId } = elements[index];
-          const instance = await loadByIdWithMetaRels(req.session.user, elemId, { withFiles: true });
+          const instance = await storeLoadByIdWithRefs(req.session.user, elemId, { withFiles: true });
           if (isFullVisibleElement(instance)) {
-            const stixData = convertInstanceToStix(instance);
+            const stixData = convertStoreToStix(instance);
             const start = stixData.updated_at;
             const eventId = utcDate(start).toDate().getTime();
             if (channel.connected()) {
@@ -356,9 +356,9 @@ const createSeeMiddleware = () => {
                 for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
                   const missingRef = missingElements[missingIndex];
                   if (!cache.has(missingRef)) {
-                    const missingInstance = await loadByIdWithMetaRels(req.session.user, missingRef);
+                    const missingInstance = await storeLoadByIdWithRefs(req.session.user, missingRef);
                     if (isFullVisibleElement(missingInstance)) {
-                      const missingData = convertInstanceToStix(missingInstance);
+                      const missingData = convertStoreToStix(missingInstance);
                       const markings = missingData.object_marking_refs || [];
                       const message = generateCreateMessage(missingInstance);
                       const content = { data: missingData, markings, message, version };

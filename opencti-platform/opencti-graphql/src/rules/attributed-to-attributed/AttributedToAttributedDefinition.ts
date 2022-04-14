@@ -1,4 +1,5 @@
 import { RELATION_ATTRIBUTED_TO } from '../../schema/stixCoreRelationship';
+import type { RuleBehavior, RuleDefinition } from '../../types/rules';
 
 const id = 'attribution_attribution';
 const name = 'Attribution via attribution';
@@ -16,7 +17,8 @@ const attributes = [
   { name: 'confidence' },
   { name: 'object_marking_refs' },
 ];
+const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition = { id, name, description, scan, scopes };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
 export default definition;

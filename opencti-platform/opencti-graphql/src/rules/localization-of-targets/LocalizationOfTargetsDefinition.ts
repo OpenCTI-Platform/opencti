@@ -1,4 +1,5 @@
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
+import type { RuleDefinition, RuleBehavior } from '../../types/rules';
 
 const id = 'localization_of_targets';
 const name = 'Location of targets';
@@ -16,7 +17,8 @@ const attributes = [
   { name: 'confidence' },
   { name: 'object_marking_refs' },
 ];
+const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition = { id, name, description, scan, scopes };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
 export default definition;

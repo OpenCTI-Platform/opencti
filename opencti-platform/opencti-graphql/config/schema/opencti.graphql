@@ -8511,6 +8511,8 @@ input StixMetaRelationshipsAddInput {
 ### QUERIES
 
 type Query {
+  ###### TEST
+  stix(id: String!): String
   ###### INTERNAL
 
   platform_theme: String

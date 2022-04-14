@@ -1,5 +1,6 @@
 import type { Event } from './event';
 import type { StixObject, StixEntities } from './general';
+import type { StixRelation } from './stix-sro';
 
 interface RuleFilters {
   types: Array<string>;
@@ -23,6 +24,12 @@ interface RuleBehavior {
   operation: string;
 }
 
+interface RelationTypes {
+  leftType: string;
+  rightType: string;
+  creationType: string;
+}
+
 interface RuleDefinition {
   id: string;
   name: string;
@@ -33,6 +40,7 @@ interface RuleDefinition {
 }
 
 interface Rule extends RuleDefinition {
+  activated?: boolean;
   insert: (element: StixEntities | StixRelation) => Promise<Array<Event>>;
   update: (element: StixEntities | StixRelation) => Promise<Array<Event>>;
   clean: (element: StixObject, deletedDependencies: Array<string>) => Promise<Array<Event>>;

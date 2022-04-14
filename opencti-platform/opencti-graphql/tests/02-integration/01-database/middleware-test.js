@@ -6,10 +6,9 @@ import {
   deleteRelationsByFromAndTo,
   distributionEntities,
   distributionRelations,
-  fullLoadById,
+  storeFullLoadById,
   internalLoadById,
-  listRelations,
-  loadById,
+  storeLoadById,
   mergeEntities,
   patchAttribute,
   querySubTypes,
@@ -52,6 +51,7 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
 import { listEntities } from '../../../src/database/repository';
+import { listRelations } from '../../../src/database/middleware-loader';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -129,17 +129,17 @@ describe('Attribute updater', () => {
   });
   it('should update numeric', async () => {
     const stixId = 'relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416';
-    let relation = await loadById(ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    let relation = await storeLoadById(ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
     const relationId = relation.internal_id;
     // expect(relation.confidence).toEqual(1);
     let patch = { confidence: 5 };
     await patchAttribute(ADMIN_USER, relationId, RELATION_MITIGATES, patch);
-    relation = await loadById(ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    relation = await storeLoadById(ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
     expect(relation.confidence).toEqual(5);
     // Value back to before
     patch = { confidence: 1 };
     await patchAttribute(ADMIN_USER, relationId, RELATION_MITIGATES, patch);
-    relation = await loadById(ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    relation = await storeLoadById(ADMIN_USER, stixId, ABSTRACT_STIX_CORE_RELATIONSHIP);
     expect(relation.confidence).toEqual(1);
   });
   it('should update multivalued attribute', async () => {
@@ -440,20 +440,20 @@ describe('Element loader', () => {
     expect(element.id).toEqual(internalId);
     expect(element.name).toEqual('A demo report for testing purposes');
     // Correct type
-    element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT);
+    element = await storeLoadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
     // Wrong type
-    element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+    element = await storeLoadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
     expect(element).toBeUndefined();
   });
   it('should load entity by id', async () => {
     // No type
     const report = await elLoadById(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const internalId = report.internal_id;
-    const loadPromise = loadById(ADMIN_USER, internalId);
+    const loadPromise = storeLoadById(ADMIN_USER, internalId);
     expect(loadPromise).rejects.toThrow();
-    const element = await loadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT);
+    const element = await storeLoadById(ADMIN_USER, internalId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
     expect(element.name).toEqual('A demo report for testing purposes');
@@ -461,9 +461,9 @@ describe('Element loader', () => {
   it('should load entity by stix id', async () => {
     // No type
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
-    const loadPromise = loadById(ADMIN_USER, stixId);
+    const loadPromise = storeLoadById(ADMIN_USER, stixId);
     expect(loadPromise).rejects.toThrow();
-    const element = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
+    const element = await storeLoadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(element).not.toBeNull();
     expect(element.standard_id).toEqual('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
     expect(element.name).toEqual('A demo report for testing purposes');
@@ -472,25 +472,25 @@ describe('Element loader', () => {
     // No type
     const relation = await elLoadById(ADMIN_USER, 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
     const relationId = relation.internal_id;
-    const loadPromise = loadById(ADMIN_USER, relationId, null);
+    const loadPromise = storeLoadById(ADMIN_USER, relationId, null);
     expect(loadPromise).rejects.toThrow();
-    const element = await loadById(ADMIN_USER, relationId, 'uses');
+    const element = await storeLoadById(ADMIN_USER, relationId, 'uses');
     expect(element).not.toBeNull();
     expect(element.id).toEqual(relationId);
     expect(element.confidence).toEqual(3);
   });
   it('should load relation by stix id', async () => {
     const stixId = 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02';
-    const loadPromise = loadById(ADMIN_USER, stixId, null);
+    const loadPromise = storeLoadById(ADMIN_USER, stixId, null);
     expect(loadPromise).rejects.toThrow();
-    const element = await loadById(ADMIN_USER, stixId, 'uses');
+    const element = await storeLoadById(ADMIN_USER, stixId, 'uses');
     expect(element).not.toBeNull();
     expect(element.x_opencti_stix_ids).toEqual([stixId]);
     expect(element.confidence).toEqual(3);
   });
   it('should load by grakn id for multiple attributes', async () => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
-    const identity = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const identity = await storeLoadById(ADMIN_USER, stixId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     expect(identity).not.toBeNull();
     expect(identity.x_opencti_aliases).not.toBeNull();
     expect(identity.x_opencti_aliases.length).toEqual(2);
@@ -510,7 +510,7 @@ describe('Attribute updated and indexed correctly', () => {
     const attributeName = threatReportAttribute.node.key;
     // 01. Get the report directly and test if type is "Threat report".
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
-    let report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
+    let report = await storeLoadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
     // 02. Update attribute "Threat report" to "Threat test"
@@ -521,7 +521,7 @@ describe('Attribute updated and indexed correctly', () => {
     });
     expect(updatedAttribute).not.toBeNull();
     // 03. Get the report directly and test if type is Threat test
-    report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
+    report = await storeLoadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-test']);
     // 04. Back to original configuration
@@ -531,7 +531,7 @@ describe('Attribute updated and indexed correctly', () => {
       current: 'threat-report',
     });
     expect(updatedAttribute).not.toBeNull();
-    report = await loadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
+    report = await storeLoadById(ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
   });
@@ -725,7 +725,7 @@ describe('Relations distribution', () => {
 // Some utils
 const createThreat = async (input) => {
   const threat = await createEntity(ADMIN_USER, input, ENTITY_TYPE_THREAT_ACTOR);
-  return loadById(ADMIN_USER, threat.id, ENTITY_TYPE_THREAT_ACTOR);
+  return storeLoadById(ADMIN_USER, threat.id, ENTITY_TYPE_THREAT_ACTOR);
 };
 const createFile = async (input) => {
   const observableSyntaxResult = checkObservableSyntax(ENTITY_HASHED_OBSERVABLE_STIX_FILE, input);
@@ -733,7 +733,7 @@ const createFile = async (input) => {
     throw FunctionalError(`Observable of type ${ENTITY_HASHED_OBSERVABLE_STIX_FILE} is not correctly formatted.`);
   }
   const file = await createEntity(ADMIN_USER, input, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
-  return loadById(ADMIN_USER, file.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
+  return storeLoadById(ADMIN_USER, file.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
 };
 const isOneOfThisIdsExists = async (ids) => {
   const idsShould = ids.map((id) => ({ match_phrase: { 'internal_id.keyword': id } }));
@@ -789,7 +789,7 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
     expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
-    let loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    let loadMalware = await storeLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
     expect(loadMalware.object_marking_refs.length).toEqual(2);
     // Upsert TLP by name
@@ -798,7 +798,7 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware).not.toBeNull();
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
-    loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    loadMalware = await storeLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.object_marking_refs.length).toEqual(3);
     // Upsert definition per alias
     upMalware = {
@@ -814,7 +814,7 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
     expect(upsertedMalware.aliases.sort()).toEqual(['NEW MALWARE ALIAS', 'MALWARE_TEST'].sort());
-    loadMalware = await loadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
+    loadMalware = await storeLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.name).toEqual('NEW NAME');
     expect(loadMalware.description).toEqual('MALWARE_TEST NEW');
     expect(loadMalware.id).toEqual(loadMalware.id);
@@ -888,7 +888,7 @@ describe('Upsert and merge entities', () => {
       toId: malware01.internal_id,
       relationship_type: RELATION_USES,
     });
-    target = await loadById(ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR);
+    target = await storeLoadById(ADMIN_USER, target.id, ENTITY_TYPE_THREAT_ACTOR);
     // source 01
     const sourceInput01 = {
       name: 'THREAT_SOURCE_01',
@@ -911,7 +911,7 @@ describe('Upsert and merge entities', () => {
       objectMarking: [testMarking, whiteMarking, mitreMarking],
       objectLabel: ['report', 'note', 'malware'],
     });
-    source02 = await loadById(ADMIN_USER, source02.id, ENTITY_TYPE_THREAT_ACTOR);
+    source02 = await storeLoadById(ADMIN_USER, source02.id, ENTITY_TYPE_THREAT_ACTOR);
     // source 03
     const sourceInput03 = { name: 'THREAT_SOURCE_03', objectMarking: [testMarking], objectLabel: ['note', 'malware'] };
     let source03 = await createThreat(sourceInput03);
@@ -922,7 +922,7 @@ describe('Upsert and merge entities', () => {
       objectMarking: [testMarking, whiteMarking, mitreMarking],
       objectLabel: ['report', 'note', 'malware'],
     });
-    source03 = await loadById(ADMIN_USER, source03.id, ENTITY_TYPE_THREAT_ACTOR);
+    source03 = await storeLoadById(ADMIN_USER, source03.id, ENTITY_TYPE_THREAT_ACTOR);
     // source 04
     const sourceInput04 = {
       name: 'THREAT_SOURCE_04',
@@ -941,7 +941,7 @@ describe('Upsert and merge entities', () => {
       toId: malware03.internal_id,
       relationship_type: RELATION_USES,
     });
-    source06 = await loadById(ADMIN_USER, source06.id, ENTITY_TYPE_THREAT_ACTOR);
+    source06 = await storeLoadById(ADMIN_USER, source06.id, ENTITY_TYPE_THREAT_ACTOR);
     // Merge with fully resolved entities
     const merged = await mergeEntities(ADMIN_USER, target.internal_id, [
       source01.internal_id,
@@ -951,7 +951,7 @@ describe('Upsert and merge entities', () => {
       source05.internal_id,
       source06.internal_id,
     ]);
-    const loadedThreat = await fullLoadById(ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR);
+    const loadedThreat = await storeFullLoadById(ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR);
     // List of ids that should disappears
     const idsThatShouldNotExists = [
       source01.internal_id,
@@ -1000,7 +1000,7 @@ describe('Upsert and merge entities', () => {
     const idsThatShouldNotExists = [sha1.internal_id, sha256.internal_id];
     const isExist = await isOneOfThisIdsExists(idsThatShouldNotExists);
     expect(isExist).toBeFalsy();
-    const reloadMd5 = await loadById(ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
+    const reloadMd5 = await storeLoadById(ADMIN_USER, md5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
     expect(reloadMd5).not.toBeNull();
     expect(reloadMd5.hashes).not.toBeNull();
     expect(reloadMd5.hashes.MD5).toEqual(MD5);
@@ -1074,9 +1074,9 @@ describe('Elements impacts deletions', () => {
     await deleteElementById(ADMIN_USER, intrusionSet.internal_id, ENTITY_TYPE_INTRUSION_SET);
     const isExist = await isOneOfThisIdsExists(toBeDeleted);
     expect(isExist).toBeFalsy();
-    const resolvedMalware = await loadById(ADMIN_USER, malware.internal_id, ENTITY_TYPE_MALWARE);
+    const resolvedMalware = await storeLoadById(ADMIN_USER, malware.internal_id, ENTITY_TYPE_MALWARE);
     expect(resolvedMalware).not.toBeUndefined();
-    const resolvedRelationLabel = await loadById(ADMIN_USER, malwareLabel.internal_id, RELATION_OBJECT_LABEL);
+    const resolvedRelationLabel = await storeLoadById(ADMIN_USER, malwareLabel.internal_id, RELATION_OBJECT_LABEL);
     expect(resolvedRelationLabel).not.toBeUndefined();
     // Clear remaining stuff
     await deleteElementById(ADMIN_USER, resolvedMalware.internal_id, ENTITY_TYPE_MALWARE);

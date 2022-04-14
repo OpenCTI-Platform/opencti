@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, loadById, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -10,7 +10,7 @@ import { groupAddRelation } from './group';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 
 export const findById = (user, markingDefinitionId) => {
-  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+  return storeLoadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const findAll = (user, args) => {
@@ -46,14 +46,14 @@ export const markingDefinitionEditField = async (user, markingDefinitionId, inpu
 
 export const markingDefinitionCleanContext = async (user, markingDefinitionId) => {
   await delEditContext(user, markingDefinitionId);
-  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
+  return storeLoadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
   });
 };
 
 export const markingDefinitionEditContext = async (user, markingDefinitionId, input) => {
   await setEditContext(user, markingDefinitionId, input);
-  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
+  return storeLoadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
   });
 };

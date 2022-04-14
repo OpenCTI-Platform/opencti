@@ -15,6 +15,8 @@ export const INPUT_CREATED_BY = 'createdBy'; // created_by_ref
 export const INPUT_LABELS = 'objectLabel'; // labels
 export const INPUT_MARKINGS = 'objectMarking'; // object_marking_refs
 export const INPUT_OBJECTS = 'objects'; // object_refs
+export const INPUT_DOMAIN_FROM = 'from'; // source_ref
+export const INPUT_DOMAIN_TO = 'to'; // target_ref
 
 export const MULTIPLE_META_RELATIONSHIPS_INPUTS = [
   INPUT_MARKINGS,

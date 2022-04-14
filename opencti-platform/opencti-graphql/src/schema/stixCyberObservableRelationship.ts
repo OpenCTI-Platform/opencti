@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, schemaTypes } from './general';
+import { STIX_META_RELATION_TO_FIELD } from './stixMetaRelationship';
 
 // Inputs
 export const INPUT_OPERATING_SYSTEM = 'operatingSystems';
@@ -62,7 +63,7 @@ export const RELATION_VALUES = 'values';
 export const RELATION_X509_V3_EXTENSIONS = 'x509-v3-extensions';
 export const RELATION_LINKED = 'x_opencti_linked-to';
 
-export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE = {
+export const FIELD_CYBER_RELATIONS_TO_STIX_ATTRIBUTE: { [k: string]: string } = {
   [RELATION_OPERATING_SYSTEM]: 'operating_system_refs',
   [RELATION_SAMPLE]: 'sample_ref',
   [RELATION_CONTAINS]: 'contains_refs',
@@ -100,7 +101,7 @@ export const STIX_ATTRIBUTE_TO_CYBER_RELATIONS = R.mergeAll(
   }))
 );
 
-export const STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD = {
+export const STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD: { [k: string]: string } = {
   operating_system_refs: INPUT_OPERATING_SYSTEM,
   sample_ref: INPUT_SAMPLE,
   contains_refs: INPUT_CONTAINS,
@@ -137,7 +138,7 @@ export const STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE = R.mergeAll(
   }))
 );
 
-export const STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD = {
+export const STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD: { [k: string]: string } = {
   [RELATION_OPERATING_SYSTEM]: INPUT_OPERATING_SYSTEM,
   [RELATION_SAMPLE]: INPUT_SAMPLE,
   [RELATION_CONTAINS]: INPUT_CONTAINS,
@@ -168,6 +169,12 @@ export const STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD = {
   [RELATION_X509_V3_EXTENSIONS]: INPUT_X509_V3_EXTENSIONS,
   [RELATION_LINKED]: INPUT_LINKED,
 };
+
+export const CYBER_OBSERVABLE_FIELD_TO_META_RELATION = R.mergeAll(
+  Object.keys(STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD).map((k) => ({
+    [STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD[k]]: k,
+  }))
+);
 
 export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_OPERATING_SYSTEM,
@@ -238,7 +245,7 @@ export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
   ...SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
   ...MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
 ];
-export const isStixCyberObservableRelationship = (type) => R.includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
+export const isStixCyberObservableRelationship = (type: string): boolean => R.includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 export const singleStixCyberObservableRelationships = [
   RELATION_SAMPLE,
   RELATION_FROM,
@@ -257,8 +264,8 @@ export const singleStixCyberObservableRelationships = [
   RELATION_PARENT,
   RELATION_BODY_MULTIPART,
 ];
-export const isSingleStixCyberObservableRelationship = (type) => R.includes(type, singleStixCyberObservableRelationships);
-export const isSingleStixCyberObservableRelationshipInput = (input) => R.includes(input, SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS);
+export const isSingleStixCyberObservableRelationship = (type: string): boolean => R.includes(type, singleStixCyberObservableRelationships);
+export const isSingleStixCyberObservableRelationshipInput = (input: string): boolean => R.includes(input, SINGLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS);
 
 export const stixCyberObservableRelationshipsAttributes = [
   'internal_id',

@@ -3,7 +3,7 @@ import EventSource from 'eventsource';
 import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import conf, { logApp } from '../config/conf';
-import { createRelation, deleteElementById, internalLoadById, loadById } from '../database/middleware';
+import { createRelation, deleteElementById, internalLoadById, storeLoadById } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { SYSTEM_USER } from '../utils/access';
 import { buildInputDataFromStix } from '../database/stix';
@@ -80,6 +80,7 @@ import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
 import { lockResource } from '../database/redis';
 import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { rawFilesListing } from '../database/minio';
+import { generateInternalType } from '../schema/schemaUtils';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 
@@ -97,7 +98,7 @@ const syncManagerInstance = (syncId) => {
   let run = true;
   const startStreamListening = async () => {
     eventsQueue = new Queue();
-    syncElement = await loadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
+    syncElement = await storeLoadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
     const { token, ssl_verify: ssl = false } = syncElement;
     const eventSourceUri = createSyncHttpUri(syncElement);
     logApp.info(`[OPENCTI] Running sync manager for ${syncId} (${eventSourceUri})`);
@@ -137,7 +138,7 @@ const syncManagerInstance = (syncId) => {
     return currentDelay;
   };
   const handleDeleteEvent = async (user, data) => {
-    const { type } = buildInputDataFromStix(data);
+    const type = generateInternalType(data);
     logApp.info(`[OPENCTI] Sync deleting element ${type} ${data.id}`);
     await deleteElementById(user, data.id, type);
   };
@@ -173,7 +174,8 @@ const syncManagerInstance = (syncId) => {
     }
   };
   const handleCreateEvent = async (user, data) => {
-    const { type, input } = buildInputDataFromStix(data);
+    const type = generateInternalType(data);
+    const input = buildInputDataFromStix(data);
     // Then create the elements
     if (isStixCoreRelationship(type)) {
       logApp.info(`[OPENCTI] Sync creating relation ${input.relationship_type} ${input.fromId}/${input.toId}`);

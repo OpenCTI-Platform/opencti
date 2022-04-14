@@ -25,7 +25,7 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  listAllRelations, loadStixById,
+  stixLoadById,
   mergeEntities,
   patchAttribute,
 } from '../database/middleware';
@@ -45,6 +45,7 @@ import { rulesCleanHandler, rulesApplyDerivedEvents, getRule } from './ruleManag
 import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
+import { listAllRelations } from '../database/middleware-loader';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -222,7 +223,7 @@ const executeMerge = async (user, context, element) => {
 const executeRuleApply = async (user, taskId, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
-  const instance = await loadStixById(user, element.internal_id);
+  const instance = await stixLoadById(user, element.internal_id);
   const event = buildEvent(EVENT_TYPE_CREATE, user, instance.object_marking_refs ?? [], '-', instance);
   await rulesApplyDerivedEvents(`task--${taskId}`, [event], [rule]);
 };

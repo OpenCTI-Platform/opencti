@@ -4,7 +4,7 @@ import {
   createEntity,
   distributionEntities,
   internalLoadById,
-  loadById,
+  storeLoadById,
   timeSeriesEntities,
 } from '../database/middleware';
 import { listEntities } from '../database/repository';
@@ -19,7 +19,7 @@ import { isStixId } from '../schema/schemaUtils';
 import { addIndividual, findAll as findIndividuals } from './individual';
 
 export const findById = (user, opinionId) => {
-  return loadById(user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
+  return storeLoadById(user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
 };
 export const findAll = async (user, args) => {
   return listEntities(user, [ENTITY_TYPE_CONTAINER_OPINION], args);

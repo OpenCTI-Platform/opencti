@@ -5,7 +5,7 @@ import {
   createEntity,
   createRelation,
   batchListThroughGetTo,
-  loadById,
+  storeLoadById,
   timeSeriesEntities,
   distributionEntities,
 } from '../database/middleware';
@@ -115,7 +115,7 @@ const computeValidUntil = async (user, indicator) => {
 };
 
 export const findById = (user, indicatorId) => {
-  return loadById(user, indicatorId, ENTITY_TYPE_INDICATOR);
+  return storeLoadById(user, indicatorId, ENTITY_TYPE_INDICATOR);
 };
 
 export const findAll = (user, args) => {

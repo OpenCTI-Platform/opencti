@@ -5,14 +5,14 @@ export const STIX_SIGHTING_RELATIONSHIP = 'stix-sighting-relationship';
 
 const SIGHTING_OF_REF = 'sighting_of_ref';
 const WHERE_SIGHTED_REFS = 'where_sighted_refs';
-export const SIGHTING_RELATIONSHIP_REFS_TO_FIELDS = {
+export const SIGHTING_RELATIONSHIP_REFS_TO_FIELDS: { [k: string]: string } = {
   [SIGHTING_OF_REF]: 'fromId',
   [WHERE_SIGHTED_REFS]: 'toId',
 };
 
-export const isStixSightingRelationship = (type) => type === STIX_SIGHTING_RELATIONSHIP;
+export const isStixSightingRelationship = (type: string): boolean => type === STIX_SIGHTING_RELATIONSHIP;
 
-export const stixSightingRelationshipsAttributes = {
+export const stixSightingRelationshipsAttributes: { [k: string]: Array<string> } = {
   [STIX_SIGHTING_RELATIONSHIP]: [
     'internal_id',
     'standard_id',

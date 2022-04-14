@@ -5,18 +5,28 @@ import { RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import def from './LocalizationOfTargetsDefinition';
 import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { computeAverage } from '../../database/utils';
+import type { StixRelation } from '../../types/stix-sro';
+import type { Event } from '../../types/event';
+import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { BasicStoreObject, BasicStoreRelation } from '../../types/store';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
+import type { StixObject } from '../../types/stix-common';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
-  const applyUpsert = async (data) => {
-    const events = [];
-    const { x_opencti_id: createdId, object_marking_refs: markings } = data;
-    const { x_opencti_source_ref: sourceRef, x_opencti_target_ref: targetRef } = data;
+  const applyUpsert = async (data: StixRelation): Promise<Array<Event>> => {
+    const events: Array<Event> = [];
+    const { extensions } = data;
+    const createdId = extensions[STIX_EXT_OCTI].id;
+    const sourceRef = extensions[STIX_EXT_OCTI].source_ref;
+    const targetRef = extensions[STIX_EXT_OCTI].target_ref;
+    const { object_marking_refs: markings } = data;
     const { confidence: createdConfidence, start_time: startTime, stop_time: stopTime } = data;
     const creationRange = buildPeriodFromDates(startTime, stopTime);
-    const resolvedSource = await internalLoadById(RULE_MANAGER_USER, sourceRef);
-    if (resolvedSource.entity_type === RELATION_TARGETS) {
-      const { id: foundRelationId, fromId: foundFrom, toId: foundTo, object_marking_refs } = resolvedSource;
+    const internalSource = await internalLoadById(RULE_MANAGER_USER, sourceRef) as unknown as BasicStoreObject;
+    if (internalSource.entity_type === RELATION_TARGETS) {
+      const resolvedSource = internalSource as BasicStoreRelation;
+      const { internal_id: foundRelationId, fromId: foundFrom, toId: foundTo, [RELATION_OBJECT_MARKING]: object_marking_refs } = resolvedSource;
       const { confidence, start_time, stop_time } = resolvedSource;
       const existingRange = buildPeriodFromDates(start_time, stop_time);
       const range = computeRangeIntersection(creationRange, existingRange);
@@ -42,9 +52,15 @@ const ruleLocalizationOfTargetsBuilder = () => {
     return events;
   };
   // Contract
-  const clean = async (element, deletedDependencies) => deleteInferredRuleElement(def.id, element, deletedDependencies);
-  const insert = async (element) => applyUpsert(element);
-  const update = async (element) => applyUpsert(element);
+  const clean = async (element: StixObject, deletedDependencies: Array<string>): Promise<Array<Event>> => {
+    return deleteInferredRuleElement(def.id, element, deletedDependencies) as Promise<Array<Event>>;
+  };
+  const insert = async (element: StixRelation): Promise<Array<Event>> => {
+    return applyUpsert(element);
+  };
+  const update = async (element: StixRelation): Promise<Array<Event>> => {
+    return applyUpsert(element);
+  };
   return { ...def, insert, update, clean };
 };
 const RuleLocalizationOfTargets = ruleLocalizationOfTargetsBuilder();

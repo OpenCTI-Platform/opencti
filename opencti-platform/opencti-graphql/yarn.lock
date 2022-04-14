@@ -2274,6 +2274,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dot-object@npm:^2.1.2":
+  version: 2.1.2
+  resolution: "@types/dot-object@npm:2.1.2"
+  checksum: 467e8c15c901524f226f1834fb74a28f44f6fcee320302f0ad47fd3c18f41c77bbbc196be2580dc73633cd9a433ff6ed672f691fd1f567c065d851a7b8f0056b
+  languageName: node
+  linkType: hard
+
 "@types/express-serve-static-core@npm:4.17.28, @types/express-serve-static-core@npm:^4.17.18":
   version: 4.17.28
   resolution: "@types/express-serve-static-core@npm:4.17.28"
@@ -2480,6 +2487,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/set-interval-async@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@types/set-interval-async@npm:1.0.0"
+  checksum: 1a96001f49c77678a685df775a83644ee57ad717ca6a41ec9949249bfa2d4f02454680e81dd301cbe1285761f8196ef6b6c250da04b5b741a3ea2ddf66916c5c
+  languageName: node
+  linkType: hard
+
 "@types/stack-utils@npm:^2.0.0":
   version: 2.0.1
   resolution: "@types/stack-utils@npm:2.0.1"
@@ -2487,7 +2501,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:8.3.4":
+"@types/uuid@npm:^8.3.4":
   version: 8.3.4
   resolution: "@types/uuid@npm:8.3.4"
   checksum: 6f11f3ff70f30210edaa8071422d405e9c1d4e53abbe50fdce365150d3c698fe7bbff65c1e71ae080cbfb8fded860dbb5e174da96fdbbdfcaa3fb3daa474d20f
@@ -10531,10 +10545,12 @@ __metadata:
     "@luckycatfactory/esbuild-graphql-loader": 3.7.0
     "@opensearch-project/opensearch": 1.1.0
     "@types/bcryptjs": 2.4.2
+    "@types/dot-object": ^2.1.2
     "@types/express": 4
     "@types/jest": 27.4.0
     "@types/ramda": 0.27.64
-    "@types/uuid": 8.3.4
+    "@types/set-interval-async": ^1.0.0
+    "@types/uuid": ^8.3.4
     "@typescript-eslint/eslint-plugin": 5.11.0
     "@typescript-eslint/parser": 5.11.0
     amqplib: 0.8.0

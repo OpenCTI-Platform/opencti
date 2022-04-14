@@ -9,10 +9,10 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   batchListThroughGetFrom,
-  loadById,
+  storeLoadById,
   mergeEntities,
   updateAttribute,
-  batchLoadThroughGetTo,
+  batchLoadThroughGetTo, storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { findAll as relationFindAll } from './stixCoreRelationship';
@@ -65,7 +65,7 @@ export const findAll = async (user, args) => {
   return listEntities(user, types, args);
 };
 
-export const findById = async (user, stixCoreObjectId) => loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+export const findById = async (user, stixCoreObjectId) => storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
 export const batchCreatedBy = async (user, stixCoreObjectIds) => {
   return batchLoadThroughGetTo(user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
@@ -114,7 +114,7 @@ export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) =
 };
 
 export const stixCoreObjectAddRelations = async (user, stixCoreObjectId, input) => {
-  const stixCoreObject = await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot add the relation, Stix-Core-Object cannot be found.');
   }
@@ -126,11 +126,11 @@ export const stixCoreObjectAddRelations = async (user, stixCoreObjectId, input) 
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user));
+  return storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user));
 };
 
 export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId, relationshipType) => {
-  const stixCoreObject = await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the relation, Stix-Core-Object cannot be found.');
   }
@@ -142,7 +142,7 @@ export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId,
 };
 
 export const stixCoreObjectEditField = async (user, stixCoreObjectId, input) => {
-  const stixCoreObject = await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot edit the field, Stix-Core-Object cannot be found.');
   }
@@ -151,7 +151,7 @@ export const stixCoreObjectEditField = async (user, stixCoreObjectId, input) => 
 };
 
 export const stixCoreObjectDelete = async (user, stixCoreObjectId) => {
-  const stixCoreObject = await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
   }
@@ -172,7 +172,7 @@ export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
 // endregion
 
 export const stixCoreObjectAskEnrichment = async (user, stixCoreObjectId, connectorId) => {
-  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const connector = await storeLoadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
   const work = await createWork(user, connector, 'Manual enrichment', stixCoreObjectId);
   const message = {
     internal: {
@@ -300,7 +300,7 @@ export const stixCoreObjectsExportAsk = async (user, args) => {
 };
 export const stixCoreObjectExportAsk = async (user, args) => {
   const { format, stixCoreObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
-  const entity = stixCoreObjectId ? await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
+  const entity = stixCoreObjectId ? await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
   const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
 };
@@ -345,7 +345,7 @@ export const stixCoreObjectImportPush = async (user, entity, file) => {
 };
 
 export const stixCoreObjectIdImportPush = async (user, entityId, file) => {
-  const entity = await internalLoadById(user, entityId);
+  const entity = await storeLoadByIdWithRefs(user, entityId);
   if (!entity) {
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
@@ -359,7 +359,7 @@ export const stixCoreObjectImportDelete = async (user, fileId) => {
   // Get the context
   const up = await loadFile(user, fileId);
   const entityId = up.metaData.entity_id;
-  const entity = await internalLoadById(user, entityId);
+  const entity = await storeLoadByIdWithRefs(user, entityId);
   if (!entity) {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
   }

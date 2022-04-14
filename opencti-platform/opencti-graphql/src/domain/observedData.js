@@ -3,7 +3,7 @@ import {
   createEntity,
   distributionEntities,
   internalLoadById,
-  loadById,
+  storeLoadById,
   timeSeriesEntities,
 } from '../database/middleware';
 import { listEntities } from '../database/repository';
@@ -20,7 +20,7 @@ import { objects } from './container';
 import { observableValue } from '../utils/format';
 
 export const findById = (user, observedDataId) => {
-  return loadById(user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+  return storeLoadById(user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
 };
 
 export const findAll = async (user, args) => {

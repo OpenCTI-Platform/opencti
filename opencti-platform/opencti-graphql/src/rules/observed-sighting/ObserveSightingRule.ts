@@ -3,8 +3,7 @@ import {
   createInferredRelation,
   deleteInferredRuleElement,
   internalLoadById,
-  listAllRelations,
-  loadStixById,
+  stixLoadById,
 } from '../../database/middleware';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import def from './ObserveSightingDefinition';
@@ -14,8 +13,14 @@ import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
-import type { Event } from '../../types/event';
 import type { Rule } from '../../types/rules';
+import type { StixObject } from '../../types/stix-common';
+import type { StixIndicator, StixObservedData } from '../../types/stix-sdo';
+import type { StixRelation } from '../../types/stix-sro';
+import type { BasicStoreEntity } from '../../types/store';
+import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import { listAllRelations } from '../../database/middleware-loader';
+import type { Event } from '../../types/event';
 
 // 'If **observed-data A** (`created-by` **identity X**) have `object` **observable B** and **indicator C** ' +
 // 'is `based-on` **observable B**, then **indicator C** is `sighted` in **identity X**.';
@@ -46,7 +51,7 @@ const ruleObserveSightingBuilder = (): Rule => {
   };
   const handleIndicatorUpsert = async (indicator: StixObject) => {
     const events: Array<Event> = [];
-    const { x_opencti_id: indicatorId } = indicator;
+    const { id: indicatorId } = indicator.extensions[STIX_EXT_OCTI];
     const baseOnArgs = { toType: ABSTRACT_STIX_CYBER_OBSERVABLE, fromId: indicatorId };
     const baseOnRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
     for (let index = 0; index < baseOnRelations.length; index += 1) {
@@ -56,7 +61,7 @@ const ruleObserveSightingBuilder = (): Rule => {
       const objectsRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, objectsArgs);
       for (let objectIndex = 0; objectIndex < objectsRelations.length; objectIndex += 1) {
         const { internal_id: objectId, fromId: observedDataId } = objectsRelations[objectIndex];
-        const observedData = (await internalLoadById(RULE_MANAGER_USER, observedDataId)) as unknown as StoreObservedData;
+        const observedData = (await internalLoadById(RULE_MANAGER_USER, observedDataId)) as unknown as StixObservedData;
         const { created_by_ref: organizationId, confidence, object_marking_refs } = observedData;
         const { number_observed, first_observed, last_observed } = observedData;
         if (organizationId) {
@@ -88,12 +93,13 @@ const ruleObserveSightingBuilder = (): Rule => {
     }
     return events;
   };
-  const handleObservedDataUpsert = async (observedData: StoreObservedData) => {
+  const handleObservedDataUpsert = async (observedData: StixObservedData) => {
     const events = [];
-    const { x_opencti_id: observedDataId, created_by_ref: organizationId } = observedData;
+    const { created_by_ref: organizationId } = observedData;
+    const { id: observedDataId } = observedData.extensions[STIX_EXT_OCTI];
     const { number_observed, first_observed, last_observed } = observedData;
     const { confidence, object_marking_refs } = observedData;
-    const organization = (await internalLoadById(RULE_MANAGER_USER, organizationId)) as unknown as StoreBasicObject;
+    const organization = (await internalLoadById(RULE_MANAGER_USER, organizationId)) as unknown as BasicStoreEntity;
     if (organization) {
       // Get all observable of this observed-data
       const listFromArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], fromId: observedDataId };
@@ -133,26 +139,26 @@ const ruleObserveSightingBuilder = (): Rule => {
     }
     return events;
   };
-  const handleObservedDataRelationUpsert = async (objectRelation: StoreStixRelation) => {
-    const { x_opencti_source_ref: observedDataId } = objectRelation;
-    const observedData = (await loadStixById(RULE_MANAGER_USER, observedDataId)) as unknown as StoreObservedData;
+  const handleObservedDataRelationUpsert = async (objectRelation: StixRelation) => {
+    const { source_ref: observedDataId } = objectRelation.extensions[STIX_EXT_OCTI];
+    const observedData = (await stixLoadById(RULE_MANAGER_USER, observedDataId)) as unknown as StixObservedData;
     return handleObservedDataUpsert(observedData);
   };
-  const handleObservableRelationUpsert = async (baseOnRelation: StoreStixRelation) => {
-    const { x_opencti_source_ref: indicatorId } = baseOnRelation;
-    const baseOnIndicator = (await loadStixById(RULE_MANAGER_USER, indicatorId)) as unknown as StixObject;
+  const handleObservableRelationUpsert = async (baseOnRelation: StixRelation) => {
+    const { source_ref: indicatorId } = baseOnRelation.extensions[STIX_EXT_OCTI];
+    const baseOnIndicator = (await stixLoadById(RULE_MANAGER_USER, indicatorId)) as unknown as StixIndicator;
     return handleIndicatorUpsert(baseOnIndicator);
   };
-  const applyUpsert = async (data: StixEntities | StoreStixRelation): Promise<Array<Event>> => {
+  const applyUpsert = async (data: StixObject): Promise<Array<Event>> => {
     const events: Array<Event> = [];
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_INDICATOR) {
       return handleIndicatorUpsert(data);
     }
     if (entityType === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-      return handleObservedDataUpsert(data as StoreObservedData);
+      return handleObservedDataUpsert(data as StixObservedData);
     }
-    const upsertRelation = data as StoreStixRelation;
+    const upsertRelation = data as StixRelation;
     const { relationship_type: relationType } = upsertRelation;
     if (relationType === RELATION_BASED_ON) {
       return handleObservableRelationUpsert(upsertRelation);
@@ -167,8 +173,8 @@ const ruleObserveSightingBuilder = (): Rule => {
     const cleanPromiseEvents = deleteInferredRuleElement(def.id, element, deletedDependencies);
     return cleanPromiseEvents as unknown as Promise<Array<Event>>;
   };
-  const insert = async (element: StixEntities | StoreStixRelation): Promise<Array<Event>> => applyUpsert(element);
-  const update = async (element: StixEntities | StoreStixRelation): Promise<Array<Event>> => applyUpsert(element);
+  const insert = async (element: StixObject): Promise<Array<Event>> => applyUpsert(element);
+  const update = async (element: StixObject): Promise<Array<Event>> => applyUpsert(element);
   return { ...def, insert, update, clean };
 };
 const RuleObserveSighting = ruleObserveSightingBuilder();

@@ -5,7 +5,7 @@ import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
-import { loadById, timeSeriesEntities } from '../database/middleware';
+import { storeLoadById, timeSeriesEntities } from '../database/middleware';
 import { READ_INDEX_HISTORY, INDEX_HISTORY } from '../database/utils';
 import { SYSTEM_USER } from '../utils/access';
 
@@ -19,7 +19,7 @@ export const findAll = (user, args) => {
 };
 
 export const creator = async (user, entityId) => {
-  const entity = await loadById(user, entityId, ABSTRACT_STIX_CORE_OBJECT);
+  const entity = await storeLoadById(user, entityId, ABSTRACT_STIX_CORE_OBJECT);
   return elPaginate(user, READ_INDEX_HISTORY, {
     orderBy: 'timestamp',
     orderMode: 'asc',

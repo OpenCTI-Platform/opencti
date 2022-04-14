@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { loadStixById } from '../../../src/database/middleware';
+import { stixLoadById } from '../../../src/database/middleware';
 import { ADMIN_USER } from '../../utils/testQuery';
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import {
@@ -8,18 +8,23 @@ import {
   ENTITY_TYPE_MALWARE,
   isStixDomainObject
 } from '../../../src/schema/stixDomainObject';
-import { convertTypeToStixType, updateInputsToPatch } from '../../../src/database/stix';
+import { updateInputsToPatch } from '../../../src/database/stix';
 import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
+import { convertTypeToStixType } from '../../../src/database/stix-converter';
 
 describe('Stix opencti converter', () => {
   const dataMap = new Map(data.objects.map((obj) => [obj.id, obj]));
 
   const rawDataCompare = async (rawId, standardId) => {
     let rawData = dataMap.get(rawId);
-    const stixData = await loadStixById(ADMIN_USER, rawId);
-    // console.log(stixData);
+    console.log(`Comparing ${rawId}`);
+    // const stixData = await loadStixById(ADMIN_USER, rawId);
+    const stixData = await stixLoadById(ADMIN_USER, rawId);
+    console.log(JSON.stringify(rawData));
+    console.log(JSON.stringify(stixData));
     let remainingData = { ...stixData };
     if (stixData.x_opencti_type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
       rawData = R.dissoc('objects', rawData);
@@ -34,11 +39,9 @@ describe('Stix opencti converter', () => {
       remainingData = R.dissoc(rawKey, remainingData);
       const initialData = rawData[rawKey];
       const refetchData = stixData[rawKey];
-      if (rawKey.startsWith('x_')) {
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-      // console.log(`${rawKey} - ${refetchData} / ${initialData}`);
+      // console.log(`Comparing ${rawKey}`);
+      // console.log(JSON.stringify(refetchData));
+      // console.log(JSON.stringify(initialData));
       if (rawKey === 'id') { // Because of standard_id generation
         if (standardId) { // Cant be compare for sighting and relationship
           expect(refetchData).toBe(standardId);
@@ -62,7 +65,7 @@ describe('Stix opencti converter', () => {
         const refetchDataAsArray = Array.isArray(refetchData) ? refetchData : [refetchData];
         for (let i = 0; i < refetchDataAsArray.length; i += 1) {
           const refetchElement = refetchDataAsArray[i];
-          const stixRef = await loadStixById(ADMIN_USER, refetchElement);
+          const stixRef = await stixLoadById(ADMIN_USER, refetchElement);
           resolvedIds.push(stixRef.id, ...stixRef.x_opencti_stix_ids);
         }
         const initialDataAsArray = Array.isArray(initialData) ? initialData : [initialData];
@@ -75,6 +78,7 @@ describe('Stix opencti converter', () => {
       }
     }
     // Testing opencti added data
+    console.log('Testing opencti added data');
     expect(remainingData.x_opencti_id).not.toBeNull();
     expect(convertTypeToStixType(remainingData.x_opencti_type)).toEqual(rawData.type);
     expect(remainingData.x_opencti_stix_ids).toContainEqual(rawData.id);
@@ -103,6 +107,12 @@ describe('Stix opencti converter', () => {
       expect(remainingData.is_family).toEqual(false);
       remainingData = R.dissoc('is_family', remainingData);
     }
+    // Rework on name for marking def
+    if (remainingData.x_opencti_type === ENTITY_TYPE_MARKING_DEFINITION) {
+      const def = R.head(Object.values(rawData.definition));
+      expect(remainingData.name).toEqual(def);
+      remainingData = R.dissoc('name', remainingData);
+    }
     // All remaining data must be extensions
     const remain = R.mergeAll(
       Object.entries(remainingData)
@@ -110,6 +120,7 @@ describe('Stix opencti converter', () => {
         .map(([k, v]) => ({ [k]: v }))
     );
     if (!R.isEmpty(remain)) {
+      console.log('----------- Remain -----------');
       console.log(remain);
     }
     const notExtSize = Object.keys(remainingData)
@@ -118,7 +129,7 @@ describe('Stix opencti converter', () => {
   };
 
   it('Should patch correctly generated', async () => {
-    const dataEvent = updateInputsToPatch([{
+    const dataEvent = updateInputsToPatch(null, [{
       operation: UPDATE_OPERATION_REPLACE,
       key: 'revoked',
       value: [true],

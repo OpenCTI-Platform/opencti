@@ -1,13 +1,13 @@
 import { pipe, assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, createRelation, deleteElementById, loadById, updateAttribute } from '../database/middleware';
+import { createEntity, createRelation, deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixMetaRelationship';
 
 export const findById = (user, killChainPhaseId) => {
-  return loadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return storeLoadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const findAll = (user, args) => {
@@ -38,7 +38,7 @@ export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
 
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
   await deleteElementById(user, relationId, RELATION_KILL_CHAIN_PHASE);
-  const data = await loadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  const data = await storeLoadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, data, user);
 };
 
@@ -49,10 +49,10 @@ export const killChainPhaseEditField = async (user, killChainPhaseId, input, opt
 
 export const killChainPhaseCleanContext = async (user, killChainPhaseId) => {
   await delEditContext(user, killChainPhaseId);
-  return loadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) => notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user));
+  return storeLoadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) => notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user));
 };
 
 export const killChainPhaseEditContext = async (user, killChainPhaseId, input) => {
   await setEditContext(user, killChainPhaseId, input);
-  return loadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) => notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user));
+  return storeLoadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) => notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user));
 };

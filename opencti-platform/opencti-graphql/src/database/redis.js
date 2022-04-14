@@ -18,8 +18,8 @@ import {
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
-import { convertInstanceToStix, updateInputsToPatch } from './stix';
-import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
+import { updateInputsToPatch } from './stix';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
@@ -31,6 +31,7 @@ import {
   isStixEmbeddedRelationship,
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
+import { convertStoreToStix } from './stix-converter';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
@@ -351,9 +352,10 @@ const mapJSToStream = (event) => {
   return cmdArgs;
 };
 export const buildEvent = (eventType, user, markings, message, data, commitMessage = undefined, references = []) => {
-  if (!data.id || !data.x_opencti_id || !data.type) {
-    throw UnsupportedError('Stream event requires id, type and x_opencti_id');
-  }
+  // TODO JRI Reactivate or delete?
+  // if (!data.id || !data.x_opencti_id || !data.type) {
+  //   throw UnsupportedError('Stream event requires id, type and x_opencti_id');
+  // }
   return {
     version: '3', // Event version.
     type: eventType,
@@ -384,8 +386,8 @@ const DIFF_REMOVE = 3;
 const DIFF_TYPE = '_t';
 const DIFF_TYPE_ARRAY = 'a';
 export const computeMergeDifferential = (initialInstance, mergedInstance) => {
-  const convertInit = convertInstanceToStix(initialInstance, { patchGeneration: true });
-  const convertMerged = convertInstanceToStix(mergedInstance, { patchGeneration: true });
+  const convertInit = convertStoreToStix(initialInstance);
+  const convertMerged = convertStoreToStix(mergedInstance);
   const diffGenerator = createJsonDiff({
     objectHash: (obj) => {
       return obj.x_opencti_id;
@@ -461,12 +463,12 @@ export const computeMergeDifferential = (initialInstance, mergedInstance) => {
 const buildMergeEvent = (user, initialInstance, mergedInstance, sourceEntities, impacts) => {
   const patch = computeMergeDifferential(initialInstance, mergedInstance);
   const message = generateMergeMessage(initialInstance, sourceEntities);
-  const data = convertInstanceToStix(mergedInstance);
+  const data = convertStoreToStix(mergedInstance);
   const { updatedRelations, dependencyDeletions } = impacts;
   data.x_opencti_patch = patch;
   data.x_opencti_context = {
-    sources: R.map((s) => convertInstanceToStix(s), sourceEntities),
-    deletions: R.map((s) => convertInstanceToStix(s), dependencyDeletions),
+    sources: R.map((s) => convertStoreToStix(s), sourceEntities),
+    deletions: R.map((s) => convertStoreToStix(s), dependencyDeletions),
     shifts: updatedRelations,
   };
   return buildEvent(EVENT_TYPE_MERGE, user, mergedInstance.object_marking_refs, message, data);
@@ -480,18 +482,18 @@ export const storeMergeEvent = async (user, initialInstance, mergedInstance, sou
   }
 };
 // Update
-export const buildUpdateEvent = (user, instance, patch, opts = {}) => {
+const buildUpdateEvent = (user, instance, inputs, opts = {}) => {
   const { withoutMessage = false } = opts;
+  const patch = updateInputsToPatch(instance, inputs);
+  const message = withoutMessage ? '-' : generateUpdateMessage(inputs);
   // dataUpdate can be empty
   if (isEmptyField(patch)) {
     return null;
   }
   // Build the final data
   const data = { ...instance, x_opencti_patch: patch };
-  // Generate the message
-  const message = withoutMessage ? '-' : generateUpdateMessage(patch);
   // Build and send the event
-  const dataEvent = convertInstanceToStix(data);
+  const dataEvent = convertStoreToStix(data);
   return buildEvent(
     EVENT_TYPE_UPDATE,
     user,
@@ -503,13 +505,10 @@ export const buildUpdateEvent = (user, instance, patch, opts = {}) => {
   );
 };
 export const storeUpdateEvent = async (user, instance, patchInputs, opts = {}) => {
-  const { mustBeRepublished = false } = opts;
   // updateEvents -> [{ operation, input }]
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     try {
-      const patch = updateInputsToPatch(patchInputs);
-      const eventData = mustBeRepublished ? instance : getInstanceIdentifiers(instance);
-      const event = buildUpdateEvent(user, eventData, patch, opts);
+      const event = buildUpdateEvent(user, instance, patchInputs, opts);
       // Push the event in the stream only if instance is in "real index"
       if (mustBeIncludeInStream(instance)) {
         await pushToStream(clientBase, event);
@@ -522,55 +521,56 @@ export const storeUpdateEvent = async (user, instance, patchInputs, opts = {}) =
   return null;
 };
 // Create
-export const buildCreateEvent = async (user, instance, input, loaders, opts = {}) => {
-  const { withoutMessage = false } = opts;
-  const { stixLoadById, connectionLoaders } = loaders;
-  // If internal relation, publish an update instead of a creation
-  if (isStixEmbeddedRelationship(instance.entity_type)) {
-    const mustRepublished = instance.entity_type === RELATION_OBJECT_MARKING;
-    let publishedInstance;
-    if (mustRepublished) {
-      publishedInstance = await stixLoadById(user, instance.from.internal_id);
-    } else if (instance.from.base_type === BASE_TYPE_RELATION) {
-      const instanceWithConnections = await connectionLoaders(user, instance.from);
-      publishedInstance = getInstanceIdentifiers(instanceWithConnections);
-    } else {
-      publishedInstance = getInstanceIdentifiers(instance.from);
-    }
-    const key = STIX_EMBEDDED_RELATION_TO_FIELD[instance.entity_type];
-    if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
-      const inputVal = { key, value: [instance.to], previous: null };
-      const patch = updateInputsToPatch([inputVal]);
-      return buildUpdateEvent(user, publishedInstance, patch, opts);
-    }
-    const inputVal = { key, value: [instance.to], operation: UPDATE_OPERATION_ADD };
-    const patch = updateInputsToPatch([inputVal]);
-    return buildUpdateEvent(user, publishedInstance, patch, opts);
-  }
-  // Convert the input to data
-  const mergedData = { ...instance, ...input };
-  const data = convertInstanceToStix(mergedData);
-  // Generate the message
-  const message = withoutMessage ? '-' : generateCreateMessage(mergedData);
-  // Build and send the event
-  const inputMarkings = (input.objectMarking || []).map((m) => m.internal_id);
-  return buildEvent(EVENT_TYPE_CREATE, user, inputMarkings, message, data);
-};
-export const storeCreateEvent = async (user, instance, input, loaders) => {
-  if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
-    try {
-      const event = await buildCreateEvent(user, instance, input, loaders);
-      // Push the event in the stream only if instance is in "real index"
-      if (mustBeIncludeInStream(instance)) {
+export const storeCreateRelationEvent = async (user, indexed, input, loaders, opts = {}) => {
+  try {
+    const { withoutMessage = false } = opts;
+    const { stixLoadById } = loaders;
+    const data = { ...input, ...indexed };
+    if (mustBeIncludeInStream(data)) {
+      const message = withoutMessage ? '-' : generateCreateMessage(data);
+      if (isStixEmbeddedRelationship(data.entity_type)) {
+        const key = STIX_EMBEDDED_RELATION_TO_FIELD[data.entity_type];
+        const from = await stixLoadById(user, data.from.internal_id);
+        if (isSingleStixEmbeddedRelationship(from.entity_type)) {
+          const inputs = [{ key, value: [data.to], previous: null }];
+          return buildUpdateEvent(user, from, inputs, opts);
+        }
+        const inputs = [{ key, value: [data.to], operation: UPDATE_OPERATION_ADD }];
+        const event = buildUpdateEvent(user, from, inputs, opts);
         await pushToStream(clientBase, event);
+        return event;
+        // eslint-disable-next-line no-else-return
+      } else {
+        const stixData = convertStoreToStix(data);
+        const inputMarkings = (input.objectMarking || []).map((m) => m.internal_id);
+        const event = buildEvent(EVENT_TYPE_CREATE, user, inputMarkings, message, stixData);
+        await pushToStream(clientBase, event);
+        return event;
       }
-      return event;
-    } catch (e) {
-      throw DatabaseError('Error in store create event', { error: e });
     }
+    return null;
+  } catch (e) {
+    throw DatabaseError('Error in store create relation event', { error: e });
   }
-  return null;
 };
+export const storeCreateEntityEvent = async (user, indexed, input, opts = {}) => {
+  try {
+    const { withoutMessage = false } = opts;
+    const data = { ...input, ...indexed };
+    if (mustBeIncludeInStream(data)) {
+      const markings = (data.objectMarking || []).map((m) => m.internal_id);
+      const message = withoutMessage ? '-' : generateCreateMessage(data);
+      const stixData = convertStoreToStix(data);
+      const event = buildEvent(EVENT_TYPE_CREATE, user, markings, message, stixData);
+      await pushToStream(clientBase, event);
+      return event;
+    }
+    return null;
+  } catch (e) {
+    throw DatabaseError('Error in store create entity event', { error: e });
+  }
+};
+
 // Delete
 export const buildDeleteEvent = async (user, instance, dependencyDeletions, loaders, opts = {}) => {
   const { withoutMessage = false } = opts;
@@ -589,19 +589,17 @@ export const buildDeleteEvent = async (user, instance, dependencyDeletions, load
     }
     const key = STIX_EMBEDDED_RELATION_TO_FIELD[instance.entity_type];
     if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
-      const inputVal = { key, value: null, previous: [instance.to] };
-      const patch = updateInputsToPatch([inputVal]);
-      return buildUpdateEvent(user, publishedInstance, patch, opts);
+      const inputs = [{ key, value: null, previous: [instance.to] }];
+      return buildUpdateEvent(user, publishedInstance, inputs, opts);
     }
-    const inputVal = { key, value: [instance.to], operation: UPDATE_OPERATION_REMOVE };
-    const patch = updateInputsToPatch([inputVal]);
-    return buildUpdateEvent(user, publishedInstance, patch, opts);
+    const inputs = [{ key, value: [instance.to], operation: UPDATE_OPERATION_REMOVE }];
+    return buildUpdateEvent(user, publishedInstance, inputs, opts);
   }
   // Convert the input to data
-  const data = convertInstanceToStix(instance);
+  const data = convertStoreToStix(instance);
   // Generate the message
   const message = withoutMessage ? '-' : generateDeleteMessage(instance);
-  data.x_opencti_context = { deletions: R.map((s) => convertInstanceToStix(s), dependencyDeletions) };
+  data.x_opencti_context = { deletions: R.map((s) => convertStoreToStix(s), dependencyDeletions) };
   return buildEvent(EVENT_TYPE_DELETE, user, instance.object_marking_refs, message, data);
 };
 export const storeDeleteEvent = async (user, instance, dependencyDeletions, loaders) => {

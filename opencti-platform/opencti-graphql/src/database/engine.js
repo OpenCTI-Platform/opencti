@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
-import { Client as ElkClient } from '@elastic/elasticsearch';
-import { Client as OpenClient } from '@opensearch-project/opensearch';
-import { Promise } from 'bluebird';
+import {Client as ElkClient} from '@elastic/elasticsearch';
+import {Client as OpenClient} from '@opensearch-project/opensearch';
+import {Promise} from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
-import { readFileSync } from 'node:fs';
+import {readFileSync} from 'node:fs';
 import {
   buildPagination,
   cursorToOffset,
@@ -21,8 +21,8 @@ import {
   READ_RELATIONSHIPS_INDICES,
   WRITE_PLATFORM_INDICES,
 } from './utils';
-import conf, { booleanConf, logApp } from '../config/conf';
-import { ConfigurationError, DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
+import conf, {booleanConf, logApp} from '../config/conf';
+import {ConfigurationError, DatabaseError, FunctionalError, UnsupportedError} from '../config/errors';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -48,11 +48,13 @@ import {
   booleanAttributes,
   dateAttributes,
   isBooleanAttribute,
+  isModifiedObject,
   isMultipleAttribute,
   isRuntimeAttribute,
+  isUpdatedAtObject,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
-import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
+import {convertEntityTypeToStixType, getParentTypes} from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
   ATTRIBUTE_DESCRIPTION,
@@ -60,19 +62,15 @@ import {
   ATTRIBUTE_NAME,
   isStixObjectAliased,
 } from '../schema/stixDomainObject';
-import { isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
-import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
-import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import { BYPASS } from '../utils/access';
-import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
-import {
-  INPUTS_RELATIONS_TO_STIX_ATTRIBUTE,
-  isSingleStixEmbeddedRelationship,
-  STIX_EMBEDDED_RELATION_TO_FIELD,
-} from '../schema/stixEmbeddedRelationship';
-import { now, runtimeFieldObservableValueScript } from '../utils/format';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import {isStixObject} from '../schema/stixCoreObject';
+import {isBasicRelationship, isStixRelationShipExceptMeta} from '../schema/stixRelationship';
+import {RELATION_INDICATES} from '../schema/stixCoreRelationship';
+import {getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD} from '../schema/identifier';
+import {BYPASS} from '../utils/access';
+import {cacheDel, cacheGet, cachePurge, cacheSet} from './redis';
+import {isSingleStixEmbeddedRelationship,} from '../schema/stixEmbeddedRelationship';
+import {now, runtimeFieldObservableValueScript} from '../utils/format';
+import {ENTITY_TYPE_MARKING_DEFINITION} from '../schema/stixMetaObject';
 
 const ELK_ENGINE = 'elk';
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
@@ -804,11 +802,7 @@ const elDataConverter = (esHit) => {
       // Rebuild rel to stix attributes
       const rel = key.substr(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      const stixType = STIX_EMBEDDED_RELATION_TO_FIELD[relType];
-      if (stixType) {
-        const dataKey = INPUTS_RELATIONS_TO_STIX_ATTRIBUTE[relType];
-        data[dataKey] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : val;
-      }
+      data[relType] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : val;
     } else {
       data[key] = val;
     }
@@ -2017,10 +2011,10 @@ export const elIndexElements = async (elements) => {
       cache[e.fromId] = e.from;
       cache[e.toId] = e.to;
       if (isImpactedRole(fromRole)) {
-        impacts.push({ from: e.fromId, relationshipType, to: e.to, side: 'from' });
+        impacts.push({ from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
       }
       if (isImpactedRole(toRole)) {
-        impacts.push({ from: e.toId, relationshipType, to: e.from, side: 'to' });
+        impacts.push({ from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
       }
       return impacts;
     }),
@@ -2035,7 +2029,7 @@ export const elIndexElements = async (elements) => {
     const targetsElements = R.map((relType) => {
       const data = targetsByRelation[relType];
       const resolvedData = R.map((d) => {
-        return { id: d.to.internal_id, side: d.side };
+        return { id: d.to.internal_id, side: d.side, type: d.type };
       }, data);
       return { relation: relType, elements: resolvedData };
     }, Object.keys(targetsByRelation));
@@ -2046,9 +2040,12 @@ export const elIndexElements = async (elements) => {
       let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
       script += `ctx._source['${field}'].addAll(params['${field}'])`;
       if (isStixMetaRelationship(t.relation)) {
-        const fromUpdate = R.filter((e) => e.side === 'from', t.elements).length > 0;
-        if (fromUpdate) {
+        const fromSide = R.find((e) => e.side === 'from', t.elements);
+        if (fromSide && isUpdatedAtObject(fromSide.type)) {
           script += '; ctx._source[\'updated_at\'] = params.updated_at';
+        }
+        if (fromSide && isModifiedObject(fromSide.type)) {
+          script += '; ctx._source[\'modified\'] = params.updated_at';
         }
       }
       return script;

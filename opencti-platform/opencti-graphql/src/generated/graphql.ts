@@ -8041,6 +8041,7 @@ export type Query = {
   statusTemplate?: Maybe<StatusTemplate>;
   statusTemplates?: Maybe<StatusTemplateConnection>;
   statuses?: Maybe<StatusConnection>;
+  stix?: Maybe<Scalars['String']>;
   stixCoreObject?: Maybe<StixCoreObject>;
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']>;
@@ -8893,6 +8894,11 @@ export type QueryStatusesArgs = {
   orderBy?: InputMaybe<StatusOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryStixArgs = {
+  id: Scalars['String'];
 };
 
 
@@ -19161,6 +19167,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   statusTemplate?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, RequireFields<QueryStatusTemplateArgs, 'id'>>;
   statusTemplates?: Resolver<Maybe<ResolversTypes['StatusTemplateConnection']>, ParentType, ContextType, Partial<QueryStatusTemplatesArgs>>;
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
+  stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;

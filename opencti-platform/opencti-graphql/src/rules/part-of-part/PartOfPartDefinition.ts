@@ -1,4 +1,5 @@
 import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
+import type { RuleDefinition, RuleBehavior } from '../../types/rules';
 
 const id = 'part_part';
 const name = 'Part of via Part of';
@@ -16,7 +17,8 @@ const attributes = [
   { name: 'confidence' },
   { name: 'object_marking_refs' },
 ];
+const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition = { id, name, description, scan, scopes };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
 export default definition;

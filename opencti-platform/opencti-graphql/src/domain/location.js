@@ -1,5 +1,5 @@
 import { pipe, assoc, dissoc, filter } from 'ramda';
-import { createEntity, loadById } from '../database/middleware';
+import { createEntity, storeLoadById } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -7,7 +7,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/gen
 import { isStixDomainObjectLocation } from '../schema/stixDomainObject';
 
 export const findById = async (user, locationId) => {
-  return loadById(user, locationId, ENTITY_TYPE_LOCATION);
+  return storeLoadById(user, locationId, ENTITY_TYPE_LOCATION);
 };
 
 export const findAll = async (user, args) => {

@@ -2,6 +2,8 @@ import * as R from 'ramda';
 import type { Request } from 'express';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { baseUrl, basePath } from '../config/conf';
+import type { StixCoreObject } from '../types/stix-common';
+import type { AuthUser } from '../types/user';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
@@ -25,10 +27,7 @@ export const getBaseUrl = (req: Request): string => {
   return basePath;
 };
 
-export const filterElementsAccordingToUser = (
-  user: AuthUser,
-  elements: Array<StixCoreObject>
-): Array<StixCoreObject> => {
+export const filterElementsAccordingToUser = (user: AuthUser, elements: Array<StixCoreObject>): Array<StixCoreObject> => {
   const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
   // If user have bypass, grant access to all
   if (isBypassUser(user)) {
@@ -47,6 +46,7 @@ export const SYSTEM_USER: AuthUser = {
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
   allowed_marking: [],
+  all_marking: [],
 };
 
 export const RETENTION_MANAGER_USER: AuthUser = {
@@ -58,4 +58,5 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],
   allowed_marking: [],
+  all_marking: [],
 };

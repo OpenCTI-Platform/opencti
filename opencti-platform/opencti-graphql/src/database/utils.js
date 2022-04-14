@@ -8,12 +8,23 @@ import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from '../sc
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
-import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import {
+  isStixCyberObservableRelationship,
+  STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD
+} from '../schema/stixCyberObservableRelationship';
+import { isStixMetaRelationship, META_FIELD_TO_STIX_ATTRIBUTE } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
+import {
+  INPUT_CREATED_BY,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS
+} from '../schema/general';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 
@@ -277,28 +288,44 @@ export const generateCreateMessage = (instance) => {
 export const generateDeleteMessage = (instance) => {
   return generateCreateDeleteMessage(EVENT_TYPE_DELETE, instance);
 };
-export const generateUpdateMessage = (patch) => {
-  const patchElements = Object.entries(patch);
-  return patchElements
-    .map(([operation, element]) => {
-      const elemEntries = Object.entries(element);
-      return `${operation}s ${elemEntries.map(([key, val]) => {
-        const values = Array.isArray(val) ? val : [val];
-        const valMessage = values
-          .map((v) => {
-            if (operation === UPDATE_OPERATION_REPLACE) {
-              if (Array.isArray(v.current)) {
-                return v.current.map((c) => c.reference || c.value || c);
-              }
-              return v.reference?.value || v.current?.value || v.current;
-            }
-            return v.reference || v.value || v;
-          })
-          .join(', ');
-        return `\`${valMessage || 'nothing'}\` in \`${key}\``;
-      })}`;
-    })
-    .join(', ');
+
+export const generateUpdateMessage = (inputs) => {
+  const inputsByOperations = R.groupBy((m) => m.operation, inputs);
+  const patchElements = Object.entries(inputsByOperations);
+  return patchElements.map(([type, operations]) => {
+    return `${type}s ${operations.map(({ key, value }) => {
+      let message = 'nothing';
+      const convertedKey = META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key] || key;
+      if (value) {
+        const next = Array.isArray(value) ? value : [value];
+        if (STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]) {
+          message = next.map((val) => observableValue(val)).join(', ');
+        } else {
+          switch (key) {
+            case INPUT_OBJECTS:
+            case INPUT_CREATED_BY:
+              message = next.map((i) => i.name).join(', ');
+              break;
+            case INPUT_MARKINGS:
+              message = next.map((i) => i.definition).join(', ');
+              break;
+            case INPUT_LABELS:
+              message = next.map((i) => i.value).join(', ');
+              break;
+            case INPUT_KILLCHAIN:
+              message = next.map((i) => i.kill_chain_name).join(', ');
+              break;
+            case INPUT_EXTERNAL_REFS:
+              message = next.map((i) => i.source_name).join(', ');
+              break;
+            default:
+              message = next.join(', ');
+          }
+        }
+      }
+      return `\`${message}\` in \`${convertedKey}\``;
+    })}`;
+  }).join(', ');
 };
 
 export const pascalize = (s) => {

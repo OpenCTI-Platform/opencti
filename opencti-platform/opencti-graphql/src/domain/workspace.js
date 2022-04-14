@@ -8,7 +8,7 @@ import {
   internalLoadById,
   paginateAllThings,
   listThings,
-  loadById,
+  storeLoadById,
   updateAttribute,
 } from '../database/middleware';
 import { listEntities } from '../database/repository';
@@ -21,7 +21,7 @@ import { isInternalRelationship, RELATION_HAS_REFERENCE } from '../schema/intern
 import { generateInternalId } from '../schema/identifier';
 
 export const findById = (user, workspaceId) => {
-  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
+  return storeLoadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
 };
 
 export const findAll = (user, args) => {
@@ -57,7 +57,7 @@ export const workspaceAddRelation = async (user, workspaceId, input) => {
 };
 
 export const workspaceAddRelations = async (user, workspaceId, input) => {
-  const workspace = await loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
+  const workspace = await storeLoadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
   if (!workspace) {
     throw FunctionalError('Cannot add the relation, workspace cannot be found.');
   }
@@ -69,11 +69,11 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user));
+  return storeLoadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user));
 };
 
 export const workspaceDeleteRelation = async (user, workspaceId, toId, relationshipType) => {
-  const workspace = await loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
+  const workspace = await storeLoadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
   if (!workspace) {
     throw FunctionalError('Cannot delete the relation, workspace cannot be found.');
   }
@@ -85,7 +85,7 @@ export const workspaceDeleteRelation = async (user, workspaceId, toId, relations
 };
 
 export const workspaceDeleteRelations = async (user, workspaceId, toIds, relationshipType) => {
-  const workspace = await loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
+  const workspace = await storeLoadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
   if (!workspace) {
     throw FunctionalError('Cannot delete the relation, workspace cannot be found.');
   }
@@ -111,11 +111,11 @@ export const workspaceDelete = async (user, workspaceId) => {
 // region context
 export const workspaceCleanContext = async (user, workspaceId) => {
   await delEditContext(user, workspaceId);
-  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, userToReturn, user));
+  return storeLoadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, userToReturn, user));
 };
 
 export const workspaceEditContext = async (user, workspaceId, input) => {
   await setEditContext(user, workspaceId, input);
-  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
+  return storeLoadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((workspaceToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user));
 };
 // endregion

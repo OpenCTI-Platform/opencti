@@ -7,6 +7,7 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../schema/stixDomainObject';
+import type { RuleDefinition, RuleBehavior } from '../../types/rules';
 
 const id = 'observable_related';
 const name = 'Related via observable';
@@ -44,7 +45,8 @@ const attributes = [
   { name: 'confidence' },
   { name: 'object_marking_refs' },
 ];
+const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition = { id, name, description, scan, scopes };
+const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
 export default definition;

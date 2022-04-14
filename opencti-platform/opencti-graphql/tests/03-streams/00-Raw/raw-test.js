@@ -15,9 +15,6 @@ import {
   EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
 } from '../../../src/database/rabbitmq';
-import { fullLoadById } from '../../../src/database/middleware';
-import { rebuildInstanceWithPatch } from '../../../src/utils/patch';
-import { convertInstanceToStix } from '../../../src/database/stix';
 import { STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD } from '../../../src/schema/stixMetaRelationship';
 
 const OPERATIONS = [UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE];
@@ -139,32 +136,6 @@ describe('Raw streams tests', () => {
           checkStreamData(EVENT_TYPE_MERGE, source);
         }
       }
-    },
-    FIVE_MINUTES
-  );
-
-  // Based on all events of a specific element, can we reconstruct the final state correctly?
-  it(
-    'Should events rebuild succeed',
-    async () => {
-      const report = await fullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
-      const stixReport = convertInstanceToStix(report);
-      const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
-      const reportEvents = events.filter((e) => report.standard_id === e.data.data.id);
-      expect(reportEvents.length).toBe(1);
-      const createEvents = reportEvents.filter((e) => e.type === EVENT_TYPE_CREATE);
-      expect(createEvents.length).toBe(1);
-      const updateEvents = reportEvents.filter((e) => e.type === EVENT_TYPE_UPDATE);
-      expect(updateEvents.length).toBe(0);
-      // Rebuild the data
-      let stixInstance = R.head(createEvents).data.data;
-      for (let index = 0; index < updateEvents.length; index += 1) {
-        const { x_opencti_patch: patch } = updateEvents[index].data.data;
-        stixInstance = rebuildInstanceWithPatch(stixInstance, patch);
-      }
-      // Check
-      const diffElements = await checkInstanceDiff(stixReport, stixInstance);
-      expect(diffElements.length).toBe(0);
     },
     FIVE_MINUTES
   );
