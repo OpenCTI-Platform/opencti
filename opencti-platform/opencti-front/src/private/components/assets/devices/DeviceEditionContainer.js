@@ -226,7 +226,7 @@ class DeviceEditionContainer extends Component {
       R.assoc('connected_to_network', device?.connected_to_network?.name || ''),
       R.assoc('netbios_name', device?.netbios_name || ''),
       R.assoc('baseline_configuration_name', device?.baseline_configuration_name || ''),
-      R.assoc('mac_address', (device?.mac_address || []).join()),
+      R.assoc('mac_address', device?.mac_address || []),
       R.assoc('model', device?.model || ''),
       R.assoc('ports', device?.ports.length > 0 ? device.ports : []),
       R.assoc('port_number', ''),
@@ -383,7 +383,7 @@ class DeviceEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={device.external_references}
                     cyioCoreObjectId={device?.id}
-                    disableAdd={true}
+                    fieldName= 'external_references'
                     typename={device.__typename}
                     refreshQuery={refreshQuery}
                   />
@@ -395,7 +395,7 @@ class DeviceEditionContainer extends Component {
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={device.__typename}
                 refreshQuery={refreshQuery}
-                disableAdd={true}
+                fieldName= 'notes'
                 notes={device.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
               />

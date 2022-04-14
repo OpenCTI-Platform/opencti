@@ -112,6 +112,8 @@
     network_id
     "Label"
     labels
+    "Asset Type"
+    asset_type
   }
 
   "Defines the list of fields that can be filtered upon for Network Assets."

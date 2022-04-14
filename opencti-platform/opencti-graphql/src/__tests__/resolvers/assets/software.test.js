@@ -28,11 +28,11 @@ const softwareAssetQuery = `query softwareAssetQuery {
     }
   }`;
 describe('Successfully Query Software Assets', () => {
-  it('Return software asset list', async () => {
-    const result = await submitOperation(softwareAssetList);
+  // it('Return software asset list', async () => {
+  //   const result = await submitOperation(softwareAssetList);
 
-    expect(typeof { value: result.data.softwareAssetList.edges[0] }).toBe('object');
-  });
+  //   expect(typeof { value: result.data.softwareAssetList.edges[0] }).toBe('object');
+  // });
 
   it('Return a single software asset', async () => {
     const result = await submitOperation(softwareAssetQuery);

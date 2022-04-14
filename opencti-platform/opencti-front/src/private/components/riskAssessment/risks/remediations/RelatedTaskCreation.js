@@ -40,6 +40,11 @@ import { insertNode } from '../../../../../utils/Store';
 import { parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import TaskType from '../../../common/form/TaskType';
+import ResourceType from '../../../common/form/ResourceType';
+import AssociatedActivities from '../../../common/form/AssociatedActivities';
+import ResponsibleParties from '../../../common/form/ResponsibleParties';
+import Dependencies from '../../../common/form/Dependencies';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -128,10 +133,6 @@ const RelatedTaskCreationMutation = graphql`
   ) {
     createOscalTask(input: $input) {
       id
-      entity_type
-      name
-      task_type
-      description
     }
   }
 `;
@@ -149,10 +150,12 @@ class RelatedTaskCreation extends Component {
     this.state = {
       open: false,
       close: false,
-      timings: {
-        start_date: '',
-        end_date: '',
-      },
+      timing: {
+        within_date_range: 
+        {
+          start_date: '',
+          end_date: '',
+        }},
     };
   }
 
@@ -167,19 +170,21 @@ class RelatedTaskCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     console.log('relatedTask', values);
     this.setState({
-      timings: {
+      timing: { within_date_range: {
         start_date: values.start_date === null ? null : parse(values.start_date).format(),
         end_date: values.end_date === null ? null : parse(values.end_date).format(),
-      },
+      }},
     });
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
       dissoc('related_tasks'),
-      assoc('timings', this.state.timings),
-      dissoc('timings'),
+      assoc('timing', this.state.timing),
+      dissoc('timing'),
+      dissoc('resource_type'),
       dissoc('milestone'),
-      // assoc('responsible_roles', this.state.responsible_roles),
+      dissoc('associated_activities'),
+      dissoc('responsible_roles'),
     )(values);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
@@ -371,14 +376,12 @@ class RelatedTaskCreation extends Component {
               name: '',
               description: '',
               task_type: '',
-              task_dependencies: [],
               start_date: null,
               end_date: null,
+              task_dependencies: [],
               related_tasks: [],
               associated_activities: [],
               responsible_roles: [],
-              resource_type:'',
-              resource_name:'',
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -461,8 +464,7 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <TaskType
                           name="task_type"
                           fullWidth={true}
                           variant='outlined'
@@ -578,21 +580,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource_type"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='milestone'>
-                            Milestone
-                          </MenuItem>
-                          <MenuItem value='action'>
-                            Action
-                          </MenuItem>
-                        </Field>
+                          <ResourceType
+                            name="resource_type"
+                            fullWidth={true}
+                            variant='outlined'
+                            style={{ height: '38.09px' }}
+                            containerstyle={{ width: '100%' }}
+                          />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -647,7 +641,7 @@ class RelatedTaskCreation extends Component {
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         >
-                          <MenuItem value='Helloworld'>
+                          {/* <MenuItem value='Helloworld'>
                             helloWorld
                           </MenuItem>
                           <MenuItem value='test'>
@@ -655,7 +649,7 @@ class RelatedTaskCreation extends Component {
                           </MenuItem>
                           <MenuItem value='data'>
                             data
-                          </MenuItem>
+                          </MenuItem> */}
                         </Field>
                       </div>
                     </Grid>
@@ -675,24 +669,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="associated_activities"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        <AssociatedActivities
+                           name="associated_activities"
+                           fullWidth={true}
+                           variant='outlined'
+                           style={{ height: '38.09px' }}
+                           containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                   </Grid>
@@ -712,25 +695,14 @@ class RelatedTaskCreation extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <Field
-                          component={SelectField}
+                        <ResponsibleParties
                           style={{ height: '38.09px' }}
                           variant='outlined'
                           name="responsible_roles"
                           size='small'
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -749,24 +721,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="task_dependencies"
-                          fullWidth={true}
-                          variant='outlined'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        <Dependencies
+                           name="task_dependencies"
+                           fullWidth={true}
+                           variant='outlined'
+                           style={{ height: '38.09px' }}
+                           containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                   </Grid>
@@ -774,6 +735,7 @@ class RelatedTaskCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        fieldName='links'
                         typename={relatedTaskData.__typename}
                         externalReferences={relatedTaskData.links}
                         cyioCoreObjectId={remediationId}
@@ -784,6 +746,7 @@ class RelatedTaskCreation extends Component {
                         refreshQuery={refreshQuery}
                         typename={relatedTaskData.__typename}
                         notes={relatedTaskData.remarks}
+                        fieldName='remarks'
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
                       // data={props}

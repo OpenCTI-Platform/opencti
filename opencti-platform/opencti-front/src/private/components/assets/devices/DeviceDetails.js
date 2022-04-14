@@ -254,7 +254,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch color="primary" defaultChecked={device?.is_virtual} size="small" />
+                <Switch disabled color="primary" defaultChecked={device?.is_virtual} size="small" />
               </div>
               <div>
                 <Typography
@@ -271,7 +271,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch color="primary" defaultChecked={device?.is_publicly_accessible} size="small" />
+                <Switch disabled color="primary" defaultChecked={device?.is_publicly_accessible} size="small" />
               </div>
               <div>
                 <Typography
@@ -289,52 +289,6 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {device?.fqdn && t(device.fqdn)}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('IPv4 Address')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('ipv4_address')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.ipv4_address
-                  && device.ipv4_address.map((ipv4Address) => (
-                    <>
-                      <div className="clearfix" />
-                      {ipv4Address.ip_address_value && t(ipv4Address.ip_address_value)}
-                    </>
-                  ))}
-              </div>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('IPv6 Address')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('ipv6_address')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.ipv6_address
-                  && device.ipv6_address.map((ipv6Address) => (
-                    <>
-                      <div className="clearfix" />
-                      {ipv6Address.ip_address_value && t(ipv6Address.ip_address_value)}
-                    </>
-                  ))}
               </div>
             </Grid>
             <Grid item={true} xs={6}>
@@ -361,7 +315,7 @@ class DeviceDetailsComponent extends Component {
                       component="button"
                       variant="body2"
                       className={classes.link}
-                      onClick={() => ( history.push(`/defender HQ/assets/devices/${data.id}`))}
+                      onClick={() => (history.push(`/defender HQ/assets/devices/${data.id}`))}
                     >
                       <Launch fontSize="inherit" style={{ marginRight: '5.5px' }} />{data?.name && t(data.name)}
                     </Link>
@@ -413,28 +367,6 @@ class DeviceDetailsComponent extends Component {
                 </div>
                 <div className="clearfix" />
                 {device?.model && t(device.model)}
-              </div>
-              <div style={{ marginBottom: '15px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: 'left', marginTop: 20 }}
-                >
-                  {t('MAC Address')}
-                </Typography>
-                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('MAC Address')} >
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {device?.mac_address && device.mac_address.map((macAddress, key) => (
-                  <div key={key}>
-                    <div className="clearfix" />
-                    {macAddress && t(macAddress)}
-                  </div>
-                ))}
               </div>
               <div>
                 <Typography
@@ -511,7 +443,7 @@ class DeviceDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                <Switch color="primary" defaultChecked={device?.is_scanned} size="small" />
+                <Switch disabled color="primary" defaultChecked={device?.is_scanned} size="small" />
               </div>
               <div>
                 <Typography
@@ -548,6 +480,94 @@ class DeviceDetailsComponent extends Component {
                 <div className="clearfix" />
                 {device?.default_gateway
                   && t(device.default_gateway)}
+              </div>
+            </Grid>
+          </Grid>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 20 }}
+              >
+                {t('MAC Address')}
+              </Typography>
+              <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <Tooltip title={t('MAC Address')}>
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    {device?.mac_address && device.mac_address.map((macAddress, key) => (
+                      <div key={key}>
+                        <div className="clearfix" />
+                        {macAddress && t(macAddress)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 20 }}
+              >
+                {t('IPv4 Address')}
+              </Typography>
+              <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <Tooltip title={t('IPv4 Address')}>
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    {device?.ipv4_address
+                      && device.ipv4_address.map((ipv4Address) => (
+                        <>
+                          <div className="clearfix" />
+                          {ipv4Address.ip_address_value && t(ipv4Address.ip_address_value)}
+                        </>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 20 }}
+              >
+                {t('IPv6 Address')}
+              </Typography>
+              <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                <Tooltip title={t('IPv6 Address')}>
+                  <Information fontSize="inherit" color="disabled" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <div className={classes.scrollBg}>
+                <div className={classes.scrollDiv}>
+                  <div className={classes.scrollObj}>
+                    {device?.ipv6_address
+                      && device.ipv6_address.map((ipv6Address) => (
+                        <>
+                          <div className="clearfix" />
+                          {ipv6Address.ip_address_value && t(ipv6Address.ip_address_value)}
+                        </>
+                      ))}
+                  </div>
+                </div>
               </div>
             </Grid>
           </Grid>

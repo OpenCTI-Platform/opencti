@@ -113,11 +113,11 @@ describe('Successfully Query Common Assets', () => {
   //   expect(typeof { value: result.data }).toBe('object');
   // });
 
-  it('Returns a list of assets', async () => {
-    const result = await submitOperation(assetListQuery);
+  // it('Returns a list of assets', async () => {
+  //   const result = await submitOperation(assetListQuery);
 
-    expect(typeof { value: result.data.assetList.edges[0] }).toBe('object');
-  });
+  //   expect(typeof { value: result.data.assetList.edges[0] }).toBe('object');
+  // });
 
   it('Return a single asset', async () => {
     const result = await submitOperation(assetQuery);
