@@ -267,7 +267,7 @@ class CyioListLines extends Component {
                 <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
               </div>
             )}
-            <InputLabel
+            {/* <InputLabel
               classes={{ root: classes.sortFieldLabel }}
               style={{
                 marginLeft:
@@ -299,7 +299,7 @@ class CyioListLines extends Component {
               classes={{ root: classes.sortArrowButton }}
             >
               {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
-            </IconButton>
+            </IconButton> */}
             {(!availableFilterKeys || availableFilterKeys.length === 0)
               && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
             <div className={classes.filters}>
