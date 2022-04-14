@@ -111,7 +111,7 @@
     "Network ID"
     network_id
     "Label"
-    labels
+    label_name
     "Asset Type"
     asset_type
   }

@@ -43,7 +43,7 @@ import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
 const hardwareResolvers = {
   Query: {
     hardwareAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
-      const sparqlQuery = selectAllHardware(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllHardware(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({

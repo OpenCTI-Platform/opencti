@@ -190,6 +190,11 @@ export const selectAllHardware = (select, filters) => {
     }
   }
 
+  // add value of orderedBy's key to cause special predicates to be included
+  if ( args.orderedBy !== undefined ) {
+    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
   return `
   SELECT DISTINCT ?iri ${selectionClause} 

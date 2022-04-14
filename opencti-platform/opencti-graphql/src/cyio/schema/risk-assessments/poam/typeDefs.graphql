@@ -284,7 +284,7 @@
     "Modified"
     modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Label"
-    labels
+    label_name"
     "Name"
     name
     "Risk Level"

@@ -275,7 +275,7 @@
     "Asset ID"
     asset_id
     "Label"
-    labels
+    label_name
     "Vendor Name"
     vendor_name
   }
