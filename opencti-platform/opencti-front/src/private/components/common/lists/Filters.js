@@ -28,7 +28,7 @@ import {
   itAssetFiltersNetworkFieldsQuery,
   itAssetFiltersSoftwareFieldsQuery,
 } from '../../settings/ItAssetFilters';
-import { RiskFiltersFieldsQuery } from '../../settings/RiskFilters';
+import { RiskFiltersQuery } from '../../settings/RiskFilters';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -194,6 +194,106 @@ class Filters extends Component {
                 name_m: R.union(
                   nameEntities,
                   this.state.entities.name_m,
+                ),
+              },
+            });
+          });
+        break;
+      case 'risk_level':
+        fetchDarklightQuery(RiskFiltersQuery, {
+          type: 'RiskLevel',
+        })
+          .toPromise()
+          .then((data) => {
+            const riskLevelEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
+              R.map((n) => ({
+                label: t(n.name),
+                value: n.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                risk_level: R.union(
+                  riskLevelEntities,
+                  this.state.entities.risk_level,
+                ),
+              },
+            });
+          });
+        break;
+      case 'risk_status':
+        fetchDarklightQuery(RiskFiltersQuery, {
+          type: 'RiskStatus',
+        })
+          .toPromise()
+          .then((data) => {
+            const riskStatusEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
+              R.map((n) => ({
+                label: t(n.name),
+                value: n.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                risk_status: R.union(
+                  riskStatusEntities,
+                  this.state.entities.risk_status,
+                ),
+              },
+            });
+          });
+        break;
+      case 'lifecycle':
+        fetchDarklightQuery(RiskFiltersQuery, {
+          type: 'RiskLifeCyclePhase',
+        })
+          .toPromise()
+          .then((data) => {
+            const riskLifecycleEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
+              R.map((n) => ({
+                label: t(n.name),
+                value: n.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                lifecycle: R.union(
+                  riskLifecycleEntities,
+                  this.state.entities.lifecycle,
+                ),
+              },
+            });
+          });
+        break;
+      case 'risk_response':
+        fetchDarklightQuery(RiskFiltersQuery, {
+          type: 'ResponseType',
+        })
+          .toPromise()
+          .then((data) => {
+            const riskResponseEntities = R.pipe(
+              R.pathOr([], ['__type', 'enumValues']),
+              R.map((n) => ({
+                label: t(n.name),
+                value: n.name,
+                type: 'attribute',
+              })),
+            )(data);
+            this.setState({
+              entities: {
+                ...this.state.entities,
+                risk_response: R.union(
+                  riskResponseEntities,
+                  this.state.entities.risk_response,
                 ),
               },
             });
