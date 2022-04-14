@@ -91,8 +91,8 @@ const poamItemResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > itemList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < itemList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: itemList.length,
           },
           edges: edges,
@@ -165,7 +165,7 @@ const poamItemResolvers = {
       const reducer = getReducer("POAM-ITEM");
       return reducer(result[0]);
     },
-    deletePOAMItem: async ( _, {poam, id}, {dbName, selectMap, dataSources} ) => {
+    deletePOAMItem: async ( _, {poam, id}, {dbName, dataSources,} ) => {
       // remove the POAM Item from the POAM
       const relationshipQuery = removeItemFromPOAM(poam, id);
       await dataSources.Stardog.delete({
@@ -224,7 +224,7 @@ const poamItemResolvers = {
   },
   // field-level resolvers
   POAMItem: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -264,7 +264,7 @@ const poamItemResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -304,7 +304,7 @@ const poamItemResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -491,7 +491,7 @@ const poamItemResolvers = {
         return null;
       }
     },
-    occurrences:  async (parent, args, {dbName, dataSources, selectMap}) => {
+    occurrences:  async (parent, _, {dbName, dataSources, }) => {
       if (parent.id === undefined) {
         return 0;
       }
