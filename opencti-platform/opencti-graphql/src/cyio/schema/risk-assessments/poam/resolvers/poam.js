@@ -24,6 +24,9 @@ import {
   selectRiskByIriQuery,
 } from '../../assessment-common/resolvers/sparql-query.js';
 import {
+  selectLocationByIriQuery,
+  selectPartyByIriQuery,  
+  selectResponsiblePartyByIriQuery,
   insertRolesQuery,
   selectRoleByIriQuery,
   getReducer as getCommonReducer,
@@ -32,7 +35,7 @@ import {
 const poamResolvers = {
   Query: {
     poams: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllPOAMs(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllPOAMs(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -69,10 +72,10 @@ const poamResolvers = {
             continue
           }
 
-          // if (poam.id === undefined || poam.id == null ) {
-          //   console.log(`[DATA-ERROR] object ${poam.iri} is missing required properties; skipping object.`);
-          //   continue;
-          // }
+          if (poam.id === undefined || poam.id == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${poam.iri} missing field 'id'; skipping`);
+            continue;
+          }
 
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
@@ -96,8 +99,8 @@ const poamResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > poamList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < poamList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: poamList.length,
           },
           edges: edges,
@@ -249,7 +252,7 @@ const poamResolvers = {
 
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer("POAM");
-      poam = (reducer(response[0]));
+      let poam = (reducer(response[0]));
 
       // Detach any attached roles
       if (poam.hasOwnProperty('roles_iri')) {
@@ -317,7 +320,7 @@ const poamResolvers = {
   },
   // field-level resolvers
   POAM: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -357,7 +360,7 @@ const poamResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -365,7 +368,7 @@ const poamResolvers = {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -397,7 +400,7 @@ const poamResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -405,7 +408,7 @@ const poamResolvers = {
         const reducer = getGlobalReducer("NOTE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -437,8 +440,8 @@ const poamResolvers = {
         return [];
       }
     },
-    revisions: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // TODO: Add implementation retrieval of revisions
+    revisions: async (_parent, _args, {_dbName, _dataSources, _selectMap}) => {
+      // TODO: Add implementation retrieval of an array of revisions
     },
     roles: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.roles_iri === undefined) return null;
@@ -488,8 +491,8 @@ const poamResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
+            hasNextPage: (args.first < iriArray.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,
@@ -499,15 +502,180 @@ const poamResolvers = {
       }
     },
     locations: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // TODO: Add implementation retrieval of locations
+      if (parent.locations_iri === undefined) return null;
+      let iriArray = parent.locations_iri;
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const edges = [];
+        const reducer = getCommonReducer("LOCATION");
+        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Location')) continue ;
+          const sparqlQuery = selectLocationByIriQuery(iri, selectMap.getNode('node'));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Location",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return null;
+          if (Array.isArray(response) && response.length > 0) {
+            if ( limit ) {
+              let edge = {
+                cursor: iri,
+                node: reducer(response[0]),
+              }
+              edges.push(edge);
+              limit--;
+            }
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        if (edges.length === 0 ) return null;
+        return {
+          pageInfo: {
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (args.first < iriArray.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
+            globalCount: iriArray.length,
+          },
+          edges: edges,
+        }
+      } else {
+        return null;
+      }
     },
     parties: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // TODO: Add implementation party retrieval
+      if (parent.parties_iri === undefined) return null;
+      let iriArray = parent.parties_iri;
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const edges = [];
+        const reducer = getCommonReducer("PARTY");
+        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Party')) continue ;
+          const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode('node'));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Party",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return null;
+          if (Array.isArray(response) && response.length > 0) {
+            if ( limit ) {
+              let edge = {
+                cursor: iri,
+                node: reducer(response[0]),
+              }
+              edges.push(edge);
+              limit--;
+            }
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        if (edges.length === 0 ) return null;
+        return {
+          pageInfo: {
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (args.first < iriArray.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
+            globalCount: iriArray.length,
+          },
+          edges: edges,
+        }
+      } else {
+        return null;
+      }
     },
     responsible_parties: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // TODO: Add implementation responsible parties retrieval
+      if (parent.resp_parties_iri === undefined) return null;
+      let iriArray = parent.resp_parties_iri;
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const edges = [];
+        const reducer = getCommonReducer("RESPONSIBLE-PARTY");
+        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('ResponsibleParty')) continue ;
+          const sparqlQuery = selectResponsiblePartyByIriQuery(iri, selectMap.getNode('node'));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Responsible Party",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return null;
+          if (Array.isArray(response) && response.length > 0) {
+            if ( limit ) {
+              let edge = {
+                cursor: iri,
+                node: reducer(response[0]),
+              }
+              edges.push(edge);
+              limit--;
+            }
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        if (edges.length === 0 ) return null;
+        return {
+          pageInfo: {
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (args.first < iriArray.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
+            globalCount: iriArray.length,
+          },
+          edges: edges,
+        }
+      } else {
+        return null;
+      }
     },
-    local_definitions: async (parent, args, {dbName, dataSources, selectMap}) => {
+    local_definitions: async (_parent, _args, {_dbName, _dataSources, _selectMap}) => {
       // TODO: Add implementation location definition retrieval
     },
     observations: async (parent, args, {dbName, dataSources, selectMap}) => {
@@ -519,7 +687,7 @@ const poamResolvers = {
         let limit = (args.first === undefined ? iriArray.length : args.first) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
-          const sparqlQuery = selectObservationByIriQuery(iri, null);
+          const sparqlQuery = selectObservationByIriQuery(iri, selectMap.getNode("node"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -558,8 +726,8 @@ const poamResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
+            hasNextPage: (args.first < iriArray.length ? true : false ),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,
@@ -577,7 +745,7 @@ const poamResolvers = {
         let limit = (args.first === undefined ? iriArray.length : args.first) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Risk')) continue ;
-          const sparqlQuery = selectRiskByIriQuery(iri, null);
+          const sparqlQuery = selectRiskByIriQuery(iri, selectMap.getNode("node"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -616,8 +784,8 @@ const poamResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
+            hasNextPage: (args.first < iriArray.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,
@@ -635,7 +803,7 @@ const poamResolvers = {
         let limit = (args.first === undefined ? iriArray.length : args.first) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('poam#Item')) continue ;
-          const sparqlQuery = selectPOAMItemByIriQuery(iri, null);
+          const sparqlQuery = selectPOAMItemByIriQuery(iri, selectMap.getNode("nodes"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -674,8 +842,8 @@ const poamResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
+            hasNextPage: (args.first < iriArray.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,
@@ -684,7 +852,7 @@ const poamResolvers = {
         return null;
       }
     },
-    resources: async (parent, args, {dbName, dataSources, selectMap}) => {
+    resources: async (_parent, _args, {_dbName, _dataSources, _selectMap}) => {
       // TODO: Add implementation resource retrieval
     },
   }

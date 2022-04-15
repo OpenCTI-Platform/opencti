@@ -125,7 +125,7 @@
     "Identifies a human-readable name for the component"
     name: String!
     "Identifies a description of the component, including information about its function."
-    description: String!
+    description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
@@ -303,7 +303,7 @@
     "Identifies a human-readable name for the component"
     name: String!
     "Identifies a description of the component, including information about its function."
-    description: String!
+    description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
@@ -497,7 +497,7 @@
     "Identifies a human-readable name for the component"
     name: String!
     "Identifies a description of the component, including information about its function."
-    description: String!
+    description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
@@ -698,7 +698,7 @@
     "Identifies a human-readable name for the component"
     name: String!
     "Identifies a description of the component, including information about its function."
-    description: String!
+    description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
@@ -888,7 +888,7 @@
     "Identifies a human-readable name for the component"
     name: String!
     "Identifies a description of the component, including information about its function."
-    description: String!
+    description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."
@@ -1093,7 +1093,7 @@
     "Identifies a human-readable name for the component"
     name: String!
     "Identifies a description of the component, including information about its function."
-    description: String!
+    description: String
     "Identifies a summary of the technological or business purpose of the component."
     purpose: String
     "Identifies an organizationally specific identifier that is used to uniquely identify a logical or tangible item by the organization that owns the item."

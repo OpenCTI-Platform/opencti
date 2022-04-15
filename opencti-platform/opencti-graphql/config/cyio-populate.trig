@@ -61,7 +61,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-a9a8e3ab-eb7d-56cb-840f-31aef93
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "asset_administrator" ;
+        oscal:role_identifier "asset-administrator" ;
         oscal:name "Asset Administrator"@en-US ;
         oscal:short_name "Asset Admin"@en-US ;
         oscal:description "Responsible for administering a set of assets."@en-US ;
@@ -77,7 +77,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-620b6804-1469-5aa7-b8a5-e569548
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "asset_owner" ;
+        oscal:role_identifier "asset-owner" ;
         oscal:name "Asset Owner"@en-US ;
         oscal:short_name "Asset Owner"@en-US ;
         oscal:description "Accountable for ensuring the asset is managed in accordance with organizational policies and procedures."@en-US ;
@@ -93,7 +93,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-0884f6b4-0861-5f41-8f35-7291bdf
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "authorizing_official" ;
+        oscal:role_identifier "authorizing-official" ;
         oscal:name "Authorizing Official"@en-US ;
         oscal:short_name "Authorizing Official"@en-US ;
         oscal:description "The authorizing official for this system."@en-US ;
@@ -109,7 +109,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-e78722d3-b8e8-537d-9856-4dd8319
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "authorizing_official_poc" ;
+        oscal:role_identifier "authorizing-official-poc" ;
         oscal:name "Authorizing Official Point-of-Contact"@en-US ;
         oscal:short_name "Authorizing Official POC"@en-US ;
         oscal:description "The authorizing official's designated point of contact (POC) for this system."@en-US ;
@@ -125,7 +125,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-57848ae3-fe3e-525e-9687-0d06fc2
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "configuation_management" ;
+        oscal:role_identifier "configuration-management" ;
         oscal:name "Configuration Management"@en-US ;
         oscal:short_name "Configuration Management"@en-US ;
         oscal:description "Responsible for the configuration management processes governing changes to the asset."@en-US ;
@@ -157,7 +157,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-4d8083fe-6ea8-5766-b7ef-275f9b4
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "content_approver" ;
+        oscal:role_identifier "content-approver" ;
         oscal:name "Content Approver"@en-US ;
         oscal:short_name "Content Approver"@en-US ;
         oscal:description "Indicates the organization responsible for all content represented in the 'document'."@en-US ;
@@ -189,7 +189,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-a5b866c6-fb51-5adf-947e-c46a5d6
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "help_desk" ;
+        oscal:role_identifier "help-desk" ;
         oscal:name "Help Desk"@en-US ;
         oscal:short_name "Help Desk"@en-US ;
         oscal:description "Responsible for providing information and support to users."@en-US ;
@@ -205,7 +205,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-c4831b78-89ec-5ff7-a007-89479e3
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "incident_response" ;
+        oscal:role_identifier "incident-response" ;
         oscal:name "Incident Response"@en-US ;
         oscal:short_name "Incident Response"@en-US ;
         oscal:description "Responsible for responding to an event that could lead to loss of, or disruption to, an organization's operations, services or functions."@en-US ;
@@ -221,7 +221,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-261eee7c-48e8-50cf-8ae0-0c20037
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "information_system_security_officer" ;
+        oscal:role_identifier "information-system-security-officer" ;
         oscal:name "Information System Security Officer"@en-US ;
         oscal:short_name "ISSO"@en-US ;
         oscal:description "The primary role responsible for ensuring the organization operates the system securely."@en-US ;
@@ -237,7 +237,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-e709913b-e363-552a-b283-8d9d3d6
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "isa_authorizing_official_local" ;
+        oscal:role_identifier "isa-authorizing-official-local" ;
         oscal:name "ISA Information Authorizing Offical - Local"@en-US ;
         oscal:short_name "Local ISA Offical"@en-US ;
         oscal:description "Interconnection Security Agreement (ISA) authorizing official for this system."@en-US ;
@@ -253,7 +253,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-6f03828d-b4c9-5222-b866-cccfd0c
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "isa_authorizing_official_remote" ;
+        oscal:role_identifier "isa-authorizing-official-remote" ;
         oscal:name "ISA Authorizating Official - Remote"@en-US ;
         oscal:short_name "Remove ISA Offical"@en-US ;
         oscal:description "Interconnection Security Agreement (ISA) authorizing official for the remote interconnected system."@en-US ;
@@ -269,7 +269,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f2a802f0-164a-52aa-ba66-9d625b7
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "isa_poc_local" ;
+        oscal:role_identifier "isa-poc-local" ;
         oscal:name "ISA Point-of-Contact - Local"@en-US ;
         oscal:short_name "Local ISA POC"@en-US ;
         oscal:description "Interconnection Security Agreement (ISA) point of contact (POC) for this system."@en-US ;
@@ -285,7 +285,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f3675394-a3b4-50f0-8949-c8e94e7
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "isa_poc_remote" ;
+        oscal:role_identifier "isa-poc-remote" ;
         oscal:name "ISA Point-of-Contact - Remote"@en-US ;
         oscal:short_name "Remote ISA POC"@en-US ;
         oscal:description "Interconnection Security Agreement (ISA) point of contact (POC) for the remote interconnected system."@en-US ;
@@ -317,7 +317,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-20ddc873-263e-5457-88ff-a757521
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "network_operations" ;
+        oscal:role_identifier "network-operations" ;
         oscal:name "Network Operations"@en-US ;
         oscal:short_name "NetOps"@en-US ;
         oscal:description "Member of the network operations center (NOC)."@en-US ;
@@ -333,7 +333,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-fa315278-017f-5e5e-b666-edeb1ea
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "prepared_by" ;
+        oscal:role_identifier "prepared-by" ;
         oscal:name "Prepared By"@en-US ;
         oscal:short_name "Prepared By"@en-US ;
         oscal:description "Indicates the organization that prepared this content."@en-US ;
@@ -349,7 +349,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-609156af-16ca-55e1-9c32-0f602da
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "prepared_for" ;
+        oscal:role_identifier "prepared-for" ;
         oscal:name "Prepared For"@en-US ;
         oscal:short_name "Prepared For"@en-US ;
         oscal:description "Indicates the organization for which this content was created."@en-US ;
@@ -365,7 +365,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-49a1d640-dc1c-5526-96d2-b881eaf
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "privacy_poc" ;
+        oscal:role_identifier "privacy-poc" ;
         oscal:name "Privacy Point-of-Contact"@en-US ;
         oscal:short_name "Privacy POC"@en-US ;
         oscal:description  "The point of contact (POC) responsible for identifying privacy information within the system, and ensuring its protection if present."@en-US ;
@@ -397,7 +397,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-dae14e93-4a98-57fb-9437-d921b07
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "security_operations" ;
+        oscal:role_identifier "security-operations" ;
         oscal:name "Security Operations"@en-US ;
         oscal:short_name "SecOps"@en-US ;
         oscal:description  "Member of the security operations center (SOC)."@en-US ;
@@ -413,7 +413,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-7cc4668b-1794-5258-941d-5c4c1f2
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "system_owner" ;
+        oscal:role_identifier "system-owner" ;
         oscal:name "System Owner"@en-US ;
         oscal:short_name "System Owner"@en-US ;
         oscal:description "The executive ultimately accountable for the system."@en-US ;
@@ -429,7 +429,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-51251b9d-ac28-5ca4-af4b-bd6f77c
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "system_poc_management" ;
+        oscal:role_identifier "system-poc-management" ;
         oscal:name "System Point-of-Contact - Management"@en-US ;
         oscal:short_name "System POC Management"@en-US ;
         oscal:description "The primary management-level point of contact (POC) for the system."@en-US ;
@@ -445,7 +445,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-51a67c39-6a4a-5600-93f5-b490c03
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "system_poc_other" ;
+        oscal:role_identifier "system-poc-other" ;
         oscal:name "System Point-of-Contact - Other"@en-US ;
         oscal:short_name "System POC Other"@en-US ;
         oscal:description "Other point of contact (POC) for the system that is not the management or technical POC."@en-US ;
@@ -461,7 +461,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f444fef7-39b8-53d0-9983-9b5516a
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "system_poc_technical" ;
+        oscal:role_identifier "system-poc-technical" ;
         oscal:name "System Point-of-Contact - Technical"@en-US ;
         oscal:short_name "Technical System POC"@en-US ;
         oscal:description "The primary technical point of contact (POC) for the system."@en-US ;
@@ -469,7 +469,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-f444fef7-39b8-53d0-9983-9b5516a
 }
 # Tenable Nessus Assessment Platform
 GRAPH <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-57853743-fc7d-5967-a1b6-f09a4fc73b15> {
-    <http://csrc.nist.gov/ns/oscal/common#AssessmentPlatform-57853743-fc7d-5967-a1b6-f09a4fc73b15> 
+    <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-57853743-fc7d-5967-a1b6-f09a4fc73b15> 
         a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform> ;
         a <http://csrc.nist.gov/ns/oscal/common#Object> ; 
         a <http://darklight.ai/ns/common#Object> ;
@@ -483,7 +483,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-578537
 }
 # Rapid7 Nexpose Assessment Platform
 GRAPH <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-828a147d-92ac-5f4a-acc6-b71966d6962c> {
-    <http://csrc.nist.gov/ns/oscal/common#AssessmentPlatform-828a147d-92ac-5f4a-acc6-b71966d6962c> 
+    <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-828a147d-92ac-5f4a-acc6-b71966d6962c> 
         a <http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform> ;
         a <http://csrc.nist.gov/ns/oscal/common#Object> ; 
         a <http://darklight.ai/ns/common#Object> ;

@@ -22,7 +22,7 @@ import {
 const responsiblePartyResolvers = {
   Query: {
     oscalResponsibleParties: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllResponsibleParties(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllResponsibleParties(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -60,7 +60,7 @@ const responsiblePartyResolvers = {
           }
 
           if (respParty.id === undefined || respParty.id == null) {
-            console.log(`[DATA-ERROR] object ${respParty.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${respParty.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -86,8 +86,8 @@ const responsiblePartyResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first > respPartyList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < respPartyList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: respPartyList.length,
           },
           edges: edges,
@@ -275,7 +275,7 @@ const responsiblePartyResolvers = {
     },
   },
   OscalResponsibleParty: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -315,7 +315,7 @@ const responsiblePartyResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -323,7 +323,7 @@ const responsiblePartyResolvers = {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -355,7 +355,7 @@ const responsiblePartyResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -363,7 +363,7 @@ const responsiblePartyResolvers = {
         const reducer = getGlobalReducer("NOTE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -395,7 +395,7 @@ const responsiblePartyResolvers = {
         return [];
       }
     },
-    parties: async (parent, args, {dbName, dataSources, selectMap}) => {
+    parties: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.parties_iri === undefined) return [];
       let iriArray = parent.parties_iri;
       const results = [];
@@ -435,7 +435,7 @@ const responsiblePartyResolvers = {
         return [];
       }
     },
-    role: async (parent, args, {dbName, dataSources, selectMap}) => {
+    role: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.role_iri === undefined) return null;
       let iri = parent.role_iri[0];
       const reducer = getReducer("ROLE");
