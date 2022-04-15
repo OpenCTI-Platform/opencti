@@ -272,12 +272,14 @@
     name
     "Asset Type"
     asset_type
-    "Asset ID"
-    asset_id
-    "Label"
-    labels
     "Vendor Name"
     vendor_name
+    "CPE Identifier"
+    cpe_identifier
+    "Sofware Identifier"
+    software_identifier
+    "Label"
+    label_name
   }
 
   # Filtering Types

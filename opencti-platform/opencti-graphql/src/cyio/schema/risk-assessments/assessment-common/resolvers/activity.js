@@ -19,10 +19,8 @@ import {
   selectAllAssociatedActivities,
   deleteAssociatedActivityQuery,
   attachToAssociatedActivityQuery,
-  detachFromAssociatedActivityQuery,
   selectAssessmentSubjectByIriQuery,
   associatedActivityPredicateMap,
-  selectSubjectByIriQuery,
   deleteAssessmentSubjectByIriQuery,
 } from './sparql-query.js';
 import {
@@ -34,7 +32,7 @@ import {
 const activityResolvers = {
   Query: {
     activities: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllActivities(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllActivities(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -72,7 +70,7 @@ const activityResolvers = {
           }
 
           if (activity.id === undefined || activity.id == null ) {
-            console.log(`[DATA-ERROR] object ${activity.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${activity.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -98,8 +96,8 @@ const activityResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > activityList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < activityList.length ? true : false),
+            hasPreviousPage: (args.offset > 0  ? true : false),
             globalCount: activityList.length,
           },
           edges: edges,
@@ -148,7 +146,7 @@ const activityResolvers = {
       }
     },
     associatedActivities: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllAssociatedActivities(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllAssociatedActivities(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -186,7 +184,7 @@ const activityResolvers = {
           }
 
           if (activity.id === undefined || activity.id == null ) {
-            console.log(`[DATA-ERROR] object ${activity.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${activity.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -212,8 +210,8 @@ const activityResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > assocActivityList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < assocActivityList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: assocActivityList.length,
           },
           edges: edges,
@@ -576,7 +574,7 @@ const activityResolvers = {
   },
   // field-level resolvers
   Activity: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.label_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -618,7 +616,7 @@ const activityResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -660,7 +658,7 @@ const activityResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -702,7 +700,7 @@ const activityResolvers = {
         return [];
       }
     },
-    responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
+    responsible_roles: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.responsible_roles_iri === undefined) return [];
       let iriArray = parent.responsible_roles_iri;
       const results = [];
@@ -746,7 +744,7 @@ const activityResolvers = {
     },
   },
   AssociatedActivity: {
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -788,7 +786,7 @@ const activityResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -830,7 +828,7 @@ const activityResolvers = {
         return [];
       }
     },
-    responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
+    responsible_roles: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.responsible_roles_iri === undefined) return [];
       let iriArray = parent.responsible_roles_iri;
       const results = [];
@@ -872,7 +870,7 @@ const activityResolvers = {
         return [];
       }
     },
-    subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
