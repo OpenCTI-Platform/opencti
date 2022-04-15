@@ -80,8 +80,8 @@ const hardwareResolvers = {
             continue
           }
 
-          if (hardware.id === undefined || hardware.id == null) {
-            console.log(`[DATA-ERROR] object ${hardware.iri} is missing required properties; skipping object.`);
+          if (hardware.id === undefined) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${hardware.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -159,7 +159,7 @@ const hardwareResolvers = {
   },
   Mutation: {
     createHardwareAsset: async (_, {input}, {dbName, selectMap, dataSources}) => {
-      // remove input fields with null or empty values
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
           delete input[key];
@@ -169,6 +169,8 @@ const hardwareResolvers = {
           delete input[key];
         }
       }
+      // END WORKAROUND
+
       let ports, ipv4, ipv6, mac, connectedNetwork, installedOS, installedSoftware;
       if (input.ports !== undefined) {
         ports = input.ports
@@ -486,7 +488,7 @@ const hardwareResolvers = {
       var iri = parent.installed_os_iri
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
-          console.log(`[WARNING] ${parent.parent_iri} has ${parent.parent_iri.length} values: ${parent.installed_os_iri}`);
+          console.log(`[CYIO] (${dbName}) CONSTRAINT-VIOLATION: ${parent.iri} 'installed_operating_system' violates maxCount constraint`);
           iri = parent.installed_os_iri[0]
         }
       } else {
@@ -690,7 +692,7 @@ const hardwareResolvers = {
       let iri = parent.conn_network_iri;
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
-          console.log(`[WARNING] ${parent.conn_network_iri} has ${iri.length} values: ${parent.conn_network_iri}`);
+          console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${parent.iri} 'connected_to_network' violates maxCount constraint`);
           iri = parent.conn_network_iri[0]
         }
       } else {

@@ -1,5 +1,5 @@
 import { globalSingularizeSchema as singularizeSchema } from '../global-mappings.js';
-import { compareValues, updateQuery, filterValues } from '../../utils.js';
+import { compareValues, filterValues } from '../../utils.js';
 import { UserInputError } from "apollo-server-express";
 import {objectMap} from '../global-utils.js';
 import { 
@@ -13,7 +13,7 @@ import {
 const cyioGlobalTypeResolvers = {
   Query: {
     civicAddresses: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllAddresses(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllAddresses(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -51,7 +51,7 @@ const cyioGlobalTypeResolvers = {
           }
 
           if (addr.id === undefined || addr.id == null) {
-            console.log(`[DATA-ERROR] object ${addr.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${addr.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -77,8 +77,8 @@ const cyioGlobalTypeResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.limit > addrList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.limit < addrList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: addrList.length,
           },
           edges: edges,
@@ -127,7 +127,7 @@ const cyioGlobalTypeResolvers = {
       }
     },
     telephoneNumbers: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllPhoneNumbers(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllPhoneNumbers(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -165,7 +165,7 @@ const cyioGlobalTypeResolvers = {
           }
 
           if (phoneNumber.id === undefined || phoneNumber.id == null) {
-            console.log(`[DATA-ERROR] object ${phoneNumber.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${phoneNumber.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -191,8 +191,8 @@ const cyioGlobalTypeResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.limit > phoneList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.limit < phoneList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: phoneList.length,
           },
           edges: edges,
@@ -242,7 +242,7 @@ const cyioGlobalTypeResolvers = {
     },
   },
   Mutation: {
-    addReference: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+    addReference: async ( _, {input}, {dbName, dataSources, } ) => {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined) throw new UserInputError(`Source and target types must be supplied`);
 
@@ -323,7 +323,7 @@ const cyioGlobalTypeResolvers = {
       if (response === undefined) return false;
       return true
     },
-    removeReference: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+    removeReference: async ( _, {input}, {dbName, dataSources, } ) => {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined) throw new UserInputError(`Source and target types must be supplied`);
 
