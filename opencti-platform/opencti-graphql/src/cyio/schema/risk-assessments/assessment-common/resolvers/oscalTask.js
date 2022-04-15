@@ -11,6 +11,7 @@ import {
   deleteResponsiblePartyByIriQuery,
   selectResponsiblePartyByIriQuery,
   getReducer as getCommonReducer,
+  selectObjectByIriQuery,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
   getReducer, 
@@ -32,7 +33,7 @@ import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 const oscalTaskResolvers = {
   Query: {
     oscalTasks: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllOscalTasks(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllOscalTasks(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -70,7 +71,7 @@ const oscalTaskResolvers = {
           }
 
           if (task.id === undefined || task.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${task.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${task.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -96,8 +97,8 @@ const oscalTaskResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < taskList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > taskList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: taskList.length,
           },
           edges: edges,

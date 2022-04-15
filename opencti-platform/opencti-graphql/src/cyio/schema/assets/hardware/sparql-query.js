@@ -30,7 +30,7 @@ const hardwareAssetReducer = (item) => {
   // when there shouldn't be but just one
   if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
     if (item.installed_operating_system.length > 1) {
-      console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
+      console.log(`[NON-CONFORMANT] ${item.iri} violates maxCount constraint; using only first value`)
     }
     item.installed_operating_system = item.installed_operating_system[0]
   }
@@ -156,7 +156,7 @@ export const selectHardwareByIriQuery = (iri, select) => {
     select = select.filter(i => i !== 'ipv6_address')
     select.push('ip_address')
   }
-  if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
+  if (select === null) select = Object.keys(hardwarePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -175,24 +175,18 @@ export const selectHardwareByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllHardware = (select, args) => {
+export const selectAllHardware = (select, filters) => {
   if (select != null) {
     select = select.filter(i => i !== 'ipv4_address')
     select = select.filter(i => i !== 'ipv6_address')
     select.push('ip_address')
   }
-  if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
+  if (select === null) select =Object.keys(hardwarePredicateMap);
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
@@ -327,14 +321,6 @@ const deviceMap = {
   },
   "hardware": {
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Hardware",
-  },
-  "laptop": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Laptop",
-    parent: "computing-device",
-  },
-  "mobile-device": {
-    iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#MobileDevice",
-    parent: "network-device",
   },
   "network": {
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Network",
@@ -640,11 +626,6 @@ export const hardwarePredicateMap = {
   ip_address: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>", // this should really be ipv4_address in ontology
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip_address");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  ip_address_value: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address>/<http://scap.nist.gov/ns/asset-identification#ip_address_value>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "ip_address_value");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   ipv4_address: {

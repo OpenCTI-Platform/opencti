@@ -1,4 +1,5 @@
-import {byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, OASIS_SCO_NS} from "../../utils.js";
+import {UpdateOps, byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, OASIS_SCO_NS} from "../../utils.js";
+// import {objectMap} from '../../global/global-utils.js';
 
 const predicateBody = `
     ?iri <http://darklight.ai/ns/common#id> ?id .
@@ -93,22 +94,13 @@ const softwareAssetReducer = (item) => {
 }
 
 // Software resolver support functions
-export function getSelectSparqlQuery(type, select, id, args) {
+export function getSelectSparqlQuery(type, select, id, filters) {
   let sparqlQuery;
 
   if (type == 'SOFTWARE') {
-    if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
-
-    if (args !== undefined ) {
-      if ( args.filters !== undefined && id === undefined ) {
-        for( const filter of args.filters) {
-          if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-        }
-      }
-      
-      // add value of orderedBy's key to cause special predicates to be included
-      if ( args.orderedBy !== undefined ) {
-        if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    if ( filters !== undefined && id === undefined ) {
+      for( const filter of filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
     }
   }
@@ -250,7 +242,7 @@ export const selectSoftwareQuery = (id, select) => {
 }
 export const selectSoftwareByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
+  if (select === null) select = Object.keys(softwarePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(softwarePredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -262,19 +254,13 @@ export const selectSoftwareByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllSoftware = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
+export const selectAllSoftware = (select, filters) => {
+  if (select === null) select =Object.keys(softwarePredicateMap);
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 

@@ -393,7 +393,7 @@ export const selectPOAMQuery = (id, select) => {
 }
 export const selectPOAMByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(poamPredicateMap);
+  if (select === null) select = Object.keys(poamPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(poamPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -405,19 +405,13 @@ export const selectPOAMByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllPOAMs = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(poamPredicateMap);
+export const selectAllPOAMs = (select, filters) => {
+  if (select === null) select =Object.keys(poamPredicateMap);
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
@@ -546,7 +540,7 @@ export const selectPOAMItemQuery = (id, select) => {
 }
 export const selectPOAMItemByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
+  if (select === null) select = Object.keys(poamItemPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(poamItemPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -558,19 +552,13 @@ export const selectPOAMItemByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllPOAMItems = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
+export const selectAllPOAMItems = (select, filters) => {
+  if (select === null) select =Object.keys(poamItemPredicateMap);
   
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
@@ -638,7 +626,7 @@ export const attachToPOAMItemQuery = (id, field, itemIris) => {
   }
   `
 }
-export const detachFromPOAMItemQuery = (id, field, itemIris) => {
+export const detachFromPOAMItemQuery = (id, field, itemIri) => {
   const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`;
   if (!poamItemPredicateMap.hasOwnProperty(field)) return null;
   const predicate = poamItemPredicateMap[field].predicate;

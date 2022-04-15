@@ -47,7 +47,7 @@ export const selectObjectByIriQuery = (iri, type, select) => {
       break;
   }
 
-  if (select === undefined || select === null) select = Object.keys(predicateMap);
+  if (select === null) select = Object.keys(predicateMap);
   const { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -260,7 +260,7 @@ export const selectExternalIdentifierQuery = (id, select) => {
 }
 export const selectExternalIdentifierByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(externalIdentifierPredicateMap);
+  if (select === null) select = Object.keys(externalIdentifierPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(externalIdentifierPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -273,7 +273,7 @@ export const selectExternalIdentifierByIriQuery = (iri, select) => {
   `
 }
 export const selectAllExternalIdentifiers = (select, filters) => {
-  if (select === undefined || select === null) select = Object.keys(externalIdentifierPredicateMap);
+  if (select === null) select =Object.keys(externalIdentifierPredicateMap);
 
   // add value of filter's key to cause special predicates to be included
   if ( filters !== undefined ) {
@@ -390,7 +390,7 @@ export const selectLocationQuery = (id, select) => {
 }
 export const selectLocationByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
+  if (select === null) select = Object.keys(locationPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -402,19 +402,13 @@ export const selectLocationByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllLocations = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
+export const selectAllLocations = (select, filters) => {
+  if (select === null) select =Object.keys(locationPredicateMap);
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
@@ -528,7 +522,7 @@ export const selectPartyQuery = (id, select) => {
 }
 export const selectPartyByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
+  if (select === null) select = Object.keys(partyPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(partyPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -540,19 +534,13 @@ export const selectPartyByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllParties = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
+export const selectAllParties = (select, filters) => {
+  if (select === null) select =Object.keys(partyPredicateMap);
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
@@ -654,7 +642,7 @@ export const selectResponsiblePartyQuery = (id, select) => {
 }
 export const selectResponsiblePartyByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(responsiblePartyPredicateMap);
+  if (select === null) select = Object.keys(responsiblePartyPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(responsiblePartyPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -666,19 +654,13 @@ export const selectResponsiblePartyByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllResponsibleParties = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(responsiblePartyPredicateMap);
+export const selectAllResponsibleParties = (select, filters) => {
+  if (select === null) select =Object.keys(responsiblePartyPredicateMap);
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
@@ -821,7 +803,7 @@ export const selectRoleQuery = (id, select) => {
 }
 export const selectRoleByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(rolePredicateMap);
+  if (select === null) select = Object.keys(rolePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(rolePredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -833,19 +815,13 @@ export const selectRoleByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllRoles = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(rolePredicateMap);
+export const selectAllRoles = (select, filters) => {
+  if (select === null) select =Object.keys(rolePredicateMap);
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
@@ -1138,7 +1114,7 @@ export const partyPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   job_title: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#job_title>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#jjob_title>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "job_title");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },

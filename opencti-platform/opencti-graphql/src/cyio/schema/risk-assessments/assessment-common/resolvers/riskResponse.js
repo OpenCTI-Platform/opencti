@@ -22,7 +22,7 @@ import {
 const riskResponseResolvers = {
   Query: {
     riskResponses: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllRiskResponses(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllRiskResponses(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -60,7 +60,7 @@ const riskResponseResolvers = {
           }
 
           if (riskResponse.id === undefined || riskResponse.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${riskResponse.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${riskResponse.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -86,8 +86,8 @@ const riskResponseResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < riskResponseList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > riskResponseList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: riskResponseList.length,
           },
           edges: edges,
@@ -298,7 +298,7 @@ const riskResponseResolvers = {
   },
   // field-level resolvers
   RiskResponse: {
-    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -340,7 +340,7 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -382,7 +382,7 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -424,7 +424,7 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
+    origins:async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
@@ -466,7 +466,7 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    required_assets: async (parent, _, {dbName, dataSources, selectMap}) => {
+    required_assets: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.required_assets_iri === undefined) return [];
       let iriArray = parent.required_assets_iri;
       const results = [];
@@ -508,7 +508,7 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    tasks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    tasks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.tasks_iri === undefined) return [];
       let iriArray = parent.tasks_iri;
       const results = [];

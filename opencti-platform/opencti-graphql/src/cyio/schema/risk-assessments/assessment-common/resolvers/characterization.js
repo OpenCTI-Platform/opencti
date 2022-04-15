@@ -32,7 +32,7 @@ import {
 const characterizationResolvers = {
   Query: {
     characterizations: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllCharacterizations(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllCharacterizations(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -70,7 +70,7 @@ const characterizationResolvers = {
           }
 
           if (characterization.id === undefined || characterization.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${characterization.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${characterization.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -96,8 +96,8 @@ const characterizationResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < characterizationList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > characterizationList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: characterizationList.length,
           },
           edges: edges,
@@ -146,7 +146,7 @@ const characterizationResolvers = {
       }
     },
     facets: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllFacets(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllFacets(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -184,7 +184,7 @@ const characterizationResolvers = {
           }
 
           if (facet.id === undefined || facet.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${facet.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${facet.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -210,8 +210,8 @@ const characterizationResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < facetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > facetList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: facetList.length,
           },
           edges: edges,
@@ -587,7 +587,7 @@ const characterizationResolvers = {
     },
   },
   Characterization: {
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -629,7 +629,7 @@ const characterizationResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -671,7 +671,7 @@ const characterizationResolvers = {
         return [];
       }
     },
-    facets: async (parent, _, {dbName, dataSources, }) => {
+    facets: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.facets_iri === undefined) return [];
       let iriArray = parent.facets_iri;
       const results = [];
@@ -706,7 +706,7 @@ const characterizationResolvers = {
 
             // Convert the each key/value pair of Vulnerability Facet into an individual OSCAL facet
             for (const [key, value] of Object.entries(facet)) {
-              if (key === 'id' || key === 'entity_type' || key === 'standard_id' || key === 'risk_state' || key === 'source_system' ) continue;
+              if (key === 'id' || key === 'entity_type' || key === 'risk_state' || key === 'source_system') continue;
               let id = generateId();
               let newFacet = { 
                 id: `${id}`,
@@ -734,7 +734,7 @@ const characterizationResolvers = {
         return [];
       }
     },
-    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
+    origins:async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];

@@ -27,7 +27,7 @@ import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 const requiredAssetResolvers = {
   Query: {
     requiredAssets: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllRequiredAssets(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllRequiredAssets(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -65,7 +65,7 @@ const requiredAssetResolvers = {
           }
 
           if (reqAsset.id === undefined || reqAsset.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${reqAsset.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${reqAsset.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -91,8 +91,8 @@ const requiredAssetResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < reqAssetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > reqAssetList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: reqAssetList.length,
           },
           edges: edges,
@@ -332,7 +332,7 @@ const requiredAssetResolvers = {
     },
   },
   RequiredAsset: {
-    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -374,7 +374,7 @@ const requiredAssetResolvers = {
         return [];
       }
     },
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -416,7 +416,7 @@ const requiredAssetResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -458,7 +458,7 @@ const requiredAssetResolvers = {
         return [];
       }
     },
-    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
+    subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];

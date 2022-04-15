@@ -14,7 +14,7 @@ import {
 const cyioExternalReferenceResolvers = {
   Query: {
     cyioExternalReferences: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllExternalReferences(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllExternalReferences(selectMap.getNode("node"));
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -52,7 +52,7 @@ const cyioExternalReferenceResolvers = {
           }
 
           if (externalRef.id === undefined || externalRef.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${externalRef.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${externalRef.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -78,8 +78,8 @@ const cyioExternalReferenceResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.limit < externalRefList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.limit > externalRefList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: externalRefList.length,
           },
           edges: edges,

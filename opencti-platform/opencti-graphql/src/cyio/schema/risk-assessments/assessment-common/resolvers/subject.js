@@ -19,8 +19,10 @@ import {
   insertSubjectQuery,
   selectSubjectQuery,
   selectSubjectByIriQuery,
+  attachToSubjectQuery,
   detachFromSubjectQuery,
   subjectPredicateMap,
+  getSubjectIriByIdQuery,
   insertSubjectsQuery,
 } from './sparql-query.js';
 
@@ -28,7 +30,7 @@ import {
 const subjectResolvers = {
   Query: {
     subjects: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllSubjects(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllSubjects(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -65,13 +67,8 @@ const subjectResolvers = {
             continue
           }
 
-          if (subject.id === undefined || subject.id == null) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
-            continue;
-          }
-
-          if (subject.subject_ref === undefined) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_ref'; skipping`);
+          if (subject.id === undefined || subject.id == null || subject.subject_ref == undefined) {
+            console.log(`[DATA-ERROR] object ${subject.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -97,8 +94,8 @@ const subjectResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < subjectList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > subjectList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: subjectList.length,
           },
           edges: edges,
@@ -147,7 +144,7 @@ const subjectResolvers = {
       }
     },
     assessmentSubjects: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllAssessmentSubjects(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllAssessmentSubjects(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -185,7 +182,7 @@ const subjectResolvers = {
           }
 
           if (subject.id === undefined || subject.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${subject.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -211,8 +208,8 @@ const subjectResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < subjectList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > subjectList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: subjectList.length,
           },
           edges: edges,
@@ -471,7 +468,7 @@ const subjectResolvers = {
         try {
           await dataSources.Stardog.create({
             dbName,
-            queryId: "Add Subject to Assessment Subject",
+            queryId: "Add facet to Characterization",
             sparqlQuery: includeAttachQuery
           });
         } catch (e) {
@@ -598,7 +595,7 @@ const subjectResolvers = {
     },
   },
   Subject: {
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -640,7 +637,7 @@ const subjectResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -682,10 +679,10 @@ const subjectResolvers = {
         return [];
       }
     },    
-    subject_ref: async (parent, _, {dbName, dataSources, selectMap }) => {
+    subject_ref: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.subject_ref_iri === undefined) return null;
       let iri = parent.subject_ref_iri[0];
-      const sparqlQuery = selectObjectByIriQuery(iri, parent.subject_type, selectMap.getNode("subject_ref"));
+      const sparqlQuery = selectObjectByIriQuery(iri, parent.subject_type, null);
       let response;
       try {
         response = await dataSources.Stardog.queryById({
@@ -715,7 +712,7 @@ const subjectResolvers = {
     },    
   },
   AssessmentSubject: {
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -757,7 +754,7 @@ const subjectResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -799,7 +796,7 @@ const subjectResolvers = {
         return [];
       }
     },    
-    include_subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
+    include_subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.include_subjects_iri === undefined) return [];
       let iriArray = parent.include_subjects_iri;
       const results = [];
@@ -841,7 +838,7 @@ const subjectResolvers = {
         return [];
       }
     },
-    exclude_subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
+    exclude_subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.exclude_subjects_iri === undefined) return [];
       let iriArray = parent.exclude_subjects_iri;
       const results = [];

@@ -1,5 +1,5 @@
 import {riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {selectObjectIriByIdQuery} from '../../../global/global-utils.js';
+import {objectMap, selectObjectIriByIdQuery} from '../../../global/global-utils.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
@@ -8,6 +8,7 @@ import {
   deleteOriginQuery,
   insertOriginQuery,
   selectOriginQuery,
+  selectOriginByIriQuery,
   attachToOriginQuery,
   detachFromOriginQuery,
   insertActorsQuery,
@@ -19,7 +20,7 @@ import {
 const originResolvers = {
   Query: {
     origins: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllOrigins(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllOrigins(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -57,7 +58,7 @@ const originResolvers = {
           }
 
           if (origin.id === undefined || origin.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${origin.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${origin.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -83,8 +84,8 @@ const originResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < originList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > originList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: originList.length,
           },
           edges: edges,
@@ -328,7 +329,7 @@ const originResolvers = {
 
   },
   Origin: {
-		origin_actors: async (parent, _, {dbName, dataSources, selectMap}) => {
+		origin_actors: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.origin_actors_iri === undefined) return [];
       let iriArray = parent.origin_actors_iri;
       const results = [];
@@ -375,7 +376,7 @@ const originResolvers = {
         return [];
       }
 		},
-    related_tasks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    related_tasks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.related_tasks_iri === undefined) return [];
       let iriArray = parent.related_tasks_iri;
       const results = [];

@@ -2,6 +2,7 @@ import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.
 import { compareValues, updateQuery, filterValues } from '../../../utils.js';
 import { UserInputError } from "apollo-server-express";
 import {
+  selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
@@ -18,7 +19,7 @@ import {
 const evidenceResolvers = {
   Query: {
     evidenceList: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllEvidence(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllEvidence(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -56,7 +57,7 @@ const evidenceResolvers = {
           }
 
           if (evidence.id === undefined || evidence.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${evidence.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${evidence.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -82,8 +83,8 @@ const evidenceResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < evidenceList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > evidenceList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: evidenceList.length,
           },
           edges: edges,
@@ -200,6 +201,8 @@ const evidenceResolvers = {
       }
 
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      let reducer = getReducer("EVIDENCE");
+      const evidence = (reducer(response[0]));
 
       // detach the Evidence from the Observation
       if (observationId !== undefined && observationId !== null) {
@@ -255,7 +258,7 @@ const evidenceResolvers = {
     },
   },
   Evidence: {
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -297,7 +300,7 @@ const evidenceResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];

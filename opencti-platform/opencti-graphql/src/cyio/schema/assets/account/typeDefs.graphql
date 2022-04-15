@@ -1,5 +1,5 @@
   "Captures identifying information about an account.  The Account class is an extension to NIST-7693 that was missing. The relationship with other Account classes from other ontologies will likely be established here."
-  type AccountAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
+  interface AccountAsset {
     # BasicObject
     "Uniquely identifies this object."
     id: ID!
