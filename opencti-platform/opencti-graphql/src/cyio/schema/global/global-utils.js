@@ -114,7 +114,7 @@ export const selectObjectByIriQuery = (iri, type, select) => {
   if (select === undefined || select === null) select = Object.keys(predicateMap);
   const { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)

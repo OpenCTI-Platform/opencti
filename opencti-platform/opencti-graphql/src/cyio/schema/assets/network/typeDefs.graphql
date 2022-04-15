@@ -111,7 +111,7 @@
     "Network ID"
     network_id
     "Label"
-    labels
+    label_name
     "Asset Type"
     asset_type
   }
@@ -124,12 +124,16 @@
     modified      # Modified before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Name"
     name          # Name (key:name, values: ["name1","name2"], operator: "matches", filterMode: "or")
-    "Label"
-    label_name         # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
+    "Asset Type"
+    asset_type
+    "Asset ID"
+    asset_id
     "Network ID"
     network_id
     "Is Publicly Accessible"
     is_publicly_accessible
+    "Label"
+    label_name         # Label (key:labels, values:["label1","label2"], operator: "matches", filterMode: "or")
   }
 
   # this is used to restrict the set of asset_types values that are allowed in a filter

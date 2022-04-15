@@ -14,7 +14,7 @@ import {
 const cyioNoteResolvers = {
   Query: {
     cyioNotes: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllNotes(selectMap.getNode("node"));
+      const sparqlQuery = selectAllNotes(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -52,7 +52,7 @@ const cyioNoteResolvers = {
           }
 
           if (note.id === undefined || note.id == null ) {
-            console.log(`[DATA-ERROR] object ${note.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${note.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -78,8 +78,8 @@ const cyioNoteResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.limit > noteList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.limit < noteList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: noteList.length,
           },
           edges: edges,

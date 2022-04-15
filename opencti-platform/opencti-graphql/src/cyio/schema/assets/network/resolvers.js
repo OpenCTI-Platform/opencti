@@ -27,7 +27,7 @@ import {
 const networkResolvers = {
   Query: {
     networkAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args.filters);
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args);
       var reducer = getReducer('NETWORK')
       const response = await dataSources.Stardog.queryAll({
           dbName,
@@ -54,7 +54,7 @@ const networkResolvers = {
           }
 
           if (asset.id === undefined || asset.id == null) {
-            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -128,7 +128,7 @@ const networkResolvers = {
   },
   Mutation: {
     createNetworkAsset: async (_, { input }, {dbName, dataSources}) => {
-      // remove input fields with null or empty values
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
           delete input[key];
@@ -138,6 +138,8 @@ const networkResolvers = {
           delete input[key];
         }
       }
+      // END WORKAROUND
+
       let ipv4RelIri = null, ipv6RelIri = null;
       if (input.network_ipv4_address_range !== undefined) {
         const ipv4Range = input.network_ipv4_address_range;
@@ -301,18 +303,23 @@ const networkResolvers = {
 
       if (Array.isArray(response) && response.length > 0) {
         let results = reducer(response[0])
-        return {
-          id: results.id,
-          starting_ip_address: {
-            id: generateId({ "value": results.start_addr_iri }, DARKLIGHT_NS),
-            entity_type: (results.start_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
-            ip_address_value: results.start_addr_iri
-          },
-          ending_ip_address: {
-            id: generateId({ "value": results.ending_addr_iri }, DARKLIGHT_NS),
-            entity_type: (results.ending_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
-            ip_address_value: results.ending_addr_iri
+        if (results.hasOwnProperty('start_addr')) {
+          return {
+            id: results.id,
+            starting_ip_address: {
+              id: generateId({ "value": results.start_addr }, DARKLIGHT_NS),
+              entity_type: (results.start_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+              ip_address_value: results.start_addr
+            },
+            ending_ip_address: {
+              id: generateId({ "value": results.ending_addr }, DARKLIGHT_NS),
+              entity_type: (results.ending_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+              ip_address_value: results.ending_addr
+            }
           }
+        }
+        if (results.hasOwnProperty('start_addr_iri')) {
+          return results;
         }
       }
 
