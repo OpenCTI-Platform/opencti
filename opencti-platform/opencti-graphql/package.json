@@ -102,6 +102,7 @@
     "winston-daily-rotate-file": "4.6.0"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.16.7",
     "@graphql-codegen/cli": "2.6.1",
     "@graphql-codegen/introspection": "2.1.1",
     "@graphql-codegen/typescript": "2.4.3",
@@ -144,6 +145,11 @@
     "graphql-constraint-directive": "patch:graphql-constraint-directive@2.3.0#./patch/graphql-constraint-directive-2.3.0.patch",
     "nconf": "patch:nconf@0.11.3#./patch/nconf-0.11.3.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-typescript"
+    ]
   },
   "packageManager": "yarn@3.1.1"
 }
