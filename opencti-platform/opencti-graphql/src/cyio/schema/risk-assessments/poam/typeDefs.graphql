@@ -284,15 +284,15 @@
     "Modified"
     modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Label"
-    label_name
+    labels
     "Name"
     name
     "Risk Level"
     risk_level
     "Risk Status"
     risk_status
-    "Risk Response Type"
-    response_type
+    "Risk Response"
+    risk_response
     "Risk Lifecycle Phase"
     lifecycle
     "Risk Migitation Deadline"
@@ -313,7 +313,7 @@
     "Risk Status"
     risk_status     # Risk Status (key:risk_status, values: ["value1","value2"], operator: eq)
     "Risk Response"
-    response_type   # Risk Response (key:response_type, values: ["value1","value2"], operator: eq)
+    risk_response   # Risk Response (key:response_type, values: ["value1","value2"], operator: eq)
     "Risk Lifecycle Phase"
     lifecycle       # Risk Lifecycle (key:lifecycle, values: ["value1","value2"], operator: eq)
     "Risk Migitation Deadline"

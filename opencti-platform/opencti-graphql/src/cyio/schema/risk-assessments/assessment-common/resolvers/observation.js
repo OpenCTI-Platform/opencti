@@ -26,7 +26,7 @@ import {
 const observationResolvers = {
   Query: {
     observations: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllObservations(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllObservations(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -64,7 +64,7 @@ const observationResolvers = {
           }
 
           if (observation.id === undefined || observation.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${observation.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${observation.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -90,8 +90,8 @@ const observationResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < observationList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > observationList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: observationList.length,
           },
           edges: edges,
@@ -336,7 +336,7 @@ const observationResolvers = {
   },
   // field-level resolvers
   Observation: {
-    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -378,7 +378,7 @@ const observationResolvers = {
         return [];
       }
     },
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -420,7 +420,7 @@ const observationResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -462,7 +462,7 @@ const observationResolvers = {
         return [];
       }
     },
-    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
+    origins:async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
@@ -504,7 +504,7 @@ const observationResolvers = {
         return [];
       }
     },
-    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
+    subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
@@ -546,7 +546,7 @@ const observationResolvers = {
         return [];
       }
     },
-    relevant_evidence: async (parent, _, {dbName, dataSources, selectMap}) => {
+    relevant_evidence: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.relevant_evidence_iri === undefined) return [];
       let iriArray = parent.relevant_evidence_iri;
       const results = [];

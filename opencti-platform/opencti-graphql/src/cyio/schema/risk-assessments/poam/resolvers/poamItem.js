@@ -12,21 +12,22 @@ import {
   removeItemFromPOAM,
 } from './sparql-query.js';
 import {
-  selectLabelByIriQuery,
-  selectExternalReferenceByIriQuery,
-  selectNoteByIriQuery,
+  selectLabelQuery,
+  selectExternalReferenceQuery,
+  selectNoteQuery,
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
 import {
   getReducer as getAssessmentReducer,
   selectObservationByIriQuery,
   selectRiskByIriQuery,
+  selectRiskQuery,
 } from '../../assessment-common/resolvers/sparql-query.js'
 
 const poamItemResolvers = {
   Query: {
     poamItems: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllPOAMItems(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllPOAMItems(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -64,7 +65,7 @@ const poamItemResolvers = {
           }
 
           if (item.id === undefined || item.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${item.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${item.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -271,7 +272,7 @@ const poamItemResolvers = {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -311,7 +312,7 @@ const poamItemResolvers = {
         const reducer = getGlobalReducer("NOTE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -391,8 +392,8 @@ const poamItemResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < iriArray.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (iriArray.length > args.first ),
+            hasPreviousPage: 0,
             globalCount: iriArray.length,
           },
           edges: edges,
@@ -429,7 +430,7 @@ const poamItemResolvers = {
             let risk = response[0];
 
           if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
+            console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
             risk.risk_status = risk.risk_status.replace('_', '-');
           }
 
@@ -480,8 +481,8 @@ const poamItemResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < iriArray.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (iriArray.length > args.first ),
+            hasPreviousPage: 0,
             globalCount: iriArray.length,
           },
           edges: edges,

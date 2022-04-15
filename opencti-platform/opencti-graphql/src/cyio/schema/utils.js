@@ -38,29 +38,23 @@ export function generateId( materials, namespace ) {
 // Used as part of sorting to compare values within an object
 export function compareValues( key, order = 'asc') {
   return function innerSort(a, b) {
-    if (!a.hasOwnProperty(key) && !b.hasOwnProperty(key)) {
+    if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
       // property doesn't exist on either object
       return 0;
     }
 
+    const varA = (typeof a[key] === 'string')
+      ? a[key].toUpperCase() : a[key];
+    const varB = (typeof b[key] === 'string')
+      ? b[key].toUpperCase() : b[key];
+
     let comparison = 0;
-    if (!a.hasOwnProperty(key) && b.hasOwnProperty(key)) comparison = -1;
-    if (a.hasOwnProperty(key) && !b.hasOwnProperty(key)) comparison = 1;
-
-    if (comparison === 0 ) {
-      const varA = (typeof a[key] === 'string')
-        ? a[key].toUpperCase() : a[key];
-      const varB = (typeof b[key] === 'string')
-        ? b[key].toUpperCase() : b[key];
-
-      if (varA > varB) {
-        comparison = 1;
-      } else if (varA < varB) {
-        comparison = -1;
-      }
+    if (varA > varB) {
+      comparison = 1;
+    } else if (varA < varB) {
+      comparison = -1;
     }
-
-  return (
+    return (
       (order === 'desc') ? (comparison * -1) : comparison
     );
   };

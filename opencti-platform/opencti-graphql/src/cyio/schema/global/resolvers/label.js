@@ -14,7 +14,7 @@ import {
 const cyioLabelResolvers = {
   Query: {
     cyioLabels: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllLabels(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllLabels(selectMap.getNode("node"));
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -52,7 +52,7 @@ const cyioLabelResolvers = {
           }
 
           if (label.id === undefined || label.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${label.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${label.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -78,8 +78,8 @@ const cyioLabelResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.limit < labelList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.limit > labelList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: labelList.length,
           },
           edges: edges,

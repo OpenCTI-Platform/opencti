@@ -27,7 +27,7 @@ import {
 const oscalLocationResolvers = {
   Query: {
     oscalLocations: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllLocations(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllLocations(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -65,7 +65,7 @@ const oscalLocationResolvers = {
           }
 
           if (location.id === undefined || location.id == null) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${location.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${party.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -91,8 +91,8 @@ const oscalLocationResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < locationList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > locationList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: locationList.length,
           },
           edges: edges,
@@ -315,7 +315,7 @@ const oscalLocationResolvers = {
     },
   },
   OscalLocation: {
-    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -355,7 +355,7 @@ const oscalLocationResolvers = {
         return [];
       }
     },
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -363,7 +363,7 @@ const oscalLocationResolvers = {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -395,7 +395,7 @@ const oscalLocationResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -403,7 +403,7 @@ const oscalLocationResolvers = {
         const reducer = getGlobalReducer("NOTE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -435,7 +435,7 @@ const oscalLocationResolvers = {
         return [];
       }
     },
-    address: async (parent, _, {dbName, dataSources, selectMap}) => {
+    address: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.address_iri === undefined) return [];
       let iri = parent.address_iri[0];
       const sparqlQuery = selectAddressByIriQuery(iri, selectMap.getNode("addresses"));
@@ -466,7 +466,7 @@ const oscalLocationResolvers = {
         }
       }  
     },
-    telephone_numbers: async (parent, _, {dbName, dataSources, selectMap}) => {
+    telephone_numbers: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.telephone_numbers_iri === undefined) return [];
       let iriArray = parent.telephone_numbers_iri;
       const results = [];

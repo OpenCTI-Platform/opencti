@@ -26,8 +26,8 @@ export const inventoryItemReducer = (item) => {
   return {
     id: item.id,
     standard_id: item.id,
-    entity_type: 'inventory-item',
     ...(item.iri && {parent_iri: item.iri}),
+    ...(item.object_type && {entity_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
@@ -116,7 +116,7 @@ export const selectInventoryItemQuery = (id, select) => {
 }
 export const selectInventoryItemByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(inventoryItemPredicateMap);
+  if (select === null) select = Object.keys(inventoryItemPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(inventoryItemPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -129,7 +129,7 @@ export const selectInventoryItemByIriQuery = (iri, select) => {
   `
 }
 export const selectAllInventoryItems = (select, filters) => {
-  if (select === undefined || select === null) select = Object.keys(inventoryItemPredicateMap);
+  if (select === null) select =Object.keys(inventoryItemPredicateMap);
 
   // add value of filter's key to cause special predicates to be included
   if ( filters !== undefined ) {
@@ -262,6 +262,11 @@ export const inventoryItemPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "implemented_components");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  asset_id: {
+    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
+    binding: function (iri, value) { return  parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   name: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "name");},
@@ -280,16 +285,6 @@ export const inventoryItemPredicateMap = {
   location_name: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#locations>/<http://darklight.ai/ns/common#name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "location_name");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  allows_authenticated_scan: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#allows_authenticted_scan>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "allows_authenticated_scan")},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  },
-  asset_id: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
-    binding: function (iri, value) { return  parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_id");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   asset_type: {
@@ -471,6 +466,6 @@ export const inventoryItemPredicateMap = {
     predicate: "<http://scap.nist.gov/ns/asset-identification#baseline_configuration_name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "baseline_configuration_name")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
-  },
+  }
 }
 

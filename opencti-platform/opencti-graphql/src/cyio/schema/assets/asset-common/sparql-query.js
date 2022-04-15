@@ -211,8 +211,6 @@ export function getSelectSparqlQuery( type, select, id, filters, ) {
   var byId = '';
   var sparqlQuery;
 
-  if (select === undefined || select === null) select = Object.keys(assetPredicateMap);
-
   if ( filters !== undefined && id === undefined ) {
     for( const filter of filters) {
       if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
@@ -363,7 +361,7 @@ export const selectLocationQuery = (id, select) => {
 }
 export const selectLocationByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
+  if (select === null) select = Object.keys(locationPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -375,19 +373,11 @@ export const selectLocationByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllLocations = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
-
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+export const selectAllLocations = (select, filters) => {
+  if (select === null) select =Object.keys(locationPredicateMap);
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
@@ -425,121 +415,7 @@ export const deleteLocationQuery = (id) => {
   `
 }
 
-// IpAddress resolver support functions
-export const selectIpAddressQuery = (id, select) => {
-  return selectIpAddressByIriQuery(`http://scap.nist.gov/ns/asset-identification#IpAddress-${id}`, select);
-}
-export const selectIpAddressByIriQuery = (iri, select) => {
-  if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(ipAddrPredicateMap);
-  const { selectionClause, predicates } = buildSelectVariables(ipAddrPredicateMap, select);
-  return `
-  SELECT ${selectionClause}
-  FROM <tag:stardog:api:context:named>
-  WHERE {
-    BIND(${iri} AS ?iri)
-    ?iri a <http://scap.nist.gov/ns/asset-identification#IpAddress> .
-    ${predicates}
-  }
-  `
-}
-
-
 // Predicate Maps
-export const assetPredicateMap = {
-  id: {
-    predicate: "<http://darklight.ai/ns/common#id>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
-  },
-  object_type: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#object_type>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  created: {
-    predicate: "<http://darklight.ai/ns/common#created>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "created");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  modified: {
-    predicate: "<http://darklight.ai/ns/common#modified>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "modified");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  labels: {
-    predicate: "<http://darklight.ai/ns/common#labels>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  label_name: {
-    predicate: "<http://darklight.ai/ns/common#labels>/<http://darklight.ai/ns/common#name>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "label_name");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  notes: {
-    predicate: "<http://darklight.ai/ns/common#notes>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "notes");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  external_references: {
-    predicate: "<http://darklight.ai/ns/common#external_references>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "external_references");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  asset_id: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_id>",
-    binding: function (iri, value) { return  parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_id");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  name: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#name>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "name");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  description: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#description>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "description");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  locations: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#locations>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "locations");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  location_name: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#locations>/<http://darklight.ai/ns/common#name>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "location_name");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-}
-export const ipAddrPredicateMap = {
-  id: {
-    predicate: "<http://darklight.ai/ns/common#id>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id")},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
-  },
-  object_type: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#object_type>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  created: {
-    predicate: "<http://darklight.ai/ns/common#created>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "created");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  modified: {
-    predicate: "<http://darklight.ai/ns/common#modified>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "modified");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  ip_address_value: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#ip_address_value>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "ip_address_value");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-}
 export const itAssetPredicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
@@ -604,46 +480,6 @@ export const itAssetPredicateMap = {
   location_name: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#locations>/<http://darklight.ai/ns/common#name>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "location_name");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  asset_type: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_type>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_type");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  asset_tag: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#asset_tag>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "asset_tag");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  serial_number: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#serial_number>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "serial_number");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  vendor_name: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#vendor_name>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "vendor_name");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  version: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#version>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "version");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  release_date: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#release_date>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime`: null, this.predicate, "release_date");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  implementation_point: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#implementation_point>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "implementation_point");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  operational_status: {
-    predicate: "<http://scap.nist.gov/ns/asset-identification#operational_status>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, "operational_status");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }

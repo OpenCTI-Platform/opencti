@@ -26,10 +26,10 @@ import {
 
 const logEntryResolvers = {
   Query: {
-    assessmentLogEntries: async (_, _args, {_dbName, _dataSources, _selectMap}) => { return null },
-    assessmentLogEntry: async (_, {_id}, {_dbName, _dataSources, _selectMap}) => { return null },
-    riskLogEntries: async (_, args, {dbName, dataSources, selectMap}) => {
-      const sparqlQuery = selectAllRiskLogEntries(selectMap.getNode("node"), args);
+    assessmentLogEntries: async (_, args, { dbName, dataSources, selectMap }) => {},
+    assessmentLogEntry: async (_, {id}, { dbName, dataSources, selectMap }) => {},
+    riskLogEntries: async (_, args, { dbName, dataSources, selectMap }) => {
+      const sparqlQuery = selectAllRiskLogEntries(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -67,7 +67,7 @@ const logEntryResolvers = {
           }
 
           if (logEntry.id === undefined || logEntry.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${logEntry.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${logEntry.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -93,8 +93,8 @@ const logEntryResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < logEntryList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > logEntryList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: logEntryList.length,
           },
           edges: edges,
@@ -144,9 +144,9 @@ const logEntryResolvers = {
     },
   },
   Mutation: {
-    createAssessmentLogEntry: async ( _, {_input}, {_dbName, _dataSources, _selectMap} ) => {},
-    deleteAssessmentLogEntry: async ( _, {_resultId, _id}, {_dbName, _dataSources} ) => {},
-    editAssessmentLogEntry: async (_, {_id, _input}, {_dbName, _dataSources, _selectMap}) => {},
+    createAssessmentLogEntry: async ( _, {input}, {dbName, selectMap, dataSources} ) => {},
+    deleteAssessmentLogEntry: async ( _, {resultId, id}, {dbName, dataSources} ) => {},
+    editAssessmentLogEntry: async (_, {id, input}, {dbName, dataSources, selectMap}) => {},
     createRiskLogEntry: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
       // Setup to handle embedded objects to be created
       let riskId, responses, authors;
@@ -315,7 +315,7 @@ const logEntryResolvers = {
     },
 },
   AssessmentLogEntry: {
-    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -357,7 +357,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -399,7 +399,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -441,7 +441,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    related_tasks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    related_tasks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.related_tasks_iri === undefined) return [];
       let iriArray = parent.related_tasks_iri;
       const results = [];
@@ -485,7 +485,7 @@ const logEntryResolvers = {
     },
   },
   RiskLogEntry: {
-    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -527,7 +527,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -569,7 +569,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -611,7 +611,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    logged_by: async (parent, _, {dbName, dataSources, selectMap}) => {
+    logged_by: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.logged_by_iri === undefined) return [];
       let iriArray = parent.logged_by_iri;
       const results = [];
@@ -653,7 +653,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    related_responses: async (parent, _, {dbName, dataSources, selectMap}) => {
+    related_responses: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.related_responses_iri === undefined) return [];
       let iriArray = parent.related_responses_iri;
       const results = [];

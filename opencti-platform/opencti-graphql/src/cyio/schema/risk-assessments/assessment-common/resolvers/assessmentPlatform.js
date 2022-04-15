@@ -1,5 +1,5 @@
 import {riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {selectObjectIriByIdQuery} from '../../../global/global-utils.js';
+import {objectMap, selectObjectIriByIdQuery} from '../../../global/global-utils.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
@@ -18,6 +18,7 @@ import {
   deleteAssessmentPlatformQuery,
   insertAssessmentPlatformQuery,
   selectAssessmentPlatformQuery,
+  selectAssessmentPlatformByIriQuery,
   detachFromAssessmentPlatformQuery,
   assessmentPlatformPredicateMap,
 } from './sparql-query.js';
@@ -26,7 +27,7 @@ import {
 const assessmentPlatformResolvers = {
 	Query: {
     assessmentPlatforms: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllAssessmentPlatforms(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllAssessmentPlatforms(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -64,7 +65,7 @@ const assessmentPlatformResolvers = {
           }
 
           if (platform.id === undefined || platform.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${platform.iri} missing field 'id'; skipping`);
+            console.log(`[DATA-ERROR] object ${platform.iri} is missing required properties; skipping object.`);
             continue;
           }
 
@@ -90,8 +91,8 @@ const assessmentPlatformResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < platformList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > platformList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: platformList.length,
           },
           edges: edges,
@@ -288,7 +289,7 @@ const assessmentPlatformResolvers = {
     },
 	},
 	AssessmentPlatform :{
-    labels: async (parent, _, {dbName, dataSources, }) => {
+    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -330,7 +331,7 @@ const assessmentPlatformResolvers = {
         return [];
       }
     },
-    links: async (parent, _, {dbName, dataSources, }) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -340,7 +341,7 @@ const assessmentPlatformResolvers = {
           if (iri === undefined || !iri.includes('ExternalReference')) {
             continue;
           }
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, null);
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -372,7 +373,7 @@ const assessmentPlatformResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, }) => {
+    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -414,7 +415,7 @@ const assessmentPlatformResolvers = {
         return [];
       }
     },
-		uses_components: async (parent, _, {dbName, dataSources, }) => {
+		uses_components: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.uses_components_iri === undefined) return [];
       let iriArray = parent.uses_components_iri;
       const results = [];

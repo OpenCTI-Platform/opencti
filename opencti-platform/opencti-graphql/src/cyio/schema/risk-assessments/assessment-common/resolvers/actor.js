@@ -22,7 +22,7 @@ import {
 const actorResolvers = {
   Query: {
     actors: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllActors(selectMap.getNode("node"), args);
+      const sparqlQuery = selectAllActors(selectMap.getNode("node"), args.filters);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -59,18 +59,14 @@ const actorResolvers = {
             continue
           }
 
-          if (actor.id === undefined || actor.id == null) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${actor.iri} missing field 'id'; skipping`);
+          if (actor.id === undefined || actor.id == null || actor.actor_ref === undefined) {
+            console.log(`[DATA-ERROR] object ${actor.iri} is missing required properties; skipping object.`);
             continue;
           }
-          if (actor.actor_ref === undefined || actor.actor_ref == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${actor.iri} missing field 'id'; skipping`);
-          }
 
-
-          // TODO: fix the generation to use the assessment-platform as the actor type value of Assessment Platforms
+          // TODO: fix the generation to use the assessment-platform  as the actor type value of Assessment Platforms
           if (actor.actor_type == 'tool' && actor.actor_ref.includes('AssessmentPlatform')) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${actor.iri} conflicting fields 'actor_type' and 'actor_ref'; see ADO #4853`);
+            console.log(`[DATA-ERROR] object ${actor.iri} has conflicting information; see ADO card #4853.`);
             response[0].actor_type = 'assessment-platform';
           }
 
@@ -96,8 +92,8 @@ const actorResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < actorList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (args.first > actorList.length),
+            hasPreviousPage: (args.offset > 0),
             globalCount: actorList.length,
           },
           edges: edges,
@@ -319,7 +315,7 @@ const actorResolvers = {
   },
   // field-level resolvers
   Actor: {
-    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+    links: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -361,13 +357,13 @@ const actorResolvers = {
         return [];
       }
     },
-    actor_ref: async (parent, _, {dbName, dataSources, selectMap}) => {
+    actor_ref: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.actor_ref_iri === undefined) return null;
-      // TODO: fix the generation to use the assessment-platform as the actor type value of Assessment Platforms
+      // TODO: fix the generation to use the assessment-platform  as the actor type value of Assessment Platforms
       if (parent.actor_type == 'tool' && parent.actor_ref_iri.includes('AssessmentPlatform')) parent.actor_type = 'assessment-platform';
       let iri = parent.actor_ref_iri;
       const reducer = getReducer(parent.actor_type.toUpperCase());
-      const sparqlQuery = selectObjectByIriQuery(iri, parent.actor_type, selectMap.getNode("actor_ref"));
+      const sparqlQuery = selectObjectByIriQuery(iri, parent.actor_type, null);
       let response;
       try {
         response = await dataSources.Stardog.queryById({
@@ -394,11 +390,11 @@ const actorResolvers = {
         }
       }  
     },
-    role_ref: async (parent, _, {dbName, dataSources, selectMap}) => {
+    role_ref: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.role_ref_iri === undefined) return null;
       let iri = parent.role_ref_iri;
       const reducer = getCommonReducer("ROLE");
-      const sparqlQuery = selectObjectByIriQuery(iri, "role", selectMap.getNode("role_ref"));
+      const sparqlQuery = selectObjectByIriQuery(iri, "role", null);
       let response;
       try {
         response = await dataSources.Stardog.queryById({

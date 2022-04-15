@@ -63,12 +63,9 @@ const networkAssetReducer = (item) => {
   }
 }
 const ipAddrRangeReducer = (item) => {
-  let is_string = false;
-  if (!item.starting_ip_address.includes('http:')) {
-    console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'starting_ip_address' is NOT an object`);
-    is_string = true;
+  if ( typeof item.starting_ip_address == 'string' ) {
+    console.log(`[NON-CONFORMANT] starting_ip_address is NOT an object`);
   }
-
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined && item.asset_type !== undefined ) {
     item.object_type = item.asset_type
@@ -82,30 +79,19 @@ const ipAddrRangeReducer = (item) => {
     ...(item.object_type && {entity_type: item.object_type}),
     ...(item.iri &&{parent_iri: item.iri}),
     // Hints
-    ...((item.starting_ip_address && is_string) && {start_addr: item.starting_ip_address}),
-    ...((item.ending_ip_address && is_string) && {ending_addr: item.ending_ip_address}),
-    ...((item.starting_ip_address && !is_string) && {start_addr_iri: item.starting_ip_address}),
-    ...((item.ending_ip_address && !is_string) && {ending_addr_iri: item.ending_ip_address}),
+    ...(item.starting_ip_address && {start_addr_iri: item.starting_ip_address}),
+    ...(item.ending_ip_address && {ending_addr_iri: item.ending_ip_address}),
   }
 }
 
 // Network resolver support functions
-export function getSelectSparqlQuery(type, select, id, args, ) {
+export function getSelectSparqlQuery(type, select, id, filters, ) {
   var sparqlQuery;
 
   if (type === 'NETWORK') {
-    if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
-
-    if (args !== undefined ) {
-      if ( args.filters !== undefined && id === undefined ) {
-        for( const filter of args.filters) {
-          if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-        }
-      }
-      
-      // add value of orderedBy's key to cause special predicates to be included
-      if ( args.orderedBy !== undefined ) {
-        if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    if ( filters !== undefined && id === undefined ) {
+      for( const filter of filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
     }
   }
@@ -232,7 +218,7 @@ export const selectNetworkQuery = (id, select) => {
 }
 export const selectNetworkByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
+  if (select === null) select = Object.keys(networkPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(networkPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -244,19 +230,13 @@ export const selectNetworkByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllNetworks = (select, args) => {
-  if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
+export const selectAllNetworks = (select, filters) => {
+  if (select === null) select =Object.keys(networkPredicateMap);
 
-  if (args !== undefined ) {
-    if ( args.filters !== undefined ) {
-      for( const filter of args.filters) {
-        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
-      }
-    }
-    
-    // add value of orderedBy's key to cause special predicates to be included
-    if ( args.orderedBy !== undefined ) {
-      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+  // add value of filter's key to cause special predicates to be included
+  if ( filters !== undefined ) {
+    for( const filter of filters) {
+      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
     }
   }
 
