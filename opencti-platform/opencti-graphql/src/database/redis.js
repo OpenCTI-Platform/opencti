@@ -44,7 +44,8 @@ const CONTEXT_DATABASE = 1; // locks / user context
 const REDIS_EXPIRE_TIME = 90;
 
 const mustBeIncludeInStream = (instance) => {
-  return INCLUDE_INFERENCES || !isInferredIndex(instance._index);
+  return (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type))
+      && (INCLUDE_INFERENCES || !isInferredIndex(instance._index));
 };
 
 const redisOptions = (database) => ({
