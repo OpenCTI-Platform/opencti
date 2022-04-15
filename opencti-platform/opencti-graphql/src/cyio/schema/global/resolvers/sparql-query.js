@@ -416,7 +416,7 @@ export const selectAllAddresses = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(addressPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -547,7 +547,7 @@ export const selectAllLabels = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(labelPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -718,7 +718,7 @@ export const selectAllExternalReferences = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(externalReferencePredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -848,7 +848,7 @@ export const selectAllNotes = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(notePredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -997,7 +997,7 @@ export const selectAllPhoneNumbers = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(phoneNumberPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }

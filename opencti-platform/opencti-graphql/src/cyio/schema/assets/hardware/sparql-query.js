@@ -184,7 +184,7 @@ export const selectAllHardware = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }

@@ -566,7 +566,7 @@ export const selectAllActivities = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(activityPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -725,7 +725,7 @@ export const selectAllActors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(actorPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -864,7 +864,7 @@ export const selectAllAssessmentPlatforms = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(assessmentPlatformPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -1160,7 +1160,7 @@ export const selectAllAssociatedActivities = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(associatedActivityPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -1315,7 +1315,7 @@ export const selectAllCharacterizations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(characterizationPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -1484,7 +1484,7 @@ export const selectAllEvidence = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(evidencePredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -1659,7 +1659,7 @@ export const selectAllFacets = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(facetPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -1956,7 +1956,7 @@ export const selectAllMitigatingFactors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(mitigatingFactorPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -2090,7 +2090,7 @@ export const selectAllObservations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(observationPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -2237,7 +2237,7 @@ export const selectAllOrigins = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(originPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -2416,7 +2416,7 @@ export const selectAllRequiredAssets = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(requiredAssetPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -2569,7 +2569,7 @@ export const selectAllRisks = (select, args) => {
   }
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -2720,7 +2720,7 @@ export const selectAllRiskLogEntries = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(riskLogPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -2880,7 +2880,7 @@ export const selectAllRiskResponses = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -3036,7 +3036,7 @@ export const selectAllSubjects = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -3169,7 +3169,7 @@ export const selectAllOscalTasks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(oscalTaskPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }

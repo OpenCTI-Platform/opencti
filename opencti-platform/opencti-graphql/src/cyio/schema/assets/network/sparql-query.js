@@ -248,7 +248,7 @@ export const selectAllNetworks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }

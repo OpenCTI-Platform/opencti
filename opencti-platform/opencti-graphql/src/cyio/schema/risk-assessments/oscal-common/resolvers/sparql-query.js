@@ -406,7 +406,7 @@ export const selectAllLocations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -544,7 +544,7 @@ export const selectAllParties = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -670,7 +670,7 @@ export const selectAllResponsibleParties = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(responsiblePartyPredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
@@ -837,7 +837,7 @@ export const selectAllRoles = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(rolePredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }

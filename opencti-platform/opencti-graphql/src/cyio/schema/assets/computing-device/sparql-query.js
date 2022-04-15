@@ -394,7 +394,7 @@ export const selectAllComputingDevices = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
 
   if (args !== undefined ) {
-    if ( args.filters !== undefined && id === undefined ) {
+    if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }

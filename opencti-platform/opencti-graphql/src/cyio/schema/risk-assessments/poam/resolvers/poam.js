@@ -441,7 +441,7 @@ const poamResolvers = {
       }
     },
     revisions: async (_parent, _args, {_dbName, _dataSources, _selectMap}) => {
-      // TODO: Add implementation retrieval of revisions
+      // TODO: Add implementation retrieval of an array of revisions
     },
     roles: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.roles_iri === undefined) return null;
@@ -559,7 +559,7 @@ const poamResolvers = {
         return null;
       }
     },
-    parties: async (parent, _, {dbName, dataSources, selectMap}) => {
+    parties: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.parties_iri === undefined) return null;
       let iriArray = parent.parties_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
