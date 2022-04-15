@@ -32,7 +32,13 @@ import {
   INPUT_VALUES,
   isStixCyberObservableRelationship
 } from '../schema/stixCyberObservableRelationship';
-import { ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+  isStixMetaObject
+} from '../schema/stixMetaObject';
 import type * as S from '../types/stix-common';
 import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
@@ -896,6 +902,54 @@ const convertMarkingToStix = (instance: StoreEntity): SMO.StixMarkingDefinition 
   };
 };
 
+const convertLabelToStix = (instance: StoreEntity): SMO.StixLabel => {
+  const label = buildStixObject(instance);
+  return {
+    ...label,
+    value: instance.value,
+    color: instance.color,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...label.extensions[STIX_EXT_OCTI],
+        extension_type: 'new-sdo',
+      })
+    }
+  };
+};
+
+const convertKillChainPhaseToStix = (instance: StoreEntity): SMO.StixKillChainPhase => {
+  const killChain = buildStixObject(instance);
+  return {
+    ...killChain,
+    kill_chain_name: instance.kill_chain_name,
+    phase_name: instance.phase_name,
+    order: instance.x_opencti_order,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...killChain.extensions[STIX_EXT_OCTI],
+        extension_type: 'new-sdo',
+      })
+    }
+  };
+};
+
+const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternalReference => {
+  const reference = buildStixObject(instance);
+  return {
+    ...reference,
+    url: instance.url,
+    source_name: instance.source_name,
+    description: instance.description,
+    external_id: instance.external_id,
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...reference.extensions[STIX_EXT_OCTI],
+        extension_type: 'new-sdo',
+      })
+    }
+  };
+};
+
 // CONVERTERS
 const convertToStix = (instance: StoreObject | StorePartial, type: string): S.StixObject => {
   if (!isStixObject(type) && !isStixRelationship(type)) {
@@ -986,6 +1040,15 @@ const convertToStix = (instance: StoreObject | StorePartial, type: string): S.St
     const basic = instance as StoreEntity;
     if (ENTITY_TYPE_MARKING_DEFINITION === type) {
       return convertMarkingToStix(basic);
+    }
+    if (ENTITY_TYPE_LABEL === type) {
+      return convertLabelToStix(basic);
+    }
+    if (ENTITY_TYPE_KILL_CHAIN_PHASE === type) {
+      return convertKillChainPhaseToStix(basic);
+    }
+    if (ENTITY_TYPE_EXTERNAL_REFERENCE === type) {
+      return convertExternalReferenceToStix(basic);
     }
     // No converter found
     throw UnsupportedError(`No meta converter available for ${type}`);

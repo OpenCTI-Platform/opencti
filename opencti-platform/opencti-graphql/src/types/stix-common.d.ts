@@ -24,7 +24,7 @@ interface StixMitreExtension {
 }
 
 interface StixOpenctiExtension {
-  extension_type : 'property-extension';
+  extension_type : 'property-extension' | 'new-sdo';
   id: v4 | undefined;
   stix_ids: Array<StixId>;
   type: string;
@@ -32,6 +32,10 @@ interface StixOpenctiExtension {
   is_inferred: boolean;
   patch: StixPatch | undefined;
   context: StixContext | undefined;
+}
+
+interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
+  extension_type : 'new-sdo';
 }
 
 interface StixObject {

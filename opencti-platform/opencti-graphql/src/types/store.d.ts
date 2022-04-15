@@ -196,6 +196,8 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
 
 interface BasicStoreEntity extends BasicStoreCommon {
   lang: string;
+  value: string;
+  color: string;
   attribute_abstract: string;
   content: string;
   pattern: string;
@@ -221,6 +223,11 @@ interface BasicStoreEntity extends BasicStoreCommon {
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree';
   x_mitre_id: string;
   x_opencti_color: string;
+  kill_chain_name: string;
+  phase_name: string;
+  url: string;
+  source_name: string;
+  external_id: string;
   // rels
   [RELATION_OBJECT_MARKING]: Array<string>;
   // Array

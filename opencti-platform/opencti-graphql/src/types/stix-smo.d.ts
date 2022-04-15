@@ -1,4 +1,4 @@
-import { StixId, StixMarkingsObject, StixOpenctiExtension } from './stix-common';
+import { StixId, StixMarkingsObject, StixObject, StixOpenctiExtension, StixOpenctiExtensionSDO } from './stix-common';
 import { STIX_EXT_OCTI } from './stix-extensions';
 
 // Extensions
@@ -16,18 +16,47 @@ interface StixExtension {
   extension_properties?: Array<string>;
 }
 
+// Marking Definition Specific Properties
+// name, definition_type, definition
 interface MarkingDefinitionExtension extends StixOpenctiExtension {
   color: string;
   order: number;
 }
-
-// Marking Definition Specific Properties
-// name, definition_type, definition
 interface StixMarkingDefinition extends StixMarkingsObject {
   name: string;
   definition_type: string;
   definition: { [x: string]: string; };
   extensions: {
     [STIX_EXT_OCTI] : MarkingDefinitionExtension
+  };
+}
+
+// Label
+interface StixLabel extends StixObject {
+  value: string;
+  color: string;
+  extensions: {
+    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+  };
+}
+
+// Kill chain
+interface StixKillChainPhase extends StixObject {
+  kill_chain_name: string;
+  phase_name: string;
+  order: number;
+  extensions: {
+    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
+  };
+}
+
+// External reference
+interface StixExternalReference extends StixObject {
+  url: string;
+  source_name: string;
+  description: string;
+  external_id: string;
+  extensions: {
+    [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   };
 }
