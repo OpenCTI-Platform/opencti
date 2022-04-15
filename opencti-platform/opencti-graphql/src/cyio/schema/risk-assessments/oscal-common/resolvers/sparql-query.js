@@ -405,16 +405,17 @@ export const selectLocationByIriQuery = (iri, select) => {
 export const selectAllLocations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( args.filters !== undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
@@ -542,16 +543,17 @@ export const selectPartyByIriQuery = (iri, select) => {
 export const selectAllParties = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( args.filters !== undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(partyPredicateMap, select);
@@ -667,16 +669,17 @@ export const selectResponsiblePartyByIriQuery = (iri, select) => {
 export const selectAllResponsibleParties = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(responsiblePartyPredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( args.filters !== undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(responsiblePartyPredicateMap, select);
@@ -833,16 +836,17 @@ export const selectRoleByIriQuery = (iri, select) => {
 export const selectAllRoles = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(rolePredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( args.filters !== undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(rolePredicateMap, select);
@@ -1134,7 +1138,7 @@ export const partyPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   job_title: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#jjob_title>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#job_title>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "job_title");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },

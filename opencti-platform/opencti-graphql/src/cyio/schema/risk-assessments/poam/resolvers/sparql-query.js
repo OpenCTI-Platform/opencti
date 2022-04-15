@@ -408,15 +408,17 @@ export const selectPOAMByIriQuery = (iri, select) => {
 export const selectAllPOAMs = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(poamPredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( args.filters !== undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(poamPredicateMap, select);
@@ -559,15 +561,17 @@ export const selectPOAMItemByIriQuery = (iri, select) => {
 export const selectAllPOAMItems = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
   
-  // add value of filter's key to cause special predicates to be included
-  if ( args.filters !== undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(poamItemPredicateMap, select);

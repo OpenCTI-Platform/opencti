@@ -245,15 +245,17 @@ export function getSelectSparqlQuery( type, select, id, args, ) {
   }
   if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
 
-  if ( args.filters !== undefined && id === undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   let { selectionClause, predicates } = buildSelectVariables(computingDevicePredicateMap, select);
@@ -391,16 +393,17 @@ export const selectComputingDeviceByIriQuery = (iri, select) => {
 export const selectAllComputingDevices = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( args.filters !== undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(computingDevicePredicateMap, select);

@@ -378,16 +378,17 @@ export const selectLocationByIriQuery = (iri, select) => {
 export const selectAllLocations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( args.filters !== undefined ) {
-    for( const filter of args.filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
     }
-  }
-  
-  // add value of orderedBy's key to cause special predicates to be included
-  if ( args.orderedBy !== undefined ) {
-    if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
+    }
   }
 
   const { selectionClause, predicates } = buildSelectVariables(locationPredicateMap, select);
