@@ -7,6 +7,7 @@ import {
   getReducer,
   insertQuery,
   deleteNetworkAssetQuery,
+  selectNetworkQuery,
   networkPredicateMap,
 } from './sparql-query.js';
 import {
@@ -127,7 +128,7 @@ const networkResolvers = {
     }
   },
   Mutation: {
-    createNetworkAsset: async (_, { input }, {dbName, dataSources}) => {
+    createNetworkAsset: async (_, { input }, {dbName, dataSources, selectMap}) => {
       // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
@@ -220,7 +221,25 @@ const networkResolvers = {
         sparqlQuery: connectQuery,
         queryId: "Add Network Asset to Inventory"
       });
-      return { id }
+
+      // retrieve information about the newly created Network to return to the user
+      const select = selectNetworkQuery(id, selectMap.getNode("createNetworkAsset"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: select,
+          queryId: "Select Network Device",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("NETWORK");
+      return reducer(response[0]);
+
+      // return { id }
     },
     deleteNetworkAsset: async (_, args, {dbName, dataSources}) => {
       const sparqlQuery = getSelectSparqlQuery("NETWORK", ["id", "network_address_range"], args.id);

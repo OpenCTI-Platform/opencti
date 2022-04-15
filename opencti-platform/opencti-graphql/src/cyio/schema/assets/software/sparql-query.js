@@ -222,7 +222,7 @@ export const insertSoftwareQuery = (propValues) => {
     .map((propPair) => softwarePredicateMap[propPair[0]].binding(iri, propPair[1]))
     .join('.\n      ');
   const insertPredicates = [];
-  insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#Component> .`);
+  insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/common#Component> `);
   if (propValues.asset_type !== 'software') {
     insertPredicates.push(`${iri} a <${iriTemplate}>`);
   }
