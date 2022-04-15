@@ -79,8 +79,8 @@ const styles = (theme) => ({
     padding: '18px 18px 0 18px',
   },
   searchBar: {
-    width: '560px',
-    minWidth: '560px',
+    width: '350px',
+    minWidth: '350px',
   },
   views: {
     // float: 'right',
@@ -281,7 +281,7 @@ class CyioListLines extends Component {
                   <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
                 </div>
               )}
-              <InputLabel
+              {/* <InputLabel
                 classes={{ root: classes.sortFieldLabel }}
                 style={{
                   marginLeft:
@@ -314,7 +314,7 @@ class CyioListLines extends Component {
                 classes={{ root: classes.sortArrowButton }}
               >
                 {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
-              </IconButton>
+              </IconButton> */}
               {(!availableFilterKeys || availableFilterKeys.length === 0)
                 && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
             </div>

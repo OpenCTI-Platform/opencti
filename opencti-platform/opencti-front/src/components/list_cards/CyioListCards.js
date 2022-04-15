@@ -63,8 +63,8 @@ const styles = (theme) => ({
     padding: '18px 18px 0 18px',
   },
   searchBar: {
-    width: '560px',
-    minWidth: '560px',
+    width: '350px',
+    minWidth: '350px',
   },
   views: {
     // display: 'flex',
@@ -188,7 +188,7 @@ class CyioListCards extends Component {
               ) : (
                 ''
               )}
-              <InputLabel
+              {/* <InputLabel
                 classes={{ root: classes.sortFieldLabel }}
                 style={{
                   marginLeft:
@@ -220,7 +220,7 @@ class CyioListCards extends Component {
                 classes={{ root: classes.sortIcon }}
               >
                 {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
-              </IconButton>
+              </IconButton> */}
             </div>
             <div className={classes.filters}>
               {map((currentFilter) => {
