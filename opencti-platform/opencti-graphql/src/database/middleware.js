@@ -2175,8 +2175,8 @@ const upsertElementRaw = async (user, instance, type, input) => {
   // If modification must be done, reload
   return {
     type: TRX_UPDATE,
-    element: instance,
     patchInputs, // To generate the patch message in stream
+    element: mergeInstanceWithInputs(instance, impactedInputs),
     relations: rawRelations, // Added meta relationships
     partialInstance: impactedInputs.length > 0 ? partialInstanceWithInputs(instance, impactedInputs) : undefined // For indexation
   };

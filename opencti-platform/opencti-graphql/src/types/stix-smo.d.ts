@@ -52,9 +52,10 @@ interface StixKillChainPhase extends StixObject {
 
 // External reference
 interface StixExternalReference extends StixObject {
-  url: string;
   source_name: string;
   description: string;
+  url: string;
+  hashes: object;
   external_id: string;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

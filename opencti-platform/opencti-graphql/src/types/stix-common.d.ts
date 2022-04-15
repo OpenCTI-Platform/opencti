@@ -51,7 +51,7 @@ interface StixObject {
 // --- STIX Core Objects
 // SDO
 interface StixDomainObject extends StixObject {
-  created_by_ref: StixId; // optional
+  created_by_ref: StixId | undefined; // optional
   created: Date;
   modified: Date;
   revoked: boolean; // optional
@@ -64,7 +64,7 @@ interface StixDomainObject extends StixObject {
 
 // SRO
 interface StixRelationshipObject extends StixObject {
-  created_by_ref: StixId; // optional
+  created_by_ref: StixId | undefined; // optional
   created: Date;
   modified: Date;
   revoked: boolean; // optional
@@ -121,23 +121,26 @@ interface StixExternalReference {
   url: string;
   hashes: object;
   external_id: string;
-  // [k: StixFieldExtension]: unknown
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtension;
   }
 }
 
+interface StixKillChainExtension extends StixOpenctiExtension {
+  order: number;
+}
+
 interface StixKillChainPhase {
   kill_chain_name: string;
   phase_name: string;
-  // x_opencti_order: number;
-  // [k: StixFieldExtension]: unknown
-  // extensions?: object;
+  extensions: {
+    [STIX_EXT_OCTI] : StixKillChainExtension;
+  }
 }
 
 // Markings
 interface StixMarkingsObject extends StixObject {
-  created_by_ref: StixId; // optional
+  created_by_ref: StixId | undefined; // optional
   created: Date;
   modified: Date;
   external_references?: Array<StixExternalReference>; // optional

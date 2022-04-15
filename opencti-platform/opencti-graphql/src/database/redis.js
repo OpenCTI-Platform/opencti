@@ -485,7 +485,7 @@ export const storeMergeEvent = async (user, initialInstance, mergedInstance, sou
 // Update
 const buildUpdateEvent = (user, instance, inputs, opts = {}) => {
   const { withoutMessage = false } = opts;
-  const patch = updateInputsToPatch(instance, inputs);
+  const patch = updateInputsToPatch(instance.entity_type, inputs);
   const message = withoutMessage ? '-' : generateUpdateMessage(inputs);
   // dataUpdate can be empty
   if (isEmptyField(patch)) {
@@ -507,13 +507,10 @@ const buildUpdateEvent = (user, instance, inputs, opts = {}) => {
 };
 export const storeUpdateEvent = async (user, instance, patchInputs, opts = {}) => {
   // updateEvents -> [{ operation, input }]
-  if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
+  if (mustBeIncludeInStream(instance)) {
     try {
       const event = buildUpdateEvent(user, instance, patchInputs, opts);
-      // Push the event in the stream only if instance is in "real index"
-      if (mustBeIncludeInStream(instance)) {
-        await pushToStream(clientBase, event);
-      }
+      await pushToStream(clientBase, event);
       return event;
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });

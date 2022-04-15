@@ -128,7 +128,7 @@ import { isMultipleAttribute, stixHashesToInput } from '../schema/fieldDataAdapt
 import { generateInternalType } from '../schema/schemaUtils';
 import { generateStandardId, normalizeName } from '../schema/identifier';
 import { mergeDeepRightAll } from '../utils/format';
-import type { StoreInput, StoreInputOperation, BasicStoreObject, StorePartial } from '../types/store';
+import type { StoreInput, StoreInputOperation, StorePartial } from '../types/store';
 import type { StixCoreObject, StixExternalReference, StixObject } from '../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import type { StixMarkingDefinition } from '../types/stix-smo';
@@ -175,11 +175,11 @@ const isStixFieldKey = (key: string): boolean => {
   return !(isInternal || isSpecificRels || EXCLUDED_FIELDS_FROM_STIX.includes(key));
 };
 
-const storeInputToStixPatch = (instance: BasicStoreObject, input: StoreInput): StixObject => {
+const storeInputToStixPatch = (entityType: string, input: StoreInput): StixObject => {
   const { key, value } = input;
   const adaptedVal = !isMultipleAttribute(key) && Array.isArray(value) ? R.head(value) : value;
   const partialData = { [key]: adaptedVal } as StorePartial;
-  return convertPartialToStix(partialData, instance.entity_type);
+  return convertPartialToStix(partialData, entityType);
 };
 
 export const buildInputDataFromStix = (stix: StixCoreObject | StixMarkingDefinition | StixExternalReference): unknown => {
@@ -323,7 +323,7 @@ export const buildInputDataFromStix = (stix: StixCoreObject | StixMarkingDefinit
   return {};
 };
 
-export const updateInputsToPatch = (instance: BasicStoreObject, inputs: Array<StoreInputOperation>) => {
+export const updateInputsToPatch = (entityType: string, inputs: Array<StoreInputOperation>) => {
   const convertedInputs = inputs.map((input) => {
     const { key, value, operation = UPDATE_OPERATION_REPLACE, previous = null } = input;
     if (isNotEmptyField(value) && !Array.isArray(value)) {
@@ -336,27 +336,15 @@ export const updateInputsToPatch = (instance: BasicStoreObject, inputs: Array<St
     if (!isStixFieldKey(key)) {
       return undefined;
     }
-    const stixPatchValue = storeInputToStixPatch(instance, input);
+    const stixPatchValue = storeInputToStixPatch(entityType, input);
     if (operation === UPDATE_OPERATION_REPLACE) {
       if (previous) {
-        const prevStixPatchValue = storeInputToStixPatch(instance, { key, value: previous });
+        const prevStixPatchValue = storeInputToStixPatch(entityType, { key, value: previous });
         return { [operation]: prevStixPatchValue };
       }
       return { [operation]: null };
     }
     return { [operation]: stixPatchValue };
-    //
-    //
-    // if (isMultipleAttribute(keyConvert)) {
-    //
-    // }
-    // const onlyVal = convertedVal ? R.head(convertedVal) : convertedVal;
-    // if (operation === UPDATE_OPERATION_REPLACE) {
-    //   const { value: convertedPrevious } = previous ? convertInputToStixPatchValue(instance, { key, value: previous }) : { value: previous };
-    //   const onlyPrevious = convertedPrevious ? R.head(convertedPrevious) : convertedPrevious;
-    //   return { [operation]: { [keyConvert]: { current: onlyVal, previous: onlyPrevious } } };
-    // }
-    // return { [operation]: { [keyConvert]: onlyVal } };
   });
   return mergeDeepRightAll(...convertedInputs);
 };

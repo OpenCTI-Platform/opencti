@@ -1,4 +1,3 @@
-import { v4, v5 } from 'uuid';
 import { MappingRuntimeFieldType, SortResults } from '@elastic/elasticsearch/api/types';
 import {
   INPUT_BCC,
@@ -38,7 +37,7 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import type { AuthUser } from './user';
-import type { StixPatch, StixContext, StixObject } from './stix-common';
+import type { StixPatch, StixContext, StixObject, StixId } from './stix-common';
 import { RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 
 type StorePrimitives = string | number | boolean | Date;
@@ -61,7 +60,7 @@ interface StoreInputOperation extends StoreInput {
 interface StoreBase {
   _index: string;
   name: string;
-  standard_id: `${string}--${v4 | v5}`;
+  standard_id: StixId;
   internal_id: string;
   entity_type: string;
   base_type: string;
@@ -178,23 +177,26 @@ interface StoreRawRelation extends BasicStoreCommon {
   connections: Array<StoreConnection>;
 }
 interface BasicStoreRelation extends StoreRawRelation {
-  from: BasicStoreObject | undefined;
   fromId: string;
   fromRole: string;
   fromType: array<string>;
-  to: BasicStoreObject | undefined;
   toId: string;
   toRole: string;
   toType: array<string>;
 }
 interface StoreRelation extends BasicStoreRelation, StoreCommon {
-  [INPUT_CREATED_BY]: StoreBasicEntity;
-  [INPUT_DOMAIN_FROM]: StoreBasicEntity;
-  [INPUT_DOMAIN_TO]: StoreBasicEntity;
+  [INPUT_DOMAIN_FROM]: BasicStoreObject;
+  [INPUT_DOMAIN_TO]: BasicStoreObject;
+  [INPUT_CREATED_BY]: Array<BasicStoreEntity>;
+  [INPUT_DOMAIN_FROM]: Array<BasicStoreEntity>;
+  [INPUT_DOMAIN_TO]: Array<BasicStoreEntity>;
   [INPUT_LABELS]: Array<StoreLabel>;
 }
 
 interface BasicStoreEntity extends BasicStoreCommon {
+  content_type: string;
+  content_disposition: string;
+  body: string;
   lang: string;
   value: string;
   color: string;
@@ -266,10 +268,9 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_order: number;
 }
 interface StoreEntity extends BasicStoreEntity, StoreCommon {
-  // inputs
-  [INPUT_CREATED_BY]: StoreBasicEntity;
-  [INPUT_RAW_EMAIL]: StoreBasicEntity;
-  [INPUT_OBJECTS]: Array<StoreEntity>;
+  [INPUT_CREATED_BY]: Array<BasicStoreEntity>;
+  [INPUT_RAW_EMAIL]: Array<BasicStoreEntity>;
+  [INPUT_OBJECTS]: Array<BasicStoreEntity>;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
 }
@@ -375,31 +376,30 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   environment_variables: object;
 }
 interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
-  // inputs
-  [INPUT_CONTAINS]: Array<BasicStoreEntity>;
+  [INPUT_CONTAINS]: Array<BasicStoreObject>;
   [INPUT_BODY_MULTIPART]: Array<BasicStoreEntity>;
-  [INPUT_PARENT_DIRECTORY]: StoreBasicEntity;
-  [INPUT_BODY_RAW]: BasicStoreEntity;
-  [INPUT_SRC]: BasicStoreEntity;
-  [INPUT_DST]: BasicStoreEntity;
-  [INPUT_SRC_PAYLOAD]: BasicStoreEntity;
-  [INPUT_DST_PAYLOAD]: BasicStoreEntity;
-  [INPUT_ENCAPSULATED_BY]: BasicStoreEntity;
-  [INPUT_CREATOR_USER]: BasicStoreEntity;
-  [INPUT_IMAGE]: BasicStoreEntity;
-  [INPUT_PARENT]: BasicStoreEntity;
-  [INPUT_CHILD]: Array<BasicStoreEntity>;
-  [INPUT_ENCAPSULATES]: Array<BasicStoreEntity>;
-  [INPUT_OPENED_CONNECTION]: Array<BasicStoreEntity>;
-  [INPUT_CC]: Array<BasicStoreEntity>;
-  [INPUT_BCC]: Array<BasicStoreEntity>;
-  [INPUT_TO]: Array<StoreBasicEntity>;
-  [INPUT_RESOLVES_TO]: Array<BasicStoreEntity>;
-  [INPUT_BELONGS_TO]: Array<BasicStoreEntity>;
-  [INPUT_SENDER]: BasicStoreEntity;
-  [INPUT_RAW_EMAIL]: BasicStoreEntity;
-  [INPUT_FROM]: StoreBasicEntity;
-  [INPUT_CONTENT]: StoreBasicEntity;
+  [INPUT_PARENT_DIRECTORY]: BasicStoreObject;
+  [INPUT_BODY_RAW]: BasicStoreObject;
+  [INPUT_SRC]: BasicStoreObject;
+  [INPUT_DST]: BasicStoreObject;
+  [INPUT_SRC_PAYLOAD]: BasicStoreObject;
+  [INPUT_DST_PAYLOAD]: BasicStoreObject;
+  [INPUT_ENCAPSULATED_BY]: BasicStoreObject;
+  [INPUT_CREATOR_USER]: BasicStoreObject;
+  [INPUT_IMAGE]: BasicStoreObject;
+  [INPUT_PARENT]: BasicStoreObject;
+  [INPUT_CHILD]: Array<BasicStoreObject>;
+  [INPUT_ENCAPSULATES]: Array<BasicStoreObject>;
+  [INPUT_OPENED_CONNECTION]: Array<BasicStoreObject>;
+  [INPUT_CC]: Array<BasicStoreObject>;
+  [INPUT_BCC]: Array<BasicStoreObject>;
+  [INPUT_TO]: Array<BasicStoreObject>;
+  [INPUT_RESOLVES_TO]: Array<BasicStoreObject>;
+  [INPUT_BELONGS_TO]: Array<BasicStoreObject>;
+  [INPUT_SENDER]: BasicStoreObject;
+  [INPUT_RAW_EMAIL]: BasicStoreObject;
+  [INPUT_FROM]: BasicStoreObject;
+  [INPUT_CONTENT]: BasicStoreObject;
   [INPUT_VALUES]: Array<StoreWindowsRegistryValueType>;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_EXTERNAL_REFS]: Array<StoreExternalReferences>;

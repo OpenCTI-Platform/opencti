@@ -791,7 +791,7 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
     let loadMalware = await storeLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
-    expect(loadMalware.object_marking_refs.length).toEqual(2);
+    expect(loadMalware['object-marking'].length).toEqual(2);
     // Upsert TLP by name
     let upMalware = { name: 'MALWARE_TEST', objectMarking: [testMarking] };
     let upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
@@ -799,7 +799,7 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await storeLoadById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
-    expect(loadMalware.object_marking_refs.length).toEqual(3);
+    expect(loadMalware['object-marking'].length).toEqual(3);
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',
@@ -832,7 +832,7 @@ describe('Upsert and merge entities', () => {
     const checkers = await elFindByIds(ADMIN_USER, loadMalware.id);
     const test = await internalLoadById(ADMIN_USER, testMarking);
     const mitre = await internalLoadById(ADMIN_USER, mitreMarking);
-    const rawMarkings = R.head(checkers).object_marking_refs;
+    const rawMarkings = R.head(checkers)['object-marking'];
     expect(rawMarkings.length).toEqual(2);
     expect(rawMarkings.includes(test.internal_id)).toBeTruthy();
     expect(rawMarkings.includes(mitre.internal_id)).toBeTruthy();
@@ -1006,7 +1006,7 @@ describe('Upsert and merge entities', () => {
     expect(reloadMd5.hashes.MD5).toEqual(MD5);
     expect(reloadMd5.hashes['SHA-1']).toEqual(SHA1);
     expect(reloadMd5.hashes['SHA-256']).toEqual(SHA256);
-    expect(reloadMd5.object_marking_refs.length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
+    expect(reloadMd5['object-marking'].length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
     // Cleanup
     await deleteElementById(ADMIN_USER, reloadMd5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   });

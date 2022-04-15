@@ -52,7 +52,7 @@ import type {
   StoreEntity,
   StoreCyberObservable,
   StoreObject,
-} from '../types/store';
+  BasicStoreEntity } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -138,12 +138,12 @@ const assertType = (type: string, instanceType: string) => {
     throw UnsupportedError(`${instanceType} not compatible with ${type}`);
   }
 };
-const mandatory = <T>(data: T): T => {
-  if (isEmptyField(data)) {
-    throw UnsupportedError('mandatory field');
-  }
-  return data;
-};
+// const mandatory = <T>(data: T): T => {
+//   if (isEmptyField(data)) {
+//     throw UnsupportedError('mandatory field');
+//   }
+//   return data;
+// };
 const isValidStix = (data: S.StixObject): boolean => {
   // TODO @JRI @SAM
   return !R.isEmpty(data);
@@ -183,47 +183,61 @@ const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
 
 // Builders
 const buildWindowsRegistryValueType = (instance: StoreCyberObservable): Array<SCO.StixWindowsRegistryValueType> => {
-  return (instance[INPUT_VALUES] ?? []).map((k) => cleanObject({
-    name: k.name,
-    data: k.data,
-    data_type: k.data_type,
-    extensions: {
-      [STIX_EXT_OCTI]: buildOCTIExtensions(k)
-    }
-  }));
+  return (instance[INPUT_VALUES] ?? []).map((k) => {
+    const data: SCO.StixWindowsRegistryValueType = {
+      name: k.name,
+      data: k.data,
+      data_type: k.data_type,
+      // extensions: {
+      //   [STIX_EXT_OCTI]: buildOCTIExtensions(k)
+      // }
+    };
+    return cleanObject(data);
+  });
 };
 const buildEmailBodyMultipart = (instance: StoreCyberObservable): Array<SCO.StixEmailBodyMultipart> => {
-  return (instance[INPUT_BODY_MULTIPART] ?? []).map((k) => cleanObject({
-    content_type: instance.content_type,
-    content_disposition: instance.content_disposition,
-    body: instance.body,
-    body_raw_ref: instance[INPUT_BODY_RAW]?.standard_id,
-    extensions: {
-      [STIX_EXT_OCTI]: buildOCTIExtensions(k)
-    }
-  }));
+  return (instance[INPUT_BODY_MULTIPART] ?? []).map((k) => {
+    const data: SCO.StixEmailBodyMultipart = {
+      content_type: k.content_type,
+      content_disposition: k.content_disposition,
+      body: k.body,
+      body_raw_ref: instance[INPUT_BODY_RAW]?.standard_id,
+      // extensions: {
+      //   [STIX_EXT_OCTI]: buildOCTIExtensions(k)
+      // }
+    };
+    return cleanObject(data);
+  });
 };
 const buildKillChainPhases = (instance: StoreEntity): Array<S.StixKillChainPhase> => {
-  return (instance[INPUT_KILLCHAIN] ?? []).map((k) => cleanObject({
-    kill_chain_name: k.kill_chain_name,
-    phase_name: k.phase_name,
-    // x_opencti_order: k.x_opencti_order, // attribute_order
-    extensions: {
-      [STIX_EXT_OCTI]: buildOCTIExtensions(k)
-    }
-  }));
+  return (instance[INPUT_KILLCHAIN] ?? []).map((k) => {
+    const data: S.StixKillChainPhase = {
+      kill_chain_name: k.kill_chain_name,
+      phase_name: k.phase_name,
+      extensions: {
+        [STIX_EXT_OCTI]: {
+          ...buildOCTIExtensions(k),
+          order: k.x_opencti_order
+        }
+      }
+    };
+    return cleanObject(data);
+  });
 };
 const buildExternalReferences = (instance: StoreObject): Array<S.StixExternalReference> => {
-  return (instance[INPUT_EXTERNAL_REFS] ?? []).map((e) => cleanObject({
-    source_name: e.source_name,
-    description: e.description,
-    url: e.url,
-    hashes: e.hashes,
-    external_id: e.external_id,
-    extensions: {
-      [STIX_EXT_OCTI]: buildOCTIExtensions(e)
-    }
-  }));
+  return (instance[INPUT_EXTERNAL_REFS] ?? []).map((e) => {
+    const data: S.StixExternalReference = {
+      source_name: e.source_name,
+      description: e.description,
+      url: e.url,
+      hashes: e.hashes,
+      external_id: e.external_id,
+      extensions: {
+        [STIX_EXT_OCTI]: buildOCTIExtensions(e)
+      }
+    };
+    return cleanObject(data);
+  });
 };
 const buildStixObject = (instance: BasicStoreCommon): S.StixObject => {
   const isFullStix = instance.entity_type !== undefined;
@@ -245,8 +259,8 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
     confidence: instance.confidence,
     lang: instance.lang,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
-    object_marking_refs: (instance.objectMarking ?? []).map((m) => m.standard_id),
-    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
+    created_by_ref: R.head<BasicStoreEntity>(instance[INPUT_CREATED_BY] || [])?.standard_id,
     external_references: buildExternalReferences(instance),
   };
 };
@@ -255,10 +269,9 @@ const buildStixRelationship = (instance: StoreRelation): S.StixRelationshipObjec
   return buildStixDomain(instance);
 };
 const buildStixMarkings = (instance: StoreEntity): S.StixMarkingsObject => {
-  const creator = Array.isArray(instance.createdBy) ? R.head(instance.createdBy) : instance.createdBy;
   return {
     ...buildStixObject(instance),
-    created_by_ref: creator?.standard_id,
+    created_by_ref: R.head<BasicStoreEntity>(instance[INPUT_CREATED_BY] || [])?.standard_id,
     created: instance.created,
     modified: instance.updated_at,
     external_references: buildExternalReferences(instance),
@@ -289,7 +302,7 @@ const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIde
   }
   return {
     ...buildStixDomain(instance),
-    name: mandatory(instance.name),
+    name: instance.name,
     description: instance.description,
     contact_information: instance.contact_information,
     identity_class: instance.identity_class,
@@ -320,7 +333,7 @@ const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixInc
   assertType(ENTITY_TYPE_INCIDENT, type);
   return {
     ...buildStixDomain(instance),
-    name: mandatory(instance.name),
+    name: instance.name,
     description: instance.description,
     first_seen: instance.first_seen,
     last_seen: instance.last_seen
@@ -330,7 +343,7 @@ const convertCampaignToStix = (instance: StoreEntity, type: string): SDO.StixCam
   assertType(ENTITY_TYPE_CAMPAIGN, type);
   return {
     ...buildStixDomain(instance),
-    name: mandatory(instance.name),
+    name: instance.name,
     description: instance.description,
     aliases: instance.aliases,
     first_seen: instance.first_seen,
@@ -342,7 +355,7 @@ const convertToolToStix = (instance: StoreEntity, type: string): SDO.StixTool =>
   assertType(ENTITY_TYPE_TOOL, type);
   return {
     ...buildStixDomain(instance),
-    name: mandatory(instance.name),
+    name: instance.name,
     description: instance.description,
     tool_types: instance.tool_types,
     aliases: instance.aliases,
@@ -354,7 +367,7 @@ const convertVulnerabilityToStix = (instance: StoreEntity, type: string): SDO.St
   assertType(ENTITY_TYPE_VULNERABILITY, type);
   return {
     ...buildStixDomain(instance),
-    name: mandatory(instance.name),
+    name: instance.name,
     description: instance.description,
   };
 };
@@ -362,7 +375,7 @@ const convertThreatActorToStix = (instance: StoreEntity, type: string): SDO.Stix
   assertType(ENTITY_TYPE_THREAT_ACTOR, type);
   return {
     ...buildStixDomain(instance),
-    name: mandatory(instance.name),
+    name: instance.name,
     description: instance.description,
     threat_actor_types: instance.threat_actor_types,
     aliases: instance.aliases,
@@ -381,7 +394,7 @@ const convertInfrastructureToStix = (instance: StoreEntity, type: string): SDO.S
   assertType(ENTITY_TYPE_INFRASTRUCTURE, type);
   return {
     ...buildStixDomain(instance),
-    name: mandatory(instance.name),
+    name: instance.name,
     description: instance.description,
     infrastructure_types: instance.infrastructure_types,
     aliases: instance.aliases,
@@ -532,7 +545,7 @@ const convertAutonomousSystemToStix = (instance: StoreCyberObservable, type: str
   assertType(ENTITY_AUTONOMOUS_SYSTEM, type);
   return {
     ...buildStixCyberObservable(instance),
-    number: mandatory(instance.number),
+    number: instance.number,
     name: instance.name,
     rir: instance.rir,
   };
@@ -823,42 +836,43 @@ const convertWX509CertificateToStix = (instance: StoreCyberObservable, type: str
   };
 };
 
+const checkInstanceCompletion = (instance: StoreRelation, isPartial: boolean) => {
+  if (!isPartial) {
+    if (instance.from === undefined || isEmptyField(instance.from)) {
+      throw UnsupportedError(`Cannot convert relation without a resolved from: ${instance.fromId}`);
+    }
+    if (instance.to === undefined || isEmptyField(instance.to)) {
+      throw UnsupportedError(`Cannot convert relation without a resolved to: ${instance.toId}`);
+    }
+  }
+};
+
 // SRO
-const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
-  if (instance.from === undefined || isEmptyField(instance.from)) {
-    throw UnsupportedError(`Cannot convert relation without a resolved from: ${instance.fromId}`);
-  }
-  if (instance.to === undefined || isEmptyField(instance.to)) {
-    throw UnsupportedError(`Cannot convert relation without a resolved to: ${instance.toId}`);
-  }
+const convertRelationToStix = (instance: StoreRelation, isPartial: boolean): SRO.StixRelation => {
+  checkInstanceCompletion(instance, isPartial);
   const stixRelationship = buildStixRelationship(instance);
   return {
     ...stixRelationship,
     relationship_type: instance.relationship_type,
     description: instance.description,
-    source_ref: instance.from.standard_id,
-    target_ref: instance.to.standard_id,
+    source_ref: instance.from?.standard_id,
+    target_ref: instance.to?.standard_id,
     start_time: instance.start_time,
     stop_time: instance.stop_time,
     external_references: buildExternalReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
-        source_ref: instance.from.internal_id,
-        source_type: instance.from.entity_type,
-        target_ref: instance.to.internal_id,
-        target_type: instance.to.entity_type
+        source_ref: instance.from?.internal_id,
+        source_type: instance.from?.entity_type,
+        target_ref: instance.to?.internal_id,
+        target_type: instance.to?.entity_type
       })
     }
   };
 };
-const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
-  if (instance.from === undefined || isEmptyField(instance.from)) {
-    throw UnsupportedError(`Cannot convert relation without a resolved from: ${instance.fromId}`);
-  }
-  if (instance.to === undefined || isEmptyField(instance.to)) {
-    throw UnsupportedError(`Cannot convert relation without a resolved to: ${instance.toId}`);
-  }
+const convertSightingToStix = (instance: StoreRelation, isPartial: boolean): SRO.StixSighting => {
+  checkInstanceCompletion(instance, isPartial);
   const stixRelationship = buildStixRelationship(instance);
   return {
     ...stixRelationship,
@@ -866,17 +880,17 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
     first_seen: instance.first_seen,
     last_seen: instance.last_seen,
     count: instance.attribute_count,
-    sighting_of_ref: instance.from.standard_id,
-    where_sighted_refs: [instance.to.standard_id],
+    sighting_of_ref: instance.from?.standard_id,
+    where_sighted_refs: instance.to?.standard_id ? [instance.to?.standard_id] : [],
     summary: instance.summary,
     observed_data_refs: [], // TODO Add support
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
-        sighting_of_ref: instance.from.internal_id,
-        sighting_of_type: instance.from.entity_type,
-        where_sighted_refs: [instance.to.internal_id],
-        where_sighted_types: [instance.to.entity_type],
+        sighting_of_ref: instance.from?.internal_id,
+        sighting_of_type: instance.from?.entity_type,
+        where_sighted_refs: instance.to?.internal_id ? [instance.to?.internal_id] : [],
+        where_sighted_types: instance.to?.entity_type ? [instance.to?.entity_type] : [],
         negative: instance.negative, // TODO JRI TRUE??
       })
     }
@@ -937,9 +951,10 @@ const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternal
   const reference = buildStixObject(instance);
   return {
     ...reference,
-    url: instance.url,
     source_name: instance.source_name,
     description: instance.description,
+    url: instance.url,
+    hashes: instance.hashes,
     external_id: instance.external_id,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
@@ -951,7 +966,7 @@ const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternal
 };
 
 // CONVERTERS
-const convertToStix = (instance: StoreObject | StorePartial, type: string): S.StixObject => {
+const convertToStix = (instance: StoreObject | StorePartial, type: string, isPartial: boolean): S.StixObject => {
   if (!isStixObject(type) && !isStixRelationship(type)) {
     throw UnsupportedError(`Type ${type} cannot be converted to Stix`, { instance });
   }
@@ -959,13 +974,13 @@ const convertToStix = (instance: StoreObject | StorePartial, type: string): S.St
   if (isStixRelationship(type)) {
     const basic = instance as StoreRelation;
     if (isStixCoreRelationship(type)) {
-      return convertRelationToStix(basic);
+      return convertRelationToStix(basic, isPartial);
     }
     if (isStixCyberObservableRelationship(type)) {
-      return convertRelationToStix(basic);
+      return convertRelationToStix(basic, isPartial);
     }
     if (isStixSightingRelationship(type)) {
-      return convertSightingToStix(basic);
+      return convertSightingToStix(basic, isPartial);
     }
     throw UnsupportedError(`No relation converter available for ${type}`);
   }
@@ -1130,7 +1145,7 @@ const convertToStix = (instance: StoreObject | StorePartial, type: string): S.St
 
 export const convertPartialToStix = (instance: StorePartial, type: string): S.StixObject => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const converted = convertToStix(instance, type) as any;
+  const converted = convertToStix(instance, type, true) as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const extensions: any = {};
   const instanceExtensions = Object.entries(converted.extensions);
@@ -1148,7 +1163,7 @@ export const convertStoreToStix = (instance: StoreObject): S.StixObject => {
   if (isEmptyField(instance._index) || isEmptyField(instance.entity_type)) {
     throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
   }
-  const converted = convertToStix(instance, instance.entity_type);
+  const converted = convertToStix(instance, instance.entity_type, false);
   // converted.extensions = buildExtensions(converted);
   const stix = cleanObject(converted);
   if (!isValidStix(stix)) {

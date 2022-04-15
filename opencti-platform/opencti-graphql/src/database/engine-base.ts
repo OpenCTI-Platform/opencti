@@ -129,12 +129,10 @@ const elMergeRelation = (concept: StoreRawRelation, fromConnection: StoreConnect
   return {
     ...concept,
     // from
-    from: undefined,
     fromId: fromConnection.internal_id,
     fromRole: fromConnection.role,
     fromType: R.head(fromConnection.types),
     // to
-    to: undefined,
     toId: toConnection.internal_id,
     toRole: toConnection.role,
     toType: R.head(toConnection.types),
