@@ -45,8 +45,9 @@ const oscalLocationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("LOCATION");
-        let limit = (args.first === undefined ? response.length : args.first);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         let locationList;
         if (args.orderedBy !== undefined) {
           locationList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -91,8 +92,8 @@ const oscalLocationResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < locationList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: locationList.length,
           },
           edges: edges,

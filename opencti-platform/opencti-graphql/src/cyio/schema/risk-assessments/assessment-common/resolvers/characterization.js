@@ -50,8 +50,9 @@ const characterizationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("CHARACTERIZATION");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         let characterizationList ;
         if (args.orderedBy !== undefined ) {
           characterizationList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -96,8 +97,8 @@ const characterizationResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < characterizationList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: characterizationList.length,
           },
           edges: edges,
@@ -164,8 +165,9 @@ const characterizationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("FACET");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         let facetList ;
         if (args.orderedBy !== undefined ) {
           facetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -210,8 +212,8 @@ const characterizationResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < facetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: facetList.length,
           },
           edges: edges,

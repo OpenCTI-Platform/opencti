@@ -45,8 +45,9 @@ const requiredAssetResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("REQUIRED-ASSET");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         let reqAssetList ;
         if (args.orderedBy !== undefined ) {
           reqAssetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -91,8 +92,8 @@ const requiredAssetResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < reqAssetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: reqAssetList.length,
           },
           edges: edges,

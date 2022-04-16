@@ -37,8 +37,9 @@ const oscalRoleResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ROLE");
-        let limit = (args.first === undefined ? response.length : args.first);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         let roleList;
         if (args.orderedBy !== undefined) {
           roleList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -83,8 +84,8 @@ const oscalRoleResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < roleList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: roleList.length,
           },
           edges: edges,

@@ -32,8 +32,9 @@ const cyioLabelResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("LABEL");
-        let limit = (args.limit === undefined ? response.length : args.limit) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.limit === undefined ? response.length : args.limit) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         let labelList ;
         if (args.orderedBy !== undefined ) {
           labelList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -78,8 +79,8 @@ const cyioLabelResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.limit < labelList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: labelList.length,
           },
           edges: edges,
