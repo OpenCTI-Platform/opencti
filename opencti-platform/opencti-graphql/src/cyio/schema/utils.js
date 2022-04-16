@@ -80,6 +80,8 @@ export function filterValues( item, filters, filterMode = 'or') {
         continue ;
 
       // GraphQL doesn't allow '_', so need to replace
+      // TODO: Need to only do for asset types??
+      // * CPE ID would break
       filterValue = filterValue.replace('_', '-');
       
       let itemValues;

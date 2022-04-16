@@ -174,7 +174,7 @@ export const insertQuery = (propValues) => {
       ${iri} <http://darklight.ai/ns/common#object_type> "network" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates}
+      ${insertPredicates} .
     }
   }
   `
