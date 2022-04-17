@@ -292,7 +292,7 @@ export const buildInputDataFromStix = (stix: StixCoreObject | StixMarkingDefinit
     // noinspection UnnecessaryLocalVariableJS
     const input:MarkingDefinitionAddInput = {
       created: markingDef.created,
-      definition: markingDef.definition[markingDef.definition_type],
+      definition: markingDef.name,
       definition_type: markingDef.definition_type,
       x_opencti_order: markingDef.extensions[STIX_EXT_OCTI].order,
       modified: markingDef.modified,
