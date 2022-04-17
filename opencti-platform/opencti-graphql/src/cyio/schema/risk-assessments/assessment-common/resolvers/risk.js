@@ -453,7 +453,7 @@ const riskResolvers = {
         return [];
       }
     },
-    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
+    origins: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
@@ -633,7 +633,7 @@ const riskResolvers = {
         const edges = [];
         const reducer = getReducer("RISK-LOG-ENTRY");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('RiskLogEntry')) continue ;
@@ -693,7 +693,7 @@ const riskResolvers = {
         const edges = [];
         const reducer = getReducer("OBSERVATION");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;

@@ -451,7 +451,7 @@ const poamResolvers = {
         const edges = [];
         const reducer = getCommonReducer("ROLE");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Role')) continue ;
@@ -511,7 +511,7 @@ const poamResolvers = {
         const edges = [];
         const reducer = getCommonReducer("LOCATION");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Location')) continue ;
@@ -571,7 +571,7 @@ const poamResolvers = {
         const edges = [];
         const reducer = getCommonReducer("PARTY");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Party')) continue ;
@@ -631,7 +631,7 @@ const poamResolvers = {
         const edges = [];
         const reducer = getCommonReducer("RESPONSIBLE-PARTY");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ResponsibleParty')) continue ;
@@ -694,7 +694,7 @@ const poamResolvers = {
         const edges = [];
         const reducer = getAssessmentReducer("OBSERVATION");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
@@ -753,11 +753,17 @@ const poamResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getAssessmentReducer("RISK");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        let risk, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        if (offset > iriArray.length) return null;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Risk')) continue ;
+          // skip down past the offset
+          if (offset) {
+            offset--
+            continue
+          }
           const sparqlQuery = selectRiskByIriQuery(iri, selectMap.getNode("node"));
           let response;
           try {
@@ -772,25 +778,54 @@ const poamResolvers = {
             throw e
           }
           if (response === undefined) return null;
-          if (Array.isArray(response) && response.length > 0) {
-            if ( limit ) {
-              let edge = {
-                cursor: iri,
-                node: reducer(response[0]),
-              }
-              edges.push(edge);
-              limit--;
-            }
+
+          // Handle reporting Stardog Error
+          if (typeof (response) === 'object' && 'body' in response) {
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
           }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
+
+          if (Array.isArray(response) && response.length > 0) risk = response[0];
+
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
+          }
+
+          // calculate the risk level
+          risk.risk_level = 'unknown';
+          if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
+            let riskLevel;
+            let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
+            if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
+            if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
+            if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
+            if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
+            if (score == 0) riskLevel = 'very-low';
+            risk.risk_score = score;
+            risk.risk_level = riskLevel;
+
+            // clean up
+            delete risk.cvss20_base_score;
+            delete risk.cvss20_temporal_score;
+            delete risk.cvss30_base_score
+            delete risk.cvss30_temporal_score;
+            delete risk.exploit_available;
+            delete risk.exploitability;
+          }
+
+          if ( limit ) {
+            let edge = {
+              cursor: iri,
+              node: reducer(risk),
             }
-          }  
+            edges.push(edge);
+            limit--;
+            if (limit === 0) break;
+            console.log(`limit: ${limit}`)
+          }
         }
         if (edges.length === 0 ) return null;
         return {
@@ -814,7 +849,7 @@ const poamResolvers = {
         const edges = [];
         const reducer = getReducer("POAM-ITEM");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('poam#Item')) continue ;

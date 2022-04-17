@@ -351,7 +351,7 @@ const poamItemResolvers = {
         const edges = [];
         const reducer = getAssessmentReducer("OBSERVATION");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
@@ -411,7 +411,7 @@ const poamItemResolvers = {
         let edges = [];
         const reducer = getAssessmentReducer("RISK");
         let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Risk')) continue ;
