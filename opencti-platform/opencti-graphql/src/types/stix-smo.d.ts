@@ -25,7 +25,6 @@ interface MarkingDefinitionExtension extends StixOpenctiExtension {
 interface StixMarkingDefinition extends StixMarkingsObject {
   name: string;
   definition_type: string;
-  definition: { [x: string]: string; };
   extensions: {
     [STIX_EXT_OCTI] : MarkingDefinitionExtension
   };

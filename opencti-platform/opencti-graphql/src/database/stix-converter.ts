@@ -899,13 +899,12 @@ const convertSightingToStix = (instance: StoreRelation, isPartial: boolean): SRO
 
 // SMO
 const convertMarkingToStix = (instance: StoreEntity): SMO.StixMarkingDefinition => {
-  const key = instance.definition_type.toLowerCase();
+  const key = instance.definition_type?.toLowerCase();
   const marking = buildStixMarkings(instance);
   return {
     ...marking,
     name: instance.definition,
     definition_type: key,
-    definition: { [key]: instance.definition.replace(/^(tlp|TLP):/g, '') },
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...marking.extensions[STIX_EXT_OCTI],
