@@ -74,7 +74,7 @@ describe('Stix opencti converter', () => {
           const initialId = initialDataAsArray[j];
           expect(resolvedIds).toContainEqual(initialId);
         }
-      } else if (rawKey.startsWith('x_')) {
+      } else if (rawKey.startsWith('x_') || rawKey === 'definition') {
         // Cant compare old stix version
       } else {
         expect(refetchData).toEqual(initialData);
