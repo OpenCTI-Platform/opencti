@@ -32,9 +32,8 @@ const cyioExternalReferenceResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("EXTERNAL-REFERENCE");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.limit === undefined ? response.length : args.limit) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit = (args.limit === undefined ? response.length : args.limit) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
         let externalRefList ;
         if (args.orderedBy !== undefined ) {
           externalRefList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -75,14 +74,12 @@ const cyioExternalReferenceResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.limit < externalRefList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: externalRefList.length,
           },
           edges: edges,

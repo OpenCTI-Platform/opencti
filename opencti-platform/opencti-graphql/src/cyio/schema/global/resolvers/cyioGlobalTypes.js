@@ -31,9 +31,8 @@ const cyioGlobalTypeResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ADDRESS");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit = (args.limit === undefined ? response.length : args.limit);
+        let offset = (args.offset === undefined ? 0 : args.offset);
         let addrList;
         if (args.orderedBy !== undefined) {
           addrList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -74,14 +73,12 @@ const cyioGlobalTypeResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.limit < addrList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: addrList.length,
           },
           edges: edges,
@@ -148,9 +145,8 @@ const cyioGlobalTypeResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("PHONE-NUMBER");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit = (args.limit === undefined ? response.length : args.limit);
+        let offset = (args.offset === undefined ? 0 : args.offset);
         let phoneList;
         if (args.orderedBy !== undefined) {
           phoneList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -191,14 +187,12 @@ const cyioGlobalTypeResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.limit < phoneList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: phoneList.length,
           },
           edges: edges,

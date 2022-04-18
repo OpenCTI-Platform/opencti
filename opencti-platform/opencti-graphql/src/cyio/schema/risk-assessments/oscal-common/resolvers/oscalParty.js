@@ -49,9 +49,8 @@ const oscalPartyResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("PARTY");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit = (args.first === undefined ? response.length : args.first);
+        let offset = (args.offset === undefined ? 0 : args.offset);
         let partyList;
         if (args.orderedBy !== undefined) {
           partyList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -92,14 +91,12 @@ const oscalPartyResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.first < partyList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: partyList.length,
           },
           edges: edges,

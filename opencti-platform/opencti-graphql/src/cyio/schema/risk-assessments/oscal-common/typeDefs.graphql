@@ -228,15 +228,15 @@
     "Identifies references to previous versions of this document."
     document_ids: [ID]
     "Identifies one or more references to a function assumed or expected to be assumed by a party in a specific situation."
-    roles(first: Int, offset: Int): OscalRoleConnection
+    roles( first: Int ): OscalRoleConnection
     "Identifies one or more references to a location."
-    locations(first: Int, offset: Int): OscalLocationConnection
+    locations( first: Int ): OscalLocationConnection
     "Identifies one or more references to a responsible entity which is either a person or an organization."
-    parties(first: Int, offset: Int): OscalPartyConnection
+    parties( first: Int ): OscalPartyConnection
     "Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object."
-    responsible_parties(first: Int, offset: Int): OscalResponsiblePartyConnection
+    responsible_parties( first: Int ): OscalResponsiblePartyConnection
     # Back-matter
-    resources(first: Int, offset: Int): OscalResourceConnection
+    resources( first: Int ): OscalResourceConnection
   }
 
   "Defines the identifying information about an OSCAL object."

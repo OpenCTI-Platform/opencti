@@ -50,9 +50,8 @@ const characterizationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("CHARACTERIZATION");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit = (args.first === undefined ? response.length : args.first) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
         let characterizationList ;
         if (args.orderedBy !== undefined ) {
           characterizationList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -93,14 +92,12 @@ const characterizationResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.first < characterizationList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: characterizationList.length,
           },
           edges: edges,
@@ -167,9 +164,8 @@ const characterizationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("FACET");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit = (args.first === undefined ? response.length : args.first) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
         let facetList ;
         if (args.orderedBy !== undefined ) {
           facetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -210,14 +206,12 @@ const characterizationResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.first < facetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: facetList.length,
           },
           edges: edges,
@@ -740,7 +734,7 @@ const characterizationResolvers = {
         return [];
       }
     },
-    origins: async (parent, _, {dbName, dataSources, selectMap}) => {
+    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
