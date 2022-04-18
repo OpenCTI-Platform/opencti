@@ -138,10 +138,10 @@ const RelatedTaskCreationMutation = graphql`
 `;
 
 const RelatedTaskValidation = (t) => Yup.object().shape({
-  source_name: Yup.string().required(t('This field is required')),
-  external_id: Yup.string(),
-  url: Yup.string().url(t('The value must be an URL')),
-  description: Yup.string(),
+  name: Yup.string().required(t('This field is required')),
+  // external_id: Yup.string(),
+  // url: Yup.string().url(t('The value must be an URL')),
+  description: Yup.string().required(t('This field is required')),
 });
 
 class RelatedTaskCreation extends Component {
@@ -383,7 +383,7 @@ class RelatedTaskCreation extends Component {
               associated_activities: [],
               responsible_roles: [],
             }}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -415,6 +415,9 @@ class RelatedTaskCreation extends Component {
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
+                          invalidDateMessage={t(
+                            'Field is required',
+                          )}
                         />
                       </div>
                     </Grid>
