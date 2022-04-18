@@ -44,8 +44,9 @@ const riskResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("RISK");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         let riskList ;
         if (args.orderedBy !== undefined ) {
           riskList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -113,12 +114,14 @@ const riskResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < riskList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: riskList.length,
           },
           edges: edges,
@@ -452,7 +455,7 @@ const riskResolvers = {
         return [];
       }
     },
-    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
+    origins: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
@@ -631,7 +634,9 @@ const riskResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getReducer("RISK-LOG-ENTRY");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('RiskLogEntry')) continue ;
           const sparqlQuery = selectRiskLogEntryByIriQuery(iri, null);
@@ -669,12 +674,14 @@ const riskResolvers = {
           }  
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < iriArray.length ? true : false ),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,
@@ -689,7 +696,9 @@ const riskResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getReducer("OBSERVATION");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
           const sparqlQuery = selectObservationByIriQuery(iri, null);
@@ -727,12 +736,14 @@ const riskResolvers = {
           }  
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < iriArray.length ? true : false ),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,

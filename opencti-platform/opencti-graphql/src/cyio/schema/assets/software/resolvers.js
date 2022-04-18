@@ -36,8 +36,9 @@ const softwareResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
         if (offset > assetList.length) return null;
@@ -75,12 +76,14 @@ const softwareResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < assetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
+            hasNextPage: (edges.length < limitSize ? false : true),
+            hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: assetList.length,
           },
           edges: edges,
