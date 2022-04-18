@@ -350,7 +350,7 @@ class SoftwareEditionContainer extends Component {
                   <CyioCoreObjectExternalReferences
                     externalReferences={software.external_references}
                     refreshQuery={refreshQuery}
-                    disableAdd={true}
+                    fieldName='external_references'
                     cyioCoreObjectId={software.id}
                     typename={software.__typename}
                   />
@@ -362,7 +362,7 @@ class SoftwareEditionContainer extends Component {
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={software.__typename}
                 refreshQuery={refreshQuery}
-                disableAdd={true}
+                fieldName='notes'
                 notes={software.notes}
                 cyioCoreObjectOrCyioCoreRelationshipId={software.id}
               />

@@ -199,7 +199,7 @@ class SoftwareCardComponent extends Component {
               </div>
             </Grid>
             <Grid xs={12} container={true} >
-              <Grid item={true} xs={6} className={classes.body}>
+              <Grid item={true} xs={7} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"
@@ -234,10 +234,10 @@ class SoftwareCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('Lorem Ipsum')} */}
-                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 25)}
+                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
                 </Typography>
               </Grid>
-              <Grid xs={6} item={true} className={classes.body}>
+              <Grid xs={5} item={true} className={classes.body}>
                 <Typography
                  variant="h3"
                  color="textSecondary"

@@ -38,23 +38,29 @@ export function generateId( materials, namespace ) {
 // Used as part of sorting to compare values within an object
 export function compareValues( key, order = 'asc') {
   return function innerSort(a, b) {
-    if (!a.hasOwnProperty(key) || !b.hasOwnProperty(key)) {
+    if (!a.hasOwnProperty(key) && !b.hasOwnProperty(key)) {
       // property doesn't exist on either object
       return 0;
     }
 
-    const varA = (typeof a[key] === 'string')
-      ? a[key].toUpperCase() : a[key];
-    const varB = (typeof b[key] === 'string')
-      ? b[key].toUpperCase() : b[key];
-
     let comparison = 0;
-    if (varA > varB) {
-      comparison = 1;
-    } else if (varA < varB) {
-      comparison = -1;
+    if (!a.hasOwnProperty(key) && b.hasOwnProperty(key)) comparison = -1;
+    if (a.hasOwnProperty(key) && !b.hasOwnProperty(key)) comparison = 1;
+
+    if (comparison === 0 ) {
+      const varA = (typeof a[key] === 'string')
+        ? a[key].toUpperCase() : a[key];
+      const varB = (typeof b[key] === 'string')
+        ? b[key].toUpperCase() : b[key];
+
+      if (varA > varB) {
+        comparison = 1;
+      } else if (varA < varB) {
+        comparison = -1;
+      }
     }
-    return (
+
+  return (
       (order === 'desc') ? (comparison * -1) : comparison
     );
   };
@@ -73,6 +79,11 @@ export function filterValues( item, filters, filterMode = 'or') {
       if (match && filter.filterMode == 'or')
         continue ;
 
+      // GraphQL doesn't allow '_', so need to replace
+      // TODO: Need to only do for asset types??
+      // * CPE ID would break
+      filterValue = filterValue.replace('_', '-');
+      
       let itemValues;
       if (item[filter.key] instanceof Array) {
         itemValues = item[filter.key];

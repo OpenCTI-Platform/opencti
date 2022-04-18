@@ -497,6 +497,7 @@ class RequiredResourcePopover extends Component {
                     <Grid style={{ marginTop: '5px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         typename={requiredResourceData.__typename}
+                        fieldName='links'
                         externalReferences={requiredResourceData.links}
                         cyioCoreObjectId={remediationId}
                         refreshQuery={refreshQuery}
@@ -506,6 +507,7 @@ class RequiredResourcePopover extends Component {
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         typename={requiredResourceData.__typename}
                         notes={requiredResourceData.remarks}
+                        fieldName='remarks'
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop='0px'
                         refreshQuery={refreshQuery}

@@ -7,6 +7,7 @@ import {
   getReducer,
   insertQuery,
   deleteNetworkAssetQuery,
+  selectNetworkQuery,
   networkPredicateMap,
 } from './sparql-query.js';
 import {
@@ -27,7 +28,7 @@ import {
 const networkResolvers = {
   Query: {
     networkAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args.filters);
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args);
       var reducer = getReducer('NETWORK')
       const response = await dataSources.Stardog.queryAll({
           dbName,
@@ -54,7 +55,7 @@ const networkResolvers = {
           }
 
           if (asset.id === undefined || asset.id == null) {
-            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -79,8 +80,8 @@ const networkResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < assetList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: assetList.length,
           },
           edges: edges,
@@ -127,8 +128,8 @@ const networkResolvers = {
     }
   },
   Mutation: {
-    createNetworkAsset: async (_, { input }, {dbName, dataSources}) => {
-      // remove input fields with null or empty values
+    createNetworkAsset: async (_, { input }, {dbName, dataSources, selectMap}) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
           delete input[key];
@@ -138,6 +139,8 @@ const networkResolvers = {
           delete input[key];
         }
       }
+      // END WORKAROUND
+
       let ipv4RelIri = null, ipv6RelIri = null;
       if (input.network_ipv4_address_range !== undefined) {
         const ipv4Range = input.network_ipv4_address_range;
@@ -216,9 +219,27 @@ const networkResolvers = {
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: connectQuery,
-        queryId: "Add Netowork Asset to Inventory"
+        queryId: "Add Network Asset to Inventory"
       });
-      return { id }
+
+      // retrieve information about the newly created Network to return to the user
+      const select = selectNetworkQuery(id, selectMap.getNode("createNetworkAsset"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: select,
+          queryId: "Select Network Device",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("NETWORK");
+      return reducer(response[0]);
+
+      // return { id }
     },
     deleteNetworkAsset: async (_, args, {dbName, dataSources}) => {
       const sparqlQuery = getSelectSparqlQuery("NETWORK", ["id", "network_address_range"], args.id);
@@ -286,7 +307,7 @@ const networkResolvers = {
   },
   // Map enum GraphQL values to data model required values
   NetworkAsset: {
-    network_address_range: async (parent, args, {dbName, dataSources},) => {
+    network_address_range: async (parent, _, {dbName, dataSources},) => {
       let item = parent.netaddr_range_iri;
       if (item === undefined) return null;
       var sparqlQuery = selectIPAddressRange(`<${item}>`)
@@ -301,18 +322,23 @@ const networkResolvers = {
 
       if (Array.isArray(response) && response.length > 0) {
         let results = reducer(response[0])
-        return {
-          id: results.id,
-          starting_ip_address: {
-            id: generateId({ "value": results.start_addr_iri }, DARKLIGHT_NS),
-            entity_type: (results.start_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
-            ip_address_value: results.start_addr_iri
-          },
-          ending_ip_address: {
-            id: generateId({ "value": results.ending_addr_iri }, DARKLIGHT_NS),
-            entity_type: (results.ending_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
-            ip_address_value: results.ending_addr_iri
+        if (results.hasOwnProperty('start_addr')) {
+          return {
+            id: results.id,
+            starting_ip_address: {
+              id: generateId({ "value": results.start_addr }, DARKLIGHT_NS),
+              entity_type: (results.start_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+              ip_address_value: results.start_addr
+            },
+            ending_ip_address: {
+              id: generateId({ "value": results.ending_addr }, DARKLIGHT_NS),
+              entity_type: (results.ending_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+              ip_address_value: results.ending_addr
+            }
           }
+        }
+        if (results.hasOwnProperty('start_addr_iri')) {
+          return results;
         }
       }
 
@@ -324,7 +350,7 @@ const networkResolvers = {
         });
       }
     },
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -363,7 +389,7 @@ const networkResolvers = {
         return [];
       }
     },
-    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+    external_references: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -402,7 +428,7 @@ const networkResolvers = {
         return [];
       }
     },
-    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+    notes: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {

@@ -42,7 +42,7 @@ import RiskAssessmentPopover from './RiskAssessmentPopover';
 const styles = (theme) => ({
   card: {
     width: '100%',
-    height: '319px',
+    height: '337px',
     borderRadius: 9,
   },
   cardDummy: {
@@ -218,8 +218,8 @@ class RiskCardComponent extends Component {
                   {t('Priority')}
                 </Typography>
                 <Typography>
-                  {/* {node.priority && t(node.priority)} */}
-                  {t('Priority')}
+                  {node.priority && t(node.priority)}
+                  {/* {t('Priority')} */}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -245,8 +245,7 @@ class RiskCardComponent extends Component {
                   {t('Component')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
-                  {/* {node.fqdn && truncate(t(node.fqdn), 25)} */}
+                  {node.fqdn && truncate(t(node.fqdn), 25)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -259,8 +258,7 @@ class RiskCardComponent extends Component {
                   {t('Controls')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
-                  {/* {node.network_id && t(node.network_id)} */}
+                  {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
             </Grid>
@@ -275,7 +273,6 @@ class RiskCardComponent extends Component {
                   {t('Component')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
                   {node.component_type && t(node.component_type)}
                 </Typography>
               </Grid>
@@ -289,8 +286,7 @@ class RiskCardComponent extends Component {
                   {t('Controls')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
-                  {/* {node.network_id && t(node.network_id)} */}
+                  {node.network_id && t(node.network_id)}
                 </Typography>
               </Grid>
             </Grid>
