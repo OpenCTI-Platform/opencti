@@ -104,11 +104,12 @@ const hardwareResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: hardwareList.length,
           },

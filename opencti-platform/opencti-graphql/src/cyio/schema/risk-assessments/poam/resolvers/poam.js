@@ -96,11 +96,13 @@ const poamResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: poamList.length,
           },
@@ -490,11 +492,13 @@ const poamResolvers = {
           }  
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
@@ -550,11 +554,13 @@ const poamResolvers = {
           }  
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
@@ -610,11 +616,13 @@ const poamResolvers = {
           }  
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
@@ -670,11 +678,13 @@ const poamResolvers = {
           }  
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
@@ -733,11 +743,13 @@ const poamResolvers = {
           }  
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
@@ -788,7 +800,6 @@ const poamResolvers = {
           }
 
           if (Array.isArray(response) && response.length > 0) risk = response[0];
-
           if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
             risk.risk_status = risk.risk_status.replace('_', '-');
@@ -824,15 +835,17 @@ const poamResolvers = {
             edges.push(edge);
             limit--;
             if (limit === 0) break;
-            console.log(`limit: ${limit}`)
           }
         }
+        // return null if no edges
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
@@ -888,11 +901,13 @@ const poamResolvers = {
           }  
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize + 1 ? false : true),
+            hasNextPage: (edges.length < limitSize ? false : true),
             hasPreviousPage: (offsetSize > 0 ? true : false),
             globalCount: iriArray.length,
           },
