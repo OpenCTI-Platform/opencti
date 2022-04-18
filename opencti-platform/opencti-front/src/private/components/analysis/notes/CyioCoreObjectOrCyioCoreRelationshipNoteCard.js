@@ -330,6 +330,9 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
             <CyioCoreObjectLabels
               variant="inList"
               labels={node.labels}
+              refreshQuery={refreshQuery}
+              id={node.id}
+              typename={this.props.typename}
             />
           </CardActions>
         </Collapse>
