@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
@@ -55,6 +57,10 @@ const styles = (theme) => ({
     width: '100%',
     height: '100%',
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
   description: {
     height: 70,
     overflow: 'hidden',
@@ -76,11 +82,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const cyioCoreObjectOrCyioCoreRelationshipNoteCardDelete = graphql`
-  mutation CyioCoreObjectOrCyioCoreRelationshipNoteCardDeleteMutation(
-    $id: ID!
+const cyioCoreObjectOrCyioCoreRelationshipNoteCardRemove = graphql`
+  mutation CyioCoreObjectOrCyioCoreRelationshipNoteCardRemoveMutation(
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
+    $from_type: String
+    $to_type: String!
   ) {
-    deleteCyioNote(id: $id)
+    removeReference(input:  {field_name: $fieldName, from_id: $fromId, to_id: $toId, from_type: $from_type, to_type: $to_type})
   }
 `;
 
@@ -123,13 +133,18 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
 
   removeNote(noteId) {
     CM(environmentDarkLight, {
-      mutation: cyioCoreObjectOrCyioCoreRelationshipNoteCardDelete,
+      mutation: cyioCoreObjectOrCyioCoreRelationshipNoteCardRemove,
       variables: {
-        id: noteId,
+        toId: noteId,
+        fromId: this.props.cyioCoreObjectOrCyioCoreRelationshipId,
+        fieldName: this.props.fieldName,
+        to_type: this.props.node.__typename,
+        from_type: this.props.typename,
       },
       onCompleted: () => {
         this.setState({ removing: false });
         this.handleCloseDialog();
+        this.props.refreshQuery();
       },
       // onError: (err) => console.log('NoteRemoveDarkLightMutationError', err),
     });
@@ -316,10 +331,6 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
               variant="inList"
               labels={node.labels}
             />
-            {/* <StixCoreObjectLabels
-              variant="inList"
-              labels={objectLabel}
-            /> */}
           </CardActions>
         </Collapse>
         <Dialog
@@ -329,23 +340,27 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
           onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
-            <DialogContentText>
+            <Typography>
               {t('Do you want to remove this note?')}
-            </DialogContentText>
+            </Typography>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDialog.bind(this)}
               disabled={this.state.removing}
+              variant='outlined'
+              size='small'
             >
               {t('Cancel')}
             </Button>
             <Button
               onClick={this.handleRemoval.bind(this)}
-              color="primary"
+              color='secondary'
+              size='small'
+              variant='contained'
               disabled={this.state.removing}
             >
-              {t('Delete')}
+              {t('Remove')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -361,6 +376,7 @@ CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  typename: PropTypes.string,
   nsdt: PropTypes.func,
 };
 
