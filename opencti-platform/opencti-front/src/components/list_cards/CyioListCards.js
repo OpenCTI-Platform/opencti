@@ -44,26 +44,35 @@ const styles = (theme) => ({
   },
   toolBar: {
     margin: '-20px -24px 20px -24px',
-    height: '64px',
-    '@media (max-width: 1063.5px)': {
-      height: '100%',
-    },
+    height: '100%',
     display: 'flex',
+    '@media (max-width: 1400px)': {
+      flexWrap: 'wrap',
+    },
+    alignItems: 'self-start',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    alignItems: 'center',
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
   parameters: {
     // float: 'left',
-    padding: '18px',
+    display: 'flex',
+    '@media (max-width: 1250px)': {
+      flexWrap: 'wrap',
+    },
+    padding: '18px 18px 0 18px',
+  },
+  searchBar: {
+    width: '350px',
+    minWidth: '350px',
   },
   views: {
     // display: 'flex',
+    width: '254px',
+    minWidth: '254px',
     float: 'right',
     marginTop: '5px',
-    padding: '14px 18px',
+    padding: '14px 18px 12px 18px',
   },
   cardsContainer: {
     marginTop: 10,
@@ -89,16 +98,20 @@ const styles = (theme) => ({
     margin: '-9px 0 0 15px',
   },
   filters: {
-    float: 'left',
-    margin: '2px 0 0 10px',
+    padding: '0 0 12px 0',
+    '@media (max-width: 1250px)': {
+      marginTop: '20px',
+    },
   },
   filter: {
     marginRight: 10,
+    marginBottom: 10,
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.background.chip,
     marginRight: 10,
+    marginBottom: 10,
   },
 });
 
@@ -148,65 +161,67 @@ class CyioListCards extends Component {
           style={{ backgroundColor: '#075AD333' }}
         >
           <div className={classes.parameters}>
-            <div style={{ float: 'left', marginRight: 20 }}>
-              <SearchInput
-                variant="small"
-                onSubmit={handleSearch.bind(this)}
-                keyword={keyword}
-                disabled={true}
-              />
-            </div>
-            {availableFilterKeys && availableFilterKeys.length > 0 ? (
-              <Filters
-                availableFilterKeys={availableFilterKeys}
-                handleAddFilter={handleAddFilter}
-                currentFilters={filters}
-                filterEntityType={filterEntityType}
-              />
-            ) : (
-              ''
-            )}
-            {numberOfElements ? (
-              <div style={{ float: 'left', padding: '5px' }}>
-                {t('Count:')}{' '}
-                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+            <div className={classes.searchBar}>
+              <div style={{ float: 'left', marginRight: 20 }}>
+                <SearchInput
+                  variant="small"
+                  onSubmit={handleSearch.bind(this)}
+                  keyword={keyword}
+                  disabled={true}
+                />
               </div>
-            ) : (
-              ''
-            )}
-            <InputLabel
-              classes={{ root: classes.sortFieldLabel }}
-              style={{
-                marginLeft:
-                  availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
-              }}
-            >
-              {t('Sort by')}
-            </InputLabel>
-            <FormControl classes={{ root: classes.sortField }}>
-              <Select
-                name="sort-by"
-                value={sortBy}
-                onChange={this.sortBy.bind(this)}
-                inputProps={{
-                  name: 'sort-by',
-                  id: 'sort-by',
+              {availableFilterKeys && availableFilterKeys.length > 0 ? (
+                <Filters
+                  availableFilterKeys={availableFilterKeys}
+                  handleAddFilter={handleAddFilter}
+                  currentFilters={filters}
+                  filterEntityType={filterEntityType}
+                />
+              ) : (
+                ''
+              )}
+              {numberOfElements ? (
+                <div style={{ float: 'left', padding: '5px' }}>
+                  {t('Count:')}{' '}
+                  <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>
+                </div>
+              ) : (
+                ''
+              )}
+              {/* <InputLabel
+                classes={{ root: classes.sortFieldLabel }}
+                style={{
+                  marginLeft:
+                    availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
                 }}
               >
-                {toPairs(dataColumns).map((dataColumn) => (
-                  <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
-                    {t(dataColumn[1].label)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <IconButton
-              aria-label="Sort by"
-              onClick={this.reverse.bind(this)}
-              classes={{ root: classes.sortIcon }}
-            >
-              {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
-            </IconButton>
+                {t('Sort by')}
+              </InputLabel>
+              <FormControl classes={{ root: classes.sortField }}>
+                <Select
+                  name="sort-by"
+                  value={sortBy}
+                  onChange={this.sortBy.bind(this)}
+                  inputProps={{
+                    name: 'sort-by',
+                    id: 'sort-by',
+                  }}
+                >
+                  {toPairs(dataColumns).map((dataColumn) => (
+                    <MenuItem key={dataColumn[0]} value={dataColumn[0]}>
+                      {t(dataColumn[1].label)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <IconButton
+                aria-label="Sort by"
+                onClick={this.reverse.bind(this)}
+                classes={{ root: classes.sortIcon }}
+              >
+                {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
+              </IconButton> */}
+            </div>
             <div className={classes.filters}>
               {map((currentFilter) => {
                 const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
@@ -261,7 +276,7 @@ class CyioListCards extends Component {
                       onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
                       disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
-                      || disabled}
+                        || disabled}
                       color="primary"
                       size="large"
                     >
