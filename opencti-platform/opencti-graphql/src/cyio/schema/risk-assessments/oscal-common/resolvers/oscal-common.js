@@ -47,8 +47,8 @@ const oscalCommonResolvers = {
   RoleType: {
     asset_administrator: 'asset-administrator',
     asset_owner: 'asset-owner',
-    authorizing_official_poc: 'authorizing_official_poc',
-    authorizing_official: 'authorizing_official',
+    authorizing_official_poc: 'authorizing-official-poc',
+    authorizing_official: 'authorizing-official',
     configuration_management: 'configuration-management',
     contact: 'contact',
     content_approver: 'content-approver',

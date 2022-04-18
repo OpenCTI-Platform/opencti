@@ -151,13 +151,13 @@
     "Asset ID"
     asset_id
     "IP Address"
-    ip_address
+    ip_address_value
     "Installed Operating System"
-    installed_operating_system
+    installed_os_name
     "Nework ID"
     network_id
     "Label"
-    labels
+    label_name
   }
   # Filtering Types
   input HardwareAssetFiltering {

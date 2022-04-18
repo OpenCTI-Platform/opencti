@@ -22,7 +22,7 @@ const softwareResolvers = {
   Query: {
     softwareAssetList: async ( _, args, {dbName, dataSources, selectMap})  => {
       const selectionList = selectMap.getNode("node");
-      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, undefined, args.filters);
+      const sparqlQuery = getSelectSparqlQuery('SOFTWARE', selectionList, undefined, args);
       const reducer = getReducer('SOFTWARE');
       const response = await dataSources.Stardog.queryAll({
               dbName,
@@ -50,7 +50,7 @@ const softwareResolvers = {
           }
 
           if (asset.id === undefined || asset.id == null ) {
-            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -68,7 +68,7 @@ const softwareResolvers = {
               node: reducer( asset ),
             }
             if (edge.node.name === undefined) {
-              console.log(`[WARNING] Required field 'name' missing: ${edge}`)
+              console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'name'`);
             }
             edges.push( edge )
             limit-- ;
@@ -127,7 +127,7 @@ const softwareResolvers = {
   },
   Mutation: {
     createSoftwareAsset: async ( _, {input}, {dbName, dataSources, selectMap}) => {
-      // remove input fields with null or empty values
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
           delete input[key];
@@ -137,6 +137,8 @@ const softwareResolvers = {
           delete input[key];
         }
       }
+      // END WORKAROUND
+
       const {iri, id, query} = insertSoftwareQuery(input);
       await dataSources.Stardog.create({dbName, queryId: "Insert Software Asset",sparqlQuery: query});
       const connectQuery = addToInventoryQuery(iri);

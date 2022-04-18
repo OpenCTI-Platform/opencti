@@ -26,7 +26,7 @@ import {
 const riskResolvers = {
   Query: {
     risks: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllRisks(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllRisks(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -64,12 +64,12 @@ const riskResolvers = {
           }
 
           if (risk.id === undefined || risk.id == null ) {
-            console.log(`[DATA-ERROR] object ${risk.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
             continue;
           }
 
           if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-            console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
             risk.risk_status = risk.risk_status.replace('_', '-');
           }
 
@@ -117,8 +117,8 @@ const riskResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > riskList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < riskList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: riskList.length,
           },
           edges: edges,
@@ -156,7 +156,7 @@ const riskResolvers = {
         let risk = response[0];
 
         if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-          console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+          console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
           risk.risk_status = risk.risk_status.replace('_', '-');
         }
 
@@ -326,7 +326,7 @@ const riskResolvers = {
   },
   // field-level resolvers
   Risk: {
-    labels: async (parent, _, {dbName, dataSources, }) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -336,7 +336,7 @@ const riskResolvers = {
           if (iri === undefined || !iri.includes('Label')) {
             continue;
           }
-          const sparqlQuery = selectLabelByIriQuery(iri, null);
+          const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode("labels"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -368,7 +368,7 @@ const riskResolvers = {
         return [];
       }
     },
-    links: async (parent, _, {dbName, dataSources, }) => {
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -378,7 +378,7 @@ const riskResolvers = {
           if (iri === undefined || !iri.includes('ExternalReference')) {
             continue;
           }
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, null);
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -410,7 +410,7 @@ const riskResolvers = {
         return [];
       }
     },
-    remarks: async (parent, _, {dbName, dataSources, }) => {
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -420,7 +420,7 @@ const riskResolvers = {
           if (iri === undefined || !iri.includes('Note')) {
             continue;
           }
-          const sparqlQuery = selectNoteByIriQuery(iri, null);
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -494,7 +494,7 @@ const riskResolvers = {
         return [];
       }
     },
-    threats: async (parent, _,  ) => {
+    threats: async (parent, _, ) => {
       if (parent.threats_iri === undefined) return [];
       // this is a No-Op for MVP until we get threat intelligence integrated 
       return [];
@@ -673,8 +673,8 @@ const riskResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
+            hasNextPage: (args.first < iriArray.length ? true : false ),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,
@@ -731,8 +731,8 @@ const riskResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
+            hasNextPage: (args.first < iriArray.length ? true : false ),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,
