@@ -44,9 +44,8 @@ const poamItemResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("POAM-ITEM");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit = (args.first === undefined ? response.length : args.first) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
         let itemList ;
         if (args.orderedBy !== undefined ) {
           itemList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -87,14 +86,12 @@ const poamItemResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.first < itemList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: itemList.length,
           },
           edges: edges,
@@ -352,17 +349,9 @@ const poamItemResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getAssessmentReducer("OBSERVATION");
-        let risk, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
-        if (offset > iriArray.length) return null;
+        let limit = (args.first === undefined ? iriArray.length : args.first) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
-          // skip down past the offset
-          if (offset) {
-            offset--
-            continue
-          }
           const sparqlQuery = selectObservationByIriQuery(iri, selectMap.getNode("node"));
           let response;
           try {
@@ -377,36 +366,33 @@ const poamItemResolvers = {
             throw e
           }
           if (response === undefined) return null;
-
-          // Handle reporting Stardog Error
-          if (typeof (response) === 'object' && 'body' in response) {
-            throw new UserInputError(response.statusText, {
-              error_details: (response.body.message ? response.body.message : response.body),
-              error_code: (response.body.code ? response.body.code : 'N/A')
-            });
-          }
-
-          if (Array.isArray(response) && response.length > 0) risk = response[0];
-          if ( limit ) {
-            let edge = {
-              cursor: iri,
-              node: reducer(risk),
+          if (Array.isArray(response) && response.length > 0) {
+            if ( limit ) {
+              let edge = {
+                cursor: iri,
+                node: reducer(response[0]),
+              }
+              edges.push(edge);
+              limit--;
             }
-            edges.push(edge);
-            limit--;
-            if (limit === 0) break;
           }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
         }
-        // return null if no edges
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.first < iriArray.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,
@@ -421,18 +407,11 @@ const poamItemResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         let edges = [];
         const reducer = getAssessmentReducer("RISK");
-        let risk, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
-        if (offset > iriArray.length) return null;
+        let limit = (args.first === undefined ? iriArray.length : args.first) ;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Risk')) continue ;
-          // skip down past the offset
-          if (offset) {
-            offset--
-            continue
-          }
-          const sparqlQuery = selectRiskByIriQuery(iri, selectMap.getNode('node'));
+          const select = selectMap.getNode('node')
+          const sparqlQuery = selectRiskByIriQuery(iri, select);
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -446,63 +425,63 @@ const poamItemResolvers = {
             throw e
           }
           if (response === undefined) return null;
-          
-          // Handle reporting Stardog Error
-          if (typeof (response) === 'object' && 'body' in response) {
-            throw new UserInputError(response.statusText, {
-              error_details: (response.body.message ? response.body.message : response.body),
-              error_code: (response.body.code ? response.body.code : 'N/A')
-            });
-          }
+          if (Array.isArray(response) && response.length > 0) {
+            let risk = response[0];
 
-          if (Array.isArray(response) && response.length > 0) risk = response[0];
           if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
             risk.risk_status = risk.risk_status.replace('_', '-');
           }
 
           // calculate the risk level
-          risk.risk_level = 'unknown';
-          if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
-            let riskLevel;
-            let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
-            if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
-            if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
-            if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
-            if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
-            if (score == 0) riskLevel = 'very-low';
-            risk.risk_score = score;
-            risk.risk_level = riskLevel;
+            risk.risk_level = 'unknown';
+            if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
+              let riskLevel;
+              let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
+              if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
+              if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
+              if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
+              if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
+              if (score == 0) riskLevel = 'very-low';
+              risk.risk_score = score;
+              risk.risk_level = riskLevel;
 
-            // clean up
-            delete risk.cvss20_base_score;
-            delete risk.cvss20_temporal_score;
-            delete risk.cvss30_base_score
-            delete risk.cvss30_temporal_score;
-            delete risk.exploit_available;
-            delete risk.exploitability;
-          }
-
-          if ( limit ) {
-            let edge = {
-              cursor: iri,
-              node: reducer(risk),
+              // clean up
+              delete risk.cvss20_base_score;
+              delete risk.cvss20_temporal_score;
+              delete risk.cvss30_base_score
+              delete risk.cvss30_temporal_score;
+              delete risk.exploit_available;
+              delete risk.exploitability;
             }
-            edges.push(edge);
-            limit--;
-            if (limit === 0) break;
+
+            if ( limit ) {
+              let edge = {
+                cursor: iri,
+                node: reducer(risk),
+              }
+              edges.push(edge);
+              limit--;
+            }
           }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
         }
         // return null if no edges
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.first < iriArray.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: iriArray.length,
           },
           edges: edges,

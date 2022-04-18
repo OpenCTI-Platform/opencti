@@ -37,9 +37,8 @@ const originResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ORIGIN");
-        let limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        let limit = (args.first === undefined ? response.length : args.first) ;
+        let offset = (args.offset === undefined ? 0 : args.offset) ;
         let originList ;
         if (args.orderedBy !== undefined ) {
           originList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -80,14 +79,12 @@ const originResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
-        // Need to adjust limitSize in case filters were used
-        if (args !== undefined && 'filters' in args && args.filters !== null) limitSize++;
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (edges.length < limitSize ? false : true),
-            hasPreviousPage: (offsetSize > 0 ? true : false),
+            hasNextPage: (args.first < originList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: originList.length,
           },
           edges: edges,
