@@ -111,7 +111,7 @@ class ResourceTypeField extends Component {
               () => handleResourceType(this.state.resourceTypeName))}
             key={key}
             classes={{ root: classes.menuItemRoot }}
-            value={resourceType.description}
+            value={resourceType.name}
           >
             {t(resourceType.description)}
           </MenuItem>
