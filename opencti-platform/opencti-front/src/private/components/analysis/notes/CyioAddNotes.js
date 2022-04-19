@@ -212,7 +212,7 @@ class CyioAddNotes extends Component {
     return (
       <div>
         <IconButton
-          color="secondary"
+          color="default"
           aria-label="Add"
           disabled={disableAdd}
           onClick={this.handleOpen.bind(this)}

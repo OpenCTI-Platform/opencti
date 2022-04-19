@@ -220,7 +220,7 @@ class CyioAddExternalReferences extends Component {
     return (
       <div>
         <IconButton
-          color="secondary"
+          color="default"
           aria-label="Add"
           onClick={this.handleOpen.bind(this)}
           classes={{ root: classes.createButton }}

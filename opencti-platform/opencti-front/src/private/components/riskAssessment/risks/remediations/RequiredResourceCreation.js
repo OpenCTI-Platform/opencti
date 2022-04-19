@@ -392,7 +392,7 @@ class RequiredResourceCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              name: 'Hello World',
+              name: '',
               resource: '',
               description: '',
               resource_type: '',
