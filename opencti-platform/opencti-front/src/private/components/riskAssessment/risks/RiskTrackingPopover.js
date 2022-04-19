@@ -547,7 +547,7 @@ class RiskTrackingPopover extends Component {
                         <div className="clearfix" />
                         <RiskStatus
                           variant='outlined'
-                          name="entry_type"
+                          name="status_change"
                           size='small'
                           fullWidth={true}
                           style={{ height: '38.09px', marginBottom: '3px' }}

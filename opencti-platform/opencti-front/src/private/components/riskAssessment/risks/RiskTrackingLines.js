@@ -220,7 +220,7 @@ class RiskTrackingLinesContainer extends Component {
     const {
       t, classes, riskId, data, history,
     } = this.props;
-    const riskLogEdges = R.pathOr([], ['risk', 'risk_log', 'edges'], data);
+    const riskLogEdges = R.pathOr([], ['risk_log', 'edges'], data);
     const { expanded, displayUpdate } = this.state;
     const riskStatusResponse = R.pipe(
       R.pathOr([], ['risk', 'remediations']),
