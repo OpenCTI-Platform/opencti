@@ -254,8 +254,6 @@ const networkResolvers = {
       }
       const reducer = getReducer("NETWORK");
       return reducer(response[0]);
-
-      // return { id }
     },
     deleteNetworkAsset: async (_, args, {dbName, dataSources}) => {
       const sparqlQuery = getSelectSparqlQuery("NETWORK", ["id", "network_address_range"], args.id);
@@ -307,6 +305,25 @@ const networkResolvers = {
       return id;
     },
     editNetworkAsset: async (_, { id, input }, {dbName, dataSources}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectNetworkQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Hardware asset",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Network-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Network",
@@ -318,7 +335,21 @@ const networkResolvers = {
         sparqlQuery: query,
         queryId: "Update Network Asset"
       });
-      return { id }
+      const selectQuery = selectNetworkQuery(id, selectMap.getNode("editNetworkAsset"));
+      let result;
+      try {
+        result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: selectQuery,
+          queryId: "Select Network asset",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("NETWORK");
+      return reducer(result[0]);
     },
   },
   // Map enum GraphQL values to data model required values
