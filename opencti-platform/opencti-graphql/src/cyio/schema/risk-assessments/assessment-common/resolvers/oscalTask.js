@@ -11,7 +11,6 @@ import {
   deleteResponsiblePartyByIriQuery,
   selectResponsiblePartyByIriQuery,
   getReducer as getCommonReducer,
-  selectObjectByIriQuery,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
   getReducer, 
@@ -33,7 +32,7 @@ import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 const oscalTaskResolvers = {
   Query: {
     oscalTasks: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllOscalTasks(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllOscalTasks(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -71,7 +70,7 @@ const oscalTaskResolvers = {
           }
 
           if (task.id === undefined || task.id == null ) {
-            console.log(`[DATA-ERROR] object ${task.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${task.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -97,8 +96,8 @@ const oscalTaskResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > taskList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < taskList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: taskList.length,
           },
           edges: edges,
@@ -375,7 +374,7 @@ const oscalTaskResolvers = {
   },
   // field-level resolvers
   OscalTask: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -417,7 +416,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -459,7 +458,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -502,7 +501,7 @@ const oscalTaskResolvers = {
       }
     },
     // tasks: async (parent, args, {dbName, dataSources, selectMap}) => {},
-    task_dependencies: async (parent, args, {dbName, dataSources, selectMap}) => {
+    task_dependencies: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.task_dependencies_iri === undefined) return [];
       let iriArray = parent.task_dependencies_iri;
       const results = [];
@@ -544,7 +543,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    associated_activities: async (parent, args, {dbName, dataSources, selectMap}) => {
+    associated_activities: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.associated_activities_iri === undefined) return [];
       let iriArray = parent.associated_activities_iri;
       const results = [];
@@ -586,7 +585,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
@@ -628,7 +627,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
+    responsible_roles: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.responsible_roles_iri === undefined) return [];
       let iriArray = parent.responsible_roles_iri;
       const results = [];
@@ -670,7 +669,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    timing: async (parent, args, {dbName, dataSources, selectMap}) => {
+    timing: async (parent, _, ) => {
       const id = generateId( );
       return {
         id: `${id}`,

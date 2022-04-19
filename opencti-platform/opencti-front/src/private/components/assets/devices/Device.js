@@ -94,6 +94,7 @@ class DeviceComponent extends Component {
                 <CyioCoreObjectExternalReferences
                   typename={device.__typename}
                   externalReferences={device.external_references}
+                  fieldName='external_references'
                   cyioCoreObjectId={device?.id}
                   refreshQuery={refreshQuery}
                 />
@@ -108,6 +109,7 @@ class DeviceComponent extends Component {
               typename={device.__typename}
               notes={device.notes}
               refreshQuery={refreshQuery}
+              fieldName='notes'
               cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>

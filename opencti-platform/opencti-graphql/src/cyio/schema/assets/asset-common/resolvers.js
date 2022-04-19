@@ -13,6 +13,7 @@ import {
   selectAllLocations,
   deleteLocationQuery,
   locationPredicateMap,
+  selectIpAddressByIriQuery,
 } from './sparql-query.js';
 import {
   selectLabelByIriQuery,
@@ -20,6 +21,7 @@ import {
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
 } from '../../global/resolvers/sparql-query.js';
+import { getReducer as getIpAddrReducer} from '../computing-device/sparql-query.js';
 
 const assetCommonResolvers = {
   Query: {
@@ -63,7 +65,7 @@ const assetCommonResolvers = {
           }
 
           if (asset.id === undefined || asset.id == null ) {
-            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'`);
             continue;
           }
 
@@ -89,8 +91,8 @@ const assetCommonResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > assetList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: assetList.length,
           },
           edges: edges,
@@ -182,7 +184,7 @@ const assetCommonResolvers = {
           }
 
           if (asset.id === undefined || asset.id == null ) {
-            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'`);
             continue;
           }
 
@@ -208,8 +210,8 @@ const assetCommonResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > assetList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < assetList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: assetList.length,
           },
           edges: edges,
@@ -261,7 +263,7 @@ const assetCommonResolvers = {
       }
     },
     assetLocationList: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllLocations(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllLocations(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -299,7 +301,7 @@ const assetCommonResolvers = {
           }
 
           if (location.id === undefined || location.id == null ) {
-            console.log(`[DATA-ERROR] object ${location.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${location.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -325,8 +327,8 @@ const assetCommonResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > locationList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < locationList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: locationList.length,
           },
           edges: edges,
@@ -405,7 +407,7 @@ const assetCommonResolvers = {
       });
     },
     createAssetLocation: async (_, {input}, {dbName, selectMap, dataSources}) => {
-      // remove input fields with null or empty values
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
           delete input[key];
@@ -415,6 +417,8 @@ const assetCommonResolvers = {
           delete input[key];
         }
       }
+      // END WORKAROUND
+
       const {id, query} = insertLocationQuery(input);
       await dataSources.Stardog.create({
         dbName,
@@ -480,7 +484,9 @@ const assetCommonResolvers = {
     firewall: 'firewall',
     guidance: 'guidance',
     hypervisor: 'hypervisor',
+    laptop: 'laptop',
     load_balancer: 'load-balancer',
+    mobile_device: 'mobile-device',
     network_device: 'network-device',
     network: 'network',
     operating_system: 'operating-system',
@@ -512,7 +518,7 @@ const assetCommonResolvers = {
     __resolveType: ( item ) => {
       return objectTypeMapping[item.entity_type];
     },
-    locations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    locations: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -551,7 +557,7 @@ const assetCommonResolvers = {
         return [];
       }
     },
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -590,7 +596,7 @@ const assetCommonResolvers = {
         return [];
       }
     },
-    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+    external_references: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -629,7 +635,7 @@ const assetCommonResolvers = {
         return [];
       }
     },
-    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+    notes: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -698,6 +704,82 @@ const assetCommonResolvers = {
     __resolveType: ( item ) => {
       return objectTypeMapping[item.entity_type];
     }
+  },
+  IpAddressRange: {
+    starting_ip_address: async (parent, _, {dbName, dataSources, selectMap},) => {
+      if (parent.start_addr_iri === undefined && parent.starting_ip_address !== undefined) return parent.starting_ip_address;
+      if (parent.start_addr_iri === undefined) {
+        console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${parent.iri} missing field 'starting_ip_address'`);
+        return null;
+      }
+      // retrieve the IPAddress object
+      let addrType;
+      if (parent.start_addr_iri.includes('IpV4Address')) {
+        addrType = 'IPV4-ADDR';
+      }
+      if (parent.start_addr_iri.includes('IpV6Address')) {
+        addrType = 'IPV6-ADDR';
+      }
+
+      let selectList = selectMap.getNode('starting_ip_address');
+      let sparqlQuery = selectIpAddressByIriQuery(parent.start_addr_iri, selectList === undefined ? null : selectList );
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select IP Address",
+        singularizeSchema
+      })
+      if (response === undefined) return [];
+      if (Array.isArray(response) && response.length > 0) {
+        let reducer = getIpAddrReducer(addrType);
+        return (reducer(response[0]));
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        }
+      }
+    },
+    ending_ip_address: async (parent, _, {dbName, dataSources, selectMap},) => {
+      if (parent.ending_addr_iri === undefined && parent.ending_ip_address !== undefined) return parent.ending_ip_address;
+      if (parent.ending_addr_iri === undefined) {
+        console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${parent.iri} missing field 'ending_ip_address'`);
+        return null;
+      }
+      // retrieve the IPAddress object
+      let addrType, selectList;
+      if (parent.start_addr_iri.includes('IpV4Address')) {
+        addrType = 'IPV4-ADDR';
+      }
+      if (parent.start_addr_iri.includes('IpV6Address')) {
+        addrType = 'IPV6-ADDR';
+      }
+
+      selectList = selectMap.getNode('ending_ip_address');
+      let sparqlQuery = selectIpAddressByIriQuery(parent.start_addr_iri, selectList === undefined ? null : selectList );
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select IP Address",
+        singularizeSchema
+      })
+      if (response === undefined) return [];
+      if (Array.isArray(response) && response.length > 0) {
+        let reducer = getIpAddrReducer(addrType);
+        return (reducer(response[0]));
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        }
+      }
+    },
   },
   IpAddress: {
     __resolveType: ( item ) => {

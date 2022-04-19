@@ -125,7 +125,8 @@ class RiskAnalysisContainerComponent extends Component {
                 <CyioCoreObjectExternalReferences
                   typename={risk.__typename}
                   externalReferences={riskCharacterizations.links}
-                  cyioCoreObjectId={risk.id}
+                  fieldName='links'
+                  cyioCoreObjectId={riskCharacterizations.id}
                   refreshQuery={refreshQuery}
                 />
               </Grid>
@@ -134,8 +135,9 @@ class RiskAnalysisContainerComponent extends Component {
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   typename={risk.__typename}
                   notes={riskCharacterizations.remarks}
-                  cyioCoreObjectOrCyioCoreRelationshipId={risk.id}
+                  cyioCoreObjectOrCyioCoreRelationshipId={riskCharacterizations.id}
                   marginTop='0px'
+                  fieldName='remarks'
                   refreshQuery={refreshQuery}
                 />
               </Grid>

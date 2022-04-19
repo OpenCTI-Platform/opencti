@@ -19,7 +19,7 @@ import {
 const oscalRoleResolvers = {
   Query: {
     oscalRoles: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllRoles(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllRoles(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -57,7 +57,7 @@ const oscalRoleResolvers = {
           }
 
           if (role.id === undefined || role.id == null) {
-            console.log(`[DATA-ERROR] object ${role.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${role.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -83,8 +83,8 @@ const oscalRoleResolvers = {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first > roleList.length),
-            hasPreviousPage: (args.offset > 0),
+            hasNextPage: (args.first < roleList.length ? true : false),
+            hasPreviousPage: (args.offset > 0 ? true : false),
             globalCount: roleList.length,
           },
           edges: edges,
@@ -220,7 +220,7 @@ const oscalRoleResolvers = {
     },
   },
   OscalRole: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -260,7 +260,7 @@ const oscalRoleResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -268,7 +268,7 @@ const oscalRoleResolvers = {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -300,7 +300,7 @@ const oscalRoleResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];
@@ -308,7 +308,7 @@ const oscalRoleResolvers = {
         const reducer = getGlobalReducer("NOTE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({

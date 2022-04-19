@@ -214,7 +214,7 @@ const CyioCoreObjectLabelsView = (props) => {
   )(labels);
   return (
     <div style={{ marginTop: marginTop || 0 }}>
-      <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+      <Typography variant="h3" color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
         {t('Labels')}
       </Typography>
       <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
@@ -228,7 +228,7 @@ const CyioCoreObjectLabelsView = (props) => {
       </div>
       {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
       <IconButton
-        color="secondary"
+        color="default"
         disabled={disableAdd}
         aria-label="Label"
         size="small"

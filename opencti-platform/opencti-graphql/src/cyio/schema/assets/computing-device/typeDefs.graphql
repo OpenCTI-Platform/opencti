@@ -180,6 +180,67 @@
     network_id
   }
 
+  "Defines identifying information about a laptop that perform generic computing capabilities."
+  type LaptopAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
+    # BasicObject
+    "Uniquely identifies this object."
+    id: ID!
+    "Identifies the identifier defined by the standard."
+    standard_id: String!
+    "Identifies the type of the Object."
+    entity_type: String!
+    "Identifies the parent types of this object."
+    parent_types: [String]!
+    # CoreObject
+    created: Timestamp
+    modified: Timestamp
+    labels: [CyioLabel]
+    # Asset
+    asset_id: String
+    name: String!
+    description: String
+    locations: [AssetLocation]
+    external_references: [CyioExternalReference]
+    notes: [CyioNote]
+    # ItAsset
+    asset_tag: String
+    asset_type: AssetType!
+    serial_number: String
+    vendor_name: String
+    version: String
+    release_date: Timestamp
+    implementation_point: ImplementationPoint
+    operational_status: OperationalStatus
+    # responsible_parties: [ResponsibleParty]
+    # HardwareAsset
+    cpe_identifier: String
+    installation_id: String
+    installed_hardware: [ComputingDeviceAsset]
+    installed_operating_system: OperatingSystemAsset
+    model: String
+    motherboard_id: String
+    baseline_configuration_name: String
+    function: String
+    # Computing Device
+    bios_id: String
+    connected_to_network: NetworkAsset
+    default_gateway: String
+    fqdn: String
+    hostname: String
+    netbios_name: String
+    installed_software: [SoftwareAsset]
+    ipv4_address: [IpV4Address]
+    ipv6_address: [IpV6Address]
+    #    mac_address: [MACAddress]     this is what it should be because MAC address are objects
+    mac_address: [MAC]
+    vlan_id: String
+    uri: String
+    ports: [PortInfo]
+    is_publicly_accessible: Boolean
+    is_scanned: Boolean
+    is_virtual: Boolean
+    last_scanned: Timestamp
+  }
 
   "Defines identifying information about infrastructure server device that perform generic computing capabilities."
   type ServerAsset implements BasicObject & LifecycleObject & CoreObject & Asset & ItAsset {
@@ -310,12 +371,16 @@
   enum DeviceAssetTypes {
     "Computing Device"
     computing_device
+    "Laptop"
+    laptop
     "Appliance"
     appliance
     "Workstation"
     workstation
     "Network Device"
     network_device
+    "Mobile Device"
+    mobile_device
     "Load Balancer"
     load_balancer
     "Router"
@@ -332,5 +397,5 @@
     physical_device
   }
 
-  union ComputingDeviceKind = ComputingDeviceAsset | ServerAsset | WorkstationAsset 
+  union ComputingDeviceKind = ComputingDeviceAsset | ServerAsset | WorkstationAsset | LaptopAsset
 
