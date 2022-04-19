@@ -128,7 +128,7 @@ class RiskObservationLineContainer extends Component {
                     variant="h2"
                     style={{ color: 'white' }}
                   >
-                    {observation.node.name && t(observation.node.name)}
+                    {observation.node.description && t(observation.node.description)}
                   </Typography>
                 </div>
                 <div style={{ marginTop: '12px' }}>
@@ -185,6 +185,7 @@ export const RiskObservationLineContainerComponent = createPaginationContainer(
               id
               entity_type
               name
+              description
               ...RiskObservationPopover_risk
             }
           }
