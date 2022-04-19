@@ -15,14 +15,21 @@ import {
   deleteRiskLogEntryQuery,
   riskLogPredicateMap,
   attachToRiskLogEntryQuery,
+  selectRiskQuery,
   attachToRiskQuery,
   detachFromRiskQuery,
+  selectRiskResponseQuery,
   selectRiskResponseByIriQuery,
   selectOscalTaskByIriQuery,
   insertLogEntryAuthorsQuery,
   deleteLogEntryAuthorByIriQuery,
   selectLogEntryAuthorByIriQuery,
 } from './sparql-query.js';
+import {
+  selectPartyQuery,
+  selectPartyByIriQuery,
+  getReducer as getCommonReducer,
+} from '../../oscal-common/resolvers/sparql-query.js'
 
 const logEntryResolvers = {
   Query: {
@@ -164,11 +171,82 @@ const logEntryResolvers = {
     deleteAssessmentLogEntry: async ( _, {_resultId, _id}, {_dbName, _dataSources} ) => {},
     editAssessmentLogEntry: async (_, {_id, _input}, {_dbName, _dataSources, _selectMap}) => {},
     createRiskLogEntry: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
       let riskId, responses, authors;
-      if (input.logged_by !== undefined) authors = input.logged_by;
-      if (input.related_responses !== undefined) responses = input.related_responses;
-      if (input.risk_id !== undefined) riskId = input.risk_id;
+      if (input.risk_id !== undefined) {
+        riskId = input.risk_id;
+
+        // check that the Risk exists
+        const sparqlQuery = selectRiskQuery(riskId, ["id"]);
+        let response;
+        try {
+          response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Checking existence of Risk object",
+            singularizeSchema
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+        if (response.length === 0) throw new UserInputError(`Risk does not exist with ID ${riskId}`);
+      }
+      if (input.logged_by !== undefined) {
+        authors = input.logged_by;
+        for ( let author of authors) {
+          // check that the Party exists
+          const sparqlQuery = selectPartyQuery(author.party, ["id"]);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Checking existence of Party object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+
+          if (response.length === 0) throw new UserInputError(`Party does not exist with ID ${author.party}`);
+        }
+      }
+      if (input.related_responses !== undefined) {
+        responses = input.related_responses;
+        authors = input.related_responses;
+        for ( let responseId of responses) {
+          // check that the Risk exists
+          const sparqlQuery = selectRiskResponseQuery(responseId, ["id"]);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Checking existence of Risk Response object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+
+          if (response.length === 0) throw new UserInputError(`Risk Response does not exist with ID ${responseId}`);
+        }
+      }
 
       // create the Risk Log Entry
       const {iri, id, query} = insertRiskLogEntryQuery(input);
@@ -710,6 +788,70 @@ const logEntryResolvers = {
       } else {
         return [];
       }
+    },
+  },
+  LogEntryAuthor: {
+    party: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.party_iri === undefined) return null;
+      const reducer = getCommonReducer("PARTY");
+      let iri = parent.party_iri[0];
+      const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode("party"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Party",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined) return null;
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+      if (Array.isArray(response) && response.length > 0) {
+        return (reducer(response[0]));
+      }
+
+      return null;  
+    },
+    role: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.role_iri === undefined) return null;
+      const reducer = getCommonReducer("PARTY");
+      let iri = parent.role_iri[0];
+      const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode("party"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Party",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined) return null;
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+      if (Array.isArray(response) && response.length > 0) {
+        return (reducer(response[0]));
+      }
+
+      return null;  
     },
   },
 }
