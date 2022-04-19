@@ -189,7 +189,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, externalReference,
+      t, classes, cyioCoreObjectId, externalReference, refreshQuery,
     } = this.props;
     const { expanded, displayExternalRefID } = this.state;
     // const externalReferencesEdges = externalReference || [];
@@ -234,6 +234,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                 {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
                 <CyioExternalReferencePopover
                   externalReference={externalReference}
+                  refreshQuery={refreshQuery}
                   externalReferenceId={externalReference.id}
                   handleRemove={this.handleOpenDialog.bind(
                     this,
