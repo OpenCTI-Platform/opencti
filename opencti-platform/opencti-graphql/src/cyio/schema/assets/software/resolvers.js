@@ -194,8 +194,12 @@ const softwareResolvers = {
       return id;
     },
     editSoftwareAsset: async ( _, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the ComputingDevice exists
-      const sparqlQuery = selectSoftwareQuery(id, null );
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectSoftwareQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -203,6 +207,12 @@ const softwareResolvers = {
         singularizeSchema
       })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Software-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Software",
