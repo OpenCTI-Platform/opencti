@@ -228,7 +228,7 @@ const CyioCoreObjectLabelsView = (props) => {
       </div>
       {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
       <IconButton
-        color="secondary"
+        color="default"
         disabled={disableAdd}
         aria-label="Label"
         size="small"
