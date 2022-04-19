@@ -45,8 +45,10 @@ const oscalLocationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("LOCATION");
-        let limit = (args.first === undefined ? response.length : args.first);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let locationList;
         if (args.orderedBy !== undefined) {
           locationList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -74,6 +76,7 @@ const oscalLocationResolvers = {
             if (!filterValues(location, args.filters, args.filterMode)) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -84,16 +87,30 @@ const oscalLocationResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = locationList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < locationList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: locationList.length,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
