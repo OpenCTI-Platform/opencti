@@ -143,6 +143,7 @@ class RemediationComponent extends Component {
             remediation={remediation}
             history={history}
             risk={risk}
+            riskId={riskId}
           />
         </div>
         {/* <RemediationEdition

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -26,7 +27,9 @@ import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } fr
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation } from '../../../../../relay/environment';
+import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dateFormat, parse } from '../../../../../utils/Time';
+import { adaptFieldValue } from '../../../../../utils/String';
 import SelectField from '../../../../../components/SelectField';
 import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
@@ -83,6 +86,25 @@ const styles = (theme) => ({
   },
 });
 
+const remediationEditionMutation = graphql`
+  mutation RemediationDetailsPopoverMutation(
+    $id: ID!,
+    $input: [EditInput]!
+  ) {
+    editRiskResponse(id: $id, input: $input) {
+      id
+      name
+      id
+      description
+      response_type
+      entity_type
+      lifecycle
+      created
+      modified
+    }
+  }
+`;
+
 class RemediationDetailsPopover extends Component {
   constructor(props) {
     super(props);
@@ -90,6 +112,7 @@ class RemediationDetailsPopover extends Component {
       anchorEl: null,
       details: false,
       close: false,
+      onSubmit: false,
     };
   }
 
@@ -102,21 +125,50 @@ class RemediationDetailsPopover extends Component {
     this.setState({ anchorEl: null });
   }
 
-  handleCloseUpdate() {
-    this.setState({ details: false });
+  handleSubmit() {
+    this.setState({ onSumbit: true });
   }
 
-  handleOpenDetails() {
-    this.setState({ details: true });
+  onReset() {
     this.handleClose();
-  }
-
-  handleCloseDetails() {
-    this.setState({ details: false });
   }
 
   handleCancelCloseClick() {
     this.setState({ close: false });
+  }
+
+  onSubmit(values, { setSubmitting, resetForm }) {
+    const adaptedValues = R.evolve(
+      {
+        modified: () => parse(values.modified).format(),
+        created: () => parse(values.created).format(),
+      },
+      values,
+    );
+    const finalValues = R.pipe(
+      R.toPairs,
+      R.map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
+    )(adaptedValues);
+    CM(environmentDarkLight, {
+      mutation: remediationEditionMutation,
+      variables: {
+        id: this.props.riskId,
+        input: finalValues,
+      },
+      setSubmitting,
+      onCompleted: (data) => {
+        setSubmitting(false);
+        resetForm();
+        this.handleClose();
+        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation/`);
+        console.log('editedData',data);
+      },
+      onError: (err) => console.log('editRemediationMutationError', err),
+    });
+    this.setState({ onSubmit: true });
   }
 
   render() {
@@ -129,8 +181,8 @@ class RemediationDetailsPopover extends Component {
     } = this.props;
     const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
-      R.assoc('description', remediation?.description || ''),
       R.assoc('name', remediation?.name || ''),
+      R.assoc('description', remediation?.description || ''),
       R.assoc('source', remediationOriginData?.name || []),
       R.assoc('modified', dateFormat(remediation?.modified)),
       R.assoc('created', dateFormat(remediation?.created)),
@@ -158,8 +210,8 @@ class RemediationDetailsPopover extends Component {
             enableReinitialize={true}
             initialValues={initialValues}
           // validationSchema={RelatedTaskValidation(t)}
-          // onSubmit={this.onSubmit.bind(this)}
-          // onReset={this.onResetContextual.bind(this)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
           >
             {({
               submitForm,
@@ -454,6 +506,7 @@ RemediationDetailsPopover.propTypes = {
   connectionKey: PropTypes.string,
   enableReferences: PropTypes.bool,
   risk: PropTypes.object,
+  riskId: PropTypes.string,
   remediation: PropTypes.object,
   remediationId: PropTypes.string,
 };
