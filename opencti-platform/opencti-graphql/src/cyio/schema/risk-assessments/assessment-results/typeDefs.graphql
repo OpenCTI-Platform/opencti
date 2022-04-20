@@ -43,7 +43,7 @@
     # "Identifies a reference to the implementation statement in the SSP to which this finding is related."
     # implementation_statement: ImplementationStatement
     "Relates the finding to a set of referenced observations that were used to determine the finding."
-    related_observations(first: Int): ObservationConnection
+    related_observations(first: Int, offset: Int): ObservationConnection
     "Relates the finding to a set of referenced risks that were used to determine the finding."
-    related_risks(first: Int): RiskConnection
+    related_risks(first: Int, offset: Int): RiskConnection
   }

@@ -1725,6 +1725,8 @@ type OscalTaskEdge {
     labels
     "Name"
     name
+    "Risk Level"
+    risk_level
     "Risk Status"
     risk_status
     "Deadline"

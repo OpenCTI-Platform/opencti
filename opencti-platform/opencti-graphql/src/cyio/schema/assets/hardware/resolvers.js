@@ -61,8 +61,10 @@ const hardwareResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("HARDWARE-DEVICE");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0
         let hardwareList ;
         if (args.orderedBy !== undefined ) {
           hardwareList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -90,6 +92,7 @@ const hardwareResolvers = {
             if (!filterValues(hardware, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -100,16 +103,30 @@ const hardwareResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = hardwareList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < hardwareList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: hardwareList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -403,8 +420,12 @@ const hardwareResolvers = {
       return id;
     },
     editHardwareAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
-      // check that the Hardware asset exists
-      const sparqlQuery = selectHardwareQuery(id, null );
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectHardwareQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -412,6 +433,13 @@ const hardwareResolvers = {
         singularizeSchema
       })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Hardware-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Hardware",
@@ -423,12 +451,12 @@ const hardwareResolvers = {
         sparqlQuery: query,
         queryId: "Update Hardware Asset"
       });
-      const select = selectHardwareQuery(id, selectMap.getNode("editHardwareAsset"));
+      const selectQuery = selectHardwareQuery(id, selectMap.getNode("editHardwareAsset"));
       let result;
       try {
         result = await dataSources.Stardog.queryById({
           dbName,
-          sparqlQuery: select,
+          sparqlQuery: selectQuery,
           queryId: "Select Hardware asset",
           singularizeSchema
         });
