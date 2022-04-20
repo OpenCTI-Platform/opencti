@@ -51,6 +51,7 @@ class Devices extends Component {
   }
 
   saveView() {
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -85,6 +86,10 @@ class Devices extends Component {
 
   handleDeviceCreation() {
     this.setState({ openDeviceCreation: true });
+  }
+
+  handleRefresh() {
+    this.props.history.push('/defender HQ/assets/devices');
   }
 
   handleDisplayEdit(selectedElements) {
