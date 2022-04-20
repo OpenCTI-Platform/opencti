@@ -171,6 +171,7 @@ export default createPaginationContainer(
         orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
+        filterMode: fragmentVariables.filterMode,
       };
     },
     query: devicesLinesQuery,

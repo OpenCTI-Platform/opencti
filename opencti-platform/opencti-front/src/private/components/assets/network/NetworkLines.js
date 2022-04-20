@@ -93,6 +93,7 @@ export const networkLinesQuery = graphql`
     $orderedBy: NetworkAssetOrdering
     $orderMode: OrderingMode
     $filters: [NetworkAssetFiltering]
+    $filterMode: FilterMode
   ) {
     ...NetworkLines_data
       @arguments(
@@ -103,6 +104,7 @@ export const networkLinesQuery = graphql`
         orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
+        filterMode: $filterMode
       )
   }
 `;
@@ -120,6 +122,7 @@ export default createPaginationContainer(
         orderedBy: { type: "NetworkAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[NetworkAssetFiltering]" }
+        filterMode: { type: "FilterMode" }
       ) {
         networkAssetList(
           search: $search
@@ -129,6 +132,7 @@ export default createPaginationContainer(
           orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
+          filterMode: $filterMode
         ) @connection(key: "Pagination_networkAssetList") {
           edges {
             node {
@@ -168,6 +172,7 @@ export default createPaginationContainer(
         orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
+        filterMode: fragmentVariables.filterMode,
       };
     },
     query: networkLinesQuery,
