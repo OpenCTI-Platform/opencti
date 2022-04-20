@@ -267,6 +267,7 @@ class RemediationPopover extends Component {
             if (props) {
               return (
                 <RemediationDetailsPopover
+                  cyioCoreRelationshipId={cyioCoreRelationshipId}
                   displayEdit={this.state.displayEdit}
                   history={history}
                   handleDisplayEdit={this.handleDisplayEdit.bind(this)}

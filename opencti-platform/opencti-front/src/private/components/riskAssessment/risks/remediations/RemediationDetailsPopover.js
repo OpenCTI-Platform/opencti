@@ -93,14 +93,6 @@ const remediationEditionMutation = graphql`
   ) {
     editRiskResponse(id: $id, input: $input) {
       id
-      name
-      id
-      description
-      response_type
-      entity_type
-      lifecycle
-      created
-      modified
     }
   }
 `;
@@ -140,8 +132,8 @@ class RemediationDetailsPopover extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = R.evolve(
       {
-        modified: () => parse(values.modified).format(),
-        created: () => parse(values.created).format(),
+        modified: () => values.modified === null ? null : parse(values.modified).format(),
+        created: () => values.created === null ? null : parse(values.created).format(),
       },
       values,
     );
@@ -155,7 +147,7 @@ class RemediationDetailsPopover extends Component {
     CM(environmentDarkLight, {
       mutation: remediationEditionMutation,
       variables: {
-        id: this.props.riskId,
+        id: this.props.cyioCoreRelationshipId,
         input: finalValues,
       },
       setSubmitting,
@@ -164,7 +156,6 @@ class RemediationDetailsPopover extends Component {
         resetForm();
         this.handleClose();
         this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation/`);
-        console.log('editedData',data);
       },
       onError: (err) => console.log('editRemediationMutationError', err),
     });
