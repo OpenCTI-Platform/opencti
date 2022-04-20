@@ -77,7 +77,6 @@ class CyioAddNotesLinesContainer extends Component {
       (n) => n.id,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
-    console.log('cyioAddNotesLines', cyioCoreObjectOrStixCoreRelationshipNotes);
     const alreadyAdded = entityNotesIds.includes(note.id);
     if (event.target.checked && !alreadyAdded) {
       this.state.addNotes.push(note);

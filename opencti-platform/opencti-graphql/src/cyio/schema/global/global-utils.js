@@ -92,7 +92,7 @@ export const selectObjectIriByIdQuery = (id, type) => {
 export const selectObjectByIriQuery = (iri, type, select) => {
   // due to a limitation in the selectMap.getNode capability, its possible to only get back 
   // a reference to the __typename meta type if all the other members are fragments.
-  if (select.length === 1 && select.includes('__typename')) select = null;
+  if (select === undefined || (select.length === 1 && select.includes('__typename'))) select = null;
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (!objectMap.hasOwnProperty(type)) {
     let found = false;

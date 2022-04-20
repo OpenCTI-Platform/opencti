@@ -154,6 +154,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
                   key={note.id}
                   refreshQuery={refreshQuery}
                   fieldName={fieldName}
+                  typename={typename}
                   node={note}
                   cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
                 />
