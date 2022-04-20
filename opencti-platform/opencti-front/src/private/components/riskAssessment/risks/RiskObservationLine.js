@@ -100,7 +100,7 @@ class RiskObservationLineContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, risk, fd, relay,
+      t, classes, cyioCoreObjectId, risk, fd, relay, fldt,
     } = this.props;
     const RelatedObservations = R.pathOr([], ['related_observations', 'edges'], risk);
     return (
@@ -120,7 +120,7 @@ class RiskObservationLineContainer extends Component {
                     </strong>
                     &nbsp; added an Observation on &nbsp;
                     <strong style={{ color: 'white' }}>
-                      {observation.node.collected && fd(observation.node.collected)}
+                      {observation.node.collected && fldt(observation.node.collected)}
                     </strong>
                   </Typography>
                   <br /> <br />
@@ -128,7 +128,7 @@ class RiskObservationLineContainer extends Component {
                     variant="h2"
                     style={{ color: 'white' }}
                   >
-                    {observation.node.name && t(observation.node.name)}
+                    {observation.node.description && t(observation.node.description)}
                   </Typography>
                 </div>
                 <div style={{ marginTop: '12px' }}>
@@ -149,7 +149,7 @@ RiskObservationLineContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
   fd: PropTypes.func,
   relay: PropTypes.object,
 };
@@ -184,6 +184,8 @@ export const RiskObservationLineContainerComponent = createPaginationContainer(
             node {
               id
               entity_type
+              collected
+              description
               name
               ...RiskObservationPopover_risk
             }

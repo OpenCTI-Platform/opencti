@@ -115,12 +115,15 @@ const RiskLogCreationMutation = graphql`
   }
 `;
 
-// const RiskLogValidation = (t) => Yup.object().shape({
-//   entry_type: Yup.string().required(t('This field is required')),
-//   name: Yup.string().required(t('This field is required')),
-//   description: Yup.string().required(t('This field is required')),
-//   event_start: Yup.date().required(t('This field is required')),
-// });
+const RiskLogValidation = (t) => Yup.object().shape({
+  entry_type: Yup.string().required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
+  description: Yup.string().required(t('This field is required')),
+  event_start: Yup.date().required(t('The value must be a date (YYYY-MM-DD)')),
+  event_end: Yup.date()
+  .nullable()
+  .typeError(t('The value must be a date (YYYY-MM-DDss)')),
+});
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -162,6 +165,8 @@ class RiskLogCreation extends Component {
         party: values.logged_by,
       }],
     })
+
+    
     const adaptedValues = evolve(
       {
         event_start: () => values.event_start === null ? null : parse(values.event_start).format(),
@@ -170,6 +175,7 @@ class RiskLogCreation extends Component {
       },
       values,
     );
+  
     const finalValues = R.pipe(
       R.assoc('logged_by', this.state.logged_by),
     )(adaptedValues)
@@ -188,6 +194,7 @@ class RiskLogCreation extends Component {
       onError: (err) => {
         console.error('riskLogCreationValueError', err)
         toastGenericError("Failed to create Risk Log")
+        setSubmitting(false);
       },
     });
     // commitMutation({
@@ -223,6 +230,7 @@ class RiskLogCreation extends Component {
 
   renderClassic() {
     const { t, classes, data } = this.props;
+    
     return (
       <div>
         <Fab
@@ -261,7 +269,8 @@ class RiskLogCreation extends Component {
                 event_start: null,
                 event_end: null,
               }}
-              // validationSchema={RiskLogValidation(t)}
+               validationSchema={RiskLogValidation(t)}
+              
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -355,16 +364,16 @@ class RiskLogCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               risk_id: riskId,
-              entry_type: [],
+              entry_type: '',
               name: '',
               description: '',
               event_start: '',
-              event_end: '',
+              event_end: null,
               logged_by: '',
               status_change: null,
               related_responses: [],
             }}
-            // validationSchema={RiskLogValidation(t)}
+             validationSchema={RiskLogValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -550,7 +559,7 @@ class RiskLogCreation extends Component {
                           {t('End Date')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('End Date')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
