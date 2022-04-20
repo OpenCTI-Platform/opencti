@@ -245,7 +245,7 @@ class DeviceCreation extends Component {
             labels: [],
             asset_type: 'physical_device',
             mac_address: [],
-            installed_operating_system: null,
+            installed_operating_system: '',
             installed_hardware: [],
             installed_software: [],
             fqdn: '',
