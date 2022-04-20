@@ -95,6 +95,7 @@ class CyioCoreObjectExternalReferences extends Component {
               <CyioCoreObjectExternalReferencesLines
                 key={externalReference.id}
                 fieldName={fieldName}
+                typename={typename}
                 cyioCoreObjectId={cyioCoreObjectId}
                 refreshQuery={refreshQuery}
                 externalReference={externalReference}
