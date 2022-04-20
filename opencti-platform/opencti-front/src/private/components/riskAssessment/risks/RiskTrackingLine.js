@@ -241,6 +241,7 @@ class RiskTrackingLineContainer extends Component {
       history,
       riskId,
       node,
+      refreshQuery,
       riskStatusResponse,
     } = this.props;
     const { expanded, displayUpdate } = this.state;
@@ -393,6 +394,8 @@ class RiskTrackingLineContainer extends Component {
               handleRemove={this.handleOpenDialog.bind(this)}
               handleOpenUpdate={this.handleOpenUpdate.bind(this)}
               history={history}
+              riskId={riskId}
+              refreshQuery={refreshQuery}
               node={node}
               riskStatusResponse={riskStatusResponse}
             />
@@ -462,6 +465,7 @@ RiskTrackingLineContainer.propTypes = {
   riskId: PropTypes.string,
   node: PropTypes.object,
   limit: PropTypes.number,
+  refreshQuery: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
