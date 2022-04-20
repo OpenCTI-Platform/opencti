@@ -159,28 +159,42 @@ const requiredAssetResolvers = {
   },
   Mutation: {
     createRequiredAsset: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
       let subjects, remediationId;
       if (input.remediation_id !== undefined) remediationId = input.remediation_id
       if (input.subjects !== undefined) subjects = input.subjects;
 
       let sparqlQuery, result;
-      for (let subject of subjects) {
-        sparqlQuery = selectObjectIriByIdQuery(subject.subject_ref, subject.subject_type);
-        try {
-          result = await dataSources.Stardog.queryById({
-            dbName,
-            sparqlQuery,
-            queryId: "Select Object",
-            singularizeSchema
-          });
-        } catch (e) {
-          console.log(e)
-          throw e
+      if (subjects !== undefined && subjects !==  null) {
+        for (let subject of subjects) {
+          sparqlQuery = selectObjectIriByIdQuery(subject.subject_ref, subject.subject_type);
+          try {
+            result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+  
+          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${subject.subject_ref}`);
+          subject.subject_ref = result[0].iri;
         }
-
-        if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${subject.subject_ref}`);
-        subject.subject_ref = result[0].iri;
       }
 
       // create the Risk Response
