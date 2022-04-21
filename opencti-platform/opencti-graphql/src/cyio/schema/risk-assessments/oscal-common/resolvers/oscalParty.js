@@ -31,7 +31,7 @@ import {
 const oscalPartyResolvers = {
   Query: {
     oscalParties: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllParties(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllParties(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -49,8 +49,10 @@ const oscalPartyResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("PARTY");
-        let limit = (args.first === undefined ? response.length : args.first);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let partyList;
         if (args.orderedBy !== undefined) {
           partyList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -69,7 +71,7 @@ const oscalPartyResolvers = {
           }
 
           if (party.id === undefined || party.id == null) {
-            console.log(`[DATA-ERROR] object ${party.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${party.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -78,6 +80,7 @@ const oscalPartyResolvers = {
             if (!filterValues(party, args.filters, args.filterMode)) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -88,16 +91,30 @@ const oscalPartyResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = partyList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first > partyList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: partyList.length,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -370,22 +387,26 @@ const oscalPartyResolvers = {
       return id;
     },
     editOscalParty: async (_, { id, input }, { dbName, dataSources, selectMap }) => {
-      // check that the Party exists
-      const sparqlQuery = selectPartyQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select OSCAL Party",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id','party_type'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectPartyQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select OSCAL Party",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       let reducer = getReducer("PARTY");
       const party = (reducer(response[0]));
 
@@ -414,7 +435,7 @@ const oscalPartyResolvers = {
     },
   },
   OscalParty: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -454,15 +475,15 @@ const oscalPartyResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -494,15 +515,15 @@ const oscalPartyResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -534,7 +555,7 @@ const oscalPartyResolvers = {
         return [];
       }
     },
-    addresses: async (parent, args, {dbName, dataSources, selectMap}) => {
+    addresses: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.addresses_iri === undefined) return [];
       let iriArray = parent.addresses_iri;
       const results = [];
@@ -574,7 +595,7 @@ const oscalPartyResolvers = {
         return [];
       }
     },
-    member_of_organizations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    member_of_organizations: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.member_of_organizations_iri === undefined) return [];
       let iriArray = parent.member_of_organizations_iri;
       const results = [];
@@ -614,7 +635,7 @@ const oscalPartyResolvers = {
         return [];
       }
     },
-    locations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    locations: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.locations_iri === undefined) return [];
       let iriArray = parent.locations_iri;
       const results = [];
@@ -654,7 +675,7 @@ const oscalPartyResolvers = {
         return [];
       }
     },
-    telephone_numbers: async (parent, args, {dbName, dataSources, selectMap}) => {
+    telephone_numbers: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.telephone_numbers_iri === undefined) return [];
       let iriArray = parent.telephone_numbers_iri;
       const results = [];
@@ -694,7 +715,7 @@ const oscalPartyResolvers = {
         return [];
       }
     },
-    external_identifiers: async (parent, args, {dbName, dataSources, selectMap}) => {
+    external_identifiers: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.external_identifiers_iri === undefined) return [];
       let iriArray = parent.external_identifiers_iri;
       const results = [];
@@ -734,7 +755,7 @@ const oscalPartyResolvers = {
         return [];
       }
     },
-    email_addresses: async (parent, args, {dbName, dataSources, selectMap}) => {
+    email_addresses: async (parent, _, ) => {
       // this is necessary to work around an issue were an array a strings is returned as a single value.
       if (parent.email_addresses === undefined) return [];
       const results = [];

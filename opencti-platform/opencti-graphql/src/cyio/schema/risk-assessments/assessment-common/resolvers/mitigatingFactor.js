@@ -1,8 +1,8 @@
 import {riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {objectMap, selectObjectIriByIdQuery} from '../../../global/global-utils.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
+  selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
@@ -25,7 +25,7 @@ import {
 const mitigatingFactorResolvers = {
   Query: {
     mitigatingFactors: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllMitigatingFactors(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllMitigatingFactors(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -43,8 +43,10 @@ const mitigatingFactorResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("MITIGATING-FACTOR");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let factorList ;
         if (args.orderedBy !== undefined ) {
           factorList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -62,8 +64,8 @@ const mitigatingFactorResolvers = {
             continue
           }
 
-          if (reqAsset.id === undefined || reqAsset.id == null ) {
-            console.log(`[DATA-ERROR] object ${factor.iri} is missing required properties; skipping object.`);
+          if (factor.id === undefined || factor.id == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${factor.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -72,6 +74,7 @@ const mitigatingFactorResolvers = {
             if (!filterValues(factor, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -84,14 +87,27 @@ const mitigatingFactorResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = factorList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > factorList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: factorList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -219,7 +235,7 @@ const mitigatingFactorResolvers = {
       const reducer = getReducer("MITIGATING-FACTOR");
       return reducer(response[0]);
     },
-    deleteMitigatingFactor: async ( _, {riskId, input}, {dbName, selectMap, dataSources} ) => {
+    deleteMitigatingFactor: async ( _, {riskId}, {dbName, dataSources,} ) => {
       // check that the MitigatingFactor exists
       const sparqlQuery = selectMitigatingFactorQuery(id, null);
       let response;
@@ -287,22 +303,26 @@ const mitigatingFactorResolvers = {
       return id;
     },
     editMitigatingFactor: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the MitigatingFactor exists
-      const sparqlQuery = selectMitigatingFactorQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select MitigatingFactor",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectMitigatingFactorQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Mitigating Factor",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor",
@@ -326,7 +346,7 @@ const mitigatingFactorResolvers = {
     },
   },
   MitigatingFactor: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -336,7 +356,7 @@ const mitigatingFactorResolvers = {
           if (iri === undefined || !iri.includes('Label')) {
             continue;
           }
-          const sparqlQuery = selectLabelByIriQuery(iri, null);
+          const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -368,9 +388,9 @@ const mitigatingFactorResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -378,7 +398,7 @@ const mitigatingFactorResolvers = {
           if (iri === undefined || !iri.includes('ExternalReference')) {
             continue;
           }
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, null);
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -410,9 +430,9 @@ const mitigatingFactorResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -420,7 +440,7 @@ const mitigatingFactorResolvers = {
           if (iri === undefined || !iri.includes('Note')) {
             continue;
           }
-          const sparqlQuery = selectNoteByIriQuery(iri, null);
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -452,7 +472,7 @@ const mitigatingFactorResolvers = {
         return [];
       }
     },
-    subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];

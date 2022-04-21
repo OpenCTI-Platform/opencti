@@ -22,7 +22,7 @@ import {
 const responsiblePartyResolvers = {
   Query: {
     oscalResponsibleParties: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllResponsibleParties(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllResponsibleParties(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -40,8 +40,10 @@ const responsiblePartyResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("RESPONSIBLE-PARTY");
-        let limit = (args.first === undefined ? response.length : args.first);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let respPartyList;
         if (args.orderedBy !== undefined) {
           respPartyList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -60,7 +62,7 @@ const responsiblePartyResolvers = {
           }
 
           if (respParty.id === undefined || respParty.id == null) {
-            console.log(`[DATA-ERROR] object ${respParty.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${respParty.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -69,6 +71,7 @@ const responsiblePartyResolvers = {
             if (!filterValues(respParty, args.filters, args.filterMode)) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -79,16 +82,30 @@ const responsiblePartyResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = respPartyList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first > respPartyList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: respPartyList.length,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -235,22 +252,25 @@ const responsiblePartyResolvers = {
       return id;
     },
     editOscalResponsibleParty: async (_, { id, input }, { dbName, dataSources, selectMap }) => {
-      // check that the Party exists
-      const sparqlQuery = selectResponsiblePartyQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select OSCAL Responsible Party",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectResponsiblePartyQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Responsible Party",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
 
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/common#ResponsibleParty-${id}`,
@@ -275,7 +295,7 @@ const responsiblePartyResolvers = {
     },
   },
   OscalResponsibleParty: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -315,15 +335,15 @@ const responsiblePartyResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -355,15 +375,15 @@ const responsiblePartyResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -395,7 +415,7 @@ const responsiblePartyResolvers = {
         return [];
       }
     },
-    parties: async (parent, args, {dbName, dataSources, selectMap}) => {
+    parties: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.parties_iri === undefined) return [];
       let iriArray = parent.parties_iri;
       const results = [];
@@ -435,7 +455,7 @@ const responsiblePartyResolvers = {
         return [];
       }
     },
-    role: async (parent, args, {dbName, dataSources, selectMap}) => {
+    role: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.role_iri === undefined) return null;
       let iri = parent.role_iri[0];
       const reducer = getReducer("ROLE");

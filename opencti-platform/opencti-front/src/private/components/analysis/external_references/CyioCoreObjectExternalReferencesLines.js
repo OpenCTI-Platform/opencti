@@ -63,6 +63,10 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
   buttonExpand: {
     position: 'absolute',
     bottom: 2,
@@ -155,7 +159,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
         toId: externalReferenceEdge.id,
         fromId: this.props.cyioCoreObjectId,
         fieldName: this.props.fieldName,
-        from_type: externalReferenceEdge.entity_type,
+        from_type: this.props.typename,
         to_type: externalReferenceEdge.__typename,
       },
       onCompleted: (resp) => {
@@ -189,7 +193,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, externalReference,
+      t, classes, cyioCoreObjectId, externalReference, refreshQuery,
     } = this.props;
     const { expanded, displayExternalRefID } = this.state;
     // const externalReferencesEdges = externalReference || [];
@@ -234,6 +238,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                 {/* <Security needs={[KNOWLEDGE_KNUPDATE]}> */}
                 <CyioExternalReferencePopover
                   externalReference={externalReference}
+                  refreshQuery={refreshQuery}
                   externalReferenceId={externalReference.id}
                   handleRemove={this.handleOpenDialog.bind(
                     this,
@@ -256,20 +261,24 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
           onClose={this.handleCloseDialog.bind(this)}
         >
           <DialogContent>
-            <DialogContentText>
+            <Typography>
               {t('Do you want to remove this external reference?')}
-            </DialogContentText>
+            </Typography>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={classes.dialogActions}>
             <Button
               onClick={this.handleCloseDialog.bind(this)}
               disabled={this.state.removing}
+              variant='outlined'
+              size='small'
             >
               {t('Cancel')}
             </Button>
             <Button
               onClick={this.handleRemoval.bind(this)}
-              color="primary"
+              color="secondary"
+              size='small'
+              variant='contained'
               disabled={this.state.removing}
             >
               {t('Remove')}
@@ -309,6 +318,7 @@ CyioCoreObjectExternalReferencesLinesContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   externalReference: PropTypes.object,
   fieldName: PropTypes.string,
+  typename: PropTypes.string,
   refreshQuery: PropTypes.func,
   limit: PropTypes.number,
   classes: PropTypes.object,

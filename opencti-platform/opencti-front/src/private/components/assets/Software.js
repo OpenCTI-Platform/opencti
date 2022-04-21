@@ -51,6 +51,7 @@ class Software extends Component {
   }
 
   saveView() {
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -81,6 +82,10 @@ class Software extends Component {
 
   handleSoftwareCreation() {
     this.setState({ openSoftwareCreation: true });
+  }
+
+  handleRefresh() {
+    this.props.history.push('/defender HQ/assets/software');
   }
 
   handleDisplayEdit(selectedElements) {

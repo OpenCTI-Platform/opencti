@@ -7,6 +7,7 @@ import {
   getReducer,
   insertQuery,
   deleteNetworkAssetQuery,
+  selectNetworkQuery,
   networkPredicateMap,
 } from './sparql-query.js';
 import {
@@ -27,7 +28,7 @@ import {
 const networkResolvers = {
   Query: {
     networkAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
-      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args.filters);
+      var sparqlQuery = getSelectSparqlQuery('NETWORK', selectMap.getNode('node'), undefined, args);
       var reducer = getReducer('NETWORK')
       const response = await dataSources.Stardog.queryAll({
           dbName,
@@ -40,8 +41,10 @@ const networkResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        let limit = (args.first === undefined ? response.length : args.first);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         const assetList = (args.orderedBy !== undefined) ? response.sort(compareValues(args.orderedBy, args.orderMode)) : response;
 
         if (offset > assetList.length) return null;
@@ -54,7 +57,7 @@ const networkResolvers = {
           }
 
           if (asset.id === undefined || asset.id == null) {
-            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -63,6 +66,7 @@ const networkResolvers = {
             if (!filterValues(asset, args.filters, args.filterMode)) {
               continue
             }
+            filterCount++;
           }
 
           if (limit) {
@@ -74,14 +78,27 @@ const networkResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = assetList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < assetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: assetList.length,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -127,8 +144,8 @@ const networkResolvers = {
     }
   },
   Mutation: {
-    createNetworkAsset: async (_, { input }, {dbName, dataSources}) => {
-      // remove input fields with null or empty values
+    createNetworkAsset: async (_, { input }, {dbName, dataSources, selectMap}) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
           delete input[key];
@@ -138,6 +155,8 @@ const networkResolvers = {
           delete input[key];
         }
       }
+      // END WORKAROUND
+
       let ipv4RelIri = null, ipv6RelIri = null;
       if (input.network_ipv4_address_range !== undefined) {
         const ipv4Range = input.network_ipv4_address_range;
@@ -218,7 +237,23 @@ const networkResolvers = {
         sparqlQuery: connectQuery,
         queryId: "Add Network Asset to Inventory"
       });
-      return { id }
+
+      // retrieve information about the newly created Network to return to the user
+      const select = selectNetworkQuery(id, selectMap.getNode("createNetworkAsset"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: select,
+          queryId: "Select Network Device",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("NETWORK");
+      return reducer(response[0]);
     },
     deleteNetworkAsset: async (_, args, {dbName, dataSources}) => {
       const sparqlQuery = getSelectSparqlQuery("NETWORK", ["id", "network_address_range"], args.id);
@@ -270,6 +305,25 @@ const networkResolvers = {
       return id;
     },
     editNetworkAsset: async (_, { id, input }, {dbName, dataSources}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectNetworkQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Hardware asset",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Network-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Network",
@@ -281,7 +335,21 @@ const networkResolvers = {
         sparqlQuery: query,
         queryId: "Update Network Asset"
       });
-      return { id }
+      const selectQuery = selectNetworkQuery(id, selectMap.getNode("editNetworkAsset"));
+      let result;
+      try {
+        result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery: selectQuery,
+          queryId: "Select Network asset",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      const reducer = getReducer("NETWORK");
+      return reducer(result[0]);
     },
   },
   // Map enum GraphQL values to data model required values
@@ -301,18 +369,23 @@ const networkResolvers = {
 
       if (Array.isArray(response) && response.length > 0) {
         let results = reducer(response[0])
-        return {
-          id: results.id,
-          starting_ip_address: {
-            id: generateId({ "value": results.start_addr_iri }, DARKLIGHT_NS),
-            entity_type: (results.start_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
-            ip_address_value: results.start_addr_iri
-          },
-          ending_ip_address: {
-            id: generateId({ "value": results.ending_addr_iri }, DARKLIGHT_NS),
-            entity_type: (results.ending_addr_iri.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
-            ip_address_value: results.ending_addr_iri
+        if (results.hasOwnProperty('start_addr')) {
+          return {
+            id: results.id,
+            starting_ip_address: {
+              id: generateId({ "value": results.start_addr }, DARKLIGHT_NS),
+              entity_type: (results.start_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+              ip_address_value: results.start_addr
+            },
+            ending_ip_address: {
+              id: generateId({ "value": results.ending_addr }, DARKLIGHT_NS),
+              entity_type: (results.ending_addr.includes(':') ? 'ipv6-addr' : 'ipv4-addr'),
+              ip_address_value: results.ending_addr
+            }
           }
+        }
+        if (results.hasOwnProperty('start_addr_iri')) {
+          return results;
         }
       }
 

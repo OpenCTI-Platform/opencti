@@ -126,7 +126,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-57848ae3-fe3e-525e-9687-0d06fc2
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "configuation-management" ;
+        oscal:role_identifier "configuration-management" ;
         oscal:name "Configuration Management"@en-US ;
         oscal:short_name "Configuration Management"@en-US ;
         oscal:description "Responsible for the configuration management processes governing changes to the asset."@en-US ;
@@ -238,7 +238,7 @@ GRAPH <http://csrc.nist.gov/ns/oscal/common#Role-e709913b-e363-552a-b283-8d9d3d6
         common:object_type "oscal-role";
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
         common:modified "2022-03-18T16:50:31.343Z"^^xsd:dateTime;
-        oscal:role_identifier "isa-uthorizing-official-local" ;
+        oscal:role_identifier "isa-authorizing-official-local" ;
         oscal:name "ISA Information Authorizing Offical - Local"@en-US ;
         oscal:short_name "Local ISA Offical"@en-US ;
         oscal:description "Interconnection Security Agreement (ISA) authorizing official for this system."@en-US ;

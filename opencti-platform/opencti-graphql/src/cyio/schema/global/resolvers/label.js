@@ -14,7 +14,7 @@ import {
 const cyioLabelResolvers = {
   Query: {
     cyioLabels: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllLabels(selectMap.getNode("node"));
+      const sparqlQuery = selectAllLabels(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -32,8 +32,10 @@ const cyioLabelResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("LABEL");
-        let limit = (args.limit === undefined ? response.length : args.limit) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.limit === undefined ? response.length : args.limit) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let labelList ;
         if (args.orderedBy !== undefined ) {
           labelList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -52,7 +54,7 @@ const cyioLabelResolvers = {
           }
 
           if (label.id === undefined || label.id == null ) {
-            console.log(`[DATA-ERROR] object ${label.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${label.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -61,6 +63,7 @@ const cyioLabelResolvers = {
             if (!filterValues(label, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -73,14 +76,27 @@ const cyioLabelResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = labelList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.limit > labelList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: labelList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -156,6 +172,26 @@ const cyioLabelResolvers = {
       return id;
     },
     editCyioLabel: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectLabelQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Label",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://darklight.ai/ns/common#Label-${id}`,
         "http://darklight.ai/ns/common#Label",

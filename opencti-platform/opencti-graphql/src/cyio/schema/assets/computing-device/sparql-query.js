@@ -115,7 +115,7 @@ export const computingDeviceAssetReducer = (item) => {
   // when there shouldn't be but just one
   if (Array.isArray( item.installed_operating_system )  && item.installed_operating_system.length > 0 ) {
     if (item.installed_operating_system.length > 1) {
-      console.log(`[NON-CONFORMANT] ${item.iri} violates maxCount constraint; using only first value`)
+      console.log(`[CYIO] CONSTRAINT-VIOLATION: ${item.iri} 'installed_operating_system' violates maxCount constraint`)
     }
     item.installed_operating_system = item.installed_operating_system[0]
   }
@@ -233,7 +233,7 @@ export const portReducer = (item) => {
 }
 
 // ComputingDevice resolver support functions
-export function getSelectSparqlQuery( type, select, id, filters, ) {
+export function getSelectSparqlQuery( type, select, id, args, ) {
   // TODO: [DL] Need to convert this to the utils.buildSelectVariables() method. No more string replacement strategy
   var sparqlQuery;
   
@@ -242,11 +242,19 @@ export function getSelectSparqlQuery( type, select, id, filters, ) {
     select = select.filter(i => i !== 'ipv4_address')
     select = select.filter(i => i !== 'ipv6_address')
     select.push('ip_address')
+  }
+  if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
 
-    if ( filters !== undefined && id === undefined ) {
-      for( const filter of filters) {
+  if (args !== undefined ) {
+    if ( args.filters !== undefined && id === undefined ) {
+      for( const filter of args.filters) {
         if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
       }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -320,7 +328,7 @@ export const insertQuery = (propValues) => {
   `
   return {iri, id, query}
 }
-export const selectObjectRefsQuery = (id, properties) => {
+export const selectObjectRefsQuery = (id, _properties) => {
   const { selectClause ,predicates } = buildSelectVariables(computingDevicePredicateMap, ["ports", "ip_address"])
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`
   return `
@@ -370,7 +378,7 @@ export const selectComputingDeviceQuery = (id, select) => {
 }
 export const selectComputingDeviceByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === null) select = Object.keys(computingDevicePredicateMap);
+  if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(computingDevicePredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -382,13 +390,19 @@ export const selectComputingDeviceByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllComputingDevices = (select, filters) => {
-  if (select === null) select =Object.keys(computingDevicePredicateMap);
+export const selectAllComputingDevices = (select, args) => {
+  if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 

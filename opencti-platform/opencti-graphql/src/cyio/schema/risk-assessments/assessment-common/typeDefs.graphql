@@ -315,7 +315,7 @@
     "Identifies the name for the activity."
     name: String!
     "Identifies a human-readable description of the activity."
-    description: String!
+    description: String
     "Identifies the assessment method used."
     methods: [MethodTypes!]!
     # "Identifies one or more steps related to an activity."
@@ -1273,7 +1273,7 @@ input LogEntryAuthorAddInput  {
     "Identifies the name for the observation."
     name: String!
     "Identifies a human-readable description of the assessment observation."
-    description: String!
+    description: String
     "Identifies how the observation was made."
     methods: [MethodTypes!]!
     "Identifies the nature of the observation. More than one may be used to further qualify and enable filtering."
@@ -1453,7 +1453,7 @@ type OscalTask implements BasicObject & LifecycleObject & OscalObject {
   "Identifies the name for the task."
   name: String!
   "Identifies a human-readable description of the task."
-  description: String!
+  description: String
   "Identifies the timing under which the task is intended to occur."
   timing: EventTiming
   "Identifies that the task is dependent on another task."
@@ -1564,7 +1564,7 @@ type OscalTaskEdge {
     "Identifies the name of the required asset."
     name: String!
     "Identifies a human-readable description of the required asset."
-    description: String!
+    description: String
     "Identifies a reference to one or more subjects, in the form of a party or tool required to achieve the remediation."
     subjects: [Subject]
   }
@@ -1655,7 +1655,7 @@ type OscalTaskEdge {
     "Identifies the name for the risk."
     name: String!
     "Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system."
-    description: String!
+    description: String
     "Identifies a summary of impact for how the risk affects the system."
     statement: String
     "Identifies the status of the associated risk."
@@ -1725,6 +1725,8 @@ type OscalTaskEdge {
     labels
     "Name"
     name
+    "Risk Level"
+    risk_level
     "Risk Status"
     risk_status
     "Deadline"
@@ -1803,7 +1805,7 @@ type OscalTaskEdge {
     "Identifies the name for the response activity."
     name: String!
     "Identifies a human-readable description of the response plan."
-    description: String!
+    description: String
     "Identifies one or more sources of individuals and/or tools that generated this recommended or planned response."
     origins: [Origin]
     "Identifies an asset required to achieve remediation."
