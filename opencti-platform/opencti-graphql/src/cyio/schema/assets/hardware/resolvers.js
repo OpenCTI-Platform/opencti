@@ -420,8 +420,12 @@ const hardwareResolvers = {
       return id;
     },
     editHardwareAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
-      // check that the Hardware asset exists
-      const sparqlQuery = selectHardwareQuery(id, null );
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectHardwareQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -429,6 +433,13 @@ const hardwareResolvers = {
         singularizeSchema
       })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Hardware-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Hardware",
@@ -440,12 +451,12 @@ const hardwareResolvers = {
         sparqlQuery: query,
         queryId: "Update Hardware Asset"
       });
-      const select = selectHardwareQuery(id, selectMap.getNode("editHardwareAsset"));
+      const selectQuery = selectHardwareQuery(id, selectMap.getNode("editHardwareAsset"));
       let result;
       try {
         result = await dataSources.Stardog.queryById({
           dbName,
-          sparqlQuery: select,
+          sparqlQuery: selectQuery,
           queryId: "Select Hardware asset",
           singularizeSchema
         });

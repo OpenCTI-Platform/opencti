@@ -248,6 +248,26 @@ const evidenceResolvers = {
       return id;
     },
     editEvidence: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectEvidenceQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Evidence",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Evidence-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Evidence",
@@ -257,7 +277,7 @@ const evidenceResolvers = {
       await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
-        queryId: "Update Characterization"
+        queryId: "Update Evidence"
       });
       const select = selectEvidenceQuery(id, selectMap.getNode("editEvidence"));
       const result = await dataSources.Stardog.queryById({
@@ -272,8 +292,8 @@ const evidenceResolvers = {
   },
   Evidence: {
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -314,8 +334,8 @@ const evidenceResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");

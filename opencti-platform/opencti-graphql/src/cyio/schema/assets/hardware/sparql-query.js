@@ -152,9 +152,9 @@ export const selectHardwareQuery = (id, select) => {
 export const selectHardwareByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select != null) {
+    if (select.includes('ipv4_address') || select.includes('ipv6_address')) select.push('ip_address');
     select = select.filter(i => i !== 'ipv4_address')
     select = select.filter(i => i !== 'ipv6_address')
-    select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);

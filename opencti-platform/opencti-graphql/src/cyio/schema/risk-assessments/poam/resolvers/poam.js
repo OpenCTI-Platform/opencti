@@ -298,22 +298,26 @@ const poamResolvers = {
       return id;
     },
     editPOAM: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the risk exists
-      const sparqlQuery = selectPOAMQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Risk",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectPOAMQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select POAM",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/common#POAM-${id}`,
         "http://csrc.nist.gov/ns/oscal/common#POAM",
@@ -379,8 +383,8 @@ const poamResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -419,8 +423,8 @@ const poamResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
