@@ -138,6 +138,7 @@ class CyioExternalReferenceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.props.handleClose();
+        this.props.refreshQuery();
       },
       // onError: (err) => console.log('ExtRefEditionDarkLightMutationError', err),
     });
@@ -260,6 +261,7 @@ class CyioExternalReferenceEditionContainer extends Component {
 CyioExternalReferenceEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   externalReference: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

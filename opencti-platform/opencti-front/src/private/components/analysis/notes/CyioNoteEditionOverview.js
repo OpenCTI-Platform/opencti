@@ -159,6 +159,7 @@ class CyioNoteEditionOverviewComponent extends Component {
         setSubmitting(false);
         resetForm();
         this.props.handleClose();
+        this.props.refreshQuery();
       },
       // onError: (err) => console.log('CyioNoteEditionDarkLightMutationError', err),
     });
@@ -232,13 +233,13 @@ class CyioNoteEditionOverviewComponent extends Component {
                 rows="4"
                 style={{ marginTop: 20, marginBottom: 20 }}
               />
-              <CyioCoreObjectLabelsView
+              {/* <CyioCoreObjectLabelsView
                 name="labels"
                 labels={note.labels}
                 refreshQuery={refreshQuery}
                 typename={note.__typename}
                 id={note.id}
-              />
+              /> */}
               <div style={{ display: 'grid', gridTemplateColumns: '50% 1fr', marginTop: '20px' }}>
                 <div>
                   <Typography
@@ -309,12 +310,6 @@ const CyioNoteEditionOverview = createFragmentContainer(
         abstract
         content
         authors
-        labels {
-            id
-            name
-            color
-            description
-        }
       }
     `,
   },

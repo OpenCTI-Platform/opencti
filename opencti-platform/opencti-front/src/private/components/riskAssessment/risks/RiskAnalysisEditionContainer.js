@@ -449,12 +449,6 @@ const RiskAnalysisEditionFragment = createFragmentContainer(
           abstract
           content
           authors
-          labels {
-            id
-            name
-            color
-            description
-          }
         }
         ...RiskAnalysisEditionCharacterization_risk
         # ...RiskEditionDetails_risk
