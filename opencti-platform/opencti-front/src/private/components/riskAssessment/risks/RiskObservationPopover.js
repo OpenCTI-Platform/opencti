@@ -155,9 +155,6 @@ class RiskObservationPopover extends Component {
             <DialogContentText style={{ color: 'white' }}>
               {data.name && t(data.name)}
             </DialogContentText>
-            <DialogContentText style={{ color: 'white' }}>
-              {data.description && t(data.description)}
-            </DialogContentText>
             <DialogContentText>
               <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
                 <Grid item={true} xs={3}>
