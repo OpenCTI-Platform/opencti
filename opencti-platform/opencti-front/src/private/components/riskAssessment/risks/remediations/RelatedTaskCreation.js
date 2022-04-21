@@ -45,6 +45,8 @@ import ResourceType from '../../../common/form/ResourceType';
 import AssociatedActivities from '../../../common/form/AssociatedActivities';
 import ResponsibleParties from '../../../common/form/ResponsibleParties';
 import Dependencies from '../../../common/form/Dependencies';
+import ResourceNameField from '../../../common/form/ResourceNameField';
+import ResourceTypeField from '../../../common/form/ResourceTypeField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -141,6 +143,7 @@ const RelatedTaskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   // external_id: Yup.string(),
   // url: Yup.string().url(t('The value must be an URL')),
+  task_type: Yup.string().required(t('This field is required')),
   description: Yup.string().required(t('This field is required')),
 });
 
@@ -150,6 +153,14 @@ class RelatedTaskCreation extends Component {
     this.state = {
       open: false,
       close: false,
+      resourceName: '',
+      subjects: [
+        {
+          subject_type: '',
+          subject_ref: '',
+          name: '',
+        },
+      ],
       timing: {
         within_date_range: 
         {
@@ -163,28 +174,45 @@ class RelatedTaskCreation extends Component {
     this.setState({ open: true });
   }
 
+  handleResourceTypeFieldChange(resourceType) {
+    this.setState({ resourceName: resourceType });
+  }
+
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, resourceName: '', fieldName: '' });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
     console.log('relatedTask', values);
+    if (values.resource_type === '' && values.resource === '') {
+      this.setState({ subjects: [] });
+    } else {
     this.setState({
+      subjects: [
+        {
+          subject_type: values.resource_type,
+          subject_ref: values.resource,
+          name: values.name,
+        },
+      ],
       timing: { within_date_range: {
-        start_date: values.start_date === null ? null : parse(values.start_date).format(),
-        end_date: values.end_date === null ? null : parse(values.end_date).format(),
+        start_date: values.start_date === null ? null : parse(values.start_date),
+        end_date: values.end_date === null ? null : parse(values.end_date),
       }},
     });
+  }
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
       dissoc('related_tasks'),
-      assoc('timing', this.state.timing),
-      dissoc('timing'),
       dissoc('resource_type'),
       dissoc('milestone'),
       dissoc('associated_activities'),
       dissoc('responsible_roles'),
+      assoc('timing', this.state.timing),
+      dissoc('resource_type'),
+      dissoc('resource'),
+      assoc('subjects', this.state.subjects),
     )(values);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
@@ -237,11 +265,13 @@ class RelatedTaskCreation extends Component {
     this.setState({
       open: false,
       close: true,
+      resourceName: '',
+      fieldName: '',
     });
   }
 
   handleCancelCloseClick() {
-    this.setState({ close: false });
+    this.setState({ close: false, resourceName: '', fieldName: '' });
   }
 
   onResetContextual() {
@@ -382,6 +412,8 @@ class RelatedTaskCreation extends Component {
               related_tasks: [],
               associated_activities: [],
               responsible_roles: [],
+              resource_type: '',
+              resource: '',
             }}
             validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -583,10 +615,12 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                          <ResourceType
-                            name="resource_type"
+                          <ResourceTypeField
+                            name='resource_type'
                             fullWidth={true}
                             variant='outlined'
+                            handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
+                            type='hardware'
                             style={{ height: '38.09px' }}
                             containerstyle={{ width: '100%' }}
                           />
@@ -608,11 +642,12 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource_name"
+                        <ResourceNameField
+                          name='resource'
+                          resourceTypename={this.state.resourceName}
                           fullWidth={true}
                           variant='outlined'
+                          type='hardware'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -636,24 +671,13 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                         <TaskType
                           name="related_tasks"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        >
-                          {/* <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem> */}
-                        </Field>
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -672,12 +696,19 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <AssociatedActivities
+                        {/* <AssociatedActivities
                            name="associated_activities"
                            fullWidth={true}
                            variant='outlined'
                            style={{ height: '38.09px' }}
                            containerstyle={{ width: '100%' }}
+                        /> */}
+                         <TaskType
+                          name="associated_activities"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
                         />
                       </div>
                     </Grid>
@@ -698,14 +729,21 @@ class RelatedTaskCreation extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <ResponsibleParties
+                        <TaskType
+                          name="responsible_roles"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                        {/* <ResponsibleParties
                           style={{ height: '38.09px' }}
                           variant='outlined'
                           name="responsible_roles"
                           size='small'
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
-                        />
+                        /> */}
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -724,13 +762,20 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Dependencies
+                        <TaskType
+                          name="task_dependencies"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                        {/* <Dependencies
                            name="task_dependencies"
                            fullWidth={true}
                            variant='outlined'
                            style={{ height: '38.09px' }}
                            containerstyle={{ width: '100%' }}
-                        />
+                        /> */}
                       </div>
                     </Grid>
                   </Grid>
