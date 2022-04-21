@@ -91,7 +91,7 @@ describe('Elasticsearch document loader', () => {
     const dataThroughStix = await elLoadById(ADMIN_USER, standardId, null, ['test_index']);
     expect(dataThroughStix.standard_id).toEqual(documentWithIndex.standard_id);
     // Try to delete
-    await elDeleteElements(ADMIN_USER, [dataThroughStix], { idLoader: storeLoadByIdWithRefs });
+    await elDeleteElements(ADMIN_USER, [dataThroughStix], storeLoadByIdWithRefs);
     const removedInternal = await elLoadById(ADMIN_USER, internalId, null, ['test_index']);
     expect(removedInternal).toBeUndefined();
   });

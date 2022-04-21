@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
@@ -25,6 +25,7 @@ import {
   INPUT_MARKINGS,
   INPUT_OBJECTS
 } from '../schema/general';
+import { isStixRelationship } from '../schema/stixRelationship';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 
@@ -269,18 +270,20 @@ const generateCreateDeleteMessage = (type, instance) => {
     }
     return `${type}s a ${entityType} \`${name}\``;
   }
-  // Relation
-  const from = extractEntityMainValue(instance.from);
-  let fromType = instance.from.entity_type;
-  if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-    fromType = 'File';
+  if (isStixRelationship(instance.entity_type)) {
+    const from = extractEntityMainValue(instance.from);
+    let fromType = instance.from.entity_type;
+    if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+      fromType = 'File';
+    }
+    const to = extractEntityMainValue(instance.to);
+    let toType = instance.to.entity_type;
+    if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+      toType = 'File';
+    }
+    return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
   }
-  const to = extractEntityMainValue(instance.to);
-  let toType = instance.to.entity_type;
-  if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-    toType = 'File';
-  }
-  return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
+  return '-';
 };
 export const generateCreateMessage = (instance) => {
   return generateCreateDeleteMessage(EVENT_TYPE_CREATE, instance);
@@ -290,9 +293,9 @@ export const generateDeleteMessage = (instance) => {
 };
 
 export const generateUpdateMessage = (inputs) => {
-  const inputsByOperations = R.groupBy((m) => m.operation, inputs);
+  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
   const patchElements = Object.entries(inputsByOperations);
-  return patchElements.map(([type, operations]) => {
+  const generatedMessage = patchElements.map(([type, operations]) => {
     return `${type}s ${operations.map(({ key, value }) => {
       let message = 'nothing';
       const convertedKey = META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key] || key;
@@ -326,6 +329,10 @@ export const generateUpdateMessage = (inputs) => {
       return `\`${message}\` in \`${convertedKey}\``;
     })}`;
   }).join(', ');
+  if (generatedMessage.includes('undefined') || generatedMessage.includes('[object Object]')) {
+    throw UnsupportedError('Error generating update message', { inputs, message: generatedMessage });
+  }
+  return generatedMessage;
 };
 
 export const pascalize = (s) => {

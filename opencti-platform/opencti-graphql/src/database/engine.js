@@ -1873,10 +1873,9 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
   }
 };
 
-export const elDeleteElements = async (user, elements, loaders) => {
+export const elDeleteElements = async (user, elements, stixLoadById) => {
   if (elements.length === 0) return [];
   const toBeRemovedIds = elements.map((e) => e.internal_id);
-  const { stixLoadById } = loaders;
   const opts = { concurrency: ES_MAX_CONCURRENCY };
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
   const stixRelations = relations.filter((r) => isStixRelationShipExceptMeta(r.relationship_type));

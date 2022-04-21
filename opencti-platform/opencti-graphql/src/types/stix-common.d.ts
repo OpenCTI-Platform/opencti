@@ -6,17 +6,17 @@ type StixId = `${string}--${v4 | v5}`;
 type StixFieldExtension = `${string}--${string}`;
 
 // Common
-interface StixPatch {
-  add?: StixCoreObject
-  replace?: StixCoreObject
-  remove?: StixCoreObject
-}
-
-interface StixContext {
-  sources: Array<StixCoreObject>;
-  deletions: Array<StixCoreObject>;
-  shifts: Array<StixCoreObject>;
-}
+// interface StixPatch {
+//   add?: StixCoreObject
+//   replace?: StixCoreObject
+//   remove?: StixCoreObject
+// }
+//
+// interface StixDependenciesContext {
+//   sources: Array<StixCoreObject>;
+//   deletions: Array<StixCoreObject>;
+//   shifts: Array<StixCoreObject>;
+// }
 
 interface StixMitreExtension {
   'extension_type': 'property-extension',
@@ -26,12 +26,11 @@ interface StixMitreExtension {
 interface StixOpenctiExtension {
   extension_type : 'property-extension' | 'new-sdo';
   id: v4 | undefined;
+  files: Array<string>;
   stix_ids: Array<StixId>;
   type: string;
   created_at: Date;
   is_inferred: boolean;
-  patch: StixPatch | undefined;
-  context: StixContext | undefined;
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {

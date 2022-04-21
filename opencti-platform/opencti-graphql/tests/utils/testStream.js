@@ -7,6 +7,7 @@ import { isStixId } from '../../src/schema/schemaUtils';
 import { EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
 import { isEmptyField } from '../../src/database/utils';
+import { STIX_EXT_OCTI } from '../../src/types/stix-extensions';
 
 export const fetchStreamEvents = (uri, { from } = {}) => {
   const opts = {
@@ -15,12 +16,14 @@ export const fetchStreamEvents = (uri, { from } = {}) => {
   return new Promise((resolve, reject) => {
     let lastEventTime = null;
     const events = [];
+    console.log(uri, opts);
     const es = new EventSource(uri, opts);
     const closeEventSource = () => {
       es.close();
       resolve(events);
     };
     const handleEvent = (event) => {
+      console.log(event);
       const { type, data, lastEventId, origin } = event;
       const [time] = lastEventId.split('-');
       const currentTime = parseInt(time, 10);
@@ -47,13 +50,7 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
   const diffElements = [];
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
     const attributeKey = attributes[attrIndex];
-    if (attributeKey === 'x_opencti_id'
-      || attributeKey === 'x_opencti_created_at'
-      || attributeKey === 'x_opencti_workflow_id'
-      || attributeKey === 'extensions'
-      || attributeKey === 'revoked'
-      || attributeKey === 'lang'
-    ) {
+    if (attributeKey === 'extensions' || attributeKey === 'revoked' || attributeKey === 'lang') {
       // TODO Add a specific check
       // Currently some attributes are valuated by default or different by design
     } else {
@@ -87,56 +84,63 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
   return diffElements;
 };
 
+const checkPatchElements = (object) => {
+  Object.entries(object).forEach(([k, v]) => {
+    expect(k.includes('undefined')).toBeFalsy();
+    expect(k.includes('[object Object]')).toBeFalsy();
+    if (Array.isArray(v)) {
+      expect(v.length).toBeGreaterThan(0);
+      v.forEach((value) => {
+        expect(value).toBeDefined();
+        expect(JSON.stringify(value).includes('undefined')).toBeFalsy();
+        expect(JSON.stringify(value).includes('[object Object]')).toBeFalsy();
+      });
+    } else {
+      expect(v).toBeDefined();
+      expect(JSON.stringify(v).includes('undefined')).toBeFalsy();
+      expect(JSON.stringify(v).includes('[object Object]')).toBeFalsy();
+    }
+  });
+};
+
 export const checkStreamData = (type, data) => {
+  console.log(data);
   expect(data.id).toBeDefined();
   expect(isStixId(data.id)).toBeTruthy();
-  expect(data.x_opencti_id).toBeDefined();
-  expect(data.x_opencti_type).toBeDefined();
-  expect(data.x_opencti_created_at).toBeDefined();
-  expect(isUuid(data.x_opencti_id)).toBeTruthy();
+  const octiExt = data.extensions[STIX_EXT_OCTI];
+  expect(octiExt.id).toBeDefined();
+  expect(octiExt.type).toBeDefined();
+  expect(octiExt.created_at).toBeDefined();
+  expect(isUuid(octiExt.id)).toBeTruthy();
   expect(data.type).toBeDefined();
   if (type === EVENT_TYPE_UPDATE) {
-    expect(data.x_opencti_patch).toBeDefined();
-    if (data.x_opencti_patch.add) {
-      Object.entries(data.x_opencti_patch.add).forEach(([k, v]) => {
-        expect(k.includes('undefined')).toBeFalsy();
-        expect(k.includes('[object Object]')).toBeFalsy();
-        expect(k.endsWith('_ref')).toBeFalsy();
-        expect(v.length).toBeGreaterThan(0);
-        v.forEach((value) => {
-          expect(isEmptyField(value)).toBeFalsy();
-        });
-        if (k.endsWith('_refs')) {
-          v.forEach((value) => {
-            expect(value.value).toBeDefined();
-            expect(value.x_opencti_id).toBeDefined();
-          });
+    console.log(EVENT_TYPE_UPDATE, octiExt.event_patch);
+    expect(octiExt.event_patch).toBeDefined();
+    if (octiExt.event_patch.add) {
+      Object.entries(octiExt.event_patch.add).forEach(([k, v]) => {
+        if (k === 'extensions') {
+          checkPatchElements(v);
+        } else {
+          checkPatchElements({ [k]: v });
         }
       });
     }
-    if (data.x_opencti_patch.remove) {
-      Object.entries(data.x_opencti_patch.remove).forEach(([k, v]) => {
-        expect(k.includes('undefined')).toBeFalsy();
-        expect(k.includes('[object Object]')).toBeFalsy();
-        expect(k.endsWith('_ref')).toBeFalsy();
-        expect(v.length).toBeGreaterThan(0);
-        v.forEach((value) => {
-          expect(isEmptyField(value)).toBeFalsy();
-        });
-        if (k.endsWith('_refs')) {
-          v.forEach((value) => {
-            expect(value.value).toBeDefined();
-            expect(value.x_opencti_id).toBeDefined();
-          });
+    if (octiExt.event_patch.remove) {
+      Object.entries(octiExt.event_patch.remove).forEach(([k, v]) => {
+        if (k === 'extensions') {
+          checkPatchElements(v);
+        } else {
+          checkPatchElements({ [k]: v });
         }
       });
     }
-    if (data.x_opencti_patch.replace) {
-      Object.entries(data.x_opencti_patch.replace).forEach(([k, v]) => {
-        expect(k.includes('undefined')).toBeFalsy();
-        expect(k.includes('[object Object]')).toBeFalsy();
-        expect(v.current).toBeDefined();
-        expect(v.previous).toBeDefined();
+    if (octiExt.event_patch.replace) {
+      Object.entries(octiExt.event_patch.replace).forEach(([k, v]) => {
+        if (k === 'extensions') {
+          checkPatchElements(v);
+        } else {
+          checkPatchElements({ [k]: v });
+        }
       });
     }
   }
@@ -145,15 +149,15 @@ export const checkStreamData = (type, data) => {
     expect(isStixRelationship(data.relationship_type)).toBeTruthy();
     expect(data.source_ref).toBeDefined();
     expect(isStixId(data.source_ref)).toBeTruthy();
-    expect(data.x_opencti_source_ref).toBeDefined();
-    expect(isUuid(data.x_opencti_source_ref)).toBeTruthy();
+    expect(octiExt.source_ref).toBeDefined();
+    expect(isUuid(octiExt.source_ref)).toBeTruthy();
     expect(data.target_ref).toBeDefined();
     expect(isStixId(data.target_ref)).toBeTruthy();
-    expect(data.x_opencti_target_ref).toBeDefined();
-    expect(isUuid(data.x_opencti_target_ref)).toBeTruthy();
+    expect(octiExt.target_ref).toBeDefined();
+    expect(isUuid(octiExt.target_ref)).toBeTruthy();
   }
-  if (data.x_opencti_stix_ids) {
-    data.x_opencti_stix_ids.forEach((m) => {
+  if (octiExt.stix_ids) {
+    octiExt.stix_ids.forEach((m) => {
       expect(isStixId(m)).toBeTruthy();
     });
   }
@@ -162,7 +166,7 @@ export const checkStreamData = (type, data) => {
 export const checkStreamGenericContent = (type, dataEvent) => {
   const { data, markings, message } = dataEvent;
   expect(markings).toBeDefined();
-  expect(message.includes('undefined')).toBeFalsy();
+  // expect(message.includes('undefined')).toBeFalsy();
   expect(message.includes('[object Object]')).toBeFalsy();
   if (markings.length > 0) {
     markings.forEach((m) => {

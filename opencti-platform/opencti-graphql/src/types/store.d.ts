@@ -37,8 +37,12 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import type { AuthUser } from './user';
-import type { StixPatch, StixContext, StixObject, StixId } from './stix-common';
-import { RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import type { StixPatch, StixDependenciesContext, StixObject, StixId } from './stix-common';
+import {
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../schema/stixMetaRelationship';
 
 type StorePrimitives = string | number | boolean | Date;
 
@@ -49,12 +53,20 @@ interface StorePatch {
 
 interface StoreInput {
   key: string;
-  value: Array<StorePrimitives | BasicStoreObject>;
+  value: Array<StorePrimitives | BasicStoreObject> | null;
 }
 
 interface StoreInputOperation extends StoreInput {
   operation: 'add' | 'replace' | 'remove' | 'change';
   previous: Array<StorePrimitives | BasicStoreObject>;
+}
+
+interface StoreFile {
+  name: string;
+  value: string;
+  uri: string;
+  version: string;
+  mime_type: string;
 }
 
 interface StoreBase {
@@ -64,10 +76,9 @@ interface StoreBase {
   internal_id: string;
   entity_type: string;
   base_type: string;
-  x_opencti_stix_ids: array<string>;
+  x_opencti_files: Array<string>;
+  x_opencti_stix_ids: Array<StixId>;
   x_opencti_inferences: Array<StoreRule> | undefined;
-  x_opencti_patch: StixPatch | undefined;
-  x_opencti_context: StixContext ;
   created_at: Date;
   updated_at: Date;
 }
@@ -110,19 +121,19 @@ interface StoreWindowsRegistryValueType extends StoreBase {
 interface StoreConnection {
   internal_id: string;
   role: string;
-  types: array<string>;
+  types: Array<string>;
 }
 
 interface StoreRawRule {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inferred: any;
-  explanation: array<string>;
+  explanation: Array<string>;
 }
 
 interface StoreRule {
   rule: string;
   attributes: Array<{ field: string, value: string }>;
-  explanation: array<string>;
+  explanation: Array<string>;
 }
 
 interface StoreRuntimeAttribute {
@@ -135,7 +146,7 @@ interface StoreRuntimeAttribute {
 }
 
 interface BasicStoreCommon extends StoreBase {
-  // array
+  // Array
   [k: `i_rule_${string}`]: Array<StoreRawRule>;
   // [k: `rel_${string}`]: Array<string>;
   // object
@@ -173,16 +184,16 @@ interface StoreRawRelation extends BasicStoreCommon {
   // number
   confidence: number;
   attribute_count: number;
-  // array
+  // Array
   connections: Array<StoreConnection>;
 }
 interface BasicStoreRelation extends StoreRawRelation {
   fromId: string;
   fromRole: string;
-  fromType: array<string>;
+  fromType: string;
   toId: string;
   toRole: string;
-  toType: array<string>;
+  toType: string;
 }
 interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_DOMAIN_FROM]: BasicStoreObject;
@@ -230,8 +241,9 @@ interface BasicStoreEntity extends BasicStoreCommon {
   url: string;
   source_name: string;
   external_id: string;
+  lastEventId: string;
   // rels
-  [RELATION_OBJECT_MARKING]: Array<string>;
+  [RELATION_CREATED_BY]: Array<string>;
   // Array
   received_lines: Array<string>;
   parent_types: Array<string>;

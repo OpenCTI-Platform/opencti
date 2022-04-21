@@ -8,7 +8,6 @@ import {
   ENTITY_TYPE_MALWARE,
   isStixDomainObject
 } from '../../../src/schema/stixDomainObject';
-import { updateInputsToPatch } from '../../../src/database/stix';
 import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
 import { UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
@@ -131,16 +130,6 @@ describe('Stix opencti converter', () => {
       .filter((key) => !key.startsWith('x_') && key !== 'extensions').length;
     expect(notExtSize).toEqual(0);
   };
-
-  it('Should patch correctly generated', async () => {
-    const dataEvent = updateInputsToPatch(ENTITY_TYPE_INDICATOR, [{
-      operation: UPDATE_OPERATION_REPLACE,
-      key: 'revoked',
-      value: [true],
-      previous: [false]
-    }]);
-    expect(dataEvent).toEqual({ replace: { revoked: false } });
-  });
 
   it('Should stix data correctly generated', async () => {
     await rawDataCompare('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc', 'attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');

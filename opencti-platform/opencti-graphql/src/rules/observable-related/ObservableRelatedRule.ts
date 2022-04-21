@@ -49,7 +49,7 @@ const ruleRelatedObservableBuilder = () => {
         const input = { fromId: targetRef, toId, relationship_type: RELATION_RELATED_TO };
         const event = await createInferredRelation(input, ruleContent);
         if (event) {
-          events.push(event);
+          events.push(event as Event);
         }
         // -----------------------------------------------------------------------------------------------------------
         // Create relation TO = FROM
@@ -63,7 +63,7 @@ const ruleRelatedObservableBuilder = () => {
         const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
         const reverseEvent = await createInferredRelation(reverseInput, reverseRuleContent);
         if (reverseEvent) {
-          events.push(reverseEvent);
+          events.push(reverseEvent as Event);
         }
       }
     };

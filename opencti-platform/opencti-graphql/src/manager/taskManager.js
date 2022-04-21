@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
-import { buildEvent, lockResource } from '../database/redis';
+import { buildCreateEvent, lockResource } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_DELETE,
@@ -224,7 +224,7 @@ const executeRuleApply = async (user, taskId, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
   const instance = await stixLoadById(user, element.internal_id);
-  const event = buildEvent(EVENT_TYPE_CREATE, user, instance.object_marking_refs ?? [], '-', instance);
+  const event = buildCreateEvent(user, instance, '-');
   await rulesApplyDerivedEvents(`task--${taskId}`, [event], [rule]);
 };
 

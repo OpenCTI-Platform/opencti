@@ -1,7 +1,9 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
+import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { buildEvent, createStreamProcessor, lockResource } from '../database/redis';
+import type { Operation } from 'fast-json-patch';
+import { buildUpdateEvent, createStreamProcessor, lockResource } from '../database/redis';
 import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
@@ -19,7 +21,6 @@ import { createRuleTask, deleteTask } from '../domain/task';
 import { RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
 import { getParentTypes } from '../schema/schemaUtils';
-import { extractFieldsOfPatch, rebuildInstanceBeforePatch } from '../utils/patch';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { elList, listEntities } from '../database/middleware-loader';
@@ -40,15 +41,15 @@ import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule'
 import type { RuleRuntime, RuleDefinition } from '../types/rules';
 import type {
   BasicManagerEntity,
-  BasicRuleEntity, BasicStoreCommon,
-  BasicTaskEntity,
+  BasicRuleEntity, BasicStoreCommon, BasicStoreEntity,
+  BasicTaskEntity, StoreRule,
 } from '../types/store';
 import type { AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
-import type { StixCoreObject, StixId } from '../types/stix-common';
+import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
-import type { Event, RuntimeEvent, StreamEvent } from '../types/event';
+import type { DeleteEvent, Event, MergeEvent, StreamEvent, UpdateEvent } from '../types/event';
 
 let activatedRules: Array<RuleRuntime> = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
@@ -129,28 +130,33 @@ export const setRuleActivation = async (user: AuthUser, ruleId: string, active: 
   return getRule(ruleId);
 };
 
-const buildInternalEvent = (type: string, instance: StixCoreObject): Event => {
-  return buildEvent(type, RULE_MANAGER_USER, instance.object_marking_refs ?? [], '-', instance) as Event;
+const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
+  return {
+    version: '4',
+    type,
+    message: 'rule internal event',
+    origin: RULE_MANAGER_USER,
+    markings: stix.object_marking_refs || [],
+    data: stix,
+  };
 };
-const ruleMergeHandler = async (event: Event): Promise<Array<Event>> => {
-  const { data, markings } = event;
-  const events = [];
+const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
+  const { data, markings, context } = event;
+  const events: Array<Event> = [];
   // region 01 - Generate events for deletion
   // -- sources
-  const { extensions } = data;
-  const x_opencti_context = extensions[STIX_EXT_OCTI].context;
-  const sourceDeleteEvents = (x_opencti_context?.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
+  const sourceDeleteEvents = (context?.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...sourceDeleteEvents);
   // -- derived deletions
-  const derivedDeleteEvents = (x_opencti_context?.deletions || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
+  const derivedDeleteEvents = (context?.deletions || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...derivedDeleteEvents);
   // endregion
   // region 02 - Generate events for shifted relations
-  if ((x_opencti_context?.shifts ?? []).length > 0) {
-    const shifts = x_opencti_context?.shifts ?? [];
+  if ((context?.shifts ?? []).length > 0) {
+    const shifts = context?.shifts ?? [];
     for (let index = 0; index < shifts.length; index += 1) {
       const shift = shifts[index];
-      const shiftedElement = await stixLoadById(RULE_MANAGER_USER, shift.id) as StixCoreObject;
+      const shiftedElement = await stixLoadById(RULE_MANAGER_USER, shift) as StixCoreObject;
       // We need to cleanup the element associated with this relation and then rescan it
       events.push(buildInternalEvent(EVENT_TYPE_DELETE, shiftedElement));
       // Then we need to generate event for redo rule on shifted relations
@@ -159,37 +165,41 @@ const ruleMergeHandler = async (event: Event): Promise<Array<Event>> => {
   }
   // endregion
   // region 03 - Generate event for merged entity
-  const updateEvent = buildEvent(EVENT_TYPE_UPDATE, RULE_MANAGER_USER, markings, '-', data);
+  const updateEvent = buildInternalEvent(EVENT_TYPE_UPDATE, data) as UpdateEvent;
+  updateEvent.context = { previous_patch: context.previous_patch };
   events.push(updateEvent);
   // endregion
   return events;
 };
 
-const isAttributesImpactDependencies = (rules: Array<RuleDefinition>, instance: StixCoreObject): boolean => {
-  const rulesAttributes = rules
-    .map((r) => r.scopes ?? [])
-    .flat()
+const getAttributesImpactDependencies = (rule: RuleDefinition, operations: Operation[]): Array<string> => {
+  const rulesAttributes = (rule.scopes ?? [])
     .map((s) => s.attributes)
     .flat()
     .filter((a) => a.dependency === true)
     .map((a) => a.name);
-  const patchedAttributes = Object.entries(instance).map(([k]) => k);
-  return patchedAttributes.some((f) => rulesAttributes.includes(f));
+  const operationAttributes = R.uniq(operations.map((o) => {
+    const parts = o.path.substring(1).split('/');
+    // eslint-disable-next-line no-restricted-globals
+    return parts.filter((p) => isNaN(Number(p))).join('.');
+  }));
+  return operationAttributes.filter((f) => rulesAttributes.includes(f));
 };
 
-const isMatchRuleFilters = (rule: RuleDefinition, element: StixCoreObject, matchUpdateFields = false): boolean => {
+const isMatchRuleFilters = (rule: RuleDefinition, element: StixCoreObject): boolean => {
   // Handle types filtering
   const scopeFilters = rule.scopes ?? [];
   for (let index = 0; index < scopeFilters.length; index += 1) {
     const scopeFilter = scopeFilters[index];
-    const { filters, attributes } = scopeFilter;
+    const { filters } = scopeFilter;
     const { types = [], fromTypes = [], toTypes = [] } = filters ?? {};
-    let isValidFilter = true;
     const instanceType = element.extensions[STIX_EXT_OCTI].type;
     if (types.length > 0) {
       const elementTypes = [instanceType, ...getParentTypes(instanceType)];
       const isCompatibleType = types.some((r) => elementTypes.includes(r));
-      if (!isCompatibleType) isValidFilter = false;
+      if (!isCompatibleType) {
+        return false;
+      }
     }
     if (isBasicRelationship(instanceType)) {
       const isSighting = isStixSightingRelationship(instanceType);
@@ -207,26 +217,21 @@ const isMatchRuleFilters = (rule: RuleDefinition, element: StixCoreObject, match
       if (fromTypes.length > 0) {
         const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
         const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
-        if (!isCompatibleType) isValidFilter = false;
+        if (!isCompatibleType) {
+          return false;
+        }
       }
       if (toTypes.length > 0) {
         const instanceToTypes = [toType, ...getParentTypes(toType)];
         const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
-        if (!isCompatibleType) isValidFilter = false;
+        if (!isCompatibleType) {
+          return false;
+        }
       }
-    }
-    if (isValidFilter) {
-      if (matchUpdateFields) {
-        const { patch } = element.extensions[STIX_EXT_OCTI];
-        if (patch === undefined) throw new Error('//TODO JRI CHANGE THAT');
-        const patchedFields = extractFieldsOfPatch(patch);
-        return attributes.map((a) => a.name).some((f) => patchedFields.includes(f));
-      }
-      return true;
     }
   }
-  // No filter match, return false
-  return false;
+  // All filters are valid
+  return true;
 };
 
 const handleRuleError = async (event: Event, error: unknown) => {
@@ -234,61 +239,69 @@ const handleRuleError = async (event: Event, error: unknown) => {
   logApp.error(`[OPENCTI-MODULE] Rule error applying ${type} event`, { event, error });
 };
 
-const applyCleanupOnDependencyIds = async (eventId: string, deletionIds: Array<string>) => {
+const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   const filters = [{ key: `${RULE_PREFIX}*.dependencies`, values: deletionIds, operator: 'wildcard' }];
   const callback = (elements: Array<BasicStoreCommon>) => {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    return rulesCleanHandler(eventId, elements, RULES_DECLARATION, deletionIds);
+    return rulesCleanHandler(elements, RULES_DECLARATION, deletionIds);
   };
   await elList<BasicStoreCommon>(RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
 };
 
 // noinspection TypeScriptValidateTypes
-export const rulesApplyHandler = async (events: Array<RuntimeEvent>, forRules: Array<RuleRuntime> = []) => {
+export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<RuleRuntime> = []) => {
   if (isEmptyField(events) || events.length === 0) return;
   const rules = forRules.length > 0 ? forRules : activatedRules;
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
-    const { eventId, type, data, markings } = event;
-    logApp.debug('[RULE] Processing event', { eventId });
+    const { type, data } = event;
+    const internalId = data.extensions[STIX_EXT_OCTI].id;
+    // logApp.debug('[RULE] Processing event', { eventId });
     try {
-      const element: StixCoreObject = { ...data, object_marking_refs: markings };
-      const internalId = data.extensions[STIX_EXT_OCTI].id;
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
-        const derivedEvents = await ruleMergeHandler(event);
+        const mergeEvent = event as MergeEvent;
+        const derivedEvents = await ruleMergeHandler(mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        await rulesApplyDerivedEvents(eventId, derivedEvents);
+        await rulesApplyDerivedEvents(derivedEvents);
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
-        const contextDeletions = (data.extensions[STIX_EXT_OCTI].context?.deletions ?? [])
-          .map((d) => d.extensions[STIX_EXT_OCTI].id);
+        const deleteEvent = event as DeleteEvent;
+        // const element: StixCoreObject = { ...data, object_marking_refs: markings };
+        const contextDeletions = (deleteEvent.context.deletions ?? []).map((d) => d.extensions[STIX_EXT_OCTI].id);
         const deletionIds = [internalId, ...contextDeletions];
-        await applyCleanupOnDependencyIds(eventId, deletionIds);
+        await applyCleanupOnDependencyIds(deletionIds);
       }
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
-        // We need to clean elements that could be part of rule dependencies
-        // Only interesting if rule depends of this patched attributes
-        const { patch } = element.extensions[STIX_EXT_OCTI];
-        if (patch === undefined) throw new Error('//TODO JRI CHANGE THAT');
-        const previously = rebuildInstanceBeforePatch({}, patch);
-        const isDependent = isAttributesImpactDependencies(rules, previously);
-        if (isDependent) {
-          const deletionIds = Object.entries(previously).map(([k, v]) => `${internalId}_${k}:${v}`);
-          await applyCleanupOnDependencyIds(eventId, deletionIds);
-        }
-        // Dispatch update
+        const updateEvent = event as UpdateEvent;
+        const previousPatch = updateEvent.context.previous_patch;
+        const previousStix = jsonpatch.applyPatch<StixCoreObject>(data, previousPatch).newDocument;
+        const patchOperations = jsonpatch.compare(previousStix, data);
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
-          const isImpactedElement = isMatchRuleFilters(rule, element, true);
-          if (isImpactedElement) {
-            const elementId: StixId = patch?.replace?.id || element.id;
-            const stixData = await stixLoadById(RULE_MANAGER_USER, elementId);
-            const derivedEvents = await rule.update(stixData);
+          // TODO Improve filtering definition to rely on attribute values
+          const isPreviouslyMatched = isMatchRuleFilters(rule, previousStix);
+          const isCurrentMatched = isMatchRuleFilters(rule, data);
+          // Rule doesnt match anymore, need to cleanup
+          const isNoLongerValid = isPreviouslyMatched && !isCurrentMatched;
+          if (isNoLongerValid) {
+            await applyCleanupOnDependencyIds([internalId]);
+          } else { // Still valid but need to be cleanup if an attribute dependency has changed
+            const attributeDependencies = getAttributesImpactDependencies(rule, patchOperations);
+            const deletionIds = attributeDependencies.map((k) => {
+              const v = (previousStix as any)[k];
+              const dep = Array.isArray(v) ? v.join(',') : v;
+              return `${internalId}_${k}:${dep}`;
+            });
+            await applyCleanupOnDependencyIds(deletionIds);
+          }
+          // Rule match, need to apply
+          if (isCurrentMatched) {
+            const derivedEvents = await rule.insert(data);
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            await rulesApplyDerivedEvents(eventId, derivedEvents);
+            await rulesApplyDerivedEvents(derivedEvents);
           }
         }
       }
@@ -296,11 +309,11 @@ export const rulesApplyHandler = async (events: Array<RuntimeEvent>, forRules: A
       if (type === EVENT_TYPE_CREATE) {
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
-          const isImpactedElement = isMatchRuleFilters(rule, element);
+          const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
-            const derivedEvents = await rule.insert(element);
+            const derivedEvents = await rule.insert(data);
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            await rulesApplyDerivedEvents(eventId, derivedEvents);
+            await rulesApplyDerivedEvents(derivedEvents);
           }
         }
       }
@@ -310,13 +323,12 @@ export const rulesApplyHandler = async (events: Array<RuntimeEvent>, forRules: A
   }
 };
 
-export const rulesApplyDerivedEvents = async (eventId: string, derivedEvents: Array<Event>, forRules: Array<RuleRuntime> = []): Promise<void> => {
-  const events = derivedEvents.map((d) => ({ eventId, ...d }));
+export const rulesApplyDerivedEvents = async (derivedEvents: Array<Event>, forRules: Array<RuleRuntime> = []): Promise<void> => {
   // eslint-disable-next-line no-use-before-define
-  await rulesApplyHandler(events, forRules);
+  await rulesApplyHandler(derivedEvents, forRules);
 };
 
-export const rulesCleanHandler = async (eventId: string, instances: Array<BasicStoreCommon>, rules: Array<RuleRuntime>, deletedDependencies: Array<string> = []) => {
+export const rulesCleanHandler = async (instances: Array<BasicStoreCommon>, rules: Array<RuleRuntime>, deletedDependencies: Array<string> = []) => {
   for (let i = 0; i < instances.length; i += 1) {
     const instance = instances[i];
     for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
@@ -327,7 +339,7 @@ export const rulesCleanHandler = async (eventId: string, instances: Array<BasicS
         // In case of inference of inference, element can be recursively cleanup by the deletion system
         if (processingElement) {
           const derivedEvents = await rule.clean(processingElement, deletedDependencies);
-          await rulesApplyDerivedEvents(eventId, derivedEvents);
+          await rulesApplyDerivedEvents(derivedEvents);
         }
       }
     }
@@ -346,10 +358,7 @@ const ruleStreamHandler = async (streamEvents: Array<StreamEvent>) => {
     return isCompatibleVersion && !isInferenceEvent;
   });
   if (compatibleEvents.length > 0) {
-    const ruleEvents: Array<RuntimeEvent> = compatibleEvents.map((e) => {
-      const { id, data: eventData } = e;
-      return { eventId: `stream--${id}`, ...eventData };
-    });
+    const ruleEvents: Array<Event> = compatibleEvents.map((e) => e.data);
     // Execute the events
     await rulesApplyHandler(ruleEvents);
     // Save the last processed event
@@ -364,9 +373,10 @@ const ruleStreamHandler = async (streamEvents: Array<StreamEvent>) => {
   }
 };
 
-const getInitRuleManager = () => {
+const getInitRuleManager = async (): Promise<BasicStoreEntity> => {
   const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
-  return createEntity(RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
+  const created = await createEntity(RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
+  return created as BasicStoreEntity;
 };
 
 const initRuleManager = () => {

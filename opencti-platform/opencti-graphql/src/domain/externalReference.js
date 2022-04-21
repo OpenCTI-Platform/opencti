@@ -22,7 +22,6 @@ import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { isEmptyField } from '../database/utils';
-import { stixCoreObjectIdImportPush } from './stixCoreObject';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 
 export const findById = (user, externalReferenceId) => {
@@ -72,9 +71,6 @@ export const addExternalReference = async (user, externalReference) => {
     });
   }
   const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
-  if (!isEmptyField(externalReference.file)) {
-    await stixCoreObjectIdImportPush(user, created.id, externalReference.file);
-  }
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].ADDED_TOPIC, created, user);
 };
 

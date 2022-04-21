@@ -18,6 +18,7 @@ import type { StixSighting } from '../../types/stix-sro';
 import type { Event } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixObject } from '../../types/stix-common';
+import type { StoreObject } from '../../types/store';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
@@ -58,28 +59,28 @@ const ruleSightingIncidentBuilder = () => {
         const ruleContent = createRuleContent(id, dependencies, explanation, ruleContentData);
         const inferredEntity = await createInferredEntity(input, ruleContent, ENTITY_TYPE_INCIDENT);
         if (inferredEntity.event) {
-          events.push(inferredEntity.event);
+          events.push(inferredEntity.event as Event);
         }
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
-
+        const created = inferredEntity.element as StoreObject;
         const incidentToIndicator = {
-          fromId: inferredEntity.element.id,
+          fromId: created.internal_id,
           toId: indicatorId,
           relationship_type: RELATION_RELATED_TO,
         };
-        const incidentToIndicatorEvent = await createInferredRelation(incidentToIndicator, ruleRelContent);
+        const incidentToIndicatorEvent = await createInferredRelation(incidentToIndicator, ruleRelContent) as Event;
         if (incidentToIndicatorEvent) {
           events.push(incidentToIndicatorEvent);
         }
         // Create **Incident C** `targets` **identity B**
 
         const incidentToIdentity = {
-          fromId: inferredEntity.element.id,
+          fromId: created.internal_id,
           toId: identityId,
           relationship_type: RELATION_TARGETS,
         };
-        const incidentToIdentityEvent = await createInferredRelation(incidentToIdentity, ruleRelContent);
+        const incidentToIdentityEvent = await createInferredRelation(incidentToIdentity, ruleRelContent) as Event;
         if (incidentToIdentityEvent) {
           events.push(incidentToIdentityEvent);
         }

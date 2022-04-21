@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import { version as uuidVersion } from 'uuid';
 import uuidTime from 'uuid-time';
-import { UnsupportedError } from '../config/errors';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -117,19 +116,16 @@ import {
   RELATION_X509_V3_EXTENSIONS,
   STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD,
 } from '../schema/stixCyberObservableRelationship';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, INTERNAL_PREFIX, REL_INDEX_PREFIX, } from '../schema/general';
-import { isNotEmptyField, UPDATE_OPERATION_REPLACE } from './utils';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { isMultipleAttribute, stixHashesToInput } from '../schema/fieldDataAdapter';
+import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { generateInternalType } from '../schema/schemaUtils';
 import { generateStandardId, normalizeName } from '../schema/identifier';
-import { mergeDeepRightAll } from '../utils/format';
-import type { StoreInput, StoreInputOperation, StorePartial } from '../types/store';
-import type { StixCoreObject, StixExternalReference, StixObject } from '../types/stix-common';
+import type { StixCoreObject, StixExternalReference } from '../types/stix-common';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import type { StixMarkingDefinition } from '../types/stix-smo';
 import type {
@@ -143,44 +139,9 @@ import type {
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { StixAttackPattern } from '../types/stix-sdo';
 import type { StixArtifact } from '../types/stix-sco';
-import { convertPartialToStix } from './stix-converter';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
-const EXCLUDED_FIELDS_FROM_STIX = [
-  '_index',
-  'standard_id',
-  'internal_id',
-  'fromId',
-  'fromRole',
-  'fromType',
-  'toId',
-  'toRole',
-  'toType',
-  'parent_types',
-  'base_type',
-  'entity_type',
-  'update',
-  'connections',
-  'created_at',
-  'updated_at',
-  'sort',
-  'x_opencti_inferences',
-  'x_opencti_graph_data'
-];
-
-const isStixFieldKey = (key: string): boolean => {
-  const isInternal = key.startsWith(INTERNAL_PREFIX);
-  const isSpecificRels = key.startsWith(REL_INDEX_PREFIX);
-  return !(isInternal || isSpecificRels || EXCLUDED_FIELDS_FROM_STIX.includes(key));
-};
-
-const storeInputToStixPatch = (entityType: string, input: StoreInput): StixObject => {
-  const { key, value } = input;
-  const adaptedVal = !isMultipleAttribute(key) && Array.isArray(value) ? R.head(value) : value;
-  const partialData = { [key]: adaptedVal } as StorePartial;
-  return convertPartialToStix(partialData, entityType);
-};
 
 export const buildInputDataFromStix = (stix: StixCoreObject | StixMarkingDefinition | StixExternalReference): unknown => {
   const type = generateInternalType(stix);
@@ -321,32 +282,6 @@ export const buildInputDataFromStix = (stix: StixCoreObject | StixMarkingDefinit
   // inputData[translatedKey] = stix[key].map((v) => generateStandardId(ENTITY_TYPE_KILL_CHAIN_PHASE, v));
   // TODO JRI Generate all mapping types
   return {};
-};
-
-export const updateInputsToPatch = (entityType: string, inputs: Array<StoreInputOperation>) => {
-  const convertedInputs = inputs.map((input) => {
-    const { key, value, operation = UPDATE_OPERATION_REPLACE, previous = null } = input;
-    if (isNotEmptyField(value) && !Array.isArray(value)) {
-      throw UnsupportedError('value must be an array');
-    }
-    if (isNotEmptyField(previous) && !Array.isArray(previous)) {
-      throw UnsupportedError('previous must be an array');
-    }
-    // Sometime the key will be empty because the patch include a none stix modification
-    if (!isStixFieldKey(key)) {
-      return undefined;
-    }
-    const stixPatchValue = storeInputToStixPatch(entityType, input);
-    if (operation === UPDATE_OPERATION_REPLACE) {
-      if (previous) {
-        const prevStixPatchValue = storeInputToStixPatch(entityType, { key, value: previous });
-        return { [operation]: prevStixPatchValue };
-      }
-      return { [operation]: null };
-    }
-    return { [operation]: stixPatchValue };
-  });
-  return mergeDeepRightAll(...convertedInputs);
 };
 
 export const onlyStableStixIds = (ids = []) => R.filter((n) => uuidVersion(R.split('--', n)[1]) !== 1, ids);

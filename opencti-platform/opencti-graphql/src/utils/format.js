@@ -25,7 +25,7 @@ export const UNTIL_END = 100000000000000;
 export const UNTIL_END_STR = '5138-11-16T09:46:40.000Z';
 
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
-export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
+export const utcDate = (date) => (date ? moment(date).utc() : moment().utc());
 export const now = () => utcDate().toISOString();
 export const sinceNowInMinutes = (lastModified) => {
   const diff = utcDate().diff(utcDate(lastModified));

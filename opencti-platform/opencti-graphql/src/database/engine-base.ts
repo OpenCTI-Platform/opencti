@@ -131,11 +131,11 @@ const elMergeRelation = (concept: StoreRawRelation, fromConnection: StoreConnect
     // from
     fromId: fromConnection.internal_id,
     fromRole: fromConnection.role,
-    fromType: R.head(fromConnection.types),
+    fromType: fromConnection.types[0],
     // to
     toId: toConnection.internal_id,
     toRole: toConnection.role,
-    toType: R.head(toConnection.types),
+    toType: toConnection.types[0],
   };
 };
 const elRebuildRelation = (concept: StoreRawRelation): BasicStoreRelation => {

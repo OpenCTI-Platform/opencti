@@ -109,6 +109,7 @@ import {
   INPUT_MARKINGS,
   INPUT_OBJECTS
 } from '../schema/general';
+import { basePath, baseUrl } from '../config/conf';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -165,8 +166,7 @@ const buildOCTIExtensions = (instance: StoreBase): S.StixOpenctiExtension => {
     extension_type: 'property-extension',
     id: instance.internal_id,
     type: instance.entity_type,
-    patch: instance.x_opencti_patch,
-    context: instance.x_opencti_context,
+    files: (instance.x_opencti_files ?? []).map((uri) => `${baseUrl}${basePath}/storage/get/${uri}`),
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
     created_at: instance.created_at,
     is_inferred: instance._index ? isInferredIndex(instance._index) : undefined
@@ -254,7 +254,7 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
   return {
     ...buildStixObject(instance),
     created: instance.created,
-    modified: instance.updated_at,
+    modified: instance.updated_at, // TODO JRI??? modified?
     revoked: instance.revoked,
     confidence: instance.confidence,
     lang: instance.lang,
@@ -643,12 +643,12 @@ const convertFileToStix = (instance: StoreCyberObservable, type: string): SCO.St
     content_ref: instance[INPUT_CONTENT]?.standard_id,
     extensions: {
       ...stixCyberObject.extensions,
-      [STIX_EXT_OCTI_SCO]: {
+      [STIX_EXT_OCTI_SCO]: cleanObject({
         extension_type: 'property-extension',
         labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
         description: instance.x_opencti_description,
         additional_names: instance.x_opencti_additional_names ?? []
-      }
+      })
       // TODO implements stix extensions
     }
   };

@@ -12,7 +12,7 @@ import {
   storeLoadById,
   mergeEntities,
   updateAttribute,
-  batchLoadThroughGetTo, storeLoadByIdWithRefs,
+  batchLoadThroughGetTo, storeLoadByIdWithRefs, mergeInstanceWithInputs,
 } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { findAll as relationFindAll } from './stixCoreRelationship';
@@ -330,7 +330,7 @@ export const stixCoreObjectImportPush = async (user, entity, file) => {
     // Patch the updated_at to force live stream evolution
     await elUpdateElement({ _index: entity._index, internal_id: internalId, updated_at: now() });
     // Stream event generation
-    const eventFiles = [stixFileConverter(user, up)];
+    // const eventFiles = [stixFileConverter(user, up)];
     const eventInputs = [{ key: 'x_opencti_files', value: [eventFiles], operation: UPDATE_OPERATION_ADD }];
     await storeUpdateEvent(user, entity, eventInputs);
     return up;
@@ -359,23 +359,24 @@ export const stixCoreObjectImportDelete = async (user, fileId) => {
   // Get the context
   const up = await loadFile(user, fileId);
   const entityId = up.metaData.entity_id;
-  const entity = await storeLoadByIdWithRefs(user, entityId);
-  if (!entity) {
+  const previous = await storeLoadByIdWithRefs(user, entityId);
+  if (!previous) {
     throw UnsupportedError('Cant delete a file of none existing element', { entityId });
   }
   let lock;
-  const participantIds = getInstanceIds(entity);
+  const participantIds = getInstanceIds(previous);
   try {
     // Lock the participants that will be merged
     lock = await lockResource(participantIds);
     // Delete the file
     await deleteFile(user, fileId);
     // Patch the updated_at to force live stream evolution
-    await elUpdateElement({ _index: entity._index, internal_id: entityId, updated_at: now() });
+    await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now() });
     // Stream event generation
-    const eventFiles = [stixFileConverter(user, up)];
-    const eventInputs = [{ key: 'x_opencti_files', value: [eventFiles], operation: UPDATE_OPERATION_REMOVE }];
-    await storeUpdateEvent(user, entity, eventInputs);
+    // const eventFiles = [stixFileConverter(user, up)];
+    const eventInputs = [{ key: 'x_opencti_files', value: [up.uri], operation: UPDATE_OPERATION_REMOVE }];
+    const instance = mergeInstanceWithInputs(previous, eventInputs);
+    await storeUpdateEvent(user, previous, instance, `${up.name} remove from files`);
     return true;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
