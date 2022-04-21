@@ -37,6 +37,8 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
+import { toastGenericError } from "../../../../../utils/bakedToast";
+
 
 const styles = (theme) => ({
   container: {
@@ -157,7 +159,7 @@ class RemediationDetailsPopover extends Component {
         this.handleClose();
         this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation/`);
       },
-      onError: (err) => console.log('editRemediationMutationError', err),
+      onError: (err) => toastGenericError('Request Failed'),
     });
     this.setState({ onSubmit: true });
   }
