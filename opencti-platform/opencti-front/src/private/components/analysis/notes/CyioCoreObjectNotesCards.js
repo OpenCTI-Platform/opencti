@@ -116,6 +116,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
     const {
       t,
       cyioCoreObjectId,
+      fieldName,
       marginTop,
       data,
       height,
@@ -136,6 +137,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
         <CyioAddNotes
           cyioCoreObjectOrStixCoreRelationshipId={cyioCoreObjectId}
           typename={typename}
+          fieldName={fieldName}
           disableAdd={disableAdd}
           refreshQuery={refreshQuery}
           cyioCoreObjectOrStixCoreRelationshipNotes={
@@ -151,6 +153,8 @@ class CyioCoreObjectNotesCardsContainer extends Component {
                 <CyioCoreObjectOrCyioCoreRelationshipNoteCard
                   key={note.id}
                   refreshQuery={refreshQuery}
+                  fieldName={fieldName}
+                  typename={typename}
                   node={note}
                   cyioCoreObjectOrCyioCoreRelationshipId={cyioCoreObjectId}
                 />
@@ -170,6 +174,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
 CyioCoreObjectNotesCardsContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   marginTop: PropTypes.number,
+  fieldName: PropTypes.string,
   typename: PropTypes.string,
   disableAdd: PropTypes.bool,
   refreshQuery: PropTypes.func,

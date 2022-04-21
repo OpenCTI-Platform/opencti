@@ -15,21 +15,28 @@ import {
   deleteRiskLogEntryQuery,
   riskLogPredicateMap,
   attachToRiskLogEntryQuery,
+  selectRiskQuery,
   attachToRiskQuery,
   detachFromRiskQuery,
+  selectRiskResponseQuery,
   selectRiskResponseByIriQuery,
   selectOscalTaskByIriQuery,
   insertLogEntryAuthorsQuery,
   deleteLogEntryAuthorByIriQuery,
   selectLogEntryAuthorByIriQuery,
 } from './sparql-query.js';
+import {
+  selectPartyQuery,
+  selectPartyByIriQuery,
+  getReducer as getCommonReducer,
+} from '../../oscal-common/resolvers/sparql-query.js'
 
 const logEntryResolvers = {
   Query: {
-    assessmentLogEntries: async (_, args, { dbName, dataSources, selectMap }) => {},
-    assessmentLogEntry: async (_, {id}, { dbName, dataSources, selectMap }) => {},
-    riskLogEntries: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllRiskLogEntries(selectMap.getNode("node"), args.filters);
+    assessmentLogEntries: async (_, _args, {_dbName, _dataSources, _selectMap}) => { return null },
+    assessmentLogEntry: async (_, {_id}, {_dbName, _dataSources, _selectMap}) => { return null },
+    riskLogEntries: async (_, args, {dbName, dataSources, selectMap}) => {
+      const sparqlQuery = selectAllRiskLogEntries(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -47,8 +54,10 @@ const logEntryResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("RISK-LOG-ENTRY");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let logEntryList ;
         if (args.orderedBy !== undefined ) {
           logEntryList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -67,7 +76,7 @@ const logEntryResolvers = {
           }
 
           if (logEntry.id === undefined || logEntry.id == null ) {
-            console.log(`[DATA-ERROR] object ${logEntry.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${logEntry.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -76,6 +85,7 @@ const logEntryResolvers = {
             if (!filterValues(logEntry, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -88,14 +98,27 @@ const logEntryResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = logEntryList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > logEntryList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: logEntryList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -144,15 +167,86 @@ const logEntryResolvers = {
     },
   },
   Mutation: {
-    createAssessmentLogEntry: async ( _, {input}, {dbName, selectMap, dataSources} ) => {},
-    deleteAssessmentLogEntry: async ( _, {resultId, id}, {dbName, dataSources} ) => {},
-    editAssessmentLogEntry: async (_, {id, input}, {dbName, dataSources, selectMap}) => {},
+    createAssessmentLogEntry: async ( _, {_input}, {_dbName, _dataSources, _selectMap} ) => {},
+    deleteAssessmentLogEntry: async ( _, {_resultId, _id}, {_dbName, _dataSources} ) => {},
+    editAssessmentLogEntry: async (_, {_id, _input}, {_dbName, _dataSources, _selectMap}) => {},
     createRiskLogEntry: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
       let riskId, responses, authors;
-      if (input.logged_by !== undefined) authors = input.logged_by;
-      if (input.related_responses !== undefined) responses = input.related_responses;
-      if (input.risk_id !== undefined) riskId = input.risk_id;
+      if (input.risk_id !== undefined) {
+        riskId = input.risk_id;
+
+        // check that the Risk exists
+        const sparqlQuery = selectRiskQuery(riskId, ["id"]);
+        let response;
+        try {
+          response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Checking existence of Risk object",
+            singularizeSchema
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+        if (response.length === 0) throw new UserInputError(`Risk does not exist with ID ${riskId}`);
+      }
+      if (input.logged_by !== undefined) {
+        authors = input.logged_by;
+        for ( let author of authors) {
+          // check that the Party exists
+          const sparqlQuery = selectPartyQuery(author.party, ["id"]);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Checking existence of Party object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+
+          if (response.length === 0) throw new UserInputError(`Party does not exist with ID ${author.party}`);
+        }
+      }
+      if (input.related_responses !== undefined) {
+        responses = input.related_responses;
+        authors = input.related_responses;
+        for ( let responseId of responses) {
+          // check that the Risk exists
+          const sparqlQuery = selectRiskResponseQuery(responseId, ["id"]);
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Checking existence of Risk Response object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+
+          if (response.length === 0) throw new UserInputError(`Risk Response does not exist with ID ${responseId}`);
+        }
+      }
 
       // create the Risk Log Entry
       const {iri, id, query} = insertRiskLogEntryQuery(input);
@@ -291,6 +385,26 @@ const logEntryResolvers = {
       return id;
     },
     editRiskLogEntry: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectRiskLogEntryQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Risk Log Entry",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry",
@@ -315,7 +429,7 @@ const logEntryResolvers = {
     },
 },
   AssessmentLogEntry: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -357,9 +471,9 @@ const logEntryResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -399,9 +513,9 @@ const logEntryResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -441,7 +555,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    related_tasks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    related_tasks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.related_tasks_iri === undefined) return [];
       let iriArray = parent.related_tasks_iri;
       const results = [];
@@ -485,7 +599,7 @@ const logEntryResolvers = {
     },
   },
   RiskLogEntry: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -527,9 +641,9 @@ const logEntryResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -569,9 +683,9 @@ const logEntryResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -611,7 +725,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    logged_by: async (parent, args, {dbName, dataSources, selectMap}) => {
+    logged_by: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.logged_by_iri === undefined) return [];
       let iriArray = parent.logged_by_iri;
       const results = [];
@@ -653,7 +767,7 @@ const logEntryResolvers = {
         return [];
       }
     },
-    related_responses: async (parent, args, {dbName, dataSources, selectMap}) => {
+    related_responses: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.related_responses_iri === undefined) return [];
       let iriArray = parent.related_responses_iri;
       const results = [];
@@ -694,6 +808,70 @@ const logEntryResolvers = {
       } else {
         return [];
       }
+    },
+  },
+  LogEntryAuthor: {
+    party: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.party_iri === undefined) return null;
+      const reducer = getCommonReducer("PARTY");
+      let iri = parent.party_iri[0];
+      const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode("party"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Party",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined) return null;
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+      if (Array.isArray(response) && response.length > 0) {
+        return (reducer(response[0]));
+      }
+
+      return null;  
+    },
+    role: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.role_iri === undefined) return null;
+      const reducer = getCommonReducer("PARTY");
+      let iri = parent.role_iri[0];
+      const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode("party"));
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select Party",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined) return null;
+      // Handle reporting Stardog Error
+      if (typeof (response) === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: (response.body.message ? response.body.message : response.body),
+          error_code: (response.body.code ? response.body.code : 'N/A')
+        });
+      }
+      if (Array.isArray(response) && response.length > 0) {
+        return (reducer(response[0]));
+      }
+
+      return null;  
     },
   },
 }

@@ -93,6 +93,7 @@ class NetworkComponent extends Component {
                 <CyioCoreObjectExternalReferences
                   externalReferences={network.external_references}
                   cyioCoreObjectId={network.id}
+                  fieldName='external_references'
                   refreshQuery={refreshQuery}
                   typename={network.__typename}
                 />
@@ -105,6 +106,7 @@ class NetworkComponent extends Component {
               notes={network.notes}
               refreshQuery={refreshQuery}
               typename={network.__typename}
+              fieldName='notes'
               cyioCoreObjectOrCyioCoreRelationshipId={network.id}
             />
             {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>

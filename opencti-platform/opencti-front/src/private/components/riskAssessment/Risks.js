@@ -49,6 +49,7 @@ class Risks extends Component {
   }
 
   saveView() {
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -83,6 +84,10 @@ class Risks extends Component {
 
   handleRiskCreation() {
     this.setState({ openRiskCreation: true });
+  }
+
+  handleRefresh() {
+    this.props.history.push('/activities/risk assessment/risks');
   }
 
   handleDisplayEdit(selectedElements) {

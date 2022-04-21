@@ -19,10 +19,8 @@ import {
   insertSubjectQuery,
   selectSubjectQuery,
   selectSubjectByIriQuery,
-  attachToSubjectQuery,
   detachFromSubjectQuery,
   subjectPredicateMap,
-  getSubjectIriByIdQuery,
   insertSubjectsQuery,
 } from './sparql-query.js';
 
@@ -30,7 +28,7 @@ import {
 const subjectResolvers = {
   Query: {
     subjects: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllSubjects(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllSubjects(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -48,8 +46,10 @@ const subjectResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("SUBJECT");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let subjectList ;
         if (args.orderedBy !== undefined ) {
           subjectList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -67,8 +67,13 @@ const subjectResolvers = {
             continue
           }
 
-          if (subject.id === undefined || subject.id == null || subject.subject_ref == undefined) {
-            console.log(`[DATA-ERROR] object ${subject.iri} is missing required properties; skipping object.`);
+          if (subject.id === undefined || subject.id == null) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
+            continue;
+          }
+
+          if (subject.subject_ref === undefined) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'subject_ref'; skipping`);
             continue;
           }
 
@@ -77,6 +82,7 @@ const subjectResolvers = {
             if (!filterValues(subject, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -87,16 +93,30 @@ const subjectResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = subjectList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > subjectList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: subjectList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -144,7 +164,7 @@ const subjectResolvers = {
       }
     },
     assessmentSubjects: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllAssessmentSubjects(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllAssessmentSubjects(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -162,8 +182,10 @@ const subjectResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ASSESSMENT-SUBJECT");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let subjectList ;
         if (args.orderedBy !== undefined ) {
           subjectList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -182,7 +204,7 @@ const subjectResolvers = {
           }
 
           if (subject.id === undefined || subject.id == null ) {
-            console.log(`[DATA-ERROR] object ${subject.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${subject.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -191,6 +213,7 @@ const subjectResolvers = {
             if (!filterValues(subject, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -201,16 +224,30 @@ const subjectResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = subjectList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > subjectList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: subjectList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -359,22 +396,26 @@ const subjectResolvers = {
       return id;
     },
     editSubject: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the risk response exists
-      const sparqlQuery = selectSubjectQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Subject",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectSubjectQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Subject",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Subject-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Subject",
@@ -468,7 +509,7 @@ const subjectResolvers = {
         try {
           await dataSources.Stardog.create({
             dbName,
-            queryId: "Add facet to Characterization",
+            queryId: "Add Subject to Assessment Subject",
             sparqlQuery: includeAttachQuery
           });
         } catch (e) {
@@ -556,22 +597,26 @@ const subjectResolvers = {
       return id;
     },
     editAssessmentSubject: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the risk response exists
-      const sparqlQuery = selectAssessmentSubjectQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Assessment Subject",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectAssessmentSubjectQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Assessment Subject",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject",
@@ -595,9 +640,9 @@ const subjectResolvers = {
     },
   },
   Subject: {
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -637,9 +682,9 @@ const subjectResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -679,10 +724,10 @@ const subjectResolvers = {
         return [];
       }
     },    
-    subject_ref: async (parent, args, {dbName, dataSources, selectMap}) => {
+    subject_ref: async (parent, _, {dbName, dataSources, selectMap }) => {
       if (parent.subject_ref_iri === undefined) return null;
       let iri = parent.subject_ref_iri[0];
-      const sparqlQuery = selectObjectByIriQuery(iri, parent.subject_type, null);
+      const sparqlQuery = selectObjectByIriQuery(iri, parent.subject_type, selectMap.getNode("subject_ref"));
       let response;
       try {
         response = await dataSources.Stardog.queryById({
@@ -712,9 +757,9 @@ const subjectResolvers = {
     },    
   },
   AssessmentSubject: {
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -754,9 +799,9 @@ const subjectResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -796,7 +841,7 @@ const subjectResolvers = {
         return [];
       }
     },    
-    include_subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+    include_subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.include_subjects_iri === undefined) return [];
       let iriArray = parent.include_subjects_iri;
       const results = [];
@@ -838,7 +883,7 @@ const subjectResolvers = {
         return [];
       }
     },
-    exclude_subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+    exclude_subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.exclude_subjects_iri === undefined) return [];
       let iriArray = parent.exclude_subjects_iri;
       const results = [];

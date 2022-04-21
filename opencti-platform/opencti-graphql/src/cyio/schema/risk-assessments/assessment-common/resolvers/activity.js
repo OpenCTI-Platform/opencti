@@ -19,10 +19,8 @@ import {
   selectAllAssociatedActivities,
   deleteAssociatedActivityQuery,
   attachToAssociatedActivityQuery,
-  detachFromAssociatedActivityQuery,
   selectAssessmentSubjectByIriQuery,
   associatedActivityPredicateMap,
-  selectSubjectByIriQuery,
   deleteAssessmentSubjectByIriQuery,
 } from './sparql-query.js';
 import {
@@ -34,7 +32,7 @@ import {
 const activityResolvers = {
   Query: {
     activities: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllActivities(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllActivities(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -52,8 +50,10 @@ const activityResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ACTIVITY");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let activityList ;
         if (args.orderedBy !== undefined ) {
           activityList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -72,7 +72,7 @@ const activityResolvers = {
           }
 
           if (activity.id === undefined || activity.id == null ) {
-            console.log(`[DATA-ERROR] object ${activity.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${activity.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -81,6 +81,7 @@ const activityResolvers = {
             if (!filterValues(activity, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -93,14 +94,27 @@ const activityResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = activityList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > activityList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: activityList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -148,7 +162,7 @@ const activityResolvers = {
       }
     },
     associatedActivities: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllAssociatedActivities(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllAssociatedActivities(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -166,8 +180,10 @@ const activityResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ASSOCIATED-ACTIVITY");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let assocActivityList ;
         if (args.orderedBy !== undefined ) {
           assocActivityList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -186,7 +202,7 @@ const activityResolvers = {
           }
 
           if (activity.id === undefined || activity.id == null ) {
-            console.log(`[DATA-ERROR] object ${activity.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${activity.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -195,6 +211,7 @@ const activityResolvers = {
             if (!filterValues(activity, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -207,14 +224,27 @@ const activityResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = assocActivityList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > assocActivityList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: assocActivityList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -359,21 +389,26 @@ const activityResolvers = {
       return id;
     },
     editActivity: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the Activity exists
-      const sparqlQuery = selectActivityQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Activity",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
+      const sparqlQuery = selectActivityQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Activity",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Activity-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Activity",
@@ -531,21 +566,26 @@ const activityResolvers = {
       return id;
     },
     editAssociatedActivity: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the Activity exists
-      const sparqlQuery = selectAssociatedActivityQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Associated Activity",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
+      const sparqlQuery = selectAssociatedActivityQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Associated Activity",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#AssociatedActivity-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#AssociatedActivity",
@@ -576,8 +616,8 @@ const activityResolvers = {
   },
   // field-level resolvers
   Activity: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.label_iri === undefined) return [];
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -618,9 +658,9 @@ const activityResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -660,9 +700,9 @@ const activityResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -702,7 +742,7 @@ const activityResolvers = {
         return [];
       }
     },
-    responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
+    responsible_roles: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.responsible_roles_iri === undefined) return [];
       let iriArray = parent.responsible_roles_iri;
       const results = [];
@@ -746,9 +786,9 @@ const activityResolvers = {
     },
   },
   AssociatedActivity: {
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -788,9 +828,9 @@ const activityResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -830,7 +870,7 @@ const activityResolvers = {
         return [];
       }
     },
-    responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
+    responsible_roles: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.responsible_roles_iri === undefined) return [];
       let iriArray = parent.responsible_roles_iri;
       const results = [];
@@ -872,7 +912,7 @@ const activityResolvers = {
         return [];
       }
     },
-    subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];

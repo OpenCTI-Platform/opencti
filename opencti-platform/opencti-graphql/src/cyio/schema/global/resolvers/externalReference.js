@@ -14,7 +14,7 @@ import {
 const cyioExternalReferenceResolvers = {
   Query: {
     cyioExternalReferences: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllExternalReferences(selectMap.getNode("node"));
+      const sparqlQuery = selectAllExternalReferences(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -32,8 +32,10 @@ const cyioExternalReferenceResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("EXTERNAL-REFERENCE");
-        let limit = (args.limit === undefined ? response.length : args.limit) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.limit === undefined ? response.length : args.limit) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let externalRefList ;
         if (args.orderedBy !== undefined ) {
           externalRefList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -52,7 +54,7 @@ const cyioExternalReferenceResolvers = {
           }
 
           if (externalRef.id === undefined || externalRef.id == null ) {
-            console.log(`[DATA-ERROR] object ${externalRef.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${externalRef.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -61,6 +63,7 @@ const cyioExternalReferenceResolvers = {
             if (!filterValues(externalRef, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -73,14 +76,27 @@ const cyioExternalReferenceResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = externalRefList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.limit > externalRefList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: externalRefList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -156,6 +172,26 @@ const cyioExternalReferenceResolvers = {
       return id;
     },
     editCyioExternalReference: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectExternalReferenceQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select ExternalReference",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://darklight.ai/ns/common#ExternalReference-${id}`,
         "http://darklight.ai/ns/common#ExternalReference",

@@ -291,6 +291,7 @@ class RequiredResourceLineComponent extends Component {
               <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                 <CyioCoreobjectExternalReferences
                   typename={requiredResourceData.__typename}
+                  fieldName='links'
                   externalReferences={requiredResourceData.links}
                   cyioCoreObjectId={remediationId}
                   refreshQuery={refreshQuery}
@@ -300,6 +301,7 @@ class RequiredResourceLineComponent extends Component {
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   typename={requiredResourceData.__typename}
                   notes={requiredResourceData.remarks}
+                  fieldName='remarks'
                   cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                   marginTop='0px'
                   refreshQuery={refreshQuery}

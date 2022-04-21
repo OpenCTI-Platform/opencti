@@ -19,6 +19,7 @@ import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import ItemMarking from '../../../../components/ItemMarking';
+import Typography from '@material-ui/core/Typography';
 
 const styles = (theme) => ({
   avatar: {
@@ -76,7 +77,6 @@ class CyioAddNotesLinesContainer extends Component {
       (n) => n.id,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
-    console.log('cyioAddNotesLines', cyioCoreObjectOrStixCoreRelationshipNotes);
     const alreadyAdded = entityNotesIds.includes(note.id);
     if (event.target.checked && !alreadyAdded) {
       this.state.addNotes.push(note);
@@ -88,15 +88,22 @@ class CyioAddNotesLinesContainer extends Component {
   }
 
   render() {
-    const { classes, data, cyioCoreObjectOrStixCoreRelationshipNotes } = this.props;
+    const {
+      classes,
+      data,
+      cyioCoreObjectOrStixCoreRelationshipNotes,
+      t,
+    } = this.props;
     const entityNotesIds = map(
       (n) => n.id,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     );
-    const filteredValue = filter((value) => (value.node.abstract.toLowerCase()).includes(this.props.search), data.cyioNotes.edges);
+    const filteredValue = data.cyioNotes
+      ? filter((value) => (value.node.abstract.toLowerCase()).includes(this.props.search), data.cyioNotes.edges)
+      : [];
     return (
       <List>
-        {filteredValue.map((noteNode) => {
+        {filteredValue.length > 0 ? filteredValue.map((noteNode) => {
           const note = noteNode.node;
           const alreadyAdded = entityNotesIds.includes(note.id);
           const noteId = note.external_id ? `(${note.external_id})` : '';
@@ -140,7 +147,11 @@ class CyioAddNotesLinesContainer extends Component {
               </div> */}
             </ListItem>
           );
-        })}
+        }) : (
+          <Typography style={{ padding: '20px 0', textAlign: 'center' }}>
+            {t('No Entries')}
+          </Typography>
+        )}
       </List>
     );
   }

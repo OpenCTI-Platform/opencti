@@ -11,7 +11,6 @@ import {
   deleteResponsiblePartyByIriQuery,
   selectResponsiblePartyByIriQuery,
   getReducer as getCommonReducer,
-  selectObjectByIriQuery,
 } from '../../oscal-common/resolvers/sparql-query.js';
 import {
   getReducer, 
@@ -33,7 +32,7 @@ import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 const oscalTaskResolvers = {
   Query: {
     oscalTasks: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllOscalTasks(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllOscalTasks(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -51,8 +50,10 @@ const oscalTaskResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("TASK");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let taskList ;
         if (args.orderedBy !== undefined ) {
           taskList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -71,7 +72,7 @@ const oscalTaskResolvers = {
           }
 
           if (task.id === undefined || task.id == null ) {
-            console.log(`[DATA-ERROR] object ${task.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${task.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -80,6 +81,7 @@ const oscalTaskResolvers = {
             if (!filterValues(task, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -92,14 +94,27 @@ const oscalTaskResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = taskList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > taskList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: taskList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -351,6 +366,26 @@ const oscalTaskResolvers = {
       return id;
     },
     editOscalTask: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectOscalTaskQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select OSCAL Task",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Task",
@@ -375,7 +410,7 @@ const oscalTaskResolvers = {
   },
   // field-level resolvers
   OscalTask: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -417,9 +452,9 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -459,9 +494,9 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -502,7 +537,7 @@ const oscalTaskResolvers = {
       }
     },
     // tasks: async (parent, args, {dbName, dataSources, selectMap}) => {},
-    task_dependencies: async (parent, args, {dbName, dataSources, selectMap}) => {
+    task_dependencies: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.task_dependencies_iri === undefined) return [];
       let iriArray = parent.task_dependencies_iri;
       const results = [];
@@ -544,7 +579,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    associated_activities: async (parent, args, {dbName, dataSources, selectMap}) => {
+    associated_activities: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.associated_activities_iri === undefined) return [];
       let iriArray = parent.associated_activities_iri;
       const results = [];
@@ -586,7 +621,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
@@ -628,7 +663,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    responsible_roles: async (parent, args, {dbName, dataSources, selectMap}) => {
+    responsible_roles: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.responsible_roles_iri === undefined) return [];
       let iriArray = parent.responsible_roles_iri;
       const results = [];
@@ -670,7 +705,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    timing: async (parent, args, {dbName, dataSources, selectMap}) => {
+    timing: async (parent, _, ) => {
       const id = generateId( );
       return {
         id: `${id}`,

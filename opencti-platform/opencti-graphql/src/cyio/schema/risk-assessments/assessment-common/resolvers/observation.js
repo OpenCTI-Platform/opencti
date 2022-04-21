@@ -26,7 +26,7 @@ import {
 const observationResolvers = {
   Query: {
     observations: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllObservations(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllObservations(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -44,8 +44,10 @@ const observationResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("OBSERVATION");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let observationList ;
         if (args.orderedBy !== undefined ) {
           observationList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -64,7 +66,7 @@ const observationResolvers = {
           }
 
           if (observation.id === undefined || observation.id == null ) {
-            console.log(`[DATA-ERROR] object ${observation.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${observation.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -73,6 +75,7 @@ const observationResolvers = {
             if (!filterValues(observation, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -85,14 +88,27 @@ const observationResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = observationList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > observationList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: observationList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -312,6 +328,26 @@ const observationResolvers = {
       return id;
     },
     editObservation: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectObservationQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Observation",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Observation-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Observation",
@@ -336,7 +372,7 @@ const observationResolvers = {
   },
   // field-level resolvers
   Observation: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -378,9 +414,9 @@ const observationResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -420,9 +456,9 @@ const observationResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -462,7 +498,7 @@ const observationResolvers = {
         return [];
       }
     },
-    origins:async (parent, args, {dbName, dataSources, selectMap}) => {
+    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
@@ -504,7 +540,7 @@ const observationResolvers = {
         return [];
       }
     },
-    subjects: async (parent, args, {dbName, dataSources, selectMap}) => {
+    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
@@ -546,7 +582,7 @@ const observationResolvers = {
         return [];
       }
     },
-    relevant_evidence: async (parent, args, {dbName, dataSources, selectMap}) => {
+    relevant_evidence: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.relevant_evidence_iri === undefined) return [];
       let iriArray = parent.relevant_evidence_iri;
       const results = [];

@@ -51,6 +51,7 @@ class Network extends Component {
   }
 
   saveView() {
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -81,6 +82,10 @@ class Network extends Component {
 
   handleNetworkCreation() {
     this.setState({ openNetworkCreation: true });
+  }
+
+  handleRefresh() {
+    this.props.history.push('/defender HQ/assets/network');
   }
 
   handleDisplayEdit(selectedElements) {

@@ -64,6 +64,7 @@ class CyioCoreObjectExternalReferences extends Component {
       t,
       classes,
       disableAdd,
+      fieldName,
       cyioCoreObjectId,
       refreshQuery,
       typename,
@@ -83,6 +84,7 @@ class CyioCoreObjectExternalReferences extends Component {
             // externalReference.externalReference
           }
           disableAdd={disableAdd}
+          fieldName={fieldName}
           refreshQuery={refreshQuery}
           typename={typename}
         />
@@ -92,6 +94,8 @@ class CyioCoreObjectExternalReferences extends Component {
             externalReferences.map((externalReference) => (
               <CyioCoreObjectExternalReferencesLines
                 key={externalReference.id}
+                fieldName={fieldName}
+                typename={typename}
                 cyioCoreObjectId={cyioCoreObjectId}
                 refreshQuery={refreshQuery}
                 externalReference={externalReference}
@@ -132,6 +136,7 @@ class CyioCoreObjectExternalReferences extends Component {
 
 CyioCoreObjectExternalReferences.propTypes = {
   externalReferences: PropTypes.array,
+  fieldName: PropTypes.string,
   typename: PropTypes.string,
   cyioCoreObjectId: PropTypes.string,
   refreshQuery: PropTypes.func,

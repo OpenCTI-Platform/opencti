@@ -1,5 +1,5 @@
 import {riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
-import {objectMap, selectObjectIriByIdQuery} from '../../../global/global-utils.js';
+import {selectObjectIriByIdQuery} from '../../../global/global-utils.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
@@ -8,7 +8,6 @@ import {
   deleteOriginQuery,
   insertOriginQuery,
   selectOriginQuery,
-  selectOriginByIriQuery,
   attachToOriginQuery,
   detachFromOriginQuery,
   insertActorsQuery,
@@ -20,7 +19,7 @@ import {
 const originResolvers = {
   Query: {
     origins: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllOrigins(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllOrigins(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -38,8 +37,10 @@ const originResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ORIGIN");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let originList ;
         if (args.orderedBy !== undefined ) {
           originList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -58,7 +59,7 @@ const originResolvers = {
           }
 
           if (origin.id === undefined || origin.id == null ) {
-            console.log(`[DATA-ERROR] object ${origin.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${origin.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -67,6 +68,7 @@ const originResolvers = {
             if (!filterValues(origin, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -79,14 +81,27 @@ const originResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = originList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > originList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: originList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -289,22 +304,26 @@ const originResolvers = {
       return id;
     },
     editOrigin: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the Origin exists
-      const sparqlQuery = selectOriginQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Origin",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectOriginQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Origin",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Origin-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Origin",
@@ -329,7 +348,7 @@ const originResolvers = {
 
   },
   Origin: {
-		origin_actors: async (parent, args, {dbName, dataSources, selectMap}) => {
+		origin_actors: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origin_actors_iri === undefined) return [];
       let iriArray = parent.origin_actors_iri;
       const results = [];
@@ -376,7 +395,7 @@ const originResolvers = {
         return [];
       }
 		},
-    related_tasks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    related_tasks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.related_tasks_iri === undefined) return [];
       let iriArray = parent.related_tasks_iri;
       const results = [];

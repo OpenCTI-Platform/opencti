@@ -43,7 +43,7 @@ import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
 const hardwareResolvers = {
   Query: {
     hardwareAssetList: async (_, args, {dbName, dataSources, selectMap}) => {
-      const sparqlQuery = selectAllHardware(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllHardware(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -61,8 +61,10 @@ const hardwareResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("HARDWARE-DEVICE");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0
         let hardwareList ;
         if (args.orderedBy !== undefined ) {
           hardwareList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -80,8 +82,8 @@ const hardwareResolvers = {
             continue
           }
 
-          if (hardware.id === undefined || hardware.id == null) {
-            console.log(`[DATA-ERROR] object ${hardware.iri} is missing required properties; skipping object.`);
+          if (hardware.id === undefined) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${hardware.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -90,6 +92,7 @@ const hardwareResolvers = {
             if (!filterValues(hardware, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -100,16 +103,30 @@ const hardwareResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = hardwareList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > hardwareList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: hardwareList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -159,7 +176,7 @@ const hardwareResolvers = {
   },
   Mutation: {
     createHardwareAsset: async (_, {input}, {dbName, selectMap, dataSources}) => {
-      // remove input fields with null or empty values
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
           delete input[key];
@@ -169,6 +186,8 @@ const hardwareResolvers = {
           delete input[key];
         }
       }
+      // END WORKAROUND
+
       let ports, ipv4, ipv6, mac, connectedNetwork, installedOS, installedSoftware;
       if (input.ports !== undefined) {
         ports = input.ports
@@ -401,8 +420,12 @@ const hardwareResolvers = {
       return id;
     },
     editHardwareAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
-      // check that the Hardware asset exists
-      const sparqlQuery = selectHardwareQuery(id, null );
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectHardwareQuery(id, editSelect );
       let response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
@@ -410,6 +433,13 @@ const hardwareResolvers = {
         singularizeSchema
       })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://scap.nist.gov/ns/asset-identification#Hardware-${id}`,
         "http://scap.nist.gov/ns/asset-identification#Hardware",
@@ -421,12 +451,12 @@ const hardwareResolvers = {
         sparqlQuery: query,
         queryId: "Update Hardware Asset"
       });
-      const select = selectHardwareQuery(id, selectMap.getNode("editHardwareAsset"));
+      const selectQuery = selectHardwareQuery(id, selectMap.getNode("editHardwareAsset"));
       let result;
       try {
         result = await dataSources.Stardog.queryById({
           dbName,
-          sparqlQuery: select,
+          sparqlQuery: selectQuery,
           queryId: "Select Hardware asset",
           singularizeSchema
         });
@@ -440,7 +470,7 @@ const hardwareResolvers = {
   },
   // field-level query
   HardwareAsset: {
-    installed_software: async (parent, args, {dbName, dataSources, selectMap}) => {
+    installed_software: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.installed_sw_iri === undefined) return [];
       let iriArray = parent.installed_sw_iri;
       const results = [];
@@ -481,12 +511,12 @@ const hardwareResolvers = {
         return [];
       }
     },
-    installed_operating_system: async (parent, args, {dbName, dataSources, selectMap}) => {
+    installed_operating_system: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.installed_os_iri === undefined) return null;
       var iri = parent.installed_os_iri
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
-          console.log(`[WARNING] ${parent.parent_iri} has ${parent.parent_iri.length} values: ${parent.installed_os_iri}`);
+          console.log(`[CYIO] (${dbName}) CONSTRAINT-VIOLATION: ${parent.iri} 'installed_operating_system' violates maxCount constraint`);
           iri = parent.installed_os_iri[0]
         }
       } else {
@@ -520,7 +550,7 @@ const hardwareResolvers = {
         }
       }
     },
-    ipv4_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+    ipv4_address: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -560,7 +590,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    ipv6_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+    ipv6_address: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ip_addr_iri === undefined) return [];
       let iriArray = parent.ip_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -600,7 +630,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    mac_address: async (parent, args, {dbName, dataSources, selectMap}) => {
+    mac_address: async (parent, _, {dbName, dataSources, }) => {
       if (parent.mac_addr_iri === undefined) return [];
       let iriArray = parent.mac_addr_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -646,7 +676,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    ports: async (parent, args, {dbName, dataSources, selectMap}) => {
+    ports: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ports_iri === undefined) return [];
       let iriArray = parent.ports_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -685,12 +715,12 @@ const hardwareResolvers = {
         return [];
       }
     },
-    connected_to_network: async (parent, args, {dbName, dataSources, selectMap}) => {
+    connected_to_network: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.conn_network_iri === undefined) return null;
       let iri = parent.conn_network_iri;
       if (Array.isArray(iri) && iri.length > 0) {
         if (iri.length > 1) {
-          console.log(`[WARNING] ${parent.conn_network_iri} has ${iri.length} values: ${parent.conn_network_iri}`);
+          console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${parent.iri} 'connected_to_network' violates maxCount constraint`);
           iri = parent.conn_network_iri[0]
         }
       } else {
@@ -719,7 +749,7 @@ const hardwareResolvers = {
         }
       }
     },
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -759,7 +789,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+    external_references: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.ext_ref_iri === undefined) return [];
       let iriArray = parent.ext_ref_iri;
       const results = [];
@@ -799,7 +829,7 @@ const hardwareResolvers = {
         return [];
       }
     },
-    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+    notes: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.notes_iri === undefined) return [];
       let iriArray = parent.notes_iri;
       const results = [];

@@ -13,6 +13,7 @@ import {
   selectAllLocations,
   deleteLocationQuery,
   locationPredicateMap,
+  selectIpAddressByIriQuery,
 } from './sparql-query.js';
 import {
   selectLabelByIriQuery,
@@ -20,6 +21,7 @@ import {
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
 } from '../../global/resolvers/sparql-query.js';
+import { getReducer as getIpAddrReducer} from '../computing-device/sparql-query.js';
 
 const assetCommonResolvers = {
   Query: {
@@ -43,8 +45,10 @@ const assetCommonResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let assetList ;
         if (args.orderedBy !== undefined ) {
           assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -63,7 +67,7 @@ const assetCommonResolvers = {
           }
 
           if (asset.id === undefined || asset.id == null ) {
-            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'`);
             continue;
           }
 
@@ -72,6 +76,7 @@ const assetCommonResolvers = {
             if (!filterValues(asset, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -84,14 +89,27 @@ const assetCommonResolvers = {
             limit-- ;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = assetList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > assetList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: assetList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -162,8 +180,10 @@ const assetCommonResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         // build array of edges
         const edges = [];
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let assetList ;
         if (args.orderedBy !== undefined ) {
           assetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -182,7 +202,7 @@ const assetCommonResolvers = {
           }
 
           if (asset.id === undefined || asset.id == null ) {
-            console.log(`[DATA-ERROR] object ${asset.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${asset.iri} missing field 'id'`);
             continue;
           }
 
@@ -191,6 +211,7 @@ const assetCommonResolvers = {
             if (!filterValues(asset, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -203,14 +224,27 @@ const assetCommonResolvers = {
             limit-- ;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = assetList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > assetList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: assetList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -261,7 +295,7 @@ const assetCommonResolvers = {
       }
     },
     assetLocationList: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllLocations(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllLocations(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -279,8 +313,10 @@ const assetCommonResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ASSET-LOCATION");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount,limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let locationList ;
         if (args.orderedBy !== undefined ) {
           locationList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -299,7 +335,7 @@ const assetCommonResolvers = {
           }
 
           if (location.id === undefined || location.id == null ) {
-            console.log(`[DATA-ERROR] object ${location.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${location.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -308,6 +344,7 @@ const assetCommonResolvers = {
             if (!filterValues(location, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -321,13 +358,26 @@ const assetCommonResolvers = {
           }
         }
         if (edges.length === 0 ) return null;
+        // Need to adjust limitSize in case filters were used
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = locationList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > locationList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: locationList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -405,7 +455,7 @@ const assetCommonResolvers = {
       });
     },
     createAssetLocation: async (_, {input}, {dbName, selectMap, dataSources}) => {
-      // remove input fields with null or empty values
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
       for (const [key, value] of Object.entries(input)) {
         if (Array.isArray(input[key]) && input[key].length === 0) {
           delete input[key];
@@ -415,6 +465,8 @@ const assetCommonResolvers = {
           delete input[key];
         }
       }
+      // END WORKAROUND
+
       const {id, query} = insertLocationQuery(input);
       await dataSources.Stardog.create({
         dbName,
@@ -441,6 +493,25 @@ const assetCommonResolvers = {
       return id;
     },
     editAssetLocation: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectLocationQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Asset Location",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
       const query = updateQuery(
           `http://darklight.ai/ns/common#CivicLocation-${id}`,
           "http://darklight.ai/ns/common#CivicLocation",
@@ -480,7 +551,9 @@ const assetCommonResolvers = {
     firewall: 'firewall',
     guidance: 'guidance',
     hypervisor: 'hypervisor',
+    laptop: 'laptop',
     load_balancer: 'load-balancer',
+    mobile_device: 'mobile-device',
     network_device: 'network-device',
     network: 'network',
     operating_system: 'operating-system',
@@ -512,7 +585,7 @@ const assetCommonResolvers = {
     __resolveType: ( item ) => {
       return objectTypeMapping[item.entity_type];
     },
-    locations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    locations: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -551,7 +624,7 @@ const assetCommonResolvers = {
         return [];
       }
     },
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.labels_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -590,7 +663,7 @@ const assetCommonResolvers = {
         return [];
       }
     },
-    external_references: async (parent, args, {dbName, dataSources, selectMap}) => {
+    external_references: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.ext_ref_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -629,7 +702,7 @@ const assetCommonResolvers = {
         return [];
       }
     },
-    notes: async (parent, args, {dbName, dataSources, selectMap}) => {
+    notes: async (parent, _, {dbName, dataSources, selectMap}) => {
       let iriArray = parent.notes_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -698,6 +771,82 @@ const assetCommonResolvers = {
     __resolveType: ( item ) => {
       return objectTypeMapping[item.entity_type];
     }
+  },
+  IpAddressRange: {
+    starting_ip_address: async (parent, _, {dbName, dataSources, selectMap},) => {
+      if (parent.start_addr_iri === undefined && parent.starting_ip_address !== undefined) return parent.starting_ip_address;
+      if (parent.start_addr_iri === undefined) {
+        console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${parent.iri} missing field 'starting_ip_address'`);
+        return null;
+      }
+      // retrieve the IPAddress object
+      let addrType;
+      if (parent.start_addr_iri.includes('IpV4Address')) {
+        addrType = 'IPV4-ADDR';
+      }
+      if (parent.start_addr_iri.includes('IpV6Address')) {
+        addrType = 'IPV6-ADDR';
+      }
+
+      let selectList = selectMap.getNode('starting_ip_address');
+      let sparqlQuery = selectIpAddressByIriQuery(parent.start_addr_iri, selectList === undefined ? null : selectList );
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select IP Address",
+        singularizeSchema
+      })
+      if (response === undefined) return [];
+      if (Array.isArray(response) && response.length > 0) {
+        let reducer = getIpAddrReducer(addrType);
+        return (reducer(response[0]));
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        }
+      }
+    },
+    ending_ip_address: async (parent, _, {dbName, dataSources, selectMap},) => {
+      if (parent.ending_addr_iri === undefined && parent.ending_ip_address !== undefined) return parent.ending_ip_address;
+      if (parent.ending_addr_iri === undefined) {
+        console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${parent.iri} missing field 'ending_ip_address'`);
+        return null;
+      }
+      // retrieve the IPAddress object
+      let addrType, selectList;
+      if (parent.start_addr_iri.includes('IpV4Address')) {
+        addrType = 'IPV4-ADDR';
+      }
+      if (parent.start_addr_iri.includes('IpV6Address')) {
+        addrType = 'IPV6-ADDR';
+      }
+
+      selectList = selectMap.getNode('ending_ip_address');
+      let sparqlQuery = selectIpAddressByIriQuery(parent.start_addr_iri, selectList === undefined ? null : selectList );
+      const response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select IP Address",
+        singularizeSchema
+      })
+      if (response === undefined) return [];
+      if (Array.isArray(response) && response.length > 0) {
+        let reducer = getIpAddrReducer(addrType);
+        return (reducer(response[0]));
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        }
+      }
+    },
   },
   IpAddress: {
     __resolveType: ( item ) => {

@@ -1,6 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
+import { calculateRiskLevel } from '../../riskUtils.js';
 import {
   selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
@@ -26,7 +27,7 @@ import {
 const riskResolvers = {
   Query: {
     risks: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllRisks(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllRisks(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -44,8 +45,10 @@ const riskResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("RISK");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let riskList ;
         if (args.orderedBy !== undefined ) {
           riskList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -64,26 +67,21 @@ const riskResolvers = {
           }
 
           if (risk.id === undefined || risk.id == null ) {
-            console.log(`[DATA-ERROR] object ${risk.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
             continue;
           }
 
           if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-            console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
             risk.risk_status = risk.risk_status.replace('_', '-');
           }
 
           // calculate the risk level
           risk.risk_level = 'unknown';
-          if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
-            let riskLevel;
-            let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
-            if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
-            if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
-            if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
-            if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
-            if (score == 0) riskLevel = 'very-low';
-            risk.risk_score = score;
+          if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
+            // calculate the risk level
+            const {riskLevel, riskScore} = calculateRiskLevel(risk);
+            risk.risk_score = riskScore;
             risk.risk_level = riskLevel;
 
             // clean up
@@ -100,6 +98,7 @@ const riskResolvers = {
             if (!filterValues(risk, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -110,16 +109,30 @@ const riskResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = riskList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > riskList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: riskList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -156,15 +169,15 @@ const riskResolvers = {
         let risk = response[0];
 
         if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-          console.log(`[DATA-ERROR] Risk object ${risk.id} has invalid value of '${risk.risk_status}' for risk_status; fixing issue.`);
+          console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
           risk.risk_status = risk.risk_status.replace('_', '-');
         }
 
         // calculate the risk level
         risk.risk_level = 'unknown';
-        if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
+        if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
           let riskLevel;
-          let score = risk.cvss3_base_score !== undefined ? parseFloat(risk.cvss3_base_score) : parseFloat(risk.cvss2_base_score) ;
+          let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
           if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
           if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
           if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
@@ -286,21 +299,26 @@ const riskResolvers = {
       return id;
     },
     editRisk: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the risk exists
-      const sparqlQuery = selectRiskQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Risk",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
+      const sparqlQuery = selectRiskQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Risk",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Risk",
@@ -326,7 +344,7 @@ const riskResolvers = {
   },
   // field-level resolvers
   Risk: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -336,7 +354,7 @@ const riskResolvers = {
           if (iri === undefined || !iri.includes('Label')) {
             continue;
           }
-          const sparqlQuery = selectLabelByIriQuery(iri, null);
+          const sparqlQuery = selectLabelByIriQuery(iri, selectMap.getNode("labels"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -368,9 +386,9 @@ const riskResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -378,7 +396,7 @@ const riskResolvers = {
           if (iri === undefined || !iri.includes('ExternalReference')) {
             continue;
           }
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, null);
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -410,9 +428,9 @@ const riskResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -420,7 +438,7 @@ const riskResolvers = {
           if (iri === undefined || !iri.includes('Note')) {
             continue;
           }
-          const sparqlQuery = selectNoteByIriQuery(iri, null);
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -452,7 +470,7 @@ const riskResolvers = {
         return [];
       }
     },
-    origins:async (parent, args, {dbName, dataSources, selectMap}) => {
+    origins: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
@@ -494,11 +512,12 @@ const riskResolvers = {
         return [];
       }
     },
-    threats: async (parent, args, {dbName, dataSources, selectMap}) => {
+    threats: async (parent, _, ) => {
+      if (parent.threats_iri === undefined) return [];
       // this is a No-Op for MVP until we get threat intelligence integrated 
       return [];
     },
-    characterizations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    characterizations: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.characterizations_iri === undefined) return [];
       let iriArray = parent.characterizations_iri;
       const results = [];
@@ -540,7 +559,7 @@ const riskResolvers = {
         return [];
       }
     },
-    mitigating_factors: async (parent, args, {dbName, dataSources, selectMap}) => {
+    mitigating_factors: async (parent, _, {dbName, dataSources, }) => {
       if (parent.mitigating_factors_iri === undefined) return [];
       let iriArray = parent.mitigating_factors_iri;
       const results = [];
@@ -582,7 +601,7 @@ const riskResolvers = {
         return [];
       }
     },
-    remediations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    remediations: async (parent, _, {dbName, dataSources, }) => {
       if (parent.remediations_iri === undefined) return [];
       let iriArray = parent.remediations_iri;
       const results = [];
@@ -624,13 +643,16 @@ const riskResolvers = {
         return [];
       }
     },
-    risk_log: async (parent, args, {dbName, dataSources, selectMap}) => {
+    risk_log: async (parent, args, {dbName, dataSources, }) => {
       if (parent.risk_log_iri === undefined) return null;
       let iriArray = parent.risk_log_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
-        const reducer = getAssessmentReducer("RISK-LOG-ENTRY");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        const reducer = getReducer("RISK-LOG-ENTRY");
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('RiskLogEntry')) continue ;
           const sparqlQuery = selectRiskLogEntryByIriQuery(iri, null);
@@ -655,6 +677,7 @@ const riskResolvers = {
               }
               edges.push(edge);
               limit--;
+              if (limit === 0) break;
             }
           }
           else {
@@ -667,14 +690,27 @@ const riskResolvers = {
             }
           }  
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
-            globalCount: iriArray.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -682,13 +718,16 @@ const riskResolvers = {
         return null;
       }
     },
-    related_observations: async (parent, args, {dbName, dataSources, selectMap}) => {
+    related_observations: async (parent, args, {dbName, dataSources, }) => {
       if (parent.related_observations_iri === undefined) return null;
       let iriArray = parent.related_observations_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getReducer("OBSERVATION");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
           const sparqlQuery = selectObservationByIriQuery(iri, null);
@@ -713,6 +752,7 @@ const riskResolvers = {
               }
               edges.push(edge);
               limit--;
+              if (limit === 0) break;
             }
           }
           else {
@@ -725,14 +765,27 @@ const riskResolvers = {
             }
           }  
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
-            globalCount: iriArray.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }

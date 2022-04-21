@@ -1,6 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
+import { calculateRiskLevel } from '../../riskUtils.js';
 import {
   getReducer, 
   insertPOAMQuery,
@@ -24,6 +25,9 @@ import {
   selectRiskByIriQuery,
 } from '../../assessment-common/resolvers/sparql-query.js';
 import {
+  selectLocationByIriQuery,
+  selectPartyByIriQuery,  
+  selectResponsiblePartyByIriQuery,
   insertRolesQuery,
   selectRoleByIriQuery,
   getReducer as getCommonReducer,
@@ -32,7 +36,7 @@ import {
 const poamResolvers = {
   Query: {
     poams: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllPOAMs(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllPOAMs(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -50,8 +54,10 @@ const poamResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("POAM");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let poamList ;
         if (args.orderedBy !== undefined ) {
           poamList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -69,16 +75,17 @@ const poamResolvers = {
             continue
           }
 
-          // if (poam.id === undefined || poam.id == null ) {
-          //   console.log(`[DATA-ERROR] object ${poam.iri} is missing required properties; skipping object.`);
-          //   continue;
-          // }
+          if (poam.id === undefined || poam.id == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${poam.iri} missing field 'id'; skipping`);
+            continue;
+          }
 
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(poam, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -89,16 +96,30 @@ const poamResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = poamList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > poamList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: poamList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -249,7 +270,7 @@ const poamResolvers = {
 
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer("POAM");
-      poam = (reducer(response[0]));
+      let poam = (reducer(response[0]));
 
       // Detach any attached roles
       if (poam.hasOwnProperty('roles_iri')) {
@@ -277,22 +298,26 @@ const poamResolvers = {
       return id;
     },
     editPOAM: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the risk exists
-      const sparqlQuery = selectPOAMQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Risk",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectPOAMQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select POAM",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/common#POAM-${id}`,
         "http://csrc.nist.gov/ns/oscal/common#POAM",
@@ -317,7 +342,7 @@ const poamResolvers = {
   },
   // field-level resolvers
   POAM: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -357,15 +382,15 @@ const poamResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('ExternalReference')) continue;
-          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("external_references"));
+          const sparqlQuery = selectExternalReferenceByIriQuery(iri, selectMap.getNode("links"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -397,15 +422,15 @@ const poamResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Note')) continue;
-          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("notes"));
+          const sparqlQuery = selectNoteByIriQuery(iri, selectMap.getNode("remarks"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -437,8 +462,8 @@ const poamResolvers = {
         return [];
       }
     },
-    revisions: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // TODO: Add implementation retrieval of revisions
+    revisions: async (_parent, _args, {_dbName, _dataSources, _selectMap}) => {
+      // TODO: Add implementation retrieval of an array of revisions
     },
     roles: async (parent, args, {dbName, dataSources, selectMap}) => {
       if (parent.roles_iri === undefined) return null;
@@ -446,7 +471,10 @@ const poamResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getCommonReducer("ROLE");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Role')) continue ;
           const sparqlQuery = selectRoleByIriQuery(iri, selectMap.getNode('node'));
@@ -471,6 +499,7 @@ const poamResolvers = {
               }
               edges.push(edge);
               limit--;
+              if (limit === 0) break;
             }
           }
           else {
@@ -483,14 +512,27 @@ const poamResolvers = {
             }
           }  
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
-            globalCount: iriArray.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -499,15 +541,231 @@ const poamResolvers = {
       }
     },
     locations: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // TODO: Add implementation retrieval of locations
+      if (parent.locations_iri === undefined) return null;
+      let iriArray = parent.locations_iri;
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const edges = [];
+        const reducer = getCommonReducer("LOCATION");
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Location')) continue ;
+          const sparqlQuery = selectLocationByIriQuery(iri, selectMap.getNode('node'));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Location",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return null;
+          if (Array.isArray(response) && response.length > 0) {
+            if ( limit ) {
+              let edge = {
+                cursor: iri,
+                node: reducer(response[0]),
+              }
+              edges.push(edge);
+              limit--;
+              if (limit === 0) break;
+            }
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        // check if there is data to be returned
+        if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
+        return {
+          pageInfo: {
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
+          },
+          edges: edges,
+        }
+      } else {
+        return null;
+      }
     },
     parties: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // TODO: Add implementation party retrieval
+      if (parent.parties_iri === undefined) return null;
+      let iriArray = parent.parties_iri;
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const edges = [];
+        const reducer = getCommonReducer("PARTY");
+        let filterCount, limitCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Party')) continue ;
+          const sparqlQuery = selectPartyByIriQuery(iri, selectMap.getNode('node'));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Party",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return null;
+          if (Array.isArray(response) && response.length > 0) {
+            if ( limit ) {
+              let edge = {
+                cursor: iri,
+                node: reducer(response[0]),
+              }
+              edges.push(edge);
+              limit--;
+              if (limit === 0) break;
+            }
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        // check if there is data to be returned
+        if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
+        return {
+          pageInfo: {
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
+          },
+          edges: edges,
+        }
+      } else {
+        return null;
+      }
     },
     responsible_parties: async (parent, args, {dbName, dataSources, selectMap}) => {
-      // TODO: Add implementation responsible parties retrieval
+      if (parent.resp_parties_iri === undefined) return null;
+      let iriArray = parent.resp_parties_iri;
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const edges = [];
+        const reducer = getCommonReducer("RESPONSIBLE-PARTY");
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('ResponsibleParty')) continue ;
+          const sparqlQuery = selectResponsiblePartyByIriQuery(iri, selectMap.getNode('node'));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Responsible Party",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return null;
+          if (Array.isArray(response) && response.length > 0) {
+            if ( limit ) {
+              let edge = {
+                cursor: iri,
+                node: reducer(response[0]),
+              }
+              edges.push(edge);
+              limit--;
+              if (limit === 0) break;
+            }
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        // check if there is data to be returned
+        if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
+        return {
+          pageInfo: {
+            startCursor: edges[0].cursor,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
+          },
+          edges: edges,
+        }
+      } else {
+        return null;
+      }
     },
-    local_definitions: async (parent, args, {dbName, dataSources, selectMap}) => {
+    local_definitions: async (_parent, _args, {_dbName, _dataSources, _selectMap}) => {
       // TODO: Add implementation location definition retrieval
     },
     observations: async (parent, args, {dbName, dataSources, selectMap}) => {
@@ -516,10 +774,13 @@ const poamResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getAssessmentReducer("OBSERVATION");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
-          const sparqlQuery = selectObservationByIriQuery(iri, null);
+          const sparqlQuery = selectObservationByIriQuery(iri, selectMap.getNode("node"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -541,6 +802,7 @@ const poamResolvers = {
               }
               edges.push(edge);
               limit--;
+              if (limit === 0) break;
             }
           }
           else {
@@ -553,14 +815,27 @@ const poamResolvers = {
             }
           }  
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
-            globalCount: iriArray.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -574,10 +849,19 @@ const poamResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getAssessmentReducer("RISK");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let filterCount, resultCount, risk, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
+        if (offset > iriArray.length) return null;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Risk')) continue ;
-          const sparqlQuery = selectRiskByIriQuery(iri, null);
+          // skip down past the offset
+          if (offset) {
+            offset--
+            continue
+          }
+          const sparqlQuery = selectRiskByIriQuery(iri, selectMap.getNode("node"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -591,34 +875,68 @@ const poamResolvers = {
             throw e
           }
           if (response === undefined) return null;
-          if (Array.isArray(response) && response.length > 0) {
-            if ( limit ) {
-              let edge = {
-                cursor: iri,
-                node: reducer(response[0]),
-              }
-              edges.push(edge);
-              limit--;
-            }
+
+          // Handle reporting Stardog Error
+          if (typeof (response) === 'object' && 'body' in response) {
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
           }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
+
+          if (Array.isArray(response) && response.length > 0) risk = response[0];
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
+          }
+
+          risk.risk_level = 'unknown';
+          if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
+            // calculate the risk level
+            const {riskLevel, riskScore} = calculateRiskLevel(risk);
+            risk.risk_score = riskScore;
+            risk.risk_level = riskLevel;
+
+            // clean up
+            delete risk.cvss20_base_score;
+            delete risk.cvss20_temporal_score;
+            delete risk.cvss30_base_score
+            delete risk.cvss30_temporal_score;
+            delete risk.exploit_available;
+            delete risk.exploitability;
+          }
+
+          if ( limit ) {
+            let edge = {
+              cursor: iri,
+              node: reducer(risk),
             }
-          }  
+            edges.push(edge);
+            limit--;
+            if (limit === 0) break;
+          }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
-            globalCount: iriArray.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -632,10 +950,13 @@ const poamResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getReducer("POAM-ITEM");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('poam#Item')) continue ;
-          const sparqlQuery = selectPOAMItemByIriQuery(iri, null);
+          const sparqlQuery = selectPOAMItemByIriQuery(iri, selectMap.getNode("nodes"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -657,6 +978,7 @@ const poamResolvers = {
               }
               edges.push(edge);
               limit--;
+              if (limit === 0) break;
             }
           }
           else {
@@ -669,14 +991,27 @@ const poamResolvers = {
             }
           }  
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (iriArray.length > args.first ),
-            hasPreviousPage: 0,
-            globalCount: iriArray.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -684,7 +1019,7 @@ const poamResolvers = {
         return null;
       }
     },
-    resources: async (parent, args, {dbName, dataSources, selectMap}) => {
+    resources: async (_parent, _args, {_dbName, _dataSources, _selectMap}) => {
       // TODO: Add implementation resource retrieval
     },
   }

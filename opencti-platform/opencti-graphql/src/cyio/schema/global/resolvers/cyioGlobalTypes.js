@@ -1,5 +1,5 @@
 import { globalSingularizeSchema as singularizeSchema } from '../global-mappings.js';
-import { compareValues, updateQuery, filterValues } from '../../utils.js';
+import { compareValues, filterValues } from '../../utils.js';
 import { UserInputError } from "apollo-server-express";
 import {objectMap} from '../global-utils.js';
 import { 
@@ -13,7 +13,7 @@ import {
 const cyioGlobalTypeResolvers = {
   Query: {
     civicAddresses: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllAddresses(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllAddresses(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -31,8 +31,10 @@ const cyioGlobalTypeResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ADDRESS");
-        let limit = (args.limit === undefined ? response.length : args.limit);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let addrList;
         if (args.orderedBy !== undefined) {
           addrList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -51,7 +53,7 @@ const cyioGlobalTypeResolvers = {
           }
 
           if (addr.id === undefined || addr.id == null) {
-            console.log(`[DATA-ERROR] object ${addr.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${addr.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -60,6 +62,7 @@ const cyioGlobalTypeResolvers = {
             if (!filterValues(addr, args.filters, args.filterMode)) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -72,14 +75,27 @@ const cyioGlobalTypeResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = addrList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.limit > addrList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: addrList.length,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -127,7 +143,7 @@ const cyioGlobalTypeResolvers = {
       }
     },
     telephoneNumbers: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllPhoneNumbers(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllPhoneNumbers(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -145,8 +161,10 @@ const cyioGlobalTypeResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("PHONE-NUMBER");
-        let limit = (args.limit === undefined ? response.length : args.limit);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let phoneList;
         if (args.orderedBy !== undefined) {
           phoneList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -165,7 +183,7 @@ const cyioGlobalTypeResolvers = {
           }
 
           if (phoneNumber.id === undefined || phoneNumber.id == null) {
-            console.log(`[DATA-ERROR] object ${phoneNumber.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${phoneNumber.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -174,6 +192,7 @@ const cyioGlobalTypeResolvers = {
             if (!filterValues(phoneNumber, args.filters, args.filterMode)) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -186,14 +205,27 @@ const cyioGlobalTypeResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = phoneList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.limit > phoneList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: phoneList.length,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -242,7 +274,7 @@ const cyioGlobalTypeResolvers = {
     },
   },
   Mutation: {
-    addReference: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+    addReference: async ( _, {input}, {dbName, dataSources, } ) => {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined) throw new UserInputError(`Source and target types must be supplied`);
 
@@ -323,7 +355,7 @@ const cyioGlobalTypeResolvers = {
       if (response === undefined) return false;
       return true
     },
-    removeReference: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+    removeReference: async ( _, {input}, {dbName, dataSources, } ) => {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined) throw new UserInputError(`Source and target types must be supplied`);
 

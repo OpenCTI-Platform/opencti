@@ -752,6 +752,7 @@ class RelatedTaskPopover extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        fieldName='links'
                         typename={relatedTaskData.__typename}
                         externalReferences={relatedTaskData.links}
                         cyioCoreObjectId={remediationId}
@@ -760,6 +761,7 @@ class RelatedTaskPopover extends Component {
                     <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
+                        fieldName='remarks'
                         typename={relatedTaskData.__typename}
                         notes={relatedTaskData.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}

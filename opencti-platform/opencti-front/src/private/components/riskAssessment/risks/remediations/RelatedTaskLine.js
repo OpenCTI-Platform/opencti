@@ -366,6 +366,7 @@ class RelatedTaskLine extends Component {
               <Grid style={{ marginTop: '20px' }} xs={12} item={true}>
                 <CyioCoreobjectExternalReferences
                   refreshQuery={refreshQuery}
+                  fieldName='links'
                   typename={relatedTaskData.__typename}
                   externalReferences={relatedTaskData.links}
                   cyioCoreObjectId={remediationId}
@@ -375,6 +376,7 @@ class RelatedTaskLine extends Component {
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   refreshQuery={refreshQuery}
                   typename={relatedTaskData.__typename}
+                  fieldName='remarks'
                   notes={relatedTaskData.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                   marginTop='0px'

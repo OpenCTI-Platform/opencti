@@ -100,7 +100,7 @@ class RiskObservationLineContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, risk, fd, relay,
+      t, classes, cyioCoreObjectId, risk, fd, relay, fldt,
     } = this.props;
     const RelatedObservations = R.pathOr([], ['related_observations', 'edges'], risk);
     return (
@@ -118,18 +118,18 @@ class RiskObservationLineContainer extends Component {
                     <strong style={{ color: '#00bcd4' }}>
                       {observation.node.name && t(observation.node.name)}
                     </strong>
-                    &nbsp; added an Observation on &nbsp;
+                    &nbsp; discovered on &nbsp;
                     <strong style={{ color: 'white' }}>
-                      {observation.node.collected && fd(observation.node.collected)}
+                      {observation.node.collected && fldt(observation.node.collected)}
                     </strong>
                   </Typography>
                   <br /> <br />
-                  <Typography
+                  {/*  <Typography
                     variant="h2"
                     style={{ color: 'white' }}
                   >
-                    {observation.node.name && t(observation.node.name)}
-                  </Typography>
+                    {observation.node.description && t(observation.node.description)}
+                  </Typography> */}
                 </div>
                 <div style={{ marginTop: '12px' }}>
                   <RiskObservationPopover data={observation.node} />
@@ -149,7 +149,7 @@ RiskObservationLineContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
   fd: PropTypes.func,
   relay: PropTypes.object,
 };
@@ -184,7 +184,10 @@ export const RiskObservationLineContainerComponent = createPaginationContainer(
             node {
               id
               entity_type
+              collected
+              description
               name
+              description
               ...RiskObservationPopover_risk
             }
           }

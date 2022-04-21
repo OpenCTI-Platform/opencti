@@ -22,7 +22,7 @@ import {
 const riskResponseResolvers = {
   Query: {
     riskResponses: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllRiskResponses(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllRiskResponses(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -40,8 +40,10 @@ const riskResponseResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("RISK-RESPONSE");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let riskResponseList ;
         if (args.orderedBy !== undefined ) {
           riskResponseList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -60,7 +62,7 @@ const riskResponseResolvers = {
           }
 
           if (riskResponse.id === undefined || riskResponse.id == null ) {
-            console.log(`[DATA-ERROR] object ${riskResponse.iri} is missing required properties; skipping object.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${riskResponse.iri} missing field 'id'; skipping`);
             continue;
           }
 
@@ -69,6 +71,7 @@ const riskResponseResolvers = {
             if (!filterValues(riskResponse, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -79,16 +82,30 @@ const riskResponseResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = riskResponseList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > riskResponseList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: riskResponseList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -298,7 +315,7 @@ const riskResponseResolvers = {
   },
   // field-level resolvers
   RiskResponse: {
-    labels: async (parent, args, {dbName, dataSources, selectMap}) => {
+    labels: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.labels_iri === undefined) return [];
       let iriArray = parent.labels_iri;
       const results = [];
@@ -340,9 +357,9 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -382,9 +399,9 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    remarks: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+    remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -424,7 +441,7 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    origins:async (parent, args, {dbName, dataSources, selectMap}) => {
+    origins:async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.origins_iri === undefined) return [];
       let iriArray = parent.origins_iri;
       const results = [];
@@ -466,7 +483,7 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    required_assets: async (parent, args, {dbName, dataSources, selectMap}) => {
+    required_assets: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.required_assets_iri === undefined) return [];
       let iriArray = parent.required_assets_iri;
       const results = [];
@@ -508,7 +525,7 @@ const riskResponseResolvers = {
         return [];
       }
     },
-    tasks: async (parent, args, {dbName, dataSources, selectMap}) => {
+    tasks: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.tasks_iri === undefined) return [];
       let iriArray = parent.tasks_iri;
       const results = [];

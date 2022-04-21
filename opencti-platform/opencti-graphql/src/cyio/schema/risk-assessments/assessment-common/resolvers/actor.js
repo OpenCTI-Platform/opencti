@@ -22,7 +22,7 @@ import {
 const actorResolvers = {
   Query: {
     actors: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllActors(selectMap.getNode("node"), args.filters);
+      const sparqlQuery = selectAllActors(selectMap.getNode("node"), args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -40,8 +40,10 @@ const actorResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ACTOR");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let actorList ;
         if (args.orderedBy !== undefined ) {
           actorList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -59,14 +61,18 @@ const actorResolvers = {
             continue
           }
 
-          if (actor.id === undefined || actor.id == null || actor.actor_ref === undefined) {
-            console.log(`[DATA-ERROR] object ${actor.iri} is missing required properties; skipping object.`);
+          if (actor.id === undefined || actor.id == null) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${actor.iri} missing field 'id'; skipping`);
             continue;
           }
+          if (actor.actor_ref === undefined || actor.actor_ref == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${actor.iri} missing field 'id'; skipping`);
+          }
 
-          // TODO: fix the generation to use the assessment-platform  as the actor type value of Assessment Platforms
+
+          // TODO: fix the generation to use the assessment-platform as the actor type value of Assessment Platforms
           if (actor.actor_type == 'tool' && actor.actor_ref.includes('AssessmentPlatform')) {
-            console.log(`[DATA-ERROR] object ${actor.iri} has conflicting information; see ADO card #4853.`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${actor.iri} conflicting fields 'actor_type' and 'actor_ref'; see ADO #4853`);
             response[0].actor_type = 'assessment-platform';
           }
 
@@ -75,6 +81,7 @@ const actorResolvers = {
             if (!filterValues(actor, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -87,14 +94,27 @@ const actorResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = actorList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first > actorList.length),
-            hasPreviousPage: (args.offset > 0),
-            globalCount: actorList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -276,21 +296,26 @@ const actorResolvers = {
       return id;
     },
     editActor: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the risk response exists
-      const sparqlQuery = selectActorQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Actor",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
+      const sparqlQuery = selectActorQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Actor",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Actor-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Actor",
@@ -315,9 +340,9 @@ const actorResolvers = {
   },
   // field-level resolvers
   Actor: {
-    links: async (parent, args, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+    links: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -357,13 +382,13 @@ const actorResolvers = {
         return [];
       }
     },
-    actor_ref: async (parent, args, {dbName, dataSources, selectMap}) => {
+    actor_ref: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.actor_ref_iri === undefined) return null;
-      // TODO: fix the generation to use the assessment-platform  as the actor type value of Assessment Platforms
+      // TODO: fix the generation to use the assessment-platform as the actor type value of Assessment Platforms
       if (parent.actor_type == 'tool' && parent.actor_ref_iri.includes('AssessmentPlatform')) parent.actor_type = 'assessment-platform';
       let iri = parent.actor_ref_iri;
       const reducer = getReducer(parent.actor_type.toUpperCase());
-      const sparqlQuery = selectObjectByIriQuery(iri, parent.actor_type, null);
+      const sparqlQuery = selectObjectByIriQuery(iri, parent.actor_type, selectMap.getNode("actor_ref"));
       let response;
       try {
         response = await dataSources.Stardog.queryById({
@@ -390,11 +415,11 @@ const actorResolvers = {
         }
       }  
     },
-    role_ref: async (parent, args, {dbName, dataSources, selectMap}) => {
+    role_ref: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.role_ref_iri === undefined) return null;
       let iri = parent.role_ref_iri;
       const reducer = getCommonReducer("ROLE");
-      const sparqlQuery = selectObjectByIriQuery(iri, "role", null);
+      const sparqlQuery = selectObjectByIriQuery(iri, "role", selectMap.getNode("role_ref"));
       let response;
       try {
         response = await dataSources.Stardog.queryById({

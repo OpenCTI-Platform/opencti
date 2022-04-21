@@ -121,7 +121,7 @@ class CyioAddNotes extends Component {
           variables: {
             toId: note.id,
             fromId: cyioCoreObjectOrStixCoreRelationshipId,
-            fieldName: 'notes',
+            fieldName: this.props.fieldName,
             to_type: note.__typename,
             from_type: this.props.typename,
           },
@@ -149,7 +149,7 @@ class CyioAddNotes extends Component {
         variables: {
           toId: createNote.id,
           fromId: cyioCoreObjectOrStixCoreRelationshipId,
-          fieldName: 'notes',
+          fieldName: this.props.fieldName,
           to_type: createNote.__typename,
           from_type: this.props.typename,
         },
@@ -212,7 +212,7 @@ class CyioAddNotes extends Component {
     return (
       <div>
         <IconButton
-          color="secondary"
+          color="default"
           aria-label="Add"
           disabled={disableAdd}
           onClick={this.handleOpen.bind(this)}
@@ -349,6 +349,7 @@ CyioAddNotes.propTypes = {
   cyioCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
   refreshQuery: PropTypes.func,
+  fieldName: PropTypes.string,
   typename: PropTypes.string,
   disableAdd: PropTypes.bool,
   classes: PropTypes.object,
