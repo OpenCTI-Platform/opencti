@@ -114,6 +114,7 @@ class CyioExternalReferencePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
+        this.props.refreshQuery();
       },
       // onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
     });
@@ -253,6 +254,7 @@ class CyioExternalReferencePopover extends Component {
 CyioExternalReferencePopover.propTypes = {
   externalReference: PropTypes.object,
   externalReferenceId: PropTypes.string,
+  refreshQuery: PropTypes.func,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
