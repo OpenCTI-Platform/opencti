@@ -8,12 +8,12 @@
 @prefix oscal-poam: <http://csrc.nist.gov/ns/oscal/poam#> .
 
 # Plan of Action and Milestone Model
-GRAPH <http://csrc.nist.gov/ns/oscal/poam#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> {
-    <http://csrc.nist.gov/ns/oscal/poam#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> 
+GRAPH <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> {
+    <http://csrc.nist.gov/ns/oscal/common#POAM-22f2ad37-4f07-5182-bf4e-59ea197a73dc> 
         a <http://csrc.nist.gov/ns/oscal/common#Model> ;
         a <http://csrc.nist.gov/ns/oscal/common#Object> ; 
         a <http://darklight.ai/ns/common#Object> ;
-        a <http://csrc.nist.gov/ns/oscal/poam#POAM> ;
+        a <http://csrc.nist.gov/ns/oscal/common#POAM> ;
         common:id "22f2ad37-4f07-5182-bf4e-59ea197a73dc" ;
         common:object_type "poam" ;
         common:created "2022-03-18T16:50:31.343Z"^^xsd:dateTime ;
