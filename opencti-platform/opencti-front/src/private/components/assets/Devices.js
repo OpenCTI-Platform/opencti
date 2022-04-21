@@ -385,6 +385,7 @@ class Devices extends Component {
       orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
+      filterMode: 'and',
     };
     const { location } = this.props;
     return (
