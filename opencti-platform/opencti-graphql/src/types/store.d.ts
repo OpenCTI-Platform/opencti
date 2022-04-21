@@ -37,10 +37,10 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import type { AuthUser } from './user';
-import type { StixPatch, StixDependenciesContext, StixObject, StixId } from './stix-common';
+import type { StixObject, StixId } from './stix-common';
 import {
   RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_LABEL,
+  RELATION_EXTERNAL_REFERENCE,
   RELATION_OBJECT_MARKING
 } from '../schema/stixMetaRelationship';
 

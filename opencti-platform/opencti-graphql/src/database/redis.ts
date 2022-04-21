@@ -1,11 +1,11 @@
-import {readFileSync} from 'node:fs';
-import Redis, {RedisOptions} from 'ioredis';
+import { readFileSync } from 'node:fs';
+import Redis, { RedisOptions } from 'ioredis';
 import Redlock from 'redlock';
 import * as jsonpatch from 'fast-json-patch';
-import {RedisPubSub} from 'graphql-redis-subscriptions';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
-import type {ChainableCommander} from 'ioredis/built/utils/RedisCommander';
-import conf, {booleanConf, configureCA, DEV_MODE, ENABLED_CACHING, logApp} from '../config/conf';
+import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
+import conf, { booleanConf, configureCA, DEV_MODE, ENABLED_CACHING, logApp } from '../config/conf';
 import {
   generateCreateMessage,
   generateDeleteMessage,
@@ -16,18 +16,18 @@ import {
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
 } from './utils';
-import {isStixObject} from '../schema/stixCoreObject';
-import {isStixRelationship} from '../schema/stixRelationship';
-import {EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE} from './rabbitmq';
-import {DatabaseError, FunctionalError} from '../config/errors';
-import {now, utcDate} from '../utils/format';
+import { isStixObject } from '../schema/stixCoreObject';
+import { isStixRelationship } from '../schema/stixRelationship';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
+import { DatabaseError, FunctionalError } from '../config/errors';
+import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
-import {getInstanceIds} from '../schema/identifier';
-import {isStixEmbeddedRelationship, STIX_EMBEDDED_RELATION_TO_FIELD,} from '../schema/stixEmbeddedRelationship';
-import {convertStoreToStix} from './stix-converter';
-import type {StoreObject, StoreRelation} from '../types/store';
-import type {AuthUser} from '../types/user';
+import { getInstanceIds } from '../schema/identifier';
+import { isStixEmbeddedRelationship, STIX_EMBEDDED_RELATION_TO_FIELD, } from '../schema/stixEmbeddedRelationship';
+import { convertStoreToStix } from './stix-converter';
+import type { StoreObject, StoreRelation } from '../types/store';
+import type { AuthUser } from '../types/user';
 import type {
   CommitContext,
   CreateEventOpts,
@@ -37,9 +37,9 @@ import type {
   StreamEvent,
   UpdateEvent,
 } from '../types/event';
-import type {StixCoreObject} from '../types/stix-common';
-import type {EditContext} from '../generated/graphql';
-import {RELATION_OBJECT_MARKING} from '../schema/stixMetaRelationship';
+import type { StixCoreObject } from '../types/stix-common';
+import type { EditContext } from '../generated/graphql';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);

@@ -48,10 +48,10 @@ import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now, observableValue } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { deleteFile, loadFile, stixFileConverter, upload } from '../database/minio';
+import { deleteFile, loadFile, upload } from '../database/minio';
 import { uploadJobImport } from './file';
 import { elUpdateElement } from '../database/engine';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { getInstanceIds } from '../schema/identifier';
 
 export const findAll = async (user, args) => {
@@ -331,8 +331,9 @@ export const stixCoreObjectImportPush = async (user, entity, file) => {
     await elUpdateElement({ _index: entity._index, internal_id: internalId, updated_at: now() });
     // Stream event generation
     // const eventFiles = [stixFileConverter(user, up)];
-    const eventInputs = [{ key: 'x_opencti_files', value: [eventFiles], operation: UPDATE_OPERATION_ADD }];
-    await storeUpdateEvent(user, entity, eventInputs);
+    // const eventInputs = [{ key: 'x_opencti_files', value: [eventFiles], operation: UPDATE_OPERATION_ADD }];
+    // await storeUpdateEvent(user, entity, eventInputs);
+    // TODO JRI??? REACTIVATE
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {

@@ -44,7 +44,6 @@ import { SYSTEM_USER } from '../utils/access';
 import { rulesCleanHandler, rulesApplyDerivedEvents, getRule } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
-import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { listAllRelations } from '../database/middleware-loader';
 
 // Task manager responsible to execute long manual tasks

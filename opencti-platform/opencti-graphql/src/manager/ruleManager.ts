@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Operation } from 'fast-json-patch';
-import { buildUpdateEvent, createStreamProcessor, lockResource } from '../database/redis';
+import { createStreamProcessor, lockResource } from '../database/redis';
 import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
@@ -42,7 +42,7 @@ import type { RuleRuntime, RuleDefinition } from '../types/rules';
 import type {
   BasicManagerEntity,
   BasicRuleEntity, BasicStoreCommon, BasicStoreEntity,
-  BasicTaskEntity, StoreRule,
+  BasicTaskEntity,
 } from '../types/store';
 import type { AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
@@ -141,7 +141,7 @@ const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
   };
 };
 const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
-  const { data, markings, context } = event;
+  const { data, context } = event;
   const events: Array<Event> = [];
   // region 01 - Generate events for deletion
   // -- sources
