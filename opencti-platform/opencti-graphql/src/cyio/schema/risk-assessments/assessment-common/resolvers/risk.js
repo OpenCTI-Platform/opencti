@@ -2,6 +2,7 @@ import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
 import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
+import { findParentIriQuery, objectMap } from '../../../global/global-utils.js';
 import {
   selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
@@ -409,18 +410,62 @@ const riskResolvers = {
       }
       // END WORKAROUND
 
-      const query = updateQuery(
-        `http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}`,
-        "http://csrc.nist.gov/ns/oscal/assessment/common#Risk",
-        input,
-        riskPredicateMap
-      )
-      response = await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Risk"
-      });
-      if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      // Handle 'dynamic' property editing separately
+      for (let editItem of input) {
+        let parentIri, iriTemplate, predicateMap;
+        if (editItem.key === 'poam_id') {
+          // remove edit item so it doesn't get processed again
+          input = input.filter(item => item.key != 'poam_id');
+
+          // find parent IRI of POAM Item 
+          let parentQuery = findParentIriQuery(response[0].iri, editItem.key, riskPredicateMap);
+          let results = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery: parentQuery,
+            queryId: "Select Find Parent",
+            singularizeSchema
+          })
+          if (results.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+          for (let result of results) {
+            let index = result.objectType.indexOf('poam-item');
+            parentIri = result.parentIri[index];
+            iriTemplate = objectMap[result.objectType[index]].iriTemplate;
+            predicateMap = objectMap[result.objectType[index]].predicateMap;
+            break;
+          }
+
+          let newInput = [editItem];
+          const query = updateQuery(
+            parentIri,
+            iriTemplate,
+            newInput,
+            predicateMap
+          );
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update Risk"
+          });
+          if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+        }
+      }
+
+      if (input.length > 0 ) {
+        const query = updateQuery(
+          `http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}`,
+          "http://csrc.nist.gov/ns/oscal/assessment/common#Risk",
+          input,
+          riskPredicateMap
+        )
+        response = await dataSources.Stardog.edit({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Update Risk"
+        });
+        if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      }
+
       const select = selectRiskQuery(id, selectMap.getNode("editRisk"));
       const result = await dataSources.Stardog.queryById({
         dbName,
