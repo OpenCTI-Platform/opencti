@@ -1901,7 +1901,7 @@ type OscalTaskEdge {
     "Indicates the type of subject"
     subject_type: SubjectType!
     "Identifies a reference to a component, inventory-item, location, party, user, or resource."
-    subject_ref: SubjectTarget
+    subject_ref: SubjectTarget!
   }
   input SubjectAddInput {
     "Identifies the name for the referenced subject."

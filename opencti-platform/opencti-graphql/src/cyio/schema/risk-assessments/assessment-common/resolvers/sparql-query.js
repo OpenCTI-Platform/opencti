@@ -3060,6 +3060,8 @@ export const selectSubjectQuery = (id, select) => {
 export const selectSubjectByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
+  // defensive code to protect against query not supplying subject type
+  if (!select.hasOwnProperty('subject_type')) select.push('subject_type');
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
