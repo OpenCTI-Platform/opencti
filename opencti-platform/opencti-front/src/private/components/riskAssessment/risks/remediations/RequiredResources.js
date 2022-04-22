@@ -51,7 +51,8 @@ class RequiredResources extends Component {
       history,
     } = this.props;
     return (
-      <QueryRenderer
+      <QR
+        environment={QueryRendererDarkLight}
         query={requiredResourcesLinesQuery}
         variables={{ id: remediationId }}
         render={({ props, error, retry }) => {

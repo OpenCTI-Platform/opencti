@@ -179,7 +179,7 @@ class RemediationPopover extends Component {
 
   render() {
     const {
-      classes, t, cyioCoreRelationshipId, disabled, history,
+      classes, t, cyioCoreRelationshipId, disabled, history, riskId,
     } = this.props;
     return (
       <div className={classes.container}>
@@ -267,10 +267,12 @@ class RemediationPopover extends Component {
             if (props) {
               return (
                 <RemediationDetailsPopover
+                  cyioCoreRelationshipId={cyioCoreRelationshipId}
                   displayEdit={this.state.displayEdit}
                   history={history}
                   handleDisplayEdit={this.handleDisplayEdit.bind(this)}
                   remediation={props.riskResponse}
+                  riskId={riskId}
                 />
               );
             }
@@ -291,6 +293,7 @@ RemediationPopover.propTypes = {
   history: PropTypes.object,
   onDelete: PropTypes.func,
   connectionKey: PropTypes.string,
+  riskId: PropTypes.string,
 };
 
 export default compose(

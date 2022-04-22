@@ -257,6 +257,7 @@ CyioExternalReferencePopover.propTypes = {
   externalReference: PropTypes.object,
   refreshQuery: PropTypes.func,
   externalReferenceId: PropTypes.string,
+  refreshQuery: PropTypes.func,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

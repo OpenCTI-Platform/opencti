@@ -2,6 +2,8 @@ export const macAddrRegex = /^\w{2}:\w{2}:\w{2}:\w{2}:\w{2}:\w{2}$/;
 
 export const ipv4AddrRegex = /^\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}$/;
 
+export const dateFormatRegex = /T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
+
 /**
  * Source: https://community.helpsystems.com/forums/intermapper/miscellaneous-topics/5acc4fcf-fa83-e511-80cf-0050568460e4?_ga=2.113564423.1432958022.1523882681-2146416484.1523557976
  * @type {RegExp}

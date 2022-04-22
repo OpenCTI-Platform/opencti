@@ -35,6 +35,7 @@ import { truncate } from '../../../../utils/String';
 import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
 import { statusFieldStatusesSearchQuery } from '../form/StatusField';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
+import { dateFormatRegex } from '../../../../utils/Network';
 
 const styles = (theme) => ({
   filters: {
@@ -784,11 +785,12 @@ class Filters extends Component {
   }
 
   handleChangeDate(filterKey, date, value) {
+    const newDate = date.toISOString().replace(dateFormatRegex, 'T00:00:00.000Z');
     if (date && value && date.toISOString()) {
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(filterKey, date.toISOString(), value);
+        this.handleAddFilter(filterKey, newDate, value);
       } else {
-        this.props.handleAddFilter(filterKey, date.toISOString(), value);
+        this.props.handleAddFilter(filterKey, newDate, value);
       }
     }
   }
