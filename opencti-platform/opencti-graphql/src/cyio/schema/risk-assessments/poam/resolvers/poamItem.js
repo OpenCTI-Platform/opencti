@@ -1,7 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
-import { calculateRiskLevel } from '../../riskUtils.js';
+import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
 import {
   getReducer, 
   insertPOAMItemQuery,
@@ -64,11 +64,6 @@ const poamItemResolvers = {
           if (offset) {
             offset--
             continue
-          }
-
-          if (item.id === undefined || item.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${item.iri} missing field 'id'; skipping`);
-            continue;
           }
 
           // filter out non-matching entries if a filter is to be applied
@@ -488,26 +483,43 @@ const poamItemResolvers = {
           }
 
           if (Array.isArray(response) && response.length > 0) risk = response[0];
-          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
-            risk.risk_status = risk.risk_status.replace('_', '-');
-          }
 
           // calculate the risk level
           risk.risk_level = 'unknown';
-          if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
+          if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
             // calculate the risk level
             const {riskLevel, riskScore} = calculateRiskLevel(risk);
             risk.risk_score = riskScore;
             risk.risk_level = riskLevel;
 
             // clean up
-            delete risk.cvss20_base_score;
-            delete risk.cvss20_temporal_score;
-            delete risk.cvss30_base_score
-            delete risk.cvss30_temporal_score;
-            delete risk.exploit_available;
-            delete risk.exploitability;
+            delete risk.cvss2_base_score;
+            delete risk.cvss2_temporal_score;
+            delete risk.cvss3_base_score
+            delete risk.cvss3_temporal_score;
+            delete risk.available_exploit;
+            delete risk.exploitability_ease;
+          }
+
+          // retrieve most recent remediation state
+          if (risk.remediation_type !== undefined) {
+            const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
+            if (responseType !== undefined) risk.response_type = responseType;
+            if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
+            // clean up
+            delete risk.remediation_response_date;
+            delete risk.remediation_type;
+            delete risk.remediation_lifecycle;
+          }
+
+          // calculate the occurrence count
+          if (risk.related_observations) {
+            risk.occurrences = risk.related_observations.length;
+          }
+
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
           }
 
           if ( limit ) {
@@ -548,10 +560,14 @@ const poamItemResolvers = {
         return null;
       }
     },
-    occurrences:  async (parent, _, {dbName, dataSources, }) => {
+    occurrences: async (parent, _, {dbName, dataSources, }) => {
       if (parent.id === undefined) {
         return 0;
       }
+
+      // return occurrences value from parent if already exists
+      if (parent.hasOwnProperty('occurrences')) return parent.occurrences;
+
       const id = parent.id
       const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`
       const sparqlQuery = `
