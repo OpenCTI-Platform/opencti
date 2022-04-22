@@ -748,14 +748,15 @@ class Scans extends Component {
                                 </ListItemIcon>
                                 New Analysis
                               </MenuItem>
-                              <MenuItem
-                                onClick={() => handleDialogOpen({ modal: "Rename" })}
-                              >
-                                <ListItemIcon>
-                                  <EditOutlinedIcon fontSize="small" />
-                                </ListItemIcon>
-                                Rename
-                              </MenuItem>
+                              {/* This will be re-added when their is backend support for this feature */}
+                              {/*<MenuItem*/}
+                              {/*  onClick={() => handleDialogOpen({ modal: "Rename" })}*/}
+                              {/*>*/}
+                              {/*  <ListItemIcon>*/}
+                              {/*    <EditOutlinedIcon fontSize="small" />*/}
+                              {/*  </ListItemIcon>*/}
+                              {/*  Rename*/}
+                              {/*</MenuItem>*/}
                               <MenuItem
                                 onClick={(e) => handleDeleteScan(e, scan.id)}
                               >

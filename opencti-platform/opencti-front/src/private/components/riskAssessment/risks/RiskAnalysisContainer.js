@@ -123,7 +123,7 @@ class RiskAnalysisContainerComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
-                  typename={risk.__typename}
+                  typename={riskCharacterizations.__typename}
                   externalReferences={riskCharacterizations.links}
                   fieldName='links'
                   cyioCoreObjectId={riskCharacterizations.id}
@@ -133,7 +133,7 @@ class RiskAnalysisContainerComponent extends Component {
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  typename={risk.__typename}
+                  typename={riskCharacterizations.__typename}
                   notes={riskCharacterizations.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={riskCharacterizations.id}
                   marginTop='0px'
@@ -177,6 +177,7 @@ const RiskAnalysisContainerFragment = createFragmentContainer(
         id
         name
         characterizations {
+          __typename
           id
           entity_type
           created

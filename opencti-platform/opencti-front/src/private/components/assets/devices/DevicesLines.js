@@ -93,6 +93,7 @@ export const devicesLinesQuery = graphql`
     $orderedBy: HardwareAssetOrdering
     $orderMode: OrderingMode
     $filters: [HardwareAssetFiltering]
+    $filterMode: FilterMode
   ) {
     ...DevicesLines_data
       @arguments(
@@ -103,6 +104,7 @@ export const devicesLinesQuery = graphql`
         orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
+        filterMode: $filterMode
       )
   }
 `;
@@ -120,6 +122,7 @@ export default createPaginationContainer(
         orderedBy: { type: "HardwareAssetOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[HardwareAssetFiltering]" }
+        filterMode: { type: "FilterMode" }
       ) {
         hardwareAssetList(
           search: $search
@@ -128,6 +131,7 @@ export default createPaginationContainer(
           orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
+          filterMode: $filterMode
         ) @connection(key: "Pagination_hardwareAssetList") {
           edges {
             node {
@@ -167,6 +171,7 @@ export default createPaginationContainer(
         orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
+        filterMode: fragmentVariables.filterMode,
       };
     },
     query: devicesLinesQuery,

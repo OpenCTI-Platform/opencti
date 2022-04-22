@@ -162,7 +162,6 @@ class RequiredResourceCreation extends Component {
         {
           subject_type: '',
           subject_ref: '',
-          name: '',
         },
       ],
       selectedIndex: 1,
@@ -194,21 +193,24 @@ class RequiredResourceCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    this.setState({
-      subjects: [
-        {
-          subject_type: values.resource_type,
-          subject_ref: values.resource,
-          name: values.name,
-        },
-      ],
-    });
+    if (values.resource_type === '' && values.resource === '') {
+      this.setState({ subjects: [] });
+    } else {
+      this.setState({
+        subjects: [
+          {
+            subject_type: values.resource_type,
+            subject_ref: values.resource,
+          },
+        ],
+      });
+    }
     const finalValues = pipe(
       dissoc('resource_type'),
       dissoc('resource'),
+      assoc('remediation_id', this.props.remediationId),
       assoc('subjects', this.state.subjects),
     )(values);
-    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: RequiredResourceCreationMutation,
       variables: {
@@ -225,6 +227,7 @@ class RequiredResourceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        this.props.refreshQuery();
         if (this.props.onCreate) {
           this.props.onCreate(response.externalReferenceAdd, true);
         }
@@ -408,108 +411,79 @@ class RequiredResourceCreation extends Component {
                 </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant='h3'
-                          color='textSecondary'
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Name')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')}>
-                            <Information fontSize='inherit' color='disabled' />
-                          </Tooltip>
-                        </div>
-                        <div className='clearfix' />
-                        <Field
-                          component={TextField}
-                          name='name'
-                          fullWidth={true}
-                          size='small'
-                          containerstyle={{ width: '100%' }}
-                          variant='outlined'
-                        />
+                    <Grid item={true} xs={12}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Name')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Description')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
                       </div>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant='h3'
-                          color='textSecondary'
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Type')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Resource Type')}>
-                            <Information fontSize='inherit' color='disabled' />
-                          </Tooltip>
-                        </div>
-                        <div className='clearfix' />
-                        <ResourceTypeField
-                          name='resource_type'
-                          fullWidth={true}
-                          variant='outlined'
-                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
-                          type='hardware'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
-                      </div>
+                      <div className='clearfix' />
+                      <Field
+                        component={TextField}
+                        name='name'
+                        fullWidth={true}
+                        size='small'
+                        containerstyle={{ width: '100%' }}
+                        variant='outlined'
+                      />
                     </Grid>
-                    <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant='h3'
-                          color='textSecondary'
-                          gutterBottom={true}
-                          size='small'
-                          style={{ float: 'left' }}
-                        >
-                          {t('ID')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')}>
-                            <Information fontSize='inherit' color='disabled' />
-                          </Tooltip>
-                        </div>
-                        <div className='clearfix' />
-                        <Field
-                          component={TextField}
-                          name='id'
-                          fullWidth={true}
-                          size='small'
-                          variant='outlined'
-                          containerstyle={{ width: '100%' }}
-                        />
+                    <Grid item={true} xs={6} style={{ marginBottom: '15px' }}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Resource Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Resource Type')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
                       </div>
-                      <div style={{ marginBottom: '15px' }}>
-                        <Typography
-                          variant='h3'
-                          color='textSecondary'
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Resource Name')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Resource')}>
-                            <Information fontSize='inherit' color='disabled' />
-                          </Tooltip>
-                        </div>
-                        <div className='clearfix' />
-                        <ResourceNameField
-                          name='resource'
-                          resourceTypename={this.state.resourceName}
-                          fullWidth={true}
-                          variant='outlined'
-                          type='hardware'
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
-                        />
+                      <div className='clearfix' />
+                      <ResourceTypeField
+                        name='resource_type'
+                        fullWidth={true}
+                        variant='outlined'
+                        handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
+                        type='hardware'
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6} style={{ marginBottom: '15px' }}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Resource Name')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Resource')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
                       </div>
+                      <div className='clearfix' />
+                      <ResourceNameField
+                        name='resource'
+                        resourceTypename={this.state.resourceName}
+                        fullWidth={true}
+                        variant='outlined'
+                        type='hardware'
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
@@ -547,7 +521,7 @@ class RequiredResourceCreation extends Component {
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
-                    <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
+                    <Grid style={{ marginTop: '25px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
                         fieldName='remarks'
