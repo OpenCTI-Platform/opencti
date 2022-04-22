@@ -189,6 +189,7 @@ class RemediationEntityLineComponent extends Component {
             cyioCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             history={history}
+            riskId={riskId}
           // disabled={restricted}
           />
         </ListItemSecondaryAction>
