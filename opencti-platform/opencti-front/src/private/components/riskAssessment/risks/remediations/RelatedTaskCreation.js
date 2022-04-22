@@ -41,12 +41,14 @@ import { parse } from '../../../../../utils/Time';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import TaskType from '../../../common/form/TaskType';
+import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
 import ResourceType from '../../../common/form/ResourceType';
 import AssociatedActivities from '../../../common/form/AssociatedActivities';
 import ResponsibleParties from '../../../common/form/ResponsibleParties';
 import Dependencies from '../../../common/form/Dependencies';
 import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
+import {toastGenericError} from "../../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -154,6 +156,12 @@ class RelatedTaskCreation extends Component {
       open: false,
       close: false,
       resourceName: '',
+      responsible_roles: [
+        {
+          roles: '',
+          parties: [],
+        }
+      ],
       subjects: [
         {
           subject_type: '',
@@ -183,37 +191,43 @@ class RelatedTaskCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('relatedTask', values);
-    if (values.resource_type === '' && values.resource === '') {
-      this.setState({ subjects: [] });
+    if (values.resource_type === '' && values.resource === '' || values.responsible_roles === '') {
+      this.setState({
+        subjects: [],
+        responsible_roles: [],
+      });
     } else {
     this.setState({
       subjects: [
         {
           subject_type: values.resource_type,
           subject_ref: values.resource,
-          name: values.name,
         },
       ],
-      timing: { within_date_range: {
-        start_date: values.start_date === null ? null : parse(values.start_date),
-        end_date: values.end_date === null ? null : parse(values.end_date),
-      }},
+      timing: {
+        within_date_range: {
+          start_date: values.start_date === null ? null : parse(values.start_date).format(),
+          end_date: values.end_date === null ? null : parse(values.end_date).format(),
+        }
+      },
+      responsible_roles: [
+        {
+          role: values.responsible_roles,
+          parties: [],
+        }
+      ]
     });
   }
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      dissoc('related_tasks'),
-      dissoc('resource_type'),
-      dissoc('milestone'),
-      dissoc('associated_activities'),
-      dissoc('responsible_roles'),
       assoc('timing', this.state.timing),
       dissoc('resource_type'),
       dissoc('resource'),
       assoc('subjects', this.state.subjects),
+      assoc('responsible_roles', this.state.responsible_roles),
     )(values);
+    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
       variables: {
@@ -227,12 +241,13 @@ class RelatedTaskCreation extends Component {
       // ),
       setSubmitting,
       onCompleted: (response) => {
-        console.log('relatedTasksCreationResponse', response);
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
-      onError: (err) => console.log('finalValuesRelatedTasksError', err),
+      onError: (err) => {
+        toastGenericError("Failed to create Related Task")
+      }
     });
     // commitMutation({
     //   mutation: RelatedTaskCreationMutation,
@@ -465,7 +480,7 @@ class RelatedTaskCreation extends Component {
                           {t('ID')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('ID')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -478,7 +493,9 @@ class RelatedTaskCreation extends Component {
                           size="small"
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
-                        />
+                        >
+                           {remediationId && t(remediationId)}
+                        </Field>
                       </div>
                     </Grid>
                   </Grid>
@@ -671,7 +688,7 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                         <TaskType
+                         <RelatedTaskFields
                           name="related_tasks"
                           fullWidth={true}
                           variant='outlined'
@@ -703,7 +720,7 @@ class RelatedTaskCreation extends Component {
                            style={{ height: '38.09px' }}
                            containerstyle={{ width: '100%' }}
                         /> */}
-                         <TaskType
+                         <RelatedTaskFields
                           name="associated_activities"
                           fullWidth={true}
                           variant='outlined'
@@ -729,7 +746,7 @@ class RelatedTaskCreation extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <TaskType
+                        <RelatedTaskFields
                           name="responsible_roles"
                           fullWidth={true}
                           variant='outlined'
@@ -762,7 +779,7 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <TaskType
+                        <RelatedTaskFields
                           name="task_dependencies"
                           fullWidth={true}
                           variant='outlined'

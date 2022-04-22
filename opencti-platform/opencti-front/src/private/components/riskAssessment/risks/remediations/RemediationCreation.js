@@ -31,6 +31,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../../utils/Time';
+import {toastGenericError} from "../../../../../utils/bakedToast";
 import {
   commitMutation,
   QueryRenderer,
@@ -155,7 +156,6 @@ class RemediationCreation extends Component {
       R.dissoc('actor_target'),
       R.dissoc('oscal_party'),
     )(values);
-    console.log('RemdiationCreationFinal', finalValues);
     CM(environmentDarkLight, {
       mutation: remediationCreationMutation,
       variables: {
@@ -165,12 +165,12 @@ class RemediationCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        console.log('remediationCreationComplete', data);
         this.handleClose();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) =>
-        console.log('RemediationCreationError', err),
+      onError: (err) => {
+        toastGenericError("Failed to create Remediation")
+      }
     });
     // commitMutation({
     //   mutation: remediationCreationMutation,
@@ -207,8 +207,6 @@ class RemediationCreation extends Component {
   render() {
     const { t, classes, remediationId, open, history, riskId } = this.props;
     const risk_id = this.props.riskId;
-    console.log('remediationCreationId', remediationId);
-    console.log('riskID', riskId.id);
     return (
       <div className={classes.container}>
         <Formik

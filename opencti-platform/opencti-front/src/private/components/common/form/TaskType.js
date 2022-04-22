@@ -23,75 +23,12 @@ const TaskTypeQuery = graphql`
   }
 `;
 
-const TaskTypeRelatedTaskQuery = graphql`
-  query TaskTypeRelatedTaskQuery($orderedBy: OscalTaskOrdering, $orderMode: OrderingMode) {
-    oscalTasks(orderedBy: $orderedBy, orderMode: $orderMode) {
-      edges {
-        node {
-          name
-          description
-        }
-      }
-    }
-  }
-`;
-
-const TaskTypeAssociatedActivitiesQuery = graphql`
-  query TaskTypeAssociatedActivitiesQuery($orderedBy: AssociatedActivityOrdering, $orderMode: OrderingMode) {
-    associatedActivities(orderedBy: $orderedBy, orderMode: $orderMode) {
-      edges {
-        node {
-          id
-          activity_id {
-            name
-            description
-          }
-        }
-      }
-    }
-  }
-`;
-
-const TaskTypeResponsiblePartiesQuery = graphql`
-  query TaskTypeResponsiblePartiesQuery($orderedBy: OscalResponsiblePartyOrdering, $orderMode: OrderingMode) {
-    oscalResponsibleParties(orderedBy: $orderedBy, orderMode: $orderMode) {
-      edges {
-        node {
-          parties {
-            name
-            description
-          }
-        }
-      }
-    }
-  }
-`;
-
-const TaskTypeDependenciesQuery = graphql`
-  query TaskTypeDependenciesQuery {
-    oscalTasks {
-      edges {
-        node {
-          name
-          description
-        }
-      }
-    }
-  }
-`;
-
 class TaskType extends Component {
   constructor(props) {
     super(props);
     this.state = {
       TaskTypeList: []
     };
-  }
-
-  componentDidUpdate(prevProps) {
-    if (this.props.name !== prevProps.name) {
-      this.handleRelatedTaskField();
-    }
   }
 
   componentDidMount() {
@@ -117,92 +54,7 @@ class TaskType extends Component {
           },
         });
       });
-    }
-    if(this.props.name === "related_tasks"){
-      fetchDarklightQuery(TaskTypeRelatedTaskQuery, {
-        orderedBy: 'name',
-        orderMode: 'asc',
-      })
-      .toPromise()
-      .then((data) => {
-        const TaskTypeEntities = R.pipe(
-          R.pathOr([], ['oscalTasks', 'edges']),
-          R.map((n) => ({
-            label: n.node.description,
-            value: n.node.name,
-          }))
-        )(data);
-        this.setState({
-          TaskTypeList: {
-            ...this.state.entities,
-            TaskTypeEntities,
-          },
-        });
-      });
-    }
-    if(this.props.name === "associated_activities"){
-      fetchDarklightQuery(TaskTypeAssociatedActivitiesQuery, {
-        orderedBy: 'activity_id',
-        orderMode: 'asc',
-      })
-      .toPromise()
-      .then((data) => {
-        const TaskTypeEntities = R.pipe(
-          R.pathOr([], ['associatedActivities', 'edges']),
-          R.map((n) => ({
-            label: n.node.activity_id.description,
-            value: n.node.activity_id.name,
-          }))
-        )(data);
-        this.setState({
-          TaskTypeList: {
-            ...this.state.entities,
-            TaskTypeEntities,
-          },
-        });
-      });
-    }
-    if(this.props.name === "responsible_roles"){
-      fetchDarklightQuery(TaskTypeResponsiblePartiesQuery, {
-        orderedBy: 'labels',
-        orderMode: 'asc',
-      })
-      .toPromise()
-      .then((data) => {
-        const TaskTypeEntities = R.pipe(
-          R.pathOr([], ['oscalResponsibleParties', 'edges']),
-          R.map((n) => ({
-            label: n.node.parties.description,
-            value: n.node.parties.name,
-          }))
-        )(data);
-        this.setState({
-          TaskTypeList: {
-            ...this.state.entities,
-            TaskTypeEntities,
-          },
-        });
-      });
-    }
-    if(this.props.name === "task_dependencies"){
-      fetchDarklightQuery(TaskTypeDependenciesQuery)
-      .toPromise()
-      .then((data) => {
-        const TaskTypeEntities = R.pipe(
-          R.pathOr([], ['oscalTasks', 'edges']),
-          R.map((n) => ({
-            label: n.node.description,
-            value: n.node.name,
-          }))
-        )(data);
-        this.setState({
-          TaskTypeList: {
-            ...this.state.entities,
-            TaskTypeEntities,
-          },
-        });
-      });
-    }
+    }  
   }
 
   render() {
