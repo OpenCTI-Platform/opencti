@@ -118,18 +118,18 @@ class RiskObservationLineContainer extends Component {
                     <strong style={{ color: '#00bcd4' }}>
                       {observation.node.name && t(observation.node.name)}
                     </strong>
-                    &nbsp; added an Observation on &nbsp;
+                    &nbsp; discovered on &nbsp;
                     <strong style={{ color: 'white' }}>
                       {observation.node.collected && fldt(observation.node.collected)}
                     </strong>
                   </Typography>
                   <br /> <br />
-                  <Typography
+                  {/*  <Typography
                     variant="h2"
                     style={{ color: 'white' }}
                   >
                     {observation.node.description && t(observation.node.description)}
-                  </Typography>
+                  </Typography> */}
                 </div>
                 <div style={{ marginTop: '12px' }}>
                   <RiskObservationPopover data={observation.node} />
@@ -187,6 +187,7 @@ export const RiskObservationLineContainerComponent = createPaginationContainer(
               collected
               description
               name
+              description
               ...RiskObservationPopover_risk
             }
           }

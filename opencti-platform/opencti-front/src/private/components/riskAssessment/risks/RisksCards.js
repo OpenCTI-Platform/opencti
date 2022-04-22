@@ -113,6 +113,7 @@ export const risksCardsQuery = graphql`
     $orderedBy: POAMItemsOrdering
     $orderMode: OrderingMode
     $filters: [POAMItemsFiltering]
+    $filterMode: FilterMode
   ) {
     ...RisksCards_data
       @arguments(
@@ -123,6 +124,7 @@ export const risksCardsQuery = graphql`
         orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
+        filterMode: $filterMode
       )
   }
 `;
@@ -140,6 +142,7 @@ export default createPaginationContainer(
         orderedBy: { type: "POAMItemsOrdering", defaultValue: poam_id }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[POAMItemsFiltering]" }
+        filterMode: { type: "FilterMode" }
       ) {
         poamItems(
           search: $search
@@ -149,6 +152,7 @@ export default createPaginationContainer(
           orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
+          filterMode: $filterMode
         ) @connection(key: "Pagination_poamItems") {
           edges {
             node {
@@ -188,6 +192,7 @@ export default createPaginationContainer(
         orderedBy: fragmentVariables.orderedBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
+        filterMode: fragmentVariables.filterMode,
       };
     },
     query: risksCardsQuery,

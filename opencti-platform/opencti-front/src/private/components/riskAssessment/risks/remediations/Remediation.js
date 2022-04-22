@@ -142,7 +142,9 @@ class RemediationComponent extends Component {
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             remediation={remediation}
             history={history}
+            cyioCoreRelationshipId={remediation.id}
             risk={risk}
+            riskId={riskId}
           />
         </div>
         {/* <RemediationEdition
