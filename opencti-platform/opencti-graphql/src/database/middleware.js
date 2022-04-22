@@ -2493,7 +2493,8 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     let event;
     if (publishStreamEvent) {
       if (dataRel.type === TRX_CREATION) {
-        event = await storeCreateRelationEvent(user, dataRel.element, storeLoadByIdWithRefs, opts);
+        const createdRelation = { ...resolvedInput, ...dataRel.element };
+        event = await storeCreateRelationEvent(user, createdRelation, storeLoadByIdWithRefs, opts);
       } else if (dataRel.type === TRX_UPDATE) {
         event = await storeUpdateEvent(user, dataRel.previous, dataRel.element, dataRel.message);
       }
@@ -2807,7 +2808,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
     // Push the input in the stream
     let event;
     if (dataEntity.type === TRX_CREATION) {
-      const createdElement = dataEntity.element;
+      const createdElement = { ...resolvedInput, ...dataEntity.element };
       event = await storeCreateEntityEvent(user, createdElement, dataEntity.message);
     } else if (dataEntity.type === TRX_UPDATE) {
       event = await storeUpdateEvent(user, dataEntity.previous, dataEntity.element, dataEntity.message);

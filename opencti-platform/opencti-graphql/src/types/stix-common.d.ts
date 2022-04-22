@@ -84,6 +84,7 @@ interface StixCyberObject extends StixObject {
       extension_type : 'property-extension',
       labels: Array<string>; // optional
       description: string; // optional
+      score: number; // optional
     }
   };
 }

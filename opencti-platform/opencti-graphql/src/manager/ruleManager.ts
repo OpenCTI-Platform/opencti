@@ -136,7 +136,6 @@ const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
     type,
     message: 'rule internal event',
     origin: RULE_MANAGER_USER,
-    markings: stix.object_marking_refs || [],
     data: stix,
   };
 };

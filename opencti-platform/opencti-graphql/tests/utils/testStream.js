@@ -16,14 +16,12 @@ export const fetchStreamEvents = (uri, { from } = {}) => {
   return new Promise((resolve, reject) => {
     let lastEventTime = null;
     const events = [];
-    console.log(uri, opts);
     const es = new EventSource(uri, opts);
     const closeEventSource = () => {
       es.close();
       resolve(events);
     };
     const handleEvent = (event) => {
-      console.log(event);
       const { type, data, lastEventId, origin } = event;
       const [time] = lastEventId.split('-');
       const currentTime = parseInt(time, 10);
@@ -103,8 +101,7 @@ const checkPatchElements = (object) => {
   });
 };
 
-export const checkStreamData = (type, data) => {
-  console.log(data);
+export const checkStreamData = (type, data, context) => {
   expect(data.id).toBeDefined();
   expect(isStixId(data.id)).toBeTruthy();
   const octiExt = data.extensions[STIX_EXT_OCTI];
@@ -114,35 +111,8 @@ export const checkStreamData = (type, data) => {
   expect(isUuid(octiExt.id)).toBeTruthy();
   expect(data.type).toBeDefined();
   if (type === EVENT_TYPE_UPDATE) {
-    console.log(EVENT_TYPE_UPDATE, octiExt.event_patch);
-    expect(octiExt.event_patch).toBeDefined();
-    if (octiExt.event_patch.add) {
-      Object.entries(octiExt.event_patch.add).forEach(([k, v]) => {
-        if (k === 'extensions') {
-          checkPatchElements(v);
-        } else {
-          checkPatchElements({ [k]: v });
-        }
-      });
-    }
-    if (octiExt.event_patch.remove) {
-      Object.entries(octiExt.event_patch.remove).forEach(([k, v]) => {
-        if (k === 'extensions') {
-          checkPatchElements(v);
-        } else {
-          checkPatchElements({ [k]: v });
-        }
-      });
-    }
-    if (octiExt.event_patch.replace) {
-      Object.entries(octiExt.event_patch.replace).forEach(([k, v]) => {
-        if (k === 'extensions') {
-          checkPatchElements(v);
-        } else {
-          checkPatchElements({ [k]: v });
-        }
-      });
-    }
+    expect(context.previous_patch).toBeDefined();
+    expect(context.previous_patch.length).toBeGreaterThan(0);
   }
   if (data.type === 'relationship') {
     expect(data.relationship_type).toBeDefined();
@@ -164,9 +134,9 @@ export const checkStreamData = (type, data) => {
 };
 
 export const checkStreamGenericContent = (type, dataEvent) => {
-  const { data, markings, message } = dataEvent;
+  const { data, markings, message, context } = dataEvent;
   expect(markings).toBeDefined();
-  // expect(message.includes('undefined')).toBeFalsy();
+  expect(message.includes('undefined')).toBeFalsy();
   expect(message.includes('[object Object]')).toBeFalsy();
   if (markings.length > 0) {
     markings.forEach((m) => {
@@ -176,5 +146,5 @@ export const checkStreamGenericContent = (type, dataEvent) => {
     });
   }
   expect(message).not.toBeNull();
-  checkStreamData(type, data);
+  checkStreamData(type, data, context);
 };

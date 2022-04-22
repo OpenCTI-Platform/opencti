@@ -25,7 +25,6 @@ interface Event {
   version: string;
   type: string;
   origin: Partial<UserOrigin>;
-  markings: Array<string>;
   message: string;
   data: StixCoreObject;
 }

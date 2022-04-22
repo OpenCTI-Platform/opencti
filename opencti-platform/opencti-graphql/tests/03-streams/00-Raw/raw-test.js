@@ -6,26 +6,20 @@ import {
   checkStreamGenericContent,
   fetchStreamEvents,
 } from '../../utils/testStream';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
-import { isMultipleAttribute } from '../../../src/schema/fieldDataAdapter';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
   EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
 } from '../../../src/database/rabbitmq';
-import { STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD } from '../../../src/schema/stixMetaRelationship';
-import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
-
-const OPERATIONS = [UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE];
 
 describe('Raw streams tests', () => {
-  // beforeAll(async () => {
-  //   await startModules();
-  // });
-  // afterAll(async () => {
-  //   await shutdownModules();
-  // });
+  beforeAll(async () => {
+    await startModules();
+  });
+  afterAll(async () => {
+    await shutdownModules();
+  });
 
   // We need to check the event format to be sure that everything is setup correctly
   it(
@@ -60,45 +54,13 @@ describe('Raw streams tests', () => {
       const updateEventsByTypes = R.groupBy((e) => e.data.data.type, updateEvents);
       expect(updateEventsByTypes.report.length).toBe(3);
       for (let updateIndex = 0; updateIndex < updateEvents.length; updateIndex += 1) {
-        const { data: insideData, origin, type } = updateEvents[updateIndex];
+        const event = updateEvents[updateIndex];
+        const { data: insideData, origin, type } = event;
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
         // Test patch content
-        const { data } = insideData;
-        const { event_patch } = data.extensions[STIX_EXT_OCTI];
-        expect(event_patch).toBeDefined();
-        const patchKeys = Object.keys(event_patch);
-        expect(patchKeys.length > 0).toBeTruthy();
-        expect(patchKeys.some((p) => OPERATIONS.includes(p))).toBeTruthy();
-        patchKeys.forEach((key) => {
-          if (key === UPDATE_OPERATION_ADD || key === UPDATE_OPERATION_REMOVE) {
-            const elementOperations = event_patch[key];
-            const opKeys = Object.keys(elementOperations);
-            opKeys.forEach((opKey) => {
-              const metaKey = STIX_ATTRIBUTE_TO_META_RELATIONS_FIELD[opKey];
-              const k = metaKey || opKey;
-              if (k !== 'extensions') {
-                const isMultiple = isMultipleAttribute(k);
-                expect(isMultiple).toBeTruthy();
-                const val = elementOperations[opKey];
-                expect(Array.isArray(val)).toBeTruthy();
-                if (metaKey) {
-                  for (let i = 0; i < val.length; i += 1) {
-                    const metaElement = val[i];
-                    expect(metaElement).toBeDefined();
-                  }
-                }
-              }
-            });
-          }
-          if (key === UPDATE_OPERATION_REPLACE) {
-            const elementOperations = event_patch[UPDATE_OPERATION_REPLACE];
-            const opEntries = Object.entries(elementOperations);
-            opEntries.forEach(([, e]) => {
-              expect(e === null || e !== undefined).toBeTruthy();
-            });
-          }
-        });
+        const { previous_patch } = insideData.context;
+        expect(previous_patch).toBeDefined();
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
@@ -114,17 +76,13 @@ describe('Raw streams tests', () => {
       expect(mergeEvents.length).toBe(3);
       for (let mergeIndex = 0; mergeIndex < mergeEvents.length; mergeIndex += 1) {
         const { data: insideData, origin } = mergeEvents[mergeIndex];
-        const { data } = insideData;
-        console.log('origin', origin);
+        const { context } = insideData;
         expect(origin).toBeDefined();
-        const octiExt = data.extensions[STIX_EXT_OCTI];
-        console.log('octiExt', octiExt);
-        expect(octiExt.event_patch).toBeDefined();
-        expect(octiExt.event_dependencies).toBeDefined();
-        expect(octiExt.event_dependencies.sources).toBeDefined();
-        expect(octiExt.event_dependencies.sources.length > 0).toBeTruthy();
-        for (let sourceIndex = 0; sourceIndex < octiExt.event_dependencies.sources.length; sourceIndex += 1) {
-          const source = octiExt.event_dependencies.sources[sourceIndex];
+        expect(context.previous_patch).toBeDefined();
+        expect(context.sources).toBeDefined();
+        expect(context.sources.length > 0).toBeTruthy();
+        for (let sourceIndex = 0; sourceIndex < context.sources.length; sourceIndex += 1) {
+          const source = context.sources[sourceIndex];
           checkStreamData(EVENT_TYPE_MERGE, source);
         }
       }
@@ -139,14 +97,14 @@ describe('Raw streams tests', () => {
       const events = await fetchStreamEvents('http://localhost:4000/stream', { from: '0' });
       const contextWithDeletionEvents = events.filter(
         (e) => {
-          const { event_dependencies } = e.data.data.extensions[STIX_EXT_OCTI];
-          return (event_dependencies?.deletions || []).length > 0 || (event_dependencies?.sources || []).length > 0;
+          const { context } = e.data;
+          return (context?.deletions || []).length > 0 || (context?.sources || []).length > 0;
         }
       );
       const deletions = R.flatten(
         contextWithDeletionEvents.map((e) => {
-          const { event_dependencies } = e.data.data.extensions[STIX_EXT_OCTI];
-          return [...(event_dependencies?.deletions || []), ...(event_dependencies?.sources || [])];
+          const { context } = e.data;
+          return [...(context?.deletions || []), ...(context?.sources || [])];
         })
       );
       const byTypes = R.groupBy((e) => e.type, deletions);

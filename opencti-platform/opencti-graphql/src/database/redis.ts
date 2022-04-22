@@ -19,7 +19,7 @@ import {
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
-import { DatabaseError, FunctionalError } from '../config/errors';
+import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
 import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
@@ -39,7 +39,6 @@ import type {
 } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
-import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const INCLUDE_INFERENCES = booleanConf('redis:include_inferences', false);
@@ -375,7 +374,6 @@ const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreO
     type: EVENT_TYPE_MERGE,
     message,
     origin: user.origin,
-    markings: instance[RELATION_OBJECT_MARKING] ?? [],
     data: stix,
     context: {
       previous_patch: jsonpatch.compare(instance, previous),
@@ -399,16 +397,19 @@ export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance
   // Build and send the event
   const stix = convertStoreToStix(instance) as StixCoreObject;
   const previousStix = convertStoreToStix(previous) as StixCoreObject;
+  const patch = jsonpatch.compare(stix, previousStix);
+  if (patch.length === 0) {
+    throw UnsupportedError('Update event must contains a valid previous patch');
+  }
   return {
     version: '4',
     type: EVENT_TYPE_UPDATE,
     message,
     origin: user.origin,
-    markings: instance[RELATION_OBJECT_MARKING] ?? [],
     data: stix,
     commit,
     context: {
-      previous_patch: jsonpatch.compare(stix, previousStix)
+      previous_patch: patch
     }
   };
 };
@@ -432,7 +433,6 @@ export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message:
     type: EVENT_TYPE_CREATE,
     message,
     origin: user.origin,
-    markings: instance[RELATION_OBJECT_MARKING] ?? [],
     data: stix,
   };
 };
@@ -491,7 +491,6 @@ const buildDeleteEvent = async (user: AuthUser, instance: StoreObject, message: 
     type: EVENT_TYPE_DELETE,
     message,
     origin: user.origin,
-    markings: instance[RELATION_OBJECT_MARKING] ?? [],
     data: stix,
     context: {
       deletions: R.map((s) => convertStoreToStix(s) as StixCoreObject, deletions)
@@ -544,8 +543,8 @@ export const fetchStreamInfo = async () => {
   const res: any = await clientBase.xinfo('STREAM', REDIS_STREAM_NAME);
   const [, size, , , , , , lastId, , , , [firstId], ,] = res;
   const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
-  const lastEvementTime = lastId.split('-')[0];
-  const lastEventDate = utcDate(parseInt(lastEvementTime, 10)).toISOString();
+  const lastEventTime = lastId.split('-')[0];
+  const lastEventDate = utcDate(parseInt(lastEventTime, 10)).toISOString();
   return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: size };
 };
 

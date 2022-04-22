@@ -290,6 +290,7 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
         extension_type: 'property-extension',
         labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
         description: instance.x_opencti_description,
+        score: instance.x_opencti_score,
       })
     }
   };
