@@ -6,6 +6,7 @@ import { storeFullLoadById } from '../../../src/database/middleware';
 import { elAggregationCount } from '../../../src/database/engine';
 import { convertEntityTypeToStixType } from '../../../src/schema/schemaUtils';
 import { convertStoreToStix } from '../../../src/database/stix-converter';
+import { utcDate } from '../../../src/utils/format';
 
 describe('Live streams tests', () => {
   beforeAll(async () => {
@@ -51,7 +52,8 @@ describe('Live streams tests', () => {
       // Check the stream rebuild
       const report = await storeFullLoadById(ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
       const stixReport = convertStoreToStix(report);
-      const events = await fetchStreamEvents('http://localhost:4000/stream/live');
+      const now = utcDate().toISOString();
+      const events = await fetchStreamEvents(`http://localhost:4000/stream/live?from=0&recover=${now}`);
       expect(events.length).toBe(SYNC_LIVE_EVENTS_SIZE);
       await checkResultCounting(events);
       for (let index = 0; index < events.length; index += 1) {

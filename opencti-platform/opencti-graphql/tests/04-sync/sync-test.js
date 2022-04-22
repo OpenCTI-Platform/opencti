@@ -81,7 +81,7 @@ const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
-describe('Database provision', () => {
+describe.skip('Database sync testing', () => {
   const checkPreSyncContent = async () => {
     const initObjectAggregation = await elAggregationCount(ADMIN_USER, 'Stix-Object', 'entity_type');
     const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));

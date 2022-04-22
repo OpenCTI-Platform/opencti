@@ -25,9 +25,8 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  stixLoadById,
   mergeEntities,
-  patchAttribute,
+  patchAttribute, storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { now } from '../utils/format';
 import {
@@ -222,14 +221,14 @@ const executeMerge = async (user, context, element) => {
 const executeRuleApply = async (user, taskId, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
-  const instance = await stixLoadById(user, element.internal_id);
+  const instance = await storeLoadByIdWithRefs(user, element.internal_id);
   const event = buildCreateEvent(user, instance, '-');
-  await rulesApplyDerivedEvents(`task--${taskId}`, [event], [rule]);
+  await rulesApplyDerivedEvents([event], [rule]);
 };
 
 const executeRuleClean = async (context, taskId, element) => {
   const { rule } = context;
-  await rulesCleanHandler(`task--${taskId}`, [element], [rule]);
+  await rulesCleanHandler([element], [rule]);
 };
 
 const executeProcessing = async (user, taskId, processingElements) => {
