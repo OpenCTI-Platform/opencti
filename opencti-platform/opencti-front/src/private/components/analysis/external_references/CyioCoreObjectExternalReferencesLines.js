@@ -39,6 +39,7 @@ import Security, {
 } from '../../../../utils/Security';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import CyioExternalReferencePopover from './CyioExternalReferencePopover';
+import { toastGenericError } from "../../../../utils/bakedToast";
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -167,7 +168,7 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
         this.handleCloseDialog();
         this.props.refreshQuery();
       },
-      // onError: (err) => console.log('ExtRefRemoveDarkLightMutationError', err),
+      onError: (err) => toastGenericError('Request Failed'),
     });
     // commitMutation({
     //   mutation: cyioExternalReferenceMutationRelationDelete,

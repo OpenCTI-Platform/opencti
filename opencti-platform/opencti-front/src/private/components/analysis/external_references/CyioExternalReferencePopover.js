@@ -20,6 +20,7 @@ import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import CyioExternalReferenceEdition from './CyioExternalReferenceEdition';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -116,7 +117,7 @@ class CyioExternalReferencePopover extends Component {
         this.handleCloseDelete();
         this.props.refreshQuery();
       },
-      // onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
+      onError: (err) => toastGenericError('Request Failed'),
     });
     // commitMutation({
     //   mutation: cyioExternalReferencePopoverDeletionMutation,
@@ -257,7 +258,6 @@ CyioExternalReferencePopover.propTypes = {
   externalReference: PropTypes.object,
   refreshQuery: PropTypes.func,
   externalReferenceId: PropTypes.string,
-  refreshQuery: PropTypes.func,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -16,6 +16,7 @@ import {
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   header: {
@@ -140,7 +141,7 @@ class CyioExternalReferenceEditionContainer extends Component {
         this.props.handleClose();
         this.props.refreshQuery();
       },
-      // onError: (err) => console.log('ExtRefEditionDarkLightMutationError', err),
+      onError: (err) => toastGenericError('Request Failed'),
     });
   }
 
