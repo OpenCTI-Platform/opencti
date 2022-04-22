@@ -20,11 +20,7 @@ describe('Stix opencti converter', () => {
 
   const rawDataCompare = async (rawId, standardId) => {
     let rawData = dataMap.get(rawId);
-    console.log(`Comparing ${rawId}`);
-    // const stixData = await loadStixById(ADMIN_USER, rawId);
     const stixData = await stixLoadById(ADMIN_USER, rawId);
-    console.log(JSON.stringify(rawData));
-    console.log(JSON.stringify(stixData));
     let remainingData = { ...stixData };
     if (stixData.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
       rawData = R.dissoc('objects', rawData);
@@ -39,9 +35,6 @@ describe('Stix opencti converter', () => {
       remainingData = R.dissoc(rawKey, remainingData);
       const initialData = rawData[rawKey];
       const refetchData = stixData[rawKey];
-      console.log(`Comparing ${rawKey}`);
-      console.log(`refetchData: ${JSON.stringify(refetchData)}`);
-      console.log(`initialData: ${JSON.stringify(initialData)}`);
       if (rawKey === 'id') { // Because of standard_id generation
         if (standardId) { // Cant be compare for sighting and relationship
           expect(refetchData).toBe(standardId);
@@ -80,7 +73,6 @@ describe('Stix opencti converter', () => {
       }
     }
     // Testing opencti added data
-    console.log('Testing opencti added data');
     expect(remainingData.extensions[STIX_EXT_OCTI].id).not.toBeNull();
     const opencti_type = remainingData.extensions[STIX_EXT_OCTI].type;
     expect(convertTypeToStixType(opencti_type)).toEqual(rawData.type);
@@ -117,15 +109,15 @@ describe('Stix opencti converter', () => {
       remainingData = R.dissoc('name', remainingData);
     }
     // All remaining data must be extensions
-    const remain = R.mergeAll(
-      Object.entries(remainingData)
-        .filter(([k]) => !k.startsWith('x_') && k !== 'extensions')
-        .map(([k, v]) => ({ [k]: v }))
-    );
-    if (!R.isEmpty(remain)) {
-      console.log('----------- Remain -----------');
-      console.log(remain);
-    }
+    // const remain = R.mergeAll(
+    //   Object.entries(remainingData)
+    //     .filter(([k]) => !k.startsWith('x_') && k !== 'extensions')
+    //     .map(([k, v]) => ({ [k]: v }))
+    // );
+    // if (!R.isEmpty(remain)) {
+    //   console.log('----------- Remain -----------');
+    //   console.log(remain);
+    // }
     const notExtSize = Object.keys(remainingData)
       .filter((key) => !key.startsWith('x_') && key !== 'extensions').length;
     expect(notExtSize).toEqual(0);

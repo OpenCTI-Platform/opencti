@@ -134,17 +134,9 @@ export const checkStreamData = (type, data, context) => {
 };
 
 export const checkStreamGenericContent = (type, dataEvent) => {
-  const { data, markings, message, context } = dataEvent;
-  expect(markings).toBeDefined();
+  const { data, message, context } = dataEvent;
   expect(message.includes('undefined')).toBeFalsy();
   expect(message.includes('[object Object]')).toBeFalsy();
-  if (markings.length > 0) {
-    markings.forEach((m) => {
-      // Markings can have internal or stix depending on the loading.
-      // To have the best performance, sometimes we use directly internal.
-      expect(isUuid(m) || isStixId(m)).toBeTruthy();
-    });
-  }
   expect(message).not.toBeNull();
   checkStreamData(type, data, context);
 };
