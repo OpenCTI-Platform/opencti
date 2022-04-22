@@ -43,7 +43,7 @@ import { dateFormat, parse } from '../../../../utils/Time';
 import EntryType from '../../common/form/EntryType';
 import RiskStatus from '../../common/form/RiskStatus';
 import LoggedBy from '../../common/form/LoggedBy';
-
+import { toastGenericError } from '../../../../utils/bakedToast';
 const styles = (theme) => ({
   container: {
     margin: 0,
@@ -176,7 +176,7 @@ class RiskTrackingPopover extends Component {
         this.handleClose();
         this.props.refreshQuery();
       },
-      onError: (err) => console.log('RiskTrackingPopoverError', err),
+      onError: (err) => toastGenericError('Request Failed'),
     });
 
     // commitMutation({
@@ -212,7 +212,7 @@ class RiskTrackingPopover extends Component {
         this.handleCloseDelete();
         this.props.refreshQuery();
       },
-      onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
+      onError: (err) => toastGenericError('Request Failed'),
     });
     // commitMutation({
     //   mutation: RiskTrackingPopoverDeletionMutation,
