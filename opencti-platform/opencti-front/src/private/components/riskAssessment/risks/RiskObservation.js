@@ -91,7 +91,10 @@ class RiskObservation extends Component {
             variables={{ id: risk.id, first: 10, offset: 0 }}
             render={({ error, props }) => {
               if (error) {
-                return toastGenericError('Request Failed');
+                return (
+                  toastGenericError('Failed to get risk observation'),
+                  console.error(error)
+                );
               }
               if (props) {
                 return (

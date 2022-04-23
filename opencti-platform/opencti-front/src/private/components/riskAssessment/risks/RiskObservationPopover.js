@@ -124,7 +124,6 @@ class RiskObservationPopover extends Component {
       data,
       handleRemove,
     } = this.props;
-    console.log('RiskObservationPopover', data);
     return (
       <>
         <IconButton
@@ -268,7 +267,7 @@ class RiskObservationPopover extends Component {
                     {t('Observation Target(s)')}
                   </DialogContentText>
                   {data.subjects && data.subjects.map((subject, i) => {
-                    if (subject.subject_context === 'target') {
+                    if (subject && subject.subject_context === 'target') {
                       return (
                         <Typography key={i} variant="h2" color="primary">
                           {subject.subject_ref && t(subject.subject_ref.name)}
@@ -294,7 +293,7 @@ class RiskObservationPopover extends Component {
                     {t('Component(s)')}
                   </DialogContentText>
                   {data.subjects && data.subjects.map((subject, i) => {
-                    if (subject.subject_context === 'secondary_target') {
+                    if (subject && subject.subject_context === 'secondary_target') {
                       return (
                         <Typography key={i} variant="h2" color="primary">
                           {subject.subject_ref && t(subject.subject_ref.name)}
