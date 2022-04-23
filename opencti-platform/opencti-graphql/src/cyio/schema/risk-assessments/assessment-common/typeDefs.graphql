@@ -243,8 +243,8 @@
     deleteMitigatingFactor(riskId: ID, id: ID!): String!
     editMitigatingFactor(id: ID!, input: [EditInput]!, commitMessage: String): MitigatingFactor
     # Observation
-    createObservation(input: ObservationAddInput): Observation
-    deleteObservation(id: ID!): String!
+    createObservation(poamId: ID, resultId: ID, input: ObservationAddInput): Observation
+    deleteObservation(poamId: ID, resultId: ID, id: ID!): String!
     editObservation(id: ID!, input: [EditInput]!, commitMessage: String): Observation
     # Origins
     createOrigin(input: OriginAddInput): Origin
@@ -263,8 +263,8 @@
     deleteRiskLogEntry(riskId: ID, id: ID!): String!
     editRiskLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): RiskLogEntry
     # Risk 
-    createRisk(input: RiskAddInput): Risk
-    deleteRisk(id: ID!): String!
+    createRisk(poamId: ID, resultId: ID, input: RiskAddInput): Risk
+    deleteRisk(poamId: ID, resultId: ID, id: ID!): String!
     editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk
     # Risk Response
     createRiskResponse(input: RiskResponseAddInput): RiskResponse
@@ -1690,6 +1690,16 @@ type OscalTaskEdge {
     vendor_dependency: RiskAssertionState
     "Identifies a control impacted by this risk."
     impacted_control_id: String
+    # Risk Response
+    "Identifies the type of response to the risk"
+    response_type: ResponseType
+    "Identifies whether this is a recommendation, such as from an assessor or tool, or an actual plan accepted by the system owner."
+    lifecycle: RiskLifeCyclePhase
+    # POAM ID
+    "Identifies the POAM ID associated with the related POAM Item referencing this Risk"
+    poam_id: String
+    "Indicate the number of occurrences of the risk based on observations associated with the risk"
+    occurrences: Int
   }
   input RiskAddInput {
     "Identifies the name for the risk."
@@ -1721,16 +1731,20 @@ type OscalTaskEdge {
     created
     "Modified"
     modified
-    "Label"
-    labels
+    "POAM ID"
+    poam_id
     "Name"
     name
     "Risk Level"
     risk_level
     "Risk Status"
     risk_status
+    "Occurrences"
+    occurrences
     "Deadline"
     deadline
+    "Label"
+    label_name
   }
   # Filtering Types
   input RisksFiltering {
@@ -1746,6 +1760,8 @@ type OscalTaskEdge {
     modified
     "Label"
     label_name
+    "Risk Level"
+    risk_level
     "Risk Status"
     risk_status
     "Deadline"
@@ -1885,7 +1901,7 @@ type OscalTaskEdge {
     "Indicates the type of subject"
     subject_type: SubjectType!
     "Identifies a reference to a component, inventory-item, location, party, user, or resource."
-    subject_ref: SubjectTarget
+    subject_ref: SubjectTarget!
   }
   input SubjectAddInput {
     "Identifies the name for the referenced subject."

@@ -108,6 +108,7 @@ const activityReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -132,6 +133,7 @@ const actorReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -148,6 +150,7 @@ const assessmentPlatformReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -167,6 +170,7 @@ const assessmentSubjectReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -186,6 +190,7 @@ const associatedActivityReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -203,6 +208,7 @@ const characterizationReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -221,6 +227,7 @@ const evidenceReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -239,6 +246,7 @@ const facetReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -257,6 +265,7 @@ const logEntryAuthorReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -271,6 +280,7 @@ const mitigatingFactorReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -296,6 +306,7 @@ const observationReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -323,6 +334,7 @@ const originReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -338,6 +350,7 @@ const requiredAssetReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -355,6 +368,7 @@ const riskReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -383,6 +397,10 @@ const riskReducer = (item) => {
     ...(item.priority && {priority: item.priority}),
     ...(item.vendor_dependency && {vendor_dependency: item.vendor_dependency}),
     ...(item.impacted_control_id && {impacted_control_iri: item.impacted_control_id}),
+    ...(item.response_type && {response_type: item.response_type}),
+    ...(item.lifecycle && {lifecycle: item.lifecycle}),
+    ...(item.poam_id && {poam_id: item.poam_id}),
+    ...(item.occurrences && {occurrences: item.occurrences}),
   }
 }
 const riskLogReducer = (item) => {
@@ -392,6 +410,7 @@ const riskLogReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -418,6 +437,7 @@ const riskResponseReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -443,6 +463,7 @@ const subjectReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -461,6 +482,7 @@ const taskReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -492,6 +514,7 @@ const vulnerabilityFacetReducer = (item) => {
   }
 
   return {
+    iri: item.iri,
     id: item.id,
     standard_id: item.id,
     ...(item.object_type && {entity_type: item.object_type}),
@@ -553,7 +576,7 @@ export const selectActivityByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(activityPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(activityPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -712,7 +735,7 @@ export const selectActorByIriQuery = (iri, select) => {
   if (!select.includes('actor_type')) select.push('actor_type');
   const { selectionClause, predicates } = buildSelectVariables(actorPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -851,7 +874,7 @@ export const selectAssessmentPlatformByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(assessmentPlatformPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(assessmentPlatformPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1006,7 +1029,7 @@ export const selectAssessmentSubjectByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(assessmentSubjectPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(assessmentSubjectPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1147,7 +1170,7 @@ export const selectAssociatedActivityByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(associatedActivityPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(associatedActivityPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1302,7 +1325,7 @@ export const selectCharacterizationByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(characterizationPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(characterizationPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1471,7 +1494,7 @@ export const selectEvidenceByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(evidencePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(evidencePredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1646,7 +1669,7 @@ export const selectFacetByIriQuery = (iri, select) => {
 
   const { selectionClause, predicates } = buildSelectVariables(predicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1801,7 +1824,7 @@ export const selectLogEntryAuthorByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(logEntryAuthorPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(logEntryAuthorPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -1943,7 +1966,7 @@ export const selectMitigatingFactorByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(mitigatingFactorPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(mitigatingFactorPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2077,7 +2100,7 @@ export const selectObservationByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(observationPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(observationPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2224,7 +2247,7 @@ export const selectOriginByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(originPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(originPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2403,7 +2426,7 @@ export const selectRequiredAssetByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(requiredAssetPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(requiredAssetPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2534,19 +2557,25 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
 
-  // Update select to impact what predicates get retrieved if looking to calculate risk level
+  // Update select to collect additional predicates if looking to calculate risk level
   if (select.includes('risk_level')) {
-    select.push('cvss20_base_score');
-    select.push('cvss20_temporal_score');
-    select.push('cvss30_base_score');
-    select.push('cvss30_temporal_score');
-    select.push('exploit_available');
-    select.push('exploitability');
+    select.push('cvss2_base_score');
+    select.push('cvss2_temporal_score');
+    select.push('cvss3_base_score');
+    select.push('cvss3_temporal_score');
+    select.push('available_exploit');
+    select.push('exploitability_ease');
+  }
+  // Update select to collect additional predicates if looking for response type
+  if (select.includes('response_type')|| select.includes('response_lifecycle')) {
+    select.push('remediation_response_date')
+    select.push('remediation_type');
+    select.push('remediation_lifecycle')
   }
 
   const { selectionClause, predicates } = buildSelectVariables(riskPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2560,12 +2589,22 @@ export const selectAllRisks = (select, args) => {
   
   // Update select to impact what predicates get retrieved if looking to calculate risk level
   if (select.includes('risk_level')) {
-    select.push('cvss20_base_score');
-    select.push('cvss20_temporal_score');
-    select.push('cvss30_base_score');
-    select.push('cvss30_temporal_score');
-    select.push('exploit_available');
-    select.push('exploitability');
+    select.push('cvss2_base_score');
+    select.push('cvss2_temporal_score');
+    select.push('cvss3_base_score');
+    select.push('cvss3_temporal_score');
+    select.push('available_exploit');
+    select.push('exploitability_ease');
+  }
+  // Update select to collect additional predicates if looking for response type
+  if (select.includes('response_type')|| select.includes('response_lifecycle')) {
+    select.push('remediation_response_date')
+    select.push('remediation_type');
+    select.push('remediation_lifecycle')
+  }
+  // Update select to collect related observation count
+  if (select.includes('occurrences')) {
+    select.push('related_observations')
   }
 
   if (args !== undefined ) {
@@ -2707,7 +2746,7 @@ export const selectRiskLogEntryByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(riskLogPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(riskLogPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -2867,7 +2906,7 @@ export const selectRiskResponseByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(riskResponsePredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -3021,9 +3060,11 @@ export const selectSubjectQuery = (id, select) => {
 export const selectSubjectByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
+  // defensive code to protect against query not supplying subject type
+  if (!select.hasOwnProperty('subject_type')) select.push('subject_type');
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -3156,7 +3197,7 @@ export const selectOscalTaskByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(oscalTaskPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(oscalTaskPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -4145,44 +4186,66 @@ export const riskPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // Predicate mappings used to gather data for risk level scoring
-  cvss20_base_score: {
+  cvss2_base_score: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_base_score>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_base_score");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss2_base_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  cvss20_temporal_score: {
+  cvss2_temporal_score: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_temporal_score>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_temporal_score");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss2_temporal_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  // cvss20_environmental_score: {
+  // cvss2_environmental_score: {
   //   predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss20_environmental_score>",
-  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss20_environmental_score");},
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss2_environmental_score");},
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
-  cvss30_base_score: {
+  cvss3_base_score: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_base_score>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_base_score");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss3_base_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  cvss30_temporal_score: {
+  cvss3_temporal_score: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_temporal_score>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_temporal_score");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss3_temporal_score");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  // cvss30_environmental_score: {
+  // cvss3_environmental_score: {
   //   predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#cvss30_environmental_score>",
-  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss30_environmental_score");},
+  //   binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:decimal` : null,  this.predicate, "cvss3_environmental_score");},
   //   optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   // },
-  exploit_available: {
+  available_exploit: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploit_available>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "exploit_available");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value !== undefined ? `"${value}"^^xsd:boolean` : null, this.predicate, "available_exploit");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  exploitability: {
+  exploitability_ease: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#characterizations>/<http://csrc.nist.gov/ns/oscal/assessment/common#facets>/<http://csrc.nist.gov/ns/oscal/assessment/common#exploitability>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "exploitability");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "exploitability_ease");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  // Predicate mappings used to gather data for risk response
+  remediation_response_date: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://darklight.ai/ns/common#modified>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "remediation_response_date");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  remediation_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#response_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediation_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  remediation_lifecycle: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#remediations>/<http://csrc.nist.gov/ns/oscal/assessment/common#lifecycle>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remediation_lifecycle");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  // Predicate mappings used to gather data for POAM ID
+  poam_id: {
+    predicate: "^<http://csrc.nist.gov/ns/oscal/assessment/common#related_risks>/<http://fedramp.gov/ns/oscal#poam_id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "poam_id");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }

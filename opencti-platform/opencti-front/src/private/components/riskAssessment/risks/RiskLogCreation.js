@@ -137,9 +137,7 @@ class RiskLogCreation extends Component {
       open: false,
       onSubmit: false,
       displayCancel: false,
-      logged_by:[{
-        party: '',
-      }],
+      logged_by: [],
     };
   }
 
@@ -160,13 +158,13 @@ class RiskLogCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-     this.setState({
-      logged_by:[{
-        party: values.logged_by,
-      }],
-    })
-
-    
+    if(values.logged_by.length > 0){
+      this.setState({
+        logged_by: values.logged_by.map((value) => {
+          return {'party': value }
+        }),
+      })
+    }
     const adaptedValues = evolve(
       {
         event_start: () => values.event_start === null ? null : parse(values.event_start).format(),
@@ -189,7 +187,7 @@ class RiskLogCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/tracking`);
+        this.props.refreshQuery();
       },
       onError: (err) => {
         console.error('riskLogCreationValueError', err)
@@ -369,7 +367,7 @@ class RiskLogCreation extends Component {
               description: '',
               event_start: '',
               event_end: null,
-              logged_by: '',
+              logged_by: [],
               status_change: null,
               related_responses: [],
             }}
@@ -534,6 +532,7 @@ class RiskLogCreation extends Component {
                         <Field
                           component={SelectField}
                           name="related_responses"
+                          multiple={true}
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -541,7 +540,7 @@ class RiskLogCreation extends Component {
                           containerstyle={{ width: '100%' }}
                         >
                           {riskStatusResponse.map((value, i) => (
-                            <MenuItem value={value.name} key={i}>
+                            <MenuItem value={value.id} key={i}>
                               {value.name}
                             </MenuItem>
                           ))}
@@ -680,6 +679,7 @@ RiskLogCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
+  refreshQuery: PropTypes.func,
   t: PropTypes.func,
   contextual: PropTypes.bool,
   display: PropTypes.bool,
