@@ -168,7 +168,10 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
         this.handleCloseDialog();
         this.props.refreshQuery();
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        toastGenericError('Failed to remove external reference');
+        console.error(err);
+      },
     });
     // commitMutation({
     //   mutation: cyioExternalReferenceMutationRelationDelete,

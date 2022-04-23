@@ -117,7 +117,10 @@ class CyioExternalReferencePopover extends Component {
         this.handleCloseDelete();
         this.props.refreshQuery();
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        toastGenericError('Failed to delete external reference');
+        console.error(err);
+      },
     });
     // commitMutation({
     //   mutation: cyioExternalReferencePopoverDeletionMutation,

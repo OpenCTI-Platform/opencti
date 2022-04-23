@@ -141,7 +141,10 @@ class CyioExternalReferenceEditionContainer extends Component {
         this.props.handleClose();
         this.props.refreshQuery();
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        toastGenericError('Failed to update external reference');
+        console.error(err);
+      },
     });
   }
 
