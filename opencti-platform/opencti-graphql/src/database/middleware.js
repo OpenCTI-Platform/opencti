@@ -1062,7 +1062,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
   const updatedRelations = updateConnections
     .filter((u) => isStixRelationShipExceptMeta(u.entity_type))
-    .map((c) => ({ id: c.standard_id }));
+    .map((c) => c.standard_id);
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
@@ -1365,19 +1365,19 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
       const filteredIns = ins
         .filter((n) => n.key === input.key)
         .filter((o) => {
-          if (input.key !== IDS_STIX) {
-            return true;
+          if (input.key === IDS_STIX) {
+            const previous = getPreviousInstanceValue(o.key, instance);
+            if (o.operation === UPDATE_OPERATION_ADD) {
+              const newValues = o.value.filter((p) => !(previous || []).includes(p));
+              return newValues.filter((p) => isTrustedStixId(p)).length > 0;
+            }
+            if (o.operation === UPDATE_OPERATION_REMOVE) {
+              const newValues = (previous || []).filter((p) => !o.value.includes(p));
+              return newValues.filter((p) => isTrustedStixId(p)).length > 0;
+            }
+            return o.value.filter((p) => isTrustedStixId(p)).length > 0;
           }
-          const previous = getPreviousInstanceValue(o.key, instance);
-          if (o.operation === UPDATE_OPERATION_ADD) {
-            const newValues = o.value.filter((p) => !(previous || []).includes(p));
-            return newValues.filter((p) => isTrustedStixId(p)).length > 0;
-          }
-          if (o.operation === UPDATE_OPERATION_REMOVE) {
-            const newValues = (previous || []).filter((p) => !o.value.includes(p));
-            return newValues.filter((p) => isTrustedStixId(p)).length > 0;
-          }
-          return o.value.filter((p) => isTrustedStixId(p)).length > 0;
+          return !input.key.startsWith('i_');
         });
       if (filteredIns.length > 0) {
         const updatedInputsFiltered = filteredIns.map((filteredInput) => {
@@ -2608,17 +2608,17 @@ const buildEntityData = async (user, input, type, opts = {}) => {
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
     // Get statuses
-    // TODO JRI Find way
-    // const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
-    //   first: 1,
-    //   orderBy: 'order',
-    //   orderMode: 'asc',
-    //   filters: [{ key: 'type', values: [type] }],
-    //   connectionFormat: false,
-    // });
-    // if (statuses.length > 0) {
-    //   data = R.assoc('x_opencti_workflow_id', R.head(statuses).id, data);
-    // }
+    // TODO JRI??? Find a way to prevent fetch every times (distributed configuration)
+    const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
+      first: 1,
+      orderBy: 'order',
+      orderMode: 'asc',
+      filters: [{ key: 'type', values: [type] }],
+      connectionFormat: false,
+    });
+    if (statuses.length > 0) {
+      data = R.assoc('x_opencti_workflow_id', R.head(statuses).id, data);
+    }
   }
   // -- Aliased entities
   if (isStixObjectAliased(type)) {

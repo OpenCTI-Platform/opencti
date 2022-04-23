@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
+import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import type { Operation } from 'fast-json-patch';
 import { createStreamProcessor, lockResource } from '../database/redis';
 import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
@@ -38,10 +38,12 @@ import PartOfTargetsRule from '../rules/part-of-targets/PartOfTargetsRule';
 import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRule';
 import RuleSightingIncident from '../rules/sighting-incident/SightingIncidentRule';
 import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule';
-import type { RuleRuntime, RuleDefinition } from '../types/rules';
+import type { RuleDefinition, RuleRuntime } from '../types/rules';
 import type {
   BasicManagerEntity,
-  BasicRuleEntity, BasicStoreCommon, BasicStoreEntity,
+  BasicRuleEntity,
+  BasicStoreCommon,
+  BasicStoreEntity,
   BasicTaskEntity,
 } from '../types/store';
 import type { AuthUser } from '../types/user';
@@ -51,7 +53,7 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { DeleteEvent, Event, MergeEvent, StreamEvent, UpdateEvent } from '../types/event';
 
-let activatedRules: Array<RuleRuntime> = [];
+// let activatedRules: Array<RuleRuntime> = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 500;
@@ -116,12 +118,9 @@ export const setRuleActivation = async (user: AuthUser, ruleId: string, active: 
   // Update the rule
   await createEntity(user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
   // Refresh the activated rules
-  activatedRules = await getActivatedRules();
+  // activatedRules = await getActivatedRules();
   if (ENABLED_RULE_ENGINE) {
-    const tasksFilters = [
-      { key: 'type', values: ['RULE'] },
-      { key: 'rule', values: [ruleId] },
-    ];
+    const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
     const args = { filters: tasksFilters, connectionFormat: false };
     const tasks = await listEntities<BasicTaskEntity>(user, [ENTITY_TYPE_TASK], args);
     await Promise.all(tasks.map((t) => deleteTask(user, t.internal_id)));
@@ -139,6 +138,7 @@ const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
     data: stix,
   };
 };
+
 const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
   const { data, context } = event;
   const events: Array<Event> = [];
@@ -247,28 +247,29 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>) => {
   await elList<BasicStoreCommon>(RULE_MANAGER_USER, READ_DATA_INDICES, { filters, callback });
 };
 
-// noinspection TypeScriptValidateTypes
 export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<RuleRuntime> = []) => {
-  if (isEmptyField(events) || events.length === 0) return;
-  const rules = forRules.length > 0 ? forRules : activatedRules;
+  if (isEmptyField(events) || events.length === 0) {
+    return;
+  }
+  // TODO JRI??? Find a way to prevent fetch every times (distributed configuration)
+  const rules = forRules.length > 0 ? forRules : await getActivatedRules();
   for (let index = 0; index < events.length; index += 1) {
     const event = events[index];
     const { type, data } = event;
     const internalId = data.extensions[STIX_EXT_OCTI].id;
-    // logApp.debug('[RULE] Processing event', { eventId });
     try {
       // In case of merge convert the events to basic events and restart the process
       if (type === EVENT_TYPE_MERGE) {
         const mergeEvent = event as MergeEvent;
         const derivedEvents = await ruleMergeHandler(mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        await rulesApplyDerivedEvents(derivedEvents);
+        await rulesApplyHandler(derivedEvents);
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
         const deleteEvent = event as DeleteEvent;
         // const element: StixCoreObject = { ...data, object_marking_refs: markings };
-        const contextDeletions = (deleteEvent.context.deletions ?? []).map((d) => d.extensions[STIX_EXT_OCTI].id);
+        const contextDeletions = (deleteEvent.context?.deletions ?? []).map((d) => d.extensions[STIX_EXT_OCTI].id);
         const deletionIds = [internalId, ...contextDeletions];
         await applyCleanupOnDependencyIds(deletionIds);
       }
@@ -277,30 +278,30 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
         const updateEvent = event as UpdateEvent;
         const previousPatch = updateEvent.context.previous_patch;
         const previousStix = jsonpatch.applyPatch<StixCoreObject>(data, previousPatch).newDocument;
-        const patchOperations = jsonpatch.compare(previousStix, data);
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
           // TODO Improve filtering definition to rely on attribute values
           const isPreviouslyMatched = isMatchRuleFilters(rule, previousStix);
           const isCurrentMatched = isMatchRuleFilters(rule, data);
           // Rule doesnt match anymore, need to cleanup
-          const isNoLongerValid = isPreviouslyMatched && !isCurrentMatched;
-          if (isNoLongerValid) {
+          if (isPreviouslyMatched && !isCurrentMatched) {
             await applyCleanupOnDependencyIds([internalId]);
-          } else { // Still valid but need to be cleanup if an attribute dependency has changed
-            const attributeDependencies = getAttributesImpactDependencies(rule, patchOperations);
-            const deletionIds = attributeDependencies.map((k) => {
-              const v = (previousStix as any)[k];
-              const dep = Array.isArray(v) ? v.join(',') : v;
-              return `${internalId}_${k}:${dep}`;
-            });
-            await applyCleanupOnDependencyIds(deletionIds);
+          } else {
+            const attributeDependencies = getAttributesImpactDependencies(rule, previousPatch);
+            // Still valid but need to be cleanup if an attribute dependency has changed
+            if (attributeDependencies.length > 0) {
+              const deletionIds = attributeDependencies.map((k) => {
+                const v = (previousStix as any)[k];
+                const dep = Array.isArray(v) ? v.join(',') : v;
+                return `${internalId}_${k}:${dep}`;
+              });
+              await applyCleanupOnDependencyIds(deletionIds);
+            }
           }
           // Rule match, need to apply
           if (isCurrentMatched) {
             const derivedEvents = await rule.insert(data);
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            await rulesApplyDerivedEvents(derivedEvents);
+            await rulesApplyHandler(derivedEvents);
           }
         }
       }
@@ -311,8 +312,7 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
           const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
             const derivedEvents = await rule.insert(data);
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            await rulesApplyDerivedEvents(derivedEvents);
+            await rulesApplyHandler(derivedEvents);
           }
         }
       }
@@ -320,11 +320,6 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
       await handleRuleError(event, e);
     }
   }
-};
-
-export const rulesApplyDerivedEvents = async (derivedEvents: Array<Event>, forRules: Array<RuleRuntime> = []): Promise<void> => {
-  // eslint-disable-next-line no-use-before-define
-  await rulesApplyHandler(derivedEvents, forRules);
 };
 
 export const rulesCleanHandler = async (instances: Array<BasicStoreCommon>, rules: Array<RuleRuntime>, deletedDependencies: Array<string> = []) => {
@@ -338,7 +333,7 @@ export const rulesCleanHandler = async (instances: Array<BasicStoreCommon>, rule
         // In case of inference of inference, element can be recursively cleanup by the deletion system
         if (processingElement) {
           const derivedEvents = await rule.clean(processingElement, deletedDependencies);
-          await rulesApplyDerivedEvents(derivedEvents);
+          await rulesApplyHandler(derivedEvents);
         }
       }
     }
@@ -395,7 +390,7 @@ const initRuleManager = () => {
       lock = await lockResource([RULE_ENGINE_KEY]);
       logApp.info('[OPENCTI-MODULE] Running rule manager');
       // Start the stream listening
-      activatedRules = await getActivatedRules();
+      // activatedRules = await getActivatedRules();
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler);
       await streamProcessor.start(lastEventId);
       while (syncListening) {

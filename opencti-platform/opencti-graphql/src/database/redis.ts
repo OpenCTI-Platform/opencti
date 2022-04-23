@@ -368,15 +368,16 @@ const pushToStream = async (client: Redis, instance: StoreObject, event: Event) 
 const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>, impacts: any): MergeEvent => {
   const message = generateMergeMessage(instance, sourceEntities);
   const { updatedRelations, dependencyDeletions } = impacts;
-  const stix = convertStoreToStix(instance) as StixCoreObject;
+  const previousStix = convertStoreToStix(previous) as StixCoreObject;
+  const currentStix = convertStoreToStix(instance) as StixCoreObject;
   return {
     version: '4',
     type: EVENT_TYPE_MERGE,
     message,
     origin: user.origin,
-    data: stix,
+    data: currentStix,
     context: {
-      previous_patch: jsonpatch.compare(instance, previous),
+      previous_patch: jsonpatch.compare(currentStix, previousStix),
       sources: R.map((s) => convertStoreToStix(s) as StixCoreObject, sourceEntities),
       deletions: R.map((s) => convertStoreToStix(s) as StixCoreObject, dependencyDeletions),
       shifts: updatedRelations,

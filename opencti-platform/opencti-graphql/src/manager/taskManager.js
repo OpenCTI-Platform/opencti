@@ -40,7 +40,7 @@ import { elPaginate, elUpdate } from '../database/engine';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { rulesCleanHandler, rulesApplyDerivedEvents, getRule } from './ruleManager';
+import { rulesCleanHandler, rulesApplyHandler, getRule } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
 import { listAllRelations } from '../database/middleware-loader';
@@ -223,7 +223,7 @@ const executeRuleApply = async (user, taskId, context, element) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(user, element.internal_id);
   const event = buildCreateEvent(user, instance, '-');
-  await rulesApplyDerivedEvents([event], [rule]);
+  await rulesApplyHandler([event], [rule]);
 };
 
 const executeRuleClean = async (context, taskId, element) => {

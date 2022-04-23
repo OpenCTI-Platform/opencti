@@ -44,12 +44,7 @@ describe('Attribute use rule', () => {
       // Check database state
       const afterActivationRelations = await getInferences(RELATION_USES);
       expect(afterActivationRelations.length).toBe(1);
-      const myThreatToParadise = await inferenceLookup(
-        afterActivationRelations,
-        MY_THREAT,
-        PARADISE_RANSOMWARE,
-        RELATION_USES
-      );
+      const myThreatToParadise = await inferenceLookup(afterActivationRelations, MY_THREAT, PARADISE_RANSOMWARE, RELATION_USES);
       expect(myThreatToParadise).not.toBeNull();
       expect(myThreatToParadise[RULE].length).toBe(1);
       expect(myThreatToParadise.confidence).toBe(20); // AVG 2 relations (30 + 10) = 20
