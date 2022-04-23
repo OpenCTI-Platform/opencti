@@ -1,13 +1,18 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
-import { calculateRiskLevel } from '../../riskUtils.js';
+import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
+import { findParentIriQuery, objectMap } from '../../../global/global-utils.js';
 import {
   selectLabelByIriQuery,
   selectExternalReferenceByIriQuery,
   selectNoteByIriQuery,
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
+import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
 import {
   getReducer, 
   insertRiskQuery,
@@ -20,6 +25,7 @@ import {
   selectObservationByIriQuery,
   selectRiskResponseByIriQuery,
   selectRiskLogEntryByIriQuery,
+  deleteOriginByIriQuery,
   selectOriginByIriQuery,
 } from './sparql-query.js';
 
@@ -49,9 +55,55 @@ const riskResolvers = {
         limitSize = limit = (args.first === undefined ? response.length : args.first) ;
         offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
         filterCount = 0;
-        let riskList ;
+
+        // update the risk level and score before sorting
+        for (let risk of response) {
+          risk.risk_level = 'unknown';
+          if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
+            // calculate the risk level
+            const {riskLevel, riskScore} = calculateRiskLevel(risk);
+            risk.risk_score = riskScore;
+            risk.risk_level = riskLevel;
+
+            // clean up
+            delete risk.cvss2_base_score;
+            delete risk.cvss2_temporal_score;
+            delete risk.cvss3_base_score
+            delete risk.cvss3_temporal_score;
+            delete risk.available_exploit;
+            delete risk.exploitability_ease;
+          }
+
+          // retrieve most recent remediation state
+          if (risk.remediation_type !== undefined) {
+            const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
+            if (responseType !== undefined) risk.response_type = responseType;
+            if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
+            // clean up
+            delete risk.remediation_response_date;
+            delete risk.remediation_type;
+            delete risk.remediation_lifecycle;
+          }
+
+          // calculate the occurrence count
+          if (risk.related_observations !== undefined ) {
+            risk.occurrences = risk.related_observations.length;
+          } else { risk.occurrences = 0; }
+  
+          // fix up deviation values
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
+            risk.risk_status = risk.risk_status.replace('_', '-');
+          }
+        }
+
+        // sort the values
+        let riskList, sortBy ;
         if (args.orderedBy !== undefined ) {
-          riskList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+          if (args.orderedBy === 'risk_level') {
+            sortBy = 'risk_score';
+          } else { sortBy = args.orderedBy; }
+          riskList = response.sort(compareValues(sortBy, args.orderMode ));
         } else {
           riskList = response;
         }
@@ -66,32 +118,10 @@ const riskResolvers = {
             continue
           }
 
-          if (risk.id === undefined || risk.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
-            continue;
-          }
-
-          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
-            risk.risk_status = risk.risk_status.replace('_', '-');
-          }
-
-          // calculate the risk level
-          risk.risk_level = 'unknown';
-          if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
-            // calculate the risk level
-            const {riskLevel, riskScore} = calculateRiskLevel(risk);
-            risk.risk_score = riskScore;
-            risk.risk_level = riskLevel;
-
-            // clean up
-            delete risk.cvss20_base_score;
-            delete risk.cvss20_temporal_score;
-            delete risk.cvss30_base_score
-            delete risk.cvss30_temporal_score;
-            delete risk.exploit_available;
-            delete risk.exploitability;
-          }
+          // if (risk.id === undefined || risk.id == null ) {
+          //   console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
+          //   continue;
+          // }
 
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
@@ -168,31 +198,42 @@ const riskResolvers = {
         const reducer = getReducer("RISK");
         let risk = response[0];
 
+        // calculate the risk level
+        risk.risk_level = 'unknown';
+        if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
+          // calculate the risk level
+          const {riskLevel, riskScore} = calculateRiskLevel(risk);
+          risk.risk_score = riskScore;
+          risk.risk_level = riskLevel;
+
+          // clean up
+          delete risk.cvss2_base_score;
+          delete risk.cvss2_temporal_score;
+          delete risk.cvss3_base_score
+          delete risk.cvss3_temporal_score;
+          delete risk.available_exploit;
+          delete risk.exploitability_ease;
+        }
+
+        // retrieve most recent remediation state
+        if (risk.remediation_type !== undefined) {
+          const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
+          if (responseType !== undefined) risk.response_type = responseType;
+          if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
+          // clean up
+          delete risk.remediation_response_date;
+          delete risk.remediation_type;
+          delete risk.remediation_lifecycle;
+        }
+
+        // calculate the occurrence count
+        if (risk.related_observations !== undefined ) {
+          risk.occurrences = risk.related_observations.length;
+        } else { risk.occurrences = 0; }
+
         if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
           console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
           risk.risk_status = risk.risk_status.replace('_', '-');
-        }
-
-        // calculate the risk level
-        risk.risk_level = 'unknown';
-        if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
-          let riskLevel;
-          let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
-          if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
-          if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
-          if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
-          if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
-          if (score == 0) riskLevel = 'very-low';
-          risk.risk_level = riskLevel;
-          risk.risk_score = score;
-
-          // clean up
-          delete risk.cvss20_base_score;
-          delete risk.cvss20_temporal_score;
-          delete risk.cvss30_base_score
-          delete risk.cvss30_temporal_score;
-          delete risk.exploit_available;
-          delete risk.exploitability;
         }
 
         return reducer(risk);  
@@ -210,7 +251,25 @@ const riskResolvers = {
     }
   },
   Mutation: {
-    createRisk: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+    createRisk: async ( _, {poamId, resultId, input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
+      // Ensure either the ID of either a POAM or a Assessment Result is supplied
+      if (poamId === undefined && resultId === undefined) {
+        // Default to the POAM
+        poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      }
+
       // Setup to handle embedded objects to be created
       let origins;
       if (input.origins !== undefined) {
@@ -219,14 +278,27 @@ const riskResolvers = {
       }
 
       // create the Risk
-      const {id, query} = insertRiskQuery(input);
+      const {iri, id, query} = insertRiskQuery(input);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
         queryId: "Create Risk"
       });
 
-      // add the Risk to its supplied parent
+      // attach the Risk to the supplied POAM
+      if (poamId !== undefined && poamId !== null) {
+        const attachQuery = attachToPOAMQuery(poamId, 'risks', iri );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Add Risk to POAM",
+            sparqlQuery: attachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
 
       // create any origins supplied and attach them to the Risk
       if (origins !== undefined && origins !== null ) {
@@ -245,7 +317,13 @@ const riskResolvers = {
       const reducer = getReducer("RISK");
       return reducer(result[0]);
     },
-    deleteRisk: async ( _, {id}, {dbName, dataSources} ) => {
+    deleteRisk: async ( _, {poamId, _resultId, id}, {dbName, dataSources} ) => {
+      // Ensure either the ID of either a POAM or a Assessment Result is supplied
+      if (poamId === undefined && resultId === undefined) {
+        // Default to the POAM
+        poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      }
+
       // check that the risk exists
       const sparqlQuery = selectRiskQuery(id, null);
       let response;
@@ -282,9 +360,22 @@ const riskResolvers = {
         }
       }
 
-      // Detach the Risk from the parent
+      // Detach the Risk from the supplied POAM
+      if (poamId !== undefined && poamId !== null) {
+        const attachQuery = detachFromPOAMQuery(poamId, 'risks', risk.iri );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Detaching Risk from POAM",
+            sparqlQuery: attachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
 
-      // Delete the Observation itself
+      // Delete the Risk itself
       const query = deleteRiskQuery(id);
       try {
         await dataSources.Stardog.delete({
@@ -319,18 +410,62 @@ const riskResolvers = {
       }
       // END WORKAROUND
 
-      const query = updateQuery(
-        `http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}`,
-        "http://csrc.nist.gov/ns/oscal/assessment/common#Risk",
-        input,
-        riskPredicateMap
-      )
-      response = await dataSources.Stardog.edit({
-        dbName,
-        sparqlQuery: query,
-        queryId: "Update Risk"
-      });
-      if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      // Handle 'dynamic' property editing separately
+      for (let editItem of input) {
+        let parentIri, iriTemplate, predicateMap;
+        if (editItem.key === 'poam_id') {
+          // remove edit item so it doesn't get processed again
+          input = input.filter(item => item.key != 'poam_id');
+
+          // find parent IRI of POAM Item 
+          let parentQuery = findParentIriQuery(response[0].iri, editItem.key, riskPredicateMap);
+          let results = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery: parentQuery,
+            queryId: "Select Find Parent",
+            singularizeSchema
+          })
+          if (results.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+          for (let result of results) {
+            let index = result.objectType.indexOf('poam-item');
+            parentIri = result.parentIri[index];
+            iriTemplate = objectMap[result.objectType[index]].iriTemplate;
+            predicateMap = objectMap[result.objectType[index]].predicateMap;
+            break;
+          }
+
+          let newInput = [editItem];
+          const query = updateQuery(
+            parentIri,
+            iriTemplate,
+            newInput,
+            predicateMap
+          );
+          response = await dataSources.Stardog.edit({
+            dbName,
+            sparqlQuery: query,
+            queryId: "Update Risk"
+          });
+          if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+        }
+      }
+
+      if (input.length > 0 ) {
+        const query = updateQuery(
+          `http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}`,
+          "http://csrc.nist.gov/ns/oscal/assessment/common#Risk",
+          input,
+          riskPredicateMap
+        )
+        response = await dataSources.Stardog.edit({
+          dbName,
+          sparqlQuery: query,
+          queryId: "Update Risk"
+        });
+        if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+      }
+
       const select = selectRiskQuery(id, selectMap.getNode("editRisk"));
       const result = await dataSources.Stardog.queryById({
         dbName,
@@ -793,6 +928,52 @@ const riskResolvers = {
         return null;
       }
     },
+    occurrences: async (parent, _, {dbName, dataSources, }) => {
+      if (parent.id === undefined) {
+        return 0;
+      }
+
+      // return occurrences value from parent if already exists
+      if (parent.hasOwnProperty('occurrences')) return parent.occurrences;
+
+      const id = parent.id
+      const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}>`
+      const sparqlQuery = `
+      SELECT DISTINCT (COUNT(?related_observations) as ?occurrences)
+      FROM <tag:stardog:api:context:local>
+      WHERE {
+        ${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#related_observations> ?related_observations .
+      }
+      `;
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Select occurrence count",
+          singularizeSchema
+        });
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+      if (response === undefined) {
+        return 0;
+      }
+      if (Array.isArray(response) && response.length > 0) {
+        return( response[0].occurrences)
+      } else {
+        // Handle reporting Stardog Error
+        if (typeof (response) === 'object' && 'body' in response) {
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : response.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        } else {
+          return null;
+        }
+      }
+    }
   }
 }
 
