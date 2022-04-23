@@ -83,10 +83,6 @@ interface StoreBase {
   updated_at: Date;
 }
 
-interface StorePartial {
-  [k: string]: unknown;
-}
-
 interface StoreMarkingDefinition extends StoreBase {
   definition: string;
   definition_type: string;
@@ -243,7 +239,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   external_id: string;
   lastEventId: string;
   // rels
-  [RELATION_CREATED_BY]: Array<string>;
+  [RELATION_CREATED_BY]: string;
   // Array
   received_lines: Array<string>;
   parent_types: Array<string>;

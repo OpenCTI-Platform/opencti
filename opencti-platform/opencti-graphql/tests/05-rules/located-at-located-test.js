@@ -23,7 +23,7 @@ describe('Located at located rule', () => {
   it(
     'Should rule successfully activated',
     async () => {
-      // await startModules();
+      await startModules();
       const TLP_WHITE_INSTANCE = await internalLoadById(SYSTEM_USER, TLP_WHITE_ID);
       const TLP_TEST_INSTANCE = await internalLoadById(SYSTEM_USER, TLP_TEST_ID);
       // Check that no inferences exists
@@ -121,7 +121,7 @@ describe('Located at located rule', () => {
       const afterDisableRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterDisableRelations.length).toBe(0);
       // Stop modules
-      // await shutdownModules();
+      await shutdownModules();
     },
     FIVE_MINUTES
   );

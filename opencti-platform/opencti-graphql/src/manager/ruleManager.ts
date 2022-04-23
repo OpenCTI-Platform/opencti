@@ -38,7 +38,7 @@ import PartOfTargetsRule from '../rules/part-of-targets/PartOfTargetsRule';
 import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRule';
 import RuleSightingIncident from '../rules/sighting-incident/SightingIncidentRule';
 import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule';
-import type { RuleDefinition, RuleRuntime } from '../types/rules';
+import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type {
   BasicManagerEntity,
   BasicRuleEntity,
@@ -171,7 +171,7 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
   return events;
 };
 
-const getAttributesImpactDependencies = (rule: RuleDefinition, operations: Operation[]): Array<string> => {
+const isAttributesImpactDependencies = (rule: RuleDefinition, operations: Operation[]): boolean => {
   const rulesAttributes = (rule.scopes ?? [])
     .map((s) => s.attributes)
     .flat()
@@ -182,55 +182,61 @@ const getAttributesImpactDependencies = (rule: RuleDefinition, operations: Opera
     // eslint-disable-next-line no-restricted-globals
     return parts.filter((p) => isNaN(Number(p))).join('.');
   }));
-  return operationAttributes.filter((f) => rulesAttributes.includes(f));
+  return operationAttributes.filter((f) => rulesAttributes.includes(f)).length > 0;
 };
 
-const isMatchRuleFilters = (rule: RuleDefinition, element: StixCoreObject): boolean => {
-  // Handle types filtering
-  const scopeFilters = rule.scopes ?? [];
-  for (let index = 0; index < scopeFilters.length; index += 1) {
-    const scopeFilter = scopeFilters[index];
-    const { filters } = scopeFilter;
-    const { types = [], fromTypes = [], toTypes = [] } = filters ?? {};
-    const instanceType = element.extensions[STIX_EXT_OCTI].type;
-    if (types.length > 0) {
-      const elementTypes = [instanceType, ...getParentTypes(instanceType)];
-      const isCompatibleType = types.some((r) => elementTypes.includes(r));
+const isMatchRuleScope = (scopeFilter: RuleScope, element: StixCoreObject): boolean => {
+  const { filters } = scopeFilter;
+  const { types = [], fromTypes = [], toTypes = [] } = filters ?? {};
+  const instanceType = element.extensions[STIX_EXT_OCTI].type;
+  if (types.length > 0) {
+    const elementTypes = [instanceType, ...getParentTypes(instanceType)];
+    const isCompatibleType = types.some((r) => elementTypes.includes(r));
+    if (!isCompatibleType) {
+      return false;
+    }
+  }
+  if (isBasicRelationship(instanceType)) {
+    const isSighting = isStixSightingRelationship(instanceType);
+    let fromType;
+    let toType;
+    if (isSighting) {
+      const sighting = element as StixSighting;
+      fromType = sighting.extensions[STIX_EXT_OCTI].sighting_of_type;
+      toType = R.head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types);
+    } else {
+      const relation = element as StixRelation;
+      fromType = relation.extensions[STIX_EXT_OCTI].source_type;
+      toType = relation.extensions[STIX_EXT_OCTI].target_type;
+    }
+    if (fromTypes.length > 0) {
+      const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
+      const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
       if (!isCompatibleType) {
         return false;
       }
     }
-    if (isBasicRelationship(instanceType)) {
-      const isSighting = isStixSightingRelationship(instanceType);
-      let fromType;
-      let toType;
-      if (isSighting) {
-        const sighting = element as StixSighting;
-        fromType = sighting.extensions[STIX_EXT_OCTI].sighting_of_type;
-        toType = R.head(sighting.extensions[STIX_EXT_OCTI].where_sighted_types);
-      } else {
-        const relation = element as StixRelation;
-        fromType = relation.extensions[STIX_EXT_OCTI].source_type;
-        toType = relation.extensions[STIX_EXT_OCTI].target_type;
-      }
-      if (fromTypes.length > 0) {
-        const instanceFromTypes = [fromType, ...getParentTypes(fromType)];
-        const isCompatibleType = fromTypes.some((r) => instanceFromTypes.includes(r));
-        if (!isCompatibleType) {
-          return false;
-        }
-      }
-      if (toTypes.length > 0) {
-        const instanceToTypes = [toType, ...getParentTypes(toType)];
-        const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
-        if (!isCompatibleType) {
-          return false;
-        }
+    if (toTypes.length > 0) {
+      const instanceToTypes = [toType, ...getParentTypes(toType)];
+      const isCompatibleType = toTypes.some((r) => instanceToTypes.includes(r));
+      if (!isCompatibleType) {
+        return false;
       }
     }
   }
-  // All filters are valid
   return true;
+};
+
+const isMatchRuleFilters = (rule: RuleDefinition, element: StixCoreObject): boolean => {
+  // Handle types filtering
+  const evaluations = [];
+  const scopeFilters = rule.scopes ?? [];
+  for (let index = 0; index < scopeFilters.length; index += 1) {
+    const scopeFilter = scopeFilters[index];
+    evaluations.push(isMatchRuleScope(scopeFilter, element));
+  }
+  // All filters are valid
+  return evaluations.reduce((a, b) => a || b);
 };
 
 const handleRuleError = async (event: Event, error: unknown) => {
@@ -277,26 +283,16 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
       if (type === EVENT_TYPE_UPDATE) {
         const updateEvent = event as UpdateEvent;
         const previousPatch = updateEvent.context.previous_patch;
-        const previousStix = jsonpatch.applyPatch<StixCoreObject>(data, previousPatch).newDocument;
+        const previousStix = jsonpatch.applyPatch<StixCoreObject>({ ...data }, previousPatch).newDocument;
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
           // TODO Improve filtering definition to rely on attribute values
           const isPreviouslyMatched = isMatchRuleFilters(rule, previousStix);
           const isCurrentMatched = isMatchRuleFilters(rule, data);
+          const impactDependencies = isAttributesImpactDependencies(rule, previousPatch);
           // Rule doesnt match anymore, need to cleanup
-          if (isPreviouslyMatched && !isCurrentMatched) {
+          if (impactDependencies || (isPreviouslyMatched && !isCurrentMatched)) {
             await applyCleanupOnDependencyIds([internalId]);
-          } else {
-            const attributeDependencies = getAttributesImpactDependencies(rule, previousPatch);
-            // Still valid but need to be cleanup if an attribute dependency has changed
-            if (attributeDependencies.length > 0) {
-              const deletionIds = attributeDependencies.map((k) => {
-                const v = (previousStix as any)[k];
-                const dep = Array.isArray(v) ? v.join(',') : v;
-                return `${internalId}_${k}:${dep}`;
-              });
-              await applyCleanupOnDependencyIds(deletionIds);
-            }
           }
           // Rule match, need to apply
           if (isCurrentMatched) {

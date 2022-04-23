@@ -25,7 +25,7 @@ describe('Attribute use rule', () => {
       const threat = await addThreatActor(SYSTEM_USER, { name: 'MY TREAT ACTOR' });
       const MY_THREAT = threat.standard_id;
       // 02. Create require relation
-      // APT41 -> uses -> Paradise (start: 2020-02-28T23:00:00.000Z, stop: 2020-02-29T23:00:00.000Z, confidence: 30)
+      // APT41 -> attributed to -> MY TREAT ACTOR
       await createRelation(SYSTEM_USER, {
         fromId: APT41,
         toId: threat.id,

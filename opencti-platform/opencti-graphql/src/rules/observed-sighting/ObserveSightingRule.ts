@@ -8,13 +8,13 @@ import {
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import def from './ObserveSightingDefinition';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
-import { RELATION_OBJECT } from '../../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
 import { createRuleContent, RULE_MANAGER_USER } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
 import type { RuleRuntime } from '../../types/rules';
-import type { StixObject } from '../../types/stix-common';
+import type { StixObject, StixDomainObject } from '../../types/stix-common';
 import type { StixIndicator, StixObservedData } from '../../types/stix-sdo';
 import type { StixRelation } from '../../types/stix-sro';
 import type { BasicStoreEntity } from '../../types/store';
@@ -38,7 +38,6 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
     return [
       // Observed data dependencies
       observedDataId,
-      `${observedDataId}_created_by_ref:${organizationId}`,
       // Entities dependencies
       observableId,
       organizationId,
@@ -49,9 +48,10 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
       indicatorId,
     ];
   };
-  const handleIndicatorUpsert = async (indicator: StixObject) => {
+  const handleIndicatorUpsert = async (indicator: StixDomainObject) => {
     const events: Array<Event> = [];
     const { id: indicatorId } = indicator.extensions[STIX_EXT_OCTI];
+    const { object_marking_refs: indicatorMarkings } = indicator;
     const baseOnArgs = { toType: ABSTRACT_STIX_CYBER_OBSERVABLE, fromId: indicatorId };
     const baseOnRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
     for (let index = 0; index < baseOnRelations.length; index += 1) {
@@ -61,10 +61,12 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
       const objectsRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, objectsArgs);
       for (let objectIndex = 0; objectIndex < objectsRelations.length; objectIndex += 1) {
         const { internal_id: objectId, fromId: observedDataId } = objectsRelations[objectIndex];
-        const observedData = (await internalLoadById(RULE_MANAGER_USER, observedDataId)) as unknown as StixObservedData;
-        const { created_by_ref: organizationId, confidence, object_marking_refs } = observedData;
+        const observedData = (await internalLoadById(RULE_MANAGER_USER, observedDataId)) as unknown as BasicStoreEntity;
+        const { [RELATION_CREATED_BY]: organizationId, confidence } = observedData;
         const { number_observed, first_observed, last_observed } = observedData;
         if (organizationId) {
+          const organization = (await internalLoadById(RULE_MANAGER_USER, organizationId)) as unknown as BasicStoreEntity;
+          const { [RELATION_OBJECT_MARKING]: organizationMarkings } = organization;
           const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
           const dependencies = generateDependencies(
             observedDataId,
@@ -76,12 +78,13 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
           );
           // Create the sighting between the indicator and the organization
           const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
+          const elementMarkings = [...(organizationMarkings || []), ...(indicatorMarkings || [])];
           const ruleContent = createRuleContent(id, dependencies, explanation, {
             first_seen: first_observed,
             last_seen: last_observed,
             attribute_count: number_observed,
             confidence,
-            objectMarking: object_marking_refs,
+            objectMarking: elementMarkings,
           });
           const event = await createInferredRelation(input, ruleContent);
           // Re inject event if needed
@@ -97,10 +100,10 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
     const events = [];
     const { created_by_ref: organizationId } = observedData;
     const { id: observedDataId } = observedData.extensions[STIX_EXT_OCTI];
-    const { number_observed, first_observed, last_observed } = observedData;
-    const { confidence, object_marking_refs } = observedData;
+    const { number_observed, first_observed, last_observed, confidence } = observedData;
     const organization = (await internalLoadById(RULE_MANAGER_USER, organizationId)) as unknown as BasicStoreEntity;
     if (organization) {
+      const { [RELATION_OBJECT_MARKING]: organizationMarkings } = organization;
       // Get all observable of this observed-data
       const listFromArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], fromId: observedDataId };
       const objectsRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, listFromArgs);
@@ -111,6 +114,8 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
         const baseOnRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
         for (let index = 0; index < baseOnRelations.length; index += 1) {
           const { internal_id: baseOnId, fromId: indicatorId } = baseOnRelations[index];
+          const indicator = (await internalLoadById(RULE_MANAGER_USER, indicatorId)) as unknown as BasicStoreEntity;
+          const { [RELATION_OBJECT_MARKING]: indicatorMarkings } = indicator;
           const explanation = [observedDataId, objectId, observableId, baseOnId, indicatorId];
           const dependencies = generateDependencies(
             observedDataId,
@@ -122,12 +127,13 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
           );
           // Create the sighting between the indicator and the organization
           const input = { fromId: indicatorId, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
+          const elementMarkings = [...(organizationMarkings || []), ...(indicatorMarkings || [])];
           const ruleContent = createRuleContent(id, dependencies, explanation, {
             first_seen: first_observed,
             last_seen: last_observed,
             attribute_count: number_observed,
             confidence,
-            objectMarking: object_marking_refs,
+            objectMarking: elementMarkings,
           });
           const event = await createInferredRelation(input, ruleContent);
           // Re inject event if needed
@@ -153,7 +159,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
     const events: Array<Event> = [];
     const entityType = generateInternalType(data);
     if (entityType === ENTITY_TYPE_INDICATOR) {
-      return handleIndicatorUpsert(data);
+      return handleIndicatorUpsert(data as StixDomainObject);
     }
     if (entityType === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
       return handleObservedDataUpsert(data as StixObservedData);

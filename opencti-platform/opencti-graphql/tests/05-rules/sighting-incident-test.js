@@ -12,6 +12,7 @@ import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../src/schema/st
 import RuleSightingIncident from '../../src/rules/sighting-incident/SightingIncidentRule';
 import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../src/schema/stixCoreRelationship';
 import { listRelations } from '../../src/database/middleware-loader';
+import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
 
 const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 const ONE_CLAP = 'indicator--3e01a7d8-997b-5e7b-a1a3-32f8956ca752'; // indicator A
@@ -38,9 +39,9 @@ describe('Sighting incident rule', () => {
       const inferences = await assertInferencesSize(ENTITY_TYPE_INCIDENT, 1);
       const inference = R.head(inferences);
       expect(inference).not.toBeNull();
-      expect((inference.object_marking_refs || []).length).toBe(1);
+      expect((inference[RELATION_OBJECT_MARKING] || []).length).toBe(1);
       const white = await internalLoadById(SYSTEM_USER, TLP_WHITE_ID);
-      expect(R.head(inference.object_marking_refs)).toBe(white.internal_id);
+      expect(R.head(inference[RELATION_OBJECT_MARKING])).toBe(white.internal_id);
       expect(inference.first_seen).toBe('2016-08-06T20:08:31.000Z');
       expect(inference.last_seen).toBe('2016-08-07T20:08:31.000Z');
       const relArgs = { fromId: inference.id, connectionFormat: false };

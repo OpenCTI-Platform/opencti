@@ -48,7 +48,6 @@ import type {
   StoreBase,
   BasicStoreCommon,
   StoreRelation,
-  StorePartial,
   StoreEntity,
   StoreCyberObservable,
   StoreObject,
@@ -110,6 +109,7 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import { basePath, baseUrl } from '../config/conf';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -837,20 +837,18 @@ const convertWX509CertificateToStix = (instance: StoreCyberObservable, type: str
   };
 };
 
-const checkInstanceCompletion = (instance: StoreRelation, isPartial: boolean) => {
-  if (!isPartial) {
-    if (instance.from === undefined || isEmptyField(instance.from)) {
-      throw UnsupportedError(`Cannot convert relation without a resolved from: ${instance.fromId}`);
-    }
-    if (instance.to === undefined || isEmptyField(instance.to)) {
-      throw UnsupportedError(`Cannot convert relation without a resolved to: ${instance.toId}`);
-    }
+const checkInstanceCompletion = (instance: StoreRelation) => {
+  if (instance.from === undefined || isEmptyField(instance.from)) {
+    throw UnsupportedError(`Cannot convert relation without a resolved from: ${instance.fromId}`);
+  }
+  if (instance.to === undefined || isEmptyField(instance.to)) {
+    throw UnsupportedError(`Cannot convert relation without a resolved to: ${instance.toId}`);
   }
 };
 
 // SRO
-const convertRelationToStix = (instance: StoreRelation, isPartial: boolean): SRO.StixRelation => {
-  checkInstanceCompletion(instance, isPartial);
+const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
+  checkInstanceCompletion(instance);
   const stixRelationship = buildStixRelationship(instance);
   return {
     ...stixRelationship,
@@ -872,8 +870,8 @@ const convertRelationToStix = (instance: StoreRelation, isPartial: boolean): SRO
     }
   };
 };
-const convertSightingToStix = (instance: StoreRelation, isPartial: boolean): SRO.StixSighting => {
-  checkInstanceCompletion(instance, isPartial);
+const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
+  checkInstanceCompletion(instance);
   const stixRelationship = buildStixRelationship(instance);
   return {
     ...stixRelationship,
@@ -966,7 +964,8 @@ const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternal
 };
 
 // CONVERTERS
-const convertToStix = (instance: StoreObject | StorePartial, type: string, isPartial: boolean): S.StixObject => {
+const convertToStix = (instance: StoreObject): S.StixObject => {
+  const type = instance.entity_type;
   if (!isStixObject(type) && !isStixRelationship(type)) {
     throw UnsupportedError(`Type ${type} cannot be converted to Stix`, { instance });
   }
@@ -974,13 +973,16 @@ const convertToStix = (instance: StoreObject | StorePartial, type: string, isPar
   if (isStixRelationship(type)) {
     const basic = instance as StoreRelation;
     if (isStixCoreRelationship(type)) {
-      return convertRelationToStix(basic, isPartial);
+      return convertRelationToStix(basic);
     }
     if (isStixCyberObservableRelationship(type)) {
-      return convertRelationToStix(basic, isPartial);
+      return convertRelationToStix(basic);
     }
     if (isStixSightingRelationship(type)) {
-      return convertSightingToStix(basic, isPartial);
+      return convertSightingToStix(basic);
+    }
+    if (isStixMetaRelationship(type)) {
+      return convertRelationToStix(basic);
     }
     throw UnsupportedError(`No relation converter available for ${type}`);
   }
@@ -1143,27 +1145,11 @@ const convertToStix = (instance: StoreObject | StorePartial, type: string, isPar
   throw UnsupportedError(`No converter available for ${type}`);
 };
 
-export const convertPartialToStix = (instance: StorePartial, type: string): S.StixObject => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const converted = convertToStix(instance, type, true) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const extensions: any = {};
-  const instanceExtensions = Object.entries(converted.extensions);
-  for (let index = 0; index < instanceExtensions.length; index += 1) {
-    const [key, ext] = instanceExtensions[index];
-    if (Object.keys(ext as object).length > 1) {
-      extensions[key] = ext;
-    }
-  }
-  converted.extensions = extensions;
-  return cleanObject(converted);
-};
-
 export const convertStoreToStix = (instance: StoreObject): S.StixObject => {
   if (isEmptyField(instance._index) || isEmptyField(instance.entity_type)) {
     throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
   }
-  const converted = convertToStix(instance, instance.entity_type, false);
+  const converted = convertToStix(instance);
   // converted.extensions = buildExtensions(converted);
   const stix = cleanObject(converted);
   if (!isValidStix(stix)) {
