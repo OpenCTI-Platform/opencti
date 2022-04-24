@@ -8,6 +8,10 @@ import {
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
 import {
+  attachToPOAMQuery,
+  detachFromPOAMQuery,
+} from '../../poam/resolvers/sparql-query.js';
+import {
   getReducer, 
   insertObservationQuery,
   selectObservationQuery,
@@ -19,6 +23,7 @@ import {
   deleteEvidenceByIriQuery,
   selectOriginByIriQuery,
   selectSubjectByIriQuery,
+  deleteSubjectByIriQuery,
   observationPredicateMap,
 } from './sparql-query.js';
 
@@ -157,7 +162,25 @@ const observationResolvers = {
     }
   },
   Mutation: {
-    createObservation: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+    createObservation: async ( _, {poamId, resultId, input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
+      // Ensure either the ID of either a POAM or a Assessment Result is supplied
+      if (poamId === undefined && resultId === undefined) {
+        // Default to the POAM
+        poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      }
+
       // Setup to handle embedded objects to be created
       let evidence, origins, subjects;
       if (input.relevant_evidence !== undefined) {
@@ -174,14 +197,27 @@ const observationResolvers = {
       }
 
       // create the Observation
-      const {id, query} = insertObservationQuery(input);
+      const {iri, id, query} = insertObservationQuery(input);
       await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
         queryId: "Create Observation"
       });
 
-      //add the Observation to parent
+      // attach the Observation to the supplied POAM
+      if (poamId !== undefined && poamId !== null) {
+        const attachQuery = attachToPOAMQuery(poamId, 'observations', iri );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Add Observation to POAM",
+            sparqlQuery: attachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
 
       // create any evidence supplied and attach them to the Observation
       if (evidence !== undefined && evidence !== null){
@@ -241,7 +277,13 @@ const observationResolvers = {
       const reducer = getReducer("OBSERVATION");
       return reducer(response[0]);
     },
-    deleteObservation: async ( _, {id}, {dbName, dataSources} ) => {
+    deleteObservation: async ( _, {poamId, _resultId, id}, {dbName, dataSources} ) => {
+      // Ensure either the ID of either a POAM or a Assessment Result is supplied
+      if (poamId === undefined && resultId === undefined) {
+        // Default to the POAM
+        poamId = '22f2ad37-4f07-5182-bf4e-59ea197a73dc';
+      }
+
       // check that the observation exists
       const sparqlQuery = selectObservationQuery(id, null);
       let response;
@@ -311,7 +353,20 @@ const observationResolvers = {
         }
       }
 
-      // Detach the Observation from the parent
+      // Detach the Observation from the supplied POAM
+      if (poamId !== undefined && poamId !== null) {
+        const attachQuery = detachFromPOAMQuery(poamId, 'observations', observation.iri );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Detaching Observation from POAM",
+            sparqlQuery: attachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
 
       // Delete the Observation itself
       const query = deleteObservationQuery(id);
