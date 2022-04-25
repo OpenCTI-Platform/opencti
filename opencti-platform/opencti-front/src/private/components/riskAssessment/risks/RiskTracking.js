@@ -80,14 +80,14 @@ class RiskTracking extends Component {
           environment={QueryRendererDarkLight}
           query={RiskTrackingLinesQuery}
           variables={{ id: riskId }}
-          render={({ props }) => {
-            console.log('RiskTrackingProps', props);
+          render={({ props, retry }) => {
             if (props) {
               return (
                 <RiskTrackingLines
                   history={history}
                   riskId={riskId}
                   data={props.risk}
+                  refreshQuery={retry}
                 />
               );
             }

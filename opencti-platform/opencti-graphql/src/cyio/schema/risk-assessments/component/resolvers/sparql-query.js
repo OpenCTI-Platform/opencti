@@ -248,7 +248,7 @@ export const componentPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   component_type: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/common#componenet_type>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#component_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "component_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },

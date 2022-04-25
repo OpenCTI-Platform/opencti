@@ -444,12 +444,6 @@ const RemediationEditionFragment = createFragmentContainer(
           abstract
           content
           authors
-          labels {
-            id
-            name
-            color
-            description
-          }
         }
         origins {
           id

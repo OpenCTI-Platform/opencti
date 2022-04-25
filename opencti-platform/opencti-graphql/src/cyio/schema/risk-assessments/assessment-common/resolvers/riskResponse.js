@@ -14,6 +14,7 @@ import {
   selectAllRiskResponses,
   deleteRiskResponseQuery,
   selectOscalTaskByIriQuery,
+  selectRequiredAssetByIriQuery,
   selectOriginByIriQuery,
   riskResponsePredicateMap,
 } from './sparql-query.js';

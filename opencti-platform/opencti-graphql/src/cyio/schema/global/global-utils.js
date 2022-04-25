@@ -58,6 +58,27 @@ import {
   poamLocalDefinitionPredicateMap, 
 } from '../risk-assessments/poam/resolvers/sparql-query.js';
 
+
+// find IRI of parent
+export const findParentIriQuery = (iri, field, predicateMap) => {
+  if (!predicateMap.hasOwnProperty(field)) return null;
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  const predicate = predicateMap[field].predicate;
+  // return the current IRI if predicate isn't a inverse property path
+  if (!predicate.startsWith('^')) return iri;
+  // remove the datatype Property portion of the inverse property path
+  let index = predicate.lastIndexOf('/<');
+  let idPredicate = predicate.substring(0, index);
+  return `
+  SELECT DISTINCT ?parentIri ?objectType
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    ${iri} ${idPredicate} ?parentIri .
+    ?parentIri <http://darklight.ai/ns/common#object_type> ?objectType .
+  }
+  `
+}
+
 // Replacement for getSubjectIriByIdQuery
 export const selectObjectIriByIdQuery = (id, type) => {
   if (!objectMap.hasOwnProperty(type)) {

@@ -478,14 +478,6 @@ const NetworkEditionFragment = createFragmentContainer(
           # created
           # modified
           entity_type
-          labels {
-            __typename
-            id
-            name
-            color
-            entity_type
-            description
-          }
           abstract
           content
           authors
