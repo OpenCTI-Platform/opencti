@@ -148,7 +148,10 @@ class RiskAssessmentPopover extends Component {
         this.handleClosePoam();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('riskPoamMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError("Failed to fetch Risk");
+      }
     });
   }
 
@@ -175,7 +178,7 @@ class RiskAssessmentPopover extends Component {
         this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => {
-        console.log('riskStatusMutationError', err);
+        console.error(err);
         toastGenericError("Failed to fetch Risk");
       }
     });
