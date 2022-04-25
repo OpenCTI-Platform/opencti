@@ -28,6 +28,7 @@ import SelectField from '../../../../components/SelectField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import RiskStatus from '../../common/form/RiskStatus';
+import {toastGenericError} from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   container: {
@@ -173,7 +174,10 @@ class RiskAssessmentPopover extends Component {
         this.handleCloseRiskLevel();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('riskStatusMutationError', err),
+      onError: (err) => {
+        console.log('riskStatusMutationError', err);
+        toastGenericError("Failed to fetch Risk");
+      }
     });
   }
 
@@ -329,7 +333,7 @@ class RiskAssessmentPopover extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              risk_status: this.props.riskNode.risk_status,
+              risk_status: this.props.node.risk_status,
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onRiskLevelSubmit.bind(this)}

@@ -25,7 +25,7 @@ class RisksCards extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'poamItems',
+      'risks',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -71,10 +71,10 @@ class RisksCards extends Component {
               handleOffsetChange={this.handleOffsetChange.bind(this)}
               hasMore={relay.hasMore.bind(this)}
               isLoading={relay.isLoading.bind(this)}
-              dataList={pathOr([], ['poamItems', 'edges'], this.props.data)}
+              dataList={pathOr([], ['risks', 'edges'], this.props.data)}
               globalCount={pathOr(
                 nbOfCardsToLoad,
-                ['poamItems', 'pageInfo', 'globalCount'],
+                ['risks', 'pageInfo', 'globalCount'],
                 this.props.data,
               )}
               offset={offset}
@@ -110,9 +110,9 @@ export const risksCardsQuery = graphql`
     $first: Int!
     $offset: Int!
     $cursor: ID
-    $orderedBy: POAMItemsOrdering
+    $orderedBy: RisksOrdering
     $orderMode: OrderingMode
-    $filters: [POAMItemsFiltering]
+    $filters: [RisksFiltering]
     $filterMode: FilterMode
   ) {
     ...RisksCards_data
@@ -139,12 +139,12 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "POAMItemsOrdering", defaultValue: poam_id }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[POAMItemsFiltering]" }
+        orderedBy: { type: "RisksOrdering", defaultValue: name}
+        orderMode: { type: "OrderingMode", defaultValue: desc }
+        filters: { type: "[RisksFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {
-        poamItems(
+        risks(
           search: $search
           first: $first
           offset: $offset
@@ -153,7 +153,7 @@ export default createPaginationContainer(
           orderMode: $orderMode
           filters: $filters
           filterMode: $filterMode
-        ) @connection(key: "Pagination_poamItems") {
+        ) @connection(key: "Pagination_risks") {
           edges {
             node {
               id
@@ -174,7 +174,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.poamItems;
+      return props.data && props.data.risks;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
