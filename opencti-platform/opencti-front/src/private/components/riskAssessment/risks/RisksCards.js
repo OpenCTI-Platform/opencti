@@ -139,8 +139,8 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "RisksOrdering", defaultValue: name}
-        orderMode: { type: "OrderingMode", defaultValue: desc }
+        orderedBy: { type: "RisksOrdering", defaultValue: poam_id }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[RisksFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {
