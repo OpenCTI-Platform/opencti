@@ -153,7 +153,6 @@ class DeviceEditionContainer extends Component {
         'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(filteredValue);
-    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: deviceEditionMutation,
       variables: {
@@ -167,7 +166,6 @@ class DeviceEditionContainer extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/devices');
       },
-      onError: (err) => console.log('DeviceEditionContainerError', err),
     });
     // commitMutation({
     //   mutation: deviceEditionMutation,
