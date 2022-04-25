@@ -167,7 +167,7 @@ class RiskAssessmentPopover extends Component {
     CM(environmentDarkLight, {
       mutation: riskStatusEditionMutation,
       variables: {
-        id: this.props.riskNode.id,
+        id: this.props.node.id,
         input: finalValues,
       },
       setSubmitting,
