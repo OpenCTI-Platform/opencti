@@ -246,11 +246,13 @@ class RemediationCreationOverviewComponent extends Component {
                   component={TextField}
                   variant='outlined'
                   size='small'
-                  name='id'
+                  name='risk_id'
                   fullWidth={true}
                   disabled={true}
                   containerstyle={{ width: '100%' }}
-                />
+                >
+                  {this.props.riskId}
+                </Field>
               </Grid>
               <Grid style={{ marginBottom: '20px' }} item={true}>
                 <Typography
