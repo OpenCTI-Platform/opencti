@@ -14,6 +14,7 @@ import QueryRendererDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 // import { QueryRenderer } from '../../../../relay/environment';
 import RiskObservationLine, { riskObservationLineQuery } from './RiskObservationLine';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   paper: {
@@ -89,6 +90,12 @@ class RiskObservation extends Component {
             query={riskObservationLineQuery}
             variables={{ id: risk.id, first: 10, offset: 0 }}
             render={({ error, props }) => {
+              if (error) {
+                return (
+                  toastGenericError('Failed to get risk observation'),
+                  console.error(error)
+                );
+              }
               if (props) {
                 return (
                   <RiskObservationLine
