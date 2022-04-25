@@ -16,6 +16,7 @@ import {
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   header: {
@@ -138,8 +139,12 @@ class CyioExternalReferenceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.props.handleClose();
+        this.props.refreshQuery();
       },
-      // onError: (err) => console.log('ExtRefEditionDarkLightMutationError', err),
+      onError: (err) => {
+        toastGenericError('Failed to update external reference');
+        console.error(err);
+      },
     });
   }
 
@@ -260,6 +265,7 @@ class CyioExternalReferenceEditionContainer extends Component {
 CyioExternalReferenceEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
   externalReference: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
