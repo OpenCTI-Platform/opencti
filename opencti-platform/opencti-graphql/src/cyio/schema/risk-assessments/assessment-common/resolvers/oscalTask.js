@@ -633,7 +633,7 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
+    assessment_subjects: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];

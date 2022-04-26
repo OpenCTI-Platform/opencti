@@ -27,11 +27,17 @@ class TaskType extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      TaskTypeList: [],
+      TaskTypeList: []
     };
   }
+
   componentDidMount() {
-    fetchDarklightQuery(TaskTypeQuery)
+   this.handleRelatedTaskField();
+  }
+
+  handleRelatedTaskField(){
+    if(this.props.name === "task_type"){
+      fetchDarklightQuery(TaskTypeQuery)
       .toPromise()
       .then((data) => {
         const TaskTypeEntities = R.pipe(
@@ -48,6 +54,7 @@ class TaskType extends Component {
           },
         });
       });
+    }  
   }
 
   render() {
