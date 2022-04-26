@@ -32,12 +32,7 @@ class TaskType extends Component {
   }
 
   componentDidMount() {
-   this.handleRelatedTaskField();
-  }
-
-  handleRelatedTaskField(){
-    if(this.props.name === "task_type"){
-      fetchDarklightQuery(TaskTypeQuery)
+    fetchDarklightQuery(TaskTypeQuery)
       .toPromise()
       .then((data) => {
         const TaskTypeEntities = R.pipe(
@@ -54,7 +49,6 @@ class TaskType extends Component {
           },
         });
       });
-    }  
   }
 
   render() {
