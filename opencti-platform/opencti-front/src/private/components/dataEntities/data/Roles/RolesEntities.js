@@ -4,30 +4,30 @@ import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer as QR } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
-import { QueryRenderer } from '../../../relay/environment';
-import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
+import { QueryRenderer } from '../../../../../relay/environment';
+import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
   saveViewParameters,
-} from '../../../utils/ListParameters';
-import inject18n from '../../../components/i18n';
-import CyioListCards from '../../../components/list_cards/CyioListCards';
-import CyioListLines from '../../../components/list_lines/CyioListLines';
-// import RisksCards, {
-//   risksCardsQuery,
-// } from './risks/RisksCards';
-// import RisksLines, {
-//   risksLinesQuery,
-// } from './risks/RisksLines';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
-import DataSourceCreation from './data/DataSourceCreation';
-import DataSourceDeletion from './data/DataSourceDeletion';
-import ErrorNotFound from '../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from '../../../utils/bakedToast';
+} from '../../../../../utils/ListParameters';
+import inject18n from '../../../../../components/i18n';
+import CyioListCards from '../../../../../components/list_cards/CyioListCards';
+import CyioListLines from '../../../../../components/list_lines/CyioListLines';
+import EntitiesRolesCards, {
+  entitiesRolesCardsQuery,
+} from './EntitiesRolesCards';
+import EntitiesRolesLines, {
+  entitiesRolesLinesQuery,
+} from './EntitiesRolesLines';
+import EntitiesRolesCreation from './EntitiesRolesCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
+import { isUniqFilter } from '../../../common/lists/Filters';
+import EntitiesRolesDeletion from './EntitiesRolesDeletion';
+import ErrorNotFound from '../../../../../components/ErrorNotFound';
+import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
 
-class DataSources extends Component {
+class RolesEntities extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -36,7 +36,7 @@ class DataSources extends Component {
       'view-data',
     );
     this.state = {
-      sortBy: R.propOr('', 'sortBy', params),
+      sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -88,7 +88,7 @@ class DataSources extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/data/data source');
+    this.props.history.push('/data/entities/roles');
   }
 
   handleDisplayEdit(selectedElements) {
@@ -172,6 +172,9 @@ class DataSources extends Component {
       selectedElements,
       selectAll,
     } = this.state;
+    const {
+      t,
+    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -207,10 +210,11 @@ class DataSources extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<DataSourceCreation />}
-        OperationsComponent={<DataSourceDeletion />}
+        CreateItemComponent={<EntitiesRolesCreation />}
+        OperationsComponent={<EntitiesRolesDeletion />}
         openExports={openExports}
-        filterEntityType='DataSources'
+        filterEntityType="Entities"
+        selectedDataEntity='roles'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -221,10 +225,29 @@ class DataSources extends Component {
           'label_name',
         ]}
       >
-        <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>No Data Types</Typography>
-          <Typography style={{ fontSize: '20px' }} color='textSecondary'>Please choose from the Data Type dropdown above.</Typography>
-        </div>
+        <QR
+          environment={QueryRendererDarkLight}
+          query={entitiesRolesCardsQuery}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
+          render={({ error, props }) => {
+            if (error) {
+              return toastGenericError('Request Failed');
+            }
+            return (
+              <EntitiesRolesCards
+                data={props}
+                extra={props}
+                selectAll={selectAll}
+                paginationOptions={paginationOptions}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+              />
+            );
+          }}
+        />
       </CyioListCards>
     );
   }
@@ -240,6 +263,9 @@ class DataSources extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
+    const {
+      t,
+    } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
@@ -291,11 +317,12 @@ class DataSources extends Component {
         handleNewCreation={this.handleRiskCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<DataSourceCreation />}
-        OperationsComponent={<DataSourceDeletion />}
+        CreateItemComponent={<EntitiesRolesCreation />}
+        OperationsComponent={<EntitiesRolesDeletion />}
         openExports={openExports}
         selectAll={selectAll}
-        filterEntityType='DataSources'
+        filterEntityType='Entities'
+        selectedDataEntity='roles'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -306,10 +333,30 @@ class DataSources extends Component {
           'label_name',
         ]}
       >
-        <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>No Data Types</Typography>
-          <Typography style={{ fontSize: '20px' }} color='textSecondary'>Please choose from the Data Type dropdown above.</Typography>
-        </div>
+        <QR
+          environment={QueryRendererDarkLight}
+          query={entitiesRolesLinesQuery}
+          variables={{ first: 50, offset: 0, ...paginationOptions }}
+          render={({ error, props }) => {
+            console.log(`props : ${props} Error : ${error}`);
+            if (error) {
+              return toastGenericError('Request Failed');
+            }
+            return (
+              <EntitiesRolesLines
+                data={props}
+                selectAll={selectAll}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+                selectedElements={selectedElements}
+                paginationOptions={paginationOptions}
+                onLabelClick={this.handleAddFilter.bind(this)}
+                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
+                setNumberOfElements={this.setNumberOfElements.bind(this)}
+              />
+            );
+          }}
+        />
       </CyioListLines>
     );
   }
@@ -326,7 +373,8 @@ class DataSources extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderedBy: sortBy,
+      // orderedBy: sortBy,
+      orderedBy: 'name',
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
@@ -338,7 +386,10 @@ class DataSources extends Component {
         {view === 'lines' && (!openDataCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
         {((openDataCreation || location.openNewCreation) && (
           // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataSourceCreation paginationOptions={paginationOptions} history={this.props.history} />
+          <EntitiesRolesCreation
+            paginationOptions={paginationOptions}
+            history={this.props.history}
+          />
           // </Security>
         ))}
       </div>
@@ -346,10 +397,10 @@ class DataSources extends Component {
   }
 }
 
-DataSources.propTypes = {
+RolesEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(DataSources);
+export default R.compose(inject18n, withRouter)(RolesEntities);

@@ -14,12 +14,6 @@ import {
 import inject18n from '../../../components/i18n';
 import CyioListCards from '../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../components/list_lines/CyioListLines';
-// import RisksCards, {
-//   risksCardsQuery,
-// } from './risks/RisksCards';
-// import RisksLines, {
-//   risksLinesQuery,
-// } from './risks/RisksLines';
 import EntitiesCreation from './data/EntitiesCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
@@ -46,12 +40,11 @@ class Entities extends Component {
       selectedElements: null,
       selectAll: false,
       openDataCreation: false,
-      selectedDataEntity: '',
     };
   }
 
   saveView() {
-    // this.handleRefresh();
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -123,10 +116,6 @@ class Entities extends Component {
     }
   }
 
-  handleDataEntities(dataEntity) {
-    this.setState({ selectedDataEntity: dataEntity }, () => this.saveView());
-  }
-
   handleAddFilter(key, id, value, event = null) {
     if (event) {
       event.stopPropagation();
@@ -173,11 +162,13 @@ class Entities extends Component {
       searchTerm,
       filters,
       openExports,
-      selectedDataEntity,
       numberOfElements,
       selectedElements,
       selectAll,
     } = this.state;
+    const {
+      t,
+    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -203,8 +194,6 @@ class Entities extends Component {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
-        selectedDataEntity={selectedDataEntity}
-        handleDataEntities={this.handleDataEntities.bind(this)}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
@@ -230,8 +219,10 @@ class Entities extends Component {
         ]}
       >
         <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>No Data Types</Typography>
-          <Typography style={{ fontSize: '20px' }} color='textSecondary'>Please choose from the Data Type dropdown above.</Typography>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
+            {t('Please choose from the Data Type dropdown above.')}
+          </Typography>
         </div>
       </CyioListCards>
     );
@@ -245,10 +236,12 @@ class Entities extends Component {
       selectAll,
       searchTerm,
       openExports,
-      selectedDataEntity,
       selectedElements,
       numberOfElements,
     } = this.state;
+    const {
+      t,
+    } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
@@ -290,8 +283,6 @@ class Entities extends Component {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
-        selectedDataEntity={selectedDataEntity}
-        handleDataEntities={this.handleDataEntities.bind(this)}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
@@ -318,8 +309,10 @@ class Entities extends Component {
         ]}
       >
         <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>No Data Types</Typography>
-          <Typography style={{ fontSize: '20px' }} color='textSecondary'>Please choose from the Data Type dropdown above.</Typography>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
+            {t('Please choose from the Data Type dropdown above.')}
+          </Typography>
         </div>
       </CyioListLines>
     );
@@ -337,7 +330,8 @@ class Entities extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderedBy: sortBy,
+      // orderedBy: sortBy,
+      orderedBy: 'name',
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',

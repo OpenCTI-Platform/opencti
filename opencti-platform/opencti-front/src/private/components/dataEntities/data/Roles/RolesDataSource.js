@@ -4,30 +4,24 @@ import { withRouter } from 'react-router-dom';
 import * as R from 'ramda';
 import { QueryRenderer as QR } from 'react-relay';
 import Typography from '@material-ui/core/Typography';
-import { QueryRenderer } from '../../../relay/environment';
-import QueryRendererDarkLight from '../../../relay/environmentDarkLight';
+import { QueryRenderer } from '../../../../../relay/environment';
+import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import {
   buildViewParamsFromUrlAndStorage,
   convertFilters,
   saveViewParameters,
-} from '../../../utils/ListParameters';
-import inject18n from '../../../components/i18n';
-import CyioListCards from '../../../components/list_cards/CyioListCards';
-import CyioListLines from '../../../components/list_lines/CyioListLines';
-// import RisksCards, {
-//   risksCardsQuery,
-// } from './risks/RisksCards';
-// import RisksLines, {
-//   risksLinesQuery,
-// } from './risks/RisksLines';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import { isUniqFilter } from '../common/lists/Filters';
-import DataSourceCreation from './data/DataSourceCreation';
-import DataSourceDeletion from './data/DataSourceDeletion';
-import ErrorNotFound from '../../../components/ErrorNotFound';
-import { toastSuccess, toastGenericError } from '../../../utils/bakedToast';
+} from '../../../../../utils/ListParameters';
+import inject18n from '../../../../../components/i18n';
+import CyioListCards from '../../../../../components/list_cards/CyioListCards';
+import CyioListLines from '../../../../../components/list_lines/CyioListLines';
+import EntitiesCreation from '../EntitiesCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
+import { isUniqFilter } from '../../../common/lists/Filters';
+import EntitiesDeletion from '../EntitiesDeletion';
+import ErrorNotFound from '../../../../../components/ErrorNotFound';
+import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
 
-class DataSources extends Component {
+class RolesDataSource extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -36,7 +30,7 @@ class DataSources extends Component {
       'view-data',
     );
     this.state = {
-      sortBy: R.propOr('', 'sortBy', params),
+      sortBy: R.propOr('name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -88,7 +82,7 @@ class DataSources extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/data/data source');
+    this.props.history.push('/data/data source/roles');
   }
 
   handleDisplayEdit(selectedElements) {
@@ -172,6 +166,9 @@ class DataSources extends Component {
       selectedElements,
       selectAll,
     } = this.state;
+    const {
+      t,
+    } = this.props;
     const dataColumns = {
       type: {
         label: 'Type',
@@ -207,10 +204,11 @@ class DataSources extends Component {
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<DataSourceCreation />}
-        OperationsComponent={<DataSourceDeletion />}
+        CreateItemComponent={<EntitiesCreation />}
+        OperationsComponent={<EntitiesDeletion />}
         openExports={openExports}
         filterEntityType='DataSources'
+        selectedDataEntity='roles'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -222,8 +220,10 @@ class DataSources extends Component {
         ]}
       >
         <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>No Data Types</Typography>
-          <Typography style={{ fontSize: '20px' }} color='textSecondary'>Please choose from the Data Type dropdown above.</Typography>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
+            {t('Please choose from the Data Type dropdown above.')}
+          </Typography>
         </div>
       </CyioListCards>
     );
@@ -240,6 +240,9 @@ class DataSources extends Component {
       selectedElements,
       numberOfElements,
     } = this.state;
+    const {
+      t,
+    } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = numberOfElements.original;
@@ -291,11 +294,12 @@ class DataSources extends Component {
         handleNewCreation={this.handleRiskCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<DataSourceCreation />}
-        OperationsComponent={<DataSourceDeletion />}
+        CreateItemComponent={<EntitiesCreation />}
+        OperationsComponent={<EntitiesDeletion />}
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='DataSources'
+        selectedDataEntity='roles'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -307,8 +311,10 @@ class DataSources extends Component {
         ]}
       >
         <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
-          <Typography style={{ fontSize: '40px' }} color='textSecondary'>No Data Types</Typography>
-          <Typography style={{ fontSize: '20px' }} color='textSecondary'>Please choose from the Data Type dropdown above.</Typography>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
+            {t('Please choose from the Data Type dropdown above.')}
+          </Typography>
         </div>
       </CyioListLines>
     );
@@ -326,7 +332,8 @@ class DataSources extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderedBy: sortBy,
+      // orderedBy: sortBy,
+      orderedBy: 'name',
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
@@ -338,7 +345,7 @@ class DataSources extends Component {
         {view === 'lines' && (!openDataCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
         {((openDataCreation || location.openNewCreation) && (
           // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <DataSourceCreation paginationOptions={paginationOptions} history={this.props.history} />
+          <EntitiesCreation paginationOptions={paginationOptions} history={this.props.history} />
           // </Security>
         ))}
       </div>
@@ -346,10 +353,10 @@ class DataSources extends Component {
   }
 }
 
-DataSources.propTypes = {
+RolesDataSource.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(DataSources);
+export default R.compose(inject18n, withRouter)(RolesDataSource);

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { withRouter, Link } from 'react-router-dom';
 import {
   compose, last, map, toPairs,
 } from 'ramda';
@@ -227,7 +228,6 @@ class CyioListLines extends Component {
       orderAsc,
       classes,
       handleSearch,
-      handleDataEntities,
       handleChangeView,
       disableCards,
       handleAddFilter,
@@ -348,29 +348,52 @@ class CyioListLines extends Component {
                   value={selectedDataEntity}
                   label='Data Types'
                   className={classes.dataEntitiesSelect}
-                  onChange={(event) => handleDataEntities(event.target.value)}
                 >
-                  <MenuItem value='roles'>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/roles'
+                    value='roles'
+                  >
                     <img src={roles} className={classes.icon} alt="" />
                     {t('Roles')}
                   </MenuItem>
-                  <MenuItem value='locations'>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/locations'
+                    value='locations'
+                  >
                     <img src={locations} className={classes.icon} alt="" />
                     {t('Locations')}
                   </MenuItem>
-                  <MenuItem value='parties'>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/parties'
+                    value='parties'
+                  >
                     <img src={parties} className={classes.icon} alt="" />
                     {t('Parties')}
                   </MenuItem>
-                  <MenuItem value='responsible_parties'>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/responsible_parties'
+                    value='responsible_parties'
+                  >
                     <img src={responsiblePartiesIcon} style={{ marginRight: '12px' }} alt="" />
                     {t('Responsible Parties')}
                   </MenuItem>
-                  <MenuItem value='tasks'>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/tasks'
+                    value='tasks'
+                  >
                     <img src={tasksIcon} className={classes.icon} alt="" />
                     {t('Tasks')}
                   </MenuItem>
-                  <MenuItem value='assessment_platform'>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/assessment_platform'
+                    value='assessment_platform'
+                  >
                     <img src={assessmentPlatform} className={classes.icon} alt="" />
                     {t('Assessment Platform')}
                   </MenuItem>
@@ -590,7 +613,6 @@ CyioListLines.propTypes = {
   selectedElements: PropTypes.object,
   disablePopover: PropTypes.bool,
   children: PropTypes.object,
-  handleDataEntities: PropTypes.func,
   handleSearch: PropTypes.func,
   handleSort: PropTypes.func,
   handleChangeView: PropTypes.func,
@@ -625,4 +647,4 @@ CyioListLines.propTypes = {
   message: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(CyioListLines);
+export default compose(inject18n, withRouter, withStyles(styles))(CyioListLines);
