@@ -16,7 +16,7 @@
   extend type Mutation {
     createInventoryItem(input: InventoryItemAddInput): InventoryItem
     deleteInventoryItem(id: ID!): String!
-    editInventory(id: ID!, input: [EditInput]!, commitMessage: String): InventoryItem
+    editInventoryItem(id: ID!, input: [EditInput]!, commitMessage: String): InventoryItem
   }
 
 
@@ -169,6 +169,8 @@
     created
     "Modified"
     modified
+    "Name"
+    name
     "Label"
     labels
   }

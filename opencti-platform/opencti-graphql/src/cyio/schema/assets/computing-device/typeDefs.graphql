@@ -234,7 +234,7 @@
     #    mac_address: [MACAddress]     this is what it should be because MAC address are objects
     mac_address: [MAC]
     vlan_id: String
-    uri: String
+    uri: URL
     ports: [PortInfo]
     is_publicly_accessible: Boolean
     is_scanned: Boolean
@@ -296,7 +296,7 @@
 #    mac_address: [MACAddress]     this is what it should be because MAC address are objects
     mac_address: [MAC]
     vlan_id: String
-    uri: String
+    uri: URL
     ports: [PortInfo]
     is_publicly_accessible: Boolean
     is_scanned: Boolean
@@ -358,7 +358,7 @@
     #    mac_address: [MACAddress]     this is what it should be because MAC address are objects
     mac_address: [MAC]
     vlan_id: String
-    uri: String
+    uri: URL
     ports: [PortInfo]
     is_publicly_accessible: Boolean
     is_scanned: Boolean

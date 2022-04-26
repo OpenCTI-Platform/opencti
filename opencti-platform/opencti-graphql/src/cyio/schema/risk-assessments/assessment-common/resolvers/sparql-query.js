@@ -676,7 +676,7 @@ export const detachFromActivityQuery = (id, field, itemIris) => {
 export const insertActorQuery = (propValues) => {
   const id_material = {
     ...(propValues.actor_type && {"actor_type": propValues.actor_type}),
-    ...(propValues.actor_ref && {"actor_type": propValues.actor_ref}),
+    ...(propValues.actor_ref && {"actor_ref": propValues.actor_ref}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Actor-${id}>`;
@@ -3061,7 +3061,7 @@ export const selectSubjectByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
   // defensive code to protect against query not supplying subject type
-  if (!select.hasOwnProperty('subject_type')) select.push('subject_type');
+  if (!select.includes('subject_type')) select.push('subject_type');
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
