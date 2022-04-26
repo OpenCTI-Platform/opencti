@@ -128,13 +128,20 @@ export const selectInventoryItemByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllInventoryItems = (select, filters) => {
+export const selectAllInventoryItems = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(inventoryItemPredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined) {
+    // add value of filter's key to cause special predicates to be included
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
