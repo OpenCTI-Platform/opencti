@@ -97,7 +97,11 @@ const Remediations = (props) => {
             />
           </Grid>
         </>) : (
-        <RemediationCreation remediationId={remediation.id} history={history}/>
+        <RemediationCreation
+          remediationId={remediation.id}
+          riskId={riskId}
+          history={history}
+        />
       )}
       {/* </Grid> */}
     </div>

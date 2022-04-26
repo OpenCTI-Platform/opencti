@@ -31,6 +31,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../../utils/Time';
+import {toastGenericError} from "../../../../../utils/bakedToast";
 import {
   commitMutation,
   QueryRenderer,
@@ -106,13 +107,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-// const remediationCreationMutation = graphql`
-//   mutation RemediationCreationMutation($input: RemediationTaskAddInput) {
-//     createRemediationTask(input: $input) {
-//       id
-//     }
-//   }
-// `;
+const remediationCreationMutation = graphql`
+  mutation RemediationCreationMutation($input: RiskResponseAddInput) {
+    createRiskResponse(input: $input) {
+      id
+    }
+  }
+`;
 
 const remediationValidation = (t) =>
   Yup.object().shape({
@@ -152,10 +153,11 @@ class RemediationCreation extends Component {
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
+      R.dissoc('actor_target'),
+      R.dissoc('oscal_party'),
     )(values);
-    console.log('RemdiationCreationFinal', finalValues);
     CM(environmentDarkLight, {
-      // mutation: remediationCreationMutation,
+      mutation: remediationCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -163,12 +165,12 @@ class RemediationCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        console.log('remediationCreationComplete', data);
         this.handleClose();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) =>
-        console.log('RemediationCreationDarkLightMutationError', err),
+      onError: (err) => {
+        toastGenericError("Failed to create Remediation")
+      }
     });
     // commitMutation({
     //   mutation: remediationCreationMutation,
@@ -203,18 +205,19 @@ class RemediationCreation extends Component {
   }
 
   render() {
-    const { t, classes, remediationId, open, history } = this.props;
-    console.log('remediationCreationId', remediationId);
+    const { t, classes, remediationId, open, history, riskId } = this.props;
+    const risk_id = this.props.riskId;
     return (
       <div className={classes.container}>
         <Formik
           initialValues={{
+            risk_id: riskId.id,
+            response_type: '',
+            lifecycle: '',
             name: '',
+            description: '',
             created: null,
             modified: null,
-            description: '',
-            lifecycle: '',
-            response_type: '',
             actor_target: '',
             oscal_party: '',
           }}
@@ -313,6 +316,7 @@ class RemediationCreation extends Component {
                     <RemediationCreationGeneral
                       setFieldValue={setFieldValue}
                       values={values}
+                      remediationId={remediationId}
                     />
                   </Grid>
                   {/* <Grid item={true} xs={6}>
@@ -386,6 +390,7 @@ class RemediationCreation extends Component {
 
 RemediationCreation.propTypes = {
   remediationId: PropTypes.string,
+  riskId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
