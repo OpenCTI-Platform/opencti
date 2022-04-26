@@ -15,6 +15,7 @@ import RootObservations from './components/observations/Root';
 import RootThreats from './components/threats/Root';
 import RootAssets from './components/assets/Root';
 import RootRiskAssessment from './components/riskAssessment/Root';
+import RootDataEntities from './components/dataEntities/Root';
 import RootArsenal from './components/arsenal/Root';
 import RootEntities from './components/entities/Root';
 import RootSettings from './components/settings/Root';
@@ -52,7 +53,7 @@ const useStyles = makeStyles((theme) => ({
 const Index = (me) => {
 
   useEffect(() => {
-    if(!localStorage.getItem('client_id')){
+    if (!localStorage.getItem('client_id')) {
       getAccount().then((res) => {
         const account = res.data;
         if (account) {
@@ -96,6 +97,7 @@ const Index = (me) => {
             path="/dashboard/search/:keyword"
             render={(routeProps) => <Search {...routeProps} me={me} />}
           />
+          <BoundaryRoute path="/data" component={RootDataEntities} />
           <BoundaryRoute path="/activities/vulnerability assessment" component={RootVSAC} />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/events" component={RootEvents} />
