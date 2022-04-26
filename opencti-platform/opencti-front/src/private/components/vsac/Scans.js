@@ -361,6 +361,7 @@ class Scans extends Component {
     };
 
     const handleScanClick =(event, scan_id) => {
+      handlePopoverClose()
       this.setState({vulnerabilityAnchorEl: event.currentTarget, openScanMenu: scan_id})
     }
 
@@ -742,9 +743,7 @@ class Scans extends Component {
                           <Popover
                             id="mouse-over-popover"
                             className={classes.popover}
-                            classes={{
-                              paper: classes.paper,
-                            }}
+                            classes={{paper: classes.paper}}
                             style={{ pointerEvents: 'none'}}
                             open={openedPopoverId === scan.id}
                             anchorEl={popoverAnchorEl}

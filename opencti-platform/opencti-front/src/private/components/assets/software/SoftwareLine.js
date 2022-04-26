@@ -196,12 +196,6 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
         # created
         # modified
         entity_type
-        labels {
-          id
-          name
-          color
-          description
-        }
         abstract
         content
         authors

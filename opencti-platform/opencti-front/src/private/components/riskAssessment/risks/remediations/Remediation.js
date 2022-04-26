@@ -220,14 +220,6 @@ const Remediation = createFragmentContainer(RemediationComponent, {
         content
         authors
         entity_type
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
       }
       ...RemediationGeneralOverview_remediation
       # ...RemediationGeneralDetails_remediation

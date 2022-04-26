@@ -100,14 +100,6 @@ export const cyioNoteCreationMutation = graphql`
       __typename
       id
       entity_type
-      labels {
-        __typename
-        id
-        name
-        color
-        entity_type
-        description
-      }
       abstract
       content
       authors
@@ -456,7 +448,7 @@ class CyioNoteCreation extends Component {
                       style={{ marginTop: 20 }}
                     />
                   </Grid>
-                  <Grid item={true} xs={6}>
+                  {/* <Grid item={true} xs={6}>
                     <Field
                       component={AutocompleteField}
                       name="labels"
@@ -501,7 +493,7 @@ class CyioNoteCreation extends Component {
                         );
                       }}
                     />
-                  </Grid>
+                  </Grid> */}
                   <Grid style={{
                     marginLeft: 'auto',
                     display: 'grid',
