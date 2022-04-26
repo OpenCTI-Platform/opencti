@@ -726,6 +726,9 @@ const subjectResolvers = {
     },    
     subject_ref: async (parent, _, {dbName, dataSources, selectMap }) => {
       if (parent.subject_ref_iri === undefined) return null;
+      if( parent.subject_ref_iri.length > 1) {
+        console.log(`[CYIO] CONSTRAINT-VIOLATION: ${parent.iri} 'subject_ref' violates maxCount constraint; dropping extras`);
+      }
       let iri = parent.subject_ref_iri[0];
       const sparqlQuery = selectObjectByIriQuery(iri, parent.subject_type, selectMap.getNode("subject_ref"));
       let response;

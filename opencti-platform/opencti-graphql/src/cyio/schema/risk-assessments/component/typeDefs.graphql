@@ -229,6 +229,8 @@
     created
     "Modified"
     modified
+    "Name"
+    name
     "Label"
     labels
   }

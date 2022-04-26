@@ -620,6 +620,11 @@ const observationResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
+            if (response[0].subject_ref[0].includes('OperatingSystem')) {
+              console.error(`[CYIO] INVALID-IRI: ${response[0].iri} 'subject_ref' contains an IRI ${response[0].subject_ref[0]} which is invalid; skipping`);
+              continue;
+            }
+
             results.push(reducer(response[0]))
           }
           else {

@@ -1305,7 +1305,7 @@ input LogEntryAuthorAddInput  {
     "Identifies relevant evidence collected as part of this observation."
     relevant_evidence: [EvidenceAddInput]
     "Identifies a Date/time stamp identifying when the finding information was collected."
-    collected: Timestamp
+    collected: Timestamp!
     "Identifies Date/time identifying when the finding information is out-of-date and no longer valid. Typically used with continuous assessment scenarios."
     expires: Timestamp
   }
@@ -1463,7 +1463,7 @@ type OscalTask implements BasicObject & LifecycleObject & OscalObject {
   "Identifies an individual activity to be performed as part of a task."
   associated_activities: [AssociatedActivity]
   "Identifies a reference to one or more assessment subjects that the task is performed against: component, inventory item, party, users"
-  subjects: [AssessmentSubject]
+  assessment_subjects: [AssessmentSubject]
   "Identifies the person or organization responsible for performing a specific role related to the task."
   responsible_roles: [OscalResponsibleParty]
 }
@@ -1486,6 +1486,10 @@ input OscalTaskAddInput {
   subjects: [AssessmentSubjectAddInput]
   "Identifies the person or organization responsible for performing a specific role related to the task."
   responsible_roles: [ID]
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [ID]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [ID]
 }
 # Ordering Types
 enum OscalTaskOrdering {
@@ -1578,6 +1582,10 @@ type OscalTaskEdge {
     description: String!
     "Identifies a reference to one or more subjects, in the form of a party or tool required to achieve the remediation."
     subjects: [SubjectAddInput]
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [ID]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [ID]
   }
   # Ordering Type
   enum RequiredAssetOrdering {
