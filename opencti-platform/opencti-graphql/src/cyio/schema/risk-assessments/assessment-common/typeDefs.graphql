@@ -1463,7 +1463,7 @@ type OscalTask implements BasicObject & LifecycleObject & OscalObject {
   "Identifies an individual activity to be performed as part of a task."
   associated_activities: [AssociatedActivity]
   "Identifies a reference to one or more assessment subjects that the task is performed against: component, inventory item, party, users"
-  assessment_subjects: [AssessmentSubject]
+  subjects: [AssessmentSubject]
   "Identifies the person or organization responsible for performing a specific role related to the task."
   responsible_roles: [OscalResponsibleParty]
 }
