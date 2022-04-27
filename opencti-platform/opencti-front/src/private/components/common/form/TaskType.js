@@ -12,7 +12,7 @@ import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
 const TaskTypeQuery = graphql`
   query TaskTypeQuery {
-    __type(name: "TaskType") {
+    __type(name: "OscalTaskType") {
       name
       description
       enumValues {

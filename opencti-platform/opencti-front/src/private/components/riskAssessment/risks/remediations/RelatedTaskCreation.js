@@ -175,7 +175,6 @@ class RelatedTaskCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('RelatedTaskCreation', values);
     if (values.responsible_roles.length > 0) {
       this.setState({
         responsible_roles: values.responsible_roles.map((value) => (
@@ -194,8 +193,8 @@ class RelatedTaskCreation extends Component {
       this.setState({
         timing: {
           within_date_range: {
-            start_date: values.start_date === null ? null : parse(values.start_date).format(),
-            end_date: values.end_date === null ? null : parse(values.end_date).format(),
+            start_date: values.start_date === null ? null : parse(values.start_date),
+            end_date: values.end_date === null ? null : parse(values.end_date),
           }
         },
       })
@@ -469,7 +468,7 @@ class RelatedTaskCreation extends Component {
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
                         >
-                          {remediationId && t(remediationId)}
+                          {this.props.remediationId}
                         </Field>
                       </div>
                     </Grid>
