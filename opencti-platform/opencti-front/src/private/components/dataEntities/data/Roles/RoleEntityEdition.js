@@ -55,37 +55,20 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-// const roleEntityEditionQuery = graphql`
-//   query RoleEntityEditionQuery($id: ID!) {
-//     riskResponse(id: $id) {
-//       id
-//       name                # Title
-//       description         # Description
-//       created             # Created
-//       modified            # Last Modified
-//       lifecycle           # Lifecycle
-//       response_type       # Response Type
-//       origins{            # Detection Source
-//         id
-//         origin_actors {
-//           actor_type
-//           actor_ref {
-//             ... on Component {
-//               id
-//               component_type
-//               name          # Source
-//             }
-//             ... on OscalParty {
-//               id
-//               party_type
-//               name            # Source
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// `;
+const roleEntityEditionQuery = graphql`
+  query RoleEntityEditionQuery($id: ID!) {
+    oscalRole(id: $id) {
+      id
+      entity_type
+      created
+      modified
+      role_identifier
+      name
+      short_name
+      description
+    }
+  }
+`;
 
 class RoleEntityEdition extends Component {
   constructor(props) {
@@ -97,33 +80,34 @@ class RoleEntityEdition extends Component {
 
   render() {
     const {
-      classes, t, displayEdit, handleDisplayEdit, history,
+      classes, t, displayEdit, handleDisplayEdit, history, roleId,
     } = this.props;
     return (
       <div className={classes.container}>
-        {/* <QR
+        <QR
           environment={QueryRendererDarkLight}
           query={roleEntityEditionQuery}
-          variables={{ id: cyioCoreRelationshipId }}
+          variables={{ id: roleId }}
           render={({ error, props, retry }) => {
             if (props) {
-              return ( */}
-        <RoleEntityEditionContainer
-          displayEdit={displayEdit}
-          history={history}
-          handleDisplayEdit={handleDisplayEdit}
-        />
-        {/* );
+              return (
+                <RoleEntityEditionContainer
+                  displayEdit={displayEdit}
+                  history={history}
+                  handleDisplayEdit={handleDisplayEdit}
+                />
+              );
             }
             return <></>;
           }}
-        /> */}
+        />
       </div>
     );
   }
 }
 
 RoleEntityEdition.propTypes = {
+  roldId: PropTypes.string,
   displayEdit: PropTypes.bool,
   handleDisplayEdit: PropTypes.func,
   classes: PropTypes.object,

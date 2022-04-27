@@ -48,6 +48,7 @@ class RolesEntities extends Component {
       selectAll: false,
       openDataCreation: false,
       displayEdit: false,
+      selectedRoleId: '',
     };
   }
 
@@ -94,8 +95,12 @@ class RolesEntities extends Component {
   }
 
   handleDisplayEdit(selectedElements) {
-    // const roleId = Object.entries(selectedElements)[0][1].id;
-    this.setState({ displayEdit: !this.state.displayEdit });
+    let roleId = '';
+    if (selectedElements) {
+      roleId = (Object.entries(selectedElements)[0][1])?.id;
+    }
+
+    this.setState({ displayEdit: !this.state.displayEdit, selectedRoleId: roleId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -373,7 +378,7 @@ class RolesEntities extends Component {
     const paginationOptions = {
       search: searchTerm,
       // orderedBy: sortBy,
-      orderedBy: 'name',
+      orderedBy: 'created',
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
@@ -394,6 +399,7 @@ class RolesEntities extends Component {
         <RoleEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}
+          roleId={this.state.selectedRoleId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </div>

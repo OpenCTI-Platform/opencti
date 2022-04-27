@@ -77,7 +77,7 @@ class EntityRoleDetailsComponent extends Component {
       t,
       classes,
       refreshQuery,
-      device,
+      role,
       fd,
       history,
     } = this.props;
@@ -179,11 +179,11 @@ class EntityRoleDetailsComponent extends Component {
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={3}>
               <CyioCoreObjectLabelsView
-                labels={device.labels}
+                labels={role.labels}
                 marginTop={0}
                 refreshQuery={refreshQuery}
-                id={device.id}
-                typename={device.__typename}
+                id={role.id}
+                typename={role.__typename}
               />
             </Grid>
             <Grid item={true} xs={4}>
@@ -207,7 +207,7 @@ class EntityRoleDetailsComponent extends Component {
 }
 
 EntityRoleDetailsComponent.propTypes = {
-  device: PropTypes.object,
+  role: PropTypes.object,
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
@@ -217,10 +217,17 @@ EntityRoleDetailsComponent.propTypes = {
 const EntityRoleDetails = createFragmentContainer(
   EntityRoleDetailsComponent,
   {
-    device: graphql`
-      fragment EntityRoleDetails_device on HardwareAsset {
+    role: graphql`
+      fragment EntityRoleDetails_role on OscalRole {
         __typename
         id
+        entity_type
+        created
+        modified
+        role_identifier
+        name
+        short_name
+        description
         labels {
           __typename
           id

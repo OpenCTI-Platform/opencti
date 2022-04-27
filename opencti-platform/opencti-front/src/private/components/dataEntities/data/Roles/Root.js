@@ -34,10 +34,10 @@ const subscription = graphql`
 
 const roleQuery = graphql`
   query RootRoleQuery($id: ID!) {
-    hardwareAsset(id: $id) {
+    oscalRole(id: $id) {
       id
       name
-      ...EntityRole_device
+      ...EntityRole_role
     }
   }
 `;
@@ -97,7 +97,7 @@ class RootRole extends Component {
           variables={{ id: roleId }}
           render={({ error, props, retry }) => {
             if (props) {
-              if (props.hardwareAsset) {
+              if (props.oscalRole) {
                 return (
                   <Switch>
                     <Route
@@ -107,7 +107,7 @@ class RootRole extends Component {
                         <EntityRole
                           {...routeProps}
                           refreshQuery={retry}
-                          device={props.hardwareAsset}
+                          role={props.oscalRole}
                         />
                       )}
                     />
