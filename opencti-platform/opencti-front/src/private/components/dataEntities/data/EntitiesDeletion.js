@@ -205,7 +205,7 @@ class EntitiesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Risk?')}
+                {t('Are you sure you’d like to delete this entity?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}

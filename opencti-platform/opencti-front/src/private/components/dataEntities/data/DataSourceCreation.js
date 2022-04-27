@@ -240,7 +240,7 @@ class DataSourceCreation extends Component {
                   gutterBottom={true}
                   classes={{ root: classes.title }}
                 >
-                  {t('New Risk')}
+                  {t('New Data Source')}
                 </Typography>
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
@@ -276,38 +276,8 @@ class DataSourceCreation extends Component {
                   spacing={3}
                   classes={{ container: classes.gridContainer }}
                 >
-                  <Grid item={true} xs={6}>
-                    {/* <RiskCreationOverview
-                      setFieldValue={setFieldValue}
-                      values={values}
-                    /> */}
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    {/* <RiskCreationDetails values={values} setFieldValue={setFieldValue} /> */}
-                  </Grid>
                 </Grid>
               </Form>
-              <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-                style={{ marginTop: 25 }}
-              >
-                <Grid item={true} xs={6}>
-                  {/* <CyioExternalReferences
-                      cyioCoreObjectId={risk.id}
-                    /> */}
-                  {/* <CyioCoreObjectAssetCreationExternalReferences
-                    cyioCoreObjectId={riskId}
-                  /> */}
-                </Grid>
-                <Grid item={true} xs={6}>
-                  {/* <CyioCoreObjectOrCyioCoreRelationshipNotes
-                    cyioCoreObjectOrCyioCoreRelationshipId={riskId}
-                    marginTop='0px'
-                  /> */}
-                </Grid>
-              </Grid>
             </>
           )}
         </Formik>

@@ -183,7 +183,7 @@ class EntitiesRolesDeletion extends Component {
               variant="contained"
               onClick={this.handleOpenDelete.bind(this)}
               className={classes.iconButton}
-              disabled={(Boolean(!id) && Boolean(!isAllselected)) || true}
+              disabled={(Boolean(!id) && Boolean(!isAllselected))}
               color="primary"
               size="large"
             >
@@ -203,7 +203,7 @@ class EntitiesRolesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Risk?')}
+                {t('Are you sure you’d like to delete this Role?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}

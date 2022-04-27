@@ -97,6 +97,14 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  buttonRipple: {
+    opacity: 0,
+  },
+  headerDummy: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 });
 
 class EntityRoleCardComponent extends Component {
@@ -118,6 +126,7 @@ class EntityRoleCardComponent extends Component {
       classes,
       node,
       selectAll,
+      history,
       onToggleEntity,
       bookmarksIds,
       onLabelClick,
@@ -155,10 +164,8 @@ class EntityRoleCardComponent extends Component {
               >
                 <EntitiesRolesPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
-                // history={history}
-                // nodeId={node?.id}
-                // riskNode={riskData.node}
-                // node={node}
+                  history={history}
+                  nodeId={node?.id}
                 />
                 <Checkbox
                   disableRipple={true}
@@ -206,7 +213,7 @@ class EntityRoleCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {node?.installed_operating_system?.vendor_name
-                  && (node?.installed_operating_system?.vendor_name)}
+                    && (node?.installed_operating_system?.vendor_name)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -325,39 +332,36 @@ class EntityRoleCardDummyComponent extends Component {
         <CardActionArea classes={{ root: classes.area }}>
           <CardHeader
             classes={{ root: classes.header }}
-            avatar={
-              <Skeleton
-                animation="wave"
-                variant="circle"
-                width={30}
-                height={30}
-              />
-            }
             title={
-              <Skeleton
-                animation="wave"
-                variant="rect"
-                width="90%"
-                style={{ marginBottom: 10 }}
-              />
+              <div className={classes.headerDummy}>
+                <Skeleton
+                  animation="wave"
+                  variant="circle"
+                  width={30}
+                  height={30}
+                />
+                <div style={{ width: '100%', padding: '0px 20px' }}>
+                  <Skeleton
+                    animation="wave"
+                    variant="rect"
+                    width="100%"
+                    style={{ marginBottom: 10 }}
+                  />
+                  <Skeleton
+                    animation="wave"
+                    variant="rect"
+                    width="100%"
+                  />
+                </div>
+                <Skeleton
+                  animation="wave"
+                  variant="circle"
+                  width={30}
+                  height={30}
+                />
+              </div>
             }
             titleTypographyProps={{ color: 'inherit' }}
-            subheader={
-              <Skeleton
-                animation="wave"
-                variant="rect"
-                width="90%"
-                style={{ marginBottom: 10 }}
-              />
-            }
-            action={
-              <Skeleton
-                animation="wave"
-                variant="circle"
-                width={30}
-                height={30}
-              />
-            }
           />
           <CardContent classes={{ root: classes.contentDummy }}>
             <Skeleton

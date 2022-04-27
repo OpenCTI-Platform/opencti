@@ -247,9 +247,9 @@ class EntityRoleLineDummyComponent extends Component {
               >
                 <Skeleton
                   animation="wave"
-                  variant="circle"
-                  width={30}
-                  height={30}
+                  variant="rect"
+                  width="90%"
+                  height="100%"
                 />
               </div>
               <div
@@ -289,25 +289,16 @@ class EntityRoleLineDummyComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.marking.width }}
               >
-                <Skeleton animation="wave" variant="circle" width={30} height={30} />
-              </div>
-              {/* <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
-              >
                 <Skeleton
                   animation="wave"
                   variant="rect"
                   width="90%"
                   height="100%"
                 />
-              </div> */}
+              </div>
             </div>
           }
         />
-        {/* <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
-        </ListItemIcon> */}
       </ListItem>
     );
   }

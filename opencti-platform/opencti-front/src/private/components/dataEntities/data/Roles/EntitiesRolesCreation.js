@@ -242,7 +242,7 @@ class EntitiesRolesCreation extends Component {
                   gutterBottom={true}
                   classes={{ root: classes.title }}
                 >
-                  {t('New Risk')}
+                  {t('New Role')}
                 </Typography>
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>

@@ -62,6 +62,13 @@ const styles = (theme) => ({
     padding: '0px',
     textAlign: 'left',
   },
+  markingText: {
+    background: theme.palette.header.text,
+    color: 'black',
+    width: '100px',
+    textAlign: 'center',
+    padding: '3px 0',
+  }
 });
 
 class EntityRoleDetailsComponent extends Component {
@@ -188,7 +195,9 @@ class EntityRoleDetailsComponent extends Component {
                 {t('Markings')}
               </Typography>
               <div className="clearfix" />
-              {t('Lorem Ipsum')}
+              <p className={classes.markingText}>
+                {t('IEP: WHITE')}
+              </p>
             </Grid>
           </Grid>
         </Paper>

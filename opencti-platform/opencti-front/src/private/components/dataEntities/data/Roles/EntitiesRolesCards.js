@@ -36,9 +36,9 @@ class EntitiesRolesCards extends Component {
   handleSetBookmarkList(bookmarks) {
     this.setState({ bookmarks });
   }
-  handleOffsetChange(){
+  handleOffsetChange() {
     const incrementedOffset = this.state.offset += nbOfCardsToLoad;
-    this.setState({ offset:incrementedOffset })
+    this.setState({ offset: incrementedOffset })
     this.props.relay.refetchConnection(nbOfCardsToLoad, null, {
       offset: this.state.offset,
       first: nbOfCardsToLoad,
@@ -55,41 +55,28 @@ class EntitiesRolesCards extends Component {
     } = this.props;
     const { bookmarks, offset } = this.state;
     return (
-    // <QueryRenderer
-    //   query={stixDomainObjectBookmarksQuery}
-    //   variables={{ types: ['Device'] }}
-    //   render={({ props }) => (
-    //     <div>
-    //       <StixDomainObjectBookmarks
-    //         data={props}
-    //         onLabelClick={onLabelClick.bind(this)}
-    //         setBookmarkList={this.handleSetBookmarkList.bind(this)}
-    //       />
-            <CyioListCardsContent
-              initialLoading={initialLoading}
-              loadMore={relay.loadMore.bind(this)}
-              handleOffsetChange={this.handleOffsetChange.bind(this)}
-              hasMore={relay.hasMore.bind(this)}
-              isLoading={relay.isLoading.bind(this)}
-              dataList={pathOr([], ['hardwareAssetList', 'edges'], this.props.data)}
-              globalCount={pathOr(
-                nbOfCardsToLoad,
-                ['hardwareAssetList', 'pageInfo', 'globalCount'],
-                this.props.data,
-              )}
-              offset={offset}
-              CardComponent={<EntityRoleCard />}
-              DummyCardComponent={<EntityRoleCardDummy />}
-              nbOfCardsToLoad={nbOfCardsToLoad}
-              selectAll={selectAll}
-              selectedElements={selectedElements}
-              onLabelClick={onLabelClick.bind(this)}
-              onToggleEntity={onToggleEntity.bind(this)}
-              bookmarkList={bookmarks}
-            />
-    //     </div>
-    //   )}
-    // />
+      <CyioListCardsContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore.bind(this)}
+        handleOffsetChange={this.handleOffsetChange.bind(this)}
+        hasMore={relay.hasMore.bind(this)}
+        isLoading={relay.isLoading.bind(this)}
+        dataList={pathOr([], ['hardwareAssetList', 'edges'], this.props.data)}
+        globalCount={pathOr(
+          nbOfCardsToLoad,
+          ['hardwareAssetList', 'pageInfo', 'globalCount'],
+          this.props.data,
+        )}
+        offset={offset}
+        CardComponent={<EntityRoleCard />}
+        DummyCardComponent={<EntityRoleCardDummy />}
+        nbOfCardsToLoad={nbOfCardsToLoad}
+        selectAll={selectAll}
+        selectedElements={selectedElements}
+        onLabelClick={onLabelClick.bind(this)}
+        onToggleEntity={onToggleEntity.bind(this)}
+        bookmarkList={bookmarks}
+      />
     );
   }
 }

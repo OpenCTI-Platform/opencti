@@ -13,17 +13,8 @@ import {
   requestSubscription,
 } from '../../../../../relay/environment';
 import TopBar from '../../../nav/TopBar';
-import Device from '../../../assets/devices/Device';
 import EntityRole from './EntityRole';
-import DeviceKnowledge from '../../../assets/devices/DeviceKnowledge';
 import Loader from '../../../../../components/Loader';
-import FileManager from '../../../common/files/FileManager';
-import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
-import DevicePopover from '../../../assets/devices/DevicePopover';
-import StixCoreObjectHistory from '../../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixDomainObjectIndicators from '../../../observations/indicators/StixDomainObjectIndicators';
-import StixCoreRelationship from '../../../common/stix_core_relationships/StixCoreRelationship';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 

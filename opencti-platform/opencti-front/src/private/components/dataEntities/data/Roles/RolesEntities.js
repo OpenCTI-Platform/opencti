@@ -26,6 +26,7 @@ import { isUniqFilter } from '../../../common/lists/Filters';
 import EntitiesRolesDeletion from './EntitiesRolesDeletion';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
+import RoleEntityEdition from './RoleEntityEdition';
 
 class RolesEntities extends Component {
   constructor(props) {
@@ -46,6 +47,7 @@ class RolesEntities extends Component {
       selectedElements: null,
       selectAll: false,
       openDataCreation: false,
+      displayEdit: false,
     };
   }
 
@@ -92,11 +94,8 @@ class RolesEntities extends Component {
   }
 
   handleDisplayEdit(selectedElements) {
-    const riskId = Object.entries(selectedElements)[0][1].id;
-    this.props.history.push({
-      pathname: `/activities/risk assessment/risks/${riskId}`,
-      openEdit: true,
-    });
+    // const roleId = Object.entries(selectedElements)[0][1].id;
+    this.setState({ displayEdit: !this.state.displayEdit });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -392,6 +391,11 @@ class RolesEntities extends Component {
           />
           // </Security>
         ))}
+        <RoleEntityEdition
+          displayEdit={this.state.displayEdit}
+          history={this.props.history}
+          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+        />
       </div>
     );
   }

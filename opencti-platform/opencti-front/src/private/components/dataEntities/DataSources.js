@@ -14,12 +14,6 @@ import {
 import inject18n from '../../../components/i18n';
 import CyioListCards from '../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../components/list_lines/CyioListLines';
-// import RisksCards, {
-//   risksCardsQuery,
-// } from './risks/RisksCards';
-// import RisksLines, {
-//   risksLinesQuery,
-// } from './risks/RisksLines';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import DataSourceCreation from './data/DataSourceCreation';

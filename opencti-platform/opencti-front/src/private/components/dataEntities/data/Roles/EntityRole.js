@@ -10,11 +10,14 @@ import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../../components/i18n';
 import EntityRoleDetails from './EntityRoleDetails';
+import EntitiesRolesPopover from './EntitiesRolesPopover';
+import EntitiesRolesDeletion from './EntitiesRolesDeletion';
 import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
+import RoleEntityEditionContainer from './RoleEntityEditionContainer';
 
 const styles = () => ({
   container: {
@@ -39,7 +42,7 @@ class EmtityRoleComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/defender HQ/assets/devices',
+      pathname: '/data/entities/roles',
       openNewCreation: true,
     });
   }
@@ -54,65 +57,57 @@ class EmtityRoleComponent extends Component {
     } = this.props;
     return (
       <>
-        {!this.state.displayEdit && !location.openEdit ? (
-          <div className={classes.container}>
-            <CyioDomainObjectHeader
-              cyioDomainObject={device}
-              history={history}
-              // PopoverComponent={<DevicePopover />}
-              handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-              handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            // OperationsComponent={<DeviceDeletion />}
-            />
-            <TopBarBreadcrumbs />
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-            >
-              <Grid item={true} xs={12}>
-                <EntityRoleDetails device={device} history={history} refreshQuery={refreshQuery} />
-              </Grid>
-            </Grid>
-            <Grid
-              container={true}
-              spacing={3}
-              classes={{ container: classes.gridContainer }}
-              style={{ marginTop: 25 }}
-            >
-              <Grid item={true} xs={6}>
-                <CyioCoreObjectExternalReferences
-                  typename={device.__typename}
-                  externalReferences={device.external_references}
-                  fieldName='external_references'
-                  cyioCoreObjectId={device?.id}
-                  refreshQuery={refreshQuery}
-                />
-              </Grid>
-              <Grid item={true} xs={6}>
-                <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  typename={device.__typename}
-                  notes={device.notes}
-                  refreshQuery={refreshQuery}
-                  fieldName='notes'
-                  marginTop='0px'
-                  cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
-                />
-              </Grid>
-            </Grid>
-            {/* <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <DeviceEdition deviceId={device?.id} />
-              </Security> */}
-          </div>
-        ) : (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          {/* <DeviceEdition
-            open={this.state.openEdit}
-            deviceId={device?.id}
+        <div className={classes.container}>
+          <CyioDomainObjectHeader
+            cyioDomainObject={device}
             history={history}
-          /> */}
-          // </Security>
-        )}
+            PopoverComponent={<EntitiesRolesPopover />}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+            OperationsComponent={<EntitiesRolesDeletion />}
+          />
+          <TopBarBreadcrumbs />
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+          >
+            <Grid item={true} xs={12}>
+              <EntityRoleDetails device={device} history={history} refreshQuery={refreshQuery} />
+            </Grid>
+          </Grid>
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 25 }}
+          >
+            <Grid item={true} xs={6}>
+              <CyioCoreObjectExternalReferences
+                typename={device.__typename}
+                externalReferences={device.external_references}
+                fieldName='external_references'
+                cyioCoreObjectId={device?.id}
+                refreshQuery={refreshQuery}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                typename={device.__typename}
+                notes={device.notes}
+                refreshQuery={refreshQuery}
+                fieldName='notes'
+                marginTop='0px'
+                cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
+              />
+            </Grid>
+          </Grid>
+        </div>
+        <RoleEntityEditionContainer
+          displayEdit={this.state.displayEdit}
+          history={history}
+          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+        />
       </>
     );
   }

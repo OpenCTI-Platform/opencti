@@ -122,23 +122,10 @@ class EntitiesRolesPopover extends Component {
           <MenuItem
             className={classes.menuItem}
             // divider={true}
-            // onClick={() => history.push(`/activities/risk assessment/risks/${nodeId}`)}
+            // onClick={() => history.push(`/data/entities/roles/${nodeId}`)}
           >
             {t('Details')}
           </MenuItem>
-          {/* <MenuItem
-            className={classes.menuItem}
-            // onClick={this.handleOpenPoam.bind(this)}
-            divider={true}
-          >
-            {t('Assign POAM ID')}
-          </MenuItem>
-          <MenuItem
-            className={classes.menuItem}
-            // onClick={this.handleOpenRiskLevel.bind(this)}
-          >
-            {t('Change Risk Status')}
-          </MenuItem> */}
         </Menu>
       </div>
     );
@@ -147,7 +134,6 @@ class EntitiesRolesPopover extends Component {
 
 EntitiesRolesPopover.propTypes = {
   node: PropTypes.object,
-  riskNode: PropTypes.object,
   nodeId: PropTypes.string,
   handleOpenMenu: PropTypes.func,
   classes: PropTypes.object,
