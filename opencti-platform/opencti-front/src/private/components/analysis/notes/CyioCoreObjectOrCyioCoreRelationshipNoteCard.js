@@ -327,13 +327,13 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
         </CardContent>
         <Collapse sx={{ width: '1100px', borderRadius: 0 }} in={this.state.open} timeout="auto" unmountOnExit>
           <CardActions style={{ color: '#F9B406', padding: '0 20px 20px 15px' }}>
-            <CyioCoreObjectLabels
+            {/* <CyioCoreObjectLabels
               variant="inList"
               labels={node.labels}
               refreshQuery={refreshQuery}
               id={node.id}
               typename={this.props.typename}
-            />
+            /> */}
           </CardActions>
         </Collapse>
         <Dialog

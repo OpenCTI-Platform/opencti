@@ -22,13 +22,29 @@ export const componentReducer = (item) => {
   if ( item.object_type === undefined ) {
     item.object_type = 'component';
   }
+  // TODO: WORKAROUND missing component type 
+  if (item.component_type === undefined) {
+    switch(item.asset_type) {
+      case 'software':
+      case 'operating-system':
+      case 'application-software':
+        item.component_type = 'software';
+        break;
+      case 'network':
+        item.component_type = 'network';
+        break;
+      default:
+        throw new UserInputError(`Unknown component type '${item.asset_type}'`);        
+    }
+  }
+  // END WORKAROUND
 
   return {
     id: item.id,
     standard_id: item.id,
     entity_type: 'component',
     ...(item.iri && {parent_iri: item.iri}),
-    ...(item.object_type && {component_type: item.object_type}),
+    ...(item.object_type && {object_type: item.object_type}),
     ...(item.created && {created: item.created}),
     ...(item.modified && {modified: item.modified}),
     ...(item.labels && {labels_iri: item.labels}),
@@ -123,13 +139,20 @@ export const selectComponentByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllComponents = (select, filters) => {
+export const selectAllComponents = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(componentPredicateMap);
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined) {
+    // add value of filter's key to cause special predicates to be included
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
