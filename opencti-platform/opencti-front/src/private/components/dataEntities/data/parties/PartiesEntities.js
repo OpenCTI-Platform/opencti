@@ -213,7 +213,7 @@ class PartiesEntities extends Component {
         OperationsComponent={<EntitiesPartiesDeletion />}
         openExports={openExports}
         filterEntityType="Entities"
-        selectedDataEntity='roles'
+        selectedDataEntity='parties'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -321,7 +321,7 @@ class PartiesEntities extends Component {
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='Entities'
-        selectedDataEntity='roles'
+        selectedDataEntity='parties'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

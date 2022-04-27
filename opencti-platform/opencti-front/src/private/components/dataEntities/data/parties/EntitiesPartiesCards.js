@@ -91,7 +91,7 @@ EntitiesPartiesCards.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const entitiesPartiessCardsQuery = graphql`
+export const entitiesPartiesCardsQuery = graphql`
   query EntitiesPartiesCardsPaginationQuery(
     $search: String
     $first: Int!
@@ -181,6 +181,6 @@ export default createPaginationContainer(
         filterMode: fragmentVariables.filterMode,
       };
     },
-    query: entitiesPartiessCardsQuery,
+    query: entitiesPartiesCardsQuery,
   },
 );
