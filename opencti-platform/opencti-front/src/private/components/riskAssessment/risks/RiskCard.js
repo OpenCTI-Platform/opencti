@@ -343,17 +343,12 @@ const RiskCardFragment = createFragmentContainer(
         id
         poam_id
         name
-        description
         risk_level
-        occurrences
         risk_status
+        response_type
+        lifecycle
+        occurrences
         deadline
-        priority
-        remediations {
-          id
-          response_type
-          lifecycle
-        }
       }
     `,
   },
