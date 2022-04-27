@@ -155,7 +155,7 @@ class EntityRoleCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {node.asset_type && node.asset_type}
+                {node.entity_type && node.entity_type}
               </div>
               <Grid
                 item={true}
@@ -212,8 +212,8 @@ class EntityRoleCardComponent extends Component {
                   {t('Marking')}
                 </Typography>
                 <Typography>
-                  {node?.installed_operating_system?.vendor_name
-                    && (node?.installed_operating_system?.vendor_name)}
+                  {node?.parent_types
+                    && (node?.parent_types)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -226,7 +226,7 @@ class EntityRoleCardComponent extends Component {
                   {t('Author')}
                 </Typography>
                 <Typography>
-                  {node.entity_type && t(node.entity_type)}
+                  {t('Lorem Ipsum')}
                 </Typography>
               </Grid>
             </Grid>
@@ -267,22 +267,15 @@ const EntityRoleCardFragment = createFragmentContainer(
   EntityRoleCardComponent,
   {
     node: graphql`
-      fragment EntityRoleCard_node on HardwareAsset {
+      fragment EntityRoleCard_node on OscalRole {
         id
+        description
+        short_name
         name
-        created
-        asset_type
+        role_identifier
         entity_type
-        asset_id
-        ipv4_address{
-          ip_address_value
-        }
-        installed_operating_system {
-          name
-          vendor_name
-        }
-        asset_type
-        fqdn
+        created
+        modified
         labels {
           __typename
           id
@@ -291,7 +284,7 @@ const EntityRoleCardFragment = createFragmentContainer(
           entity_type
           description
         }
-        external_references {
+        links {
           __typename
           id
           source_name
@@ -303,7 +296,7 @@ const EntityRoleCardFragment = createFragmentContainer(
           }
           external_id
         }
-        notes {
+        remarks {
           __typename
           id
           # created
@@ -313,7 +306,6 @@ const EntityRoleCardFragment = createFragmentContainer(
           content
           authors
         }
-        network_id
       }
     `,
   },

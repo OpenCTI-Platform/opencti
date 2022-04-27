@@ -50,7 +50,7 @@ class EmtityRoleComponent extends Component {
   render() {
     const {
       classes,
-      device,
+      role,
       history,
       refreshQuery,
       location,
@@ -59,7 +59,7 @@ class EmtityRoleComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={device}
+            cyioDomainObject={role}
             history={history}
             PopoverComponent={<EntitiesRolesPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
@@ -73,7 +73,7 @@ class EmtityRoleComponent extends Component {
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={12}>
-              <EntityRoleDetails device={device} history={history} refreshQuery={refreshQuery} />
+              <EntityRoleDetails role={role} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
           <Grid
@@ -84,21 +84,21 @@ class EmtityRoleComponent extends Component {
           >
             <Grid item={true} xs={6}>
               <CyioCoreObjectExternalReferences
-                typename={device.__typename}
-                externalReferences={device.external_references}
-                fieldName='external_references'
-                cyioCoreObjectId={device?.id}
+                typename={role.__typename}
+                externalReferences={role.links}
+                fieldName='links'
+                cyioCoreObjectId={role?.id}
                 refreshQuery={refreshQuery}
               />
             </Grid>
             <Grid item={true} xs={6}>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
-                typename={device.__typename}
-                notes={device.notes}
+                typename={role.__typename}
+                notes={role.remarks}
                 refreshQuery={refreshQuery}
-                fieldName='notes'
+                fieldName='remarks'
                 marginTop='0px'
-                cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
+                cyioCoreObjectOrCyioCoreRelationshipId={role?.id}
               />
             </Grid>
           </Grid>
@@ -114,26 +114,24 @@ class EmtityRoleComponent extends Component {
 }
 
 EmtityRoleComponent.propTypes = {
-  device: PropTypes.object,
+  role: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
 const EntityRole = createFragmentContainer(EmtityRoleComponent, {
-  device: graphql`
-    fragment EntityRole_device on HardwareAsset {
+  role: graphql`
+    fragment EntityRole_role on OscalRole {
       __typename
       id
+      entity_type
+      created
+      modified
+      role_identifier
       name
-      asset_id
-      asset_type
-      asset_tag
+      short_name
       description
-      version
-      vendor_name
-      serial_number
-      release_date
       labels {
         __typename
         id
@@ -142,7 +140,7 @@ const EntityRole = createFragmentContainer(EmtityRoleComponent, {
         entity_type
         description
       }
-      external_references {
+      links {
         __typename
         id
         source_name
@@ -154,7 +152,7 @@ const EntityRole = createFragmentContainer(EmtityRoleComponent, {
         }
         external_id
       }
-      notes {
+      remarks {
         __typename
         id
         # created
@@ -164,9 +162,7 @@ const EntityRole = createFragmentContainer(EmtityRoleComponent, {
         content
         authors
       }
-      # responsible_parties
-      operational_status
-      ...EntityRoleDetails_device
+      ...EntityRoleDetails_role
     }
   `,
 });

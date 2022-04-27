@@ -56,6 +56,7 @@ const styles = (theme) => ({
 class EntityRoleLineComponent extends Component {
   render() {
     const {
+      t,
       fd,
       classes,
       node,
@@ -97,8 +98,8 @@ class EntityRoleLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.type.width }}
               >
-                {node.asset_type
-                  && <ItemIcon type={node.type} />}
+                {node.entity_type
+                  && <ItemIcon type={node.entity_type} />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -132,8 +133,7 @@ class EntityRoleLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.marking.width }}
               >
-                {node?.installed_operating_system?.vendor_name
-                  && <ItemIcon variant='inline' type={node.installed_operating_system.vendor_name === 'microsoft' || node.installed_operating_system.vendor_name === 'apple' || node.installed_operating_system.vendor_name === 'linux' ? node.installed_operating_system.vendor_name : 'other'} />}
+                {node?.parent_types && t(node.parent_types)}
               </div>
             </div>
           }
@@ -164,21 +164,15 @@ const EntityRoleLineFragment = createFragmentContainer(
   EntityRoleLineComponent,
   {
     node: graphql`
-      fragment EntityRoleLine_node on HardwareAsset {
+      fragment EntityRoleLine_node on OscalRole {
         id
+        description
+        short_name
         name
-        created
-        asset_id
-        asset_type
+        role_identifier
         entity_type
-        ipv4_address{
-          ip_address_value
-        }
-        installed_operating_system{
-          name
-          vendor_name
-        }
-        fqdn
+        created
+        modified
         labels {
           __typename
           id
@@ -187,7 +181,7 @@ const EntityRoleLineFragment = createFragmentContainer(
           entity_type
           description
         }
-        external_references {
+        links {
           __typename
           id
           source_name
@@ -199,7 +193,7 @@ const EntityRoleLineFragment = createFragmentContainer(
           }
           external_id
         }
-        notes {
+        remarks {
           __typename
           id
           # created
