@@ -66,7 +66,7 @@ const actorResolvers = {
             continue;
           }
           if (actor.actor_ref === undefined || actor.actor_ref == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${actor.iri} missing field 'id'; skipping`);
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${actor.iri} missing field 'actor_ref'; skipping`);
           }
 
 

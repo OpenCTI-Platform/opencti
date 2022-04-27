@@ -130,6 +130,7 @@ export const selectInventoryItemByIriQuery = (iri, select) => {
 }
 export const selectAllInventoryItems = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(inventoryItemPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined) {
     // add value of filter's key to cause special predicates to be included
