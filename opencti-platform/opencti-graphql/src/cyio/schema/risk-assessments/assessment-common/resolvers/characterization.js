@@ -764,7 +764,8 @@ const characterizationResolvers = {
 
             // Convert the each key/value pair of Vulnerability Facet into an individual OSCAL facet
             for (const [key, value] of Object.entries(facet)) {
-              if (key === 'id' || key === 'entity_type' || key === 'standard_id' || key === 'risk_state' || key === 'source_system' ) continue;
+              if (key === 'iri' || key === 'id' || key === 'entity_type' || key === 'standard_id' || key === 'risk_state' || key === 'source_system' ) continue;
+              if (value === null || value === 'null') continue;
               let id = generateId();
               let newFacet = { 
                 id: `${id}`,
