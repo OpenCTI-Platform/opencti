@@ -169,7 +169,7 @@ class RiskLineComponent extends Component {
                   color="default"
                   className={classes.statusButton}
                 >
-                  {riskRemediation.response_type && t(riskRemediation.response_type)}
+                  {node?.response_type && t(node.response_type)}
                 </Button>
               </div>
               <div
@@ -182,7 +182,7 @@ class RiskLineComponent extends Component {
                   color="default"
                   className={classes.statusButton}
                 >
-                  {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
+                  {node?.lifecycle && t(node.lifecycle)}
                 </Button>
               </div>
               <div
@@ -240,17 +240,12 @@ const RiskLineFragment = createFragmentContainer(
         id
         poam_id
         name
-        description
         risk_level
-        occurrences
         risk_status
+        response_type
+        lifecycle
+        occurrences
         deadline
-        priority
-        remediations {
-          id
-          response_type
-          lifecycle
-        }
       }
     `,
   },
