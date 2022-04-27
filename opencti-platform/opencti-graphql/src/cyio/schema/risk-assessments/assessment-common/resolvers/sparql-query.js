@@ -498,10 +498,11 @@ const taskReducer = (item) => {
     // ...(item.timing && {timing_iri: item.timing}),
     ...(item.on_date && {on_date: item.on_date}),
     ...(item.start_date && {start_date: item.start_date}),
-    ...(item.end_date && {end_date: item.end-date}),
+    ...(item.end_date && {end_date: item.end_date}),
     ...(item.frequency_period && {frequency_period: item.frequency_period}),
     ...(item.time_unit && {time_unit: item.time_unit}),
-    ...(item.task_dependencies && {task_dependency_iri: item.task_dependencies}),
+    ...(item.related_tasks && {related_tasks_iri: item.related_tasks}),
+    ...(item.task_dependencies && {task_dependencies_iri: item.task_dependencies}),
     ...(item.associated_activities && {associated_activities_iri: item.associated_activities}),
     ...(item.subjects && {subjects_iri: item.subjects}),
     ...(item.responsible_roles && {responsible_roles_iri: item.responsible_roles}),
@@ -3190,11 +3191,19 @@ export const insertOscalTaskQuery = (propValues) => {
   return {iri, id, query}  
 }
 export const selectOscalTaskQuery = (id, select) => {
-  return selectRemediationTaskByIriQuery(`http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}`, select);
+  return selectOscalTaskByIriQuery(`http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}`, select);
 }
 export const selectOscalTaskByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(oscalTaskPredicateMap);
+  if (select.includes('timing')) {
+    select.push('on_date');
+    select.push('start_date');
+    select.push('end_date');
+    select.push('frequency_period');
+    select.push('frequency_unit')
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(oscalTaskPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -3208,6 +3217,13 @@ export const selectOscalTaskByIriQuery = (iri, select) => {
 }
 export const selectAllOscalTasks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(oscalTaskPredicateMap);
+  if (select.includes('timing')) {
+    select.push('on_date');
+    select.push('start_date');
+    select.push('end_date');
+    select.push('frequency_period');
+    select.push('frequency_unit')
+  }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -3942,12 +3958,12 @@ export const oscalTaskPredicateMap = {
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   start_date: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#timing_start>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#start_date>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "start_date");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   end_date: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#timing_start>",
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#end_date>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "end_date");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
@@ -3961,9 +3977,9 @@ export const oscalTaskPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "frequency_unit");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  tasks: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#tasks>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "tasks");},
+  related_tasks: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#related_tasks>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "related_tasks");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   task_dependencies: {
