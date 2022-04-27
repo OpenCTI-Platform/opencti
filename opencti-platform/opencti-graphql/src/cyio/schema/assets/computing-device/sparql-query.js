@@ -244,6 +244,7 @@ export function getSelectSparqlQuery( type, select, id, args, ) {
     select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined && id === undefined ) {
@@ -392,6 +393,7 @@ export const selectComputingDeviceByIriQuery = (iri, select) => {
 }
 export const selectAllComputingDevices = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(computingDevicePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
