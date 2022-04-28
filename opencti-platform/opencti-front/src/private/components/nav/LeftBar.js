@@ -243,17 +243,16 @@ const LeftBar = ({
         <Divider />
         <MenuList component="nav" classes={{ root: classes.menuList }}>
             <MenuItem
-              disabled="true"
               component={Link}
-              to={toData}
-              selected={location.pathname.includes('/dashboard/data')}
+              to={'/data'}
+              selected={location.pathname.includes('/data')}
               dense={false}
               classes={{ root: classes.menuItem }}
             >
               <ListItemIcon style={{ minWidth: 35 }}>
                 <Database />
               </ListItemIcon>
-              <ListItemText primary={t('Data Source')} />
+              <ListItemText primary={t('Data')} />
             </MenuItem>
             <MenuItem
               disabled="true"
