@@ -140,7 +140,7 @@ class RoleEntityEditionContainer extends Component {
       },
       onError: (err) => {
         console.error(err);
-        return toastGenericError('Request Failed');
+        toastGenericError('Request Failed');
       }
     });
     this.setState({ onSubmit: true });

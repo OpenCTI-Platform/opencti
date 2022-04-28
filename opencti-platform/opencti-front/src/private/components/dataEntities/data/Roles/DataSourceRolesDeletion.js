@@ -129,7 +129,7 @@ class DataSourceRolesDeletion extends Component {
       },
       onError: (err) => {
         console.error(err);
-        return toastGenericError('Failed to delete role');
+        toastGenericError('Failed to delete role');
       },
     });
     // commitMutation({

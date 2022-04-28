@@ -167,7 +167,7 @@ const CyioCoreObjectLabelsView = (props) => {
         },
         onError: (err) => {
           console.error(err);
-          return toastGenericError('Failed to add label');
+          toastGenericError('Failed to add label');
         }
       })
     ));

@@ -223,7 +223,7 @@ class Network extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <NetworkCards
@@ -329,7 +329,7 @@ class Network extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <NetworkLines

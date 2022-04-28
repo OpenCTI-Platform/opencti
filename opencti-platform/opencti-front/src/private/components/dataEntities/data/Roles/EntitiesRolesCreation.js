@@ -124,7 +124,7 @@ class EntitiesRolesCreation extends Component {
       },
       onError: (err) => {
         console.error(err);
-        return toastGenericError('Failed to create role');
+        toastGenericError('Failed to create role');
       },
     });
     // commitMutation({
