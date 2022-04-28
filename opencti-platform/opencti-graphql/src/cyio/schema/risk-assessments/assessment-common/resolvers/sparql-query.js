@@ -575,6 +575,7 @@ export const selectActivityQuery = (id, select) => {
 export const selectActivityByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(activityPredicateMap);
+  
   const { selectionClause, predicates } = buildSelectVariables(activityPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -588,6 +589,7 @@ export const selectActivityByIriQuery = (iri, select) => {
 }
 export const selectAllActivities = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(activityPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -747,6 +749,7 @@ export const selectActorByIriQuery = (iri, select) => {
 }
 export const selectAllActors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(actorPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -886,6 +889,7 @@ export const selectAssessmentPlatformByIriQuery = (iri, select) => {
 }
 export const selectAllAssessmentPlatforms = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(assessmentPlatformPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1039,13 +1043,20 @@ export const selectAssessmentSubjectByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllAssessmentSubjects = (select, filters) => {
+export const selectAllAssessmentSubjects = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(assessmentSubjectPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1182,6 +1193,7 @@ export const selectAssociatedActivityByIriQuery = (iri, select) => {
 }
 export const selectAllAssociatedActivities = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(associatedActivityPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1337,6 +1349,7 @@ export const selectCharacterizationByIriQuery = (iri, select) => {
 }
 export const selectAllCharacterizations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(characterizationPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1506,6 +1519,7 @@ export const selectEvidenceByIriQuery = (iri, select) => {
 }
 export const selectAllEvidence = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(evidencePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1681,6 +1695,7 @@ export const selectFacetByIriQuery = (iri, select) => {
 }
 export const selectAllFacets = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(facetPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1834,13 +1849,20 @@ export const selectLogEntryAuthorByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllLogEntryAuthors = (select, filters) => {
+export const selectAllLogEntryAuthors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(logEntryAuthorPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -1978,6 +2000,7 @@ export const selectMitigatingFactorByIriQuery = (iri, select) => {
 }
 export const selectAllMitigatingFactors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(mitigatingFactorPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2112,6 +2135,7 @@ export const selectObservationByIriQuery = (iri, select) => {
 }
 export const selectAllObservations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(observationPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2259,6 +2283,7 @@ export const selectOriginByIriQuery = (iri, select) => {
 }
 export const selectAllOrigins = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(originPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2438,6 +2463,7 @@ export const selectRequiredAssetByIriQuery = (iri, select) => {
 }
 export const selectAllRequiredAssets = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(requiredAssetPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2587,7 +2613,8 @@ export const selectRiskByIriQuery = (iri, select) => {
 }
 export const selectAllRisks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
-  
+  if (!select.includes('id')) select.push('id');
+
   // Update select to impact what predicates get retrieved if looking to calculate risk level
   if (select.includes('risk_level')) {
     select.push('cvss2_base_score');
@@ -2758,6 +2785,7 @@ export const selectRiskLogEntryByIriQuery = (iri, select) => {
 }
 export const selectAllRiskLogEntries = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(riskLogPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -2918,6 +2946,7 @@ export const selectRiskResponseByIriQuery = (iri, select) => {
 }
 export const selectAllRiskResponses = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(riskResponsePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -3076,6 +3105,7 @@ export const selectSubjectByIriQuery = (iri, select) => {
 }
 export const selectAllSubjects = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -3196,6 +3226,7 @@ export const selectOscalTaskQuery = (id, select) => {
 export const selectOscalTaskByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(oscalTaskPredicateMap);
+  if (!select.includes('id')) select.push('id');
   if (select.includes('timing')) {
     select.push('on_date');
     select.push('start_date');
@@ -3217,6 +3248,8 @@ export const selectOscalTaskByIriQuery = (iri, select) => {
 }
 export const selectAllOscalTasks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(oscalTaskPredicateMap);
+  if (!select.includes('id')) select.push('id');
+
   if (select.includes('timing')) {
     select.push('on_date');
     select.push('start_date');
