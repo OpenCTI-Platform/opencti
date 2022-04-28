@@ -182,7 +182,7 @@ class Network extends Component {
       network_id: {
         label: 'Network ID',
       },
-      labels: {
+      label_name: {
         label: 'Labels',
       },
     };
@@ -285,7 +285,7 @@ class Network extends Component {
         width: '17%',
         isSortable: false,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
         width: '23%',
         isSortable: true,
