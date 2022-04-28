@@ -118,7 +118,7 @@ class RelatedTaskFields extends Component {
     }
     if(this.props.name === "associated_activities"){
       fetchDarklightQuery(RelatedTaskFieldsAssociatedActivitiesQuery, {
-        orderedBy: 'name',
+        orderedBy: 'activity_id',
         orderMode: 'asc',
       })
       .toPromise()
@@ -141,7 +141,7 @@ class RelatedTaskFields extends Component {
     }
     if(this.props.name === "responsible_roles"){
       fetchDarklightQuery(RelatedTaskFieldsResponsiblePartiesQuery, {
-        orderedBy: 'name',
+        orderedBy: 'labels',
         orderMode: 'asc',
       })
       .toPromise()
