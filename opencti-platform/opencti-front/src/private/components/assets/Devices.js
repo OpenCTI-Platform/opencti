@@ -192,7 +192,7 @@ class Devices extends Component {
       network_id: {
         label: 'Network ID',
       },
-      labels: {
+      label_name: {
         label: 'Label',
       },
     };
@@ -305,7 +305,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: true,
       },
-      labels: {
+      label_name: {
         label: 'Label',
         width: '20%',
         isSortable: true,
