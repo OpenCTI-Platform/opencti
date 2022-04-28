@@ -225,6 +225,7 @@ class RelatedTasksLinesContainer extends Component {
     } = this.props;
     const { expanded } = this.state;
     const relatedTaskData = data.riskResponse;
+    
     // const externalReferencesEdges = data.riskResponse.external_references.edges;
     // const expandable = externalReferencesEdges.length > 7;
     console.log('RelatedTasksData', data);
