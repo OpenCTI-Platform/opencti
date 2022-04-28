@@ -118,10 +118,10 @@ const riskResolvers = {
             continue
           }
 
-          // if (risk.id === undefined || risk.id == null ) {
-          //   console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
-          //   continue;
-          // }
+          if (risk.id === undefined || risk.id == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
+            continue;
+          }
 
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {

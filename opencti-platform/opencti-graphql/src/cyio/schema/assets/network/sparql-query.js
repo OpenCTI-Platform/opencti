@@ -95,6 +95,7 @@ export function getSelectSparqlQuery(type, select, id, args, ) {
 
   if (type === 'NETWORK') {
     if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
+    if (!select.includes('id')) select.push('id');
 
     if (args !== undefined ) {
       if ( args.filters !== undefined && id === undefined ) {
@@ -246,6 +247,7 @@ export const selectNetworkByIriQuery = (iri, select) => {
 }
 export const selectAllNetworks = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(networkPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

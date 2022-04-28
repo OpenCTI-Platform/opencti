@@ -677,10 +677,10 @@ input AssessmentPlatformAddInput {
 #
   union EventTiming = DateRangeTiming | OnDateTiming | FrequencyTiming
   input EventTimingAddInput {
-      on_date: OnDateTimingAddInput
-      within_date_range: DateRangeTimingAddInput
-      at_frequency: FrequencyTimingAddInput
-    }
+    on_date: OnDateTimingAddInput
+    within_date_range: DateRangeTimingAddInput
+    at_frequency: FrequencyTimingAddInput
+  }
 ## DateRangeTiming
 #
   "Defines identifying information about an Event Timing that occurs within a date range."
@@ -688,13 +688,13 @@ input AssessmentPlatformAddInput {
     "Identifies the specified date that the task must occur on or after."
     start_date: Timestamp!
     "identifies the specific date that the task must occur on or before."
-    end_date: Timestamp!
+    end_date: Timestamp
   }
   input DateRangeTimingAddInput {
     "Identifies the specified date that the task must occur on or after."
     start_date: Timestamp!
     "identifies the specific date that the task must occur on or before."
-    end_date: Timestamp!
+    end_date: Timestamp
   }
 ## FrequencyTiming
 #
@@ -719,7 +719,7 @@ input AssessmentPlatformAddInput {
     on_date: Timestamp!
   }
   input OnDateTimingAddInput {
-    on_date: Timestamp!
+    date: Timestamp!
   }
 
 ## Evidence
@@ -1449,7 +1449,7 @@ type OscalTask implements BasicObject & LifecycleObject & OscalObject {
   ): OscalRelationshipConnection
   # Task
   "Identifies the type of task."
-  task_type: TaskType!
+  task_type: OscalTaskType!
   "Identifies the name for the task."
   name: String!
   "Identifies a human-readable description of the task."
@@ -1469,7 +1469,7 @@ type OscalTask implements BasicObject & LifecycleObject & OscalObject {
 }
 input OscalTaskAddInput {
   "Identifies the type of task."
-  task_type: TaskType!
+  task_type: OscalTaskType!
   "Identifies the name for the task."
   name: String!
   "Identifies a human-readable description of the task."
@@ -2193,7 +2193,7 @@ type OscalTaskEdge {
   }
 
   "Defines the type of tasks"
-  enum TaskType {
+  enum OscalTaskType {
     "The task represents a planned milestone."
     milestone
     "The task represents a specific assessment action to be performed."
