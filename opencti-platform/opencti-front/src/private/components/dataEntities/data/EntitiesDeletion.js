@@ -21,8 +21,7 @@ import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import RiskEditionContainer from '../../riskAssessment/risks/RiskEditionContainer';
-import { riskEditionQuery } from '../../riskAssessment/risks/RiskEdition';
+import { toastGenericError } from '../../../../utils/bakedToast';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE,
@@ -116,27 +115,6 @@ class EntitiesDeletion extends Component {
     this.setState({ displayEdit: false });
   }
 
-  // submitDelete() {
-  //   this.setState({ deleting: true });
-  //   commitMutation({
-  //     mutation: EntitiesDeletionMutation,
-  //     variables: {
-  //       id: this.props.id,
-  //     },
-  //     config: [
-  //       {
-  //         type: 'NODE_DELETE',
-  //         deletedIDFieldName: 'id',
-  //       },
-  //     ],
-  //     onCompleted: () => {
-  //       this.setState({ deleting: false });
-  //       this.handleClose();
-  //       this.props.history.push('/activities/risk assessment/risks');
-  //     },
-  //   });
-  // }
-
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
@@ -149,7 +127,10 @@ class EntitiesDeletion extends Component {
         this.handleClose();
         // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        return toastGenericError('Failed to delete entity');
+      },
     });
     // commitMutation({
     //   mutation: EntitiesDeletionDarkLightMutation,

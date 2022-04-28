@@ -17,6 +17,7 @@ import EntityRole from './EntityRole';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import { toastGenericError } from "../../../../../utils/bakedToast";
 
 const subscription = graphql`
   subscription RootRoleSubscription($id: ID!) {
@@ -96,6 +97,10 @@ class RootRole extends Component {
           query={roleQuery}
           variables={{ id: roleId }}
           render={({ error, props, retry }) => {
+            if (error) {
+              console.error(error);
+              return toastGenericError('Failed to get role data');
+            }
             if (props) {
               if (props.oscalRole) {
                 return (

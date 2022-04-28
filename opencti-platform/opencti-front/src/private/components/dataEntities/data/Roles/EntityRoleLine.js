@@ -10,12 +10,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import DeviceIcon from '@material-ui/icons/Devices';
-import WindowsIcon from '@material-ui/icons/LaptopWindows';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../../../components/i18n';
-import StixCoreObjectLabels from '../../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import EntitiesRolesPopover from './EntitiesRolesPopover';
@@ -66,7 +62,6 @@ class EntityRoleLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -76,9 +71,6 @@ class EntityRoleLineComponent extends Component {
         selected={selectAll || node.id in (selectedElements || {})}
         to={`/data/entities/roles/${node.id}`}
       >
-        {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <PublicOutlined />
-        </ListItemIcon> */}
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
           style={{ minWidth: 38 }}
@@ -111,7 +103,7 @@ class EntityRoleLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.author.width }}
               >
-                {node.entity_type && node.entity_type}
+                {/* {node.entity_type && node.entity_type} */}
               </div>
               <div
                 className={classes.bodyItem}
@@ -165,6 +157,7 @@ const EntityRoleLineFragment = createFragmentContainer(
   {
     node: graphql`
       fragment EntityRoleLine_node on OscalRole {
+        __typename
         id
         description
         short_name
@@ -196,8 +189,6 @@ const EntityRoleLineFragment = createFragmentContainer(
         remarks {
           __typename
           id
-          # created
-          # modified
           entity_type
           abstract
           content

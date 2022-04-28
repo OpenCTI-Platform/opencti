@@ -13,8 +13,6 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
-import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
@@ -26,6 +24,7 @@ import Security, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
 } from '../../../../../utils/Security';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -114,27 +113,6 @@ class EntitiesRolesDeletion extends Component {
     this.setState({ displayEdit: false });
   }
 
-  // submitDelete() {
-  //   this.setState({ deleting: true });
-  //   commitMutation({
-  //     mutation: EntitiesRolesDeletionMutation,
-  //     variables: {
-  //       id: this.props.id,
-  //     },
-  //     config: [
-  //       {
-  //         type: 'NODE_DELETE',
-  //         deletedIDFieldName: 'id',
-  //       },
-  //     ],
-  //     onCompleted: () => {
-  //       this.setState({ deleting: false });
-  //       this.handleClose();
-  //       this.props.history.push('/activities/risk assessment/risks');
-  //     },
-  //   });
-  // }
-
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
@@ -145,9 +123,11 @@ class EntitiesRolesDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        return toastGenericError('Failed to delete role');
+      },
     });
     // commitMutation({
     //   mutation: EntitiesRolesDeletionDarkLightMutation,

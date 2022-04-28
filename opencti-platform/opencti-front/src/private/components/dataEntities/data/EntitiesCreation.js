@@ -89,39 +89,8 @@ const styles = (theme) => ({
   },
 });
 
-// const entitiesCreationMutation = graphql`
-//   mutation EntitiesCreationMutation($input: RiskAddInput) {
-//     createRisk (input: $input) {
-//       id
-//       # ...RiskCard_node
-//       # ...RiskDetails_risk
-//       # operational_status
-//       # serial_number
-//       # release_date
-//       # description
-//       # version
-//       # name
-//     }
-//   }
-// `;
-
 const riskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -156,17 +125,9 @@ class EntitiesCreation extends Component {
       },
       values,
     );
-    const relatedRisks = {
-      created: values.riskDetailsCreated,
-      // remediations: {
-      //   response_type: values.response_type,
-      //   lifecycle: values.lifecycle,
-      // }
-    };
     const finalValues = R.pipe(
       R.assoc('name', values.name),
     )(adaptedValues);
-    console.log('RiskCreationFinal', finalValues);
     CM(environmentDarkLight, {
       // mutation: entitiesCreationMutation,
       variables: {
@@ -177,28 +138,9 @@ class EntitiesCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.error(err),
     });
-    // commitMutation({
-    //   mutation: entitiesCreationMutation,
-    //   variables: {
-    //     input: values,
-    //   },
-    // //   // updater: (store) => insertNode(
-    // //   //   store,
-    // //   //   'Pagination_threatActors',
-    // //   //   this.props.paginationOptions,
-    // //   //   'threatActorAdd',
-    // //   // ),
-    //   setSubmitting,
-    //   onCompleted: () => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //   },
-    // });
   }
 
   handleClose() {

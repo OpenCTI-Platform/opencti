@@ -11,8 +11,8 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
-// import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 import RoleEntityEditionContainer from './RoleEntityEditionContainer';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -89,6 +89,10 @@ class RoleEntityEdition extends Component {
           query={roleEntityEditionQuery}
           variables={{ id: roleId }}
           render={({ error, props, retry }) => {
+            if (error) {
+              console.error(error);
+              return toastGenericError('Failed to edit Role');
+            }
             if (props) {
               return (
                 <RoleEntityEditionContainer
