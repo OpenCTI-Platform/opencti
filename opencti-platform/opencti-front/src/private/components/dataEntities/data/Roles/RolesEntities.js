@@ -86,8 +86,8 @@ class RolesEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleRiskCreation() {
-    this.setState({ openDataCreation: true });
+  handleRoleCreation() {
+    this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   handleRefresh() {
@@ -99,7 +99,6 @@ class RolesEntities extends Component {
     if (selectedElements) {
       roleId = (Object.entries(selectedElements)[0][1])?.id;
     }
-
     this.setState({ displayEdit: !this.state.displayEdit, selectedRoleId: roleId });
   }
 
@@ -210,7 +209,7 @@ class RolesEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleRiskCreation.bind(this)}
+        handleNewCreation={this.handleRoleCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
@@ -235,6 +234,7 @@ class RolesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
+              console.error(error);
               return toastGenericError('Request Failed');
             }
             return (
@@ -318,7 +318,7 @@ class RolesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleRiskCreation.bind(this)}
+        handleNewCreation={this.handleRoleCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         CreateItemComponent={<EntitiesRolesCreation />}
@@ -342,8 +342,8 @@ class RolesEntities extends Component {
           query={entitiesRolesLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`props : ${props} Error : ${error}`);
             if (error) {
+              console.error(error);
               return toastGenericError('Request Failed');
             }
             return (
@@ -386,16 +386,13 @@ class RolesEntities extends Component {
     const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && (!openDataCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' && (!openDataCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
-        {((openDataCreation || location.openNewCreation) && (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <EntitiesRolesCreation
-            paginationOptions={paginationOptions}
-            history={this.props.history}
-          />
-          // </Security>
-        ))}
+        {view === 'cards' && this.renderCards(paginationOptions)}
+        {view === 'lines' && this.renderLines(paginationOptions)}
+        <EntitiesRolesCreation
+          openDataCreation={openDataCreation}
+          handleRoleCreation={this.handleRoleCreation.bind(this)}
+          history={this.props.history}
+        />
         <RoleEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}

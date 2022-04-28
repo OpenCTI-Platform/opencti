@@ -41,26 +41,6 @@ import { toastGenericError } from "../../../../../utils/bakedToast";
 
 
 const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  drawerPaper: {
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    backgroundColor: theme.palette.background.paper,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
-  },
-  menuItem: {
-    padding: '15px 0',
-    width: '152px',
-    margin: '0 20px',
-    justifyContent: 'center',
-  },
   dialogTitle: {
     padding: '24px 0 16px 24px',
   },
@@ -157,9 +137,11 @@ class RoleEntityEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation/`);
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        console.error(err);
+        return toastGenericError('Request Failed');
+      }
     });
     this.setState({ onSubmit: true });
   }
@@ -191,7 +173,6 @@ class RoleEntityEditionContainer extends Component {
         'response_type',
       ]),
     )(remediation);
-    console.log('remediation', remediation);
     return (
       <>
         <Dialog
@@ -214,7 +195,7 @@ class RoleEntityEditionContainer extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Edit Remediation')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
@@ -438,11 +419,7 @@ class RoleEntityEditionContainer extends Component {
                   <Button
                     variant="outlined"
                     // onClick={handleReset}
-                    onClick={() => {
-                      this.props.handleDisplayEdit();
-                      this.setState({ close: true });
-                    }}
-                    disabled={isSubmitting}
+                    onClick={() => this.props.handleDisplayEdit()}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -460,44 +437,6 @@ class RoleEntityEditionContainer extends Component {
               </Form>
             )}
           </Formik>
-        </Dialog>
-        <Dialog
-          open={this.state.close}
-          keepMounted={true}
-          // TransitionComponent={Transition}
-          onClose={this.handleCancelCloseClick.bind(this)}
-        >
-          <DialogContent>
-            <Typography className={classes.popoverDialog}>
-              {t('Are you sure you’d like to cancel?')}
-            </Typography>
-            <Typography align='left'>
-              {t('Your progress will not be saved')}
-            </Typography>
-          </DialogContent>
-          <DialogActions className={classes.dialogActions}>
-            <Button
-              // onClick={this.handleCloseDelete.bind(this)}
-              // disabled={this.state.deleting}
-              // onClick={handleReset}
-              onClick={this.handleCancelCloseClick.bind(this)}
-              classes={{ root: classes.buttonPopover }}
-              variant='outlined'
-              size='small'
-            >
-              {t('Go Back')}
-            </Button>
-            <Button
-              onClick={() => this.props.history.goBack()}
-              color='secondary'
-              // disabled={this.state.deleting}
-              classes={{ root: classes.buttonPopover }}
-              variant='contained'
-              size='small'
-            >
-              {t('Yes, Cancel')}
-            </Button>
-          </DialogActions>
         </Dialog>
       </>
     );

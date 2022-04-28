@@ -93,35 +93,12 @@ const dataSourceCreationMutation = graphql`
   mutation DataSourceCreationMutation($input: RiskAddInput) {
     createRisk (input: $input) {
       id
-      # ...RiskCard_node
-      # ...RiskDetails_risk
-      # operational_status
-      # serial_number
-      # release_date
-      # description
-      # version
-      # name
     }
   }
 `;
 
 const riskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -157,10 +134,7 @@ class DataSourceCreation extends Component {
       values,
     );
     const finalValues = R.pipe(
-      R.dissoc('controls'),
       R.assoc('name', values.name),
-      R.dissoc('riskDetailsCreated'),
-      R.dissoc('riskDetailsModified'),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: dataSourceCreationMutation,
@@ -172,28 +146,9 @@ class DataSourceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.error(err),
     });
-    // commitMutation({
-    //   mutation: dataSourceCreationMutation,
-    //   variables: {
-    //     input: values,
-    //   },
-    // //   // updater: (store) => insertNode(
-    // //   //   store,
-    // //   //   'Pagination_threatActors',
-    // //   //   this.props.paginationOptions,
-    // //   //   'threatActorAdd',
-    // //   // ),
-    //   setSubmitting,
-    //   onCompleted: () => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //   },
-    // });
   }
 
   handleClose() {

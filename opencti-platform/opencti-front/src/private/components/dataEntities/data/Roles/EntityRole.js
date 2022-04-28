@@ -18,6 +18,7 @@ import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import RoleEntityEditionContainer from './RoleEntityEditionContainer';
+import EntitiesRolesCreation from './EntitiesRolesCreation';
 
 const styles = () => ({
   container: {
@@ -33,6 +34,7 @@ class EmtityRoleComponent extends Component {
     super(props);
     this.state = {
       displayEdit: false,
+      openDataCreation: false,
     };
   }
 
@@ -41,10 +43,7 @@ class EmtityRoleComponent extends Component {
   }
 
   handleOpenNewCreation() {
-    this.props.history.push({
-      pathname: '/data/entities/roles',
-      openNewCreation: true,
-    });
+    this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   render() {
@@ -103,6 +102,11 @@ class EmtityRoleComponent extends Component {
             </Grid>
           </Grid>
         </div>
+        <EntitiesRolesCreation
+          openDataCreation={this.state.openDataCreation}
+          handleRoleCreation={this.handleOpenNewCreation.bind(this)}
+          history={history}
+        />
         <RoleEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
@@ -155,8 +159,6 @@ const EntityRole = createFragmentContainer(EmtityRoleComponent, {
       remarks {
         __typename
         id
-        # created
-        # modified
         entity_type
         abstract
         content

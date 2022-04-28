@@ -116,27 +116,6 @@ class DataSourceDeletion extends Component {
     this.setState({ displayEdit: false });
   }
 
-  // submitDelete() {
-  //   this.setState({ deleting: true });
-  //   commitMutation({
-  //     mutation: DataSourceDeletionMutation,
-  //     variables: {
-  //       id: this.props.id,
-  //     },
-  //     config: [
-  //       {
-  //         type: 'NODE_DELETE',
-  //         deletedIDFieldName: 'id',
-  //       },
-  //     ],
-  //     onCompleted: () => {
-  //       this.setState({ deleting: false });
-  //       this.handleClose();
-  //       this.props.history.push('/activities/risk assessment/risks');
-  //     },
-  //   });
-  // }
-
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
@@ -147,27 +126,9 @@ class DataSourceDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.error(err),
     });
-    // commitMutation({
-    //   mutation: DataSourceDeletionDarkLightMutation,
-    //   variables: {
-    //     id: this.props.id,
-    //   },
-    //   config: [
-    //     {
-    //       type: 'NODE_DELETE',
-    //       deletedIDFieldName: 'id',
-    //     },
-    //   ],
-    //   onCompleted: () => {
-    //     this.setState({ deleting: false });
-    //     this.handleClose();
-    //     this.props.history.push('/activities/risk assessment/risks');
-    //   },
-    // });
   }
 
   render() {

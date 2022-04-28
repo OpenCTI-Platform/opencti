@@ -132,7 +132,6 @@ class EntityRoleCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -165,7 +164,7 @@ class EntityRoleCardComponent extends Component {
                 <EntitiesRolesPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
                   history={history}
-                  nodeId={node?.id}
+                  node={node}
                 />
                 <Checkbox
                   disableRipple={true}
@@ -268,6 +267,7 @@ const EntityRoleCardFragment = createFragmentContainer(
   {
     node: graphql`
       fragment EntityRoleCard_node on OscalRole {
+        __typename
         id
         description
         short_name
@@ -299,8 +299,6 @@ const EntityRoleCardFragment = createFragmentContainer(
         remarks {
           __typename
           id
-          # created
-          # modified
           entity_type
           abstract
           content
