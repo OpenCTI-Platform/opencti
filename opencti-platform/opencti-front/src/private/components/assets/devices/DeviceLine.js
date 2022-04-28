@@ -117,7 +117,7 @@ class DeviceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.ip_address.width }}
+                style={{ width: dataColumns.ip_address_value.width }}
               >
                 {node.ipv4_address
                   && node.ipv4_address.map((ipv4Address) => (
@@ -306,7 +306,7 @@ class DeviceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.ip_address.width }}
+                style={{ width: dataColumns.ip_address_value.width }}
               >
                 <Skeleton
                   animation="wave"
