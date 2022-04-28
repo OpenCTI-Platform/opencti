@@ -186,7 +186,7 @@ class Devices extends Component {
       ip_address: {
         label: 'IP Address',
       },
-      installed_operating_system: {
+      installed_os_name: {
         label: 'OS',
       },
       network_id: {
@@ -295,7 +295,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: false,
       },
-      installed_operating_system: {
+      installed_os_name: {
         label: 'OS',
         width: '8%',
         isSortable: true,
