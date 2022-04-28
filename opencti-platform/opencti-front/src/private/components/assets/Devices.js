@@ -183,7 +183,7 @@ class Devices extends Component {
       asset_id: {
         label: 'Asset ID',
       },
-      ip_address: {
+      ip_address_value: {
         label: 'IP Address',
       },
       installed_os_name: {
@@ -285,7 +285,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: true,
       },
-      ip_address: {
+      ip_address_value: {
         label: 'IP Address',
         width: '12%',
         isSortable: true,
