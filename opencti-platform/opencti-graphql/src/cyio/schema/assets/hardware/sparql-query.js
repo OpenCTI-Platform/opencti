@@ -182,6 +182,7 @@ export const selectAllHardware = (select, args) => {
     select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

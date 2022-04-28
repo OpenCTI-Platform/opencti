@@ -98,6 +98,7 @@ export function getSelectSparqlQuery(type, select, id, args) {
 
   if (type == 'SOFTWARE') {
     if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
+    if (!select.includes('id')) select.push('id');
 
     if (args !== undefined ) {
       if ( args.filters !== undefined && id === undefined ) {
@@ -264,6 +265,7 @@ export const selectSoftwareByIriQuery = (iri, select) => {
 }
 export const selectAllSoftware = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(softwarePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

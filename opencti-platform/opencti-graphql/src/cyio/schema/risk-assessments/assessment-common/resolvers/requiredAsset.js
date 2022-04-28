@@ -172,10 +172,41 @@ const requiredAssetResolvers = {
       // END WORKAROUND
 
       // Setup to handle embedded objects to be created
-      let subjects, remediationId;
+      let subjects, remediationId, links = [], remarks = [];
       if (input.remediation_id !== undefined) remediationId = input.remediation_id
       if (input.subjects !== undefined) subjects = input.subjects;
 
+      // obtain the IRIs for the referenced objects so that if one doesn't exists we have created anything yet.
+      if (input.links !== undefined && input.links !== null) {
+        for (let linkId of input.links) {
+          let sparqlQuery = selectObjectIriByIdQuery( linkId, 'link');
+          let result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Obtaining IRI for Link object with id",
+            singularizeSchema
+          });
+          if (result === undefined || result.length === 0) throw new UserInputError(`Link object does not exist with ID ${taskId}`);
+          links.push(`<${result[0].iri}>`);
+        }
+        delete input.links;
+      }
+      if (input.remarks !== undefined && input.remarks !== null) {
+        for (let remarkId of input.remarks) {
+          let sparqlQuery = selectObjectIriByIdQuery( remarkId, 'remark');
+          let result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Obtaining IRI for Remark object with id",
+            singularizeSchema
+          });
+          if (result === undefined || result.length === 0) throw new UserInputError(`Remark object does not exist with ID ${taskId}`);
+          remarks.push(`<${result[0].iri}>`);
+        }
+        delete input.remarks;
+      }
+
+      // check that the Subject exits
       let sparqlQuery, result;
       if (subjects !== undefined && subjects !==  null) {
         for (let subject of subjects) {
@@ -197,7 +228,7 @@ const requiredAssetResolvers = {
         }
       }
 
-      // create the Risk Response
+      // create the Required Asset
       const {iri, id, query} = insertRequiredAssetQuery(input);
       try {
         await dataSources.Stardog.create({
@@ -254,6 +285,26 @@ const requiredAssetResolvers = {
         }
       }
 
+      // Attach any link(s) supplied to the Required Asset
+      if (links !== undefined && links.length > 0) {
+        let attachQuery = attachToRequiredAssetQuery( id, 'links', links);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the link(s) to the Required Asset"
+        });
+      }
+
+      // Attach any remark(s) supplied to the Required Asset
+      if (remarks !== undefined && links.length > 0 ) {
+        let attachQuery = attachToRequiredAssetQuery( id, 'remarks', remarks);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the remark(s) to the Required Asset"
+        });
+      }
+      
       // retrieve information about the newly created Characterization to return to the user
       const select = selectRequiredAssetQuery(id, selectMap.getNode("createRequiredAsset"));
       let response;

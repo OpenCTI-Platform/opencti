@@ -414,6 +414,7 @@ export const selectAddressByIriQuery = (iri, select) => {
 }
 export const selectAllAddresses = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(addressPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -545,6 +546,7 @@ export const selectLabelByIriQuery = (iri, select) => {
 }
 export const selectAllLabels = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(labelPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -716,6 +718,7 @@ export const selectExternalReferenceByIriQuery = (iri, select) => {
 }
 export const selectAllExternalReferences = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(externalReferencePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -846,6 +849,7 @@ export const selectNoteByIriQuery = (iri, select) => {
 }
 export const selectAllNotes = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(notePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -995,6 +999,7 @@ export const selectPhoneNumberByIriQuery = (iri, select) => {
 }
 export const selectAllPhoneNumbers = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(phoneNumberPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

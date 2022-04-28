@@ -272,13 +272,20 @@ export const selectExternalIdentifierByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllExternalIdentifiers = (select, filters) => {
+export const selectAllExternalIdentifiers = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(externalIdentifierPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -404,6 +411,7 @@ export const selectLocationByIriQuery = (iri, select) => {
 }
 export const selectAllLocations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -542,6 +550,7 @@ export const selectPartyByIriQuery = (iri, select) => {
 }
 export const selectAllParties = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -668,6 +677,7 @@ export const selectResponsiblePartyByIriQuery = (iri, select) => {
 }
 export const selectAllResponsibleParties = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(responsiblePartyPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -835,6 +845,7 @@ export const selectRoleByIriQuery = (iri, select) => {
 }
 export const selectAllRoles = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(rolePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

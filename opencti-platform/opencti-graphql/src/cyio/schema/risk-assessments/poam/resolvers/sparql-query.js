@@ -407,6 +407,7 @@ export const selectPOAMByIriQuery = (iri, select) => {
 }
 export const selectAllPOAMs = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(poamPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -560,7 +561,8 @@ export const selectPOAMItemByIriQuery = (iri, select) => {
 }
 export const selectAllPOAMItems = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
-  
+  if (!select.includes('id')) select.push('id');
+
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {
