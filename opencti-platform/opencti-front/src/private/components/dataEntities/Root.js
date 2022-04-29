@@ -9,6 +9,7 @@ import RolesDataSource from './data/Roles/RolesDataSource';
 import PartiesDataSource from './data/parties/PartiesDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
+import RootParty from './data/parties/Root';
 
 class Root extends Component {
   render() {
@@ -53,6 +54,10 @@ class Root extends Component {
         <BoundaryRoute
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          path="/data/entities/parties/:partyId"
+          render={(routeProps) => <RootParty {...routeProps} me={me} />}
         />
         {/* <BoundaryRoute
           path="/data/data source/:dataSourceId"

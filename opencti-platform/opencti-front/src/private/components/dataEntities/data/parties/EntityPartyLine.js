@@ -10,12 +10,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import ListItemText from '@material-ui/core/ListItemText';
-import DeviceIcon from '@material-ui/icons/Devices';
-import WindowsIcon from '@material-ui/icons/LaptopWindows';
 import Skeleton from '@material-ui/lab/Skeleton';
-import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../../../components/i18n';
-import StixCoreObjectLabels from '../../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
 import EntitiesPartiesPopover from './EntitiesPartiesPopover';
@@ -56,6 +52,7 @@ const styles = (theme) => ({
 class EntityPartyLineComponent extends Component {
   render() {
     const {
+      t,
       fd,
       classes,
       node,
@@ -65,7 +62,6 @@ class EntityPartyLineComponent extends Component {
       onToggleEntity,
       selectedElements,
     } = this.props;
-    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -75,9 +71,6 @@ class EntityPartyLineComponent extends Component {
         selected={selectAll || node.id in (selectedElements || {})}
         to={`/data/entities/parties/${node.id}`}
       >
-        {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <PublicOutlined />
-        </ListItemIcon> */}
         <ListItemIcon
           classes={{ root: classes.itemIcon }}
           style={{ minWidth: 38 }}
@@ -97,8 +90,7 @@ class EntityPartyLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.type.width }}
               >
-                {node.asset_type
-                  && <ItemIcon type={node.type} />}
+                {node.party_type && t(node.party_type)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -110,7 +102,7 @@ class EntityPartyLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.author.width }}
               >
-                {node.entity_type && node.entity_type}
+                {/* {node.entity_type && node.entity_type} */}
               </div>
               <div
                 className={classes.bodyItem}
@@ -126,14 +118,13 @@ class EntityPartyLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.creation_date.width }}
               >
-                {node.created && fd(node.created)}
+                {/* {node.created && fd(node.created)} */}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.marking.width }}
               >
-                {node?.installed_operating_system?.vendor_name
-                  && <ItemIcon variant='inline' type={node.installed_operating_system.vendor_name === 'microsoft' || node.installed_operating_system.vendor_name === 'apple' || node.installed_operating_system.vendor_name === 'linux' ? node.installed_operating_system.vendor_name : 'other'} />}
+                {/* {node?.parent_types && t(node.parent_types)} */}
               </div>
             </div>
           }
@@ -164,21 +155,11 @@ const EntityPartyLineFragment = createFragmentContainer(
   EntityPartyLineComponent,
   {
     node: graphql`
-      fragment EntityPartyLine_node on HardwareAsset {
+      fragment EntityPartyLine_node on OscalParty {
+        __typename
         id
         name
-        created
-        asset_id
-        asset_type
-        entity_type
-        ipv4_address{
-          ip_address_value
-        }
-        installed_operating_system{
-          name
-          vendor_name
-        }
-        fqdn
+        party_type
         labels {
           __typename
           id
@@ -187,7 +168,7 @@ const EntityPartyLineFragment = createFragmentContainer(
           entity_type
           description
         }
-        external_references {
+        links {
           __typename
           id
           source_name
@@ -199,11 +180,9 @@ const EntityPartyLineFragment = createFragmentContainer(
           }
           external_id
         }
-        notes {
+        remarks {
           __typename
           id
-          # created
-          # modified
           entity_type
           abstract
           content

@@ -26,6 +26,7 @@ import Security, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
 } from '../../../../../utils/Security';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -73,7 +74,7 @@ const DataSourcePartiesDeletionMutation = graphql`
 
 const DataSourcePartiesDeletionDarkLightMutation = graphql`
   mutation DataSourcePartiesDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteOscalParty(id: $id)
 }
 `;
 
@@ -114,27 +115,6 @@ class DataSourcePartiesDeletion extends Component {
     this.setState({ displayEdit: false });
   }
 
-  // submitDelete() {
-  //   this.setState({ deleting: true });
-  //   commitMutation({
-  //     mutation: DataSourcePartiesDeletionMutation,
-  //     variables: {
-  //       id: this.props.id,
-  //     },
-  //     config: [
-  //       {
-  //         type: 'NODE_DELETE',
-  //         deletedIDFieldName: 'id',
-  //       },
-  //     ],
-  //     onCompleted: () => {
-  //       this.setState({ deleting: false });
-  //       this.handleClose();
-  //       this.props.history.push('/activities/risk assessment/risks');
-  //     },
-  //   });
-  // }
-
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
@@ -147,7 +127,10 @@ class DataSourcePartiesDeletion extends Component {
         this.handleClose();
         // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        return toastGenericError('Failed to delete party');
+      },
     });
     // commitMutation({
     //   mutation: DataSourcePartiesDeletionDarkLightMutation,

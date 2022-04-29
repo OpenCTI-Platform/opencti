@@ -6,19 +6,10 @@ import { compose, evolve } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
-import Drawer from '@material-ui/core/Drawer';
-import Fab from '@material-ui/core/Fab';
-import {
-  Add,
-  Edit,
-  Close,
-  Delete,
-  ArrowBack,
-  AddCircleOutline,
-  CheckCircleOutline,
-} from '@material-ui/icons';
+import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Dialog from '@material-ui/core/Dialog';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -31,95 +22,50 @@ import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../../utils/Time';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import inject18n from '../../../../../components/i18n';
-import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
-import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioCoreObjectLatestHistory';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioCoreObjectAssetCreationExternalReferences from '../../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
-import Loader from '../../../../../components/Loader';
+import SelectField from '../../../../../components/SelectField';
+import TextField from '../../../../../components/TextField';
+import DatePickerField from '../../../../../components/DatePickerField';
+import MarkDownField from '../../../../../components/MarkDownField';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
-  container: {
-    marginBottom: 0,
-  },
-  header: {
-    margin: '-25px -24px 20px -24px',
-    padding: '23px 24px 24px 24px',
-    height: '64px',
-    backgroundColor: theme.palette.background.paper,
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  iconButton: {
+  dialogClosebutton: {
     float: 'left',
-    minWidth: '0px',
-    marginRight: 15,
-    padding: '8px 16px 8px 8px',
+    marginLeft: '15px',
+    marginBottom: '20px',
   },
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
-  rightContainer: {
-    float: 'right',
-    marginTop: '-10px',
+  dialogTitle: {
+    padding: '24px 0 16px 24px',
   },
   dialogActions: {
     justifyContent: 'flex-start',
     padding: '10px 0 20px 22px',
   },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
+  dialogContent: {
+    padding: '0 24px',
+    marginBottom: '24px',
+    overflow: 'hidden',
   },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
+  buttonPopover: {
+    textTransform: 'capitalize',
+  },
+  popoverDialog: {
+    fontSize: '18px',
+    lineHeight: '24px',
+    color: theme.palette.header.text,
   },
 });
 
-// const entitiesCreationMutation = graphql`
-//   mutation EntitiesCreationMutation($input: RiskAddInput) {
-//     createRisk (input: $input) {
-//       id
-//       # ...RiskCard_node
-//       # ...RiskDetails_risk
-//       # operational_status
-//       # serial_number
-//       # release_date
-//       # description
-//       # version
-//       # name
-//     }
-//   }
-// `;
+const entitiesPartiesCreationMutation = graphql`
+  mutation EntitiesPartiesCreationMutation($input: OscalPartyAddInput) {
+    createOscalParty (input: $input) {
+      id
+    }
+  }
+`;
 
 const riskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -154,18 +100,11 @@ class EntitiesPartiesCreation extends Component {
       },
       values,
     );
-    const relatedRisks = {
-      created: values.riskDetailsCreated,
-      // remediations: {
-      //   response_type: values.response_type,
-      //   lifecycle: values.lifecycle,
-      // }
-    };
     const finalValues = R.pipe(
       R.assoc('name', values.name),
     )(adaptedValues);
     CM(environmentDarkLight, {
-      // mutation: entitiesCreationMutation,
+      // mutation: entitiesPartiesCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -174,12 +113,14 @@ class EntitiesPartiesCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        return toastGenericError('Failed to create party');
+      },
     });
     // commitMutation({
-    //   mutation: entitiesCreationMutation,
+    //   mutation: entitiesPartiesCreationMutation,
     //   variables: {
     //     input: values,
     //   },
@@ -214,153 +155,287 @@ class EntitiesPartiesCreation extends Component {
     const {
       t,
       classes,
-      riskId,
+      openDataCreation,
+      handlePartyCreation,
       open,
       history,
     } = this.props;
     return (
-      <div className={classes.container}>
-        <Formik
-          initialValues={{
-            name: '',
-          }}
-          validationSchema={riskValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.onReset.bind(this)}
-        >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <>
-              <div className={classes.header}>
-                <Typography
-                  variant="h1"
-                  gutterBottom={true}
-                  classes={{ root: classes.title }}
-                >
-                  {t('New Party')}
-                </Typography>
-                <div className={classes.rightContainer}>
-                  <Tooltip title={t('Cancel')}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<Close />}
-                      color='primary'
-                      // onClick={() => history.goBack()}
-                      onClick={this.handleOpenCancelButton.bind(this)}
-                      className={classes.iconButton}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                  </Tooltip>
-                  <Tooltip title={t('Create')}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<CheckCircleOutline />}
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.iconButton }}
-                    >
-                      {t('Done')}
-                    </Button>
-                  </Tooltip>
-                </div>
-              </div>
-              <Form>
-                <Grid
-                  container={true}
-                  spacing={3}
-                  classes={{ container: classes.gridContainer }}
-                >
-                  <Grid item={true} xs={6}>
-                    {/* <RiskCreationOverview
-                      setFieldValue={setFieldValue}
-                      values={values}
-                    /> */}
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    {/* <RiskCreationDetails values={values} setFieldValue={setFieldValue} /> */}
-                  </Grid>
-                </Grid>
-              </Form>
-              <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-                style={{ marginTop: 25 }}
-              >
-                <Grid item={true} xs={6}>
-                  {/* <CyioExternalReferences
-                      cyioCoreObjectId={risk.id}
-                    /> */}
-                  {/* <CyioCoreObjectAssetCreationExternalReferences
-                    cyioCoreObjectId={riskId}
-                  /> */}
-                </Grid>
-                <Grid item={true} xs={6}>
-                  {/* <CyioCoreObjectOrCyioCoreRelationshipNotes
-                    cyioCoreObjectOrCyioCoreRelationshipId={riskId}
-                    marginTop='0px'
-                  /> */}
-                </Grid>
-              </Grid>
-            </>
-          )}
-        </Formik>
+      <>
         <Dialog
-          open={this.state.displayCancel}
-          TransitionComponent={Transition}
-          onClose={this.handleCancelButton.bind(this)}
+          open={openDataCreation}
+          keepMounted={true}
+          onClose={() => handlePartyCreation()}
         >
-          <DialogContent>
-            <Typography style={{
-              fontSize: '18px',
-              lineHeight: '24px',
-              color: 'white',
-            }} >
-              {t('Are you sure you’d like to cancel?')}
-            </Typography>
-            <DialogContentText>
-              {t('Your progress will not be saved')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions className={classes.dialogActions}>
-            <Button
-              // onClick={this.handleCloseDelete.bind(this)}
-              // disabled={this.state.deleting}
-              onClick={this.handleCancelButton.bind(this)}
-              classes={{ root: classes.buttonPopover }}
-              variant="outlined"
-              size="small"
-            >
-              {t('Go Back')}
-            </Button>
-            <Button
-              // onClick={this.submitDelete.bind(this)}
-              // disabled={this.state.deleting}
-              onClick={() => this.props.history.goBack()}
-              color="primary"
-              classes={{ root: classes.buttonPopover }}
-              variant="contained"
-              size="small"
-            >
-              {t('Yes Cancel')}
-            </Button>
-          </DialogActions>
+          <Formik
+            enableReinitialize={true}
+            initialValues={{
+              name: '',
+              created: null,
+              modified: null,
+            }}
+            // validationSchema={RelatedTaskValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
+          >
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
+              <Form>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogContent classes={{ root: classes.dialogContent }}>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Id')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Id')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={TextField}
+                          name="id"
+                          fullWidth={true}
+                          size="small"
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '12px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Created Date')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Created')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={DatePickerField}
+                          name="created"
+                          fullWidth={true}
+                          size="small"
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
+                          style={{ height: '38.09px' }}
+                        />
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <div style={{ marginBottom: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Modified Date')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Last Modified')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={DatePickerField}
+                          name="modified"
+                          fullWidth={true}
+                          size="small"
+                          variant='outlined'
+                          invalidDateMessage={t(
+                            'The value must be a date (YYYY-MM-DD)',
+                          )}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Role Identifier')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Role Identifier')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={TextField}
+                        name="role_identifier"
+                        fullWidth={true}
+                        size="small"
+                        containerstyle={{ width: '100%' }}
+                        variant='outlined'
+                      />
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Name')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Name')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={TextField}
+                        name="name"
+                        fullWidth={true}
+                        size="small"
+                        containerstyle={{ width: '100%' }}
+                        variant='outlined'
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Short Name')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Short Name')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={TextField}
+                        name="short_name"
+                        fullWidth={true}
+                        size="small"
+                        containerstyle={{ width: '100%' }}
+                        variant='outlined'
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Marking')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Marking')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="marking"
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid xs={12} item={true}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Description')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                        <Tooltip title={t('Description')}>
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={MarkDownField}
+                        name='description'
+                        fullWidth={true}
+                        multiline={true}
+                        rows='3'
+                        variant='outlined'
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+                <DialogActions classes={{ root: classes.dialogClosebutton }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => handlePartyCreation()}
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.buttonPopover }}
+                  >
+                    {t('Submit')}
+                  </Button>
+                </DialogActions>
+              </Form>
+            )}
+          </Formik>
         </Dialog>
-      </div>
+      </>
     );
   }
 }
 
 EntitiesPartiesCreation.propTypes = {
-  riskId: PropTypes.string,
+  openDataCreation: PropTypes.bool,
+  handlePartyCreation: PropTypes.func,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

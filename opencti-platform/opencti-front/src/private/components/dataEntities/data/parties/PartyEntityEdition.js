@@ -11,8 +11,8 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import QueryRendererDarkLight from '../../../../../relay/environmentDarkLight';
 import { commitMutation } from '../../../../../relay/environment';
-// import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
 import PartyEntityEditionContainer from './PartyEntityEditionContainer';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -55,39 +55,17 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-// const roleEntityEditionQuery = graphql`
-//   query RoleEntityEditionQuery($id: ID!) {
-//     riskResponse(id: $id) {
-//       id
-//       name                # Title
-//       description         # Description
-//       created             # Created
-//       modified            # Last Modified
-//       lifecycle           # Lifecycle
-//       response_type       # Response Type
-//       origins{            # Detection Source
-//         id
-//         origin_actors {
-//           actor_type
-//           actor_ref {
-//             ... on Component {
-//               id
-//               component_type
-//               name          # Source
-//             }
-//             ... on OscalParty {
-//               id
-//               party_type
-//               name            # Source
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-// `;
+const partyEntityEditionQuery = graphql`
+  query PartyEntityEditionQuery($id: ID!) {
+    oscalParty(id: $id) {
+      id
+      party_type
+      name
+    }
+  }
+`;
 
-class PartyEntityEdition extends Component {
+class RoleEntityEdition extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -97,33 +75,38 @@ class PartyEntityEdition extends Component {
 
   render() {
     const {
-      classes, t, displayEdit, handleDisplayEdit, history,
+      classes, t, displayEdit, handleDisplayEdit, history, partyId,
     } = this.props;
     return (
       <div className={classes.container}>
-        {/* <QR
+        <QR
           environment={QueryRendererDarkLight}
-          query={roleEntityEditionQuery}
-          variables={{ id: cyioCoreRelationshipId }}
+          query={partyEntityEditionQuery}
+          variables={{ id: partyId }}
           render={({ error, props, retry }) => {
+            if (error) {
+              console.error(error);
+              return toastGenericError('Failed to edit Party');
+            }
             if (props) {
-              return ( */}
-        <PartyEntityEditionContainer
-          displayEdit={displayEdit}
-          history={history}
-          handleDisplayEdit={handleDisplayEdit}
-        />
-        {/* );
+              return (
+                <PartyEntityEditionContainer
+                  displayEdit={displayEdit}
+                  history={history}
+                  handleDisplayEdit={handleDisplayEdit}
+                />
+              );
             }
             return <></>;
           }}
-        /> */}
+        />
       </div>
     );
   }
 }
 
-PartyEntityEdition.propTypes = {
+RoleEntityEdition.propTypes = {
+  partyId: PropTypes.string,
   displayEdit: PropTypes.bool,
   handleDisplayEdit: PropTypes.func,
   classes: PropTypes.object,
@@ -134,4 +117,4 @@ PartyEntityEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(PartyEntityEdition);
+)(RoleEntityEdition);

@@ -36,6 +36,8 @@ import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioC
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectAssetCreationExternalReferences from '../../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../../components/Loader';
+import { toastGenericError } from '../../../../../utils/bakedToast';
+
 
 const styles = (theme) => ({
   container: {
@@ -88,38 +90,15 @@ const styles = (theme) => ({
 });
 
 const dataSourcePartiesCreationMutation = graphql`
-  mutation DataSourcePartiesCreationMutation($input: RiskAddInput) {
-    createRisk (input: $input) {
+  mutation DataSourcePartiesCreationMutation($input: OscalPartyAddInput) {
+    createOscalParty (input: $input) {
       id
-      # ...RiskCard_node
-      # ...RiskDetails_risk
-      # operational_status
-      # serial_number
-      # release_date
-      # description
-      # version
-      # name
     }
   }
 `;
 
 const riskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -155,10 +134,7 @@ class DataSourcePartiesCreation extends Component {
       values,
     );
     const finalValues = R.pipe(
-      R.dissoc('controls'),
       R.assoc('name', values.name),
-      R.dissoc('riskDetailsCreated'),
-      R.dissoc('riskDetailsModified'),
     )(adaptedValues);
     CM(environmentDarkLight, {
       mutation: dataSourcePartiesCreationMutation,
@@ -172,7 +148,10 @@ class DataSourcePartiesCreation extends Component {
         this.handleClose();
         // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create party');
+      },
     });
     // commitMutation({
     //   mutation: dataSourcePartiesCreationMutation,
@@ -238,7 +217,7 @@ class DataSourcePartiesCreation extends Component {
                   gutterBottom={true}
                   classes={{ root: classes.title }}
                 >
-                  {t('New Risk')}
+                  {t('New Data Source')}
                 </Typography>
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
@@ -280,32 +259,8 @@ class DataSourcePartiesCreation extends Component {
                       values={values}
                     /> */}
                   </Grid>
-                  <Grid item={true} xs={6}>
-                    {/* <RiskCreationDetails values={values} setFieldValue={setFieldValue} /> */}
-                  </Grid>
                 </Grid>
               </Form>
-              <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-                style={{ marginTop: 25 }}
-              >
-                <Grid item={true} xs={6}>
-                  {/* <CyioExternalReferences
-                      cyioCoreObjectId={risk.id}
-                    /> */}
-                  {/* <CyioCoreObjectAssetCreationExternalReferences
-                    cyioCoreObjectId={riskId}
-                  /> */}
-                </Grid>
-                <Grid item={true} xs={6}>
-                  {/* <CyioCoreObjectOrCyioCoreRelationshipNotes
-                    cyioCoreObjectOrCyioCoreRelationshipId={riskId}
-                    marginTop='0px'
-                  /> */}
-                </Grid>
-              </Grid>
             </>
           )}
         </Formik>

@@ -48,6 +48,7 @@ class PartiesEntities extends Component {
       selectAll: false,
       openDataCreation: false,
       displayEdit: false,
+      selectedPartyId: '',
     };
   }
 
@@ -85,17 +86,20 @@ class PartiesEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleRiskCreation() {
-    this.setState({ openDataCreation: true });
+  handlePartyCreation() {
+    this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/roles');
+    this.props.history.push('/data/entities/parties');
   }
 
   handleDisplayEdit(selectedElements) {
-    // const roleId = Object.entries(selectedElements)[0][1].id;
-    this.setState({ displayEdit: !this.state.displayEdit });
+    let partyId = '';
+    if (selectedElements) {
+      partyId = (Object.entries(selectedElements)[0][1])?.id;
+    }
+    this.setState({ displayEdit: !this.state.displayEdit, selectedPartyId: partyId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -205,7 +209,7 @@ class PartiesEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleRiskCreation.bind(this)}
+        handleNewCreation={this.handlePartyCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
@@ -230,6 +234,7 @@ class PartiesEntities extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
+              console.error(error);
               return toastGenericError('Request Failed');
             }
             return (
@@ -313,7 +318,7 @@ class PartiesEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleRiskCreation.bind(this)}
+        handleNewCreation={this.handlePartyCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         CreateItemComponent={<EntitiesPartiesCreation />}
@@ -337,8 +342,8 @@ class PartiesEntities extends Component {
           query={entitiesPartiesLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
-            console.log(`props : ${props} Error : ${error}`);
             if (error) {
+              console.error(error);
               return toastGenericError('Request Failed');
             }
             return (
@@ -373,7 +378,7 @@ class PartiesEntities extends Component {
     const paginationOptions = {
       search: searchTerm,
       // orderedBy: sortBy,
-      orderedBy: 'name',
+      orderedBy: 'created',
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
@@ -381,19 +386,17 @@ class PartiesEntities extends Component {
     const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && (!openDataCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
-        {view === 'lines' && (!openDataCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
-        {((openDataCreation || location.openNewCreation) && (
-          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <EntitiesPartiesCreation
-            paginationOptions={paginationOptions}
-            history={this.props.history}
-          />
-          // </Security>
-        ))}
+        {view === 'cards' && this.renderCards(paginationOptions)}
+        {view === 'lines' && this.renderLines(paginationOptions)}
+        <EntitiesPartiesCreation
+          openDataCreation={openDataCreation}
+          handlePartyCreation={this.handlePartyCreation.bind(this)}
+          history={this.props.history}
+        />
         <PartyEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}
+          partyId={this.state.selectedPartyId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </div>

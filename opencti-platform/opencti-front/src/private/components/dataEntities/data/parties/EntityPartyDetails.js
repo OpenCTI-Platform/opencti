@@ -77,14 +77,14 @@ class EntityPartyDetailsComponent extends Component {
       t,
       classes,
       refreshQuery,
-      device,
+      party,
       fd,
       history,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Details')}
+          {t('Basic Information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
@@ -117,10 +117,10 @@ class EntityPartyDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Short Name')}
+                  {t('Location or Address')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {t('Location')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -128,10 +128,55 @@ class EntityPartyDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Role Identifier')}
+                  {t('Location Class')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Role Identifier')}
+                {t('Class Name')}
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Location(s)')}
+                </Typography>
+                <div className="clearfix" />
+                {t('Location 1')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('External Identifiers')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('External Identifiers')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('External Identifier Name')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Office')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Office')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('Office Name')}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -157,6 +202,51 @@ class EntityPartyDetailsComponent extends Component {
                 <div className="clearfix" />
                 {t('Lorem Ipsum')}
               </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Location Type')}
+                </Typography>
+                <div className="clearfix" />
+                {t('Lorem Ipsum')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Member Of')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Member of')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('Member of Name')}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left', marginTop: 20 }}
+                >
+                  {t('Mail Stop')}
+                </Typography>
+                <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
+                  <Tooltip title={t('Mail Stop')}>
+                    <Information fontSize="inherit" color="disabled" />
+                  </Tooltip>
+                </div>
+                <div className="clearfix" />
+                {t('Mail Stop Name')}
+              </div>
             </Grid>
             <Grid item={true} xs={4}>
               <Typography
@@ -179,11 +269,11 @@ class EntityPartyDetailsComponent extends Component {
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={3}>
               <CyioCoreObjectLabelsView
-                labels={device.labels}
+                labels={party.labels}
                 marginTop={0}
                 refreshQuery={refreshQuery}
-                id={device.id}
-                typename={device.__typename}
+                id={party.id}
+                typename={party.__typename}
               />
             </Grid>
             <Grid item={true} xs={4}>
@@ -207,7 +297,7 @@ class EntityPartyDetailsComponent extends Component {
 }
 
 EntityPartyDetailsComponent.propTypes = {
-  device: PropTypes.object,
+  party: PropTypes.object,
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
@@ -217,10 +307,12 @@ EntityPartyDetailsComponent.propTypes = {
 const EntityPartyDetails = createFragmentContainer(
   EntityPartyDetailsComponent,
   {
-    device: graphql`
-      fragment EntityPartyDetails_device on HardwareAsset {
+    party: graphql`
+      fragment EntityPartyDetails_party on OscalParty {
         __typename
         id
+        name
+        party_type
         labels {
           __typename
           id

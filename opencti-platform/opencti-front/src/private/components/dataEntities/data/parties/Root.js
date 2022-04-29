@@ -17,6 +17,8 @@ import EntityParty from './EntityParty';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import { toastGenericError } from "../../../../../utils/bakedToast";
+import { EntityPartyCard } from './EntityPartyCard';
 
 const subscription = graphql`
   subscription RootPartySubscription($id: ID!) {
@@ -34,10 +36,10 @@ const subscription = graphql`
 
 const partyQuery = graphql`
   query RootPartyQuery($id: ID!) {
-    hardwareAsset(id: $id) {
+    oscalParty(id: $id) {
       id
       name
-      ...EntityParty_device
+      ...EntityParty_party
     }
   }
 `;
@@ -47,12 +49,12 @@ class RootParty extends Component {
     super(props);
     const {
       match: {
-        params: { roleId },
+        params: { partyId },
       },
     } = props;
     this.sub = requestSubscription({
       subscription,
-      variables: { id: roleId },
+      variables: { id: partyId },
     });
   }
 
@@ -64,14 +66,14 @@ class RootParty extends Component {
     const {
       me,
       match: {
-        params: { roleId },
+        params: { partyId },
       },
     } = this.props;
-    const link = `/data/entities/parties/${roleId}/knowledge`;
+    const link = `/data/entities/parties/${partyId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
-        <Route path="/data/entities/parties/:roleId/knowledge">
+        <Route path="/data/entities/parties/:partyId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -94,10 +96,14 @@ class RootParty extends Component {
         <QR
           environment={QueryRendererDarkLight}
           query={partyQuery}
-          variables={{ id: roleId }}
+          variables={{ id: partyId }}
           render={({ error, props, retry }) => {
+            if (error) {
+              console.error(error);
+              return toastGenericError('Failed to get party data');
+            }
             if (props) {
-              if (props.hardwareAsset) {
+              if (props.oscalParty) {
                 return (
                   <Switch>
                     <Route
@@ -107,7 +113,7 @@ class RootParty extends Component {
                         <EntityParty
                           {...routeProps}
                           refreshQuery={retry}
-                          device={props.hardwareAsset}
+                          party={props.oscalParty}
                         />
                       )}
                     />

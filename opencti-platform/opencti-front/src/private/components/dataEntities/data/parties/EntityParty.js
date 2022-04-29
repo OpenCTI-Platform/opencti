@@ -17,7 +17,8 @@ import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
-import RoleEntityEditionContainer from './PartyEntityEditionContainer';
+import PartyEntityEditionContainer from './PartyEntityEditionContainer';
+import EntitiesPartiesCreation from './EntitiesPartiesCreation';
 
 const styles = () => ({
   container: {
@@ -33,6 +34,7 @@ class EmtityPartyComponent extends Component {
     super(props);
     this.state = {
       displayEdit: false,
+      openDataCreation: false,
     };
   }
 
@@ -41,16 +43,13 @@ class EmtityPartyComponent extends Component {
   }
 
   handleOpenNewCreation() {
-    this.props.history.push({
-      pathname: '/data/entities/roles',
-      openNewCreation: true,
-    });
+    this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   render() {
     const {
       classes,
-      device,
+      party,
       history,
       refreshQuery,
       location,
@@ -59,7 +58,7 @@ class EmtityPartyComponent extends Component {
       <>
         <div className={classes.container}>
           <CyioDomainObjectHeader
-            cyioDomainObject={device}
+            cyioDomainObject={party}
             history={history}
             PopoverComponent={<EntitiesPartiesPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
@@ -73,7 +72,7 @@ class EmtityPartyComponent extends Component {
             classes={{ container: classes.gridContainer }}
           >
             <Grid item={true} xs={12}>
-              <EntityRoleDetails device={device} history={history} refreshQuery={refreshQuery} />
+              <EntityRoleDetails party={party} history={history} refreshQuery={refreshQuery} />
             </Grid>
           </Grid>
           <Grid
@@ -84,26 +83,31 @@ class EmtityPartyComponent extends Component {
           >
             <Grid item={true} xs={6}>
               <CyioCoreObjectExternalReferences
-                typename={device.__typename}
-                externalReferences={device.external_references}
-                fieldName='external_references'
-                cyioCoreObjectId={device?.id}
+                typename={party.__typename}
+                externalReferences={party.links}
+                fieldName='links'
+                cyioCoreObjectId={party?.id}
                 refreshQuery={refreshQuery}
               />
             </Grid>
             <Grid item={true} xs={6}>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
-                typename={device.__typename}
-                notes={device.notes}
+                typename={party.__typename}
+                notes={party.remarks}
                 refreshQuery={refreshQuery}
-                fieldName='notes'
+                fieldName='remarks'
                 marginTop='0px'
-                cyioCoreObjectOrCyioCoreRelationshipId={device?.id}
+                cyioCoreObjectOrCyioCoreRelationshipId={party?.id}
               />
             </Grid>
           </Grid>
         </div>
-        <RoleEntityEditionContainer
+        <EntitiesPartiesCreation
+          openDataCreation={this.state.openDataCreation}
+          handleRoleCreation={this.handleOpenNewCreation.bind(this)}
+          history={history}
+        />
+        <PartyEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
@@ -114,26 +118,19 @@ class EmtityPartyComponent extends Component {
 }
 
 EmtityPartyComponent.propTypes = {
-  device: PropTypes.object,
+  party: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   refreshQuery: PropTypes.func,
 };
 
 const EntityParty = createFragmentContainer(EmtityPartyComponent, {
-  device: graphql`
-    fragment EntityParty_device on HardwareAsset {
+  party: graphql`
+    fragment EntityParty_party on OscalParty {
       __typename
       id
       name
-      asset_id
-      asset_type
-      asset_tag
-      description
-      version
-      vendor_name
-      serial_number
-      release_date
+      party_type
       labels {
         __typename
         id
@@ -142,7 +139,7 @@ const EntityParty = createFragmentContainer(EmtityPartyComponent, {
         entity_type
         description
       }
-      external_references {
+      links {
         __typename
         id
         source_name
@@ -154,19 +151,15 @@ const EntityParty = createFragmentContainer(EmtityPartyComponent, {
         }
         external_id
       }
-      notes {
+      remarks {
         __typename
         id
-        # created
-        # modified
         entity_type
         abstract
         content
         authors
       }
-      # responsible_parties
-      operational_status
-      ...EntityPartyDetails_device
+      ...EntityPartyDetails_party
     }
   `,
 });

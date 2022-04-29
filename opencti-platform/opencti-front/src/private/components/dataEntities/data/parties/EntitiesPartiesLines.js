@@ -21,7 +21,7 @@ class EntitiesPartiesLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'hardwareAssetList',
+      'oscalParties',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -51,10 +51,10 @@ class EntitiesPartiesLines extends Component {
         handleOffsetChange={this.handleOffsetChange.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['hardwareAssetList', 'edges'], this.props.data)}
+        dataList={pathOr([], ['oscalParties', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['hardwareAssetList', 'pageInfo', 'globalCount'],
+          ['oscalParties', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         offset={this.state.offset}
@@ -90,9 +90,9 @@ export const entitiesPartiesLinesQuery = graphql`
     $first: Int!
     $offset: Int!
     $cursor: ID
-    $orderedBy: HardwareAssetOrdering
+    $orderedBy: OscalPartyOrdering
     $orderMode: OrderingMode
-    $filters: [HardwareAssetFiltering]
+    $filters: [OscalPartyFiltering]
     $filterMode: FilterMode
   ) {
     ...EntitiesPartiesLines_data
@@ -119,12 +119,12 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "HardwareAssetOrdering", defaultValue: name }
+        orderedBy: { type: "OscalPartyOrdering", defaultValue: created }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[HardwareAssetFiltering]" }
+        filters: { type: "[OscalPartyFiltering]" }
         filterMode: { type: "FilterMode" }
       ) {
-        hardwareAssetList(
+        oscalParties(
           search: $search
           first: $first
           offset: $offset
@@ -132,7 +132,7 @@ export default createPaginationContainer(
           orderMode: $orderMode
           filters: $filters
           filterMode: $filterMode
-        ) @connection(key: "Pagination_hardwareAssetList") {
+        ) @connection(key: "Pagination_oscalParties") {
           edges {
             node {
               id
@@ -153,7 +153,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.hardwareAssetList;
+      return props.data && props.data.oscalParties;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

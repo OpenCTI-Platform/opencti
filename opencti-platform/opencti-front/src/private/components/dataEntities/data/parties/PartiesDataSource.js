@@ -86,9 +86,9 @@ class PartiesDataSource extends Component {
   }
 
   handleDisplayEdit(selectedElements) {
-    const riskId = Object.entries(selectedElements)[0][1].id;
+    const partyId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/activities/risk assessment/risks/${riskId}`,
+      pathname: `/activities/risk assessment/risks/${partyId}`,
       openEdit: true,
     });
   }

@@ -30,7 +30,7 @@ import {
 } from '../../../common/stix_domain_objects/StixDomainObjectBookmark';
 import { truncate } from '../../../../../utils/String';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
-import EntitiesRolesPopover from './EntitiesPartiesPopover';
+import EntitiesPartiesPopover from './EntitiesPartiesPopover';
 
 const styles = (theme) => ({
   card: {
@@ -132,7 +132,6 @@ class EntityPartyCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-    // const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -155,17 +154,17 @@ class EntityPartyCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {node.asset_type && node.asset_type}
+                {node.party_type && t(node.party_type)}
               </div>
               <Grid
                 item={true}
                 onClick={(event) => event.preventDefault()}
                 style={{ display: 'flex' }}
               >
-                <EntitiesRolesPopover
+                <EntitiesPartiesPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
                   history={history}
-                  nodeId={node?.id}
+                  node={node}
                 />
                 <Checkbox
                   disableRipple={true}
@@ -197,7 +196,7 @@ class EntityPartyCardComponent extends Component {
                   {t('Creation Date')}
                 </Typography>
                 <Typography>
-                  {node.created && fsd(node.created)}
+                  {/* {node.created && fsd(node.created)} */}
                 </Typography>
               </Grid>
             </Grid>
@@ -212,8 +211,8 @@ class EntityPartyCardComponent extends Component {
                   {t('Marking')}
                 </Typography>
                 <Typography>
-                  {node?.installed_operating_system?.vendor_name
-                    && (node?.installed_operating_system?.vendor_name)}
+                  {/* {node?.parent_types
+                    && (node?.parent_types)} */}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -226,7 +225,7 @@ class EntityPartyCardComponent extends Component {
                   {t('Author')}
                 </Typography>
                 <Typography>
-                  {node.entity_type && t(node.entity_type)}
+                  {t('Lorem Ipsum')}
                 </Typography>
               </Grid>
             </Grid>
@@ -267,22 +266,11 @@ const EntityPartyCardFragment = createFragmentContainer(
   EntityPartyCardComponent,
   {
     node: graphql`
-      fragment EntityPartyCard_node on HardwareAsset {
+      fragment EntityPartyCard_node on OscalParty {
+        __typename
         id
         name
-        created
-        asset_type
-        entity_type
-        asset_id
-        ipv4_address{
-          ip_address_value
-        }
-        installed_operating_system {
-          name
-          vendor_name
-        }
-        asset_type
-        fqdn
+        party_type
         labels {
           __typename
           id
@@ -291,7 +279,7 @@ const EntityPartyCardFragment = createFragmentContainer(
           entity_type
           description
         }
-        external_references {
+        links {
           __typename
           id
           source_name
@@ -303,17 +291,14 @@ const EntityPartyCardFragment = createFragmentContainer(
           }
           external_id
         }
-        notes {
+        remarks {
           __typename
           id
-          # created
-          # modified
           entity_type
           abstract
           content
           authors
         }
-        network_id
       }
     `,
   },
