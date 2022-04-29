@@ -47,6 +47,7 @@ import TopMenuVSAC from './TopMenuVSAC';
 import TopMenuAssets from './TopMenuAssets';
 import TopMenuDataEntities from './TopMenuDataEntities';
 import TopMenuDataRolesEntities from './TopMenuDataRolesEntities';
+import TopMenuDataResponsiblePartiesEntities from './TopMenuDataResponsiblePartiesEntities';
 import TopMenuRiskAssessment from './TopMenuRiskAssessment';
 import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuDevice from './TopMenuDevice';
@@ -251,6 +252,10 @@ const TopBarMenu = ({
           {(location.pathname === '/data/entities/roles'
           || location.pathname === '/data/data source/roles') && (
               <TopMenuDataRolesEntities />
+            )}
+          {(location.pathname === '/data/entities/responsible_parties'
+          || location.pathname === '/data/data source/responsible_parties') && (
+              <TopMenuDataResponsiblePartiesEntities />
             )}
           {location.pathname.includes('/defender HQ/assets/devices/') && (
             <TopMenuDevice />

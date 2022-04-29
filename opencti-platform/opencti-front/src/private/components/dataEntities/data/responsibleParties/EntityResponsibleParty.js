@@ -1,0 +1,165 @@
+/* eslint-disable */
+/* refactor */
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { compose } from 'ramda';
+import { createFragmentContainer } from 'react-relay';
+import graphql from 'babel-plugin-relay/macro';
+import { Redirect } from 'react-router-dom';
+import { withStyles } from '@material-ui/core/styles';
+import Grid from '@material-ui/core/Grid';
+import inject18n from '../../../../../components/i18n';
+import EntityResponsiblePartyDetails from './EntityResponsiblePartyDetails';
+import EntitiesResponsiblePartiesPopover from './EntitiesResponsiblePartiesPopover';
+import EntitiesResponsiblePartiesDeletion from './EntitiesResponsiblePartiesDeletion';
+import CyioDomainObjectHeader from '../../../common/stix_domain_objects/CyioDomainObjectHeader';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
+import TopBarBreadcrumbs from '../../../nav/TopBarBreadcrumbs';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
+import ResponsiblePartyEntityEditionContainer from './ResponsiblePartyEntityEditionContainer';
+import EntitiesResponsiblePartiesCreation from './EntitiesResponsiblePartiesCreation';
+
+const styles = () => ({
+  container: {
+    margin: 0,
+  },
+  gridContainer: {
+    marginBottom: 20,
+  },
+});
+
+class EmtityResponsiblePartyComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      displayEdit: false,
+      openDataCreation: false,
+    };
+  }
+
+  handleDisplayEdit() {
+    this.setState({ displayEdit: !this.state.displayEdit });
+  }
+
+  handleOpenNewCreation() {
+    this.setState({ openDataCreation: !this.state.openDataCreation });
+  }
+
+  render() {
+    const {
+      classes,
+      responsibleParty,
+      history,
+      refreshQuery,
+      location,
+    } = this.props;
+    return (
+      <>
+        <div className={classes.container}>
+          <CyioDomainObjectHeader
+            cyioDomainObject={responsibleParty}
+            history={history}
+            PopoverComponent={<EntitiesResponsiblePartiesPopover />}
+            handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+            handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
+            OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
+          />
+          <TopBarBreadcrumbs />
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+          >
+            <Grid item={true} xs={12}>
+              <EntityResponsiblePartyDetails responsibleParty={responsibleParty} history={history} refreshQuery={refreshQuery} />
+            </Grid>
+          </Grid>
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 25 }}
+          >
+            <Grid item={true} xs={6}>
+              <CyioCoreObjectExternalReferences
+                typename={responsibleParty.__typename}
+                externalReferences={responsibleParty.links}
+                fieldName='links'
+                cyioCoreObjectId={responsibleParty?.id}
+                refreshQuery={refreshQuery}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <CyioCoreObjectOrCyioCoreRelationshipNotes
+                typename={responsibleParty.__typename}
+                notes={responsibleParty.remarks}
+                refreshQuery={refreshQuery}
+                fieldName='remarks'
+                marginTop='0px'
+                cyioCoreObjectOrCyioCoreRelationshipId={responsibleParty?.id}
+              />
+            </Grid>
+          </Grid>
+        </div>
+        <EntitiesResponsiblePartiesCreation
+          openDataCreation={this.state.openDataCreation}
+          handleResponsiblePartyCreation={this.handleOpenNewCreation.bind(this)}
+          history={history}
+        />
+        <ResponsiblePartyEntityEditionContainer
+          displayEdit={this.state.displayEdit}
+          history={history}
+          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+        />
+      </>
+    );
+  }
+}
+
+EmtityResponsiblePartyComponent.propTypes = {
+  responsibleParty: PropTypes.object,
+  classes: PropTypes.object,
+  t: PropTypes.func,
+  refreshQuery: PropTypes.func,
+};
+
+const EntityRole = createFragmentContainer(EmtityResponsiblePartyComponent, {
+  responsibleParty: graphql`
+    fragment EntityResponsibleParty_responsibleParty on OscalResponsibleParty {
+      __typename
+      id
+      labels {
+        __typename
+        id
+        name
+        color
+        entity_type
+        description
+      }
+      links {
+        __typename
+        id
+        source_name
+        description
+        entity_type
+        url
+        hashes {
+          value
+        }
+        external_id
+      }
+      remarks {
+        __typename
+        id
+        entity_type
+        abstract
+        content
+        authors
+      }
+      ...EntityResponsiblePartyDetails_responsibleParty
+    }
+  `,
+});
+
+export default compose(inject18n, withStyles(styles))(EntityRole);

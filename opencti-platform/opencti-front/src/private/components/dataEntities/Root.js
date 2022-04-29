@@ -4,6 +4,8 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Entities from './Entities';
 import RolesEntities from './data/Roles/RolesEntities';
+import ResponsiblePartiesEntities from './data/responsibleParties/ResponsiblePartiesEntities';
+import ResponsiblePartiesDataSource from './data/responsibleParties/ResponsiblePartyDataSource';
 import RolesDataSource from './data/Roles/RolesDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
@@ -32,6 +34,16 @@ class Root extends Component {
           exact
           path="/data/data source/roles"
           component={RolesDataSource}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/responsible_parties"
+          component={ResponsiblePartiesEntities}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/data source/responsible_parties"
+          component={ResponsiblePartiesDataSource}
         />
         <BoundaryRoute
           exact
