@@ -164,11 +164,20 @@ const cyioLabelResolvers = {
     },
     deleteCyioLabel: async ( _, {id}, {dbName, dataSources} ) => {
       const query = deleteLabelQuery(id);
-      await dataSources.Stardog.delete({
+      let results = await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: query,
         queryId: "Delete Label"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
       return id;
     },
     editCyioLabel: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
@@ -198,11 +207,21 @@ const cyioLabelResolvers = {
         input,
         labelPredicateMap
       )
-      await dataSources.Stardog.edit({
+      let results = await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
         queryId: "Update Label"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
+
       const select = selectLabelQuery(id, selectMap.getNode("editCyioLabel"));
       const result = await dataSources.Stardog.queryById({
         dbName,

@@ -164,11 +164,20 @@ const cyioExternalReferenceResolvers = {
     },
     deleteCyioExternalReference: async ( _, {id}, {dbName, dataSources} ) => {
       const query = deleteExternalReferenceQuery(id);
-      await dataSources.Stardog.delete({
+      let results = await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: query,
         queryId: "Delete External Reference"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
       return id;
     },
     editCyioExternalReference: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
@@ -198,11 +207,20 @@ const cyioExternalReferenceResolvers = {
         input,
         externalReferencePredicateMap
       )
-      await dataSources.Stardog.edit({
+      let results = await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
         queryId: "Update External Reference"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
       const select = selectExternalReferenceQuery(id, selectMap.getNode("editCyioExternalReference"));
       const result = await dataSources.Stardog.queryById({
         dbName,
