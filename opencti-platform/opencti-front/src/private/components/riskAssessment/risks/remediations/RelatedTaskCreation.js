@@ -136,8 +136,21 @@ const RelatedTaskCreationMutation = graphql`
     $input: OscalTaskAddInput
   ) {
     createOscalTask(input: $input) {
+      __typename
       id
     }
+  }
+`;
+
+export const RelatedTaskCreationAddReferenceMutation = graphql`
+  mutation RelatedTaskCreationAddReferenceMutation(
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
+    $to_type: String
+    $from_type: String
+  ) {
+    addReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId, to_type: $to_type, from_type: $from_type})
   }
 `;
 
@@ -178,18 +191,18 @@ class RelatedTaskCreation extends Component {
     if (values.responsible_roles.length > 0) {
       this.setState({
         responsible_roles: values.responsible_roles.map((value) => (
-          {role: value}
+          { role: value }
         )),
       });
     }
     if (values.associated_activities.length > 0) {
       this.setState({
         associated_activities: values.associated_activities.map((value) => (
-          {'activity_id': value}
+          { 'activity_id': value }
         )),
       });
     }
-    if(values.start_date && values.end_date) {
+    if (values.start_date && values.end_date) {
       this.setState({
         timing: {
           within_date_range: {
@@ -214,6 +227,7 @@ class RelatedTaskCreation extends Component {
       },
       setSubmitting,
       onCompleted: (response) => {
+        this.handleAddReferenceMutation(response.createOscalTask);
         setSubmitting(false);
         resetForm();
         this.handleClose();
@@ -244,6 +258,25 @@ class RelatedTaskCreation extends Component {
     //     }
     //   },
     // });
+  }
+  handleAddReferenceMutation(taskResponse) {
+    CM(environmentDarkLight, {
+      mutation: RelatedTaskCreationAddReferenceMutation,
+      variables: {
+        toId: taskResponse.id,
+        fromId: this.props.remediationId,
+        fieldName: 'tasks',
+        to_type: 'OscalTask',
+        from_type: 'RiskResponse',
+      },
+      onCompleted: () => {
+        this.props.refreshQuery();
+      },
+      onError: (err) => {
+        toastGenericError("Failed to Add related task")
+        console.error(err);
+      }
+    });
   }
 
   onResetClassic() {
