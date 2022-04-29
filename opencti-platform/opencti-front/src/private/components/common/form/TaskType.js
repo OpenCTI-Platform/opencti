@@ -12,7 +12,7 @@ import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
 const TaskTypeQuery = graphql`
   query TaskTypeQuery {
-    __type(name: "TaskType") {
+    __type(name: "OscalTaskType") {
       name
       description
       enumValues {
@@ -32,12 +32,7 @@ class TaskType extends Component {
   }
 
   componentDidMount() {
-   this.handleRelatedTaskField();
-  }
-
-  handleRelatedTaskField(){
-    if(this.props.name === "task_type"){
-      fetchDarklightQuery(TaskTypeQuery)
+    fetchDarklightQuery(TaskTypeQuery)
       .toPromise()
       .then((data) => {
         const TaskTypeEntities = R.pipe(
@@ -54,7 +49,6 @@ class TaskType extends Component {
           },
         });
       });
-    }  
   }
 
   render() {
