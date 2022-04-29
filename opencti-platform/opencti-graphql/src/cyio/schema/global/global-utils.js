@@ -418,6 +418,7 @@ export const objectMap = {
     attachQuery: attachToSoftwareQuery,
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "SoftwareAsset",
+    alternateKey: "tool",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
   },
   "subject": {
