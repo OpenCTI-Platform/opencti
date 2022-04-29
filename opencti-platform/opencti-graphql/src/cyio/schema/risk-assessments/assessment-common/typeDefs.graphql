@@ -1850,7 +1850,11 @@ type OscalTaskEdge {
     "Identifies a human-readable description of the response plan."
     description: String!
     "Identifies one or more sources of individuals and/or tools that generated this recommended or planned response."
-    origins: [OriginAddInput]
+    origins: [OriginAddInput!]!
+    "Identifies an asset required to achieve remediation."
+    required_assets: [ID]
+    "Identifies one or more scheduled events or milestones, which may be associated with a series of assessment actions."
+    tasks: [ID]
   }
   # Ordering Types
   enum RiskResponsesOrdering {
