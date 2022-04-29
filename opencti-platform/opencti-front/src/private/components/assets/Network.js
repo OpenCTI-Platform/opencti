@@ -182,7 +182,7 @@ class Network extends Component {
       network_id: {
         label: 'Network ID',
       },
-      labels: {
+      label_name: {
         label: 'Labels',
       },
     };
@@ -223,7 +223,7 @@ class Network extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <NetworkCards
@@ -285,7 +285,7 @@ class Network extends Component {
         width: '17%',
         isSortable: false,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
         width: '23%',
         isSortable: true,
@@ -329,7 +329,7 @@ class Network extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <NetworkLines

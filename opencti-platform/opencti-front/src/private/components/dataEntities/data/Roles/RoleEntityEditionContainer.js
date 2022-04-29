@@ -73,7 +73,7 @@ const roleEntityEditionContainerMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editRiskResponse(id: $id, input: $input) {
+    editOscalRole(id: $id, input: $input) {
       id
     }
   }
@@ -140,7 +140,7 @@ class RoleEntityEditionContainer extends Component {
       },
       onError: (err) => {
         console.error(err);
-        return toastGenericError('Request Failed');
+        toastGenericError('Request Failed');
       }
     });
     this.setState({ onSubmit: true });

@@ -90,8 +90,8 @@ const styles = (theme) => ({
 });
 
 const dataSourceCreationMutation = graphql`
-  mutation DataSourceCreationMutation($input: RiskAddInput) {
-    createRisk (input: $input) {
+  mutation DataSourceCreationMutation($input: OscalRoleAddInput) {
+    createOscalRole (input: $input) {
       id
     }
   }

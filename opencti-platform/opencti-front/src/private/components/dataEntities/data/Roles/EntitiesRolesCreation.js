@@ -56,21 +56,13 @@ const styles = (theme) => ({
   },
 });
 
-// const entitiesCreationMutation = graphql`
-//   mutation EntitiesCreationMutation($input: RiskAddInput) {
-//     createRisk (input: $input) {
-//       id
-//       # ...RiskCard_node
-//       # ...RiskDetails_risk
-//       # operational_status
-//       # serial_number
-//       # release_date
-//       # description
-//       # version
-//       # name
-//     }
-//   }
-// `;
+const entitiesRolesCreationMutation = graphql`
+  mutation EntitiesRolesCreationMutation($input: OscalRoleAddInput) {
+    createOscalRole (input: $input) {
+      id
+    }
+  }
+`;
 
 const riskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
@@ -102,17 +94,11 @@ class EntitiesRolesCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = evolve(
-      {
-        deadline: () => parse(values.deadline).format(),
-      },
-      values,
-    );
     const finalValues = R.pipe(
       R.assoc('name', values.name),
-    )(adaptedValues);
+    )(values);
     CM(environmentDarkLight, {
-      // mutation: entitiesCreationMutation,
+      mutation: entitiesRolesCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -124,11 +110,11 @@ class EntitiesRolesCreation extends Component {
       },
       onError: (err) => {
         console.error(err);
-        return toastGenericError('Failed to create role');
+        toastGenericError('Failed to create role');
       },
     });
     // commitMutation({
-    //   mutation: entitiesCreationMutation,
+    //   mutation: entitiesRolesCreationMutation,
     //   variables: {
     //     input: values,
     //   },

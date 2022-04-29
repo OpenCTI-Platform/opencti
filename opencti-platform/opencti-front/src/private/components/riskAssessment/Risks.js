@@ -225,7 +225,7 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <RisksCards
@@ -366,7 +366,7 @@ class Risks extends Component {
           render={({ error, props }) => {
             console.log(`props : ${props} Error : ${error}`);
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <RisksLines

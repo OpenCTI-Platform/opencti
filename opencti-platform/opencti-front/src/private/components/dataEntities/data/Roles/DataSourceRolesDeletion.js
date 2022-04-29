@@ -74,7 +74,7 @@ const DataSourceRolesDeletionMutation = graphql`
 
 const DataSourceRolesDeletionDarkLightMutation = graphql`
   mutation DataSourceRolesDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteOscalRole(id: $id)
 }
 `;
 
@@ -129,7 +129,7 @@ class DataSourceRolesDeletion extends Component {
       },
       onError: (err) => {
         console.error(err);
-        return toastGenericError('Failed to delete role');
+        toastGenericError('Failed to delete role');
       },
     });
     // commitMutation({

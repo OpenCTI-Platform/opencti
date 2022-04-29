@@ -38,6 +38,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/Cyio
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../components/Loader';
 import RiskCreationDetails from '../../riskAssessment/risks/RiskCreationDetails';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -89,6 +90,14 @@ const styles = (theme) => ({
   },
 });
 
+const entitiesCreationMutation = graphql`
+  mutation EntitiesCreationMutation($input: OscalRoleAddInput) {
+    createOscalRole (input: $input) {
+      id
+    }
+  }
+`;
+
 const riskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
 });
@@ -129,7 +138,7 @@ class EntitiesCreation extends Component {
       R.assoc('name', values.name),
     )(adaptedValues);
     CM(environmentDarkLight, {
-      // mutation: entitiesCreationMutation,
+      mutation: entitiesCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -139,7 +148,10 @@ class EntitiesCreation extends Component {
         resetForm();
         this.handleClose();
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create entity');
+      },
     });
   }
 

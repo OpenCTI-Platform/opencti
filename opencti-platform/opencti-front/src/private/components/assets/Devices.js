@@ -183,16 +183,16 @@ class Devices extends Component {
       asset_id: {
         label: 'Asset ID',
       },
-      ip_address: {
+      ip_address_value: {
         label: 'IP Address',
       },
-      installed_operating_system: {
+      installed_os_name: {
         label: 'OS',
       },
       network_id: {
         label: 'Network ID',
       },
-      labels: {
+      label_name: {
         label: 'Label',
       },
     };
@@ -233,7 +233,7 @@ class Devices extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <DevicesCards
@@ -285,7 +285,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: true,
       },
-      ip_address: {
+      ip_address_value: {
         label: 'IP Address',
         width: '12%',
         isSortable: true,
@@ -295,7 +295,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: false,
       },
-      installed_operating_system: {
+      installed_os_name: {
         label: 'OS',
         width: '8%',
         isSortable: true,
@@ -305,7 +305,7 @@ class Devices extends Component {
         width: '12%',
         isSortable: true,
       },
-      labels: {
+      label_name: {
         label: 'Label',
         width: '20%',
         isSortable: true,
@@ -349,7 +349,7 @@ class Devices extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <DevicesLines

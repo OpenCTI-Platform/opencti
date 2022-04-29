@@ -858,7 +858,7 @@ class Scans extends Component {
                                             {
                                               analysis: analysis,
                                               client: client_ID,
-                                              scan: getCurrentScan(analysis.scan.id, scans)
+                                              scan: getCurrentScan(analysis.scan.id, renderScans)
                                             })}
                                 >
                                   <ListItemIcon>
