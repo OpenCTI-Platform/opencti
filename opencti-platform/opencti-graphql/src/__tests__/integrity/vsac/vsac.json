@@ -3,7 +3,7 @@
     {
       "root": "vsac",
       "test": "vsac.scan",
-      "describe": "",
+      "describe": "Verifying Vulnerability Scan",
       "expected": {
         "scanName": {
           "check": "equal",
@@ -11,6 +11,36 @@
         },
         "scanAnalysis": {
           "check": "exists"
+        },
+        "hostNum": {
+          "check": "equal",
+          "value": 183
+        },
+        "recordNum": {
+          "check": "equal",
+          "value": 1693
+        },
+        "hostScanDate": {
+          "check": "exists"
+        },
+        "totalHostNum": {
+          "check": "equal",
+          "value": 288
+        },
+        "scanId": {
+          "check": "exists"
+        },
+        "policyName": {
+          "check": "equal",
+          "value": "Internal Scan"
+        },
+        "totalRecordNum": {
+          "check": "equals",
+          "value": 18453
+        },
+        "reportName": {
+          "check": "equals",
+          "value": "TBC - Internal Scan - Weekly 3"
         }
       }
     }
