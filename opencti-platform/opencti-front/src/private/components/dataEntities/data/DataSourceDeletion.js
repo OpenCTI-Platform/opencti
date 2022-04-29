@@ -75,7 +75,7 @@ const DataSourceDeletionMutation = graphql`
 
 const DataSourceDeletionDarkLightMutation = graphql`
   mutation DataSourceDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteOscalRole(id: $id)
 }
 `;
 

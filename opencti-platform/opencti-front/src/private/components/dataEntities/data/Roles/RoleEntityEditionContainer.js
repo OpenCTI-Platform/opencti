@@ -73,7 +73,7 @@ const roleEntityEditionContainerMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editRiskResponse(id: $id, input: $input) {
+    editOscalRole(id: $id, input: $input) {
       id
     }
   }

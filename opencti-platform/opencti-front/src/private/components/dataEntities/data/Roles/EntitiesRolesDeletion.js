@@ -72,7 +72,7 @@ const EntitiesRolesDeletionMutation = graphql`
 
 const EntitiesRolesDeletionDarkLightMutation = graphql`
   mutation EntitiesRolesDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteOscalRole(id: $id)
 }
 `;
 

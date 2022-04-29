@@ -74,7 +74,7 @@ const EntitiesDeletionMutation = graphql`
 
 const EntitiesDeletionDarkLightMutation = graphql`
   mutation EntitiesDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteOscalRole(id: $id)
 }
 `;
 
@@ -125,7 +125,6 @@ class EntitiesDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => {
         console.error(err);
