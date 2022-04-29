@@ -2,10 +2,11 @@ const {Converter} = require("sparqljson-to-tree/lib/Converter");
 const {query, Connection} = require("stardog");
 const {expect} = require("jest")
 const fs = require("fs")
+const path = require("path")
 require('dotenv').config();
 
 function readFile(fileName) {
-  return fs.readFileSync(fileName, {encoding: "utf-8"})
+  return fs.readFileSync(path.join(__dirname, fileName), {encoding: "utf-8"})
 }
 
 class IntegrityRunner {
@@ -17,22 +18,24 @@ class IntegrityRunner {
     this.connection = new Connection({endpoint, password, username});
   }
 
-  async runCheck({config, singularizeSchema = null}) {
-    return query.execute(this.connection, this.database, readFile(`./${config}.rq`), 'application/sparql-results+json')
-      .then((response) => {
-          const sparqlResponse = response.body;
-          if (response.status !== 200 ) {
-            throw error(response.statusText)
-          }
-          const converter = new Converter({
-            delimiter: '-',
-            materializeRdfJsTerms: true,
-          });
-          if(sparqlResponse == null) return null;
-          const data = converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema)
-          const expected = readFile(`./${config}.json`)
-          expect(data).toEqual(expected)
-      })
+  runCheck({config, singularizeSchema = null}) {
+    test(config.describe, () => {
+      return query.execute(this.connection, this.database, readFile(`${config.root}/query/${config.test}.rq`), 'application/sparql-results+json')
+        .then((response) => {
+            const sparqlResponse = response.body;
+            if (response.status !== 200 ) {
+              throw new Error(response.statusText)
+            }
+            const converter = new Converter({
+              delimiter: '-',
+              materializeRdfJsTerms: true,
+            });
+            if(sparqlResponse == null) return null;
+            const data = converter.sparqlJsonResultsToTree( sparqlResponse, singularizeSchema)
+            const expected = readFile(`./${config}.json`)
+            expect(data).toEqual(expected)
+        })
+    })
   }
 }
 

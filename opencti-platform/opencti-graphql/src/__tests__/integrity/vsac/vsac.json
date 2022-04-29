@@ -1,7 +1,18 @@
 {
-  "test": "vsac.scan",
-  "describe": "",
-  "expected": {
-
-  }
+  "tests": [
+    {
+      "root": "vsac",
+      "test": "vsac.scan",
+      "describe": "",
+      "expected": {
+        "scanName": {
+          "check": "equal",
+          "value": "438.nessus"
+        },
+        "scanAnalysis": {
+          "check": "exists"
+        }
+      }
+    }
+  ]
 }

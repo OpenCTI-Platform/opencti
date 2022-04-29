@@ -15,7 +15,8 @@
     "lint": "eslint --max-warnings 0 .",
     "schema-compile": "node schema_merge.js",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
-    "test": "jest --bail --testSequencer ./tests/utils/testSequencer.js --verbose --runInBand --forceExit --coverage --e test"
+    "test": "jest --bail --testSequencer ./tests/utils/testSequencer.js --verbose --runInBand --forceExit --coverage --e test",
+    "test:integrity": "jest --config ./src/__tests__/integrity/jest.config.js"
   },
   "bin": {
     "opencti-graphql": "./build/index.js"

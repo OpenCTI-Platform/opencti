@@ -1,0 +1,19 @@
+PREFIX vsac:<tag:darklight:vuln-scan-analysis#>
+PREFIX vuln: <tag:darklight:vulnerabilitymanagement#>
+
+SELECT * WHERE {
+ BIND("438.nessus" as ?scanName) .
+ GRAPH ?vs {
+  ?vs a <tag:darklight:vulnerabilitymanagement#VulnerabilityScan> .
+  ?vs vsac:hasScanAnalysis ?scanAnalysis .
+  ?vs vuln:hasScanName ?scanName .
+  ?vs vuln:hasHostNum ?hostNum .
+  ?vs vuln:hasRecordNum ?recordNum .
+  ?vs vuln:hasHostScanDate ?hostScanDate .
+  ?vs vuln:hasTotalHostNum ?totalHostNum .
+  ?vs vuln:hasScanID ?scanId .
+  ?vs vuln:hasPolicyName ?policyName .
+  ?vs vuln:hasTotalRecordNum ?totalRecordNum .
+  ?vs vuln:hasReportName ?reportName .
+ }
+}
