@@ -183,7 +183,7 @@ class Software extends Component {
       vendor_name: {
         label: 'Vendor',
       },
-      labels: {
+      label_name: {
         label: 'Labels',
       },
     };
@@ -293,7 +293,7 @@ class Software extends Component {
         width: '15%',
         isSortable: false,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
         width: '23%',
         isSortable: true,

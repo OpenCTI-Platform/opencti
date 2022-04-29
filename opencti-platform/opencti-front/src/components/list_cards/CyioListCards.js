@@ -11,6 +11,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
+  Share,
   Edit,
   ArrowDownward,
   ArrowUpward,
@@ -19,6 +20,12 @@ import {
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
+import responsiblePartiesIcon from '../../resources/images/entities/responsible_parties.svg';
+import tasksIcon from '../../resources/images/entities/tasks.svg';
+import locations from '../../resources/images/entities/locations.svg';
+import roles from '../../resources/images/entities/roles.svg';
+import parties from '../../resources/images/entities/parties.svg';
+import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
@@ -54,6 +61,9 @@ const styles = (theme) => ({
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
+  dataEntities: {
+    width: '180px',
+  },
   parameters: {
     // float: 'left',
     display: 'flex',
@@ -68,8 +78,8 @@ const styles = (theme) => ({
   },
   views: {
     // display: 'flex',
-    width: '254px',
-    minWidth: '254px',
+    width: '295px',
+    minWidth: '280px',
     float: 'right',
     marginTop: '5px',
     padding: '14px 18px 12px 18px',
@@ -77,6 +87,9 @@ const styles = (theme) => ({
   cardsContainer: {
     marginTop: 10,
     paddingTop: '0px 16px 16px 16px',
+  },
+  icon: {
+    marginRight: '10px',
   },
   iconButton: {
     float: 'left',
@@ -129,6 +142,7 @@ class CyioListCards extends Component {
       t,
       classes,
       handleSearch,
+      handleDataEntities,
       handleChangeView,
       handleAddFilter,
       handleRemoveFilter,
@@ -140,6 +154,7 @@ class CyioListCards extends Component {
       disabled,
       keyword,
       filterEntityType,
+      selectedDataEntity,
       filters,
       selectAll,
       sortBy,
@@ -222,6 +237,50 @@ class CyioListCards extends Component {
                 {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
               </IconButton> */}
             </div>
+            {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+              <FormControl
+                size='small'
+                fullWidth={true}
+                variant='outlined'
+                className={classes.dataEntities}
+              >
+                <InputLabel>
+                  Data Types
+                </InputLabel>
+                <Select
+                  variant='outlined'
+                  label='Data Types'
+                  value={selectedDataEntity}
+                  className={classes.dataEntitiesSelect}
+                  onChange={(event) => handleDataEntities(event.target.value)}
+                >
+                  <MenuItem value='roles'>
+                    <img src={roles} className={classes.icon} alt="" />
+                    {t('Roles')}
+                  </MenuItem>
+                  <MenuItem value='locations'>
+                    <img src={locations} className={classes.icon} alt="" />
+                    {t('Locations')}
+                  </MenuItem>
+                  <MenuItem value='parties'>
+                    <img src={parties} className={classes.icon} alt="" />
+                    {t('Parties')}
+                  </MenuItem>
+                  <MenuItem value='responsible_parties'>
+                    <img src={responsiblePartiesIcon} style={{ marginRight: '12px' }} alt="" />
+                    {t('Responsible Parties')}
+                  </MenuItem>
+                  <MenuItem value='tasks'>
+                    <img src={tasksIcon} className={classes.icon} alt="" />
+                    {t('Tasks')}
+                  </MenuItem>
+                  <MenuItem value='assessment_platform'>
+                    <img src={assessmentPlatform} className={classes.icon} alt="" />
+                    {t('Assessment Platform')}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            )}
             <div className={classes.filters}>
               {map((currentFilter) => {
                 const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
@@ -283,6 +342,22 @@ class CyioListCards extends Component {
                       <Edit fontSize="inherit" />
                     </Button>
                   </Tooltip>
+                  {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+                    <Tooltip title={t('Share')}>
+                      <Button
+                        variant="contained"
+                        // onClick={handleDisplayEdit &&
+                        // handleDisplayEdit.bind(this, selectedElements)}
+                        className={classes.iconButton}
+                        disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                          || disabled}
+                        color="primary"
+                        size="large"
+                      >
+                        <Share fontSize="inherit" />
+                      </Button>
+                    </Tooltip>
+                  )}
                   <div style={{ display: 'inline-block' }}>
                     {OperationsComponent && React.cloneElement(OperationsComponent, {
                       id: Object.entries(selectedElements || {}).length !== 0
@@ -332,6 +407,8 @@ CyioListCards.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   children: PropTypes.object,
+  selectedDataEntity: PropTypes.string,
+  handleDataEntities: PropTypes.func,
   handleSearch: PropTypes.func.isRequired,
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
