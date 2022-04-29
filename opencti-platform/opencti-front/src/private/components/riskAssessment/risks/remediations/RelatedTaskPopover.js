@@ -267,7 +267,7 @@ class RelatedTaskPopover extends Component {
       R.assoc('related_tasks', ''),
       R.assoc('associated_activities', ''),
       R.assoc('dependencies', taskDependency?.name || ''),
-      R.assoc('responsible_parties', responsibleRoles.role_identifier || ''),
+      R.assoc('responsible_parties', responsibleRoles?.role_identifier || ''),
       R.pick([
         'id',
         'name',

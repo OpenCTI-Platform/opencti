@@ -191,6 +191,7 @@ class RelatedTaskLine extends Component {
       path(['role']),
     )(data);
     console.log('RelatedTaskDataCurrent', data);
+   
     return (
       <div style={{
         display: 'grid',
@@ -306,7 +307,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Dependency')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {taskDependency?.name || t(taskDependency?.name)}
+                      {taskDependency?.name && t(taskDependency?.name)}
                     </Typography>
                   </div>
                 </Grid>
@@ -329,9 +330,9 @@ class RelatedTaskLine extends Component {
                     <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
                     <div style={{ marginLeft: '10px' }}>
                       <Typography variant="subtitle1">
-                        {responsibleRoles.name && t(responsibleRoles.name)}
+                        {responsibleRoles?.name && t(responsibleRoles?.name)}
                       </Typography>
-                      {responsibleRoles.role_identifier && t(responsibleRoles.role_identifier)}
+                      {responsibleRoles?.role_identifier && t(responsibleRoles?.role_identifier)}
                     </div>
                   </div>
                 </div>
