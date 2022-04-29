@@ -18,16 +18,15 @@ import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import inject18n from '../../../../components/i18n';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import RiskEditionContainer from '../../riskAssessment/risks/RiskEditionContainer';
-import { riskEditionQuery } from '../../riskAssessment/risks/RiskEdition';
-import Loader from '../../../../components/Loader';
+import inject18n from '../../../../../components/i18n';
+import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+import Loader from '../../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+} from '../../../../../utils/Security';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -65,21 +64,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const DataSourceDeletionMutation = graphql`
-  mutation DataSourceDeletionMutation($id: ID!) {
+const DataSourceRolesDeletionMutation = graphql`
+  mutation DataSourceRolesDeletionMutation($id: ID!) {
     threatActorEdit(id: $id) {
       delete
     }
   }
 `;
 
-const DataSourceDeletionDarkLightMutation = graphql`
-  mutation DataSourceDeletionDarkLightMutation($id: ID!) {
+const DataSourceRolesDeletionDarkLightMutation = graphql`
+  mutation DataSourceRolesDeletionDarkLightMutation($id: ID!) {
   deleteOscalRole(id: $id)
 }
 `;
 
-class DataSourceDeletion extends Component {
+class DataSourceRolesDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -119,16 +118,37 @@ class DataSourceDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: DataSourceDeletionDarkLightMutation,
+      mutation: DataSourceRolesDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
+        // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to delete role');
+      },
     });
+    // commitMutation({
+    //   mutation: DataSourceRolesDeletionDarkLightMutation,
+    //   variables: {
+    //     id: this.props.id,
+    //   },
+    //   config: [
+    //     {
+    //       type: 'NODE_DELETE',
+    //       deletedIDFieldName: 'id',
+    //     },
+    //   ],
+    //   onCompleted: () => {
+    //     this.setState({ deleting: false });
+    //     this.handleClose();
+    //     this.props.history.push('/activities/risk assessment/risks');
+    //   },
+    // });
   }
 
   render() {
@@ -166,7 +186,7 @@ class DataSourceDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this data source?')}
+                {t('Are you sure you’d like to delete this Risk?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
@@ -199,7 +219,7 @@ class DataSourceDeletion extends Component {
   }
 }
 
-DataSourceDeletion.propTypes = {
+DataSourceRolesDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -211,4 +231,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(DataSourceDeletion);
+)(DataSourceRolesDeletion);

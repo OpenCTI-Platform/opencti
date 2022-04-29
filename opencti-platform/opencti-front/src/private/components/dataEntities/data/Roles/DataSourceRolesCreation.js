@@ -27,17 +27,17 @@ import Slide from '@material-ui/core/Slide';
 import DialogActions from '@material-ui/core/DialogActions';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import RiskCreationOverview from '../../riskAssessment/risks/RiskCreationOverview';
-import CyioCoreObjectLatestHistory from '../../common/stix_core_objects/CyioCoreObjectLatestHistory';
-import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
-import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
-import Loader from '../../../../components/Loader';
-import RiskCreationDetails from '../../riskAssessment/risks/RiskCreationDetails';
+import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { dayStartDate, parse } from '../../../../../utils/Time';
+import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+import inject18n from '../../../../../components/i18n';
+import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
+import CyioCoreObjectLatestHistory from '../../../common/stix_core_objects/CyioCoreObjectLatestHistory';
+import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
+import CyioCoreObjectAssetCreationExternalReferences from '../../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
+import Loader from '../../../../../components/Loader';
+import { toastGenericError } from '../../../../../utils/bakedToast';
+
 
 const styles = (theme) => ({
   container: {
@@ -89,8 +89,8 @@ const styles = (theme) => ({
   },
 });
 
-const dataSourceCreationMutation = graphql`
-  mutation DataSourceCreationMutation($input: OscalRoleAddInput) {
+const dataSourceRolesCreationMutation = graphql`
+  mutation DataSourceRolesCreationMutation($input: OscalRoleAddInput) {
     createOscalRole (input: $input) {
       id
     }
@@ -104,7 +104,7 @@ const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
 Transition.displayName = 'TransitionSlide';
-class DataSourceCreation extends Component {
+class DataSourceRolesCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -137,7 +137,7 @@ class DataSourceCreation extends Component {
       R.assoc('name', values.name),
     )(adaptedValues);
     CM(environmentDarkLight, {
-      mutation: dataSourceCreationMutation,
+      mutation: dataSourceRolesCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -146,9 +146,31 @@ class DataSourceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create role');
+      },
     });
+    // commitMutation({
+    //   mutation: dataSourceRolesCreationMutation,
+    //   variables: {
+    //     input: values,
+    //   },
+    // //   // updater: (store) => insertNode(
+    // //   //   store,
+    // //   //   'Pagination_threatActors',
+    // //   //   this.props.paginationOptions,
+    // //   //   'threatActorAdd',
+    // //   // ),
+    //   setSubmitting,
+    //   onCompleted: () => {
+    //     setSubmitting(false);
+    //     resetForm();
+    //     this.handleClose();
+    //   },
+    // });
   }
 
   handleClose() {
@@ -231,6 +253,12 @@ class DataSourceCreation extends Component {
                   spacing={3}
                   classes={{ container: classes.gridContainer }}
                 >
+                  <Grid item={true} xs={6}>
+                    {/* <RiskCreationOverview
+                      setFieldValue={setFieldValue}
+                      values={values}
+                    /> */}
+                  </Grid>
                 </Grid>
               </Form>
             </>
@@ -282,7 +310,7 @@ class DataSourceCreation extends Component {
   }
 }
 
-DataSourceCreation.propTypes = {
+DataSourceRolesCreation.propTypes = {
   riskId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -292,4 +320,4 @@ DataSourceCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(DataSourceCreation);
+)(DataSourceRolesCreation);

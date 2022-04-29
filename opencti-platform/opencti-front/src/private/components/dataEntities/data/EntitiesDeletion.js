@@ -21,8 +21,7 @@ import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import RiskEditionContainer from '../../riskAssessment/risks/RiskEditionContainer';
-import { riskEditionQuery } from '../../riskAssessment/risks/RiskEdition';
+import { toastGenericError } from '../../../../utils/bakedToast';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE,
@@ -75,7 +74,7 @@ const EntitiesDeletionMutation = graphql`
 
 const EntitiesDeletionDarkLightMutation = graphql`
   mutation EntitiesDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteOscalRole(id: $id)
 }
 `;
 
@@ -116,27 +115,6 @@ class EntitiesDeletion extends Component {
     this.setState({ displayEdit: false });
   }
 
-  // submitDelete() {
-  //   this.setState({ deleting: true });
-  //   commitMutation({
-  //     mutation: EntitiesDeletionMutation,
-  //     variables: {
-  //       id: this.props.id,
-  //     },
-  //     config: [
-  //       {
-  //         type: 'NODE_DELETE',
-  //         deletedIDFieldName: 'id',
-  //       },
-  //     ],
-  //     onCompleted: () => {
-  //       this.setState({ deleting: false });
-  //       this.handleClose();
-  //       this.props.history.push('/activities/risk assessment/risks');
-  //     },
-  //   });
-  // }
-
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
@@ -147,9 +125,11 @@ class EntitiesDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to delete entity');
+      },
     });
     // commitMutation({
     //   mutation: EntitiesDeletionDarkLightMutation,
@@ -205,7 +185,7 @@ class EntitiesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Risk?')}
+                {t('Are you sure you’d like to delete this entity?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}

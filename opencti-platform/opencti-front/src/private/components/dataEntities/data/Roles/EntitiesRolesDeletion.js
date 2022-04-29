@@ -13,21 +13,18 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import Typography from '@material-ui/core/Typography';
 import DeleteIcon from '@material-ui/icons/Delete';
-import AddCircleOutline from '@material-ui/icons/AddCircleOutline';
-import EditIcon from '@material-ui/icons/Edit';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
-import inject18n from '../../../../components/i18n';
-import environmentDarkLight from '../../../../relay/environmentDarkLight';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
-import RiskEditionContainer from '../../riskAssessment/risks/RiskEditionContainer';
-import { riskEditionQuery } from '../../riskAssessment/risks/RiskEdition';
-import Loader from '../../../../components/Loader';
+import inject18n from '../../../../../components/i18n';
+import environmentDarkLight from '../../../../../relay/environmentDarkLight';
+import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
+import Loader from '../../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
+} from '../../../../../utils/Security';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -65,21 +62,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const DataSourceDeletionMutation = graphql`
-  mutation DataSourceDeletionMutation($id: ID!) {
+const EntitiesRolesDeletionMutation = graphql`
+  mutation EntitiesRolesDeletionMutation($id: ID!) {
     threatActorEdit(id: $id) {
       delete
     }
   }
 `;
 
-const DataSourceDeletionDarkLightMutation = graphql`
-  mutation DataSourceDeletionDarkLightMutation($id: ID!) {
+const EntitiesRolesDeletionDarkLightMutation = graphql`
+  mutation EntitiesRolesDeletionDarkLightMutation($id: ID!) {
   deleteOscalRole(id: $id)
 }
 `;
 
-class DataSourceDeletion extends Component {
+class EntitiesRolesDeletion extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -119,7 +116,7 @@ class DataSourceDeletion extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
-      mutation: DataSourceDeletionDarkLightMutation,
+      mutation: EntitiesRolesDeletionDarkLightMutation,
       variables: {
         id: this.props.id,
       },
@@ -127,8 +124,28 @@ class DataSourceDeletion extends Component {
         this.setState({ deleting: false });
         this.handleClose();
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to delete role');
+      },
     });
+    // commitMutation({
+    //   mutation: EntitiesRolesDeletionDarkLightMutation,
+    //   variables: {
+    //     id: this.props.id,
+    //   },
+    //   config: [
+    //     {
+    //       type: 'NODE_DELETE',
+    //       deletedIDFieldName: 'id',
+    //     },
+    //   ],
+    //   onCompleted: () => {
+    //     this.setState({ deleting: false });
+    //     this.handleClose();
+    //     this.props.history.push('/activities/risk assessment/risks');
+    //   },
+    // });
   }
 
   render() {
@@ -146,7 +163,7 @@ class DataSourceDeletion extends Component {
               variant="contained"
               onClick={this.handleOpenDelete.bind(this)}
               className={classes.iconButton}
-              disabled={(Boolean(!id) && Boolean(!isAllselected)) || true}
+              disabled={(Boolean(!id) && Boolean(!isAllselected))}
               color="primary"
               size="large"
             >
@@ -166,7 +183,7 @@ class DataSourceDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this data source?')}
+                {t('Are you sure you’d like to delete this Role?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
@@ -199,7 +216,7 @@ class DataSourceDeletion extends Component {
   }
 }
 
-DataSourceDeletion.propTypes = {
+EntitiesRolesDeletion.propTypes = {
   id: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -211,4 +228,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(DataSourceDeletion);
+)(EntitiesRolesDeletion);
