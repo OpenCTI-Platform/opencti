@@ -91,7 +91,7 @@ class RoleEntityEdition extends Component {
           render={({ error, props, retry }) => {
             if (error) {
               console.error(error);
-              return toastGenericError('Failed to edit Role');
+              toastGenericError('Failed to edit Role');
             }
             if (props) {
               return (

@@ -38,6 +38,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/Cyio
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../components/Loader';
 import RiskCreationDetails from '../../riskAssessment/risks/RiskCreationDetails';
+import {toastGenericError} from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   container: {
@@ -139,7 +140,10 @@ class EntitiesCreation extends Component {
         resetForm();
         this.handleClose();
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create entity');
+      },
     });
   }
 

@@ -235,7 +235,7 @@ class RolesEntities extends Component {
           render={({ error, props }) => {
             if (error) {
               console.error(error);
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <EntitiesRolesCards
@@ -344,7 +344,7 @@ class RolesEntities extends Component {
           render={({ error, props }) => {
             if (error) {
               console.error(error);
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <EntitiesRolesLines

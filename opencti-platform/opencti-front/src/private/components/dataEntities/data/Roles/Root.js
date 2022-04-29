@@ -99,7 +99,7 @@ class RootRole extends Component {
           render={({ error, props, retry }) => {
             if (error) {
               console.error(error);
-              return toastGenericError('Failed to get role data');
+              toastGenericError('Failed to get role data');
             }
             if (props) {
               if (props.oscalRole) {
