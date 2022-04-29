@@ -1,5 +1,7 @@
 FROM docker.io/library/node:16-alpine AS base
 
+RUN corepack enable
+
 FROM base AS graphql-deps-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
@@ -7,7 +9,7 @@ COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yar
 COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
 RUN set -ex \
-    ; yarn install --frozen-lockfile \
+    ; yarn install --immutable --immutable-cache \
     && yarn cache clean --all
 
 
@@ -82,7 +84,7 @@ RUN set -ex \
         -S \
         -u "${UID}" \
         "${USERNAME}" \
-    && install -o "${UID}" -g "${GID}" -m 0750 '/opt/opencti/logs'
+    && install -o "${UID}" -g "${GID}" -m 0750 -d '/opt/opencti/logs'
 
 VOLUME ["/opt/opencti/logs"]
 

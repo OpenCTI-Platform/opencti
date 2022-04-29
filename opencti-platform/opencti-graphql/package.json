@@ -70,7 +70,7 @@
     "merge-graphql-schemas": "1.7.8",
     "migrate": "1.7.0",
     "mime-types": "2.1.34",
-    "minio": "7.0.26",
+    "minio": "^7.0.27",
     "moment": "2.29.1",
     "moment-range": "4.0.2",
     "nconf": "0.11.3",
@@ -142,5 +142,5 @@
     "nconf": "patch:nconf@0.11.3#./patch/nconf-0.11.3.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch"
   },
-  "packageManager": "yarn@3.1.1"
+  "packageManager": "yarn@3.2.0"
 }
