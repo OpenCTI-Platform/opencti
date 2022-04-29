@@ -40,8 +40,9 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
-import { toastGenericError } from "../../../../../utils/bakedToast";
-
+import { toastGenericError } from '../../../../../utils/bakedToast';
+import DataAddressField from '../../../common/form/DataAddressField';
+import { ipv4AddrRegex, ipv6AddrRegex, macAddrRegex } from '../../../../../utils/Network';
 
 const styles = (theme) => ({
   dialogTitle: {
@@ -63,6 +64,11 @@ const styles = (theme) => ({
   },
   buttonPopover: {
     textTransform: 'capitalize',
+  },
+  radioButtonGroup: {
+    '&.MuiFormGroup-root': {
+      display: 'block',
+    },
   },
   popoverDialog: {
     fontSize: '18px',
@@ -90,6 +96,8 @@ class PartyEntityEditionContainer extends Component {
       details: false,
       close: false,
       onSubmit: false,
+      radioButtonValue: 'locations',
+      openAddress: false,
     };
   }
 
@@ -104,6 +112,17 @@ class PartyEntityEditionContainer extends Component {
 
   handleSubmit() {
     this.setState({ onSumbit: true });
+  }
+
+  handleChangeRadioButton(event) {
+    if (event.target.value === 'address') {
+      this.setState({ openAddress: true });
+    }
+    this.setState({ radioButtonValue: event.target.value });
+  }
+
+  handleCloseAddress() {
+    this.setState({ openAddress: false });
   }
 
   onReset() {
@@ -161,19 +180,15 @@ class PartyEntityEditionContainer extends Component {
     const initialValues = R.pipe(
       R.assoc('name', remediation?.name || ''),
       R.assoc('description', remediation?.description || ''),
-      R.assoc('source', remediationOriginData?.name || []),
-      R.assoc('modified', dateFormat(remediation?.modified)),
-      R.assoc('created', dateFormat(remediation?.created)),
-      R.assoc('lifecycle', remediation?.lifecycle || []),
-      R.assoc('response_type', remediation?.response_type || ''),
+      R.assoc('telephone_numbers', []),
+      R.assoc('email_address', []),
+      R.assoc('address', []),
       R.pick([
         'name',
         'description',
-        'source',
-        'modified',
-        'created',
-        'lifecycle',
-        'response_type',
+        'telephone_numbers',
+        'email_address',
+        'address',
       ]),
     )(remediation);
     return (
@@ -198,7 +213,7 @@ class PartyEntityEditionContainer extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Party')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
@@ -394,13 +409,13 @@ class PartyEntityEditionContainer extends Component {
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
+                    <Grid item={true} xs={12}>
                       <RadioGroup
                         aria-labelledby="demo-controlled-radio-buttons-group"
                         name="controlled-radio-buttons-group"
-                        style={{ display: 'flex' }}
-                      // value={value}
-                      // onChange={handleChange}
+                        className={classes.radioButtonGroup}
+                        value={this.state.radioButtonValue}
+                        onChange={this.handleChangeRadioButton.bind(this)}
                       >
                         <FormControlLabel value="locations" control={<Radio />} label="Locations" />
                         <FormControlLabel value="address" control={<Radio />} label="Address" />
@@ -473,12 +488,47 @@ class PartyEntityEditionContainer extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                          component={TextField}
+                          name="name"
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
+                          size="small"
                           containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                        />
+                      </div>
+                      <div style={{ marginTop: '10px' }}>
+                        <DataAddressField
+                          setFieldValue={setFieldValue}
+                          values={values}
+                          addressValues={values.telephone_numbers}
+                          title='Telephone numbers'
+                          name='telephone_numbers'
+                          // validation={macAddrRegex}
+                          helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
+                        />
+                      </div>
+                      <div style={{ marginTop: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Short Name')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Short Name')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={TextField}
+                          name="name"
+                          fullWidth={true}
+                          size="small"
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
                         />
                       </div>
                     </Grid>
@@ -499,12 +549,12 @@ class PartyEntityEditionContainer extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                          component={TextField}
+                          name="name"
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
+                          size="small"
                           containerstyle={{ width: '100%' }}
+                          variant='outlined'
                         />
                       </div>
                       <div style={{ marginTop: '10px' }}>
@@ -523,16 +573,42 @@ class PartyEntityEditionContainer extends Component {
                         </div>
                         <div className="clearfix" />
                         <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                          component={TextField}
+                          name="name"
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
+                          size="small"
                           containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                        />
+                      </div>
+                      <div style={{ marginTop: '10px' }}>
+                        <DataAddressField
+                          setFieldValue={setFieldValue}
+                          values={values}
+                          addressValues={values.email_address}
+                          title='Email Address'
+                          name='email_address'
+                          // validation={macAddrRegex}
+                          helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
                         />
                       </div>
                     </Grid>
                   </Grid>
+                  {this.state.radioButtonValue === 'address' && (
+                    <Grid container={true} spacing={3}>
+                      <Grid item={true} xs={12}>
+                        <DataAddressField
+                          setFieldValue={setFieldValue}
+                          values={values}
+                          addressValues={values.address}
+                          title='Address(es)'
+                          name='address'
+                          // validation={macAddrRegex}
+                          helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
+                        />
+                      </Grid>
+                    </Grid>
+                  )}
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
@@ -556,6 +632,182 @@ class PartyEntityEditionContainer extends Component {
               </Form>
             )}
           </Formik>
+
+          <Dialog
+            open={this.state.openAddress}
+            keepMounted={true}
+            onClose={this.handleCloseAddress.bind(this)}
+          >
+            <Formik
+              enableReinitialize={true}
+              initialValues={initialValues}
+            // validationSchema={RelatedTaskValidation(t)}
+            // onSubmit={this.onSubmit.bind(this)}
+            // onReset={this.onReset.bind(this)}
+            >
+              {({
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
+                values,
+              }) => (
+                <Form>
+                  <DialogTitle classes={{ root: classes.dialogTitle }}>{t('New Address')}</DialogTitle>
+                  <DialogContent classes={{ root: classes.dialogContent }}>
+                    <Grid container={true} spacing={3}>
+                      <Grid item={true} xs={12}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Street Address')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Id')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={TextField}
+                          name="id"
+                          fullWidth={true}
+                          size="small"
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                        />
+                      </Grid>
+                      <Grid item={true} xs={6}>
+                        <div style={{ marginBottom: '12px' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('City')}
+                          </Typography>
+                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                            <Tooltip title={t('Created')} >
+                              <Information fontSize="inherit" color="disabled" />
+                            </Tooltip>
+                          </div>
+                          <div className="clearfix" />
+                          <Field
+                            component={TextField}
+                            name="id"
+                            fullWidth={true}
+                            size="small"
+                            containerstyle={{ width: '100%' }}
+                            variant='outlined'
+                          />
+                        </div>
+                      </Grid>
+                      <Grid item={true} xs={6}>
+                        <div style={{ marginBottom: '10px' }}>
+                          <Typography
+                            variant="h3"
+                            color="textSecondary"
+                            gutterBottom={true}
+                            style={{ float: 'left' }}
+                          >
+                            {t('Administrative Area')}
+                          </Typography>
+                          <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                            <Tooltip title={t('Last Modified')} >
+                              <Information fontSize="inherit" color="disabled" />
+                            </Tooltip>
+                          </div>
+                          <div className="clearfix" />
+                          <Field
+                            component={TextField}
+                            name="id"
+                            fullWidth={true}
+                            size="small"
+                            containerstyle={{ width: '100%' }}
+                            variant='outlined'
+                          />
+                        </div>
+                      </Grid>
+                    </Grid>
+                    <Grid container={true} spacing={3}>
+                      <Grid item={true} xs={6}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Country')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Country')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={TextField}
+                          name="id"
+                          fullWidth={true}
+                          size="small"
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                        />
+                      </Grid>
+                      <Grid item={true} xs={6}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Postal Code')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Postal Code')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={TextField}
+                          name="id"
+                          fullWidth={true}
+                          size="small"
+                          containerstyle={{ width: '100%' }}
+                          variant='outlined'
+                        />
+                      </Grid>
+                    </Grid>
+                  </DialogContent>
+                  <DialogActions classes={{ root: classes.dialogClosebutton }}>
+                    <Button
+                      variant="outlined"
+                      // onClick={handleReset}
+                      onClick={this.handleCloseAddress.bind(this)}
+                      classes={{ root: classes.buttonPopover }}
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      // onClick={submitForm}
+                      onClick={this.handleCloseAddress.bind(this)}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.buttonPopover }}
+                    >
+                      {t('Submit')}
+                    </Button>
+                  </DialogActions>
+                </Form>
+              )}
+            </Formik>
+          </Dialog>
         </Dialog>
       </>
     );

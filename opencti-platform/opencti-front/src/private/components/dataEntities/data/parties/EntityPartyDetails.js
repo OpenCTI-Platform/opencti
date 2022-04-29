@@ -128,21 +128,10 @@ class EntityPartyDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Location Class')}
+                  {t('Party Type')}
                 </Typography>
                 <div className="clearfix" />
                 {t('Class Name')}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Location(s)')}
-                </Typography>
-                <div className="clearfix" />
-                {t('Location 1')}
               </div>
               <div>
                 <Typography
@@ -178,6 +167,18 @@ class EntityPartyDetailsComponent extends Component {
                 <div className="clearfix" />
                 {t('Office Name')}
               </div>
+              <div style={{ marginTop: '50px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Telephone Number')}
+                </Typography>
+                <div className="clearfix" />
+                {t('+1 999 999-9999')}
+              </div>
             </Grid>
             <Grid item={true} xs={4}>
               <div>
@@ -202,13 +203,13 @@ class EntityPartyDetailsComponent extends Component {
                 <div className="clearfix" />
                 {t('Lorem Ipsum')}
               </div>
-              <div style={{ marginTop: '20px' }}>
+              <div style={{ marginTop: '75px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Location Type')}
+                  {t('Job Title')}
                 </Typography>
                 <div className="clearfix" />
                 {t('Lorem Ipsum')}
@@ -247,6 +248,18 @@ class EntityPartyDetailsComponent extends Component {
                 <div className="clearfix" />
                 {t('Mail Stop Name')}
               </div>
+              <div style={{ marginTop: '50px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Email Address')}
+                </Typography>
+                <div className="clearfix" />
+                {t('Support@darklig...')}
+              </div>
             </Grid>
             <Grid item={true} xs={4}>
               <Typography
@@ -267,6 +280,18 @@ class EntityPartyDetailsComponent extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                color="textSecondary"
+                gutterBottom={true}
+                style={{ float: 'left', marginTop: 20 }}
+              >
+                {t('Address(es)')}
+              </Typography>
+              <div className="clearfix" />
+              {t('8201 164th Ave NE, Redmond, WA, 98052 US')}
+            </Grid>
             <Grid item={true} xs={3}>
               <CyioCoreObjectLabelsView
                 labels={party.labels}

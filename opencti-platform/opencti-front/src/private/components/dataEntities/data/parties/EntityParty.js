@@ -104,7 +104,7 @@ class EmtityPartyComponent extends Component {
         </div>
         <EntitiesPartiesCreation
           openDataCreation={this.state.openDataCreation}
-          handleRoleCreation={this.handleOpenNewCreation.bind(this)}
+          handlePartyCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
         />
         <PartyEntityEditionContainer
