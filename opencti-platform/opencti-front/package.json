@@ -27,7 +27,7 @@
     "leaflet": "1.7.1",
     "lodash": "4.17.21",
     "mdi-material-ui": "7.1.0",
-    "moment": "2.29.1",
+    "moment": "^2.29.3",
     "moment-timezone": "0.5.34",
     "pdfmake": "0.2.4",
     "prop-types": "15.8.1",

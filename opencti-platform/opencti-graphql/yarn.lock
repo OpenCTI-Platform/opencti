@@ -39,7 +39,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollographql/apollo-tools@npm:^0.5.1, @apollographql/apollo-tools@npm:^0.5.3":
+"@apollographql/apollo-tools@npm:^0.5.3":
   version: 0.5.3
   resolution: "@apollographql/apollo-tools@npm:0.5.3"
   peerDependencies:
@@ -2973,7 +2973,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-reporting-protobuf@npm:^3.3.0, apollo-reporting-protobuf@npm:^3.3.1":
+"apollo-reporting-protobuf@npm:^3.3.1":
   version: 3.3.1
   resolution: "apollo-reporting-protobuf@npm:3.3.1"
   dependencies:
@@ -2991,37 +2991,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server-core@npm:3.6.3":
-  version: 3.6.3
-  resolution: "apollo-server-core@npm:3.6.3"
-  dependencies:
-    "@apollographql/apollo-tools": ^0.5.1
-    "@apollographql/graphql-playground-html": 1.6.29
-    "@graphql-tools/mock": ^8.1.2
-    "@graphql-tools/schema": ^8.0.0
-    "@josephg/resolvable": ^1.0.0
-    apollo-datasource: ^3.3.1
-    apollo-reporting-protobuf: ^3.3.0
-    apollo-server-caching: ^3.3.0
-    apollo-server-env: ^4.2.1
-    apollo-server-errors: ^3.3.1
-    apollo-server-plugin-base: ^3.5.1
-    apollo-server-types: ^3.5.1
-    async-retry: ^1.2.1
-    fast-json-stable-stringify: ^2.1.0
-    graphql-tag: ^2.11.0
-    lodash.sortby: ^4.7.0
-    loglevel: ^1.6.8
-    lru-cache: ^6.0.0
-    sha.js: ^2.4.11
-    uuid: ^8.0.0
-  peerDependencies:
-    graphql: ^15.3.0 || ^16.0.0
-  checksum: 91058baf0b199a5b7578345bb94ee6fc373505d5f7b95d9489c6d7b67b2bcd80e496e34abd6bd027d9ffa628d8ba1224b6f06867011aeeeaa03c8308c6f2281f
-  languageName: node
-  linkType: hard
-
-"apollo-server-core@npm:^3.6.3":
+"apollo-server-core@npm:^3.6.3, apollo-server-core@npm:^3.6.7":
   version: 3.6.7
   resolution: "apollo-server-core@npm:3.6.7"
   dependencies:
@@ -3091,7 +3061,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"apollo-server-plugin-base@npm:^3.5.1, apollo-server-plugin-base@npm:^3.5.2":
+"apollo-server-plugin-base@npm:^3.5.2":
   version: 3.5.2
   resolution: "apollo-server-plugin-base@npm:3.5.2"
   dependencies:
@@ -3346,7 +3316,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async-lock@npm:1.3.1":
+"async-lock@npm:^1.3.1":
   version: 1.3.1
   resolution: "async-lock@npm:1.3.1"
   checksum: b11aca6d74431a42f9a3010ce7e55ac18c208f389433f55c07249ccd69dc63bc77fade28957d2d36212811d80b9c067a010341fb1e3d6a819b4fb74a122c4c27
@@ -4762,7 +4732,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-env@npm:7.0.3":
+"cross-env@npm:^7.0.3":
   version: 7.0.3
   resolution: "cross-env@npm:7.0.3"
   dependencies:
@@ -10043,14 +10013,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:2.29.1":
-  version: 2.29.1
-  resolution: "moment@npm:2.29.1"
-  checksum: 1e14d5f422a2687996be11dd2d50c8de3bd577c4a4ca79ba5d02c397242a933e5b941655de6c8cb90ac18f01cc4127e55b4a12ae3c527a6c0a274e455979345e
-  languageName: node
-  linkType: hard
-
-"moment@npm:^2.29.1":
+"moment@npm:^2.29.1, moment@npm:^2.29.3":
   version: 2.29.3
   resolution: "moment@npm:2.29.3"
   checksum: 2e780e36d9a1823c08a1b6313cbb08bd01ecbb2a9062095820a34f42c878991ccba53abaa6abb103fd5c01e763724f295162a8c50b7e95b4f1c992ef0772d3f0
@@ -10623,9 +10586,9 @@ __metadata:
     "@typescript-eslint/parser": 5.11.0
     amqplib: 0.8.0
     apollo-errors: 1.9.0
-    apollo-server-core: 3.6.3
+    apollo-server-core: ^3.6.7
     apollo-server-express: 3.6.3
-    async-lock: 1.3.1
+    async-lock: ^1.3.1
     axios: 0.25.0
     bcryptjs: 2.4.3
     bluebird: 3.7.2
@@ -10634,7 +10597,7 @@ __metadata:
     compression: 1.7.4
     content-disposition: 0.5.4
     cors: 2.8.5
-    cross-env: 7.0.3
+    cross-env: ^7.0.3
     dataloader: 2.0.0
     esbuild: 0.14.23
     esbuild-jest: 0.5.0
@@ -10677,9 +10640,9 @@ __metadata:
     migrate: 1.7.0
     mime-types: 2.1.34
     minio: ^7.0.27
-    moment: 2.29.1
+    moment: ^2.29.3
     moment-range: 4.0.2
-    nconf: 0.11.3
+    nconf: npm
     nodemailer: 6.7.2
     openid-client: 5.1.3
     passport: 0.5.2
