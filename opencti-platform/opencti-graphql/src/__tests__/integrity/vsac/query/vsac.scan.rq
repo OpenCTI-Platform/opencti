@@ -15,5 +15,11 @@ SELECT * WHERE {
   ?vs vuln:hasPolicyName ?policyName .
   ?vs vuln:hasTotalRecordNum ?totalRecordNum .
   ?vs vuln:hasReportName ?reportName .
+  ?vs vuln:hasScanVendor ?scanVendor .
+  ?vs vuln:hasScanVendorName ?scanVendorName .
+  ?vs vuln:hasUniqueCVECount ?uniqueCVECount .
+  ?vs vuln:hasTotalCVECount ?totalCVECount .
+  ?vs vuln:hasTargetObservations ?targetObservations .
  }
 }
+LIMIT 1

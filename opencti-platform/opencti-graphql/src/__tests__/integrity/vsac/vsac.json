@@ -41,6 +41,24 @@
         "reportName": {
           "check": "equals",
           "value": "TBC - Internal Scan - Weekly 3"
+        },
+        "scanVendor": {
+          "check": "exists"
+        },
+        "scanVendorName": {
+          "check": "equals",
+          "value": "Tenable"
+        },
+        "targetObservations": {
+          "check": "exists"
+        },
+        "uniqueCVECount": {
+          "check": "equals",
+          "value": 2422
+        },
+        "totalCVECount": {
+          "check": "equals",
+          "value": 598284
         }
       }
     }

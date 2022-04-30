@@ -56,3 +56,8 @@ The JSON file is the test configuration file with the defined tests to run and t
 ## Limitations
 
 Within the IntegrityRunner there is no concept of specifying what data type the expected value is and is assumed only by the **value**. So Date or other JS data types are not supported at this time.
+
+## Future Features
+
+[] - Specify type converters (ie. string to Date)
+[] - 
