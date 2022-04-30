@@ -1093,7 +1093,7 @@ class Scans extends Component {
                                     {
                                       analysis,
                                       client: client_ID,
-                                      scan: getCurrentScan(analysis.scan.id, scans)
+                                      scan: getCurrentScan(analysis.scan.id, renderScans)
                                     })}
                         >
                           Explore Results
