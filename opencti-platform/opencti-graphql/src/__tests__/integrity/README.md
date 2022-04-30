@@ -16,6 +16,8 @@ Integrity tests require 5 environment variables to be set. Four of these variabl
 
 > Note: NODE_TLS_REJECT_UNAUTHORIZED=0 must be set prior to executing Jest and not in the .env file.
 
+The TESTING_SD_* variables can either be set directly in your environment prior to executing the testing script or placed in an **.env** file at the root of the project. 
+
 ## Testing Model
 
 Each domain of data should have its own folder for testing. This is to separation obvious and keep tests organized.
