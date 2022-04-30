@@ -18,6 +18,8 @@ Integrity tests require 5 environment variables to be set. Four of these variabl
 
 The TESTING_SD_* variables can either be set directly in your environment prior to executing the testing script or placed in an **.env** file at the root of the project. 
 
+To execute the testing, run `yarn test:integrity`.
+
 ## Testing Model
 
 Each domain of data should have its own folder for testing. This is to separation obvious and keep tests organized.
