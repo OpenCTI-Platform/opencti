@@ -418,7 +418,7 @@ class Scans extends Component {
     }
 
     const onNewAnalysis = (id, client, params) => {
-      const scanName = scans.filter((s) => s.id === params.scan_id)[0].scan_name
+      const scanName = renderScans.filter((s) => s.id === params.scan_id)[0].scan_name
       createNewScanAnalysis(id, client, params)
         .then((response) => {
           toastSuccess("Creating New Analysis")
