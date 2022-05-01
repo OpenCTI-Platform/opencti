@@ -467,6 +467,11 @@ const subjectReducer = (item) => {
     item.object_type = 'subject';
   }
 
+  // populate name if we have the actual subject's information
+  if (item.name === undefined && (item.subject_name !== undefined)) {
+    item.name = item.subject_name;
+    if (item.subject_version !== undefined) item.name = item.name + ` ${item.subject_version}`;
+  }
   return {
     iri: item.iri,
     id: item.id,
@@ -3113,6 +3118,11 @@ export const selectSubjectByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
   // defensive code to protect against query not supplying subject type
   if (!select.includes('subject_type')) select.push('subject_type');
+  // get the references name and version, if name is asked for
+  if (select.includes('name')) {
+    select.push('subject_name');
+    select.push('subject_version');
+  }
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -3127,6 +3137,13 @@ export const selectSubjectByIriQuery = (iri, select) => {
 export const selectAllSubjects = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
   if (!select.includes('id')) select.push('id');
+  // defensive code to protect against query not supplying subject type
+  if (!select.includes('subject_type')) select.push('subject_type');
+  // get the references name and version, if name is asked for
+  if (select.includes('name')) {
+    select.push('subject_name');
+    select.push('subject_version');
+  }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -4527,6 +4544,16 @@ export const subjectPredicateMap = {
   subject_context: {
     predicate: "<http://darklight.ai/ns/oscal/assessment/common#subject_context>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_context");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_name: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_version: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/common#version>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_version");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
