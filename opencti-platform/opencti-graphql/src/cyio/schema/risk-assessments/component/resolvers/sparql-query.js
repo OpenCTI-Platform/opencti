@@ -1,3 +1,4 @@
+import { UserInputError } from "apollo-server-express";
 import {
   optionalizePredicate, 
   parameterizePredicate, 
