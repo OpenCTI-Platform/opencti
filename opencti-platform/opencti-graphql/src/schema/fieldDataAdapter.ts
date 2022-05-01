@@ -17,7 +17,7 @@ import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
 import { MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from './stixCyberObservableRelationship';
-import type { StixArtifact } from '../types/stix-sco';
+import type { StixArtifact, StixFile, StixX509Certificate } from '../types/stix-sco';
 import type { HashInput } from '../generated/graphql';
 
 const multipleAttributes = [
@@ -53,6 +53,7 @@ const multipleAttributes = [
   'x_opencti_stix_ids',
   'options',
   'entities_ids',
+  'x_opencti_files',
   'platform_enable_reference',
   // meta
   INPUT_OBJECTS,
@@ -180,7 +181,7 @@ export const inputHashesToStix = (data: Array<HashInput>) => {
   return R.fromPairs(convertedInputs);
 };
 // Must only be call in generic resolvers for data output
-export const stixHashesToInput = (instance: StixArtifact): Array<HashInput> => {
+export const stixHashesToInput = (instance: StixArtifact | StixFile | StixX509Certificate): Array<HashInput> => {
   const attributeValue = instance.hashes;
   const entries = Object.entries(attributeValue);
   return entries.map(([lab, val]) => {

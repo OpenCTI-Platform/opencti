@@ -39,7 +39,6 @@ import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 import { escape, observableValue } from '../utils/format';
-import { uploadJobImport } from './file';
 
 export const findById = (user, stixCyberObservableId) => {
   return storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -389,7 +388,6 @@ export const artifactImport = async (user, args) => {
     objectLabel,
   };
   const artifact = await addStixCyberObservable(user, artifactData);
-  const up = await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id });
-  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
+  await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id });
   return artifact;
 };

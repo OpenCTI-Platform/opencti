@@ -58,15 +58,8 @@ export const askJobImport = async (user, args) => {
   const { fileName, connectorId = null, bypassEntityId = null, bypassValidation = false } = args;
   logApp.debug(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
   const file = await loadFile(user, fileName);
-  await uploadJobImport(
-    user,
-    file.id,
-    file.metaData.mimetype,
-    bypassEntityId || file.metaData.entity_id,
-    true,
-    connectorId,
-    bypassValidation
-  );
+  const entityId = bypassEntityId || file.metaData.entity_id;
+  await uploadJobImport(user, file.id, file.metaData.mimetype, entityId, true, connectorId, bypassValidation);
   return file;
 };
 
@@ -76,4 +69,6 @@ export const uploadImport = async (user, file) => {
   return up;
 };
 
-export const uploadPending = async (user, file, entityId = null) => upload(user, 'import/pending', file, entityId ? { entity_id: entityId } : {});
+export const uploadPending = async (user, file, entityId = null) => {
+  return upload(user, 'import/pending', file, entityId ? { entity_id: entityId } : {});
+};

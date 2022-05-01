@@ -6178,7 +6178,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input StixFileAddInput {
   hashes: [HashInput]
-  extensions: String
   size: Int
   name: String
   name_enc: String
@@ -6744,7 +6743,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   jobs(first: Int): [Work]
 }
 input NetworkTrafficAddInput {
-  extensions: String
   start: DateTime
   end: DateTime
   is_active: Boolean
@@ -6847,7 +6845,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   jobs(first: Int): [Work]
 }
 input ProcessAddInput {
-  extensions: String
   is_hidden: Boolean
   pid: Int
   created_time: DateTime
@@ -7138,7 +7135,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   jobs(first: Int): [Work]
 }
 input UserAccountAddInput {
-  extensions: String
   user_id: String
   credential: String
   account_login: String
@@ -7453,7 +7449,7 @@ input X509V3ExtensionsTypeAddInput {
   certificate_policies: String
   policy_mappings: String
 }
-type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type CryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -7525,7 +7521,7 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
-  # XOpenCTICryptographicKey
+  # CryptographicKey
   value: String
   # Technical
   creator: User
@@ -7537,10 +7533,10 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenCTICryptographicKeyAddInput {
+input CryptographicKeyAddInput {
   value: String
 }
-type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -7612,7 +7608,7 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
-  # XOpenCTICryptocurrencyWallet
+  # CryptocurrencyWallet
   value: String
   # Technical
   creator: User
@@ -7624,10 +7620,10 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenCTICryptocurrencyWalletAddInput {
+input CryptocurrencyWalletAddInput {
   value: String
 }
-type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -7699,7 +7695,7 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
-  # XOpenCTIHostname
+  # Hostname
   value: String
   # Technical
   creator: User
@@ -7711,10 +7707,10 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenCTIHostnameAddInput {
+input HostnameAddInput {
   value: String
 }
-type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -7786,7 +7782,7 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
-  # XOpenCTIText
+  # Text
   value: String
   # Technical
   creator: User
@@ -7798,10 +7794,10 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenCTITextAddInput {
+input TextAddInput {
   value: String
 }
-type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -7873,7 +7869,7 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
-  # XOpenCTIUserAgent
+  # UserAgent
   value: String
   # Technical
   creator: User
@@ -7885,7 +7881,7 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenCTIUserAgentAddInput {
+input UserAgentAddInput {
   value: String
 }
 
@@ -8007,11 +8003,11 @@ union StixObjectOrStixRelationship =
   | WindowsRegistryKey
   | WindowsRegistryValueType
   | X509V3ExtensionsType
-  | XOpenCTICryptographicKey
-  | XOpenCTICryptocurrencyWallet
-  | XOpenCTIHostname
-  | XOpenCTIText
-  | XOpenCTIUserAgent ### Stix Relationships
+  | CryptographicKey
+  | CryptocurrencyWallet
+  | Hostname
+  | Text
+  | UserAgent ### Stix Relationships
   | StixCoreRelationship
   | StixMetaRelationship
   | StixSightingRelationship
@@ -8062,11 +8058,11 @@ union StixCoreObjectOrStixCoreRelationship =
   | WindowsRegistryKey
   | WindowsRegistryValueType
   | X509V3ExtensionsType
-  | XOpenCTICryptographicKey
-  | XOpenCTICryptocurrencyWallet
-  | XOpenCTIHostname
-  | XOpenCTIText
-  | XOpenCTIUserAgent ### Stix Relationships
+  | CryptographicKey
+  | CryptocurrencyWallet
+  | Hostname
+  | Text
+  | UserAgent ### Stix Relationships
   | StixCoreRelationship
 
 enum StixRelationshipsOrdering {
@@ -10098,11 +10094,11 @@ type Mutation {
     WindowsRegistryKey: WindowsRegistryKeyAddInput
     WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
     X509V3ExtensionsType: X509V3ExtensionsTypeAddInput
-    XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput
-    XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
-    XOpenCTIHostname: XOpenCTIHostnameAddInput
-    XOpenCTIText: XOpenCTITextAddInput
-    XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
+    CryptographicKey: CryptographicKeyAddInput
+    CryptocurrencyWallet: CryptocurrencyWalletAddInput
+    Hostname: HostnameAddInput
+    Text: TextAddInput
+    UserAgent: UserAgentAddInput
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(

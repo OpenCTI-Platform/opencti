@@ -1,32 +1,40 @@
 import { v4, v5 } from 'uuid';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-extensions';
 import type { StixRelation, StixSighting } from './stix-sro';
+import type { StixInternalExternalReference } from './stix-smo';
 
 type StixId = `${string}--${v4 | v5}`;
 type StixFieldExtension = `${string}--${string}`;
 
-// Common
-// interface StixPatch {
-//   add?: StixCoreObject
-//   replace?: StixCoreObject
-//   remove?: StixCoreObject
-// }
-//
-// interface StixDependenciesContext {
-//   sources: Array<StixCoreObject>;
-//   deletions: Array<StixCoreObject>;
-//   shifts: Array<StixCoreObject>;
-// }
+export enum OrganizationReliability {
+  A = 'A',
+  B = 'B',
+  C = 'C',
+  D = 'D',
+  E = 'E',
+  F = 'F'
+}
 
 interface StixMitreExtension {
   'extension_type': 'property-extension',
-  mitre_id: string;
+  id: string;
+  detection: string;
+  permissions_required: Array<string>;
+  platforms: Array<string>;
+}
+
+interface StixFileExtension {
+  name: string;
+  uri: string;
+  version: string;
+  mime_type: string;
 }
 
 interface StixOpenctiExtension {
   extension_type : 'property-extension' | 'new-sdo';
   id: v4 | undefined;
-  files: Array<string>;
+  files: Array<StixFileExtension>;
+  aliases: Array<string>;
   stix_ids: Array<StixId>;
   type: string;
   created_at: Date;
@@ -57,7 +65,7 @@ interface StixDomainObject extends StixObject {
   labels: Array<string>; // optional
   confidence: number; // optional
   lang: string; // optional
-  external_references?: Array<StixExternalReference>;
+  external_references?: Array<StixInternalExternalReference>;
   object_marking_refs: Array<StixId>; // optional
 }
 
@@ -70,22 +78,26 @@ interface StixRelationshipObject extends StixObject {
   labels: Array<string>; // optional
   confidence: number; // optional
   lang: string; // optional
-  external_references?: Array<StixExternalReference>; // optional
+  external_references?: Array<StixInternalExternalReference>; // optional
   object_marking_refs: Array<StixId>; // optional
 }
 
 // SCO
+interface CyberObjectExtension {
+  extension_type : 'property-extension',
+  labels: Array<string>;
+  description: string;
+  score: number;
+  created_by_ref: StixId | undefined;
+  external_references: Array<StixInternalExternalReference>;
+}
+
 interface StixCyberObject extends StixObject {
   object_marking_refs: Array<StixId>; // optional
   defanged: boolean; // optional
   extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension;
-    [STIX_EXT_OCTI_SCO] : {
-      extension_type : 'property-extension',
-      labels: Array<string>; // optional
-      description: string; // optional
-      score: number; // optional
-    }
+    [STIX_EXT_OCTI]: StixOpenctiExtension;
+    [STIX_EXT_OCTI_SCO]: CyberObjectExtension
   };
 }
 
@@ -99,7 +111,7 @@ interface StixExtension extends StixObject {
   modified: Date;
   revoked: boolean;
   labels: Array<string>; // optional
-  external_references?: Array<StixExternalReference>; // optional
+  external_references?: Array<StixInternalExternalReference>; // optional
   object_marking_refs: Array<StixId>; // optional
   // Extension Definition Specific Properties
   // name, description, schema, version, extension_types, extension_properties
@@ -114,36 +126,12 @@ interface StixExtension extends StixObject {
 // Language
 // TODO Add support for Language
 
-// SEO (Stix embedded)
-interface StixExternalReference {
-  source_name: string;
-  description: string;
-  url: string;
-  hashes: object;
-  external_id: string;
-  extensions: {
-    [STIX_EXT_OCTI] : StixOpenctiExtension;
-  }
-}
-
-interface StixKillChainExtension extends StixOpenctiExtension {
-  order: number;
-}
-
-interface StixKillChainPhase {
-  kill_chain_name: string;
-  phase_name: string;
-  extensions: {
-    [STIX_EXT_OCTI] : StixKillChainExtension;
-  }
-}
-
 // Markings
 interface StixMarkingsObject extends StixObject {
   created_by_ref: StixId | undefined; // optional
   created: Date;
   modified: Date;
-  external_references?: Array<StixExternalReference>; // optional
+  external_references?: Array<StixInternalExternalReference>; // optional
   object_marking_refs: Array<StixId>; // optional
 }
 

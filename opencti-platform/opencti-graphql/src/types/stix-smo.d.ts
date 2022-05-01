@@ -31,6 +31,7 @@ interface StixMarkingDefinition extends StixMarkingsObject {
 }
 
 // Label
+// interface StixInternalLabel = string
 interface StixLabel extends StixObject {
   value: string;
   color: string;
@@ -40,9 +41,11 @@ interface StixLabel extends StixObject {
 }
 
 // Kill chain
-interface StixKillChainPhase extends StixObject {
+interface StixInternalKillChainPhase {
   kill_chain_name: string;
   phase_name: string;
+}
+interface StixKillChainPhase extends StixInternalKillChainPhase, StixObject {
   order: number;
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
@@ -50,12 +53,14 @@ interface StixKillChainPhase extends StixObject {
 }
 
 // External reference
-interface StixExternalReference extends StixObject {
+interface StixInternalExternalReference {
   source_name: string;
   description: string;
   url: string;
   hashes: object;
   external_id: string;
+}
+interface StixExternalReference extends StixInternalExternalReference, StixObject {
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   };

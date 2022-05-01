@@ -46,8 +46,7 @@ export const isSingleStixEmbeddedRelationshipInput = (input: string): boolean =>
 // eslint-disable-next-line
 export const instanceMetaRefsExtractor = (data: BasicStoreObject) => {
   const relKeys = Object.keys(FIELD_META_STIX_RELATIONS_TO_STIX_ATTRIBUTE);
-  // TODO JRI???
-  const anyData = data as any;
+  const anyData = data as any; // TODO JRI Find a way to not use any
   return relKeys.map((key) => anyData[key] || []).flat();
 };
 const RELATIONS_STIX_ATTRIBUTES = ['source_ref', 'target_ref', 'sighting_of_ref', 'where_sighted_refs'];

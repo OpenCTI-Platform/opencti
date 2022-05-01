@@ -195,7 +195,7 @@ import {
   yearFormat,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
-import { deleteAllFiles, upload } from './minio';
+import { deleteAllFiles, storeFileConverter, upload } from './minio';
 import { BYPASS, BYPASS_REFERENCE, filterElementsAccordingToUser, SYSTEM_USER } from '../utils/access';
 import { isRuleUser, RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import {
@@ -213,6 +213,7 @@ import { buildFilters, listEntities } from './repository';
 import { askEnrich } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listRelations } from './middleware-loader';
+// import { uploadJobImport } from '../domain/file';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -454,7 +455,6 @@ const loadElementDependencies = async (user, element, args = {}) => {
   const elementId = element.internal_id;
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : dependencyTypes;
   // Resolve all relations
-  // TODO JRI, use rels?
   // noinspection ES6MissingAwait
   const toRelationsPromise = fullResolve ? listAllRelations(user, relTypes, { toId: elementId }) : [];
   const fromRelationsPromise = listAllRelations(user, relTypes, { fromId: elementId });
@@ -521,13 +521,7 @@ export const storeFullLoadById = async (user, id, type = null) => {
 export const storeLoadByIdWithRefs = async (user, id, opts = {}) => {
   const { type = null } = opts;
   const dependencyTypes = [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP];
-  const instance = await loadByIdWithDependencies(user, id, type, { dependencyTypes, onlyMarking: false });
-  // TODO JRI FILES MIGRATION FOR CURRENT FILES
-  // if (instance) {
-  //   const filesList = await rawFilesListing(user, `import/${instance.entity_type}/${instance.id}/`);
-  //   instance.x_opencti_files = filesList.map((f) => f.id);
-  // }
-  return instance;
+  return loadByIdWithDependencies(user, id, type, { dependencyTypes, onlyMarking: false });
 };
 export const stixLoadById = async (user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(user, id, opts);
@@ -2079,6 +2073,7 @@ const upsertElementRaw = async (user, element, type, input) => {
       patchInputs.push(...patched.updatedInputs);
     }
   }
+  // Upsert relations
   if (isStixCoreRelationship(type)) {
     const basePatch = {};
     if (input.confidence && forceUpdate) {
@@ -2117,7 +2112,9 @@ const upsertElementRaw = async (user, element, type, input) => {
   if (!isEmptyField(input.file)) {
     const meta = { entity_id: element.internal_id };
     const file = await upload(user, `import/${element.entity_type}/${element.internal_id}`, input.file, meta);
-    const ins = { key: 'x_opencti_files', value: [file.uri], operation: UPDATE_OPERATION_ADD };
+    // TODO JRI Convert that to stream listening reaction.
+    // await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id); // Start import job
+    const ins = { key: 'x_opencti_files', value: [storeFileConverter(user, file)], operation: UPDATE_OPERATION_ADD };
     impactedInputs.push(ins);
     patchInputs.push(ins);
   }
@@ -2414,7 +2411,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     if (relationshipType === RELATION_REVOKED_BY) {
       // Because of entity merging, we can receive some revoked-by on the same internal id element
       // In this case we need to revoke the fromId stixId of the relation
-      // TODO
+      // TODO Handle RELATION_REVOKED_BY special case
     }
     const errorData = { from: input.fromId, to: input.toId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', errorData);
@@ -2608,7 +2605,7 @@ const buildEntityData = async (user, input, type, opts = {}) => {
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
     // Get statuses
-    // TODO JRI??? Find a way to prevent fetch every times (distributed configuration)
+    // TODO JRI Find a way to prevent fetch every times (distributed configuration)
     const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
       first: 1,
       orderBy: 'order',
@@ -2682,9 +2679,9 @@ const buildEntityData = async (user, input, type, opts = {}) => {
   if (!isEmptyField(input.file)) {
     const meta = { entity_id: created.internal_id };
     const file = await upload(user, `import/${created.entity_type}/${created.internal_id}`, input.file, meta);
+    // TODO JRI Convert that to stream listening reaction.
     // await uploadJobImport(user, file.id, file.metaData.mimetype, file.metaData.entity_id); // Start import job
-    // TODO JRI convert that to stream listening reaction.
-    created.x_opencti_files = [file.id];
+    created.x_opencti_files = [storeFileConverter(user, file)];
   }
   // Simply return the data
   return {

@@ -24,7 +24,7 @@ import { checkInstanceDiff } from '../utils/testStream';
 import { shutdownModules, startModules } from '../../src/modules';
 import { FROM_START_STR } from '../../src/utils/format';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { stixCoreObjectIdImportPush } from '../../src/domain/stixCoreObject';
+import { stixCoreObjectImportPush } from '../../src/domain/stixCoreObject';
 import { convertStoreToStix } from '../../src/database/stix-converter';
 
 const STAT_QUERY = `query stats {
@@ -81,7 +81,7 @@ const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
-describe.skip('Database sync testing', () => {
+describe('Database sync testing', () => {
   const checkPreSyncContent = async () => {
     const initObjectAggregation = await elAggregationCount(ADMIN_USER, 'Stix-Object', 'entity_type');
     const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
@@ -127,7 +127,7 @@ describe.skip('Database sync testing', () => {
     expect(diffElements.length).toBe(0);
   };
 
-  it(
+  it.skip(
     'Should python raw sync succeed',
     async () => {
       // Pre check
@@ -145,7 +145,7 @@ describe.skip('Database sync testing', () => {
     FIFTEEN_MINUTES
   );
 
-  it(
+  it.skip(
     'Should python live sync succeed',
     async () => {
       // Pre check
@@ -183,7 +183,7 @@ describe.skip('Database sync testing', () => {
         filename: 'DATA-TEST-STIX2_v2.json',
         mimetype: 'application/json',
       };
-      await stixCoreObjectIdImportPush(SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
+      await stixCoreObjectImportPush(SYSTEM_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7', file);
       // Need to create the synchronizer on the remote host
       const SYNC_CREATE = {
         input: {
@@ -279,7 +279,7 @@ describe.skip('Database sync testing', () => {
     );
   };
 
-  it(
+  it.skip(
     'Should backup/restore sync succeed',
     async () => {
       // Pre check

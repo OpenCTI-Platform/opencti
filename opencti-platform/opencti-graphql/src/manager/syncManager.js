@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import EventSource from 'eventsource';
 import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
+import * as jsonpatch from 'fast-json-patch';
 import conf, { logApp } from '../config/conf';
 import { createRelation, deleteElementById, internalLoadById, storeLoadById } from '../database/middleware';
 import { listEntities } from '../database/repository';
@@ -77,10 +78,11 @@ import { addVulnerability } from '../domain/vulnerability';
 import Queue from '../utils/queue';
 import { ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
-import { lockResource } from '../database/redis';
+import { EVENT_VERSION_V4, lockResource } from '../database/redis';
 import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { rawFilesListing } from '../database/minio';
 import { generateInternalType } from '../schema/schemaUtils';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 
@@ -96,6 +98,13 @@ const syncManagerInstance = (syncId) => {
   let eventSource;
   let syncElement;
   let run = true;
+  const handleEvent = (event) => {
+    const { type, data } = event;
+    const { data: stixData, context, version } = JSON.parse(data);
+    if (version === EVENT_VERSION_V4) {
+      eventsQueue.enqueue({ type, data: stixData, context });
+    }
+  };
   const startStreamListening = async () => {
     eventsQueue = new Queue();
     syncElement = await storeLoadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
@@ -106,12 +115,9 @@ const syncManagerInstance = (syncId) => {
       rejectUnauthorized: ssl,
       headers: { authorization: `Bearer ${token}` },
     });
-    eventSource.on('create', (d) => {
-      eventsQueue.enqueue(d);
-    });
-    eventSource.on('delete', (d) => {
-      eventsQueue.enqueue(d);
-    });
+    eventSource.on('create', (d) => handleEvent(d));
+    eventSource.on('update', (d) => handleEvent(d));
+    eventSource.on('delete', (d) => handleEvent(d));
     eventSource.on('connected', (d) => {
       connectionId = JSON.parse(d.data).connectionId;
     });
@@ -126,12 +132,12 @@ const syncManagerInstance = (syncId) => {
       const config = { headers: { authorization: `Bearer ${token}` } };
       if (currentDelay === lDelay && eventsQueue.getLength() > MAX_QUEUE_SIZE) {
         await axios.post(connectionManagement, { delay: hDelay }, config);
-        logApp.info(`Connection setup to use ${hDelay} delay`);
+        logApp.info(`[OPENCTI] Sync connection setup to use ${hDelay} delay`);
         return hDelay;
       }
       if (currentDelay === hDelay && eventsQueue.getLength() < MIN_QUEUE_SIZE) {
         await axios.post(connectionManagement, { delay: lDelay }, config);
-        logApp.info(`Connection setup to use ${lDelay} delay`);
+        logApp.info(`[OPENCTI] Sync connection setup to use ${lDelay} delay`);
         return lDelay;
       }
     }
@@ -142,14 +148,15 @@ const syncManagerInstance = (syncId) => {
     logApp.info(`[OPENCTI] Sync deleting element ${type} ${data.id}`);
     await deleteElementById(user, data.id, type);
   };
-  const handleFilesSync = async (user, elementFile, data) => {
-    const { token, uri } = syncElement;
-    const entityFiles = data.x_opencti_files || [];
-    const entityDirectory = `import/${data.x_opencti_type}/${elementFile.internal_id}/`;
+  const handleFilesSync = async (user, id, stix) => {
+    const { token } = syncElement;
+    const entityType = stix.extensions[STIX_EXT_OCTI].type;
+    const entityFiles = stix.extensions[STIX_EXT_OCTI].files ?? [];
+    const entityDirectory = `import/${entityType}/${id}/`;
     // Find the files we need to upload/update and files that need to be deleted.
     const currentFiles = await rawFilesListing(user, entityDirectory);
     const currentFileIds = currentFiles.map((c) => c.name);
-    const entityFileIds = entityFiles.map((c) => c.value);
+    const entityFileIds = entityFiles.map((c) => c.name);
     // Delete files when needed
     const filesToDelete = currentFileIds.filter((c) => !entityFileIds.includes(c));
     for (let deleteIndex = 0; deleteIndex < filesToDelete.length; deleteIndex += 1) {
@@ -159,22 +166,19 @@ const syncManagerInstance = (syncId) => {
     }
     // Add new files if needed
     const currentFileVersionIds = currentFiles.map((c) => `${c.name}-${c.metaData.version}`);
-    const entityFileVersionIds = entityFiles.map((c) => `${c.value}-${c.version}`);
+    const entityFileVersionIds = entityFiles.map((c) => `${c.name}-${c.version}`);
     const filesToUpload = entityFileVersionIds.filter((c) => !currentFileVersionIds.includes(c));
     for (let index = 0; index < filesToUpload.length; index += 1) {
       const fileToUploadId = filesToUpload[index];
-      const fileToUpload = R.find((c) => `${c.value}-${c.version}` === fileToUploadId, entityFiles);
-      const { uri: fileUri, value, mime_type: mimetype, version } = fileToUpload;
-      const fileStream = await axios.get(`${httpBase(uri)}storage/get/${fileUri}`, {
-        responseType: 'stream',
-        headers: { authorization: `Bearer ${token}` },
-      });
-      const file = { createReadStream: () => fileStream.data, filename: value, mimetype, version };
-      await stixCoreObjectImportPush(user, elementFile, file);
+      const fileToUpload = R.find((c) => `${c.name}-${c.version}` === fileToUploadId, entityFiles);
+      const { uri: fileUri, name, mime_type: mimetype, version } = fileToUpload;
+      const fileStream = await axios.get(fileUri, { responseType: 'stream', headers: { authorization: `Bearer ${token}` } });
+      const file = { createReadStream: () => fileStream.data, filename: name, mimetype, version };
+      await stixCoreObjectImportPush(user, id, file);
     }
   };
   const handleCreateEvent = async (user, data) => {
-    const type = generateInternalType(data);
+    const { type } = data.extensions[STIX_EXT_OCTI];
     const input = buildInputDataFromStix(data);
     // Then create the elements
     if (isStixCoreRelationship(type)) {
@@ -245,12 +249,12 @@ const syncManagerInstance = (syncId) => {
         throw UnsupportedError(`${type} not handle by synchronizer`);
       }
       // Handle files
-      await handleFilesSync(user, element, data);
+      await handleFilesSync(user, element.internal_id, data);
     } else if (isStixCyberObservable(type)) {
       logApp.info(`[OPENCTI] Sync creating cyber observable ${type} ${input.stix_id}`);
       const element = await addStixCyberObservable(user, input);
       // Handle files
-      await handleFilesSync(user, element, data);
+      await handleFilesSync(user, element.internal_id, data);
     } else {
       throw UnsupportedError(`${type} not handle by synchronizer`);
     }
@@ -274,13 +278,25 @@ const syncManagerInstance = (syncId) => {
         if (event) {
           try {
             currentDelay = manageBackPressure(sync, currentDelay);
-            const { type: eventType } = event;
-            const { data } = JSON.parse(event.data);
+            const { type: eventType, data, context } = event;
             if (eventType === 'delete') {
               await handleDeleteEvent(user, data);
             }
             if (eventType === 'create') {
               await handleCreateEvent(user, data);
+            }
+            if (eventType === 'update') {
+              // In case of update, if the standard id is impacted
+              // we need to apply modification on the previous id
+              // standard id will be regenerated according to the other changes
+              const idOperations = context.previous_patch.filter((patch) => patch.path === '/id');
+              if (idOperations.length > 0) {
+                const { newDocument: stixPreviousID } = jsonpatch.applyPatch(R.clone(data), idOperations);
+                await handleCreateEvent(user, stixPreviousID);
+              } else {
+                // If id not impacted just apply the data
+                await handleCreateEvent(user, data);
+              }
             }
             // Update the current state
             if (eventCount > STATE_UPDATE_SIZE) {

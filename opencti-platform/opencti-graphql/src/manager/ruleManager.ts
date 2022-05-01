@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { createStreamProcessor, lockResource } from '../database/redis';
+import { createStreamProcessor, EVENT_VERSION_V4, lockResource } from '../database/redis';
 import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
@@ -131,7 +131,7 @@ export const setRuleActivation = async (user: AuthUser, ruleId: string, active: 
 
 const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
   return {
-    version: '4',
+    version: EVENT_VERSION_V4,
     type,
     message: 'rule internal event',
     origin: RULE_MANAGER_USER,
@@ -257,10 +257,13 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
-  // TODO JRI??? Find a way to prevent fetch every times (distributed configuration)
+  // TODO JRI Find a way to prevent fetch every times (distributed configuration)
   const rules = forRules.length > 0 ? forRules : await getActivatedRules();
-  for (let index = 0; index < events.length; index += 1) {
-    const event = events[index];
+  // Keep only compatible events
+  const compatibleEvents = events.filter((e) => e.version === EVENT_VERSION_V4);
+  // Execute the events
+  for (let index = 0; index < compatibleEvents.length; index += 1) {
+    const event = compatibleEvents[index];
     const { type, data } = event;
     const internalId = data.extensions[STIX_EXT_OCTI].id;
     try {
@@ -283,7 +286,7 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
       if (type === EVENT_TYPE_UPDATE) {
         const updateEvent = event as UpdateEvent;
         const previousPatch = updateEvent.context.previous_patch;
-        const previousStix = jsonpatch.applyPatch<StixCoreObject>({ ...data }, previousPatch).newDocument;
+        const previousStix = jsonpatch.applyPatch<StixCoreObject>(R.clone(data), previousPatch).newDocument;
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
           // TODO Improve filtering definition to rely on attribute values

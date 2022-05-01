@@ -90,7 +90,6 @@ describe('Loaders', () => {
 });
 
 describe('Attribute updater', () => {
-  // TODO JRI HOW TO CHECK THE ES SCHEMA
   it.skip('should update fail for unknown attributes', async () => {
     const campaign = await elLoadById(ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
@@ -354,7 +353,6 @@ describe('Relations listing', () => {
     };
     const args = { relationFilter };
     const stixRelations = await listRelations(ADMIN_USER, 'stix-core-relationship', args);
-    // TODO Ask Julien
     expect(stixRelations.edges.length).toEqual(11);
     const relation = await elLoadById(ADMIN_USER, 'relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c');
     const argsWithRelationId = {

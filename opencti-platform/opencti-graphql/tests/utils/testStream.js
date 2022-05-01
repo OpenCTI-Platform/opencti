@@ -34,13 +34,10 @@ export const fetchStreamEvents = (uri, { from } = {}) => {
         }
       }, 5000);
     };
-    es.addEventListener('init-dependencies', (event) => handleEvent(event));
-    es.addEventListener('init-create', (event) => handleEvent(event));
     es.addEventListener('create', (event) => handleEvent(event));
     es.addEventListener('update', (event) => handleEvent(event));
     es.addEventListener('merge', (event) => handleEvent(event));
     es.addEventListener('delete', (event) => handleEvent(event));
-    es.addEventListener('sync', () => closeEventSource());
     es.onerror = (err) => reject(err);
   });
 };

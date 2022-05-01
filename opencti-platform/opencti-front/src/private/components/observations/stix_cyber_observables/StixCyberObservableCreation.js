@@ -216,11 +216,11 @@ const stixCyberObservableMutation = graphql`
     $WindowsRegistryKey: WindowsRegistryKeyAddInput
     $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
     $X509V3ExtensionsType: X509V3ExtensionsTypeAddInput
-    $XOpenCTIHostname: XOpenCTIHostnameAddInput
-    $XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput
-    $XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
-    $XOpenCTIText: XOpenCTITextAddInput
-    $XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
+    $Hostname: HostnameAddInput
+    $CryptographicKey: CryptographicKeyAddInput
+    $CryptocurrencyWallet: CryptocurrencyWalletAddInput
+    $Text: TextAddInput
+    $UserAgent: UserAgentAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -252,11 +252,11 @@ const stixCyberObservableMutation = graphql`
       WindowsRegistryKey: $WindowsRegistryKey
       WindowsRegistryValueType: $WindowsRegistryValueType
       X509V3ExtensionsType: $X509V3ExtensionsType
-      XOpenCTIHostname: $XOpenCTIHostname
-      XOpenCTICryptographicKey: $XOpenCTICryptographicKey
-      XOpenCTICryptocurrencyWallet: $XOpenCTICryptocurrencyWallet
-      XOpenCTIText: $XOpenCTIText
-      XOpenCTIUserAgent: $XOpenCTIUserAgent
+      Hostname: $Hostname
+      CryptographicKey: $CryptographicKey
+      CryptocurrencyWallet: $CryptocurrencyWallet
+      Text: $Text
+      UserAgent: $UserAgent
     ) {
       id
       entity_type

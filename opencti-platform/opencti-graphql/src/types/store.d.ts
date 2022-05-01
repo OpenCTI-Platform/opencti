@@ -24,7 +24,7 @@ import {
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
-  INPUT_VALUES
+  INPUT_VALUES,
 } from '../schema/stixCyberObservableRelationship';
 import {
   INPUT_CREATED_BY,
@@ -37,7 +37,7 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import type { AuthUser } from './user';
-import type { StixObject, StixId } from './stix-common';
+import type { StixObject, StixId, OrganizationReliability } from './stix-common';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -62,9 +62,8 @@ interface StoreInputOperation extends StoreInput {
 }
 
 interface StoreFile {
+  id: string;
   name: string;
-  value: string;
-  uri: string;
   version: string;
   mime_type: string;
 }
@@ -76,7 +75,10 @@ interface StoreBase {
   internal_id: string;
   entity_type: string;
   base_type: string;
-  x_opencti_files: Array<string>;
+  x_opencti_lastname: string;
+  x_opencti_firstname: string;
+  x_opencti_files: Array<StoreFile>;
+  x_opencti_aliases: Array<string>;
   x_opencti_stix_ids: Array<StixId>;
   x_opencti_inferences: Array<StoreRule> | undefined;
   created_at: Date;
@@ -231,6 +233,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   tool_version: string;
   opinion: 'strongly-disagree' | 'disagree' | 'neutral' | 'agree' | 'strongly-agree';
   x_mitre_id: string;
+  x_mitre_detection: string;
   x_opencti_color: string;
   kill_chain_name: string;
   phase_name: string;
@@ -238,9 +241,19 @@ interface BasicStoreEntity extends BasicStoreCommon {
   source_name: string;
   external_id: string;
   lastEventId: string;
+  organization_type: string;
+  reliability: OrganizationReliability;
+  x_opencti_attack_vector: string;
+  x_opencti_availability_impact: string;
+  x_opencti_base_severity: string;
+  x_opencti_confidentiality_impact: string;
+  x_opencti_integrity_impact: string;
+  x_opencti_main_observable_type: string;
   // rels
   [RELATION_CREATED_BY]: string;
   // Array
+  x_mitre_permissions_required: Array<string>;
+  x_mitre_platforms: Array<string>;
   received_lines: Array<string>;
   parent_types: Array<string>;
   report_types: Array<string>;
@@ -255,6 +268,9 @@ interface BasicStoreEntity extends BasicStoreCommon {
   infrastructure_types: Array<string>;
   threat_actor_types: Array<string>;
   tool_types: Array<string>;
+  architecture_execution_envs: Array<string>;
+  implementation_languages: Array<string>;
+  capabilities: Array<string>;
   // dates
   created: Date;
   published: Date;
@@ -267,6 +283,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   // boolean
   revoked: boolean;
   is_family: boolean;
+  x_opencti_detection: boolean;
   // number
   number_observed: number;
   confidence: number;
@@ -274,6 +291,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
   longitude: number;
   precision: number;
   x_opencti_order: number;
+  x_opencti_base_score: number;
+  x_opencti_score: number;
 }
 interface StoreEntity extends BasicStoreEntity, StoreCommon {
   [INPUT_CREATED_BY]: Array<BasicStoreEntity>;
@@ -333,6 +352,9 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   inhibit_any_policy: string;
   certificate_policies: string;
   policy_mappings: string;
+  name: string;
+  data: string;
+  data_type: string;
   // date
   attribute_date: Date;
   ctime: Date;
@@ -384,18 +406,19 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   environment_variables: object;
 }
 interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
+  [INPUT_CREATED_BY]: Array<BasicStoreEntity>;
   [INPUT_CONTAINS]: Array<BasicStoreObject>;
   [INPUT_BODY_MULTIPART]: Array<BasicStoreEntity>;
-  [INPUT_PARENT_DIRECTORY]: BasicStoreObject;
-  [INPUT_BODY_RAW]: BasicStoreObject;
-  [INPUT_SRC]: BasicStoreObject;
-  [INPUT_DST]: BasicStoreObject;
-  [INPUT_SRC_PAYLOAD]: BasicStoreObject;
-  [INPUT_DST_PAYLOAD]: BasicStoreObject;
-  [INPUT_ENCAPSULATED_BY]: BasicStoreObject;
-  [INPUT_CREATOR_USER]: BasicStoreObject;
-  [INPUT_IMAGE]: BasicStoreObject;
-  [INPUT_PARENT]: BasicStoreObject;
+  [INPUT_PARENT_DIRECTORY]: Array<BasicStoreObject>;
+  [INPUT_BODY_RAW]: Array<BasicStoreObject>;
+  [INPUT_SRC]: Array<BasicStoreObject>;
+  [INPUT_DST]: Array<BasicStoreObject>;
+  [INPUT_SRC_PAYLOAD]: Array<BasicStoreObject>;
+  [INPUT_DST_PAYLOAD]: Array<BasicStoreObject>;
+  [INPUT_ENCAPSULATED_BY]: Array<BasicStoreObject>;
+  [INPUT_CREATOR_USER]: Array<BasicStoreObject>;
+  [INPUT_IMAGE]: Array<BasicStoreObject>;
+  [INPUT_PARENT]: Array<BasicStoreObject>;
   [INPUT_CHILD]: Array<BasicStoreObject>;
   [INPUT_ENCAPSULATES]: Array<BasicStoreObject>;
   [INPUT_OPENED_CONNECTION]: Array<BasicStoreObject>;
@@ -404,10 +427,10 @@ interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_TO]: Array<BasicStoreObject>;
   [INPUT_RESOLVES_TO]: Array<BasicStoreObject>;
   [INPUT_BELONGS_TO]: Array<BasicStoreObject>;
-  [INPUT_SENDER]: BasicStoreObject;
-  [INPUT_RAW_EMAIL]: BasicStoreObject;
-  [INPUT_FROM]: BasicStoreObject;
-  [INPUT_CONTENT]: BasicStoreObject;
+  [INPUT_SENDER]: Array<BasicStoreObject>;
+  [INPUT_RAW_EMAIL]: Array<BasicStoreObject>;
+  [INPUT_FROM]: Array<BasicStoreObject>;
+  [INPUT_CONTENT]: Array<BasicStoreObject>;
   [INPUT_VALUES]: Array<StoreWindowsRegistryValueType>;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_EXTERNAL_REFS]: Array<StoreExternalReferences>;

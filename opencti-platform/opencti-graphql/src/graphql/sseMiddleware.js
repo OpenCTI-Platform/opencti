@@ -4,7 +4,7 @@ import { Promise } from 'bluebird';
 import LRU from 'lru-cache';
 import conf, { basePath, booleanConf, logApp } from '../config/conf';
 import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/user';
-import { createStreamProcessor } from '../database/redis';
+import { createStreamProcessor, EVENT_VERSION_V4 } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { findById, streamCollectionGroups } from '../domain/stream';
 import {
@@ -502,8 +502,9 @@ const createSeeMiddleware = () => {
                       if (isFullVisibleElement(missingInstance)) {
                         const missingData = convertStoreToStix(missingInstance);
                         const message = generateCreateMessage(missingInstance);
-                        const content = { data: missingData, message, version };
-                        channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_DEPENDENCIES, content);
+                        const origin = { referer: EVENT_TYPE_DEPENDENCIES };
+                        const content = { data: missingData, message, origin, version };
+                        channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, content);
                         eventIndex += 1;
                         await wait(channel.delay);
                         cache.set(missingData.id);
@@ -515,8 +516,9 @@ const createSeeMiddleware = () => {
                 // publish element
                 if (!cache.has(`${stixData.id}-${stixData.updated_at}`)) {
                   const message = generateCreateMessage(instance);
-                  const eventData = { data: stixData, message, version };
-                  channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_INIT, eventData);
+                  const origin = { referer: EVENT_TYPE_INIT };
+                  const eventData = { data: stixData, message, origin, version };
+                  channel.sendEvent(`${eventId}-${eventIndex}`, EVENT_TYPE_CREATE, eventData);
                   await wait(channel.delay);
                   cache.set(stixData.id);
                   cache.set(`${stixData.id}-${stixData.updated_at}`);
@@ -540,15 +542,15 @@ const createSeeMiddleware = () => {
         for (let index = 0; index < elements.length; index += 1) {
           const element = elements[index];
           const { id: eventId, event, data: eventData } = element;
-          const { type, data, version: eventVersion, context } = eventData;
+          const { type, data: stix, version: eventVersion, context } = eventData;
           // New stream support only v4 events.
-          if (eventVersion === '4') {
+          if (eventVersion === EVENT_VERSION_V4) {
             // Check for inferences
-            const isInferredData = data.extensions[STIX_EXT_OCTI].is_inferred;
+            const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
             if (!isInferredData || (isInferredData && withInferences)) {
-              const isCurrentlyVisible = await isInstanceMatchFilters(data, streamFilters, filterCache);
+              const isCurrentlyVisible = await isInstanceMatchFilters(stix, streamFilters, filterCache);
               if (type === EVENT_TYPE_UPDATE) {
-                const previous = jsonpatch.applyPatch({ ...data }, context.previous_patch).newDocument;
+                const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), context.previous_patch);
                 const isPreviouslyVisible = await isInstanceMatchFilters(previous, streamFilters, filterCache);
                 if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                   client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
@@ -564,9 +566,10 @@ const createSeeMiddleware = () => {
                   client.sendEvent(eventId, event, eventData);
                 }
               }
+              await wait(channel.delay);
             }
             // Delete eventual filtering cache
-            filterCache.delete(data.extensions[STIX_EXT_OCTI].id);
+            filterCache.delete(stix.extensions[STIX_EXT_OCTI].id);
           }
         }
       });

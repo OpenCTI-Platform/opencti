@@ -1,5 +1,6 @@
 import type { StixDomainObject, StixId, StixKillChainPhase, StixOpenctiExtension, StixMitreExtension } from './stix-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI } from './stix-extensions';
+import { OrganizationReliability, StixOpenctiExtensionSDO } from './stix-common';
 
 // Attack Pattern Specific Properties
 // name, description, aliases, kill_chain_phases
@@ -31,6 +32,10 @@ interface StixCourseOfAction extends StixDomainObject {
   name: string; // optional
   description: string; // optional
   // action - RESERVED
+  extensions: {
+    [STIX_EXT_OCTI] : StixOpenctiExtension
+    [STIX_EXT_MITRE] : StixMitreExtension
+  };
 }
 
 // TODO Add support for Grouping
@@ -44,6 +49,12 @@ interface StixGrouping extends StixDomainObject {
 }
 
 // Identity Specific Properties
+interface StixIdentityExtension extends StixOpenctiExtension {
+  firstname: string;
+  lastname: string;
+  organization_type: string;
+  reliability: OrganizationReliability;
+}
 // name, description, roles, identity_class, sectors, contact_information
 interface StixIdentity extends StixDomainObject {
   name: string; // optional
@@ -52,18 +63,32 @@ interface StixIdentity extends StixDomainObject {
   identity_class: string; // 'individual' | 'group' | 'system' | 'organization' | 'class' | 'unknown'; // optional
   sectors: Array<string>; // optional
   contact_information: string; // optional
+  extensions: {
+    [STIX_EXT_OCTI]: StixIdentityExtension;
+  };
 }
 
 // Incident Specific Properties
 // name, description
+// Not in https://docs.oasis-open.org/cti/stix/v2.1
 interface StixIncident extends StixDomainObject {
   name: string;
   description: string; // optional
-  first_seen: Date; // Not in https://docs.oasis-open.org/cti/stix/v2.1
-  last_seen: Date; // Not in https://docs.oasis-open.org/cti/stix/v2.1
+  first_seen: Date;
+  last_seen: Date;
+  objective: string;
+  aliases: Array<string>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
+  };
 }
 
 // Indicator Specific Properties
+interface StixIndicatorExtension extends StixOpenctiExtension {
+  detection: boolean;
+  score: number;
+  main_observable_type: string;
+}
 // name, description, indicator_types, pattern, pattern_type, pattern_version, valid_from, valid_until, kill_chain_phases
 interface StixIndicator extends StixDomainObject {
   name: string; // optional
@@ -75,6 +100,10 @@ interface StixIndicator extends StixDomainObject {
   valid_from : Date;
   valid_until : Date; // optional
   kill_chain_phases: Array<StixKillChainPhase>; // optional
+  extensions: {
+    [STIX_EXT_OCTI]: StixIndicatorExtension;
+    [STIX_EXT_MITRE] : StixMitreExtension
+  };
 }
 
 // infrastructure Specific Properties
@@ -131,9 +160,9 @@ interface StixMalware extends StixDomainObject {
   kill_chain_phases: Array<StixKillChainPhase>; // optional
   first_seen: Date; // optional
   last_seen: Date; // optional
-  // architecture_execution_envs: Array<string>; // optional
-  // implementation_languages: Array<string>; // optional
-  // capabilities: Array<string>; // optional
+  architecture_execution_envs: Array<string>; // optional
+  implementation_languages: Array<string>; // optional
+  capabilities: Array<string>; // optional
   // operating_system_refs: Array<StixId>; // optional
   // sample_refs: Array<StixId>; // optional
 }
@@ -230,8 +259,19 @@ interface StixTool extends StixDomainObject {
 }
 
 // Vulnerability Specific Properties
+interface StixVulnerabilityExtension extends StixOpenctiExtension {
+  attack_vector: string;
+  availability_impact: string;
+  base_score: number;
+  base_severity: string;
+  confidentiality_impact: string;
+  integrity_impact: string;
+}
 // name, description
 interface StixVulnerability extends StixDomainObject {
   name: string;
   description: string; // optional
+  extensions: {
+    [STIX_EXT_OCTI]: StixVulnerabilityExtension;
+  };
 }

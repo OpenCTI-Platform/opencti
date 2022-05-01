@@ -9,7 +9,7 @@ const observableExtractors = [
   { type: C.ENTITY_HASHED_OBSERVABLE_STIX_FILE, hashType: 'SHA-1', regex: /'[a-fA-F0-9]{40}'/g },
   { type: C.ENTITY_HASHED_OBSERVABLE_STIX_FILE, hashType: 'SHA-256', regex: /'[a-fA-F0-9]{64}'/g },
   { type: C.ENTITY_HASHED_OBSERVABLE_STIX_FILE, hashType: 'SHA-512', regex: /'[a-fA-F0-9]{128}'/g },
-  { type: C.ENTITY_X_OPENCTI_HOSTNAME, regex: /'(?:(?:(?:[a-zA-z-]+):\/{1,3})?(?:[a-zA-Z0-9])(?:[a-zA-Z0-9-_.]){1,61}(?:\.[a-zA-Z]{2,})+|\[(?:(?:(?:[a-fA-F0-9]){1,4})(?::(?:[a-fA-F0-9]){1,4}){7}|::1|::)\]|(?:(?:[0-9]{1,3})(?:\.[0-9]{1,3}){3}))(?::[0-9]{1,5})?'/g },
+  { type: C.ENTITY_HOSTNAME, regex: /'(?:(?:(?:[a-zA-z-]+):\/{1,3})?(?:[a-zA-Z0-9])(?:[a-zA-Z0-9-_.]){1,61}(?:\.[a-zA-Z]{2,})+|\[(?:(?:(?:[a-fA-F0-9]){1,4})(?::(?:[a-fA-F0-9]){1,4}){7}|::1|::)\]|(?:(?:[0-9]{1,3})(?:\.[0-9]{1,3}){3}))(?::[0-9]{1,5})?'/g },
   { type: C.ENTITY_EMAIL_ADDR, regex: /'[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*'/g }
 ];
 
@@ -27,13 +27,13 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
             });
           }
           break;
-        case C.ENTITY_X_OPENCTI_HOSTNAME:
+        case C.ENTITY_HOSTNAME:
           for (let i = 0; i < groups.length; i += 1) {
             const value = groups[i].replaceAll("'", '');
             // If this is not an IP address
             if (!/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?:\/([0-9]|[1-2][0-9]|3[0-2]))?$/.test(value)) {
               observables.push({
-                type: (value.match(/\./g) || []).length === 1 ? C.ENTITY_DOMAIN_NAME : C.ENTITY_X_OPENCTI_HOSTNAME,
+                type: (value.match(/\./g) || []).length === 1 ? C.ENTITY_DOMAIN_NAME : C.ENTITY_HOSTNAME,
                 value,
               });
             }
@@ -82,7 +82,7 @@ export const checkObservableSyntax = (observableType, observableData) => {
         if (!sha512checker.test(observableData.hashes['SHA-512'])) return 'Valid SHA-512 hash';
       }
       break;
-    case C.ENTITY_X_OPENCTI_HOSTNAME:
+    case C.ENTITY_HOSTNAME:
       const hostnameChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-_]*[A-Za-z0-9])$/;
       if (!hostnameChecker.test(observableData.value)) return 'Valid hostname';
       break;
