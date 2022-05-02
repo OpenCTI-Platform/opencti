@@ -222,10 +222,8 @@ class EntityTaskCardComponent extends Component {
                   style={{ marginTop: '13px' }}
                   gutterBottom={true}
                 >
-                  {t('Author')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
                 </Typography>
               </Grid>
             </Grid>

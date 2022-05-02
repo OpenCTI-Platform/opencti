@@ -109,7 +109,6 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Milestone')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
