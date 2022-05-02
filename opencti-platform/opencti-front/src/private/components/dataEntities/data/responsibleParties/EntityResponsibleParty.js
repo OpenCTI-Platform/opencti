@@ -110,6 +110,7 @@ class EmtityResponsiblePartyComponent extends Component {
         <ResponsiblePartyEntityEditionContainer
           displayEdit={this.state.displayEdit}
           history={history}
+          responsibleParty={responsibleParty}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </>

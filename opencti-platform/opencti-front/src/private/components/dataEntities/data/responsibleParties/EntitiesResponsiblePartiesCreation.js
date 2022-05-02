@@ -167,6 +167,9 @@ class EntitiesResponsiblePartiesCreation extends Component {
               name: '',
               created: null,
               modified: null,
+              role: '',
+              parties: [],
+              marking: [],
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -345,7 +348,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="marking"
+                          name="parties"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -394,7 +397,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="marking"
+                        name="role"
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}

@@ -99,6 +99,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 {t('Lorem Ipsum')}
+                {/* {responsibleParty.name} */}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -110,6 +111,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 {t('Jun 3, 2022')}
+                 {/* {responsibleParty.created} */}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -144,7 +146,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {responsibleParty.id}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
