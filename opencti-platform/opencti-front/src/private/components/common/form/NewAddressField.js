@@ -9,6 +9,7 @@ import AddIcon from '@material-ui/icons/Add';
 import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
 import InputAdornment from '@material-ui/core/InputAdornment';
+import Grid from '@material-ui/core/Grid';
 import ApartmentOutlined from '@material-ui/icons/ApartmentOutlined';
 import HomeOutlinedIcon from '@material-ui/icons/HomeOutlined';
 import CallIcon from '@material-ui/icons/Call';
@@ -35,7 +36,7 @@ const styles = (theme) => ({
     borderRadius: 6,
   },
   dataEntities: {
-    width: '150px',
+    width: '100%',
   },
   dataSelect: {
     display: 'flex',
@@ -73,7 +74,7 @@ const styles = (theme) => ({
   },
 });
 
-class DataAddressField extends Component {
+class NewAddressField extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,9 +87,9 @@ class DataAddressField extends Component {
   }
 
   handleAddAddress() {
-    if (!this.props.validation.test(this.state.value)) {
-      return this.setState({ error: true });
-    }
+    // if (!this.props.validation.test(this.state.value)) {
+    //   return this.setState({ error: true });
+    // }
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
@@ -150,7 +151,7 @@ class DataAddressField extends Component {
                   </div>
                   <div style={{ display: 'flex' }}>
                     <IconButton
-                      // onClick={this.handleEditionAddress.bind(this, key)}
+                    // onClick={this.handleEditionAddress.bind(this, key)}
                     >
                       <Edit />
                     </IconButton>
@@ -172,35 +173,49 @@ class DataAddressField extends Component {
           <DialogContent>
             {t(`Add or Edit ${title}`)}
           </DialogContent>
-          <DialogContent style={{ overflow: 'hidden', display: 'flex', alignItems: 'end' }}>
-            <div style={{ marginRight: '20px' }}>
-              <FormControl
-                size='small'
-                fullWidth={true}
-                className={classes.dataEntities}
-              >
-                <InputLabel>
-                  Usage Type
-                </InputLabel>
-                <Select
-                  value={this.state.selectedMode}
-                  onChange={this.handleChangeMode.bind(this)}
-                  className={classes.dataSelect}
+          <DialogContent>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={12}>
+                <FormControl
+                  size='small'
+                  fullWidth={true}
+                  className={classes.dataEntities}
                 >
-                  <MenuItem value='office'><ApartmentOutlined />Office</MenuItem>
-                  <MenuItem value='mobile'><HomeOutlinedIcon />Mobile</MenuItem>
-                  <MenuItem value='home'><CallIcon />Home</MenuItem>
-                </Select>
-              </FormControl>
-            </div>
-            <TextField
-              error={error}
-              helperText={error ? helperText : ''}
-              onChange={(event) => this.setState({ value: event.target.value })}
-              onFocus={() => this.setState({ error: false })}
-              fullWidth={true}
-              value={this.state.value}
-            />
+                  <InputLabel>
+                    Usage Type
+                  </InputLabel>
+                  <Select
+                    value={this.state.selectedMode}
+                    onChange={this.handleChangeMode.bind(this)}
+                    className={classes.dataSelect}
+                  >
+                    <MenuItem value='office'><ApartmentOutlined />Office</MenuItem>
+                    <MenuItem value='mobile'><HomeOutlinedIcon />Mobile</MenuItem>
+                    <MenuItem value='home'><CallIcon />Home</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <TextField
+                  error={error}
+                  helperText={error ? helperText : ''}
+                  onChange={(event) => this.setState({ value: event.target.value })}
+                  onFocus={() => this.setState({ error: false })}
+                  fullWidth={true}
+                  value={this.state.value}
+                />
+              </Grid>
+              <Grid item={true} xs={6}>
+                <TextField
+                  error={error}
+                  helperText={error ? helperText : ''}
+                  onChange={(event) => this.setState({ value: event.target.value })}
+                  onFocus={() => this.setState({ error: false })}
+                  fullWidth={true}
+                  value={this.state.value}
+                />
+              </Grid>
+            </Grid>
           </DialogContent>
           <DialogActions className={classes.dialogAction}>
             <Button
@@ -223,7 +238,7 @@ class DataAddressField extends Component {
   }
 }
 
-DataAddressField.propTypes = {
+NewAddressField.propTypes = {
   name: PropTypes.string,
   device: PropTypes.object,
   classes: PropTypes.object,
@@ -231,4 +246,4 @@ DataAddressField.propTypes = {
   fldt: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(DataAddressField);
+export default compose(inject18n, withStyles(styles))(NewAddressField);

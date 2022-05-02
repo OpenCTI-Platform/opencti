@@ -35,11 +35,35 @@ class EmtityPartyComponent extends Component {
     this.state = {
       displayEdit: false,
       openDataCreation: false,
+      radioButtonValue: 'locations',
+      openAddress: false,
     };
   }
 
   handleDisplayEdit() {
     this.setState({ displayEdit: !this.state.displayEdit });
+    if(this.state.displayEdit === false){
+      this.setState({ radioButtonValue: 'locations' });
+    }
+  }
+
+  handleOpenAddress() {
+    this.setState({ openAddress: !this.state.openAddress });
+    if(this.state.openAddress === false){
+      this.setState({ radioButtonValue: 'locations' });
+    }
+  }
+
+  handleChangeRadioButton(event) {
+    if(event.target.value === 'address'){
+      this.handleOpenAddress();
+      this.handleDisplayEdit();
+    }
+    if(event.target.value === 'locations'){
+      this.handleOpenAddress();
+      this.handleDisplayEdit();
+    }
+    this.setState({ radioButtonValue: event.target.value });
   }
 
   handleOpenNewCreation() {
@@ -108,7 +132,11 @@ class EmtityPartyComponent extends Component {
           history={history}
         />
         <PartyEntityEditionContainer
+          handleChangeRadioButton={this.handleChangeRadioButton.bind(this)}
+          radioButtonValue={this.state.radioButtonValue}
           displayEdit={this.state.displayEdit}
+          openAddress={this.state.openAddress}
+          handleOpenAddress={this.handleOpenAddress.bind(this)}
           history={history}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
