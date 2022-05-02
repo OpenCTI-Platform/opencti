@@ -4,15 +4,19 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Entities from './Entities';
 import RolesEntities from './data/Roles/RolesEntities';
+import RolesTasks from './data/tasks/TasksEntities';
 import RolesDataSource from './data/Roles/RolesDataSource';
+import TasksDataSource from './data/tasks/TasksDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
+import RootTask from './data/tasks/Root';
 
 class Root extends Component {
   render() {
     const { me } = this.props;
     return (
       <Switch>
+        {/* Entities Section */}
         <BoundaryRoute
           exact
           path="/data"
@@ -30,17 +34,33 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
+          path="/data/entities/tasks"
+          component={RolesTasks}
+        />
+        <BoundaryRoute
+          path="/data/entities/roles/:roleId"
+          render={(routeProps) => <RootRole {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          path="/data/entities/tasks/:taskId"
+          render={(routeProps) => <RootTask {...routeProps} me={me} />}
+        />
+
+        {/* Data Source Section */}
+        <BoundaryRoute
+          exact
           path="/data/data source/roles"
           component={RolesDataSource}
         />
         <BoundaryRoute
           exact
-          path="/data/data source"
-          component={DataSources}
+          path="/data/data source/tasks"
+          component={TasksDataSource}
         />
         <BoundaryRoute
-          path="/data/entities/roles/:roleId"
-          render={(routeProps) => <RootRole {...routeProps} me={me} />}
+          exact
+          path="/data/data source"
+          component={DataSources}
         />
         {/* <BoundaryRoute
           path="/data/data source/:dataSourceId"

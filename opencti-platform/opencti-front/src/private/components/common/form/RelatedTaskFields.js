@@ -215,7 +215,6 @@ class RelatedTaskFields extends Component {
           component={SelectField}
           name={name}
           label={label}
-          multiple={multiple}
           fullWidth={true}
           containerstyle={containerstyle}
           variant={variant}
