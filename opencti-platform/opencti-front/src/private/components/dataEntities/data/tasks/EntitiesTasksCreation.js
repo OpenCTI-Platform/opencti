@@ -30,6 +30,14 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
+import TaskType from '../../../common/form/TaskType';
+import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
+import ResourceType from '../../../common/form/ResourceType';
+import AssociatedActivities from '../../../common/form/AssociatedActivities';
+import ResponsibleParties from '../../../common/form/ResponsibleParties';
+import Dependencies from '../../../common/form/Dependencies';
+import ResourceNameField from '../../../common/form/ResourceNameField';
+import ResourceTypeField from '../../../common/form/ResourceTypeField';
 
 const styles = (theme) => ({
   dialogClosebutton: {
@@ -81,6 +89,10 @@ class EntitiesTasksCreation extends Component {
       open: false,
       onSubmit: false,
       displayCancel: false,
+      resourceName: '',
+      responsible_roles: [],
+      associated_activities: [],
+      timing: {},
     };
   }
 
@@ -96,9 +108,42 @@ class EntitiesTasksCreation extends Component {
     this.setState({ open: true });
   }
 
+  handleResourceTypeFieldChange(resourceType) {
+    this.setState({ resourceName: resourceType });
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = R.pipe(
-      R.assoc('name', values.name),
+    if (values.responsible_roles.length > 0) {
+      this.setState({
+        responsible_roles: values.responsible_roles.map((value) => (
+          { role: value }
+        )),
+      });
+    }
+    if (values.associated_activities.length > 0) {
+      this.setState({
+        associated_activities: values.associated_activities.map((value) => (
+          { 'activity_id': value }
+        )),
+      });
+    }
+    if (values.start_date && values.end_date) {
+      this.setState({
+        timing: {
+          within_date_range: {
+            start_date: values.start_date === null ? null : parse(values.start_date),
+            end_date: values.end_date === null ? null : parse(values.end_date),
+          }
+        },
+      })
+    }
+    const finalValues = pipe(
+      dissoc('start_date'),
+      dissoc('end_date'),
+      dissoc('resource_type'),
+      dissoc('resource'),
+      assoc('timing', this.state.timing),
+      assoc('responsible_roles', this.state.responsible_roles),
     )(values);
     CM(environmentDarkLight, {
       mutation: entitiesTasksCreationMutation,
@@ -137,7 +182,7 @@ class EntitiesTasksCreation extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, resourceName: '', fieldName: '' });
   }
 
   handleSubmit() {
@@ -169,8 +214,19 @@ class EntitiesTasksCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               name: '',
+              description: '',
+              task_type: '',
               created: null,
               modified: null,
+              associated_activities: [],
+              related_tasks: [],
+              subjects: [],
+              start_date: null,
+              end_date: null,
+              resource_type: [],
+              resource_name: [],
+              responsible_parties: [],
+              dependencies: []
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -250,13 +306,12 @@ class EntitiesTasksCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="marking"
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
+                      <TaskType
+                          name="task_type"
+                          fullWidth={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid xs={12} item={true}>
@@ -304,7 +359,7 @@ class EntitiesTasksCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={DatePickerField}
-                          name="created"
+                          name="start_date"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -330,11 +385,12 @@ class EntitiesTasksCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <ResourceTypeField
+                          name='resource_type'
                           fullWidth={true}
+                          variant='outlined'
+                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
+                          type='hardware'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -354,11 +410,11 @@ class EntitiesTasksCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <RelatedTaskFields
+                          name="related_tasks"
                           fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -378,11 +434,11 @@ class EntitiesTasksCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <RelatedTaskFields
+                          name="responsible_roles"
                           fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -406,7 +462,7 @@ class EntitiesTasksCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={DatePickerField}
-                          name="modified"
+                          name="end_date"
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -432,11 +488,12 @@ class EntitiesTasksCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <ResourceNameField
+                          name='resource'
+                          resourceTypename={this.state.resourceName}
                           fullWidth={true}
+                          variant='outlined'
+                          type='hardware'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -456,11 +513,11 @@ class EntitiesTasksCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <RelatedTaskFields
+                          name="associated_activities"
                           fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
@@ -480,11 +537,11 @@ class EntitiesTasksCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          variant='outlined'
-                          name="marking"
+                        <RelatedTaskFields
+                          name="task_dependencies"
                           fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />

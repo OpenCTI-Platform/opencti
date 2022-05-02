@@ -98,7 +98,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {task.name}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -142,7 +142,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('Related Tasks')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Task Name 1')}
+                {task.related_tasks.name}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -155,7 +155,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {task.id}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -166,7 +166,7 @@ class EntityTaskDetailsComponent extends Component {
                   {t('End Date')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {task.modified}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -214,7 +214,7 @@ class EntityTaskDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {t('Lorem Ipsum')}
+                    {task.description}
                   </div>
                 </div>
               </div>
@@ -276,6 +276,14 @@ const EntityTaskDetails = createFragmentContainer(
           color
           entity_type
           description
+        }
+        related_tasks {
+          id
+          name
+        }
+        associated_activities {
+          id
+          entity_type
         }
       }
     `,
