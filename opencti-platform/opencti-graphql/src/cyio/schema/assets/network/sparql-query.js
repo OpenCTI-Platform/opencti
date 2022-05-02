@@ -47,6 +47,8 @@ const networkAssetReducer = (item) => {
     ...(item.vendor_name && {vendor_name: item.vendor_name}),
     ...(item.version && {version: item.version}),
     ...(item.release_date && {release_date: item.release_date}),
+    ...(item.implementation_point && {implementation_point: item.implementation_point}),
+    ...(item.operational_status && {operational_status: item.operational_status}),
     // Network
     ...(item.network_id && {network_id: item.network_id}),
     ...(item.network_name && {network_name: item.network_name}),
@@ -162,7 +164,7 @@ export const insertQuery = (propValues) => {
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => networkPredicateMap.hasOwnProperty(propPair[0]))
     .map((propPair) => networkPredicateMap[propPair[0]].binding(iri, propPair[1]))
-    .join('.\n      ')
+    .join(' .\n      ')
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
