@@ -261,7 +261,7 @@ export const formatPath = (pathToFormat) => {
 };
 
 export const configureCA = (certificates) => {
-  if (certificates.length) {
+  if (certificates && certificates.length) {
     return { ca: certificates };
   }
   // eslint-disable-next-line no-restricted-syntax
