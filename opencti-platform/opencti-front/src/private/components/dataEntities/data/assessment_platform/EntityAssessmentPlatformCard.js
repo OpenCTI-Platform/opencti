@@ -154,7 +154,7 @@ class EntityAssessmentPlatformCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {/* {node.entity_type && node.entity_type} */}
+                {node.entity_type && node.entity_type}
               </div>
               <Grid
                 item={true}
@@ -225,7 +225,8 @@ class EntityAssessmentPlatformCardComponent extends Component {
                   {t('Author')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
+                  {node.remarks.authors}
+                  {/* {t('Lorem Ipsum')} */}
                 </Typography>
               </Grid>
             </Grid>
@@ -269,6 +270,7 @@ const EntityAssessmentPlatformCardFragment = createFragmentContainer(
       fragment EntityAssessmentPlatformCard_node on AssessmentPlatform {
         __typename
         id
+        entity_type
         description
         name
         created

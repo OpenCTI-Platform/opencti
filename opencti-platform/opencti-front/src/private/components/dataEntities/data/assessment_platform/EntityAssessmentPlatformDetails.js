@@ -98,7 +98,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {assessmentPlatform.name}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -109,7 +109,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Jun 3, 2022')}
+                {assessmentPlatform.created}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -120,7 +120,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('User Component')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Component Name')}
+                {assessmentPlatform.uses_components.name}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -133,7 +133,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {assessmentPlatform.id}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -144,7 +144,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {assessmentPlatform.modified}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -159,7 +159,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {t('Lorem Ipsum')}
+                  {assessmentPlatform.description}
                   </div>
                 </div>
               </div>
@@ -210,10 +210,15 @@ const EntityAssessmentPlatformDetails = createFragmentContainer(
       fragment EntityAssessmentPlatformDetails_assessmentPlatform on AssessmentPlatform {
         __typename
         id
+        entity_type
         created
         modified
         name
         description
+        remarks {
+          id
+          authors
+        }
         labels {
           __typename
           id
@@ -221,6 +226,10 @@ const EntityAssessmentPlatformDetails = createFragmentContainer(
           color
           entity_type
           description
+        }
+        uses_components {
+          id
+          name
         }
       }
     `,

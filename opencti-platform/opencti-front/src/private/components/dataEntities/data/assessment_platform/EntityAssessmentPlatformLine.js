@@ -90,20 +90,20 @@ class EntityAssessmentPlatformLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.type.width }}
               >
-                {/* {node.entity_type
-                  && <ItemIcon type={node.entity_type} />} */}
+                {node.entity_type
+                  && <ItemIcon type={node.entity_type} />}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {/* {node.name && node.name} */}
+                {node.name && node.name}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.author.width }}
               >
-                {/* {node.entity_type && node.entity_type} */}
+                {node.entity_type && node.entity_type}
               </div>
               <div
                 className={classes.bodyItem}
@@ -119,13 +119,13 @@ class EntityAssessmentPlatformLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.creation_date.width }}
               >
-                {/* {node.created && fd(node.created)} */}
+                {node.created && fd(node.created)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.marking.width }}
               >
-                {/* {node?.parent_types && t(node.parent_types)} */}
+                {node?.parent_types && t(node.parent_types)}
               </div>
             </div>
           }
@@ -159,6 +159,7 @@ const EntityAssessmentPlatformLineFragment = createFragmentContainer(
       fragment EntityAssessmentPlatformLine_node on AssessmentPlatform {
         __typename
         id
+        entity_type
         description
         name
         created

@@ -401,6 +401,7 @@ class AssessmentPlatformsEntities extends Component {
           history={this.props.history}
           assessmentPlatformId={this.state.selectedAssessPlatformId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+          assessmentPlatform={this.props}
         />
       </div>
     );
