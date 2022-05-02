@@ -153,7 +153,10 @@ const originResolvers = {
     createOrigin: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
       // Setup to handle embedded objects to be created
       let tasks, actors;
-      if (input.origin_actors !== undefined) actors = input.origin_actors;
+      if (input.origin_actors !== undefined) {
+        if (input.origin_actors.length === 0) throw new UserInputError(`No origin of the Risk Response provided.`)
+        actors = input.origin_actors;
+      }
 
       if (input.related_tasks !== undefined && input.related_tasks !== null) {
 				// attempt to convert task's id to IRI
@@ -178,6 +181,45 @@ const originResolvers = {
 				if (taskIris.length > 0) input.related_tasks = taskIris;
 			}
 
+      // create any Actors supplied and attach them to the Origin
+      let sparqlQuery, result;
+      for (let actor of actors) {
+        // check to see if the referenced actor exists and get its IRI
+        sparqlQuery = selectObjectIriByIdQuery( actor.actor_ref, actor.actor_type);
+        try {
+          result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select Object",
+            singularizeSchema
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+        if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.actor_ref}`);
+        actor.actor_ref = result[0].iri;
+
+        // if a role reference was provided
+        if (actor.role_ref !== undefined) {
+          // check if the role reference exists and get its IRI
+          sparqlQuery = selectObjectIriByIdQuery( actor.role_ref, 'role');
+          try {
+            result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.role_ref}`);
+          actor.role_ref = result[0].iri;
+        }
+      }
+
       // create the Origin
       const {iri, id, query} = insertOriginQuery(input);
       try {
@@ -190,10 +232,9 @@ const originResolvers = {
         console.log(e)
         throw e
       }
-
-      // create any Actors supplied and attach them to the Origin
-      if (actors !== undefined && actors !== null ) {
-        // create the Origin
+      
+      if (actors.length > 0) {
+      // create the Actors
         const { actorIris, query } = insertActorsQuery( actors );
         try {
           await dataSources.Stardog.create({
@@ -205,7 +246,6 @@ const originResolvers = {
           console.log(e)
           throw e
         }
-
         // attach Actor to the Origin
         const actorAttachQuery = attachToOriginQuery(id, 'origin_actors', actorIris );
         try {

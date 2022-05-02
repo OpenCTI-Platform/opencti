@@ -1,3 +1,4 @@
+import { UserInputError } from "apollo-server-express";
 import {byIdClause, optionalizePredicate, parameterizePredicate, buildSelectVariables, generateId, OASIS_SCO_NS} from "../../utils.js";
 
 const predicateBody = `

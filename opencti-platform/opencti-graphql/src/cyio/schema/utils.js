@@ -184,22 +184,25 @@ export const buildSelectVariables = (predicateMap, selects) => {
 }
 
 export const updateQuery = (iri, type, input, predicateMap) => {
-  let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [];
+  let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [], replacementPredicate;
   for(const {key, value, operation} of input) {
     if (!predicateMap.hasOwnProperty(key)) continue;
     for(const itr of value) {
-      const predicate = predicateMap[key].binding(`<${iri}>`, itr);
+      const predicate = predicateMap[key].binding(`<${iri}>`, itr) + ' .';
       switch (operation) {
         case UpdateOps.ADD:
+          if (insertPredicates.includes(predicate)) continue;
           insertPredicates.push(predicate);
           break;
         case UpdateOps.REMOVE:
+          if (deletePredicates.includes(predicate)) continue;
           deletePredicates.push(predicate);
           break;
         case UpdateOps.REPLACE:
         default:    // replace is the default behavior when the operation is not supplied.
-          insertPredicates.push(predicate);
-          replaceBindingPredicates.push(predicateMap[key].binding(`<${iri}>`))
+          replacementPredicate = predicateMap[key].binding(`<${iri}>`) + ' .';
+          if (!insertPredicates.includes(predicate)) insertPredicates.push(predicate);
+          if (!replaceBindingPredicates.includes(replacementPredicate)) replaceBindingPredicates.push(replacementPredicate)
           break;
         }
     }

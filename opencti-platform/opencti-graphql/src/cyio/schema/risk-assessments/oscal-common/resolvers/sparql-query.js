@@ -83,7 +83,7 @@ export function getReducer(type) {
       throw new Error(`Unsupported reducer type ' ${type}'`)
   }
 }
-const externalIdentifierReducer = (item) => {
+export const externalIdentifierReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'external-identifier';
@@ -96,7 +96,7 @@ const externalIdentifierReducer = (item) => {
     ...(item.identifier && {identifier: item.identifier}),
   }
 }
-const oscalLocationReducer = (item) => {
+export const oscalLocationReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'oscal-location';
@@ -124,7 +124,7 @@ const oscalLocationReducer = (item) => {
   }
 
 }
-const oscalPartyReducer = (item) => {
+export const oscalPartyReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'oscal-party';
@@ -155,7 +155,7 @@ const oscalPartyReducer = (item) => {
     ...(item.job_title && {job_title: item.job_title}),
   }
 }
-const oscalResponsiblePartyReducer = (item) => {
+export const oscalResponsiblePartyReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'oscal-responsible-party';
@@ -174,7 +174,7 @@ const oscalResponsiblePartyReducer = (item) => {
     ...(item.parties && {parties_iri: item.parties}),
   }
 }
-const oscalRoleReducer = (item) => {
+export const oscalRoleReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'oscal-role';

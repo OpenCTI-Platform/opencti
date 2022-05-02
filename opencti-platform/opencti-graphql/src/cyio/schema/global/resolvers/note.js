@@ -164,11 +164,20 @@ const cyioNoteResolvers = {
     },
     deleteCyioNote: async ( _, {id}, {dbName, dataSources} ) => {
       const query = deleteNoteQuery(id);
-      await dataSources.Stardog.delete({
+      let results = await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: query,
         queryId: "Delete note"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
       return id;
     },
     editCyioNote: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
@@ -197,12 +206,22 @@ const cyioNoteResolvers = {
         "http://darklight.ai/ns/common#Note",
         input,
         notePredicateMap
-      )
-      await dataSources.Stardog.edit({
+      );
+      let results = await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
         queryId: "Update Note"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
+
       const select = selectNoteQuery(id, selectMap.getNode("editCyioNote"));
       const result = await dataSources.Stardog.queryById({
         dbName,

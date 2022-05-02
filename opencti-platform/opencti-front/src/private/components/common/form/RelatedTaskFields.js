@@ -103,7 +103,7 @@ class RelatedTaskFields extends Component {
         const RelatedTaskFieldsEntities = R.pipe(
           R.pathOr([], ['oscalTasks', 'edges']),
           R.map((n) => ({
-            id: n.node.id.split(),
+            id: n.node.id,
             label: n.node.description,
             value: n.node.name,
           }))
@@ -149,8 +149,9 @@ class RelatedTaskFields extends Component {
         const RelatedTaskFieldsEntities = R.pipe(
           R.pathOr([], ['oscalResponsibleParties', 'edges']),
           R.map((n) => ({
-            label: n.node.parties.description,
-            value: n.node.parties.name,
+            id: n.node.role.id,
+            label: n.node.role.description,
+            value: n.node.role.name,
           }))
         )(data);
         this.setState({
@@ -171,7 +172,7 @@ class RelatedTaskFields extends Component {
         const RelatedTaskFieldsEntities = R.pipe(
           R.pathOr([], ['oscalTasks', 'edges']),
           R.map((n) => ({
-            id: n.node.id.split(),
+            id: n.node.id,
             label: n.node.description,
             value: n.node.name,
           }))
@@ -195,6 +196,7 @@ class RelatedTaskFields extends Component {
       style,
       variant,
       onChange,
+      multiple,
       onFocus,
       containerstyle,
       editContext,
@@ -213,6 +215,7 @@ class RelatedTaskFields extends Component {
           component={SelectField}
           name={name}
           label={label}
+          multiple={multiple}
           fullWidth={true}
           containerstyle={containerstyle}
           variant={variant}
@@ -223,7 +226,7 @@ class RelatedTaskFields extends Component {
         >
           {RelatedTaskFieldsList.map(
             (et, key) =>
-              et.value && (
+              et.id && (
                 <MenuItem key={key} value={et.id}>{et.value}</MenuItem>
               )
           )}
