@@ -1309,6 +1309,7 @@ input LabelAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## ExternalReferences

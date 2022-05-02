@@ -343,6 +343,7 @@ export const buildInputDataFromStix = (stix: StixObject): unknown => {
       value: label.value,
       color: label.color,
       x_opencti_stix_ids: label.extensions[STIX_EXT_OCTI].stix_ids,
+      update: true
     };
     return input;
   }
@@ -353,9 +354,9 @@ export const buildInputDataFromStix = (stix: StixObject): unknown => {
       stix_id: kill.id,
       kill_chain_name: kill.kill_chain_name,
       phase_name: kill.phase_name,
-      update: true,
       x_opencti_order: kill.order,
       x_opencti_stix_ids: kill.extensions[STIX_EXT_OCTI].stix_ids,
+      update: true,
     };
     return input;
   }

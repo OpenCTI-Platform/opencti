@@ -4,13 +4,12 @@ import { ADMIN_USER } from '../../utils/testQuery';
 import data from '../../data/DATA-TEST-STIX2_v2.json';
 import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
-  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INDICATOR, ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   isStixDomainObject
 } from '../../../src/schema/stixDomainObject';
 import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
 import { isStixRelationship } from '../../../src/schema/stixRelationship';
-import { UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { convertTypeToStixType } from '../../../src/database/stix-converter';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-extensions';
@@ -35,6 +34,9 @@ describe('Stix opencti converter', () => {
       remainingData = R.dissoc(rawKey, remainingData);
       const initialData = rawData[rawKey];
       const refetchData = stixData[rawKey];
+      // console.log(rawKey);
+      // console.log('initialData', initialData);
+      // console.log('refetchData', refetchData);
       if (rawKey === 'id') { // Because of standard_id generation
         if (standardId) { // Cant be compare for sighting and relationship
           expect(refetchData).toBe(standardId);

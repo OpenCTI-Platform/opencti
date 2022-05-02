@@ -108,7 +108,7 @@ export const generateInternalType = (entity) => {
     case 'file':
       return 'StixFile';
     default:
-      return pascalize(entity.type).replace('X-Opencti', 'X-OpenCTI');
+      return pascalize(entity.type);
   }
 };
 

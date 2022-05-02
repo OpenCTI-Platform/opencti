@@ -55,6 +55,7 @@ export const CONTENT_FIELD = 'content';
 export const OPINION_FIELD = 'opinion';
 export const PID_FIELD = 'pid';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
+export const X_DETECTION = 'x_opencti_detection';
 // endregion
 
 export const normalizeName = (name) => {
@@ -360,7 +361,7 @@ export const generateAliasesId = (aliases, instance = {}) => {
     const dataUUID = { name: normalizeName(a), ...additionalFields };
     const uuid = idGen('ALIAS', aliases, dataUUID, OPENCTI_NAMESPACE);
     return `aliases--${uuid}`;
-  }, aliases);
+  }, R.uniq(aliases));
 };
 
 export const generateAliasesIdsForInstance = (instance) => {

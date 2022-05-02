@@ -329,8 +329,8 @@ export const generateUpdateMessage = (inputs) => {
       return `\`${message}\` in \`${convertedKey}\``;
     })}`;
   }).join(', ');
-  if (generatedMessage.includes('undefined') || generatedMessage.includes('[object Object]')) {
-    throw UnsupportedError('Error generating update message', { inputs, message: generatedMessage });
+  if (isEmptyField(generatedMessage) || generatedMessage.includes('undefined') || generatedMessage.includes('[object Object]')) {
+    throw UnsupportedError('[OPENCTI] Error generating update message', { inputs, message: generatedMessage });
   }
   return generatedMessage;
 };

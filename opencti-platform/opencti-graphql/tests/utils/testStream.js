@@ -47,7 +47,7 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
   const diffElements = [];
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
     const attributeKey = attributes[attrIndex];
-    if (attributeKey === 'extensions' || attributeKey === 'revoked' || attributeKey === 'lang') {
+    if (attributeKey === 'extensions' || attributeKey === 'revoked' || attributeKey === 'lang' || attributeKey === 'modified') {
       // TODO Add a specific check
       // Currently some attributes are valuated by default or different by design
     } else {

@@ -1,6 +1,5 @@
 import * as R from 'ramda';
 import {
-  createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -15,6 +14,7 @@ import {
   timeSeriesEntities,
   timeSeriesRelations,
   updateAttribute,
+  createEntity,
 } from '../../../src/database/middleware';
 import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
 import { searchClient, elFindByIds, elLoadById, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
@@ -52,14 +52,18 @@ import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
 import { listEntities } from '../../../src/database/repository';
 import { listRelations } from '../../../src/database/middleware-loader';
+import { addThreatActor } from '../../../src/domain/threatActor';
+import { addMalware } from '../../../src/domain/malware';
+import { addIntrusionSet } from '../../../src/domain/intrusionSet';
+import { addIndicator } from '../../../src/domain/indicator';
 
 describe('Basic and utils', () => {
-  it('should escape according to grakn needs', () => {
+  it('should escape according to our needs', () => {
     expect(escape({ key: 'json' })).toEqual({ key: 'json' });
     expect(escape('simple ident')).toEqual('simple ident');
-    expect(escape('grakn\\special')).toEqual('grakn\\\\special');
-    expect(escape('grakn;injection')).toEqual('grakn\\;injection');
-    expect(escape('grakn,injection')).toEqual('grakn\\,injection');
+    expect(escape('test\\special')).toEqual('test\\\\special');
+    expect(escape('test;injection')).toEqual('test\\;injection');
+    expect(escape('test,injection')).toEqual('test\\,injection');
   });
   it('should date utils correct', () => {
     expect(utcDate().isValid()).toBeTruthy();
@@ -147,10 +151,10 @@ describe('Attribute updater', () => {
     let identity = await internalLoadById(ADMIN_USER, stixId);
     const identityId = identity.internal_id;
     expect(identity.x_opencti_aliases.sort()).toEqual(['Computer Incident', 'Incident'].sort());
-    let patch = { x_opencti_aliases: ['Computer', 'Test', 'Grakn'] };
+    let patch = { x_opencti_aliases: ['Computer', 'Test', 'Db'] };
     await patchAttribute(ADMIN_USER, identityId, type, patch);
     identity = await internalLoadById(ADMIN_USER, stixId);
-    expect(identity.x_opencti_aliases.sort()).toEqual(['Computer', 'Test', 'Grakn'].sort());
+    expect(identity.x_opencti_aliases.sort()).toEqual(['Computer', 'Test', 'Db'].sort());
     // Value back to before
     patch = { x_opencti_aliases: ['Computer Incident', 'Incident'] };
     await patchAttribute(ADMIN_USER, identityId, type, patch);
@@ -168,7 +172,6 @@ describe('Entities listing', () => {
     expect(malwares.edges.length).toEqual(2);
     const dataMap = new Map(malwares.edges.map((i) => [R.head(i.node.x_opencti_stix_ids), i.node]));
     const malware = dataMap.get('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    expect(malware.grakn_id).not.toBeNull();
     expect(malware.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     expect(malware.created_at_month).not.toBeNull();
     expect(malware.parent_types.length).toEqual(4);
@@ -260,17 +263,6 @@ describe('Relations listing', () => {
       const stixRelation = stixRelations.edges[index].node;
       expect(stixRelation.fromRole).toEqual('uses_from');
       expect(stixRelation.toRole).toEqual('uses_to');
-    }
-  });
-  it('should list relations with id option', async () => {
-    // Just id specified,
-    // "name": "Paradise Ransomware"
-    const options = { fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330' };
-    const thing = await internalLoadById(ADMIN_USER, 'ab78a62f-4928-4d5a-8740-03f0af9c4330');
-    const stixRelations = await listRelations(ADMIN_USER, 'uses', options);
-    for (let index = 0; index < stixRelations.edges.length; index += 1) {
-      const stixRelation = stixRelations.edges[index].node;
-      expect(stixRelation.fromId).toEqual(thing.grakn_id);
     }
   });
   it('should list relations with from types option', async () => {
@@ -414,18 +406,6 @@ describe('Relations listing', () => {
     expect(stixSightings).not.toBeNull();
     expect(stixSightings.edges.length).toEqual(3);
   });
-  it('should list sightings with id option', async () => {
-    // Just id specified,
-    // "name": "Paradise Ransomware"
-    const relationship = await elLoadById(ADMIN_USER, 'relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
-    const options = { fromId: relationship.internal_id };
-    const thing = await internalLoadById(ADMIN_USER, relationship.internal_id);
-    const stixSightings = await listRelations(ADMIN_USER, 'stix-sighting-relationship', options);
-    for (let index = 0; index < stixSightings.edges.length; index += 1) {
-      const stixSighting = stixSightings.edges[index].node;
-      expect(stixSighting.fromId).toEqual(thing.grakn_id);
-    }
-  });
 });
 
 describe('Element loader', () => {
@@ -486,7 +466,7 @@ describe('Element loader', () => {
     expect(element.x_opencti_stix_ids).toEqual([stixId]);
     expect(element.confidence).toEqual(3);
   });
-  it('should load by grakn id for multiple attributes', async () => {
+  it('should load by id for multiple attributes', async () => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
     const identity = await storeLoadById(ADMIN_USER, stixId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     expect(identity).not.toBeNull();
@@ -722,7 +702,7 @@ describe('Relations distribution', () => {
 
 // Some utils
 const createThreat = async (input) => {
-  const threat = await createEntity(ADMIN_USER, input, ENTITY_TYPE_THREAT_ACTOR);
+  const threat = await addThreatActor(ADMIN_USER, input);
   return storeLoadById(ADMIN_USER, threat.id, ENTITY_TYPE_THREAT_ACTOR);
 };
 const createFile = async (input) => {
@@ -730,6 +710,7 @@ const createFile = async (input) => {
   if (observableSyntaxResult !== true) {
     throw FunctionalError(`Observable of type ${ENTITY_HASHED_OBSERVABLE_STIX_FILE} is not correctly formatted.`);
   }
+  // TODO replace by addStixCyberObservable
   const file = await createEntity(ADMIN_USER, input, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
   return storeLoadById(ADMIN_USER, file.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
 };
@@ -782,7 +763,7 @@ describe('Upsert and merge entities', () => {
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
       objectMarking: [whiteMarking, mitreMarking],
     };
-    const createdMalware = await createEntity(ADMIN_USER, malware, ENTITY_TYPE_MALWARE);
+    const createdMalware = await addMalware(ADMIN_USER, malware);
     expect(createdMalware).not.toBeNull();
     expect(createdMalware.name).toEqual('MALWARE_TEST');
     expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
@@ -792,7 +773,7 @@ describe('Upsert and merge entities', () => {
     expect(loadMalware['object-marking'].length).toEqual(2);
     // Upsert TLP by name
     let upMalware = { name: 'MALWARE_TEST', objectMarking: [testMarking] };
-    let upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
+    let upsertedMalware = await addMalware(ADMIN_USER, upMalware);
     expect(upsertedMalware).not.toBeNull();
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
@@ -803,10 +784,10 @@ describe('Upsert and merge entities', () => {
       name: 'NEW NAME',
       description: 'MALWARE_TEST NEW',
       stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
-      update: true,
       aliases: ['NEW MALWARE ALIAS'],
+      update: true,
     };
-    upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
+    upsertedMalware = await addMalware(ADMIN_USER, upMalware);
     expect(upsertedMalware.name).toEqual('NEW NAME');
     expect(upsertedMalware.description).toEqual('MALWARE_TEST NEW');
     expect(upsertedMalware.id).toEqual(createdMalware.id);
@@ -839,7 +820,7 @@ describe('Upsert and merge entities', () => {
   });
   it('should dates update correctly rejected', async () => {
     const target = await createThreat({ name: 'THREAT_UPDATE' });
-    const malware = await createEntity(ADMIN_USER, { name: 'MALWARE_UPDATE_02' }, ENTITY_TYPE_MALWARE);
+    const malware = await addMalware(ADMIN_USER, { name: 'MALWARE_UPDATE_02' });
     const createBadRelation = () => createRelation(ADMIN_USER, {
       fromId: target.internal_id,
       toId: malware.internal_id,
@@ -869,9 +850,9 @@ describe('Upsert and merge entities', () => {
   });
   it('should entity merged', async () => {
     // 01. Create malware
-    const malware01 = await createEntity(ADMIN_USER, { name: 'MALWARE_TEST_01' }, ENTITY_TYPE_MALWARE);
-    const malware02 = await createEntity(ADMIN_USER, { name: 'MALWARE_TEST_02' }, ENTITY_TYPE_MALWARE);
-    const malware03 = await createEntity(ADMIN_USER, { name: 'MALWARE_TEST_03' }, ENTITY_TYPE_MALWARE);
+    const malware01 = await addMalware(ADMIN_USER, { name: 'MALWARE_TEST_01' });
+    const malware02 = await addMalware(ADMIN_USER, { name: 'MALWARE_TEST_02' });
+    const malware03 = await addMalware(ADMIN_USER, { name: 'MALWARE_TEST_03' });
     // 02. Create threat actors
     // target
     const targetInput01 = {
@@ -1021,17 +1002,9 @@ describe('Elements impacts deletions', () => {
   it('should all elements correctly deleted', async () => {
     // Create entities
     const label = await addLabel(ADMIN_USER, { value: 'MY LABEL' });
-    const intrusionSet = await createEntity(
-      ADMIN_USER,
-      { name: 'MY ISET', description: 'MY ISET' },
-      ENTITY_TYPE_INTRUSION_SET
-    );
-    const malware = await createEntity(ADMIN_USER, { name: 'MY MAL', description: 'MY MAL' }, ENTITY_TYPE_MALWARE);
-    const indicator = await createEntity(
-      ADMIN_USER,
-      { name: 'MY INDIC', pattern: 'pattern', pattern_type: 'pattern-type' },
-      ENTITY_TYPE_INDICATOR
-    );
+    const intrusionSet = await addIntrusionSet(ADMIN_USER, { name: 'MY ISET', description: 'MY ISET' });
+    const malware = await addMalware(ADMIN_USER, { name: 'MY MAL', description: 'MY MAL' });
+    const indicator = await addIndicator(ADMIN_USER, { name: 'MY INDIC', pattern: '[domain-name:value = \'www.test.ru\']', pattern_type: 'stix' });
     // Create basic relations
     // eslint-disable-next-line camelcase
     const intrusionSet_uses_Malware = await createRelation(ADMIN_USER, {

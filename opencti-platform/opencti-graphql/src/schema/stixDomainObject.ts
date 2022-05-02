@@ -153,11 +153,12 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
     'x_mitre_permissions_required',
     'x_mitre_detection',
     'confidence',
+    'aliases',
   ],
-  [ENTITY_TYPE_CAMPAIGN]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'confidence'],
-  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence', 'abstract'],
+  [ENTITY_TYPE_CAMPAIGN]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'confidence', 'aliases'],
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['content', 'confidence', 'attribute_abstract'],
   [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: ['description', 'confidence'],
-  [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence'],
+  [ENTITY_TYPE_CONTAINER_OPINION]: ['opinion', 'confidence', 'explanation'],
   [ENTITY_TYPE_CONTAINER_REPORT]: ['name', 'revoked', 'description', 'confidence', 'confidence'],
   [ENTITY_TYPE_COURSE_OF_ACTION]: [
     'name',
@@ -166,11 +167,12 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
     'x_opencti_threat_hunting',
     'x_opencti_log_sources',
     'confidence',
+    'x_opencti_aliases'
   ],
-  [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: ['name', 'revoked', 'description', 'contact_information', 'confidence'],
-  [ENTITY_TYPE_IDENTITY_ORGANIZATION]: ['name', 'revoked', 'description', 'contact_information', 'confidence'],
-  [ENTITY_TYPE_IDENTITY_SECTOR]: ['name', 'revoked', 'description', 'contact_information', 'confidence'],
-  [ENTITY_TYPE_IDENTITY_SYSTEM]: ['name', 'revoked', 'description', 'contact_information', 'confidence'],
+  [ENTITY_TYPE_IDENTITY_INDIVIDUAL]: ['name', 'revoked', 'description', 'contact_information', 'confidence', 'x_opencti_aliases'],
+  [ENTITY_TYPE_IDENTITY_ORGANIZATION]: ['name', 'revoked', 'description', 'contact_information', 'confidence', 'x_opencti_aliases'],
+  [ENTITY_TYPE_IDENTITY_SECTOR]: ['name', 'revoked', 'description', 'contact_information', 'confidence', 'x_opencti_aliases'],
+  [ENTITY_TYPE_IDENTITY_SYSTEM]: ['name', 'revoked', 'description', 'contact_information', 'confidence', 'x_opencti_aliases'],
   [ENTITY_TYPE_INDICATOR]: [
     'name',
     'revoked',
@@ -182,7 +184,7 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
     'x_opencti_detection',
     'indicator_types',
   ],
-  [ENTITY_TYPE_INFRASTRUCTURE]: ['name', 'revoked', 'description', 'confidence'],
+  [ENTITY_TYPE_INFRASTRUCTURE]: ['name', 'revoked', 'description', 'confidence', 'aliases'],
   [ENTITY_TYPE_INTRUSION_SET]: [
     'name',
     'revoked',
@@ -194,12 +196,13 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
     'primary_motivation',
     'secondary_motivations',
     'confidence',
+    'aliases'
   ],
-  [ENTITY_TYPE_LOCATION_CITY]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence'],
-  [ENTITY_TYPE_LOCATION_COUNTRY]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence'],
-  [ENTITY_TYPE_LOCATION_REGION]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence'],
-  [ENTITY_TYPE_LOCATION_POSITION]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence'],
-  [ENTITY_TYPE_MALWARE]: ['name', 'revoked', 'description', 'is_family', 'malware_types', 'confidence'],
+  [ENTITY_TYPE_LOCATION_CITY]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence', 'x_opencti_aliases'],
+  [ENTITY_TYPE_LOCATION_COUNTRY]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence', 'x_opencti_aliases'],
+  [ENTITY_TYPE_LOCATION_REGION]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence', 'x_opencti_aliases'],
+  [ENTITY_TYPE_LOCATION_POSITION]: ['name', 'revoked', 'description', 'latitude', 'longitude', 'confidence', 'x_opencti_aliases'],
+  [ENTITY_TYPE_MALWARE]: ['name', 'revoked', 'description', 'is_family', 'malware_types', 'confidence', 'aliases'],
   [ENTITY_TYPE_THREAT_ACTOR]: [
     'name',
     'revoked',
@@ -211,8 +214,9 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
     'primary_motivation',
     'secondary_motivations',
     'confidence',
+    'aliases'
   ],
-  [ENTITY_TYPE_TOOL]: ['name', 'revoked', 'description', 'confidence'],
+  [ENTITY_TYPE_TOOL]: ['name', 'revoked', 'description', 'confidence', 'aliases'],
   [ENTITY_TYPE_VULNERABILITY]: [
     'name',
     'revoked',
@@ -225,7 +229,7 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
     'x_opencti_confidentiality_impact',
     'confidence',
   ],
-  [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective', 'confidence'],
+  [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective', 'confidence', 'aliases'],
 };
 
 export const stixDomainObjectsAttributes: { [k: string]: Array<string> } = {

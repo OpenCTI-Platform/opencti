@@ -4,7 +4,13 @@ import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
 import conf, { logApp } from '../config/conf';
-import { createRelation, deleteElementById, internalLoadById, storeLoadById } from '../database/middleware';
+import {
+  createRelation,
+  deleteElementById,
+  internalLoadById,
+  mergeEntities,
+  storeLoadById
+} from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { SYSTEM_USER } from '../utils/access';
 import { buildInputDataFromStix } from '../database/stix';
@@ -81,7 +87,6 @@ import { createSyncHttpUri, httpBase, patchSync } from '../domain/connector';
 import { EVENT_VERSION_V4, lockResource } from '../database/redis';
 import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { rawFilesListing } from '../database/minio';
-import { generateInternalType } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
@@ -118,6 +123,7 @@ const syncManagerInstance = (syncId) => {
     eventSource.on('create', (d) => handleEvent(d));
     eventSource.on('update', (d) => handleEvent(d));
     eventSource.on('delete', (d) => handleEvent(d));
+    eventSource.on('merge', (d) => handleEvent(d));
     eventSource.on('connected', (d) => {
       connectionId = JSON.parse(d.data).connectionId;
     });
@@ -144,9 +150,14 @@ const syncManagerInstance = (syncId) => {
     return currentDelay;
   };
   const handleDeleteEvent = async (user, data) => {
-    const type = generateInternalType(data);
+    const { type } = data.extensions[STIX_EXT_OCTI];
     logApp.info(`[OPENCTI] Sync deleting element ${type} ${data.id}`);
     await deleteElementById(user, data.id, type);
+  };
+  const handleMergeEvent = async (user, data, context) => {
+    const sourceIds = context.sources.map((s) => s.id);
+    logApp.info(`[OPENCTI] Sync merging element ${sourceIds} into ${data.id}`);
+    await mergeEntities(user, data.id, sourceIds);
   };
   const handleFilesSync = async (user, id, stix) => {
     const { token } = syncElement;
@@ -285,17 +296,20 @@ const syncManagerInstance = (syncId) => {
             if (eventType === 'create') {
               await handleCreateEvent(user, data);
             }
-            if (eventType === 'update') {
+            if (eventType === 'update' || eventType === 'merge') {
               // In case of update, if the standard id is impacted
               // we need to apply modification on the previous id
               // standard id will be regenerated according to the other changes
+              let processingData = data;
               const idOperations = context.previous_patch.filter((patch) => patch.path === '/id');
               if (idOperations.length > 0) {
                 const { newDocument: stixPreviousID } = jsonpatch.applyPatch(R.clone(data), idOperations);
-                await handleCreateEvent(user, stixPreviousID);
+                processingData = stixPreviousID;
+              }
+              if (eventType === 'merge') {
+                await handleMergeEvent(user, processingData, context);
               } else {
-                // If id not impacted just apply the data
-                await handleCreateEvent(user, data);
+                await handleCreateEvent(user, processingData);
               }
             }
             // Update the current state

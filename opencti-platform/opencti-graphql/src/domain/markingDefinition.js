@@ -37,7 +37,9 @@ export const addMarkingDefinition = async (user, markingDefinition) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
 };
 
-export const markingDefinitionDelete = (user, markingDefinitionId) => deleteElementById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+export const markingDefinitionDelete = (user, markingDefinitionId) => {
+  return deleteElementById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+};
 
 export const markingDefinitionEditField = async (user, markingDefinitionId, input, opts = {}) => {
   const { element } = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, opts);

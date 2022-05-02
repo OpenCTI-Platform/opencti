@@ -45,12 +45,12 @@ import type * as SRO from '../types/stix-sro';
 import type * as SCO from '../types/stix-sco';
 import type * as SMO from '../types/stix-smo';
 import type {
-  StoreBase,
   BasicStoreCommon,
-  StoreRelation,
-  StoreEntity,
+  StoreBase,
   StoreCyberObservable,
+  StoreEntity,
   StoreObject,
+  StoreRelation,
 } from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -76,13 +76,17 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
+  ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
+  ENTITY_EMAIL_MIME_PART_TYPE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
+  ENTITY_HOSTNAME,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
   ENTITY_MAC_ADDR,
@@ -90,14 +94,12 @@ import {
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
+  ENTITY_TEXT,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_CRYPTOGRAPHIC_KEY,
-  ENTITY_CRYPTOGRAPHIC_WALLET,
-  ENTITY_HOSTNAME,
-  ENTITY_TEXT,
-  isStixCyberObservable, ENTITY_WINDOWS_REGISTRY_VALUE_TYPE, ENTITY_EMAIL_MIME_PART_TYPE
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
+  isStixCyberObservable
 } from '../schema/stixCyberObservable';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import {
@@ -159,7 +161,6 @@ const cleanObject = <T>(data: T): T => {
   }
   return obj;
 };
-const headRef = (elements: Array<StoreBase>) => R.head<StoreBase>(elements || [])?.standard_id;
 
 // Extensions
 const buildOCTIExtensions = (instance: StoreBase): S.StixOpenctiExtension => {
@@ -242,7 +243,7 @@ const buildEmailBodyMultipart = (instance: StoreCyberObservable): Array<SCO.Stix
       content_type: k.content_type,
       content_disposition: k.content_disposition,
       body: k.body,
-      body_raw_ref: headRef(instance[INPUT_BODY_RAW]),
+      body_raw_ref: instance[INPUT_BODY_RAW]?.standard_id,
     };
     return cleanObject(data);
   });
@@ -259,7 +260,7 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
     lang: instance.lang,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
-    created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
   };
 };
@@ -270,7 +271,7 @@ const buildStixRelationship = (instance: StoreRelation): S.StixRelationshipObjec
 const buildStixMarkings = (instance: StoreEntity): S.StixMarkingsObject => {
   return {
     ...buildStixObject(instance),
-    created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     created: instance.created,
     modified: instance.updated_at,
     external_references: buildExternalReferences(instance),
@@ -290,7 +291,7 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
         labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
         description: instance.x_opencti_description,
         score: instance.x_opencti_score,
-        created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+        created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
         external_references: buildExternalReferences(instance)
       })
     }
@@ -316,8 +317,8 @@ const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.StixIde
         ...identity.extensions[STIX_EXT_OCTI],
         firstname: instance.x_opencti_firstname,
         lastname: instance.x_opencti_lastname,
-        organization_type: instance.organization_type,
-        reliability: instance.reliability
+        organization_type: instance.x_opencti_organization_type,
+        reliability: instance.x_opencti_reliability
       })
     }
   };
@@ -604,7 +605,7 @@ const convertCryptocurrencyWalletToStix = (instance: StoreCyberObservable, type:
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     description: instance.x_opencti_description,
     score: instance.x_opencti_score,
-    created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
       ...stixCyberObject.extensions,
@@ -621,7 +622,7 @@ const convertCryptographicKeyToStix = (instance: StoreCyberObservable, type: str
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     description: instance.x_opencti_description,
     score: instance.x_opencti_score,
-    created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
       ...stixCyberObject.extensions,
@@ -665,8 +666,8 @@ const convertEmailMessageToStix = (instance: StoreCyberObservable, type: string)
     is_multipart: instance.is_multipart,
     date: instance.attribute_date,
     content_type: instance.content_type,
-    from_ref: headRef(instance[INPUT_FROM]),
-    sender_ref: headRef(instance[INPUT_SENDER]),
+    from_ref: instance[INPUT_FROM]?.standard_id,
+    sender_ref: instance[INPUT_SENDER]?.standard_id,
     to_refs: (instance[INPUT_TO] ?? []).map((m) => m.standard_id),
     cc_refs: (instance[INPUT_CC] ?? []).map((m) => m.standard_id),
     bcc_refs: (instance[INPUT_BCC] ?? []).map((m) => m.standard_id),
@@ -676,7 +677,7 @@ const convertEmailMessageToStix = (instance: StoreCyberObservable, type: string)
     additional_header_fields: {}, // TODO Implement
     body: instance.body,
     body_multipart: buildEmailBodyMultipart(instance),
-    raw_email_ref: headRef(instance[INPUT_RAW_EMAIL]),
+    raw_email_ref: instance[INPUT_RAW_EMAIL]?.standard_id
   };
 };
 const convertFileToStix = (instance: StoreCyberObservable, type: string): SCO.StixFile => {
@@ -693,9 +694,9 @@ const convertFileToStix = (instance: StoreCyberObservable, type: string): SCO.St
     ctime: instance.ctime,
     mtime: instance.mtime,
     atime: instance.atime,
-    parent_directory_ref: headRef(instance[INPUT_PARENT_DIRECTORY]),
+    parent_directory_ref: instance[INPUT_PARENT_DIRECTORY]?.standard_id,
     contains_refs: (instance[INPUT_CONTAINS] ?? []).map((m) => m.standard_id),
-    content_ref: headRef(instance[INPUT_CONTENT]),
+    content_ref: instance[INPUT_CONTENT]?.standard_id,
     extensions: {
       ...stixCyberObject.extensions,
       [STIX_EXT_OCTI_SCO]: cleanObject({
@@ -715,7 +716,7 @@ const convertHostnameToStix = (instance: StoreCyberObservable, type: string): SC
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     description: instance.x_opencti_description,
     score: instance.x_opencti_score,
-    created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
       ...stixCyberObject.extensions,
@@ -762,8 +763,8 @@ const convertNetworkTrafficToStix = (instance: StoreCyberObservable, type: strin
     start: instance.start,
     end: instance.end,
     is_active: instance.is_active,
-    src_ref: headRef(instance[INPUT_SRC]),
-    dst_ref: headRef(instance[INPUT_DST]),
+    src_ref: instance[INPUT_SRC]?.standard_id,
+    dst_ref: instance[INPUT_DST]?.standard_id,
     src_port: instance.src_port,
     dst_port: instance.dst_port,
     protocols: instance.protocols,
@@ -772,10 +773,10 @@ const convertNetworkTrafficToStix = (instance: StoreCyberObservable, type: strin
     src_packets: instance.src_packets,
     dst_packets: instance.dst_packets,
     ipfix: instance.ipfix,
-    src_payload_ref: headRef(instance[INPUT_SRC_PAYLOAD]),
-    dst_payload_ref: headRef(instance[INPUT_DST_PAYLOAD]),
+    src_payload_ref: instance[INPUT_SRC_PAYLOAD]?.standard_id,
+    dst_payload_ref: instance[INPUT_DST_PAYLOAD]?.standard_id,
     encapsulates_refs: (instance[INPUT_ENCAPSULATES] ?? []).map((m) => m.standard_id),
-    encapsulated_by_ref: headRef(instance[INPUT_ENCAPSULATED_BY]),
+    encapsulated_by_ref: instance[INPUT_ENCAPSULATED_BY]?.standard_id,
   };
 };
 const convertProcessToStix = (instance: StoreCyberObservable, type: string): SCO.StixProcess => {
@@ -789,9 +790,9 @@ const convertProcessToStix = (instance: StoreCyberObservable, type: string): SCO
     command_line: instance.command_line,
     environment_variables: instance.environment_variables,
     opened_connection_refs: (instance[INPUT_OPENED_CONNECTION] ?? []).map((m) => m.standard_id),
-    creator_user_ref: headRef(instance[INPUT_CREATOR_USER]),
-    image_ref: headRef(instance[INPUT_IMAGE]),
-    parent_ref: headRef(instance[INPUT_PARENT]),
+    creator_user_ref: instance[INPUT_CREATOR_USER]?.standard_id,
+    image_ref: instance[INPUT_IMAGE]?.standard_id,
+    parent_ref: instance[INPUT_PARENT]?.standard_id,
     child_refs: (instance[INPUT_CHILD] ?? []).map((m) => m.standard_id),
   };
 };
@@ -816,7 +817,7 @@ const convertTextToStix = (instance: StoreCyberObservable, type: string): SCO.St
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     description: instance.x_opencti_description,
     score: instance.x_opencti_score,
-    created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
       ...stixCyberObject.extensions,
@@ -858,7 +859,7 @@ const convertWindowsRegistryKeyToStix = (instance: StoreCyberObservable, type: s
     key: instance.attribute_key,
     values: buildWindowsRegistryValueType(instance),
     modified_time: instance.modified_time,
-    creator_user_ref: headRef(instance[INPUT_CREATOR_USER]),
+    creator_user_ref: instance[INPUT_CREATOR_USER]?.standard_id,
     number_of_subkeys: instance.number_of_subkeys,
   };
 };
@@ -960,12 +961,11 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
 
 // SMO - SDO
 const convertMarkingToStix = (instance: StoreEntity): SMO.StixMarkingDefinition => {
-  const key = instance.definition_type?.toLowerCase();
   const marking = buildStixMarkings(instance);
   return {
     ...marking,
     name: instance.definition,
-    definition_type: key,
+    definition_type: instance.definition_type,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...marking.extensions[STIX_EXT_OCTI],
@@ -1033,7 +1033,7 @@ const convertWindowsRegistryValueToStix = (instance: StoreCyberObservable): SCO.
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     description: instance.x_opencti_description,
     score: instance.x_opencti_score,
-    created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
@@ -1048,11 +1048,11 @@ const convertEmailMimePartToStix = (instance: StoreCyberObservable): SCO.StixEma
     content_type: instance.content_type,
     content_disposition: instance.content_disposition,
     body: instance.body,
-    body_raw_ref: headRef(instance[INPUT_BODY_RAW]),
+    body_raw_ref: instance[INPUT_BODY_RAW]?.standard_id,
     labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
     description: instance.x_opencti_description,
     score: instance.x_opencti_score,
-    created_by_ref: headRef(instance[INPUT_CREATED_BY]),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],

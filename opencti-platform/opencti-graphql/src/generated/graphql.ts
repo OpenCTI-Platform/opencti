@@ -5092,6 +5092,7 @@ export type LabelAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   stix_id?: InputMaybe<Scalars['String']>;
+  update?: InputMaybe<Scalars['Boolean']>;
   value: Scalars['String'];
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
