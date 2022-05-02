@@ -182,12 +182,12 @@ class SoftwareCreationDetailsComponent extends Component {
                   <Field
                     component={TextField}
                     variant='outlined'
-                    name="motherboard_id"
+                    name="cpe_identifier"
                     size='small'
                     fullWidth={true}
                   // helperText={
                   //   <SubscriptionFocus
-                  //   fieldName="motherboard_id"
+                  //   fieldName="cpe_identifier"
                   //   />
                   // }
                   />
