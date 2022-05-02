@@ -4,9 +4,12 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Entities from './Entities';
 import RolesEntities from './data/Roles/RolesEntities';
+import AssessmentPlatformsEntities from './data/assessment_platform/AssessmentPlatformsEntities';
 import RolesDataSource from './data/Roles/RolesDataSource';
+import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
+import RootAssessmentPlatform from './data/assessment_platform/Root';
 
 class Root extends Component {
   render() {
@@ -30,8 +33,18 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
+          path="/data/entities/assessment_platform"
+          component={AssessmentPlatformsEntities}
+        />
+        <BoundaryRoute
+          exact
           path="/data/data source/roles"
           component={RolesDataSource}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/data source/assessment_platform"
+          component={AssessmentPlatformsDataSource}
         />
         <BoundaryRoute
           exact
@@ -41,6 +54,10 @@ class Root extends Component {
         <BoundaryRoute
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          path="/data/entities/assessment_platform/:assessmentPlatformId"
+          render={(routeProps) => <RootAssessmentPlatform {...routeProps} me={me} />}
         />
         {/* <BoundaryRoute
           path="/data/data source/:dataSourceId"
