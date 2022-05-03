@@ -1627,7 +1627,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
       // We dont care about the operation here, the only thing we can do is replace
       if (isSingleStixEmbeddedRelationshipInput(key)) {
         const relType = FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION[key];
-        const currentValue = R.head(updatedInstance[key] || []);
+        const currentValue = updatedInstance[key];
         const { value: refIds } = meta[metaIndex];
         const targetCreated = R.head(refIds);
         // If asking for a real change
