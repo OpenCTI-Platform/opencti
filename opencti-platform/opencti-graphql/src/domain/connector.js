@@ -4,7 +4,7 @@ import { listEntities, completeConnector, connectorsFor } from '../database/repo
 import { registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { FROM_START_STR, now } from '../utils/format';
+import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
