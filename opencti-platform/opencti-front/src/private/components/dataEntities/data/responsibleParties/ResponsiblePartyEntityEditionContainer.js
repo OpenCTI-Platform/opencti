@@ -153,8 +153,8 @@ class ResponsiblePartyEntityEditionContainer extends Component {
     const responsibleMarking = R.pathOr([], ['marking'])(responsibleParty);
     
     const initialValues = R.pipe(
-      R.assoc('name', responsiblePartyData?.name || ''),
-      R.assoc('description', responsiblePartyData?.description || ''),
+      R.assoc('name', responsibleParties?.name || ''),
+      R.assoc('description', responsibleParties?.description || ''),
       R.assoc('party', responsibleParties?.name || []),
       R.assoc('role', responsibleRoles?.name || []),
       R.assoc('marking', responsibleMarking?.name),
