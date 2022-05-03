@@ -69,8 +69,12 @@ export const findAllSync = async (user, opts = {}) => {
 };
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
 export const createSyncHttpUri = (sync) => {
+  // TODO JRI Add Interface option in synchronizer to pickup from & recover & with-inferences options
   const { uri, stream_id: stream, current_state: state, listen_deletion: deletion } = sync;
-  const streamUri = `${httpBase(uri)}stream/${stream}?from=${state ?? FROM_START_STR}&listen-delete=${deletion}`;
+  let streamUri = `${httpBase(uri)}stream/${stream}?listen-delete=${deletion}`;
+  if (state) {
+    streamUri += `&from=${state}`;
+  }
   logApp.debug(`[OPENCTI] Testing sync url with ${streamUri}`);
   return streamUri;
 };

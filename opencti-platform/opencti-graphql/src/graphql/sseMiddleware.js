@@ -165,14 +165,13 @@ const createSeeMiddleware = () => {
     }
     return missingElements;
   };
-  const initBroadcasting = async (req, res, client, processor = null) => {
+  const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
     req.on('close', () => {
       req.finished = true;
       delete broadcastClients[client.id];
-      if (processor) {
-        processor.shutdown();
-      }
+      logApp.info(`[STREAM] Closing stream processor for ${client.id}`);
+      processor.shutdown();
     });
     res.writeHead(200, {
       Connection: 'keep-alive',
@@ -470,8 +469,45 @@ const createSeeMiddleware = () => {
       if (isNotEmptyField(recoverTo) && isEmptyField(startFrom)) {
         throw UnsupportedError('Recovery mode is only possible with a start date.');
       }
-      // Start fetching
-      await initBroadcasting(req, res, client);
+      // Init stream and broadcasting
+      const userEmail = req.session.user.user_email;
+      const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
+      const processor = createStreamProcessor(req.session.user, userEmail, async (elements) => {
+        for (let index = 0; index < elements.length; index += 1) {
+          const element = elements[index];
+          const { id: eventId, event, data: eventData } = element;
+          const { type, data: stix, version: eventVersion, context } = eventData;
+          // New stream support only v4 events.
+          if (eventVersion === EVENT_VERSION_V4) {
+            // Check for inferences
+            const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
+            if (!isInferredData || (isInferredData && withInferences)) {
+              const isCurrentlyVisible = await isInstanceMatchFilters(stix, streamFilters, filterCache);
+              if (type === EVENT_TYPE_UPDATE) {
+                const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), context.previous_patch);
+                const isPreviouslyVisible = await isInstanceMatchFilters(previous, streamFilters, filterCache);
+                if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
+                  client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
+                } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
+                  client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                } else if (isCurrentlyVisible) {
+                  client.sendEvent(eventId, event, eventData);
+                }
+              } else if (isCurrentlyVisible) {
+                if (type === EVENT_TYPE_DELETE && noDelete === false) {
+                  client.sendEvent(eventId, event, eventData);
+                } else { // Create Merge
+                  client.sendEvent(eventId, event, eventData);
+                }
+              }
+              await wait(channel.delay);
+            }
+            // Delete eventual filtering cache
+            filterCache.delete(stix.extensions[STIX_EXT_OCTI].id);
+          }
+        }
+      });
+      await initBroadcasting(req, res, client, processor);
       // Start recovery if needed
       if (isNotEmptyField(recoverTo)) {
         let fromStart = startFrom === '0' ? FROM_START_STR : startFrom;
@@ -536,43 +572,6 @@ const createSeeMiddleware = () => {
         await elList(req.session.user, queryIndices, queryOptions);
       }
       // After recovery start the stream listening
-      const userEmail = req.session.user.user_email;
-      const filterCache = new LRU({ max: MAX_CACHE_SIZE, ttl: MAX_CACHE_TIME });
-      const processor = createStreamProcessor(req.session.user, userEmail, async (elements) => {
-        for (let index = 0; index < elements.length; index += 1) {
-          const element = elements[index];
-          const { id: eventId, event, data: eventData } = element;
-          const { type, data: stix, version: eventVersion, context } = eventData;
-          // New stream support only v4 events.
-          if (eventVersion === EVENT_VERSION_V4) {
-            // Check for inferences
-            const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
-            if (!isInferredData || (isInferredData && withInferences)) {
-              const isCurrentlyVisible = await isInstanceMatchFilters(stix, streamFilters, filterCache);
-              if (type === EVENT_TYPE_UPDATE) {
-                const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), context.previous_patch);
-                const isPreviouslyVisible = await isInstanceMatchFilters(previous, streamFilters, filterCache);
-                if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
-                  client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);
-                } else if (!isPreviouslyVisible && isCurrentlyVisible) { // Newly visible
-                  client.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
-                } else if (isCurrentlyVisible) {
-                  client.sendEvent(eventId, event, eventData);
-                }
-              } else if (isCurrentlyVisible) {
-                if (type === EVENT_TYPE_DELETE && noDelete === false) {
-                  client.sendEvent(eventId, event, eventData);
-                } else { // Create Merge
-                  client.sendEvent(eventId, event, eventData);
-                }
-              }
-              await wait(channel.delay);
-            }
-            // Delete eventual filtering cache
-            filterCache.delete(stix.extensions[STIX_EXT_OCTI].id);
-          }
-        }
-      });
       const streamStartDate = recoverTo || (startFrom === '0' ? FROM_START_STR : startFrom);
       const startEventTime = streamStartDate ? `${utcDate(streamStartDate).unix() * 1000}-0` : 'live';
       // noinspection ES6MissingAwait
