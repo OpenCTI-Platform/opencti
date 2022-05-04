@@ -404,7 +404,13 @@ const createSeeMiddleware = () => {
     const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
     try {
       const version = STREAM_EVENT_VERSION;
-      const startFrom = req.query.from || req.headers.from || req.headers['last-event-id'];
+      const paramStartFrom = req.query.from || req.headers.from || req.headers['last-event-id'];
+      let startFrom = (paramStartFrom === '0' || paramStartFrom === '0-0') ? FROM_START_STR : paramStartFrom;
+      // Also handle event id with redis format stamp or stamp-index
+      if (startFrom.includes('-') && startFrom.split('-').length === 2) {
+        const [timestamp] = startFrom.split('-');
+        startFrom = utcDate(parseInt(timestamp, 10)).toISOString();
+      }
       const recoverTo = req.query.recover || req.headers.recover || req.headers['recover-date'];
       const noDelete = (req.query['listen-delete'] || req.headers['listen-delete']) === 'false';
       const noDependencies = (req.query['no-dependencies'] || req.headers['no-dependencies']) === 'true';
@@ -510,12 +516,6 @@ const createSeeMiddleware = () => {
       await initBroadcasting(req, res, client, processor);
       // Start recovery if needed
       if (isNotEmptyField(recoverTo)) {
-        let fromStart = startFrom === '0' ? FROM_START_STR : startFrom;
-        // Also handle event id with redis format stamp or stamp-index
-        if (startFrom.includes('-') && startFrom.split('-').length === 2) {
-          const [timestamp] = startFrom.split('-');
-          fromStart = utcDate(parseInt(timestamp, 10)).toISOString();
-        }
         // noinspection UnnecessaryLocalVariableJS
         const queryCallback = async (elements) => {
           for (let index = 0; index < elements.length; index += 1) {
@@ -530,7 +530,7 @@ const createSeeMiddleware = () => {
                 // publish missing if needed
                 if (noDependencies === false) {
                   const refs = stixRefsExtractor(stixData, generateStandardId);
-                  const missingElements = await resolveMissingReferences(queryIndices, req, streamFilters, fromStart, start, refs, cache);
+                  const missingElements = await resolveMissingReferences(queryIndices, req, streamFilters, startFrom, start, refs, cache);
                   for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
                     const missingRef = missingElements[missingIndex];
                     if (!cache.has(missingRef)) {
@@ -567,13 +567,13 @@ const createSeeMiddleware = () => {
           await wait(500);
           return channel.connected();
         };
-        const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: fromStart, before: recoverTo });
+        const queryOptions = convertFiltersToQueryOptions(streamFilters, { after: startFrom, before: recoverTo });
         queryOptions.callback = queryCallback;
         await elList(req.session.user, queryIndices, queryOptions);
       }
       // After recovery start the stream listening
       const streamStartDate = recoverTo || (startFrom === '0' ? FROM_START_STR : startFrom);
-      const startEventTime = streamStartDate ? `${utcDate(streamStartDate).unix() * 1000}-0` : 'live';
+      const startEventTime = streamStartDate ? `${startFrom.unix() * 1000}-0` : 'live';
       // noinspection ES6MissingAwait
       processor.start(startEventTime);
     } catch (e) {
