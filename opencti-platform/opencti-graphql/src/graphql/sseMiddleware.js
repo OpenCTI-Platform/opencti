@@ -407,7 +407,7 @@ const createSeeMiddleware = () => {
       const paramStartFrom = req.query.from || req.headers.from || req.headers['last-event-id'];
       let startFrom = (paramStartFrom === '0' || paramStartFrom === '0-0') ? FROM_START_STR : paramStartFrom;
       // Also handle event id with redis format stamp or stamp-index
-      if (startFrom.includes('-') && startFrom.split('-').length === 2) {
+      if (startFrom && startFrom.includes('-') && startFrom.split('-').length === 2) {
         const [timestamp] = startFrom.split('-');
         startFrom = utcDate(parseInt(timestamp, 10)).toISOString();
       }
@@ -572,8 +572,8 @@ const createSeeMiddleware = () => {
         await elList(req.session.user, queryIndices, queryOptions);
       }
       // After recovery start the stream listening
-      const streamStartDate = utcDate(recoverTo || startFrom);
-      logApp.info(`[STREAM] Listening stream ${id} from ${streamStartDate}`);
+      const streamStartDate = (recoverTo || startFrom) ? utcDate(recoverTo || startFrom) : undefined;
+      logApp.info(`[STREAM] Listening stream ${id} from ${streamStartDate ?? 'live'}`);
       const startEventTime = streamStartDate ? `${streamStartDate.unix() * 1000}-0` : 'live';
       // noinspection ES6MissingAwait
       processor.start(startEventTime);

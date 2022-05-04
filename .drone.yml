@@ -17,6 +17,7 @@ steps:
       ELASTICSEARCH__URL: http://elastic:9200
       MINIO__ENDPOINT: minio
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__HOSTNAME: smtp.ethereal.email
       SMTP__PORT: 587
@@ -118,6 +119,7 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: raw-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 30
@@ -141,6 +143,7 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: live-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 90
@@ -164,6 +167,7 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: direct-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 60
@@ -187,6 +191,7 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: restore-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 120
