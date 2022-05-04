@@ -120,7 +120,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('User Component')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Component Name')}
+                {assessmentPlatform.uses_components.name && t(assessmentPlatform.uses_components.name)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -210,6 +210,7 @@ const EntityAssessmentPlatformDetails = createFragmentContainer(
       fragment EntityAssessmentPlatformDetails_assessmentPlatform on AssessmentPlatform {
         __typename
         id
+        entity_type
         created
         modified
         name
@@ -221,6 +222,10 @@ const EntityAssessmentPlatformDetails = createFragmentContainer(
           color
           entity_type
           description
+        }
+        uses_components {
+          id
+          name
         }
       }
     `,
