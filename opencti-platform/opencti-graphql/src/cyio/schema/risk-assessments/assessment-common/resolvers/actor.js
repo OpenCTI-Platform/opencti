@@ -384,7 +384,7 @@ const actorResolvers = {
     },
     actor_ref: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.actor_ref_iri === undefined) return null;
-      // TODO: fix the generation to use the assessment-platform as the actor type value of Assessment Platforms
+      // TODO: WORKAROUND to fix the generation to use the assessment-platform as the actor type value of Assessment Platforms
       if (parent.actor_type == 'tool' && parent.actor_ref_iri.includes('AssessmentPlatform')) parent.actor_type = 'assessment-platform';
       let iri = parent.actor_ref_iri;
       const reducer = getReducer(parent.actor_type.toUpperCase());

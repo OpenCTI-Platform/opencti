@@ -5,6 +5,9 @@ import {
   generateId, 
   OSCAL_NS
 } from "../../../utils.js";
+import {
+  oscalPartyReducer,
+} from "../../oscal-common/resolvers/sparql-query.js";
 
 import {
   selectObjectIriByIdQuery,
@@ -38,6 +41,8 @@ export function getReducer( type ) {
       return observationReducer;
     case 'ORIGIN':
       return originReducer;
+    case 'PARTY':
+      return oscalPartyReducer;
     case 'REQUIRED-ASSET':
       return requiredAssetReducer;
     case 'RISK':
@@ -462,6 +467,11 @@ const subjectReducer = (item) => {
     item.object_type = 'subject';
   }
 
+  // populate name if we have the actual subject's information
+  if (item.name === undefined && (item.subject_name !== undefined)) {
+    item.name = item.subject_name;
+    if (item.subject_version !== undefined) item.name = item.name + ` ${item.subject_version}`;
+  }
   return {
     iri: item.iri,
     id: item.id,
@@ -678,8 +688,8 @@ export const detachFromActivityQuery = (id, field, itemIris) => {
 // Actor support functions
 export const insertActorQuery = (propValues) => {
   const id_material = {
-    ...(propValues.actor_type && {"actor_type": propValues.actor_type}),
     ...(propValues.actor_ref && {"actor_ref": propValues.actor_ref}),
+    ...(propValues.actor_type && {"actor_type": propValues.actor_type}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Actor-${id}>`;
@@ -704,7 +714,11 @@ export const insertActorQuery = (propValues) => {
 export const insertActorsQuery = (actors) => {
   const graphs = [], actorIris = [];
   actors.forEach((actor) => {
-    const id = generateId( );
+    const id_material = {
+      ...(actor.actor_ref && {"actor_ref": actor.actor_ref}),
+      ...(actor.actor_type && {"actor_type": actor.actor_type}),
+    } ;
+    const id = generateId( id_material, OSCAL_NS );
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Actor-${id}>`;
     actorIris.push(iri);
@@ -714,8 +728,10 @@ export const insertActorsQuery = (actors) => {
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#id> "${id}"`);
     insertPredicates.push(`${iri} <http://darklight.ai/ns/common#object_type> "actor"`); 
     insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#actor_type> "${actor.actor_type}"`);
-    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#actor> "${actor.actor}"`);
-    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#role> "${actor.role}"`);
+    insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/assessment/common#actor_ref> <${actor.actor_ref}>`);
+    if (actor.role_ref !== undefined) {
+      insertPredicates.push(`${iri} <http://csrc.nist.gov/ns/oscal/common#role> <${actor.role_ref}>`);
+    }
     graphs.push(`
   GRAPH ${iri} {
     ${insertPredicates.join(".\n        ")}
@@ -2236,7 +2252,7 @@ export const insertOriginQuery = (propValues) => {
   // compute the deterministic identifier
   const id_material = {
     ...(originActors[0].actor_type && {"actor_type": originActors[0].actor_type}),
-    ...(originActors[0].actor_ref && {"actor_type": originActors[0].actor_ref}),
+    ...(originActors[0].actor_ref && {"actor_ref": originActors[0].actor_ref}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
 
@@ -3034,7 +3050,12 @@ export const detachFromRiskResponseQuery = (id, field, itemIris) => {
 
 // Subject support functions
 export const insertSubjectQuery = (propValues) => {
-  const id = generateId( );
+  const id_material = {
+    ...(propValues.subject_context && {"subject_context": propValues.subject_context}),
+    ...(propValues.subject_ref && {"subject_ref": propValues.subject_ref}),
+    ...(propValues.subject_type && {"subject_type": propValues.subject_type}),
+  } ;
+  const id = generateId( id_material, OSCAL_NS );
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => subjectPredicateMap.hasOwnProperty(propPair[0]))
@@ -3057,8 +3078,13 @@ export const insertSubjectQuery = (propValues) => {
 export const insertSubjectsQuery = (subjects) => {
   const graphs = [], subjectIris = [];
   subjects.forEach((subject) => {
-    const id = generateId( );
-    const insertPredicates = [];
+    const id_material = {
+      ...(subject.subject_context && {"subject_context": subject.subject_context}),
+      ...(subject.subject_ref && {"subject_ref": subject.subject_ref}),
+      ...(subject.subject_type && {"subject_type": subject.subject_type}),
+    } ;
+    const id = generateId( id_material, OSCAL_NS );
+      const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Subject-${id}>`;
     subjectIris.push(iri);
     insertPredicates.push(`${iri} a <http://csrc.nist.gov/ns/oscal/assessment/common#Subject>`);
@@ -3092,6 +3118,11 @@ export const selectSubjectByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
   // defensive code to protect against query not supplying subject type
   if (!select.includes('subject_type')) select.push('subject_type');
+  // get the references name and version, if name is asked for
+  if (select.includes('name')) {
+    select.push('subject_name');
+    select.push('subject_version');
+  }
   const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -3106,6 +3137,13 @@ export const selectSubjectByIriQuery = (iri, select) => {
 export const selectAllSubjects = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
   if (!select.includes('id')) select.push('id');
+  // defensive code to protect against query not supplying subject type
+  if (!select.includes('subject_type')) select.push('subject_type');
+  // get the references name and version, if name is asked for
+  if (select.includes('name')) {
+    select.push('subject_name');
+    select.push('subject_version');
+  }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -4506,6 +4544,16 @@ export const subjectPredicateMap = {
   subject_context: {
     predicate: "<http://darklight.ai/ns/oscal/assessment/common#subject_context>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_context");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_name: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  subject_version: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>/<http://scap.nist.gov/ns/asset-identification#version>|<http://csrc.nist.gov/ns/oscal/common#version>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_version");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
