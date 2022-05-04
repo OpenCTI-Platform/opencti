@@ -572,8 +572,9 @@ const createSeeMiddleware = () => {
         await elList(req.session.user, queryIndices, queryOptions);
       }
       // After recovery start the stream listening
-      const streamStartDate = recoverTo || (startFrom === '0' ? FROM_START_STR : startFrom);
-      const startEventTime = streamStartDate ? `${startFrom.unix() * 1000}-0` : 'live';
+      const streamStartDate = utcDate(recoverTo || startFrom);
+      logApp.info(`[STREAM] Listening stream ${id} from ${streamStartDate}`);
+      const startEventTime = streamStartDate ? `${streamStartDate.unix() * 1000}-0` : 'live';
       // noinspection ES6MissingAwait
       processor.start(startEventTime);
     } catch (e) {
