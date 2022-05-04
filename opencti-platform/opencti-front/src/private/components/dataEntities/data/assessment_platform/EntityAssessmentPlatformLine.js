@@ -97,7 +97,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {/* {node.name && node.name} */}
+                {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -119,7 +119,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.creation_date.width }}
               >
-                {/* {node.created && fd(node.created)} */}
+                {node.created && fd(node.created)}
               </div>
               <div
                 className={classes.bodyItem}

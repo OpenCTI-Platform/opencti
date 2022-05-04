@@ -158,19 +158,13 @@ class AssessmentPlatformEntityEditionContainer extends Component {
     const initialValues = R.pipe(
       R.assoc('name', remediation?.name || ''),
       R.assoc('description', remediation?.description || ''),
-      R.assoc('source', remediationOriginData?.name || []),
       R.assoc('modified', dateFormat(remediation?.modified)),
       R.assoc('created', dateFormat(remediation?.created)),
-      R.assoc('lifecycle', remediation?.lifecycle || []),
-      R.assoc('response_type', remediation?.response_type || ''),
       R.pick([
         'name',
         'description',
-        'source',
         'modified',
         'created',
-        'lifecycle',
-        'response_type',
       ]),
     )(remediation);
     return (
@@ -195,7 +189,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Assessment Platform')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
@@ -216,6 +210,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
                       <Field
                         component={TextField}
                         name="id"
+                        disabled={true}
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
@@ -245,6 +240,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
                           name="created"
                           fullWidth={true}
                           size="small"
+                          disabled={true}
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
                           invalidDateMessage={t(
@@ -270,7 +266,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="role_identifier"
+                          name="name"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -298,6 +294,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
                           component={DatePickerField}
                           name="modified"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           invalidDateMessage={t(
@@ -356,7 +353,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="marking"
+                          name="user"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -364,7 +361,7 @@ class AssessmentPlatformEntityEditionContainer extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="marking"
+                          name="user_component"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}

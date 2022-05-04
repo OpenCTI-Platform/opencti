@@ -180,7 +180,7 @@ class EntitiesAssessmentPlatformsCreation extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Assessment Platform')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
@@ -255,7 +255,7 @@ class EntitiesAssessmentPlatformsCreation extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="role_identifier"
+                          name="name"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}

@@ -9,7 +9,6 @@ import RolesDataSource from './data/Roles/RolesDataSource';
 import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
 import RootAssessmentPlatform from './data/assessment_platform/Root';
 import RolesTasks from './data/tasks/TasksEntities';
-import RolesDataSource from './data/Roles/RolesDataSource';
 import TasksDataSource from './data/tasks/TasksDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';

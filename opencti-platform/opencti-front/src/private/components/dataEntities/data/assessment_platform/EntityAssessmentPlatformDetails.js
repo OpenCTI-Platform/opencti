@@ -98,7 +98,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {assessmentPlatform.name && t(assessmentPlatform.name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -109,7 +109,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Jun 3, 2022')}
+                {assessmentPlatform.created && fd(assessmentPlatform.created)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -133,7 +133,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {assessmentPlatform.id && t(assessmentPlatform.id)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -144,7 +144,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {assessmentPlatform.modified && fd(assessmentPlatform.modified)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -159,7 +159,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {t('Lorem Ipsum')}
+                  {assessmentPlatform.description && t(assessmentPlatform.description)}
                   </div>
                 </div>
               </div>
