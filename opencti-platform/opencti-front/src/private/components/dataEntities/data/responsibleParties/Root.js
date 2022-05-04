@@ -13,7 +13,7 @@ import {
   requestSubscription,
 } from '../../../../../relay/environment';
 import TopBar from '../../../nav/TopBar';
-import EntityRole from './EntityRole';
+import EntityResponsibleParty from './EntityResponsibleParty';
 import Loader from '../../../../../components/Loader';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
@@ -108,10 +108,10 @@ class RootResponsibleParty extends Component {
                       exact
                       path="/data/entities/responsible_parties/:respPartyId"
                       render={(routeProps) => (
-                        <EntityRole
+                        <EntityResponsibleParty
                           {...routeProps}
                           refreshQuery={retry}
-                          role={props.oscalResponsibleParty}
+                          responsibleParty={props.oscalResponsibleParty}
                         />
                       )}
                     />

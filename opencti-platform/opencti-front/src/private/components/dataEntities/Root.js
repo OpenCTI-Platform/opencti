@@ -12,6 +12,7 @@ import TasksDataSource from './data/tasks/TasksDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
 import RootTask from './data/tasks/Root';
+import RootResponsibleParty from './data/responsibleParties/Root';
 
 class Root extends Component {
   render() {
@@ -39,6 +40,11 @@ class Root extends Component {
           path="/data/entities/tasks"
           component={RolesTasks}
         />
+         <BoundaryRoute
+          exact
+          path="/data/entities/responsible_parties"
+          component={ResponsiblePartiesEntities}
+        />
         <BoundaryRoute
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
@@ -47,17 +53,16 @@ class Root extends Component {
           path="/data/entities/tasks/:taskId"
           render={(routeProps) => <RootTask {...routeProps} me={me} />}
         />
+        <BoundaryRoute
+          path="/data/entities/responsible_parties/:respPartyId"
+          render={(routeProps) => <RootResponsibleParty {...routeProps} me={me} />}
+        />
 
         {/* Data Source Section */}
         <BoundaryRoute
           exact
           path="/data/data source/roles"
           component={RolesDataSource}
-        />
-        <BoundaryRoute
-          exact
-          path="/data/entities/responsible_parties"
-          component={ResponsiblePartiesEntities}
         />
         <BoundaryRoute
           exact

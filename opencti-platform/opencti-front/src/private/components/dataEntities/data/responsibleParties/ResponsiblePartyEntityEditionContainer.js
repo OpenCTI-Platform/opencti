@@ -156,14 +156,18 @@ class ResponsiblePartyEntityEditionContainer extends Component {
       R.assoc('name', responsibleParties?.name || ''),
       R.assoc('description', responsibleParties?.description || ''),
       R.assoc('party', responsibleParties?.name || []),
+      R.assoc('created', responsibleParties?.created || null),
+      R.assoc('modified', responsibleParties?.modified || null),
       R.assoc('role', responsibleRoles?.name || []),
       R.assoc('marking', responsibleMarking?.name),
       R.pick([
         'name',
-        'description',
         'party',
         'role',
+        'created',
+        'modified',
         'marking',
+        'description',
       ]),
     )(responsibleParty);
     return (
@@ -188,7 +192,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Responsible Party')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>

@@ -183,7 +183,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Role')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Responsible Party')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
