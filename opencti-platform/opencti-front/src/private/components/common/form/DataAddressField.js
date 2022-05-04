@@ -16,6 +16,7 @@ import Typography from '@material-ui/core/Typography';
 import { Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import TextField from '@material-ui/core/TextField';
+import { truncate } from '../../../../utils/String';
 import Button from '@material-ui/core/Button';
 import Select from '@material-ui/core/Select';
 import FormControl from '@material-ui/core/FormControl';
@@ -78,8 +79,10 @@ class DataAddressField extends Component {
     super(props);
     this.state = {
       open: false,
+      editOpen: false,
       value: '',
       error: false,
+      editValueKey: '',
       ipAddress: [...this.props.addressValues],
       selectedMode: '',
     };
@@ -92,10 +95,24 @@ class DataAddressField extends Component {
     if (this.state.value === '' || this.state.value === null) {
       return;
     }
-    if (this.state.ipAddress.every((value) => value !== this.state.value)) {
+    if (this.state.ipAddress.every((value) => value.name !== this.state.value)) {
       this.state.ipAddress.push({ 'name': this.state.value, 'type': this.state.selectedMode });
     }
     this.setState({ value: '', open: false, selectedMode: '' });
+  }
+
+  handleEditAddress() {
+    if (!this.props.validation.test(this.state.value)) {
+      return this.setState({ error: true });
+    }
+    if (this.state.value === '' || this.state.value === null) {
+      return;
+    }
+    if (this.state.ipAddress.every((value) => value.name !== this.state.value)) {
+      this.state.ipAddress[this.state.editValueKey].name = this.state.value;
+      this.state.ipAddress[this.state.editValueKey].type = this.state.selectedMode;
+    }
+    this.setState({ value: '', editOpen: false, selectedMode: '' });
   }
 
   handleSubmit() {
@@ -103,6 +120,13 @@ class DataAddressField extends Component {
       this.props.setFieldValue(this.props.name, this.state.ipAddress)
     ));
   }
+
+  handleEditionAddress(key) {
+    const editValue = this.state.ipAddress.filter((v, i) => i === key)[0];
+    this.setState({ selectedMode: editValue.type, value: editValue.name })
+    this.setState({ editValueKey: key, editOpen: true });
+  }
+
   handleChangeMode(event) {
     this.setState({ selectedMode: event.target.value });
   }
@@ -140,17 +164,17 @@ class DataAddressField extends Component {
                 <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
                     {address.type === 'office'
-                      ? <ApartmentOutlined />
+                      ? <ApartmentOutlined fontSize='small' />
                       : address.type === 'mobile'
-                        ? <HomeOutlinedIcon />
-                        : <CallIcon />}
+                        ? <HomeOutlinedIcon fontSize='small' />
+                        : <CallIcon fontSize='small' />}
                     <Typography>
-                      {address.name}
+                      {address.name && truncate(t(address.name), 14)}
                     </Typography>
                   </div>
                   <div style={{ display: 'flex' }}>
                     <IconButton
-                      // onClick={this.handleEditionAddress.bind(this, key)}
+                      onClick={this.handleEditionAddress.bind(this, key)}
                     >
                       <Edit />
                     </IconButton>
@@ -205,13 +229,68 @@ class DataAddressField extends Component {
           <DialogActions className={classes.dialogAction}>
             <Button
               variant='outlined'
-              onClick={() => this.setState({ open: false, value: '' })}
+              onClick={() => this.setState({ open: false, value: '', selectedMode: '' })}
             >
               {t('Cancel')}
             </Button>
             <Button
               variant='contained'
               onClick={this.handleAddAddress.bind(this)}
+              color="primary"
+            >
+              {t('Submit')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.editOpen}
+          onClose={() => this.setState({ editOpen: false })}
+          fullWidth={true}
+          maxWidth='sm'
+        >
+          <DialogContent>
+            {t(`Add or Edit ${title}`)}
+          </DialogContent>
+          <DialogContent style={{ overflow: 'hidden', display: 'flex', alignItems: 'end' }}>
+            <div style={{ marginRight: '20px' }}>
+              <FormControl
+                size='small'
+                fullWidth={true}
+                className={classes.dataEntities}
+              >
+                <InputLabel>
+                  Usage Type
+                </InputLabel>
+                <Select
+                  value={this.state.selectedMode}
+                  onChange={this.handleChangeMode.bind(this)}
+                  className={classes.dataSelect}
+                >
+                  <MenuItem value='office'><ApartmentOutlined />Office</MenuItem>
+                  <MenuItem value='mobile'><HomeOutlinedIcon />Mobile</MenuItem>
+                  <MenuItem value='home'><CallIcon />Home</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
+            <TextField
+              error={error}
+              helperText={error ? helperText : ''}
+              onChange={(event) => this.setState({ value: event.target.value })}
+              onFocus={() => this.setState({ error: false })}
+              fullWidth={true}
+              value={this.state.value}
+            />
+          </DialogContent>
+          <DialogActions className={classes.dialogAction}>
+            <Button
+              variant='outlined'
+              onClick={() => this.setState({ editOpen: false, value: '', selectedMode: '' })}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant='contained'
+              onClick={this.handleEditAddress.bind(this)}
               color="primary"
             >
               {t('Submit')}

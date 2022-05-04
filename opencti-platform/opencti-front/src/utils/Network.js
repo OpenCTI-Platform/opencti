@@ -4,7 +4,7 @@ export const ipv4AddrRegex = /^\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}$/;
 
 export const dateFormatRegex = /T\d{2}:\d{2}:\d{2}.\d{3}Z$/;
 
-export const telephoneFormatRegex = /^\d \(\d{3}\) \d{3}-\d{4}$/;
+export const telephoneFormatRegex = /^\+\d \d{3} \d{3}-\d{4}$/;
 
 export const emailAddressRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
 /**
