@@ -42,6 +42,7 @@ import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import DataAddressField from '../../../common/form/DataAddressField';
+import NewAddressField from '../../../common/form/NewAddressField';
 import { ipv6AddrRegex, telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
 
 const styles = (theme) => ({
@@ -97,7 +98,6 @@ class PartyEntityEditionContainer extends Component {
       close: false,
       onSubmit: false,
       radioButtonValue: 'locations',
-      openAddress: false,
     };
   }
 
@@ -115,14 +115,7 @@ class PartyEntityEditionContainer extends Component {
   }
 
   handleChangeRadioButton(event) {
-    if (event.target.value === 'address') {
-      this.setState({ openAddress: true }, () => this.props.handleDisplayEdit());
-    }
     this.setState({ radioButtonValue: event.target.value });
-  }
-
-  handleCloseAddress() {
-    this.setState({ openAddress: false });
   }
 
   onReset() {
@@ -183,12 +176,14 @@ class PartyEntityEditionContainer extends Component {
       R.assoc('telephone_numbers', []),
       R.assoc('email_address', []),
       R.assoc('address', []),
+      R.assoc('locations', []),
       R.pick([
         'name',
         'description',
         'telephone_numbers',
         'email_address',
         'address',
+        'locations',
       ]),
     )(remediation);
     return (
@@ -564,6 +559,54 @@ class PartyEntityEditionContainer extends Component {
                         <FormControlLabel value="locations" control={<Radio />} label="Locations" />
                         <FormControlLabel value="address" control={<Radio />} label="Address" />
                       </RadioGroup>
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      {this.state.radioButtonValue === 'address' ? (
+                        <NewAddressField
+                          setFieldValue={setFieldValue}
+                          values={values}
+                          addressValues={values.address}
+                          title='Address(es)'
+                          name='address'
+                          validation={emailAddressRegex}
+                          helperText='Please enter a valid Email Address. Example: support@darklight.ai'
+                        />
+                      ) : (
+                        <NewAddressField
+                          setFieldValue={setFieldValue}
+                          values={values}
+                          addressValues={values.locations}
+                          title='Location(s)'
+                          name='locations'
+                          validation={emailAddressRegex}
+                          helperText='Please enter a valid Email Location. Example: support@darklight.ai'
+                        />
+                      )}
+
+                    </Grid>
+                    <Grid item={true} xs={6} style={{ marginTop: '10px' }}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Marking')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Marking')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="marking"
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
                     </Grid>
                   </Grid>
                 </DialogContent>
