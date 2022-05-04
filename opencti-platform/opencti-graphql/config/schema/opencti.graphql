@@ -568,7 +568,6 @@ input SynchronizerAddInput {
   current_state: String
   listen_deletion: Boolean!
   ssl_verify: Boolean
-  current_state: String
 }
 
 ############## Files

@@ -190,7 +190,7 @@ describe('Database sync testing', () => {
           name: 'SYNC',
           uri: SYNC_TEST_REMOTE_URI,
           listen_deletion: true,
-          current_state: '0-0',
+          current_state: new Date().getTime(),
           stream_id: 'live',
           token: API_TOKEN,
         },
