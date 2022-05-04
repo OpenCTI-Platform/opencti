@@ -112,20 +112,13 @@ class ResponsiblePartyEntityEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = R.evolve(
-      {
-        modified: () => values.modified === null ? null : parse(values.modified).format(),
-        created: () => values.created === null ? null : parse(values.created).format(),
-      },
-      values,
-    );
     const finalValues = R.pipe(
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
         'value': adaptFieldValue(n[1]),
       })),
-    )(adaptedValues);
+    )(values);
     CM(environmentDarkLight, {
       mutation: respPartyEntityEditionContainerMutation,
       variables: {
@@ -151,28 +144,28 @@ class ResponsiblePartyEntityEditionContainer extends Component {
       classes,
       t,
       disabled,
+      responsibleParty,
       risk,
       remediation,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
+    const responsibleParties = R.pathOr([], ['parties'])(responsibleParty);
+    const responsibleRoles = R.pathOr([], ['role'])(responsibleParty);
+    const responsibleMarking = R.pathOr([], ['marking'])(responsibleParty);
+    
     const initialValues = R.pipe(
-      R.assoc('name', remediation?.name || ''),
-      R.assoc('description', remediation?.description || ''),
-      R.assoc('source', remediationOriginData?.name || []),
-      R.assoc('modified', dateFormat(remediation?.modified)),
-      R.assoc('created', dateFormat(remediation?.created)),
-      R.assoc('lifecycle', remediation?.lifecycle || []),
-      R.assoc('response_type', remediation?.response_type || ''),
+      R.assoc('name', responsibleParties?.name || ''),
+      R.assoc('description', responsibleParties?.description || ''),
+      R.assoc('party', responsibleParties?.name || []),
+      R.assoc('role', responsibleRoles?.name || []),
+      R.assoc('marking', responsibleMarking?.name),
       R.pick([
         'name',
         'description',
-        'source',
-        'modified',
-        'created',
-        'lifecycle',
-        'response_type',
+        'party',
+        'role',
+        'marking',
       ]),
-    )(remediation);
+    )(responsibleParty);
     return (
       <>
         <Dialog
@@ -360,7 +353,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="marking"
+                          name="party"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -409,7 +402,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="marking"
+                        name="role"
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
@@ -455,6 +448,7 @@ ResponsiblePartyEntityEditionContainer.propTypes = {
   t: PropTypes.func,
   connectionKey: PropTypes.string,
   enableReferences: PropTypes.bool,
+  responsibleParty: PropTypes.object,
 };
 
 export default compose(
