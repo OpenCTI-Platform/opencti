@@ -68,18 +68,19 @@ export const findAllSync = async (user, opts = {}) => {
   return listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
-export const createSyncHttpUri = (sync) => {
+export const createSyncHttpUri = (sync, testMode) => {
   // TODO JRI Add Interface option in synchronizer to pickup from & recover & with-inferences options
   const { uri, stream_id: stream, current_state: state, listen_deletion: deletion } = sync;
-  let streamUri = `${httpBase(uri)}stream/${stream}?listen-delete=${deletion}`;
-  if (state) {
-    streamUri += `&from=${state}`;
+  if (testMode) {
+    logApp.debug(`[OPENCTI] Testing sync url with ${httpBase(uri)}stream/${stream}`);
+    return `${httpBase(uri)}stream/${stream}`;
   }
-  logApp.debug(`[OPENCTI] Testing sync url with ${streamUri}`);
+  let streamUri = `${httpBase(uri)}stream/${stream}?listen-delete=${deletion}`;
+  if (state) streamUri += `&from=${state}`;
   return streamUri;
 };
 export const testSync = async (user, sync) => {
-  const eventSourceUri = createSyncHttpUri(sync);
+  const eventSourceUri = createSyncHttpUri(sync, true);
   const { token, ssl_verify: ssl = false } = sync;
   return new Promise((resolve, reject) => {
     try {

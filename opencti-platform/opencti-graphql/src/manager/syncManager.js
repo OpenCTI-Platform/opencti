@@ -114,7 +114,7 @@ const syncManagerInstance = (syncId) => {
     eventsQueue = new Queue();
     syncElement = await storeLoadById(SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
     const { token, ssl_verify: ssl = false } = syncElement;
-    const eventSourceUri = createSyncHttpUri(syncElement);
+    const eventSourceUri = createSyncHttpUri(syncElement, false);
     logApp.info(`[OPENCTI] Running sync manager for ${syncId} (${eventSourceUri})`);
     eventSource = new EventSource(eventSourceUri, {
       rejectUnauthorized: ssl,
