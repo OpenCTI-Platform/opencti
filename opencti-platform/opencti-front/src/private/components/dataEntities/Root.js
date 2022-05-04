@@ -4,12 +4,15 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Entities from './Entities';
 import RolesEntities from './data/Roles/RolesEntities';
-import RolesTasks from './data/tasks/TasksEntities';
+import LocationsEntities from './data/locations/LocationsEntities';
+import TasksEntities from './data/tasks/TasksEntities';
 import RolesDataSource from './data/Roles/RolesDataSource';
 import TasksDataSource from './data/tasks/TasksDataSource';
+import LocationsDataSource from './data/locations/LocationsDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
 import RootTask from './data/tasks/Root';
+import RootLocation from './data/locations/Root';
 
 class Root extends Component {
   render() {
@@ -35,7 +38,12 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/data/entities/tasks"
-          component={RolesTasks}
+          component={TasksEntities}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/locations"
+          component={LocationsEntities}
         />
         <BoundaryRoute
           path="/data/entities/roles/:roleId"
@@ -44,6 +52,10 @@ class Root extends Component {
         <BoundaryRoute
           path="/data/entities/tasks/:taskId"
           render={(routeProps) => <RootTask {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          path="/data/entities/locations/:locationId"
+          render={(routeProps) => <RootLocation {...routeProps} me={me} />}
         />
 
         {/* Data Source Section */}
@@ -56,6 +68,11 @@ class Root extends Component {
           exact
           path="/data/data source/tasks"
           component={TasksDataSource}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/data source/locations"
+          component={LocationsDataSource}
         />
         <BoundaryRoute
           exact
