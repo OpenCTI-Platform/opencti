@@ -47,7 +47,7 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
-    overflow: 'hidden',
+    overflowY: 'scroll',
   },
   dialogClosebutton: {
     float: 'left',
@@ -215,6 +215,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                           component={TextField}
                           name="id"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -243,6 +244,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                           component={DatePickerField}
                           name="created"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -273,6 +275,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                           component={DatePickerField}
                           name="modified"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           invalidDateMessage={t(
