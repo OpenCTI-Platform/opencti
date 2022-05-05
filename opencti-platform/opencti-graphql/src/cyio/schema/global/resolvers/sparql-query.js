@@ -343,7 +343,7 @@ export const insertAddressQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Address .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Address> .
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
       ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
@@ -967,7 +967,7 @@ export const insertPhoneNumberQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber> .
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
       ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .

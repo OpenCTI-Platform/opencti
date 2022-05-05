@@ -319,7 +319,7 @@
     # OscalLocation
     location_type: OscalLocationType
     location_class: OscalLocationClass
-    address: [CivicAddressAddInput]
+    address: CivicAddressAddInput
     email_addresses: [EmailAddress]
     telephone_numbers: [TelephoneNumberAddInput]
     urls: [URL]
