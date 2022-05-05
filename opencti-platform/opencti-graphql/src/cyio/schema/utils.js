@@ -186,7 +186,10 @@ export const buildSelectVariables = (predicateMap, selects) => {
 export const updateQuery = (iri, type, input, predicateMap) => {
   let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [], replacementPredicate;
   for(const {key, value, operation} of input) {
-    if (!predicateMap.hasOwnProperty(key)) continue;
+    if (!predicateMap.hasOwnProperty(key)) {
+      console.error(`[CYIO] UNKNOWN-FIELD Unknown field '${key}' for object ${iri}`);        
+      continue;
+    }
     let itr;
     for(itr of value) {
       if (key === 'description' || key === 'statement') {
