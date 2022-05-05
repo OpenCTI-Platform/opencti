@@ -143,13 +143,13 @@ class RemediationDeletion extends Component {
     CM(environmentDarkLight, {
       mutation: RemediationDeletionDarkLightMutation,
       variables: {
-        id: this.props.remediationId,
+        id: this.props.id,
         riskId: this.props.riskId,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}`);
+        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
       },
       onError: (err) => {
         console.error(err);
@@ -244,8 +244,8 @@ class RemediationDeletion extends Component {
 }
 
 RemediationDeletion.propTypes = {
+  id: PropTypes.string,
   riskId: PropTypes.string,
-  remediationId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
