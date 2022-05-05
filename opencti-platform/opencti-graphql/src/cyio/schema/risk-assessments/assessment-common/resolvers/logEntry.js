@@ -274,20 +274,22 @@ const logEntryResolvers = {
       // create any authors supplied and attach them to the log entry 
       if (authors !== undefined && authors !== null ) {
         // create the Log Entry Author
+        let result;
         const {authorIris, query} = insertLogEntryAuthorsQuery( authors );
-        await dataSources.Stardog.create({
+        result = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
           queryId: "Create Authors of Log Entry"
         });
+        console.error(result)
         // attach the Author to the Party
         const authorAttachQuery = attachToRiskLogEntryQuery(id, 'logged_by', authorIris);
-        await dataSources.Stardog.create({
+        result = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: authorAttachQuery,
           queryId: "Attach Authors to Log Entry"
         });
-
+        console.error(result)
       }
 
       // Create references to the Risk Responses
@@ -750,7 +752,20 @@ const logEntryResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
+            // Return a null logEntryAuthor if it has a reference to the party that is bad or missing
+            if (response[0].hasOwnProperty('party')) {
+              let parties = [];
+              for (let party of response[0].party) {
+                if (party.includes('Party-undefined')) {
+                  console.error(`[CYIO] INVALID-IRI: (${dbName}) ${response[0].iri} 'party' contains an IRI ${party} which is invalid; skipping`);
+                  continue;
+                }
+                parties.push(party);
+              }
+              if (parties.length === 0) parties = null;
+              response[0].party = parties;
+            } 
+            if (response[0].party !== null) results.push(reducer(response[0]))
           }
           else {
             // Handle reporting Stardog Error

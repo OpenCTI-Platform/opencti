@@ -1906,6 +1906,11 @@ export const selectLogEntryAuthorQuery = (id, select) => {
 export const selectLogEntryAuthorByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(logEntryAuthorPredicateMap);
+  if (select.includes('party')) {
+    select.push('party_name');
+    select.push('party_type');
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(logEntryAuthorPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -3097,7 +3102,7 @@ export const selectAllRiskResponses = (select, args) => {
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
-    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse . 
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse> . 
     ${predicates}
   }
   `
@@ -3903,6 +3908,12 @@ export const logEntryAuthorPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  party_name: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+
   role: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#role>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "role");},
