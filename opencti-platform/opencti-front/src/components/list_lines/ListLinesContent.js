@@ -49,6 +49,12 @@ class ListLinesContent extends Component {
     ) {
       selection = true;
     }
+    if (
+      Object.keys(this.props.deSelectedElements || {}).length
+      !== Object.keys(prevProps.deSelectedElements || {}).length
+    ) {
+      selection = true;
+    }
     if (this.props.selectAll !== prevProps.selectAll) {
       selection = true;
     }
@@ -103,6 +109,7 @@ class ListLinesContent extends Component {
       refetch,
       onLabelClick,
       selectedElements,
+      deSelectedElements,
       selectAll,
       onToggleEntity,
       connectionKey,
@@ -131,6 +138,7 @@ class ListLinesContent extends Component {
           me,
           onLabelClick,
           selectedElements,
+          deSelectedElements,
           selectAll,
           onToggleEntity,
           connectionKey,
@@ -214,6 +222,7 @@ ListLinesContent.propTypes = {
   entityLink: PropTypes.string,
   onLabelClick: PropTypes.func,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
   onToggleEntity: PropTypes.func,
   selectAll: PropTypes.bool,
   connectionKey: PropTypes.string,

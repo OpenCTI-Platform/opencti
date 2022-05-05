@@ -115,12 +115,12 @@ export const createRuleTask = async (user, ruleDefinition, input) => {
 };
 
 export const createQueryTask = async (user, input) => {
-  const { actions, filters, search = null } = input;
+  const { actions, filters, excluded_ids = [], search = null } = input;
   checkActionValidity(user, actions);
   const queryData = await executeTaskQuery(user, filters, search);
-  const countExpected = queryData.pageInfo.globalCount;
+  const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
   const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected);
-  const queryTask = { ...task, actions, task_filters: filters, task_search: search };
+  const queryTask = { ...task, actions, task_filters: filters, task_search: search, task_excluded_ids: excluded_ids };
   await elIndex(INDEX_INTERNAL_OBJECTS, queryTask);
   return queryTask;
 };

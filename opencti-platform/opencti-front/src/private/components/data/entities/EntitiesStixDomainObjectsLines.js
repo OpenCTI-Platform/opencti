@@ -29,6 +29,7 @@ class EntitiesStixDomainObjectsLines extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -49,6 +50,7 @@ class EntitiesStixDomainObjectsLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
         selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
         selectAll={selectAll}
         onToggleEntity={onToggleEntity.bind(this)}
       />
@@ -68,6 +70,7 @@ EntitiesStixDomainObjectsLines.propTypes = {
   setNumberOfElements: PropTypes.func,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
   selectAll: PropTypes.bool,
 };
 

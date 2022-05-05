@@ -39,6 +39,7 @@ class StixDomainObjectIndicators extends Component {
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
+      deSelectedElements: null,
       selectAll: false,
     };
   }
@@ -102,12 +103,26 @@ class StixDomainObjectIndicators extends Component {
   handleToggleSelectEntity(entity, event) {
     event.stopPropagation();
     event.preventDefault();
-    const { selectedElements } = this.state;
+    const { selectedElements, deSelectedElements, selectAll } = this.state;
     if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
       this.setState({
         selectAll: false,
         selectedElements: newSelectedElements,
+      });
+    } else if (selectAll && entity.id in (deSelectedElements || {})) {
+      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else if (selectAll) {
+      const newDeSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        deSelectedElements || {},
+      );
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
       });
     } else {
       const newSelectedElements = R.assoc(
@@ -123,11 +138,19 @@ class StixDomainObjectIndicators extends Component {
   }
 
   handleToggleSelectAll() {
-    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+    this.setState({
+      selectAll: !this.state.selectAll,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
   }
 
   handleClearSelectedElements() {
-    this.setState({ selectAll: false, selectedElements: null });
+    this.setState({
+      selectAll: false,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
   }
 
   handleAddFilter(key, id, value, event = null) {
@@ -213,6 +236,7 @@ class StixDomainObjectIndicators extends Component {
       openExports,
       numberOfElements,
       selectedElements,
+      deSelectedElements,
       selectAll,
       filters,
       indicatorTypes,
@@ -221,7 +245,8 @@ class StixDomainObjectIndicators extends Component {
     const { stixDomainObjectId, stixDomainObjectLink } = this.props;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
+      numberOfSelectedElements = numberOfElements.original
+        - Object.keys(deSelectedElements || {}).length;
     }
     let finalFilters = filters;
     finalFilters = R.assoc(
@@ -297,6 +322,7 @@ class StixDomainObjectIndicators extends Component {
                     initialLoading={props === null}
                     setNumberOfElements={this.setNumberOfElements.bind(this)}
                     selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
                     onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                     selectAll={selectAll}
                   />
@@ -305,6 +331,7 @@ class StixDomainObjectIndicators extends Component {
             </ListLines>
             <ToolBar
               selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
               filters={finalFilters}

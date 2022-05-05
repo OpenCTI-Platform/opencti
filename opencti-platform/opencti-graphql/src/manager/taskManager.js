@@ -116,7 +116,7 @@ const computeRuleTaskElements = async (task) => {
   return processingElements;
 };
 const computeQueryTaskElements = async (user, task) => {
-  const { actions, task_position, task_filters, task_search = null } = task;
+  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
   const processingElements = [];
   // Fetch the information
   const data = await executeTaskQuery(user, task_filters, task_search, task_position);
@@ -125,7 +125,9 @@ const computeQueryTaskElements = async (user, task) => {
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
-    processingElements.push({ element: element.node, actions, next: element.cursor });
+    if (!task_excluded_ids.includes(element.node.id)) {
+      processingElements.push({ element: element.node, actions, next: element.cursor });
+    }
   }
   return processingElements;
 };

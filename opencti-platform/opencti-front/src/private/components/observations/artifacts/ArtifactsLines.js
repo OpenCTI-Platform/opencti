@@ -26,6 +26,7 @@ class ArtifactsLines extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -50,6 +51,7 @@ class ArtifactsLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
         selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
         selectAll={selectAll}
         onToggleEntity={onToggleEntity.bind(this)}
       />

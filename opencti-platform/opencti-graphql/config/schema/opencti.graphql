@@ -789,6 +789,7 @@ input ListTaskAddInput {
 input QueryTaskAddInput {
   filters: String!
   search: String
+  excluded_ids: [ID]
   actions: [TaskActionInput]!
 }
 

@@ -31,6 +31,7 @@ class StixDomainObjectIndicatorsLines extends Component {
       paginationOptions,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -53,6 +54,7 @@ class StixDomainObjectIndicatorsLines extends Component {
         entityLink={entityLink}
         entityId={entityId}
         selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
         selectAll={selectAll}
         onToggleEntity={onToggleEntity.bind(this)}
       />
@@ -73,6 +75,7 @@ StixDomainObjectIndicatorsLines.propTypes = {
   setNumberOfElements: PropTypes.func,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
   selectAll: PropTypes.bool,
 };
 
