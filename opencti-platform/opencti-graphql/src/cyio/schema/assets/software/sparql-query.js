@@ -474,9 +474,9 @@ export const softwarePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "software_identifier")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
-  patch: {
+  patch_level: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#patch_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "patch");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "patch_level");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   installation_id: {

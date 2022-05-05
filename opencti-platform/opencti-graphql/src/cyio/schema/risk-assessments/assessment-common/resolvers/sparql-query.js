@@ -8,6 +8,9 @@ import {
 import {
   oscalPartyReducer,
 } from "../../oscal-common/resolvers/sparql-query.js";
+import {
+  componentReducer,
+} from "../../component/resolvers/sparql-query.js";
 
 import {
   selectObjectIriByIdQuery,
@@ -20,8 +23,9 @@ export function getReducer( type ) {
       return actorReducer;
     case 'ACTIVITY':
       return activityReducer;
+    case 'TOOL':
+      return componentReducer;
     case 'ASSESSMENT-PLATFORM':
-    case 'TOOL':                    // TODO: change 
       return assessmentPlatformReducer;
     case 'ASSESSMENT-SUBJECT':
       return assessmentSubjectReducer;

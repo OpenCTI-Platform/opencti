@@ -164,20 +164,17 @@ class RiskObservationPopover extends Component {
                 </Grid>
                 <Grid item={true} xs={9}>
                   <DialogContentText>
-                    {t('Source Of Observation')}
+                    {t('Observation Sources')}
                   </DialogContentText>
                   <Typography style={{ alignItems: 'center', display: 'flex' }} color="primary">
-                    {data.origins.map((origin, i) => {
-                      const originActor = R.pipe(
-                        R.pathOr([], ['origin_actors']),
-                        R.mergeAll,
-                      )(origin);
-                      return (
+                    {
+                      data.origins.map((value, j) => value.origin_actors.map((s, i) => (
                         <>
-                          <LaunchIcon key={i} fontSize='small' /> {t(originActor.actor_ref.name)}
+                        <LaunchIcon key={i} fontSize='small' /> {t(s.actor_ref.name)}
+                        <br />
                         </>
-                      );
-                    })}
+                      )))
+                    }
                   </Typography>
                   <Grid style={{ marginTop: '20px' }} spacing={3} container={true}>
                     <Grid item={true} xs={6}>

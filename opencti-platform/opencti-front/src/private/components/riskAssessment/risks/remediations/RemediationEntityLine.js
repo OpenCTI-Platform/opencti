@@ -138,7 +138,7 @@ class RemediationEntityLineComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {SourceOfDetection.actor_ref.name && t(SourceOfDetection.actor_ref.name)}
+                      {SourceOfDetection.actor_ref?.name && t(SourceOfDetection.actor_ref?.name)}
                     </Typography>
                     <Typography color="textSecondary" variant="disabled">
                       {t('Lorem Ipsum Dolor Ist')}
