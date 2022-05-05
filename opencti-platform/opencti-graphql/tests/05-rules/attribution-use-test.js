@@ -15,7 +15,6 @@ const SPELEVO = 'malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85';
 const TLP_WHITE_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
 
 describe('Attribute use rule', () => {
-  // eslint-disable-next-line prettier/prettier
   it(
     'Should rule successfully activated',
     async () => {
@@ -26,7 +25,7 @@ describe('Attribute use rule', () => {
       const threat = await addThreatActor(SYSTEM_USER, { name: 'MY TREAT ACTOR' });
       const MY_THREAT = threat.standard_id;
       // 02. Create require relation
-      // APT41 -> uses -> Paradise (start: 2020-02-28T23:00:00.000Z, stop: 2020-02-29T23:00:00.000Z, confidence: 30)
+      // APT41 -> attributed to -> MY TREAT ACTOR
       await createRelation(SYSTEM_USER, {
         fromId: APT41,
         toId: threat.id,
@@ -45,13 +44,7 @@ describe('Attribute use rule', () => {
       // Check database state
       const afterActivationRelations = await getInferences(RELATION_USES);
       expect(afterActivationRelations.length).toBe(1);
-      // eslint-disable-next-line prettier/prettier
-      const myThreatToParadise = await inferenceLookup(
-        afterActivationRelations,
-        MY_THREAT,
-        PARADISE_RANSOMWARE,
-        RELATION_USES
-      );
+      const myThreatToParadise = await inferenceLookup(afterActivationRelations, MY_THREAT, PARADISE_RANSOMWARE, RELATION_USES);
       expect(myThreatToParadise).not.toBeNull();
       expect(myThreatToParadise[RULE].length).toBe(1);
       expect(myThreatToParadise.confidence).toBe(20); // AVG 2 relations (30 + 10) = 20

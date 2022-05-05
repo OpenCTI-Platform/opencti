@@ -1,4 +1,4 @@
-import { createEntity, loadById } from '../database/middleware';
+import { createEntity, storeLoadById } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -6,7 +6,7 @@ import { ENTITY_TYPE_INFRASTRUCTURE } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (user, infrastructureId) => {
-  return loadById(user, infrastructureId, ENTITY_TYPE_INFRASTRUCTURE);
+  return storeLoadById(user, infrastructureId, ENTITY_TYPE_INFRASTRUCTURE);
 };
 
 export const findAll = (user, args) => {

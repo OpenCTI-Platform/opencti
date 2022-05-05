@@ -2,7 +2,7 @@ import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
-import { deleteElementById, loadById, updateAttribute } from '../database/middleware';
+import { deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { findById as findSubTypeById } from './subType';
 import { getParentTypes } from '../schema/schemaUtils';
@@ -15,15 +15,16 @@ import type {
   EditInput,
 } from '../generated/graphql';
 import { OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
+import type { AuthUser } from '../types/user';
 
 export const findTemplateById = (user: AuthUser, statusTemplateId: string): StatusTemplate => {
-  return loadById(user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
+  return storeLoadById(user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
 };
 export const findAllTemplates = async (user: AuthUser, args: QueryStatusTemplatesArgs) => {
   return listEntities(user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
 export const findById = (user: AuthUser, statusId: string): Status => {
-  return loadById(user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
+  return storeLoadById(user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
 };
 export const findAll = (user: AuthUser, args: QueryStatusesArgs) => {
   return listEntities(user, [ENTITY_TYPE_STATUS], args);

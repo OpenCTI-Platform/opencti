@@ -18,12 +18,12 @@ import {
   stixCoreObjectAskEnrichment,
   stixCoreObjectExportAsk,
   stixCoreObjectExportPush,
-  stixCoreObjectIdImportPush,
-  stixCoreObjectDelete
+  stixCoreObjectDelete,
+  stixCoreObjectImportPush
 } from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext, pubsub } from '../database/redis';
-import { batchLoader, convertDataToRawStix } from '../database/middleware';
+import { batchLoader, stixLoadByIdStringify } from '../database/middleware';
 import { worksForSource } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { filesListing } from '../database/minio';
@@ -43,7 +43,7 @@ const reportsLoader = batchLoader(batchReports);
 const stixCoreObjectResolvers = {
   Query: {
     stixCoreObject: (_, { id }, { user }) => findById(user, id),
-    stixCoreObjectRaw: (_, { id }, { user }) => convertDataToRawStix(user, id),
+    stixCoreObjectRaw: (_, { id }, { user }) => stixLoadByIdStringify(user, id),
     stixCoreObjects: (_, args, { user }) => findAll(user, args),
   },
   StixCoreObject: {
@@ -55,7 +55,7 @@ const stixCoreObjectResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
-    toStix: (stixCoreObject, _, { user }) => convertDataToRawStix(user, stixCoreObject.id),
+    toStix: (stixCoreObject, _, { user }) => stixLoadByIdStringify(user, stixCoreObject.id),
     creator: (stixCoreObject, _, { user }) => creator(user, stixCoreObject.id),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     stixCoreRelationships: (stixCoreObject, args, { user }) => stixCoreRelationships(user, stixCoreObject.id, args),
@@ -80,7 +80,7 @@ const stixCoreObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreObjectDeleteRelation(user, id, toId, relationshipType),
       merge: ({ stixCoreObjectsIds }) => stixCoreObjectMerge(user, id, stixCoreObjectsIds),
       askEnrichment: ({ connectorId }) => stixCoreObjectAskEnrichment(user, id, connectorId),
-      importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
+      importPush: ({ file }) => stixCoreObjectImportPush(user, id, file),
       exportAsk: (args) => stixCoreObjectExportAsk(user, R.assoc('stixCoreObjectId', id, args)),
       exportPush: ({ file }) => stixCoreObjectExportPush(user, id, file),
     }),

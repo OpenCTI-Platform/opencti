@@ -1,5 +1,6 @@
 {
   "include": ["./*", "./src/**/*", "./tests/**/*", "./script/**/*"],
+  "files": ["src/generated/graphql.ts"],
   "compilerOptions": {
     "target": "es6",
     "module": "es6",
@@ -13,6 +14,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error"
+    "importsNotUsedAsValues": "error",
+    "typeRoots": ["node_modules/@types", "src/types"]
   }
 }

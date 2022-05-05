@@ -168,7 +168,7 @@ test('should stix type converter work', () => {
   const ipv4 = { type: 'ipv4-addr' };
   const ipv4Type = generateInternalType(ipv4);
   expect(ipv4Type).toEqual('IPv4-Addr');
-  const hostname = { type: 'x-opencti-hostname' };
+  const hostname = { type: 'hostname' };
   const hostnameType = generateInternalType(hostname);
-  expect(hostnameType).toEqual('X-OpenCTI-Hostname');
+  expect(hostnameType).toEqual('Hostname');
 });

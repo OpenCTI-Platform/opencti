@@ -21,7 +21,6 @@ const scan: RuleFilters = {
 // For live
 const scopes: Array<RuleScope> = [
   {
-
     filters: {
       types: [RELATION_OBJECT],
       fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA],
@@ -30,7 +29,6 @@ const scopes: Array<RuleScope> = [
     attributes: [],
   },
   {
-
     filters: {
       types: [RELATION_BASED_ON],
       fromTypes: [ENTITY_TYPE_INDICATOR],

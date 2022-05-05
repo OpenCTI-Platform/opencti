@@ -26,7 +26,7 @@ test('should observables correctly extracted', async () => {
   expect(domainAndHostname.length).toEqual(2);
   expect(domainAndHostname[0].type).toEqual(C.ENTITY_DOMAIN_NAME);
   expect(domainAndHostname[0].value).toEqual('5z8.info');
-  expect(domainAndHostname[1].type).toEqual(C.ENTITY_X_OPENCTI_HOSTNAME);
+  expect(domainAndHostname[1].type).toEqual(C.ENTITY_HOSTNAME);
   expect(domainAndHostname[1].value).toEqual('www.5z8.info');
   const simpleEmailAddress = extractObservablesFromIndicatorPattern("[email-message:sender_ref.value = 'jdoe@example.com' AND email-message:subject = 'Conference Info']");
   expect(simpleEmailAddress.length).toEqual(1);

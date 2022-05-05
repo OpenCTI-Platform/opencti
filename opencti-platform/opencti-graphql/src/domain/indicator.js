@@ -5,7 +5,7 @@ import {
   createEntity,
   createRelation,
   batchListThroughGetTo,
-  loadById,
+  storeLoadById,
   timeSeriesEntities,
   distributionEntities,
 } from '../database/middleware';
@@ -22,7 +22,7 @@ import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelatio
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { now } from '../utils/format';
 import { elCount } from '../database/engine';
-import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { extractObservablesFromIndicatorPattern } from '../utils/syntax';
 
 const OpenCTITimeToLive = {
@@ -115,7 +115,7 @@ const computeValidUntil = async (user, indicator) => {
 };
 
 export const findById = (user, indicatorId) => {
-  return loadById(user, indicatorId, ENTITY_TYPE_INDICATOR);
+  return storeLoadById(user, indicatorId, ENTITY_TYPE_INDICATOR);
 };
 
 export const findAll = (user, args) => {
@@ -152,10 +152,9 @@ export const createObservablesFromIndicator = async (user, input, indicator) => 
 };
 
 export const addIndicator = async (user, indicator) => {
-  if (
-    indicator.x_opencti_main_observable_type !== 'Unknown'
-    && !isStixCyberObservable(indicator.x_opencti_main_observable_type)
-  ) {
+  const observableType = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type;
+  const isKnownObservable = observableType !== 'Unknown';
+  if (isKnownObservable && !isStixCyberObservable(indicator.x_opencti_main_observable_type)) {
     throw FunctionalError(`Observable type ${indicator.x_opencti_main_observable_type} is not supported.`);
   }
   // check indicator syntax
@@ -163,20 +162,15 @@ export const addIndicator = async (user, indicator) => {
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
+  const validUntil = isEmptyField(indicator.valid_until) ? await computeValidUntil(user, indicator) : indicator.valid_until;
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
     R.dissoc('basedOn'),
-    R.assoc(
-      'x_opencti_main_observable_type',
-      R.isNil(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type
-    ),
+    R.assoc('x_opencti_main_observable_type', observableType),
     R.assoc('x_opencti_score', R.isNil(indicator.x_opencti_score) ? 50 : indicator.x_opencti_score),
     R.assoc('x_opencti_detection', R.isNil(indicator.x_opencti_detection) ? false : indicator.x_opencti_detection),
     R.assoc('valid_from', R.isNil(indicator.valid_from) ? now() : indicator.valid_from),
-    R.assoc(
-      'valid_until',
-      R.isNil(indicator.valid_until) ? await computeValidUntil(user, indicator) : indicator.valid_until
-    )
+    R.assoc('valid_until', validUntil)
   )(indicator);
   // create the linked observables
   let observablesToLink = [];

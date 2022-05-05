@@ -1,5 +1,5 @@
 import { getHeapStatistics } from 'v8';
-import { createEntity, loadById, updateAttribute, loadEntity } from '../database/middleware';
+import { createEntity, storeLoadById, updateAttribute, loadEntity } from '../database/middleware';
 import conf, {
   BUS_TOPICS,
   ENABLED_EXPIRED_MANAGER,
@@ -65,12 +65,12 @@ export const addSettings = async (user, settings) => {
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return loadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
+  return storeLoadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return loadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
+  return storeLoadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
 export const settingsEditField = async (user, settingsId, input) => {

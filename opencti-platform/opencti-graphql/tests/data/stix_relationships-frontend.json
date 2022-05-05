@@ -218,19 +218,19 @@
         "windows-service-ext": [
             "based-on"
         ],
-        "x-opencti-cryptocurrency-wallet": [
+        "cryptocurrency-wallet": [
             "based-on"
         ],
-        "x-opencti-cryptographic-key": [
+        "cryptographic-key": [
             "based-on"
         ],
-        "x-opencti-hostname": [
+        "hostname": [
             "based-on"
         ],
-        "x-opencti-text": [
+        "text": [
             "based-on"
         ],
-        "x-opencti-user-agent": [
+        "user-agent": [
             "based-on"
         ],
         "x509-certificate": [
@@ -365,19 +365,19 @@
         "windows-service-ext": [
             "consists-of"
         ],
-        "x-opencti-cryptocurrency-wallet": [
+        "cryptocurrency-wallet": [
             "consists-of"
         ],
-        "x-opencti-cryptographic-key": [
+        "cryptographic-key": [
             "consists-of"
         ],
-        "x-opencti-hostname": [
+        "hostname": [
             "consists-of"
         ],
-        "x-opencti-text": [
+        "text": [
             "consists-of"
         ],
-        "x-opencti-user-agent": [
+        "user-agent": [
             "consists-of"
         ],
         "x509-certificate": [
@@ -561,19 +561,19 @@
             "contains",
             "service-dll"
         ],
-        "x-opencti-cryptocurrency-wallet": [
+        "cryptocurrency-wallet": [
             "contains"
         ],
-        "x-opencti-cryptographic-key": [
+        "cryptographic-key": [
             "contains"
         ],
-        "x-opencti-hostname": [
+        "hostname": [
             "contains"
         ],
-        "x-opencti-text": [
+        "text": [
             "contains"
         ],
-        "x-opencti-user-agent": [
+        "user-agent": [
             "contains"
         ],
         "x509-certificate": [
@@ -775,19 +775,19 @@
         "windows-service-ext": [
             "analysis-sco"
         ],
-        "x-opencti-cryptocurrency-wallet": [
+        "cryptocurrency-wallet": [
             "analysis-sco"
         ],
-        "x-opencti-cryptographic-key": [
+        "cryptographic-key": [
             "analysis-sco"
         ],
-        "x-opencti-hostname": [
+        "hostname": [
             "analysis-sco"
         ],
-        "x-opencti-text": [
+        "text": [
             "analysis-sco"
         ],
-        "x-opencti-user-agent": [
+        "user-agent": [
             "analysis-sco"
         ],
         "x509-certificate": [
@@ -1056,7 +1056,7 @@
             "located-at"
         ]
     },
-    "x-opencti-hostname": {
+    "hostname": {
         "attack-pattern": [
             "uses"
         ],

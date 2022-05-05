@@ -48,8 +48,10 @@ import {
   booleanAttributes,
   dateAttributes,
   isBooleanAttribute,
+  isModifiedObject,
   isMultipleAttribute,
   isRuntimeAttribute,
+  isUpdatedAtObject,
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
 import { convertEntityTypeToStixType, getParentTypes } from '../schema/schemaUtils';
@@ -66,11 +68,7 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { getInstanceIds, INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
 import { cacheDel, cacheGet, cachePurge, cacheSet } from './redis';
-import {
-  INPUTS_RELATIONS_TO_STIX_ATTRIBUTE,
-  isSingleStixEmbeddedRelationship,
-  STIX_EMBEDDED_RELATION_TO_FIELD,
-} from '../schema/stixEmbeddedRelationship';
+import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
@@ -804,11 +802,7 @@ const elDataConverter = (esHit) => {
       // Rebuild rel to stix attributes
       const rel = key.substr(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      const stixType = STIX_EMBEDDED_RELATION_TO_FIELD[relType];
-      if (stixType) {
-        const dataKey = INPUTS_RELATIONS_TO_STIX_ATTRIBUTE[relType];
-        data[dataKey] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : val;
-      }
+      data[relType] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : val;
     } else {
       data[key] = val;
     }
@@ -1879,10 +1873,9 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
   }
 };
 
-export const elDeleteElements = async (user, elements, loaders) => {
+export const elDeleteElements = async (user, elements, stixLoadById) => {
   if (elements.length === 0) return [];
   const toBeRemovedIds = elements.map((e) => e.internal_id);
-  const { stixLoadById } = loaders;
   const opts = { concurrency: ES_MAX_CONCURRENCY };
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
   const stixRelations = relations.filter((r) => isStixRelationShipExceptMeta(r.relationship_type));
@@ -2017,10 +2010,10 @@ export const elIndexElements = async (elements) => {
       cache[e.fromId] = e.from;
       cache[e.toId] = e.to;
       if (isImpactedRole(fromRole)) {
-        impacts.push({ from: e.fromId, relationshipType, to: e.to, side: 'from' });
+        impacts.push({ from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
       }
       if (isImpactedRole(toRole)) {
-        impacts.push({ from: e.toId, relationshipType, to: e.from, side: 'to' });
+        impacts.push({ from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
       }
       return impacts;
     }),
@@ -2035,7 +2028,7 @@ export const elIndexElements = async (elements) => {
     const targetsElements = R.map((relType) => {
       const data = targetsByRelation[relType];
       const resolvedData = R.map((d) => {
-        return { id: d.to.internal_id, side: d.side };
+        return { id: d.to.internal_id, side: d.side, type: d.type };
       }, data);
       return { relation: relType, elements: resolvedData };
     }, Object.keys(targetsByRelation));
@@ -2046,9 +2039,12 @@ export const elIndexElements = async (elements) => {
       let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
       script += `ctx._source['${field}'].addAll(params['${field}'])`;
       if (isStixMetaRelationship(t.relation)) {
-        const fromUpdate = R.filter((e) => e.side === 'from', t.elements).length > 0;
-        if (fromUpdate) {
+        const fromSide = R.find((e) => e.side === 'from', t.elements);
+        if (fromSide && isUpdatedAtObject(fromSide.type)) {
           script += '; ctx._source[\'updated_at\'] = params.updated_at';
+        }
+        if (fromSide && isModifiedObject(fromSide.type)) {
+          script += '; ctx._source[\'modified\'] = params.updated_at';
         }
       }
       return script;

@@ -4,7 +4,7 @@ import { now } from '../utils/format';
 import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
-import { deleteElementById, loadById, patchAttribute } from '../database/middleware';
+import { deleteElementById, storeLoadById, patchAttribute } from '../database/middleware';
 import { listEntities, buildFilters } from '../database/repository';
 import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
@@ -47,7 +47,7 @@ const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
 };
 
 export const findById = async (user, taskId) => {
-  return loadById(user, taskId, ENTITY_TYPE_TASK);
+  return storeLoadById(user, taskId, ENTITY_TYPE_TASK);
 };
 
 export const findAll = (user, args) => {

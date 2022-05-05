@@ -1,17 +1,18 @@
 import * as R from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { paginateAllThings, listThings, loadById, listRelations } from '../database/middleware';
+import { paginateAllThings, listThings, storeLoadById } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
+import { listRelations } from '../database/middleware-loader';
 
 export const STATUS_STATUS_PROGRESS = 1;
 export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
 export const findById = async (user, containerId) => {
-  return loadById(user, containerId, ENTITY_TYPE_CONTAINER);
+  return storeLoadById(user, containerId, ENTITY_TYPE_CONTAINER);
 };
 
 export const findAll = async (user, args) => {
@@ -58,7 +59,7 @@ export const containersObjectsOfObject = async (user, { id, types, filters = [],
   );
   const containersObjectsRelationships = R.flatten(R.map((n) => n.edges, containersObjectsRelationshipsEdges));
   const containersObjects = await Promise.all(
-    R.map((n) => loadById(user, n.node.toId, n.node.toType), containersObjectsRelationships)
+    R.map((n) => storeLoadById(user, n.node.toId, n.node.toType), containersObjectsRelationships)
   );
   const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), [
     ...containers.edges,

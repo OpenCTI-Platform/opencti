@@ -3,7 +3,7 @@ import {
   createEntity,
   batchListThroughGetFrom,
   batchListThroughGetTo,
-  loadById,
+  storeLoadById,
   batchLoadThroughGetTo,
 } from '../database/middleware';
 import { listEntities } from '../database/repository';
@@ -14,7 +14,7 @@ import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (user, regionId) => {
-  return loadById(user, regionId, ENTITY_TYPE_LOCATION_REGION);
+  return storeLoadById(user, regionId, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const findAll = (user, args) => {

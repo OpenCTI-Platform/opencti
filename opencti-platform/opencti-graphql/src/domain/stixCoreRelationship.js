@@ -5,9 +5,8 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   batchListThroughGetFrom,
-  listRelations,
   batchListThroughGetTo,
-  loadById,
+  storeLoadById,
   updateAttribute,
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
@@ -40,13 +39,14 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
+import { listRelations } from '../database/middleware-loader';
 
 export const findAll = async (user, args) => {
   return listRelations(user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
 };
 
 export const findById = (user, stixCoreRelationshipId) => {
-  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  return storeLoadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
 export const stixCoreRelationshipsNumber = (user, args) => {
@@ -140,7 +140,7 @@ export const stixCoreRelationshipDeleteByFromAndTo = async (user, fromId, toId, 
 };
 
 export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId, input, opts = {}) => {
-  const stixCoreRelationship = await loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  const stixCoreRelationship = await storeLoadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
@@ -149,7 +149,7 @@ export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {
-  const stixCoreRelationship = await loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  const stixCoreRelationship = await storeLoadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot add the relation, stix-core-relationship cannot be found.');
   }
@@ -164,7 +164,7 @@ export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationship
 };
 
 export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelationshipId, toId, relationshipType) => {
-  const stixCoreRelationship = await loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  const stixCoreRelationship = await storeLoadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError(`Cannot delete the relation, ${ABSTRACT_STIX_CORE_RELATIONSHIP} cannot be found.`);
   }
@@ -185,14 +185,14 @@ export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelations
 // region context
 export const stixCoreRelationshipCleanContext = (user, stixCoreRelationshipId) => {
   delEditContext(user, stixCoreRelationshipId);
-  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) => {
+  return storeLoadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
   });
 };
 
 export const stixCoreRelationshipEditContext = (user, stixCoreRelationshipId, input) => {
   setEditContext(user, stixCoreRelationshipId, input);
-  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) => {
+  return storeLoadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
   });
 };

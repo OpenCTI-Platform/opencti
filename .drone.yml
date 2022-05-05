@@ -6,6 +6,7 @@ steps:
   - name: api-tests
     image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
     environment:
+      APP__BASE_URL: http://api-tests:4000/
       APP__ADMIN__PASSWORD: admin
       APP__SYNC_RAW_START_REMOTE_URI: http://opencti-raw-start:4100/graphql
       APP__SYNC_LIVE_START_REMOTE_URI: http://opencti-live-start:4200/graphql
@@ -16,6 +17,7 @@ steps:
       ELASTICSEARCH__URL: http://elastic:9200
       MINIO__ENDPOINT: minio
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__HOSTNAME: smtp.ethereal.email
       SMTP__PORT: 587
@@ -28,7 +30,7 @@ steps:
       - yarn install
       - yarn build
       - yarn lint
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
       - sleep 160
       - yarn test
 
@@ -117,6 +119,7 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: raw-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 30
@@ -125,7 +128,7 @@ services:
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
       - yarn start
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
@@ -140,6 +143,7 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: live-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 90
@@ -148,7 +152,7 @@ services:
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
       - yarn start
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
@@ -163,6 +167,7 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: direct-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 60
@@ -171,7 +176,7 @@ services:
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
       - yarn start
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
@@ -186,6 +191,7 @@ services:
       MINIO__ENDPOINT: minio
       MINIO__BUCKET_NAME: restore-start-bucket
       RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - sleep 120
@@ -194,5 +200,5 @@ services:
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
       - yarn start

@@ -518,7 +518,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-syntax-typescript@npm:^7.7.2":
+"@babel/plugin-syntax-typescript@npm:^7.16.7, @babel/plugin-syntax-typescript@npm:^7.7.2":
   version: 7.16.7
   resolution: "@babel/plugin-syntax-typescript@npm:7.16.7"
   dependencies:
@@ -765,6 +765,32 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0-0
   checksum: b55a519dd8b957247ebad3cab21918af5adca4f6e6c87819501cfe3d4d4bccda25bc296c7dfc8a30909b4ad905902aeb9d55ad955cb9f5cbc74b42dab32baa18
+  languageName: node
+  linkType: hard
+
+"@babel/plugin-transform-typescript@npm:^7.16.7":
+  version: 7.16.8
+  resolution: "@babel/plugin-transform-typescript@npm:7.16.8"
+  dependencies:
+    "@babel/helper-create-class-features-plugin": ^7.16.7
+    "@babel/helper-plugin-utils": ^7.16.7
+    "@babel/plugin-syntax-typescript": ^7.16.7
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+  checksum: a76d0afcbd550208cf2e7cdedb4f2d3ca3fa287640a4858a5ee0a28270b784d7d20d5a51b5997dc84514e066a5ebef9e0a0f74ed9fffae09e73984786dd08036
+  languageName: node
+  linkType: hard
+
+"@babel/preset-typescript@npm:^7.16.7":
+  version: 7.16.7
+  resolution: "@babel/preset-typescript@npm:7.16.7"
+  dependencies:
+    "@babel/helper-plugin-utils": ^7.16.7
+    "@babel/helper-validator-option": ^7.16.7
+    "@babel/plugin-transform-typescript": ^7.16.7
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+  checksum: 44e2f3fa302befe0dc50a01b79e5aa8c27a9c7047c46df665beae97201173030646ddf7c83d7d3ed3724fc38151745b11693e7b4502c81c4cd67781ff5677da5
   languageName: node
   linkType: hard
 
@@ -1690,6 +1716,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ioredis/commands@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@ioredis/commands@npm:1.1.1"
+  checksum: 66a9dc315dc077826fef4057c027c77c5af3fba247e6a5156c6847700fec8968a1b180bca344120ad561f5654cda54ed63119f790a041b0a010cacf02421ecff
+  languageName: node
+  linkType: hard
+
 "@istanbuljs/load-nyc-config@npm:^1.0.0":
   version: 1.1.0
   resolution: "@istanbuljs/load-nyc-config@npm:1.1.0"
@@ -2274,6 +2307,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/dot-object@npm:^2.1.2":
+  version: 2.1.2
+  resolution: "@types/dot-object@npm:2.1.2"
+  checksum: 467e8c15c901524f226f1834fb74a28f44f6fcee320302f0ad47fd3c18f41c77bbbc196be2580dc73633cd9a433ff6ed672f691fd1f567c065d851a7b8f0056b
+  languageName: node
+  linkType: hard
+
 "@types/express-serve-static-core@npm:4.17.28, @types/express-serve-static-core@npm:^4.17.18":
   version: 4.17.28
   resolution: "@types/express-serve-static-core@npm:4.17.28"
@@ -2480,6 +2520,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/set-interval-async@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@types/set-interval-async@npm:1.0.0"
+  checksum: 1a96001f49c77678a685df775a83644ee57ad717ca6a41ec9949249bfa2d4f02454680e81dd301cbe1285761f8196ef6b6c250da04b5b741a3ea2ddf66916c5c
+  languageName: node
+  linkType: hard
+
 "@types/stack-utils@npm:^2.0.0":
   version: 2.0.1
   resolution: "@types/stack-utils@npm:2.0.1"
@@ -2487,7 +2534,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uuid@npm:8.3.4":
+"@types/uuid@npm:^8.3.4":
   version: 8.3.4
   resolution: "@types/uuid@npm:8.3.4"
   checksum: 6f11f3ff70f30210edaa8071422d405e9c1d4e53abbe50fdce365150d3c698fe7bbff65c1e71ae080cbfb8fded860dbb5e174da96fdbbdfcaa3fb3daa474d20f
@@ -4533,6 +4580,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"commander@npm:^4.0.0":
+  version: 4.1.1
+  resolution: "commander@npm:4.1.1"
+  checksum: d7b9913ff92cae20cb577a4ac6fcc121bd6223319e54a40f51a14740a681ad5c574fd29a57da478a5f234a6fa6c52cbf0b7c641353e03c648b1ae85ba670b977
+  languageName: node
+  linkType: hard
+
 "common-tags@npm:1.8.2, common-tags@npm:^1.8.0":
   version: 1.8.2
   resolution: "common-tags@npm:1.8.2"
@@ -4936,7 +4990,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2":
+"debug@npm:4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.4":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
   dependencies:
@@ -5086,6 +5140,13 @@ __metadata:
   version: 1.5.1
   resolution: "denque@npm:1.5.1"
   checksum: 4375ad19d5cea99f90effa82a8cecdaa10f4eb261fbcd7e47cd753ff2737f037aac8f7f4e031cc77f3966314c491c86a0d3b20c128aeee57f791b4662c45108e
+  languageName: node
+  linkType: hard
+
+"denque@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "denque@npm:2.0.1"
+  checksum: ec398d1e3c6c8d4f5213dcf9ad74d7faa3b461e29a0019c9742b49a97ac5e16aa7134db45fa9d841e318e7722dd1ba670a474fde9a5b0d870b3a5fc6fe914c30
   languageName: node
   linkType: hard
 
@@ -5241,6 +5302,18 @@ __metadata:
     no-case: ^3.0.4
     tslib: ^2.0.3
   checksum: a65e3519414856df0228b9f645332f974f2bf5433370f544a681122eab59e66038fc3349b4be1cdc47152779dac71a5864f1ccda2f745e767c46e9c6543b1169
+  languageName: node
+  linkType: hard
+
+"dot-object@npm:^2.1.4":
+  version: 2.1.4
+  resolution: "dot-object@npm:2.1.4"
+  dependencies:
+    commander: ^4.0.0
+    glob: ^7.1.5
+  bin:
+    dot-object: bin/dot-object
+  checksum: d56842129dead664e75089f7f610518dfe4d9548cec1b5f9b5df35ae916efe21e05a3b999f926ee73906a270c60f9a255d53968aa0becc8cf45ad7678b3dc626
   languageName: node
   linkType: hard
 
@@ -6368,6 +6441,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-json-patch@npm:^3.1.1":
+  version: 3.1.1
+  resolution: "fast-json-patch@npm:3.1.1"
+  checksum: c4525b61b2471df60d4b025b4118b036d99778a93431aa44d1084218182841d82ce93056f0f3bbd731a24e6a8e69820128adf1873eb2199a26c62ef58d137833
+  languageName: node
+  linkType: hard
+
 "fast-json-stable-stringify@npm:2.x, fast-json-stable-stringify@npm:^2.0.0, fast-json-stable-stringify@npm:^2.1.0":
   version: 2.1.0
   resolution: "fast-json-stable-stringify@npm:2.1.0"
@@ -6860,7 +6940,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:7.2.0, glob@npm:^7.1.1, glob@npm:^7.1.2, glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.6, glob@npm:^7.2.0":
+"glob@npm:7.2.0, glob@npm:^7.1.1, glob@npm:^7.1.2, glob@npm:^7.1.3, glob@npm:^7.1.4, glob@npm:^7.1.5, glob@npm:^7.1.6, glob@npm:^7.2.0":
   version: 7.2.0
   resolution: "glob@npm:7.2.0"
   dependencies:
@@ -7605,7 +7685,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:4.28.5, ioredis@npm:^4.17.3":
+"ioredis@npm:5.0.4":
+  version: 5.0.4
+  resolution: "ioredis@npm:5.0.4"
+  dependencies:
+    "@ioredis/commands": ^1.1.1
+    cluster-key-slot: ^1.1.0
+    debug: ^4.3.4
+    denque: ^2.0.1
+    lodash.defaults: ^4.2.0
+    lodash.isarguments: ^3.1.0
+    redis-errors: ^1.2.0
+    redis-parser: ^3.0.0
+    standard-as-callback: ^2.1.0
+  checksum: ad247478f2965400cfa37c655441718f8684fbfbc23b174b584583d7e8247fb036eca97f9862bb3c3a05d2d6c1fdaf6eac4ec2af2bc9166b8620f402ce52a61f
+  languageName: node
+  linkType: hard
+
+"ioredis@npm:^4.17.3":
   version: 4.28.5
   resolution: "ioredis@npm:4.28.5"
   dependencies:
@@ -10094,6 +10191,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-abort-controller@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "node-abort-controller@npm:3.0.1"
+  checksum: 2b3d75c65249fea99e8ba22da3a8bc553f034f44dd12f5f4b38b520f718b01c88718c978f0c24c2a460fc01de9a80b567028f547b94440cb47adeacfeb82c2ee
+  languageName: node
+  linkType: hard
+
 "node-domexception@npm:1.0.0":
   version: 1.0.0
   resolution: "node-domexception@npm:1.0.0"
@@ -10501,6 +10605,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "opencti-graphql@workspace:."
   dependencies:
+    "@babel/preset-typescript": ^7.16.7
     "@elastic/elasticsearch": 7.17.0
     "@graphql-codegen/cli": 2.6.1
     "@graphql-codegen/introspection": 2.1.1
@@ -10512,10 +10617,12 @@ __metadata:
     "@luckycatfactory/esbuild-graphql-loader": 3.7.0
     "@opensearch-project/opensearch": 1.1.0
     "@types/bcryptjs": 2.4.2
+    "@types/dot-object": ^2.1.2
     "@types/express": 4
     "@types/jest": 27.4.0
     "@types/ramda": 0.27.64
-    "@types/uuid": 8.3.4
+    "@types/set-interval-async": ^1.0.0
+    "@types/uuid": ^8.3.4
     "@typescript-eslint/eslint-plugin": 5.11.0
     "@typescript-eslint/parser": 5.11.0
     amqplib: 0.8.0
@@ -10533,6 +10640,7 @@ __metadata:
     cors: 2.8.5
     cross-env: 7.0.3
     dataloader: 2.0.0
+    dot-object: ^2.1.4
     esbuild: 0.14.23
     esbuild-jest: 0.5.0
     esbuild-plugin-import-glob: 0.1.1
@@ -10549,6 +10657,7 @@ __metadata:
     express-prometheus-middleware: 1.2.0
     express-rate-limit: 6.2.0
     express-session: 1.17.2
+    fast-json-patch: ^3.1.1
     github-api: 3.4.0
     glob: 7.2.0
     graphql: 16.3.0
@@ -10562,7 +10671,7 @@ __metadata:
     graphql-upload: 13.0.0
     he: 1.2.0
     helmet: 5.0.2
-    ioredis: 4.28.5
+    ioredis: 5.0.4
     iterall: 1.3.0
     jest: 27.5.1
     jest-junit: 13.0.0
@@ -10590,7 +10699,7 @@ __metadata:
     prom-client: 14.0.1
     python-shell: 3.0.1
     ramda: 0.28.0
-    redlock: 4.2.0
+    redlock: 5.0.0-beta.2
     sanitize-filename: 1.6.3
     semver: 7.3.5
     set-interval-async: 2.0.3
@@ -11551,12 +11660,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redlock@npm:4.2.0":
-  version: 4.2.0
-  resolution: "redlock@npm:4.2.0"
+"redlock@npm:5.0.0-beta.2":
+  version: 5.0.0-beta.2
+  resolution: "redlock@npm:5.0.0-beta.2"
   dependencies:
-    bluebird: ^3.7.2
-  checksum: cd90b1d0a8e59a6ee7aefb3bc00af8e6eec7559b1c58b8293863aa7232a137f23d01fa65a36a9c28d7f7f77742c9c042e403fe003c4a6107ab57976a63913153
+    node-abort-controller: ^3.0.1
+  checksum: 62cda63af40435fb088228af29ddfb5686f85d72462595a94a674e05ff37e6764d3b3982d6493fd62d32ccadaeb72381b3afb51720f61e68711949050f6c859c
   languageName: node
   linkType: hard
 

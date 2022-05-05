@@ -234,7 +234,7 @@ class OrganizationEditionOverviewComponent extends Component {
           variables: {
             id: this.props.organization.id,
             toId: head(removed).value,
-            relationship_type: 'created-by',
+            relationship_type: 'object-marking',
           },
         });
       }

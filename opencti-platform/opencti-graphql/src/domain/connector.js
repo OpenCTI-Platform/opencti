@@ -1,10 +1,10 @@
 import EventSource from 'eventsource';
-import { createEntity, deleteElementById, loadById, patchAttribute, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, storeLoadById, patchAttribute, updateAttribute } from '../database/middleware';
 import { listEntities, completeConnector, connectorsFor } from '../database/repository';
 import { registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
-import { FROM_START_STR, now } from '../utils/format';
+import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { READ_INDEX_HISTORY } from '../database/utils';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
@@ -15,7 +15,7 @@ import { deleteWorkForConnector } from './work';
 
 // region connectors
 export const loadConnectorById = (user, id) => {
-  return loadById(user, id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
+  return storeLoadById(user, id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
 };
 
 export const connectorForWork = async (user, id) => {
@@ -36,7 +36,7 @@ export const connectorsForImport = async (user, scope, onlyAlive = false, onlyAu
 // region mutations
 export const pingConnector = async (user, id, state) => {
   const creation = now();
-  const connector = await loadById(user, id, ENTITY_TYPE_CONNECTOR);
+  const connector = await storeLoadById(user, id, ENTITY_TYPE_CONNECTOR);
   if (!connector) {
     throw FunctionalError('No connector found with the specified ID', { id });
   }
@@ -47,13 +47,13 @@ export const pingConnector = async (user, id, state) => {
     const updatePatch = { updated_at: creation, connector_state: state };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, updatePatch);
   }
-  return loadById(user, id, 'Connector').then((data) => completeConnector(data));
+  return storeLoadById(user, id, 'Connector').then((data) => completeConnector(data));
 };
 
 export const resetStateConnector = async (user, id) => {
   const patch = { connector_state: '', connector_state_reset: true };
   await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
-  return loadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+  return storeLoadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 
 // region syncs
@@ -62,20 +62,25 @@ export const patchSync = async (user, id, patch) => {
   return patched.element;
 };
 export const findSyncById = (user, syncId) => {
-  return loadById(user, syncId, ENTITY_TYPE_SYNC);
+  return storeLoadById(user, syncId, ENTITY_TYPE_SYNC);
 };
 export const findAllSync = async (user, opts = {}) => {
   return listEntities(SYSTEM_USER, [ENTITY_TYPE_SYNC], opts);
 };
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
-export const createSyncHttpUri = (sync) => {
+export const createSyncHttpUri = (sync, testMode) => {
+  // TODO JRI Add Interface option in synchronizer to pickup from & recover & with-inferences options
   const { uri, stream_id: stream, current_state: state, listen_deletion: deletion } = sync;
-  const streamUri = `${httpBase(uri)}stream/${stream}?from=${state ?? FROM_START_STR}&listen-delete=${deletion}`;
-  logApp.debug(`[OPENCTI] Testing sync url with ${streamUri}`);
+  if (testMode) {
+    logApp.debug(`[OPENCTI] Testing sync url with ${httpBase(uri)}stream/${stream}`);
+    return `${httpBase(uri)}stream/${stream}`;
+  }
+  let streamUri = `${httpBase(uri)}stream/${stream}?listen-delete=${deletion}`;
+  if (state) streamUri += `&from=${state}`;
   return streamUri;
 };
 export const testSync = async (user, sync) => {
-  const eventSourceUri = createSyncHttpUri(sync);
+  const eventSourceUri = createSyncHttpUri(sync, true);
   const { token, ssl_verify: ssl = false } = sync;
   return new Promise((resolve, reject) => {
     try {
@@ -117,18 +122,18 @@ export const syncDelete = async (user, syncId) => {
 };
 export const syncCleanContext = async (user, syncId) => {
   await delEditContext(user, syncId);
-  return loadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user));
+  return storeLoadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user));
 };
 export const syncEditContext = async (user, syncId, input) => {
   await setEditContext(user, syncId, input);
-  return loadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user));
+  return storeLoadById(user, syncId, ENTITY_TYPE_SYNC).then((syncToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, syncToReturn, user));
 };
 // endregion
 
 export const registerConnector = async (user, connectorData) => {
   // eslint-disable-next-line camelcase
   const { id, name, type, scope, auto = null, only_contextual = null } = connectorData;
-  const connector = await loadById(user, id, ENTITY_TYPE_CONNECTOR);
+  const connector = await storeLoadById(user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
@@ -142,7 +147,7 @@ export const registerConnector = async (user, connectorData) => {
       only_contextual,
     };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
-    return loadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+    return storeLoadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
   const connectorToCreate = {

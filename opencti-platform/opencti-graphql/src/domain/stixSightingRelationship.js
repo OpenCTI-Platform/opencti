@@ -5,9 +5,8 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   batchListThroughGetFrom,
-  listRelations,
   batchListThroughGetTo,
-  loadById,
+  storeLoadById,
   updateAttribute,
   batchLoadThroughGetTo,
 } from '../database/middleware';
@@ -35,13 +34,14 @@ import {
 } from '../schema/stixMetaObject';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
+import { listRelations } from '../database/middleware-loader';
 
 export const findAll = async (user, args) => {
   return listRelations(user, STIX_SIGHTING_RELATIONSHIP, args);
 };
 
 export const findById = (user, stixSightingRelationshipId) => {
-  return loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  return storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 
 export const stixSightingRelationshipsNumber = (user, args) => ({
@@ -102,7 +102,7 @@ export const stixSightingRelationshipEditField = async (user, relationshipId, in
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {
-  const stixSightingRelationship = await loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  const stixSightingRelationship = await storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
   if (!stixSightingRelationship) {
     throw FunctionalError(`Cannot add the relation, ${ABSTRACT_STIX_META_RELATIONSHIP} cannot be found.`);
   }
@@ -121,7 +121,7 @@ export const stixSightingRelationshipDeleteRelation = async (
   toId,
   relationshipType
 ) => {
-  const stixSightingRelationship = await loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  const stixSightingRelationship = await storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
   if (!stixSightingRelationship) {
     throw FunctionalError(`Cannot delete the relation, ${STIX_SIGHTING_RELATIONSHIP} cannot be found.`);
   }
@@ -142,13 +142,13 @@ export const stixSightingRelationshipDeleteRelation = async (
 // region context
 export const stixSightingRelationshipCleanContext = (user, stixSightingRelationshipId) => {
   delEditContext(user, stixSightingRelationshipId);
-  return loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
+  return storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
     return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
   });
 };
 export const stixSightingRelationshipEditContext = (user, stixSightingRelationshipId, input) => {
   setEditContext(user, stixSightingRelationshipId, input);
-  return loadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
+  return storeLoadById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) => {
     return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
   });
 };

@@ -8,7 +8,7 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   listThings,
-  loadById,
+  storeLoadById,
   paginateAllThings,
   updateAttribute,
 } from '../database/middleware';
@@ -22,11 +22,10 @@ import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { isEmptyField } from '../database/utils';
-import { stixCoreObjectIdImportPush } from './stixCoreObject';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 
 export const findById = (user, externalReferenceId) => {
-  return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  return storeLoadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 export const findAll = (user, args) => {
@@ -47,7 +46,7 @@ export const references = async (user, externalReferenceId, args) => {
 };
 
 export const externalReferenceAskEnrichment = async (user, externalReferenceId, connectorId) => {
-  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const connector = await storeLoadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
   const work = await createWork(user, connector, 'Manual enrichment', externalReferenceId);
   const message = {
     internal: {
@@ -72,9 +71,6 @@ export const addExternalReference = async (user, externalReference) => {
     });
   }
   const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
-  if (!isEmptyField(externalReference.file)) {
-    await stixCoreObjectIdImportPush(user, created.id, externalReference.file);
-  }
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].ADDED_TOPIC, created, user);
 };
 
@@ -101,7 +97,7 @@ export const externalReferenceAddRelation = async (user, externalReferenceId, in
 };
 
 export const externalReferenceDeleteRelation = async (user, externalReferenceId, fromId, relationshipType) => {
-  const externalReference = await loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  const externalReference = await storeLoadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
   if (!externalReference) {
     throw FunctionalError('Cannot delete the relation, External-Reference cannot be found.');
   }
@@ -125,14 +121,14 @@ export const externalReferenceEditField = async (user, externalReferenceId, inpu
 
 export const externalReferenceCleanContext = async (user, externalReferenceId) => {
   await delEditContext(user, externalReferenceId);
-  return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
+  return storeLoadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
   });
 };
 
 export const externalReferenceEditContext = async (user, externalReferenceId, input) => {
   await setEditContext(user, externalReferenceId, input);
-  return loadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
+  return storeLoadById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
   });
 };

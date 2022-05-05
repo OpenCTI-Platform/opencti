@@ -1,13 +1,13 @@
 import { assoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, loadById, updateAttribute } from '../database/middleware';
+import { createEntity, deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { normalizeName } from '../schema/identifier';
 
 export const findById = (user, labelId) => {
-  return loadById(user, labelId, ENTITY_TYPE_LABEL);
+  return storeLoadById(user, labelId, ENTITY_TYPE_LABEL);
 };
 
 export const findAll = (user, args) => {
@@ -47,10 +47,10 @@ export const labelEditField = async (user, labelId, input, opts = {}) => {
 
 export const labelCleanContext = async (user, labelId) => {
   await delEditContext(user, labelId);
-  return loadById(user, labelId, ENTITY_TYPE_LABEL).then((label) => notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user));
+  return storeLoadById(user, labelId, ENTITY_TYPE_LABEL).then((label) => notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user));
 };
 
 export const labelEditContext = async (user, labelId, input) => {
   await setEditContext(user, labelId, input);
-  return loadById(user, labelId, ENTITY_TYPE_LABEL).then((label) => notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user));
+  return storeLoadById(user, labelId, ENTITY_TYPE_LABEL).then((label) => notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user));
 };

@@ -12,7 +12,7 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   listThroughGetTo,
-  loadById,
+  storeLoadById,
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
@@ -96,7 +96,7 @@ const extractTokenFromBasicAuth = async (authorization) => {
 };
 
 export const findById = async (user, userId) => {
-  const data = await loadById(user, userId, ENTITY_TYPE_USER);
+  const data = await storeLoadById(user, userId, ENTITY_TYPE_USER);
   return data ? R.dissoc('password', data) : data;
 };
 
@@ -167,7 +167,7 @@ export const batchRoleCapabilities = async (user, roleId) => {
 };
 
 export const findRoleById = (user, roleId) => {
-  return loadById(user, roleId, ENTITY_TYPE_ROLE);
+  return storeLoadById(user, roleId, ENTITY_TYPE_ROLE);
 };
 
 export const findRoles = (user, args) => {
@@ -245,12 +245,12 @@ export const roleDelete = async (user, roleId) => {
 
 export const roleCleanContext = async (user, roleId) => {
   await delEditContext(user, roleId);
-  return loadById(user, roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
+  return storeLoadById(user, roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
 };
 
 export const roleEditContext = async (user, roleId, input) => {
   await setEditContext(user, roleId, input);
-  return loadById(user, roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
+  return storeLoadById(user, roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
 };
 
 const assignRoleToUser = async (user, userId, roleName) => {
@@ -321,7 +321,7 @@ export const roleEditField = async (user, roleId, input) => {
 };
 
 export const roleAddRelation = async (user, roleId, input) => {
-  const role = await loadById(user, roleId, ENTITY_TYPE_ROLE);
+  const role = await storeLoadById(user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`);
   }
@@ -336,7 +336,7 @@ export const roleAddRelation = async (user, roleId, input) => {
 };
 
 export const roleDeleteRelation = async (user, roleId, toId, relationshipType) => {
-  const role = await loadById(user, roleId, ENTITY_TYPE_ROLE);
+  const role = await storeLoadById(user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
     throw FunctionalError('Cannot delete the relation, Role cannot be found.');
   }
@@ -358,7 +358,7 @@ export const userEditField = async (user, userId, inputs) => {
 };
 
 export const deleteBookmark = async (user, id) => {
-  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
+  const currentUser = await storeLoadById(user, user.id, ENTITY_TYPE_USER);
   const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
   const newBookmarks = R.filter((n) => n.id !== id, currentBookmarks);
   await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
@@ -366,14 +366,14 @@ export const deleteBookmark = async (user, id) => {
 };
 
 export const bookmarks = async (user, types) => {
-  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
+  const currentUser = await storeLoadById(user, user.id, ENTITY_TYPE_USER);
   const bookmarkList = types && types.length > 0
     ? R.filter((n) => R.includes(n.type, types), currentUser.bookmarks || [])
     : currentUser.bookmarks || [];
   const filteredBookmarks = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const bookmark of bookmarkList) {
-    const loadedBookmark = await loadById(user, bookmark.id, bookmark.type);
+    const loadedBookmark = await storeLoadById(user, bookmark.id, bookmark.type);
     if (isNotEmptyField(loadedBookmark)) {
       filteredBookmarks.push(loadedBookmark);
     } else {
@@ -389,14 +389,14 @@ export const bookmarks = async (user, types) => {
 };
 
 export const addBookmark = async (user, id, type) => {
-  const currentUser = await loadById(user, user.id, ENTITY_TYPE_USER);
+  const currentUser = await storeLoadById(user, user.id, ENTITY_TYPE_USER);
   const currentBookmarks = currentUser.bookmarks ? currentUser.bookmarks : [];
   const newBookmarks = R.append(
     { id, type },
     R.filter((n) => n.id !== id, currentBookmarks)
   );
   await patchAttribute(user, user.id, ENTITY_TYPE_USER, { bookmarks: newBookmarks });
-  return loadById(user, id, type);
+  return storeLoadById(user, id, type);
 };
 
 export const meEditField = (user, userId, inputs) => {
@@ -410,7 +410,7 @@ export const userDelete = async (user, userId) => {
 };
 
 export const userAddRelation = async (user, userId, input) => {
-  const userData = await loadById(user, userId, ENTITY_TYPE_USER);
+  const userData = await storeLoadById(user, userId, ENTITY_TYPE_USER);
   if (!userData) {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`);
   }
@@ -435,7 +435,7 @@ export const userDeleteRelation = async (user, targetUser, toId, relationshipTyp
 };
 
 export const userIdDeleteRelation = async (user, userId, toId, relationshipType) => {
-  const userData = await loadById(user, userId, ENTITY_TYPE_USER);
+  const userData = await storeLoadById(user, userId, ENTITY_TYPE_USER);
   if (!userData) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
   }
@@ -554,7 +554,7 @@ export const resolveUserById = async (id) => {
   if (id === OPENCTI_SYSTEM_UUID) {
     return SYSTEM_USER;
   }
-  const client = await loadById(SYSTEM_USER, id, ENTITY_TYPE_USER);
+  const client = await storeLoadById(SYSTEM_USER, id, ENTITY_TYPE_USER);
   return buildCompleteUser(client);
 };
 
@@ -566,7 +566,7 @@ const resolveUserByToken = async (tokenValue) => {
 export const userRenewToken = async (user, userId) => {
   const patch = { api_token: uuid() };
   await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
-  return loadById(user, userId, ENTITY_TYPE_USER);
+  return storeLoadById(user, userId, ENTITY_TYPE_USER);
 };
 
 export const authenticateUser = async (req, user, provider, token = '') => {
@@ -666,11 +666,11 @@ export const initAdmin = async (email, password, tokenValue) => {
 // region context
 export const userCleanContext = async (user, userId) => {
   await delEditContext(user, userId);
-  return loadById(user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
+  return storeLoadById(user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
 };
 
 export const userEditContext = async (user, userId, input) => {
   await setEditContext(user, userId, input);
-  return loadById(user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
+  return storeLoadById(user, userId, ENTITY_TYPE_USER).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user));
 };
 // endregion

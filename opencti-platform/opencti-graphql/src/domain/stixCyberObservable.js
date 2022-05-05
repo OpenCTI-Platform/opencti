@@ -10,10 +10,10 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  fullLoadById,
+  storeFullLoadById,
   internalLoadById,
   listThroughGetFrom,
-  loadById,
+  storeLoadById,
   timeSeriesEntities,
   updateAttribute,
 } from '../database/middleware';
@@ -36,13 +36,12 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from 
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
+import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 import { escape, observableValue } from '../utils/format';
-import { uploadJobImport } from './file';
 
 export const findById = (user, stixCyberObservableId) => {
-  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  return storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 
 export const findAll = async (user, args) => {
@@ -144,7 +143,7 @@ const createIndicatorFromObservable = async (user, input, observable) => {
 };
 
 export const promoteObservableToIndicator = async (user, observableId) => {
-  const observable = await fullLoadById(user, observableId);
+  const observable = await storeFullLoadById(user, observableId);
   const objectLabel = observable.i_relations_from && observable.i_relations_from['object-label']
     ? observable.i_relations_from['object-label'].map((n) => n.internal_id)
     : [];
@@ -179,7 +178,7 @@ export const addStixCyberObservable = async (user, input) => {
   }
   // Convert hashes to dictionary if needed.
   if (isStixCyberObservableHashedObservable(input.type) && observableInput.hashes) {
-    const hashInputToJson = apiAttributeToComplexFormat('hashes', observableInput.hashes);
+    const hashInputToJson = inputHashesToStix(observableInput.hashes);
     observableInput = R.assoc('hashes', hashInputToJson, observableInput);
   }
   // Check the consistency of the observable.
@@ -201,7 +200,7 @@ export const stixCyberObservableDelete = async (user, stixCyberObservableId) => 
 };
 
 export const stixCyberObservableAddRelation = async (user, stixCyberObservableId, input) => {
-  const stixCyberObservable = await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const stixCyberObservable = await storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
     throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
   }
@@ -216,7 +215,7 @@ export const stixCyberObservableAddRelation = async (user, stixCyberObservableId
 };
 
 export const stixCyberObservableAddRelations = async (user, stixCyberObservableId, input) => {
-  const stixCyberObservable = await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const stixCyberObservable = await storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
     throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
   }
@@ -228,11 +227,11 @@ export const stixCyberObservableAddRelations = async (user, stixCyberObservableI
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, entity, user));
+  return storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, entity, user));
 };
 
 export const stixCyberObservableDeleteRelation = async (user, stixCyberObservableId, toId, relationshipType) => {
-  const stixCyberObservable = await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const stixCyberObservable = await storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
     throw FunctionalError('Cannot delete the relation, Stix-Cyber-Observable cannot be found.');
   }
@@ -250,7 +249,7 @@ export const stixCyberObservableDeleteRelation = async (user, stixCyberObservabl
 };
 
 export const stixCyberObservableEditField = async (user, stixCyberObservableId, input, opts = {}) => {
-  const originalStixCyberObservable = await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const originalStixCyberObservable = await storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (isNotEmptyField(originalStixCyberObservable.payload_bin) && input[0].key === 'url') {
     if (isNotEmptyField(originalStixCyberObservable.url)) {
       await updateAttribute(
@@ -299,13 +298,13 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
 // region context
 export const stixCyberObservableCleanContext = (user, stixCyberObservableId) => {
   delEditContext(user, stixCyberObservableId);
-  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) => {
+  return storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
   });
 };
 export const stixCyberObservableEditContext = (user, stixCyberObservableId, input) => {
   setEditContext(user, stixCyberObservableId, input);
-  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) => {
+  return storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) => {
     return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
   });
 };
@@ -332,7 +331,7 @@ export const stixCyberObservablesExportAsk = async (user, args) => {
 export const stixCyberObservableExportAsk = async (user, args) => {
   const { format, exportType, stixCyberObservableId = null, maxMarkingDefinition = null } = args;
   const entity = stixCyberObservableId
-    ? await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
+    ? await storeLoadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
     : null;
   const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w.work), works);
@@ -389,7 +388,6 @@ export const artifactImport = async (user, args) => {
     objectLabel,
   };
   const artifact = await addStixCyberObservable(user, artifactData);
-  const up = await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id });
-  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
+  await upload(user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id });
   return artifact;
 };

@@ -570,7 +570,7 @@
             "located-at"
         ]
     },
-    "x-opencti-hostname": {
+    "hostname": {
         "attack-pattern": [
             "uses"
         ],
