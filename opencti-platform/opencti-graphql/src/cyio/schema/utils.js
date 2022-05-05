@@ -187,7 +187,21 @@ export const updateQuery = (iri, type, input, predicateMap) => {
   let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [], replacementPredicate;
   for(const {key, value, operation} of input) {
     if (!predicateMap.hasOwnProperty(key)) continue;
-    for(const itr of value) {
+    let itr;
+    for(itr of value) {
+      if (key === 'description' || key === 'statement') {
+        // escape any special characters (e.g., newline)
+        if (key === 'description') {
+          if (itr.includes('\n')) itr = itr.replace(/\n/g, '\\n');
+          if (itr.includes('\"')) itr = itr.replace(/\"/g, '\\"');
+          if (itr.includes("\'")) itr = itr.replace(/\'/g, "\\'");
+        }
+        if (key === 'statement') {
+          if (itr.includes('\n')) itr = itr.replace(/\n/g, '\\n');
+          if (itr.includes('\"')) itr = itr.replace(/\"/g, '\\"');
+          if (itr.includes("\'")) itr = itr.replace(/\'/g, "\\'");
+        }
+      }
       const predicate = predicateMap[key].binding(`<${iri}>`, itr) + ' .';
       switch (operation) {
         case UpdateOps.ADD:
