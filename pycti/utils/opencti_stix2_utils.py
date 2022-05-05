@@ -27,7 +27,7 @@ STIX_CYBER_OBSERVABLE_MAPPING = {
     "user-account": "User-Account",
     "windows-registry-key": "Windows-Registry-Key",
     "windows-registry-value-type": "Windows-Registry-Value-Type",
-    "x-opencti-hostname": "X-OpenCTI-Hostname",
+    "hostname": "Hostname",
 }
 
 PATTERN_MAPPING = {
@@ -53,7 +53,7 @@ PATTERN_MAPPING = {
     "User-Account": ["acount_login"],
     "Windows-Registry-Key": ["key"],
     "Windows-Registry-Value-Type": ["name"],
-    "X-OpenCTI-Hostname": ["value"],
+    "Hostname": ["value"],
 }
 
 OBSERVABLES_VALUE_INT = [
@@ -100,7 +100,7 @@ class OpenCTIStix2Utils:
 
 
 @CustomObservable(
-    "x-opencti-simple-observable",
+    "simple-observable",
     [
         ("key", properties.StringProperty(required=True)),
         ("value", properties.StringProperty(required=True)),

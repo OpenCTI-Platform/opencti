@@ -288,19 +288,19 @@ class StixCyberObservable:
                 certificate_policies
                 policy_mappings
             }
-            ... on XOpenCTICryptographicKey {
+            ... on CryptographicKey {
                 value
             }
-            ... on XOpenCTICryptocurrencyWallet {
+            ... on CryptocurrencyWallet {
                 value
             }
-            ... on XOpenCTIHostname {
+            ... on Hostname {
                 value
             }
-            ... on XOpenCTIText {
+            ... on Text {
                 value
             }
-            ... on XOpenCTIUserAgent {
+            ... on UserAgent {
                 value
             }
             importFiles {
@@ -555,16 +555,16 @@ class StixCyberObservable:
             type = "IPv4-Addr"
         elif type.lower() == "ipv6-addr":
             type = "IPv6-Addr"
-        elif type.lower() == "x-opencti-hostname":
-            type = "X-OpenCTI-Hostname"
-        elif type.lower() == "x-opencti-cryptocurrency-wallet":
-            type = "X-OpenCTI-Cryptocurrency-Wallet"
-        elif type.lower() == "x-opencti-user-agent":
-            type = "X-OpenCTI-User-Agent"
-        elif type.lower() == "x-opencti-cryptographic-key":
-            type = "X-OpenCTI-Cryptographic-Key"
-        elif type.lower() == "x-opencti-text":
-            type = "X-OpenCTI-Text"
+        elif type.lower() == "hostname":
+            type = "Hostname"
+        elif type.lower() == "cryptocurrency-wallet":
+            type = "Cryptocurrency-Wallet"
+        elif type.lower() == "user-agent":
+            type = "User-Agent"
+        elif type.lower() == "cryptographic-key":
+            type = "Cryptographic-Key"
+        elif type.lower() == "text":
+            type = "Text"
 
         x_opencti_description = (
             observable_data["x_opencti_description"]
@@ -658,11 +658,11 @@ class StixCyberObservable:
                     $WindowsRegistryKey: WindowsRegistryKeyAddInput,
                     $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput,
                     $X509V3ExtensionsType: X509V3ExtensionsTypeAddInput,
-                    $XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput,
-                    $XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput,
-                    $XOpenCTIHostname: XOpenCTIHostnameAddInput
-                    $XOpenCTIText: XOpenCTITextAddInput,
-                    $XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
+                    $CryptographicKey: CryptographicKeyAddInput,
+                    $CryptocurrencyWallet: CryptocurrencyWalletAddInput,
+                    $Hostname: HostnameAddInput
+                    $Text: TextAddInput,
+                    $UserAgent: UserAgentAddInput
                 ) {
                     stixCyberObservableAdd(
                         type: $type,
@@ -695,11 +695,11 @@ class StixCyberObservable:
                         WindowsRegistryKey: $WindowsRegistryKey,
                         WindowsRegistryValueType: $WindowsRegistryValueType,
                         X509V3ExtensionsType: $X509V3ExtensionsType,
-                        XOpenCTICryptographicKey: $XOpenCTICryptographicKey,
-                        XOpenCTICryptocurrencyWallet: $XOpenCTICryptocurrencyWallet,
-                        XOpenCTIHostname: $XOpenCTIHostname,
-                        XOpenCTIText: $XOpenCTIText,
-                        XOpenCTIUserAgent: $XOpenCTIUserAgent
+                        CryptographicKey: $CryptographicKey,
+                        CryptocurrencyWallet: $CryptocurrencyWallet,
+                        Hostname: $Hostname,
+                        Text: $Text,
+                        UserAgent: $UserAgent
                     ) {
                         id
                         standard_id
@@ -1111,32 +1111,35 @@ class StixCyberObservable:
                     if "policy_mappings" in observable_data
                     else None,
                 }
-            elif type == "X-OpenCTI-Cryptographic-Key":
-                input_variables["XOpenCTICryptographicKey"] = {
+            elif type == "Cryptographic-Key" or type == "X-OpenCTI-Cryptographic-Key":
+                input_variables["CryptographicKey"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-            elif type == "X-OpenCTI-Cryptocurrency-Wallet":
-                input_variables["XOpenCTICryptocurrencyWallet"] = {
+            elif (
+                type == "Cryptocurrency-Wallet"
+                or type == "X-OpenCTI-Cryptocurrency-Wallet"
+            ):
+                input_variables["CryptocurrencyWallet"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-            elif type == "X-OpenCTI-Hostname":
-                input_variables["XOpenCTIHostname"] = {
+            elif type == "Hostname" or type == "X-OpenCTI-Hostname":
+                input_variables["Hostname"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-            elif type == "X-OpenCTI-Text":
-                input_variables["XOpenCTIText"] = {
+            elif type == "Text" or type == "X-OpenCTI-Text":
+                input_variables["Text"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-            elif type == "X-OpenCTI-User-Agent":
-                input_variables["XOpenCTIUserAgent"] = {
+            elif type == "User-Agent" or type == "X-OpenCTI-User-Agent":
+                input_variables["UserAgent"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,

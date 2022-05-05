@@ -618,7 +618,7 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
         }
-        if stix_object["type"] == "x-opencti-simple-observable":
+        if stix_object["type"] == "simple-observable":
             stix_observable_result = self.opencti.stix_cyber_observable.create(
                 simple_observable_id=stix_object["id"],
                 simple_observable_key=stix_object["key"],
@@ -910,10 +910,8 @@ class OpenCTIStix2:
             entity["entity_type"] = "File"
 
         # Indicators
-        if "pattern" in entity and "x-opencti-hostname" in entity["pattern"]:
-            entity["pattern"] = entity["pattern"].replace(
-                "x-opencti-hostname", "domain-name"
-            )
+        if "pattern" in entity and "hostname" in entity["pattern"]:
+            entity["pattern"] = entity["pattern"].replace("hostname", "domain-name")
 
         # Flatten
         if "objectLabel" in entity and len(entity["objectLabel"]) > 0:
