@@ -34,6 +34,7 @@ class ContainerStixCyberObservablesLines extends Component {
       openExports,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -59,6 +60,7 @@ class ContainerStixCyberObservablesLines extends Component {
           dataColumns={dataColumns}
           nbOfRowsToLoad={nbOfRowsToLoad}
           selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
           selectAll={selectAll}
           onToggleEntity={onToggleEntity.bind(this)}
         />
@@ -95,6 +97,7 @@ ContainerStixCyberObservablesLines.propTypes = {
   openExports: PropTypes.bool,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
   selectAll: PropTypes.bool,
 };
 

@@ -56,6 +56,7 @@ class ArtifactLineComponent extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     const file = node.importFiles.edges.length > 0
@@ -76,7 +77,10 @@ class ArtifactLineComponent extends Component {
         >
           <Checkbox
             edge="start"
-            checked={selectAll || node.id in (selectedElements || {})}
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
             disableRipple={true}
           />
         </ListItemIcon>
@@ -160,6 +164,7 @@ ArtifactLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
   selectAll: PropTypes.bool,
 };
 

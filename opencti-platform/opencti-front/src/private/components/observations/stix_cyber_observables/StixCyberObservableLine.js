@@ -56,6 +56,7 @@ class StixCyberObservableLineComponent extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -75,7 +76,10 @@ class StixCyberObservableLineComponent extends Component {
         >
           <Checkbox
             edge="start"
-            checked={selectAll || node.id in (selectedElements || {})}
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
             disableRipple={true}
           />
         </ListItemIcon>

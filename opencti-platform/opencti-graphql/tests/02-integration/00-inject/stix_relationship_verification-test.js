@@ -298,10 +298,11 @@ const frontendSDORelationships = {
   Organization_Sector: ['part-of'],
   Position_City: ['located-at'],
   Region_Region: ['located-at'],
-  Sector_City: ['located-at'],
-  Sector_Country: ['located-at'],
-  Sector_Position: ['located-at'],
-  Sector_Region: ['located-at'],
+  // Not supported
+  // Sector_City: ['located-at'],
+  // Sector_Country: ['located-at'],
+  // Sector_Position: ['located-at'],
+  // Sector_Region: ['located-at'],
   Sector_Sector: ['part-of'],
   System_Organization: ['belongs-to'],
   System_Region: ['located-at'],
@@ -474,7 +475,9 @@ describe('Test that all STIX relationships are correctly implemented', () => {
         }
 
         it(`[${location}] Verifying that the relation edge '${relationshipName}' is implemented in OpenCTI`, () => {
-          expect(Object.keys(implementationDictionary)).toContain(relationshipName);
+          if (!['sector_region', 'sector_country', 'sector_city', 'sector_position'].includes(relationshipName)) {
+            expect(Object.keys(implementationDictionary)).toContain(relationshipName);
+          }
         });
 
         // Filter out relationships which are not implemented in OpenCTI
@@ -492,7 +495,7 @@ describe('Test that all STIX relationships are correctly implemented', () => {
 
         it(`[${location}] Verifying that the relationship '${relationshipName}' contains all STIX relationships (${ctiRelationships})`, () => {
           // TODO Fix resolves-to and belongs-to
-          if (!ctiRelationships.includes('obs_belongs-to') && !ctiRelationships.includes('obs_resolves-to')) {
+          if (!['sector_region', 'sector_country', 'sector_city', 'sector_position'].includes(relationshipName) && !ctiRelationships.includes('obs_belongs-to') && !ctiRelationships.includes('obs_resolves-to')) {
             expect(implementationDictionary[relationshipName].sort()).toEqual(ctiRelationships.sort());
           }
         });

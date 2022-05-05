@@ -132,7 +132,7 @@ export const createObservablesFromIndicator = async (user, input, indicator) => 
       ...R.dissoc('type', observable),
       x_opencti_description: indicator.description
         ? indicator.description
-        : `Simple observable of indicator {${indicator.indicator_name}}`,
+        : `Simple observable of indicator {${indicator.name || indicator.pattern}}`,
       x_opencti_score: indicator.x_opencti_score,
       createdBy: input.createdBy,
       objectMarking: input.objectMarking,

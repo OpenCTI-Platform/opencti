@@ -54,6 +54,7 @@ class ContainerStixCyberObservableLineComponent extends Component {
       paginationOptions,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -73,7 +74,10 @@ class ContainerStixCyberObservableLineComponent extends Component {
         >
           <Checkbox
             edge="start"
-            checked={selectAll || node.id in (selectedElements || {})}
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
             disableRipple={true}
           />
         </ListItemIcon>
@@ -149,6 +153,7 @@ ContainerStixCyberObservableLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
   selectAll: PropTypes.bool,
 };
 

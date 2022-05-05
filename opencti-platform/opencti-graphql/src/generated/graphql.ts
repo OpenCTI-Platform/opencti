@@ -9936,6 +9936,7 @@ export type QueryTask = Task & {
 
 export type QueryTaskAddInput = {
   actions: Array<InputMaybe<TaskActionInput>>;
+  excluded_ids?: InputMaybe<Array<InputMaybe<Scalars['ID']>>>;
   filters: Scalars['String'];
   search?: InputMaybe<Scalars['String']>;
 };

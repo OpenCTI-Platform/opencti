@@ -390,6 +390,7 @@ class ToolBar extends Component {
       search,
       selectAll,
       selectedElements,
+      deSelectedElements,
       numberOfSelectedElements,
       handleClearSelectedElements,
       t,
@@ -416,6 +417,7 @@ class ToolBar extends Component {
             filters: jsonFilters,
             search,
             actions: finalActions,
+            excluded_ids: Object.keys(deSelectedElements || {}),
           },
         },
         onCompleted: () => {
@@ -1393,6 +1395,7 @@ ToolBar.propTypes = {
   t: PropTypes.func,
   numberOfSelectedElements: PropTypes.number,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
   selectAll: PropTypes.bool,
   filters: PropTypes.object,
   search: PropTypes.string,

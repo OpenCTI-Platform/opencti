@@ -57,7 +57,7 @@ export const computeRangeIntersection = (a, b) => {
 export const minutesAgo = (minutes) => moment().utc().subtract(minutes, 'minutes');
 export const hoursAgo = (hours) => moment().utc().subtract(hours, 'hours');
 
-const hashes = ['SHA-256', 'SHA-1', 'MD5'];
+const hashes = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
 export const hashValue = (stixCyberObservable) => {
   if (stixCyberObservable.hashes) {
     for (let index = 0; index < hashes.length; index += 1) {
@@ -132,7 +132,9 @@ export const runtimeFieldObservableValueScript = () => {
         emit('Unknown')
       }
     } else if (type == 'artifact') {
-       if (have(doc, 'hashes.SHA-256')) {
+       if (have(doc, 'hashes.SHA-512')) {
+         emit(doc['hashes.SHA-512.keyword'].value)
+       } else if (have(doc, 'hashes.SHA-256')) {
          emit(doc['hashes.SHA-256.keyword'].value)
        } else if (have(doc, 'hashes.SHA-1')) {
          emit(doc['hashes.SHA-1.keyword'].value)

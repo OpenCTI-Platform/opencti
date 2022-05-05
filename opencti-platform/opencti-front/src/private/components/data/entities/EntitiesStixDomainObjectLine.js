@@ -55,6 +55,7 @@ class EntitiesStixDomainObjectLineComponent extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -71,7 +72,10 @@ class EntitiesStixDomainObjectLineComponent extends Component {
         >
           <Checkbox
             edge="start"
-            checked={selectAll || node.id in (selectedElements || {})}
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
             disableRipple={true}
             onChange={onToggleEntity.bind(this, node)}
           />
@@ -150,6 +154,7 @@ EntitiesStixDomainObjectLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
 };
 
 const EntitiesStixDomainObjectLineFragment = createFragmentContainer(

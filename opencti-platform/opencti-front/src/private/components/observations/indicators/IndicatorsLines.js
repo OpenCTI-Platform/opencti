@@ -27,6 +27,7 @@ class IndicatorsLines extends Component {
       paginationOptions,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -47,6 +48,7 @@ class IndicatorsLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         onLabelClick={onLabelClick.bind(this)}
         selectedElements={selectedElements}
+        deSelectedElements={deSelectedElements}
         selectAll={selectAll}
         onToggleEntity={onToggleEntity.bind(this)}
         paginationOptions={paginationOptions}
@@ -67,6 +69,7 @@ IndicatorsLines.propTypes = {
   setNumberOfElements: PropTypes.func,
   onToggleEntity: PropTypes.func,
   selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
   selectAll: PropTypes.bool,
 };
 

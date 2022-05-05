@@ -55,6 +55,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
       entityId,
       onToggleEntity,
       selectedElements,
+      deSelectedElements,
       selectAll,
     } = this.props;
     return (
@@ -72,7 +73,10 @@ class StixDomainObjectIndicatorLineComponent extends Component {
         >
           <Checkbox
             edge="start"
-            checked={selectAll || node.id in (selectedElements || {})}
+            checked={
+              (selectAll && !(node.id in (deSelectedElements || {})))
+              || node.id in (selectedElements || {})
+            }
             disableRipple={true}
           />
         </ListItemIcon>
@@ -156,6 +160,9 @@ StixDomainObjectIndicatorLineComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
 };
 
 const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
