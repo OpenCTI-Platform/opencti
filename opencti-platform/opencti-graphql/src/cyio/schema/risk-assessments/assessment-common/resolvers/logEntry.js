@@ -281,7 +281,6 @@ const logEntryResolvers = {
           sparqlQuery: query,
           queryId: "Create Authors of Log Entry"
         });
-        console.error(result)
         // attach the Author to the Party
         const authorAttachQuery = attachToRiskLogEntryQuery(id, 'logged_by', authorIris);
         result = await dataSources.Stardog.create({
@@ -289,7 +288,6 @@ const logEntryResolvers = {
           sparqlQuery: authorAttachQuery,
           queryId: "Attach Authors to Log Entry"
         });
-        console.error(result)
       }
 
       // Create references to the Risk Responses
