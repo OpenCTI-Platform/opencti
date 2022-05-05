@@ -446,11 +446,20 @@ const hardwareResolvers = {
         input,
         hardwarePredicateMap
       )
-      await dataSources.Stardog.edit({
+      response = await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
         queryId: "Update Hardware Asset"
       });
+      if (response !== undefined && 'status' in response) {
+        if (response.ok === false || response.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(response.statusText, {
+            error_details: (response.body.message ? response.body.message : results.body),
+            error_code: (response.body.code ? response.body.code : 'N/A')
+          });
+        }
+      }
       const selectQuery = selectHardwareQuery(id, selectMap.getNode("editHardwareAsset"));
       let result;
       try {

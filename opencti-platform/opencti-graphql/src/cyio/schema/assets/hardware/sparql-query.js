@@ -114,6 +114,13 @@ export const insertHardwareQuery = (propValues) => {
   
   if (!deviceMap.hasOwnProperty(propValues.asset_type)) throw new UserInputError(`Unsupported hardware type ' ${propValues.asset_type}'`);
 
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const selectPredicates = Object.entries(propValues)
     .filter((propPair) => hardwarePredicateMap.hasOwnProperty(propPair[0]))
