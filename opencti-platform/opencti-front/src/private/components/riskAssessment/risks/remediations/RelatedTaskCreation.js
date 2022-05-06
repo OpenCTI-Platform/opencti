@@ -789,17 +789,19 @@ class RelatedTaskCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        disableAdd={true}
                         fieldName='links'
-                        typename={relatedTaskData.__typename}
-                        externalReferences={relatedTaskData.links}
+                        typename='CyioExternalReference'
+                        externalReferences={[]}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
-                        typename={relatedTaskData.__typename}
-                        notes={relatedTaskData.remarks}
+                        disableAdd={true}
+                        typename='CyioNotes'
+                        notes={[]}
                         fieldName='remarks'
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
