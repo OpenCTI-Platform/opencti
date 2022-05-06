@@ -164,7 +164,15 @@ export const insertQuery = (propValues) => {
     ...(propValues.version && {"version": propValues.version})
   } ;
   const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+  
   const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => softwarePredicateMap.hasOwnProperty(propPair[0]))
@@ -198,7 +206,15 @@ export const insertSoftwareQuery = (propValues) => {
     ...(propValues.version && {"version": propValues.version})
   } ;
   const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   let iriTemplate, objectType;
   switch(propValues.asset_type) {
     case 'software':
@@ -474,9 +490,9 @@ export const softwarePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "software_identifier")},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
-  patch: {
+  patch_level: {
     predicate: "<http://scap.nist.gov/ns/asset-identification#patch_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "patch");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "patch_level");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));}
   },
   installation_id: {

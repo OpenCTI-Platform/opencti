@@ -291,7 +291,7 @@ class Risks extends Component {
       name: {
         label: 'Name',
         width: '16%',
-        isSortable: false,
+        isSortable: true,
       },
       risk_level: {
         label: 'Risk',
@@ -321,7 +321,7 @@ class Risks extends Component {
       deadline: {
         label: 'Deadline',
         width: '10%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (

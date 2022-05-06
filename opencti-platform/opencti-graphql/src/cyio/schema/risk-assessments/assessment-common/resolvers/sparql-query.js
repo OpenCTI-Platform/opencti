@@ -8,6 +8,9 @@ import {
 import {
   oscalPartyReducer,
 } from "../../oscal-common/resolvers/sparql-query.js";
+import {
+  componentReducer,
+} from "../../component/resolvers/sparql-query.js";
 
 import {
   selectObjectIriByIdQuery,
@@ -20,8 +23,9 @@ export function getReducer( type ) {
       return actorReducer;
     case 'ACTIVITY':
       return activityReducer;
+    case 'TOOL':
+      return componentReducer;
     case 'ASSESSMENT-PLATFORM':
-    case 'TOOL':                    // TODO: change 
       return assessmentPlatformReducer;
     case 'ASSESSMENT-SUBJECT':
       return assessmentSubjectReducer;
@@ -557,7 +561,15 @@ export const insertActivityQuery = (propValues) => {
     ...(propValues.methods && {"methods": propValues.methods}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Activity-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => activityPredicateMap.hasOwnProperty(propPair[0]))
@@ -864,7 +876,15 @@ export const insertAssessmentPlatformQuery = (propValues) => {
     } ;
     id = generateId( id_material, OSCAL_NS );  
   }
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentPlatform-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => assessmentPlatformPredicateMap.hasOwnProperty(propPair[0]))
@@ -994,6 +1014,14 @@ export const detachFromAssessmentPlatformQuery = (id, field, itemIris) => {
 // AssessmentSubject support functions
 export const insertAssessmentSubjectQuery = (propValues) => {
   const id = generateId( );
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => assessmentSubjectPredicateMap.hasOwnProperty(propPair[0]))
@@ -1017,6 +1045,14 @@ export const insertAssessmentSubjectsQuery = (assessmentSubjects) => {
   const graphs = [], subjectIris = [];
   assessmentSubjects.forEach((subject) => {
     const id = generateId( );
+
+    // escape any special characters (e.g., newline)
+    if (subject.description !== undefined) {
+      if (subject.description.includes('\n')) subject.description = subject.description.replace(/\n/g, '\\n');
+      if (subject.description.includes('\"')) subject.description = subject.description.replace(/\"/g, '\\"');
+      if (subject.description.includes("\'")) subject.description = subject.description.replace(/\'/g, "\\'");
+    }
+
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#AssessmentSubject-${id}>`;
     subjectIris.push(iri);
@@ -1461,7 +1497,15 @@ export const insertEvidenceQuery = (propValues) => {
   }
 
   const id = generateId( );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Evidence-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => evidencePredicateMap.hasOwnProperty(propPair[0]))
@@ -1492,6 +1536,14 @@ export const insertEvidencesQuery = (evidences) => {
   evidences.forEach((evidence) => {
     const id = generateId( );
     const timestamp = new Date().toISOString();
+
+    // escape any special characters (e.g., newline)
+    if (evidence.description !== undefined) {
+      if (evidence.description.includes('\n')) evidence.description = evidence.description.replace(/\n/g, '\\n');
+      if (evidence.description.includes('\"')) evidence.description = evidence.description.replace(/\"/g, '\\"');
+      if (evidence.description.includes("\'")) evidence.description = evidence.description.replace(/\'/g, "\\'");
+    }
+
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Evidence-${id}>`;
     evidenceIris.push(iri);
@@ -1854,6 +1906,11 @@ export const selectLogEntryAuthorQuery = (id, select) => {
 export const selectLogEntryAuthorByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(logEntryAuthorPredicateMap);
+  if (select.includes('party')) {
+    select.push('party_name');
+    select.push('party_type');
+  }
+
   const { selectionClause, predicates } = buildSelectVariables(logEntryAuthorPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -1970,7 +2027,15 @@ export const insertMitigatingFactorQuery = (propValues) => {
     ...(propValues.implementation && {"implementation": propValues.implementation}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#MitigatingFactor-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => mitigatingFactorPredicateMap.hasOwnProperty(propPair[0]))
@@ -2110,7 +2175,15 @@ export const insertObservationQuery = (propValues) => {
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Observation-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => observationPredicateMap.hasOwnProperty(propPair[0]))
@@ -2398,13 +2471,20 @@ export const insertRequiredAssetQuery = (propValues) => {
     delete propValues.subjects;
   }
 
-
   const id_material = {
     ...(propValues.name && {"name": propValues.name}),
     ...(propValues.description && {"description": propValues.description}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => requiredAssetPredicateMap.hasOwnProperty(propPair[0]))
@@ -2434,8 +2514,20 @@ export const insertRequiredAssetQuery = (propValues) => {
 export const insertRequiredAssetsQuery = (requiredAssets) => {
   const graphs = [], reqAssetIris = [];
   requiredAssets.forEach((reqAsset) => {
-    const id = generateId( );
+    const id_material = {
+      ...(reqAsset.name && {"name": reqAsset.name}),
+      ...(reqAsset.description && {"description": reqAsset.description}),
+    } ;
+    const id = generateId( id_material, OSCAL_NS );
     const timestamp = new Date().toISOString();
+  
+    // escape any special characters (e.g., newline)
+    if (reqAsset.description !== undefined) {
+      if (reqAsset.description.includes('\n')) reqAsset.description = reqAsset.description.replace(/\n/g, '\\n');
+      if (reqAsset.description.includes('\"')) reqAsset.description = reqAsset.description.replace(/\"/g, '\\"');
+      if (reqAsset.description.includes("\'")) reqAsset.description = reqAsset.description.replace(/\'/g, "\\'");
+    }
+
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#RequiredAsset-${id}>`;
     reqAssetIris.push(iri);
@@ -2571,7 +2663,20 @@ export const insertRiskQuery = (propValues) => {
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+  if (propValues.statement !== undefined) {
+    if (propValues.statement.includes('\n')) propValues.statement = propValues.statement.replace(/\n/g, '\\n');
+    if (propValues.statement.includes('\"')) propValues.statement = propValues.statement.replace(/\"/g, '\\"');
+    if (propValues.statement.includes("\'")) propValues.statement = propValues.statement.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Risk-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => riskPredicateMap.hasOwnProperty(propPair[0]))
@@ -2752,6 +2857,13 @@ export const insertRiskLogEntryQuery = (propValues) => {
     delete propValues.risk_id;
   }
 
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const id = generateId( );
   const timestamp = new Date().toISOString()
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#RiskLogEntry-${id}>`;
@@ -2914,6 +3026,14 @@ export const insertRiskResponseQuery = (propValues) => {
     ...(riskId && {"risk_id": riskId}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+  
   const timestamp = new Date().toISOString()
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse-${id}>`;
   const insertPredicates = Object.entries(propValues)
@@ -2982,7 +3102,7 @@ export const selectAllRiskResponses = (select, args) => {
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
-    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse . 
+    ?iri a <http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse> . 
     ${predicates}
   }
   `
@@ -3236,7 +3356,15 @@ export const insertOscalTaskQuery = (propValues) => {
     ...(propValues.task_type && {"task_type": propValues.task_type}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => oscalTaskPredicateMap.hasOwnProperty(propPair[0]))
@@ -3780,6 +3908,12 @@ export const logEntryAuthorPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  party_name: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#name>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party_name");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+
   role: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#role>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "role");},

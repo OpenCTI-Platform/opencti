@@ -87,7 +87,7 @@ const riskResponseResolvers = {
           // if haven't reached limit to be returned
           if (limit) {
             let edge = {
-              cursor: risk.iri,
+              cursor: riskResponse.iri,
               node: reducer(riskResponse),
             }
             edges.push(edge)

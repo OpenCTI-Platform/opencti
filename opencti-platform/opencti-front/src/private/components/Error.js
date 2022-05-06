@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from 'react';
 import { compose, includes, dissoc } from 'ramda';
 import * as PropTypes from 'prop-types';
@@ -87,7 +88,6 @@ export const NoMatch = () => <ErrorNotFound />;
 export const SimpleError = () => (
   <Alert severity="error">
     <AlertTitle>Error</AlertTitle>
-    An unknown error occurred. Please contact your administrator or the OpenCTI
-    maintainers.
+    An error occurred. Please contact DarkLight Support through our Feedback widget or at support@darklight.ai.
   </Alert>
 );
