@@ -343,7 +343,7 @@ export const insertAddressQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Address .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Address> .
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
       ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
@@ -636,6 +636,14 @@ export const insertExternalReferenceQuery = (propValues) => {
     ...(propValues.external_id && {"external_id": propValues.external_id}),
     ...(propValues.url && {"url": propValues.url}),
   } ;
+
+  if (propValues.description !== undefined) {
+    // escape any newlines
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+  
   const id = generateId( id_material, OASIS_NS );
   const timestamp = new Date().toISOString()
   const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
@@ -667,6 +675,14 @@ export const insertExternalReferencesQuery = (externalReferences) => {
       ...(extRef.url && {"url": extRef.url}),
     } ;
     const id = generateId( id_material, OASIS_NS );
+
+    if (extRef.description !== undefined) {
+      // escape any newlines
+      if (extRef.description.includes('\n')) extRef.description = extRef.description.replace(/\n/g, '\\n');
+      if (extRef.description.includes('\"')) extRef.description = extRef.description.replace(/\"/g, '\\"');
+      if (extRef.description.includes("\'")) extRef.description = extRef.description.replace(/\'/g, "\\'");
+    }
+
     const insertPredicates = [];
     const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
     extRefIris.push(iri);
@@ -809,6 +825,14 @@ export const insertNoteQuery = (propValues) => {
     ...(propValues.content && {"content": propValues.content}),
   } ;
   const id = generateId( id_material, OASIS_NS );
+
+  if (propValues.content !== undefined) {
+    // escape any newlines
+    if (propValues.content.includes('\n')) propValues.content = propValues.content.replace(/\n/g, '\\n');
+    if (propValues.content.includes('\"')) propValues.content = propValues.content.replace(/\"/g, '\\"');
+    if (propValues.content.includes("\'")) propValues.content = propValues.content.replace(/\'/g, "\\'");
+  }
+
   const timestamp = new Date().toISOString()
   const iri = `<http://darklight.ai/ns/common#Note-${id}>`;
   const insertPredicates = Object.entries(propValues)
@@ -943,7 +967,7 @@ export const insertPhoneNumberQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#TelephoneNumber> .
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
       ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .

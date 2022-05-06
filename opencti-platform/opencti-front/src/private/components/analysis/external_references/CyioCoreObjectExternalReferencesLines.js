@@ -11,6 +11,9 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import Accordion from '@material-ui/core/Accordion';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import LinkIcon from '@material-ui/icons/Link';
@@ -224,9 +227,13 @@ class CyioCoreObjectExternalReferencesLinesContainer extends Component {
                 </AccordionSummary>
                 <AccordionDetails>
                   <div >
-                    <Typography variant="subtitle1" gutterBottom={true}>
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
                       {externalReference.description}
-                    </Typography>
+                    </Markdown>
                     <Typography variant="subtitle2" style={{ display: 'flex', color: '#F9B406' }} >
                       <LinkIcon fontSize="small" style={{ paddingRight: '5px' }} />
                       {externalReference.url && truncate(

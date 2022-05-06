@@ -297,7 +297,6 @@ class CyioAddNotes extends Component {
                   query={cyioAddNotesLinesQuery}
                   variables={{
                     search: this.state.search,
-                    count: 4,
                   }}
                   render={({ props }) => {
                     if (props) {
