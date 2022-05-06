@@ -8,16 +8,11 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { Grid, Switch, Tooltip } from '@material-ui/core';
-import Chip from '@material-ui/core/Chip';
-import Link from '@material-ui/core/Link';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Launch from '@material-ui/icons/Launch';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, Information } from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
+import { Grid, Tooltip } from '@material-ui/core';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import { Information } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
 const styles = (theme) => ({
@@ -78,7 +73,7 @@ class EntityPartyDetailsComponent extends Component {
       classes,
       refreshQuery,
       party,
-      fd,
+      fldt,
       history,
     } = this.props;
     return (
@@ -98,7 +93,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {party.name && t(party.name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -109,7 +104,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Jun 3, 2022')}
+                {party.created && fldt(party.created)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -120,7 +115,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Location or Address')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Location')}
+                {party.locations && t(party.locations.map((value) => value))}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -131,7 +126,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Party Type')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Class Name')}
+                {party.party_type && t(party.party_type)}
               </div>
               <div>
                 <Typography
@@ -148,7 +143,7 @@ class EntityPartyDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('External Identifier Name')}
+                {party.external_identifiers && t(party.external_identifiers.map((value) => value.entity_type))}
               </div>
               <div>
                 <Typography
@@ -165,7 +160,7 @@ class EntityPartyDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Office Name')}
+                {party.office && t(party.office)}
               </div>
               <div style={{ marginTop: '50px' }}>
                 <Typography
@@ -177,7 +172,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Telephone Number')}
                 </Typography>
                 <div className="clearfix" />
-                {t('+1 999 999-9999')}
+                {party.telephone_numbers && t(party.telephone_numbers.map((number) => number.phone_number))}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -190,7 +185,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {party.id && t(party.id)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -201,7 +196,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {party.modified && fldt(party.modified)}
               </div>
               <div style={{ marginTop: '75px' }}>
                 <Typography
@@ -212,7 +207,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Job Title')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {party.job_title && t(party.job_title)}
               </div>
               <div>
                 <Typography
@@ -229,7 +224,7 @@ class EntityPartyDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Member of Name')}
+                {party.member_of_organizations && t(party.member_of_organizations.map((value) => value.name))}
               </div>
               <div>
                 <Typography
@@ -246,7 +241,7 @@ class EntityPartyDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {t('Mail Stop Name')}
+                {party.mail_stop && t(party.mail_stop)}
               </div>
               <div style={{ marginTop: '50px' }}>
                 <Typography
@@ -258,7 +253,7 @@ class EntityPartyDetailsComponent extends Component {
                   {t('Email Address')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Support@darklig...')}
+                {party.email_addresses && t(party.email_addresses.map((value) => value))}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -273,7 +268,13 @@ class EntityPartyDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {t('Lorem Ipsum')}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {party.desctiption && t(party.desctiption)}
+                    </Markdown>
                   </div>
                 </div>
               </div>
@@ -290,7 +291,7 @@ class EntityPartyDetailsComponent extends Component {
                 {t('Address(es)')}
               </Typography>
               <div className="clearfix" />
-              {t('8201 164th Ave NE, Redmond, WA, 98052 US')}
+              {party.addresses && t(party.addresses.map((value) => value))}
             </Grid>
             <Grid item={true} xs={3}>
               <CyioCoreObjectLabelsView
@@ -310,9 +311,8 @@ class EntityPartyDetailsComponent extends Component {
                 {t('Markings')}
               </Typography>
               <div className="clearfix" />
-              <p className={classes.markingText}>
-                {t('IEP: WHITE')}
-              </p>
+              {/* <p className={classes.markingText}>
+              </p> */}
             </Grid>
           </Grid>
         </Paper>
@@ -326,7 +326,7 @@ EntityPartyDetailsComponent.propTypes = {
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
-  fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const EntityPartyDetails = createFragmentContainer(
@@ -336,8 +336,29 @@ const EntityPartyDetails = createFragmentContainer(
       fragment EntityPartyDetails_party on OscalParty {
         __typename
         id
+        created
+        modified
         name
+        description
         party_type
+        email_addresses
+        short_name
+        mail_stop
+        office
+        job_title
+        telephone_numbers {
+          id
+          usage_type
+          phone_number
+        }
+        external_identifiers {
+          id
+          entity_type
+        }
+        member_of_organizations {
+          id
+          name
+        }
         labels {
           __typename
           id

@@ -112,6 +112,7 @@ class EmtityPartyComponent extends Component {
         />
         <PartyEntityEditionContainer
           displayEdit={this.state.displayEdit}
+          party={party}
           history={history}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
@@ -134,6 +135,7 @@ const EntityParty = createFragmentContainer(EmtityPartyComponent, {
       id
       name
       party_type
+      email_addresses
       labels {
         __typename
         id

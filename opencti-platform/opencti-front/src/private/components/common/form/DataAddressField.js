@@ -161,24 +161,28 @@ class DataAddressField extends Component {
           <div className={classes.scrollDiv}>
             <div className={classes.scrollObj}>
               {this.state.ipAddress.map((address, key) => (
-                <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div key={key} style={{ display: 'grid', gridTemplateColumns: '75% 1fr' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                     {address.type === 'office'
                       ? <ApartmentOutlined fontSize='small' />
                       : address.type === 'mobile'
                         ? <HomeOutlinedIcon fontSize='small' />
                         : <CallIcon fontSize='small' />}
                     <Typography>
-                      {address.name && truncate(t(address.name), 14)}
+                      {(address.name && t(address.name.substr(0, 15).concat('...')))}
                     </Typography>
                   </div>
                   <div style={{ display: 'flex' }}>
                     <IconButton
+                      size='small'
                       onClick={this.handleEditionAddress.bind(this, key)}
                     >
                       <Edit />
                     </IconButton>
-                    <IconButton onClick={this.handleDeleteAddress.bind(this, key)}>
+                    <IconButton
+                      size='small'
+                      onClick={this.handleDeleteAddress.bind(this, key)}
+                    >
                       <Delete />
                     </IconButton>
                   </div>
@@ -204,16 +208,16 @@ class DataAddressField extends Component {
                 className={classes.dataEntities}
               >
                 <InputLabel>
-                  Usage Type
+                  {t('Usage Type')}
                 </InputLabel>
                 <Select
                   value={this.state.selectedMode}
                   onChange={this.handleChangeMode.bind(this)}
                   className={classes.dataSelect}
                 >
-                  <MenuItem value='office'><ApartmentOutlined />Office</MenuItem>
-                  <MenuItem value='mobile'><HomeOutlinedIcon />Mobile</MenuItem>
-                  <MenuItem value='home'><CallIcon />Home</MenuItem>
+                  <MenuItem value='office'><ApartmentOutlined />{t('Office')}</MenuItem>
+                  <MenuItem value='mobile'><HomeOutlinedIcon />{t('Mobile')}</MenuItem>
+                  <MenuItem value='home'><CallIcon />{t('Home')}</MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -259,16 +263,16 @@ class DataAddressField extends Component {
                 className={classes.dataEntities}
               >
                 <InputLabel>
-                  Usage Type
+                  {t('Usage Type')}
                 </InputLabel>
                 <Select
                   value={this.state.selectedMode}
                   onChange={this.handleChangeMode.bind(this)}
                   className={classes.dataSelect}
                 >
-                  <MenuItem value='office'><ApartmentOutlined />Office</MenuItem>
-                  <MenuItem value='mobile'><HomeOutlinedIcon />Mobile</MenuItem>
-                  <MenuItem value='home'><CallIcon />Home</MenuItem>
+                  <MenuItem value='office'><ApartmentOutlined />{t('Office')}</MenuItem>
+                  <MenuItem value='mobile'><HomeOutlinedIcon />{t('Mobile')}</MenuItem>
+                  <MenuItem value='home'><CallIcon />{t('Home')}</MenuItem>
                 </Select>
               </FormControl>
             </div>

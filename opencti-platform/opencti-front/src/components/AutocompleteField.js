@@ -3,6 +3,7 @@ import TextField from '@material-ui/core/TextField';
 import IconButton from '@material-ui/core/IconButton';
 import { Add } from '@material-ui/icons';
 import MUIAutocomplete from '@material-ui/lab/Autocomplete';
+import InsertLinkIcon from '@material-ui/icons/InsertLink';
 import { fieldToTextField } from 'formik-material-ui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
@@ -15,6 +16,7 @@ const AutocompleteField = (props) => {
     onFocus,
     variant,
     noOptionsText,
+    insertIcon,
     renderOption,
     textfieldprops,
     openCreate,
@@ -71,7 +73,7 @@ const AutocompleteField = (props) => {
           edge="end"
           style={{ position: 'absolute', top: 5, right: 35 }}
         >
-          <Add />
+          {insertIcon ? <InsertLinkIcon /> : <Add />}
         </IconButton>
       ) : (
         ''

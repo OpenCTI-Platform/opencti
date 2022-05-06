@@ -43,6 +43,7 @@ import Source from '../../../common/form/Source';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import DataAddressField from '../../../common/form/DataAddressField';
 import NewAddressField from '../../../common/form/NewAddressField';
+import LocationField from '../../../common/form/LocationField';
 import { ipv6AddrRegex, telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
 
 const styles = (theme) => ({
@@ -52,7 +53,7 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
-    overflow: 'hidden',
+    overflowY: 'scroll',
   },
   dialogClosebutton: {
     float: 'left',
@@ -166,26 +167,38 @@ class PartyEntityEditionContainer extends Component {
       classes,
       t,
       disabled,
-      risk,
-      remediation,
+      party,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
-      R.assoc('name', remediation?.name || ''),
-      R.assoc('description', remediation?.description || ''),
+      R.assoc('name', party?.name || ''),
+      R.assoc('description', party?.description || ''),
       R.assoc('telephone_numbers', []),
       R.assoc('email_address', []),
       R.assoc('address', []),
       R.assoc('locations', []),
+      R.assoc('created', null),
+      R.assoc('modified', null),
+      R.assoc('short_name', ''),
+      R.assoc('party_type', ''),
       R.pick([
         'name',
+        'created',
+        'modified',
+        'short_name',
+        'party_type',
+        'member_of',
+        'mail_stop',
+        'job_title',
+        'office',
+        'marking',
         'description',
-        'telephone_numbers',
-        'email_address',
         'address',
         'locations',
+        'email_address',
+        'telephone_numbers',
+        'external_identifiers',
       ]),
-    )(remediation);
+    )(party);
     return (
       <>
         <Dialog
@@ -230,6 +243,7 @@ class PartyEntityEditionContainer extends Component {
                         <Field
                           component={TextField}
                           name="id"
+                          disabled={true}
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -259,6 +273,7 @@ class PartyEntityEditionContainer extends Component {
                           component={DatePickerField}
                           name="created"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -313,6 +328,7 @@ class PartyEntityEditionContainer extends Component {
                           component={DatePickerField}
                           name="modified"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           invalidDateMessage={t(
@@ -395,7 +411,7 @@ class PartyEntityEditionContainer extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="marking"
+                          name="party_type"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -419,7 +435,7 @@ class PartyEntityEditionContainer extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="marking"
+                          name="member_of"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -442,7 +458,7 @@ class PartyEntityEditionContainer extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="name"
+                          name="mail_stop"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -480,7 +496,7 @@ class PartyEntityEditionContainer extends Component {
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="marking"
+                          name="job_title"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -503,7 +519,7 @@ class PartyEntityEditionContainer extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="name"
+                          name="external_identifiers"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -527,7 +543,7 @@ class PartyEntityEditionContainer extends Component {
                         <div className="clearfix" />
                         <Field
                           component={TextField}
-                          name="name"
+                          name="office"
                           fullWidth={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
@@ -572,19 +588,18 @@ class PartyEntityEditionContainer extends Component {
                           helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                         />
                       ) : (
-                        <NewAddressField
+                        <LocationField
                           setFieldValue={setFieldValue}
                           values={values}
                           addressValues={values.locations}
                           title='Location(s)'
                           name='locations'
-                          validation={emailAddressRegex}
-                          helperText='Please enter a valid Email Location. Example: support@darklight.ai'
+                          // validation={macAddrRegex}
+                          helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
                         />
                       )}
-
                     </Grid>
-                    <Grid item={true} xs={6} style={{ marginTop: '10px' }}>
+                    <Grid item={true} xs={6}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
@@ -642,6 +657,7 @@ PartyEntityEditionContainer.propTypes = {
   handleDisplayEdit: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
+  party: PropTypes.object,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
