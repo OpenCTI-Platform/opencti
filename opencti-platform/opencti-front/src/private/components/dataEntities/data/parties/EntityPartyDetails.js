@@ -51,6 +51,13 @@ const styles = (theme) => ({
     overflow: 'hidden',
     overflowY: 'scroll',
   },
+  scrollAddressDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '150px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
   scrollObj: {
     color: theme.palette.header.text,
     fontFamily: 'sans-serif',
@@ -112,17 +119,6 @@ class EntityPartyDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Location or Address')}
-                </Typography>
-                <div className="clearfix" />
-                {party.locations && t(party.locations.map((value) => value))}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
                   {t('Party Type')}
                 </Typography>
                 <div className="clearfix" />
@@ -162,7 +158,7 @@ class EntityPartyDetailsComponent extends Component {
                 <div className="clearfix" />
                 {party.office && t(party.office)}
               </div>
-              <div style={{ marginTop: '50px' }}>
+              <div style={{ marginTop: '20px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -198,7 +194,7 @@ class EntityPartyDetailsComponent extends Component {
                 <div className="clearfix" />
                 {party.modified && fldt(party.modified)}
               </div>
-              <div style={{ marginTop: '75px' }}>
+              <div style={{ marginTop: '20px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -243,7 +239,7 @@ class EntityPartyDetailsComponent extends Component {
                 <div className="clearfix" />
                 {party.mail_stop && t(party.mail_stop)}
               </div>
-              <div style={{ marginTop: '50px' }}>
+              <div style={{ marginTop: '20px' }}>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -281,19 +277,62 @@ class EntityPartyDetailsComponent extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-                style={{ float: 'left', marginTop: 20 }}
-              >
-                {t('Address(es)')}
-              </Typography>
-              <div className="clearfix" />
-              {party.addresses && t(party.addresses.map((value) => value))}
-            </Grid>
+            {
+              party.addresses.length > 0 ? (
+                <Grid item={true} xs={5}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Address(es)')}
+                  </Typography>
+                  <div className="clearfix" />
+                  <div className={classes.scrollBg}>
+                    <div className={classes.scrollAddressDiv}>
+                      <div className={classes.scrollObj}>
+                        {party.addresses && t(party.addresses.map((value) => value.street_address))}
+                      </div>
+                    </div>
+                  </div>
+                </Grid>
+              ) : (
+                <Grid item={true} xs={5}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: 'left', marginTop: 20 }}
+                  >
+                    {t('Location(s)')}
+                  </Typography>
+                  <div className="clearfix" />
+                  <div className={classes.scrollBg}>
+                    <div className={classes.scrollAddressDiv}>
+                      <div className={classes.scrollObj}>
+                        {party.locations && t(party.locations.map((value) => value.name))}
+                      </div>
+                    </div>
+                  </div>
+                </Grid>
+              )
+            }
+          </Grid>
+          <Grid container={true} spacing={3}>
             <Grid item={true} xs={3}>
+              <div style={{ marginBottom: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Location Type')}
+                </Typography>
+                <div className="clearfix" />
+                {party.locations && t(party.locations.map((value) => value.location_type))}
+              </div>
               <CyioCoreObjectLabelsView
                 labels={party.labels}
                 marginTop={0}
@@ -303,16 +342,30 @@ class EntityPartyDetailsComponent extends Component {
               />
             </Grid>
             <Grid item={true} xs={4}>
-              <Typography
-                variant="h3"
-                color="textSecondary"
-                gutterBottom={true}
-              >
-                {t('Markings')}
-              </Typography>
-              <div className="clearfix" />
-              {/* <p className={classes.markingText}>
+              <div style={{ marginBottom: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                  style={{ float: 'left' }}
+                >
+                  {t('Location Class')}
+                </Typography>
+                <div className="clearfix" />
+                {party.locations && t(party.locations.map((value) => value.location_class))}
+              </div>
+              <div>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Markings')}
+                </Typography>
+                <div className="clearfix" />
+                {/* <p className={classes.markingText}>
               </p> */}
+              </div>
             </Grid>
           </Grid>
         </Paper>
@@ -346,6 +399,17 @@ const EntityPartyDetails = createFragmentContainer(
         mail_stop
         office
         job_title
+        addresses {
+          id
+          address_type
+          street_address
+        }
+        locations {
+          id
+          name
+          location_type
+          location_class
+        }
         telephone_numbers {
           id
           usage_type
