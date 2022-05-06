@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { paginateAllThings, listThings, storeLoadById } from '../database/middleware';
+import { paginateAllThings, listThings, storeLoadById, listAllThings } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
@@ -38,6 +38,21 @@ export const objects = async (user, containerId, args) => {
     return paginateAllThings(user, types, R.assoc('filters', filters, args));
   }
   return listThings(user, types, R.assoc('filters', filters, args));
+};
+export const relatedContainers = async (user, containerId, args) => {
+  const key = buildRefRelationKey(RELATION_OBJECT);
+  let types = ['Stix-Core-Object', 'stix-core-relationship'];
+  if (args.viaTypes) {
+    types = args.viaTypes;
+  }
+  const filters = [{ key, values: [containerId] }];
+  const elements = await listAllThings(user, types, { filters });
+  const elementsIds = elements.map((element) => element.id);
+  const queryArgs = {
+    ...args,
+    filters: [...(args.filters || []), { key: buildRefRelationKey(RELATION_OBJECT), values: elementsIds }],
+  };
+  return findAll(user, queryArgs);
 };
 // endregion
 

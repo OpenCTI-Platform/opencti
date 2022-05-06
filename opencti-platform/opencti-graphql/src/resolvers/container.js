@@ -1,4 +1,4 @@
-import { findAll, findById, objects, containersObjectsOfObject } from '../domain/container';
+import { findAll, findById, objects, containersObjectsOfObject, relatedContainers } from '../domain/container';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -29,6 +29,7 @@ const containerResolvers = {
       return 'Unknown';
     },
     objects: (container, args, { user }) => objects(user, container.id, args),
+    relatedContainers: (container, args, { user }) => relatedContainers(user, container.id, args),
   },
   ContainersFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
