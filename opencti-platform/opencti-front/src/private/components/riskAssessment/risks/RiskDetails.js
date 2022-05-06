@@ -80,9 +80,6 @@ class RiskDetailsComponent extends Component {
     } = this.props;
     const riskDetectionSource = R.pipe(
       R.path(['origins']),
-      R.mergeAll,
-      R.path(['origin_actors']),
-      R.mergeAll,
     )(risk);
     return (
       <div style={{ height: '500px' }}>
@@ -191,7 +188,12 @@ class RiskDetailsComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {t(riskDetectionSource.actor_ref.name)}
+              {riskDetectionSource
+              && riskDetectionSource.map((value) => value.origin_actors.map((actor, i) => (
+                <Typography key={i}>
+                  {actor.actor_ref.name && t(actor.actor_ref.name)}
+                </Typography>
+              )))}
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>

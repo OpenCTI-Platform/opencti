@@ -149,7 +149,7 @@ class CyioDomainObjectAssetHeader extends Component {
                 size="small"
                 onClick={handleOpenNewCreation && handleOpenNewCreation.bind(this)}
                 startIcon={<AddCircleOutline />}
-                disabled={disabled || false}
+                disabled={disabled || !handleOpenNewCreation || false}
                 color='primary'
               >
                 {t('New')}

@@ -159,7 +159,15 @@ export const insertQuery = (propValues) => {
     ...(propValues.network_id && {"network_id": propValues.network_id}),
   } ;
   const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`;
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => networkPredicateMap.hasOwnProperty(propPair[0]))
@@ -206,7 +214,15 @@ export const insertNetworkQuery = (propValues) => {
     ...(propValues.network_id && {"network_id": propValues.network_id}),
   } ;
   const id = generateId( id_material, OASIS_SCO_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`;
   const insertPredicates = Object.entries(propValues)
     .filter((propPair) => networkPredicateMap.hasOwnProperty(propPair[0]))

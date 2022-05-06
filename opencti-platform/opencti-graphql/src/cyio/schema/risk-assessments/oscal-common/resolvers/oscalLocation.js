@@ -9,7 +9,7 @@ import {
   selectPhoneNumberByIriQuery,
   deleteAddressByIriQuery,
   deletePhoneNumberByIriQuery,
-  insertAddressesQuery,
+  insertAddressQuery,
   insertPhoneNumbersQuery,
   getReducer as getGlobalReducer,
 } from '../../../global/resolvers/sparql-query.js';
@@ -167,13 +167,21 @@ const oscalLocationResolvers = {
         delete input.telephone_numbers;
       }
       if (input.address !== undefined) {
-        address = input.addresses;
-        delete input.addresses;
+        address = input.address
+        delete input.address;
+      }
+      if (input.urls) {
+        let urls = [];
+        // convert to string form
+        for (let url of input.urls) {
+          urls.push(url.toString());
+        }
+        input.urls = urls;
       }
 
       // create the Location
       const { id, query } = insertLocationQuery(input);
-      await dataSources.Stardog.create({
+      let results = await dataSources.Stardog.create({
         dbName,
         sparqlQuery: query,
         queryId: "Create OSCAL Location"
@@ -184,33 +192,32 @@ const oscalLocationResolvers = {
       // create the address supplied and attach them to the Location
       if (address !== undefined && address !== null) {
         // create the address
-        let addresses = [address];
-        const {addrIris, query} = insertAddressesQuery( addresses );
-        await dataSources.Stardog.create({
+        const {iri, query} = insertAddressQuery( address );
+        let results = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
           queryId: "Create address of Location"
         });
-        // attach the address to the Party
-        const addrAttachQuery = attachToLocationQuery(id, 'address', addrIris);
-        await dataSources.Stardog.create({
+        // attach the address to the Location
+        const addrAttachQuery = attachToLocationQuery(id, 'address', iri);
+        results = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: addrAttachQuery,
           queryId: "Attach address to Location"
         });
       }
-      // create any telephone numbers supplied and attach them to the Party
+      // create any telephone numbers supplied and attach them to the Location
       if (phoneNumbers !== undefined && phoneNumbers !== null) {
         // create the Telephone Number
         const {phoneIris, query} = insertPhoneNumbersQuery( phoneNumbers );
-        await dataSources.Stardog.create({
+        let results = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
           queryId: "Create telephone numbers of Location"
         });
-        // attach the address to the Party
+        // attach the address to the Location
         const phoneAttachQuery = attachToLocationQuery(id, 'telephone_numbers', phoneIris);
-        await dataSources.Stardog.create({
+        results = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: phoneAttachQuery,
           queryId: "Attach telephone numbers to Location"
@@ -252,23 +259,30 @@ const oscalLocationResolvers = {
 
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
       const reducer = getReducer("LOCATION");
-      const party = (reducer(response[0]));
+      const location = (reducer(response[0]));
 
       // Delete any attached addresses
-      if (party.hasOwnProperty('address_iri')) {
-        let addrIri = party.address_iri;
-        const addrQuery = deleteAddressByIriQuery(addrIri);
-        await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery: addrQuery,
-          queryId: "Delete Address from this Location"
-        });
+      if (location.hasOwnProperty('address_iri')) {
+        let addrIris = []
+        if (Array.isArray(location.address_iri)) {
+          addrIris = location.address_iri;
+        } else {
+          addrIris.push(location.address_iri);
+        }
+        for (let addrIri of addrIris) {
+          const addrQuery = deleteAddressByIriQuery(addrIri);
+          let result = await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: addrQuery,
+            queryId: "Delete Address from this Location"
+          }); 
+        }
       }
       // Delete any attached telephone numbers
-      if (party.hasOwnProperty('telephone_numbers_iri')) {
-        for (const phoneIri of party.telephone_numbers_iri) {
+      if (location.hasOwnProperty('telephone_numbers_iri')) {
+        for (const phoneIri of location.telephone_numbers_iri) {
           const phoneQuery = deletePhoneNumberByIriQuery(phoneIri);
-          await dataSources.Stardog.delete({
+          let result = await dataSources.Stardog.delete({
             dbName,
             sparqlQuery: phoneQuery,
             queryId: "Delete Telephone Number from this Party"
@@ -281,7 +295,7 @@ const oscalLocationResolvers = {
       // Delete the Location itself
       const query = deleteLocationQuery(id);
       try {
-        await dataSources.Stardog.delete({
+        let result = await dataSources.Stardog.delete({
           dbName,
           sparqlQuery: query,
           queryId: "Delete OSCAL Location"
@@ -459,7 +473,7 @@ const oscalLocationResolvers = {
     address: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.address_iri === undefined) return [];
       let iri = parent.address_iri[0];
-      const sparqlQuery = selectAddressByIriQuery(iri, selectMap.getNode("addresses"));
+      const sparqlQuery = selectAddressByIriQuery(iri, selectMap.getNode("address"));
       let response;
       try {
         response = await dataSources.Stardog.queryById({
@@ -475,7 +489,7 @@ const oscalLocationResolvers = {
       if (response === undefined || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
         const reducer = getGlobalReducer("ADDRESS");
-        results.push(reducer(response[0]))
+        return(reducer(response[0]));
       }
       else {
         // Handle reporting Stardog Error

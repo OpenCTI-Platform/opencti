@@ -488,6 +488,10 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
+    "Name"
+    name
+    "Label"
+    label_name
   }
   # Pagination Types
   type AssessmentPlatformConnection {
@@ -1768,6 +1772,8 @@ type OscalTaskEdge {
     modified
     "Label"
     label_name
+    "Name"
+    name
     "Risk Level"
     risk_level
     "Risk Status"

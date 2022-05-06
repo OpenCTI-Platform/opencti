@@ -86,7 +86,7 @@ const riskAddPoamIdMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editPOAMItem(id: $id, input: $input) {
+    editRisk(id: $id, input: $input) {
       id
     }
   }

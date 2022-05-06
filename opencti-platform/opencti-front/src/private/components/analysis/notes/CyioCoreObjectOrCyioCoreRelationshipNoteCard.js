@@ -16,6 +16,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import Divider from '@material-ui/core/Divider';
 import CardActions from '@material-ui/core/CardActions';
 import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
 // import { ConnectionHandler } from 'relay-runtime';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -33,6 +34,7 @@ import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectL
 // import { commitMutation } from '../../../../relay/environment';
 import CyioNotePopover from './CyioNotePopover';
 import { resolveLink } from '../../../../utils/Entity';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   card: {
@@ -146,7 +148,10 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
         this.handleCloseDialog();
         this.props.refreshQuery();
       },
-      // onError: (err) => console.log('NoteRemoveDarkLightMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        return toastGenericError('Failed to remove Note');
+      }
     });
     // commitMutation({
     //   mutation: noteMutationRelationDelete,
@@ -187,7 +192,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
     if (node.createdBy) {
       authorName = node.createdBy.name;
       authorLink = `${resolveLink(node.createdBy.entity_type)}/${node.createdBy.id
-      }`;
+        }`;
     }
     return (
       <Card classes={{ root: classes.card }} raised={false}>
@@ -266,20 +271,6 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
                   <ExpandMoreOutlined />
                 )}
               </IconButton>
-              {/* <IconButton
-                aria-haspopup="true"
-                style={{ marginTop: 1 }}
-              >
-              {open ? (
-                <ExpandLessOutlined
-                classes={{ root: classes.toggleButton }}
-                onClick={() => this.toggleExpand()} />
-              ) : (
-                <ExpandLessOutlined
-                classes={{ root: classes.toggleButton }}
-                onClick={() => this.toggleExpand()} />
-              )}
-              </IconButton> */}
             </div>
           }
         />
@@ -288,53 +279,67 @@ class CyioCoreObjectOrCyioCoreRelationshipNoteCardComponent extends Component {
           // borderBottom: `1px solid ${theme.palette.divider}`,
         }}>
           {
-            this.state.open
-              ? (
-                <Typography style={{ margin: '0 0 10px 0' }} align="left" variant="body2">
-                  {node.content}
-                </Typography>
-              )
-              : (
-                <Typography
-                  variant="body2"
-                  noWrap={true}
-                  style={{ margin: '0 0 10px 0', fontWeight: 500 }}
+            !this.state.open && (
+              <Typography
+                variant="body2"
+                noWrap={true}
+                style={{ margin: '0 0 10px 0', fontWeight: 500 }}
+              >
+                <Markdown
+                  remarkPlugins={[remarkGfm, remarkParse]}
+                  parserOptions={{ commonmark: true }}
+                  className="markdown"
                 >
+                  {t(node.content)}
+                </Markdown>
+              </Typography>
+            )
+          }
+        </CardContent>
+        <Collapse in={this.state.open} timeout="auto" unmountOnExit>
+          <CardContent style={{ padding: '0 20px 20px 15px' }}>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                >
+                  {t('Author')}
+                </Typography>
+                <Typography style={{ margin: '0 0 10px 0' }} align="left" variant="body2">
+                  {t(node.authors)}
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={6}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                >
+                  {t('Abstract')}
+                </Typography>
+                <Typography style={{ margin: '0 0 10px 0' }} align="left" variant="body2">
+                  {t(node.abstract)}
+                </Typography>
+              </Grid>
+              <Grid item={true} xs={12}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                >
+                  {t('Content')}
+                </Typography>
+                <Typography style={{ margin: '0 0 10px 0' }} align="left" variant="body2">
                   <Markdown
                     remarkPlugins={[remarkGfm, remarkParse]}
                     parserOptions={{ commonmark: true }}
                     className="markdown"
                   >
-                    {node.attribute_abstract}
+                    {t(node.content)}
                   </Markdown>
                 </Typography>
-              )
-          }
-          {/* <Markdown
-                  remarkPlugins={[remarkGfm, remarkParse]}
-                  parserOptions={{ commonmark: true }}
-                  className="markdown"
-                >
-                  {node.content}
-                </Markdown> */}
-          {/* <IconButton
-                  component={Link}
-                  to={`/dashboard/analysis/notes/${node.id}`}
-                  classes={{ root: classes.external }}
-                >
-                  <OpenInNewOutlined fontSize="small" />
-                </IconButton> */}
-        </CardContent>
-        <Collapse sx={{ width: '1100px', borderRadius: 0 }} in={this.state.open} timeout="auto" unmountOnExit>
-          <CardActions style={{ color: '#F9B406', padding: '0 20px 20px 15px' }}>
-            {/* <CyioCoreObjectLabels
-              variant="inList"
-              labels={node.labels}
-              refreshQuery={refreshQuery}
-              id={node.id}
-              typename={this.props.typename}
-            /> */}
-          </CardActions>
+              </Grid>
+            </Grid>
+          </CardContent>
         </Collapse>
         <Dialog
           open={this.state.displayDialog}
