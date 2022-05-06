@@ -339,6 +339,12 @@
   }
   # Ordering Types
   enum ActivityOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Name"
     name
     "Method"
@@ -352,6 +358,12 @@
     filterMode: FilterMode
   }
   enum ActivityFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Name"
     name
     "Method"
@@ -475,6 +487,10 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
+    "Label"
+    label_name
+    "Name"
+    name
   }
   # Filtering Types
   input AssessmentPlatformFiltering {
@@ -488,10 +504,10 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
-    "Name"
-    name
     "Label"
     label_name
+    "Name"
+    name
   }
   # Pagination Types
   type AssessmentPlatformConnection {
@@ -653,6 +669,8 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
+    "Source"
+    origin_name
   }
   # Filtering Types
   input CharacterizationFiltering {
@@ -666,6 +684,8 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
+    "Source"
+    origin_name
   }
   # Pagination Types
   type CharacterizationConnection {
@@ -757,8 +777,12 @@ input AssessmentPlatformAddInput {
   }
   # Ordering Types
   enum EvidenceOrdering {
-    "Entity Type"
-    entity_type
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
   }
   # Filtering Types
   input EvidenceFiltering {
@@ -768,8 +792,12 @@ input AssessmentPlatformAddInput {
     filterMode: FilterMode
   }
   enum EvidenceFilter {
-    "Entity Type"
-    entity_type
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
   }
   # Pagination Types
   type EvidenceConnection {
@@ -1008,21 +1036,18 @@ input LogEntryAuthorAddInput  {
   }
   # Ordering Type
   enum AssessmentLogEntriesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Event Start"
     event_start
     "Event End"
     event_end
-    "Label"
-    labels
-  }
-  # Pagination Types
-  type AssessmentLogEntryConnection {
-    pageInfo: PageInfo!
-    edges: [AssessmentLogEntryEdge]
-  }
-  type AssessmentLogEntryEdge {
-    cursor: String!
-    node: AssessmentLogEntry!
+    "Name"
+    name
   }
   # Filtering Types
   input AssessmentLogEntriesFiltering {
@@ -1038,6 +1063,21 @@ input LogEntryAuthorAddInput  {
     modified
     "Label"
     label_name
+    "Event Start"
+    event_start
+    "Event End"
+    event_end
+    "Name"
+    name
+  }
+  # Pagination Types
+  type AssessmentLogEntryConnection {
+    pageInfo: PageInfo!
+    edges: [AssessmentLogEntryEdge]
+  }
+  type AssessmentLogEntryEdge {
+    cursor: String!
+    node: AssessmentLogEntry!
   }
 
 ## Risk Log Entry
@@ -1117,14 +1157,22 @@ input LogEntryAuthorAddInput  {
   }
   # Ordering Type
   enum RiskLogEntriesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Event Start"
     event_start
     "Event End"
     event_end
-    "Label"
-    labels
     "Entry Type"
     entry_type
+    "Name"
+    name
+    "Status Change"
+    status_change
   }
   # Filtering Types
   input RiskLogEntriesFiltering {
@@ -1140,6 +1188,16 @@ input LogEntryAuthorAddInput  {
     modified
     "Label"
     label_name
+    "Event Start"
+    event_start
+    "Event End"
+    event_end
+    "Entry Type"
+    entry_type
+    "Name"
+    name
+    "Status Change"
+    status_change
   }
   # Pagination Types
   type RiskLogEntryConnection {
@@ -1211,7 +1269,7 @@ input LogEntryAuthorAddInput  {
     "Modified"
     modified
     "Label"
-    labels
+    label_name
   }
   # Filtering Types
   input MitigatingFactorFiltering {
@@ -1320,7 +1378,7 @@ input LogEntryAuthorAddInput  {
     "Modified"
     modified
     "Label"
-    labels
+    label_name
     "Name"
     name
     "Observation Method"
@@ -1331,6 +1389,8 @@ input LogEntryAuthorAddInput  {
     collected
     "Expiration Date"
     expires
+    "Source"
+    origin_name
   }
   # Filtering Types
   input ObservationsFiltering {
@@ -1354,6 +1414,8 @@ input LogEntryAuthorAddInput  {
     collected
     "Expiration Date"
     expires
+    "Source"
+    origin_name
   }
   # Pagination Types
   type ObservationConnection {
@@ -1390,22 +1452,12 @@ input LogEntryAuthorAddInput  {
     filterMode: FilterMode
   }
   enum OriginOrdering {
-    "Created"
-    created
-    "Modified"
-    modified
-    "Label"
-    labels
     "Name"
-    name
+    actor_name
   }
   enum OriginFilter {
-    "Created"
-    created
-    "Moodified"
-    modified
-    "Label"
-    label_name
+    "Name"
+    actor_name
   }
   # Pagination Types
   type OriginConnection {
@@ -1501,6 +1553,8 @@ enum OscalTaskOrdering {
   created
   "Modified"
   modified
+  "Label"
+  label_name
   "Task Type"
   task_type
   "Name"
@@ -1518,6 +1572,8 @@ enum OscalTaskFilter {
   created
   "Modified"
   modified
+  "Label"
+  label_name
   "Task Type"
   task_type
   "Name"
@@ -1598,7 +1654,7 @@ type OscalTaskEdge {
     "Modified"
     modified
     "Label"
-    labels
+    label_name
     "Name"
     name
   }
@@ -1743,6 +1799,8 @@ type OscalTaskEdge {
     created
     "Modified"
     modified
+    "Label"
+    label_name
     "POAM ID"
     poam_id
     "Name"
@@ -1755,8 +1813,6 @@ type OscalTaskEdge {
     occurrences
     "Deadline"
     deadline
-    "Label"
-    label_name
   }
   # Filtering Types
   input RisksFiltering {
@@ -1864,14 +1920,20 @@ type OscalTaskEdge {
   }
   # Ordering Types
   enum RiskResponsesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Response Type"
     response_type
     "Response Lifecycle"
     lifecycle
     "Name"
     name
-    "Source System"
-    source_system
+    "Source"
+    origin_name
   }
   # Filtering Types
   input RiskResponsesFiltering {
@@ -1881,14 +1943,20 @@ type OscalTaskEdge {
     filterMode: FilterMode
   }
   enum RiskResponseFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Response Type"
     response_type
     "Response Lifecycle"
     lifecycle
     "Name"
     name
-    "Source System"
-    source_system
+    "Source"
+    origin_name
   }
   # Pagination Types
   type RiskResponseConnection {
@@ -1933,6 +2001,8 @@ type OscalTaskEdge {
   }
   # Ordering Types
   enum SubjectOrdering {
+    "Subject Context"
+    subject_context
     "Subject Type"
     subject_type
     "Name"
@@ -1946,6 +2016,8 @@ type OscalTaskEdge {
     filterMode: FilterMode
   }
   enum SubjectFilter {
+    "Subject Context"
+    subject_context
     "Subject Type"
     subject_type
     "Name"
