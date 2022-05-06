@@ -9,15 +9,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { Grid, Switch, Tooltip } from '@material-ui/core';
-import Chip from '@material-ui/core/Chip';
-import Link from '@material-ui/core/Link';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Launch from '@material-ui/icons/Launch';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, Information } from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
 const styles = (theme) => ({
@@ -159,7 +153,13 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                  {assessmentPlatform.description && t(assessmentPlatform.description)}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {assessmentPlatform.description && t(assessmentPlatform.description)}
+                    </Markdown>
                   </div>
                 </div>
               </div>
@@ -184,9 +184,11 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                 {t('Markings')}
               </Typography>
               <div className="clearfix" />
-              <p className={classes.markingText}>
-                {t('IEP: WHITE')}
-              </p>
+              {assessmentPlatform?.markings && (
+                <p className={classes.markingText}>
+                  {t(assessmentPlatform?.markings)}
+                </p>
+              )}
             </Grid>
           </Grid>
         </Paper>

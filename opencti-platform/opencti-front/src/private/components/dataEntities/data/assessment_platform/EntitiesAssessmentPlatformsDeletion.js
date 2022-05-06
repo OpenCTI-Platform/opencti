@@ -183,7 +183,7 @@ class EntitiesAssessmentPlatformsDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Role?')}
+                {t('Are you sure you’d like to delete this Assessment Platform?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
