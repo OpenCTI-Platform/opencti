@@ -171,9 +171,8 @@ CyioAddNotesLinesContainer.propTypes = {
 };
 
 export const cyioAddNotesLinesQuery = graphql`
-  query CyioAddNotesLinesQuery($count: Int!) {
+  query CyioAddNotesLinesQuery {
     ...CyioAddNotesLines_data
-      @arguments(count: $count)
   }
 `;
 
@@ -181,11 +180,8 @@ const CyioAddNotesLines = createFragmentContainer(
   CyioAddNotesLinesContainer,
   {
     data: graphql`
-      fragment CyioAddNotesLines_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-      ) {
-        cyioNotes(limit: $count) {
+      fragment CyioAddNotesLines_data on Query {
+        cyioNotes{
           edges {
             node {
               __typename

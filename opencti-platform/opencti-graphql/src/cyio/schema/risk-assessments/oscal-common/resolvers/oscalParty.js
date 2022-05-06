@@ -759,9 +759,9 @@ const oscalPartyResolvers = {
       // this is necessary to work around an issue were an array a strings is returned as a single value.
       if (parent.email_addresses === undefined) return [];
       const results = [];
-      let phoneNumbers = parent.email_addresses[0].split(",")
-      for (let phoneNumber of phoneNumbers) {
-        results.push(phoneNumber)
+      let emailAddresses = parent.email_addresses[0].split(",")
+      for (let emailAddress of emailAddresses) {
+        results.push(emailAddress)
       }
       return results;
     }
