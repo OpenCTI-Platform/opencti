@@ -41,14 +41,17 @@ class Root extends Component {
           component={AssessmentPlatformsEntities}
         />
         <BoundaryRoute
+          exact
           path="/data/entities/tasks"
           component={RolesTasks}
         />
         <BoundaryRoute
+          exact
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
         />
         <BoundaryRoute
+          exact
           path="/data/entities/tasks/:taskId"
           render={(routeProps) => <RootTask {...routeProps} me={me} />}
         />
@@ -75,6 +78,7 @@ class Root extends Component {
           component={DataSources}
         />
         <BoundaryRoute
+          exact
           path="/data/entities/assessment_platform/:assessmentPlatformId"
           render={(routeProps) => <RootAssessmentPlatform {...routeProps} me={me} />}
         />
