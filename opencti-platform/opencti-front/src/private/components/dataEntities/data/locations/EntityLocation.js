@@ -103,7 +103,7 @@ class EmtityLocationComponent extends Component {
         </div>
         <EntitiesLocationsCreation
           openDataCreation={this.state.openDataCreation}
-          handleRoleCreation={this.handleOpenNewCreation.bind(this)}
+          handleLocationCreation={this.handleOpenNewCreation.bind(this)}
           history={history}
         />
         <RoleEntityEditionContainer

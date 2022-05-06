@@ -38,7 +38,8 @@ import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
 import { toastGenericError } from "../../../../../utils/bakedToast";
-
+import NewAddressField from '../../../common/form/NewAddressField';
+import DataAddressField from '../../../common/form/DataAddressField';
 
 const styles = (theme) => ({
   dialogTitle: {
@@ -47,7 +48,7 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
-    overflow: 'hidden',
+    overflowY: 'scroll',
   },
   dialogClosebutton: {
     float: 'left',
@@ -151,21 +152,20 @@ class LocationEntityEditionContainer extends Component {
       classes,
       t,
       disabled,
-      risk,
       remediation,
     } = this.props;
-    const remediationOriginData = R.pathOr([], ['origins', 0, 'origin_actors', 0, 'actor'], remediation);
     const initialValues = R.pipe(
-      R.assoc('name', remediation?.name || ''),
-      R.assoc('description', remediation?.description || ''),
-      R.assoc('source', remediationOriginData?.name || []),
-      R.assoc('modified', dateFormat(remediation?.modified)),
-      R.assoc('created', dateFormat(remediation?.created)),
-      R.assoc('lifecycle', remediation?.lifecycle || []),
-      R.assoc('response_type', remediation?.response_type || ''),
+      R.assoc('name', ''),
+      R.assoc('description', ''),
+      R.assoc('address', []),
+      R.assoc('telephone_numbers', []),
+      R.assoc('email_address', []),
       R.pick([
         'name',
+        'address',
         'description',
+        'email_address',
+        'telephone_numbers',
         'source',
         'modified',
         'created',
@@ -218,6 +218,7 @@ class LocationEntityEditionContainer extends Component {
                           component={TextField}
                           name="id"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -246,6 +247,7 @@ class LocationEntityEditionContainer extends Component {
                           component={DatePickerField}
                           name="created"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -257,7 +259,7 @@ class LocationEntityEditionContainer extends Component {
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
+                      <div>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -276,6 +278,7 @@ class LocationEntityEditionContainer extends Component {
                           component={DatePickerField}
                           name="modified"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           invalidDateMessage={t(
@@ -285,32 +288,6 @@ class LocationEntityEditionContainer extends Component {
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Role Identifier')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Role Identifier')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="role_identifier"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
                     </Grid>
                     <Grid item={true} xs={12}>
                       <Typography
@@ -336,58 +313,6 @@ class LocationEntityEditionContainer extends Component {
                         variant='outlined'
                       />
                     </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Short Name')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Short Name')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="short_name"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Marking')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Marking')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="marking"
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
                     <Grid xs={12} item={true}>
                       <Typography
                         variant="h3"
@@ -411,6 +336,110 @@ class LocationEntityEditionContainer extends Component {
                         rows='3'
                         variant='outlined'
                         containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Location Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Location Type')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="marking"
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Location Class')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Location Class')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="marking"
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <NewAddressField
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        addressValues={values.address}
+                        title='Address'
+                        name='address'
+                        helperText='Please enter a valid Email Address. Example: support@darklight.ai'
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <DataAddressField
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        addressValues={values.telephone_numbers}
+                        title='Telephone numbers'
+                        name='telephone_numbers'
+                        // validation={telephoneFormatRegex}
+                        helperText='Please enter a valid Telephone Number. Example: +1 999 999-9999'
+                      />
+                      <div style={{ marginTop: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Marking')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Marking')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          variant='outlined'
+                          name="marking"
+                          fullWidth={true}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <DataAddressField
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        addressValues={values.email_address}
+                        title='Email Address'
+                        name='email_address'
+                        // validation={emailAddressRegex}
+                        helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                       />
                     </Grid>
                   </Grid>

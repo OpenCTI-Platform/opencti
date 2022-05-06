@@ -27,6 +27,8 @@ import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import NewAddressField from '../../../common/form/NewAddressField';
+import DataAddressField from '../../../common/form/DataAddressField';
 
 const styles = (theme) => ({
   dialogClosebutton: {
@@ -44,7 +46,7 @@ const styles = (theme) => ({
   dialogContent: {
     padding: '0 24px',
     marginBottom: '24px',
-    overflow: 'hidden',
+    overflowY: 'scroll',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -150,7 +152,7 @@ class EntitiesLocationsCreation extends Component {
       t,
       classes,
       openDataCreation,
-      handleRoleCreation,
+      handleLocationCreation,
       open,
       history,
     } = this.props;
@@ -159,7 +161,7 @@ class EntitiesLocationsCreation extends Component {
         <Dialog
           open={openDataCreation}
           keepMounted={true}
-          onClose={() => handleRoleCreation()}
+          onClose={() => handleLocationCreation()}
         >
           <Formik
             enableReinitialize={true}
@@ -167,6 +169,9 @@ class EntitiesLocationsCreation extends Component {
               name: '',
               created: null,
               modified: null,
+              address: [],
+              email_address: [],
+              telephone_numbers: [],
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -242,7 +247,7 @@ class EntitiesLocationsCreation extends Component {
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <div style={{ marginBottom: '10px' }}>
+                      <div>
                         <Typography
                           variant="h3"
                           color="textSecondary"
@@ -271,32 +276,6 @@ class EntitiesLocationsCreation extends Component {
                         />
                       </div>
                     </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Role Identifier')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Role Identifier')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="role_identifier"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
                     <Grid item={true} xs={12}>
                       <Typography
                         variant="h3"
@@ -321,58 +300,6 @@ class EntitiesLocationsCreation extends Component {
                         variant='outlined'
                       />
                     </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Short Name')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Short Name')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="short_name"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                    <Grid item={true} xs={6}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Marking')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Marking')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name="marking"
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
                     <Grid xs={12} item={true}>
                       <Typography
                         variant="h3"
@@ -398,12 +325,116 @@ class EntitiesLocationsCreation extends Component {
                         containerstyle={{ width: '100%' }}
                       />
                     </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Location Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Location Type')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="marking"
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Location Class')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Location Class')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="marking"
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <NewAddressField
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        addressValues={values.address}
+                        title='Address'
+                        name='address'
+                        helperText='Please enter a valid Email Address. Example: support@darklight.ai'
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <DataAddressField
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        addressValues={values.telephone_numbers}
+                        title='Telephone numbers'
+                        name='telephone_numbers'
+                        // validation={telephoneFormatRegex}
+                        helperText='Please enter a valid Telephone Number. Example: +1 999 999-9999'
+                      />
+                      <div style={{ marginTop: '10px' }}>
+                        <Typography
+                          variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ float: 'left' }}
+                        >
+                          {t('Marking')}
+                        </Typography>
+                        <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                          <Tooltip title={t('Marking')} >
+                            <Information fontSize="inherit" color="disabled" />
+                          </Tooltip>
+                        </div>
+                        <div className="clearfix" />
+                        <Field
+                          component={SelectField}
+                          variant='outlined'
+                          name="marking"
+                          fullWidth={true}
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <DataAddressField
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        addressValues={values.email_address}
+                        title='Email Address'
+                        name='email_address'
+                        // validation={emailAddressRegex}
+                        helperText='Please enter a valid Email Address. Example: support@darklight.ai'
+                      />
+                    </Grid>
                   </Grid>
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    onClick={() => handleRoleCreation()}
+                    onClick={() => handleLocationCreation()}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -429,7 +460,7 @@ class EntitiesLocationsCreation extends Component {
 
 EntitiesLocationsCreation.propTypes = {
   openDataCreation: PropTypes.bool,
-  handleRoleCreation: PropTypes.func,
+  handleLocationCreation: PropTypes.func,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
