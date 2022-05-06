@@ -7,17 +7,11 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import Typography from '@material-ui/core/Typography';
-import { Grid, Switch, Tooltip } from '@material-ui/core';
-import Chip from '@material-ui/core/Chip';
-import Link from '@material-ui/core/Link';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import Launch from '@material-ui/icons/Launch';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, Information } from 'mdi-material-ui';
-import ListItemText from '@material-ui/core/ListItemText';
-import ExpandableMarkdown from '../../../../../components/ExpandableMarkdown';
+import { Grid } from '@material-ui/core';
 import inject18n from '../../../../../components/i18n';
 import CyioCoreObjectLabelsView from '../../../common/stix_core_objects/CyioCoreObjectLabelsView';
 const styles = (theme) => ({
@@ -78,7 +72,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
       classes,
       refreshQuery,
       responsibleParty,
-      fd,
+      fldt,
       history,
     } = this.props;
     return (
@@ -98,8 +92,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
-                {/* {responsibleParty.name} */}
+                {responsibleParty?.name && t(responsibleParty?.name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -111,7 +104,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 {t('Jun 3, 2022')}
-                 {/* {responsibleParty.created} */}
+                {responsibleParty?.created && fldt(responsibleParty?.created)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -122,7 +115,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('Short Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {responsibleParty?.short_name && t(responsibleParty?.short_name)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -133,7 +126,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('Role Identifier')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Role Identifier')}
+                {responsibleParty?.role_identifier && t(responsibleParty?.role_identifier)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -146,7 +139,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {responsibleParty.id}
+                {responsibleParty.id && t(responsibleParty.id)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -157,7 +150,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {responsibleParty?.modified && fldt(responsibleParty?.modified)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -172,7 +165,13 @@ class EntityResponsiblePartyDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {t('Lorem Ipsum')}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {responsibleParty?.description && t(responsibleParty?.description)}
+                    </Markdown>
                   </div>
                 </div>
               </div>
@@ -197,9 +196,11 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                 {t('Markings')}
               </Typography>
               <div className="clearfix" />
-              <p className={classes.markingText}>
-                {t('IEP: WHITE')}
-              </p>
+              {responsibleParty?.markings && (
+                <p className={classes.markingText}>
+                  {t(responsibleParty?.markings)}
+                </p>
+              )}
             </Grid>
           </Grid>
         </Paper>
@@ -213,7 +214,7 @@ EntityResponsiblePartyDetailsComponent.propTypes = {
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
-  fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const EntityResponsiblePartyDetails = createFragmentContainer(

@@ -186,7 +186,7 @@ class DataSourceResponsiblePartiesDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Risk?')}
+                {t('Are you sure you’d like to delete this Responsible Party?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}
