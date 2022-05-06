@@ -71,15 +71,15 @@ const logEntryResolvers = {
 
         // for each Log Entry in the result set
         for (let logEntry of logEntryList) {
+          if (logEntry.id === undefined || logEntry.id == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${logEntry.iri} missing field 'id'; skipping`);
+            continue;
+          }
+
           // skip down past the offset
           if (offset) {
             offset--
             continue
-          }
-
-          if (logEntry.id === undefined || logEntry.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${logEntry.iri} missing field 'id'; skipping`);
-            continue;
           }
 
           // filter out non-matching entries if a filter is to be applied
@@ -89,6 +89,14 @@ const logEntryResolvers = {
             }
             filterCount++;
           }
+
+          //TODO: WORKAROUND data issues
+          if (logEntry.hasOwnProperty('entry_type')) {
+            for (let entry in logEntry.entry_type) {
+              logEntry.entry_type[entry] = logEntry.entry_type[entry].replace(/_/g,'-');
+            }
+          }
+          //END WORKAROUND
 
           // if haven't reached limit to be returned
           if (limit) {
