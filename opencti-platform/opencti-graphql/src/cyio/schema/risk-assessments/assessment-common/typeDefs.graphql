@@ -99,6 +99,17 @@
       filterMode: FilterMode
       search: String
     ): FacetConnection
+    #Log Entry Author
+    logEntryAuthor(id: ID!): LogEntryAuthor
+    logEntryAuthors( 
+      first: Int
+      offset: Int
+      orderedBy: LogEntryAuthorOrdering
+      orderMode: OrderingMode
+      filters: [LogEntryAuthorFiltering]
+      filterMode: FilterMode
+      search: String
+    ): LogEntryAuthorConnection
     #Mitigating Factor
     mitigatingFactor(id: ID!): MitigatingFactor
     mitigatingFactors( 
@@ -968,6 +979,37 @@ input LogEntryAuthorAddInput  {
   "Identifies a reference to the role in which the party is making the log entry"
   role: ID
 }
+# Ordering Type
+enum LogEntryAuthorOrdering {
+  "Party"
+  party_name
+  "Role"
+  role_identifier
+}
+# Filtering Types
+enum LogEntryAuthorFilter {
+  "Party"
+  party_name
+  "Role"
+  role_identifier
+}
+# Filtering Types
+input LogEntryAuthorFiltering {
+  key: LogEntryAuthorFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+# Pagination Types
+type LogEntryAuthorConnection {
+  pageInfo: PageInfo!
+  edges: [LogEntryAuthorEdge]
+}
+type LogEntryAuthorEdge {
+  cursor: String!
+  node: LogEntryAuthor!
+}
+
 
 ## Assessment Log Entry
 #

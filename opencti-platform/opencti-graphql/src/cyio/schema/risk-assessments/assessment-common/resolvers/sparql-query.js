@@ -1874,6 +1874,7 @@ export const insertLogEntryAuthorQuery = (propValues) => {
 export const insertLogEntryAuthorsQuery = (authors) => {
   const graphs = [], authorIris = [];
   authors.forEach((author) => {
+    if (author.party === undefined) throw new UserInputError(`Party ID not specified for LogEntryAuthor`); 
     const id = generateId( );
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#LogEntryAuthor-${id}>`;
@@ -1925,6 +1926,10 @@ export const selectLogEntryAuthorByIriQuery = (iri, select) => {
 export const selectAllLogEntryAuthors = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(logEntryAuthorPredicateMap);
   if (!select.includes('id')) select.push('id');
+  if (select.includes('party')) {
+    select.push('party_name');
+    select.push('party_type');
+  }
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -3913,7 +3918,11 @@ export const logEntryAuthorPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party_name");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-
+  party_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#party>/<http://csrc.nist.gov/ns/oscal/common#party_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   role: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#role>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "role");},
