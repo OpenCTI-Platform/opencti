@@ -253,7 +253,7 @@ class RiskTrackingPopover extends Component {
     )(node);
     const initialValues = R.pipe(
       R.assoc('entry_type', node?.entry_type || []),
-      R.assoc('title', node?.name || ''),
+      R.assoc('name', node?.name || ''),
       R.assoc('description', node?.description || ''),
       R.assoc('event_start', dateFormat(node?.event_start)),
       R.assoc('event_end', dateFormat(node?.event_end)),
@@ -262,7 +262,7 @@ class RiskTrackingPopover extends Component {
       R.assoc('related_responses', riskStatusResponse.map((value) => value.id) || []),
       R.pick([
         'entry_type',
-        'title',
+        'name',
         'description',
         'event_start',
         'event_end',
@@ -409,7 +409,7 @@ class RiskTrackingPopover extends Component {
                           component={TextField}
                           variant='outlined'
                           size='small'
-                          name="title"
+                          name="name"
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
                         />
