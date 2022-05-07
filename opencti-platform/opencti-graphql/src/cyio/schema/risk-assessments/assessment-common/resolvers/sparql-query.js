@@ -913,6 +913,7 @@ export const selectAssessmentPlatformQuery = (id, select) => {
 export const selectAssessmentPlatformByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(assessmentPlatformPredicateMap);
+  if (!select.includes('id')) select.push('id');
   const { selectionClause, predicates } = buildSelectVariables(assessmentPlatformPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
@@ -3770,9 +3771,9 @@ export const assessmentPlatformPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "description");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  subject_ref: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#subject_ref>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "subject_ref");},
+  uses_components: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#uses_components>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "uses_components");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 }
