@@ -5,7 +5,7 @@ import { elIndex, elPaginate, ES_MAX_CONCURRENCY } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_STIX_INDICES } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
-import { deleteElementById, loadById, loadStixById, updateAttribute } from '../database/middleware';
+import { deleteElementById, storeLoadById, stixLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -28,7 +28,7 @@ export const createTaxiiCollection = async (user, input) => {
   return data;
 };
 export const findById = async (user, collectionId) => {
-  return loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
+  return storeLoadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
 };
 export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_TAXII_COLLECTION], args);
@@ -43,13 +43,13 @@ export const taxiiCollectionDelete = async (user, collectionId) => {
 };
 export const taxiiCollectionCleanContext = async (user, collectionId) => {
   await delEditContext(user, collectionId);
-  return loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION).then((collectionToReturn) => {
+  return storeLoadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
   });
 };
 export const taxiiCollectionEditContext = async (user, collectionId, input) => {
   await setEditContext(user, collectionId, input);
-  return loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION).then((collectionToReturn) => {
+  return storeLoadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
   });
 };
@@ -105,7 +105,7 @@ const collectionQuery = async (user, collectionId, args) => {
   if (spec_version || version) {
     throw FunctionalError('Unsupported parameters provided', { spec_version, version });
   }
-  const collection = await loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
+  const collection = await storeLoadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
   if (!collection) {
     throw ResourceNotFoundError({ id: collectionId });
   }
@@ -124,7 +124,7 @@ const collectionQuery = async (user, collectionId, args) => {
 };
 export const restCollectionStix = async (user, id, args) => {
   const { edges, pageInfo } = await collectionQuery(user, id, args);
-  const objects = await Promise.map(edges, (e) => loadStixById(user, e.node.internal_id, { withFiles: true }), {
+  const objects = await Promise.map(edges, (e) => stixLoadById(user, e.node.internal_id, { withFiles: true }), {
     concurrency: ES_MAX_CONCURRENCY,
   });
   return {
@@ -153,7 +153,7 @@ const restBuildCollection = async (collection) => {
   };
 };
 export const restLoadCollectionById = async (user, collectionId) => {
-  const collection = await loadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
+  const collection = await storeLoadById(user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
   if (!collection) {
     throw ResourceNotFoundError({ id: collectionId });
   }

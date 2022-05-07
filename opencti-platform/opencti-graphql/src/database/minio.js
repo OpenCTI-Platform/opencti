@@ -79,11 +79,10 @@ export const getFileContent = (id) => {
   });
 };
 
-export const stixFileConverter = (user, file) => {
+export const storeFileConverter = (user, file) => {
   return {
+    id: file.id,
     name: file.name,
-    value: file.name,
-    uri: file.id,
     version: file.metaData.version,
     mime_type: file.metaData.mimetype,
   };
@@ -132,8 +131,8 @@ export const rawFilesListing = (user, directory) => {
   });
 };
 
-export const upload = async (user, path, file, metadata = {}) => {
-  const { createReadStream, filename, mimetype, encoding = '', version = now() } = await file;
+export const upload = async (user, path, fileUpload, metadata = {}) => {
+  const { createReadStream, filename, mimetype, encoding = '', version = now() } = await fileUpload;
   logAudit.info(user, UPLOAD_ACTION, { path, filename, metadata });
   const escapeName = querystring.escape(filename);
   const internalMeta = { filename: escapeName, mimetype, encoding, version };

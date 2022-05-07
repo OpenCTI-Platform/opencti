@@ -42,6 +42,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: null,
+      deSelectedElements: null,
       selectAll: false,
     };
   }
@@ -89,12 +90,26 @@ class ContainerStixDomainObjectsComponent extends Component {
   handleToggleSelectEntity(entity, event) {
     event.stopPropagation();
     event.preventDefault();
-    const { selectedElements } = this.state;
+    const { selectedElements, deSelectedElements, selectAll } = this.state;
     if (entity.id in (selectedElements || {})) {
       const newSelectedElements = R.omit([entity.id], selectedElements);
       this.setState({
         selectAll: false,
         selectedElements: newSelectedElements,
+      });
+    } else if (selectAll && entity.id in (deSelectedElements || {})) {
+      const newDeSelectedElements = R.omit([entity.id], deSelectedElements);
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
+      });
+    } else if (selectAll) {
+      const newDeSelectedElements = R.assoc(
+        entity.id,
+        entity,
+        deSelectedElements || {},
+      );
+      this.setState({
+        deSelectedElements: newDeSelectedElements,
       });
     } else {
       const newSelectedElements = R.assoc(
@@ -110,11 +125,19 @@ class ContainerStixDomainObjectsComponent extends Component {
   }
 
   handleToggleSelectAll() {
-    this.setState({ selectAll: !this.state.selectAll, selectedElements: null });
+    this.setState({
+      selectAll: !this.state.selectAll,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
   }
 
   handleClearSelectedElements() {
-    this.setState({ selectAll: false, selectedElements: null });
+    this.setState({
+      selectAll: false,
+      selectedElements: null,
+      deSelectedElements: null,
+    });
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -157,12 +180,14 @@ class ContainerStixDomainObjectsComponent extends Component {
       openExports,
       numberOfElements,
       selectedElements,
+      deSelectedElements,
       selectAll,
       types,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
-      numberOfSelectedElements = numberOfElements.original;
+      numberOfSelectedElements = numberOfElements.original
+        - Object.keys(deSelectedElements || {}).length;
     }
     const paginationOptions = {
       types: types.length > 0 ? types : ['Stix-Domain-Object'],
@@ -227,6 +252,7 @@ class ContainerStixDomainObjectsComponent extends Component {
                     onTypesChange={this.handleToggle.bind(this)}
                     openExports={openExports}
                     selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
                     onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                     selectAll={selectAll}
                   />
@@ -235,6 +261,7 @@ class ContainerStixDomainObjectsComponent extends Component {
             </ListLines>
             <ToolBar
               selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               selectAll={selectAll}
               filters={finalFilters}

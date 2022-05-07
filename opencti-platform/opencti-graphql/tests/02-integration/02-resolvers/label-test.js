@@ -76,7 +76,7 @@ describe('Label resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: labelInternalId, input: { key: 'value', value: ['State-Sponsored2'] } },
     });
-    expect(queryResult.data.labelEdit.fieldPatch.value).toEqual('State-Sponsored2');
+    expect(queryResult.data.labelEdit.fieldPatch.value).toEqual('state-sponsored2');
   });
   it('should context patch label', async () => {
     const CONTEXT_PATCH_QUERY = gql`

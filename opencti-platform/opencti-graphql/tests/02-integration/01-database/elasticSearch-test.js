@@ -33,7 +33,7 @@ import {
 import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION } from '../../../src/schema/general';
-import { loadByIdWithMetaRels } from '../../../src/database/middleware';
+import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
@@ -91,7 +91,7 @@ describe('Elasticsearch document loader', () => {
     const dataThroughStix = await elLoadById(ADMIN_USER, standardId, null, ['test_index']);
     expect(dataThroughStix.standard_id).toEqual(documentWithIndex.standard_id);
     // Try to delete
-    await elDeleteElements(ADMIN_USER, [dataThroughStix], { idLoader: loadByIdWithMetaRels });
+    await elDeleteElements(ADMIN_USER, [dataThroughStix], storeLoadByIdWithRefs);
     const removedInternal = await elLoadById(ADMIN_USER, internalId, null, ['test_index']);
     expect(removedInternal).toBeUndefined();
   });
@@ -260,7 +260,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2019-11')).toEqual(0);
     expect(aggregationMap.get('2019-12')).toEqual(0);
     expect(aggregationMap.get('2020-01')).toEqual(1);
-    expect(aggregationMap.get('2020-02')).toEqual(12);
+    expect(aggregationMap.get('2020-02')).toEqual(13);
     expect(aggregationMap.get('2020-03')).toEqual(1);
   });
   it('should year histogram accurate', async () => {
@@ -277,7 +277,7 @@ describe('Elasticsearch computation', () => {
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(5);
-    expect(aggregationMap.get('2020')).toEqual(14);
+    expect(aggregationMap.get('2020')).toEqual(15);
   });
   it('should year histogram with relation filter accurate', async () => {
     const attackPattern = await elLoadById(ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
@@ -507,7 +507,7 @@ describe('Elasticsearch pagination', () => {
       { key: 'color', operator: undefined, values: [null] },
     ];
     data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(18);
+    expect(data.edges.length).toEqual(17);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },

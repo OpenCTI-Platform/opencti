@@ -37,6 +37,7 @@ import StixCyberObservableRelationCreationFromEntityLines, {
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -392,11 +393,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   renderSelectEntity() {
     const { search } = this.state;
     const { classes, t, entityType } = this.props;
-    const { fromTypes, toTypes } = resolveStixCyberObservableRelationshipsTargetTypes(entityType);
-    const allTypes = R.uniq([...fromTypes, ...toTypes]);
     const paginationOptions = {
       search,
-      types: allTypes,
       orderBy: search.length > 0 ? null : 'created_at',
       orderMode: search.length > 0 ? null : 'desc',
     };
@@ -492,7 +490,6 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             inputValue={this.state.search}
             paginationKey="Pagination_stixCyberObservables"
             paginationOptions={paginationOptions}
-            targetStixDomainObjectTypes={allTypes}
           />
         </div>
       </div>
@@ -578,7 +575,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(fromEntity.observable_value, 20)}
+                      {truncate(defaultValue(fromEntity), 20)}
                     </span>
                   </div>
                 </div>
@@ -614,7 +611,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(toEntity.observable_value, 20)}
+                      {truncate(defaultValue(toEntity), 20)}
                     </span>
                   </div>
                 </div>

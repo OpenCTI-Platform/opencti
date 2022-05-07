@@ -11,7 +11,7 @@ import {
 } from '../domain/markingDefinition';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { convertDataToRawStix } from '../database/middleware';
+import { stixLoadByIdStringify } from '../database/middleware';
 
 const markingDefinitionResolvers = {
   Query: {
@@ -19,7 +19,7 @@ const markingDefinitionResolvers = {
     markingDefinitions: (_, args, { user }) => findAll(user, args),
   },
   MarkingDefinition: {
-    toStix: (markingDefinition, _, { user }) => convertDataToRawStix(user, markingDefinition.id),
+    toStix: (markingDefinition, _, { user }) => stixLoadByIdStringify(user, markingDefinition.id),
     editContext: (markingDefinition) => fetchEditContext(markingDefinition.id),
   },
   Mutation: {

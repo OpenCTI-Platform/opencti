@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { assoc, compose, map } from 'ramda';
+import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import { ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import * as R from 'ramda';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
+import { donutChartOptions } from '../../../../utils/Charts';
 
 const styles = () => ({
   paper: {
@@ -187,7 +188,7 @@ class EntityStixSightingRelationshipsDonut extends Component {
   }
 
   renderContent() {
-    const { t, entityId, variant, field, startDate, endDate, theme } = this.props;
+    const { t, entityId, variant, field, startDate, endDate, theme, toTypes } = this.props;
     const stixSightingRelationshipsDistributionVariables = {
       fromId: entityId,
       startDate: startDate || null,
@@ -210,58 +211,35 @@ class EntityStixSightingRelationshipsDonut extends Component {
           ) {
             let data = props.stixSightingRelationshipsDistribution;
             if (field === 'internal_id') {
-              data = map(
-                (n) => assoc('label', n.entity.name, n),
+              data = R.map(
+                (n) => R.assoc(
+                  'label',
+                  `${
+                    toTypes.length > 1
+                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${
+                        n.entity.name
+                      }`
+                      : `${n.entity.name}`
+                  }`,
+                  n,
+                ),
                 props.stixSightingRelationshipsDistribution,
               );
             }
+            const chartData = data.map((n) => n.value);
+            const labels = data.map((n) => (field === 'entity_type' ? t(`entity_${n.label}`) : n.label));
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <PieChart
-                  margin={{
-                    top:
-                      variant === 'inEntity' || variant === 'inKnowledge'
-                        ? 40
-                        : 0,
-                    right: 0,
-                    bottom:
-                      // eslint-disable-next-line no-nested-ternary
-                      variant === 'inLine'
-                        ? 20
-                        : variant === 'inEntity' || variant === 'inKnowledge'
-                          ? 30
-                          : 0,
-                    left: 0,
-                  }}
-                >
-                  <Pie
-                    data={data}
-                    dataKey="value"
-                    nameKey="label"
-                    cx="50%"
-                    cy="50%"
-                    fill="#82ca9d"
-                    innerRadius="63%"
-                    outerRadius="80%"
-                    label={
-                      variant === 'inEntity' || variant === 'inKnowledge'
-                        ? this.renderLabel
-                        : this.renderSimpleLabel
-                    }
-                    labelLine={true}
-                    paddingAngle={5}
-                  >
-                    {data.map((entry, index) => (
-                      <Cell
-                        key={index}
-                        fill={itemColor(entry.label)}
-                        stroke={theme.palette.background.paper}
-                      />
-                    ))}
-                  </Pie>
-                  {variant === 'inLine' && <Legend margin={{ bottom: 20 }} />}
-                </PieChart>
-              </ResponsiveContainer>
+              <Chart
+                options={donutChartOptions(
+                  theme,
+                  labels,
+                  variant === 'inEntity' ? 'left' : 'right',
+                )}
+                series={chartData}
+                type="donut"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {
@@ -331,6 +309,7 @@ EntityStixSightingRelationshipsDonut.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  toTypes: PropTypes.array,
 };
 
 export default compose(

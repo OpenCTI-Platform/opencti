@@ -1,5 +1,5 @@
 import { assoc } from 'ramda';
-import { createEntity, batchListThroughGetTo, loadById } from '../database/middleware';
+import { createEntity, batchListThroughGetTo, storeLoadById } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -8,7 +8,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
 
 export const findById = (user, individualId) => {
-  return loadById(user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
+  return storeLoadById(user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
 };
 
 export const findAll = (user, args) => {

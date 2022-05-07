@@ -1,13 +1,13 @@
 import EventSource from 'eventsource';
 import * as R from 'ramda';
 import { validate as isUuid } from 'uuid';
-import moment from 'moment';
 import { ADMIN_USER, generateBasicAuth } from './testQuery';
 import { internalLoadById } from '../../src/database/middleware';
 import { isStixId } from '../../src/schema/schemaUtils';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
+import { EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
 import { isEmptyField } from '../../src/database/utils';
+import { STIX_EXT_OCTI } from '../../src/types/stix-extensions';
 
 export const fetchStreamEvents = (uri, { from } = {}) => {
   const opts = {
@@ -34,11 +34,10 @@ export const fetchStreamEvents = (uri, { from } = {}) => {
         }
       }, 5000);
     };
-    es.addEventListener('update', (event) => handleEvent(event));
     es.addEventListener('create', (event) => handleEvent(event));
+    es.addEventListener('update', (event) => handleEvent(event));
     es.addEventListener('merge', (event) => handleEvent(event));
     es.addEventListener('delete', (event) => handleEvent(event));
-    es.addEventListener('sync', () => closeEventSource());
     es.onerror = (err) => reject(err);
   });
 };
@@ -48,14 +47,8 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
   const diffElements = [];
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
     const attributeKey = attributes[attrIndex];
-    if (
-      attributeKey === 'x_opencti_id' ||
-      attributeKey === 'status_id' || // TODO Add a specific check
-      attributeKey === 'created_at' ||
-      attributeKey === 'updated_at' ||
-      attributeKey === 'revoked' ||
-      attributeKey === 'lang'
-    ) {
+    if (attributeKey === 'extensions' || attributeKey === 'revoked' || attributeKey === 'lang' || attributeKey === 'modified') {
+      // TODO Add a specific check
       // Currently some attributes are valuated by default or different by design
     } else {
       const fetchAttr = loaded[attributeKey];
@@ -88,94 +81,61 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
   return diffElements;
 };
 
-export const checkStreamData = (type, data) => {
+const checkPatchElements = (object) => {
+  Object.entries(object).forEach(([k, v]) => {
+    expect(k.includes('undefined')).toBeFalsy();
+    expect(k.includes('[object Object]')).toBeFalsy();
+    if (Array.isArray(v)) {
+      expect(v.length).toBeGreaterThan(0);
+      v.forEach((value) => {
+        expect(value).toBeDefined();
+        expect(JSON.stringify(value).includes('undefined')).toBeFalsy();
+        expect(JSON.stringify(value).includes('[object Object]')).toBeFalsy();
+      });
+    } else {
+      expect(v).toBeDefined();
+      expect(JSON.stringify(v).includes('undefined')).toBeFalsy();
+      expect(JSON.stringify(v).includes('[object Object]')).toBeFalsy();
+    }
+  });
+};
+
+export const checkStreamData = (type, data, context) => {
   expect(data.id).toBeDefined();
   expect(isStixId(data.id)).toBeTruthy();
-  expect(data.x_opencti_id).toBeDefined();
-  expect(isUuid(data.x_opencti_id)).toBeTruthy();
+  const octiExt = data.extensions[STIX_EXT_OCTI];
+  expect(octiExt.id).toBeDefined();
+  expect(octiExt.type).toBeDefined();
+  expect(octiExt.created_at).toBeDefined();
+  expect(isUuid(octiExt.id)).toBeTruthy();
   expect(data.type).toBeDefined();
-  if (type === EVENT_TYPE_CREATE) {
-    expect(data.created_at).toBeDefined();
-    expect(moment(data.created_at).isValid()).toBeTruthy();
-    expect(data.updated_at).toBeDefined();
-    expect(moment(data.updated_at).isValid()).toBeTruthy();
-  }
   if (type === EVENT_TYPE_UPDATE) {
-    expect(data.x_opencti_patch).toBeDefined();
-    if (data.x_opencti_patch.add) {
-      Object.entries(data.x_opencti_patch.add).forEach(([k, v]) => {
-        expect(k.includes('undefined')).toBeFalsy();
-        expect(k.includes('[object Object]')).toBeFalsy();
-        expect(k.endsWith('_ref')).toBeFalsy();
-        expect(v.length).toBeGreaterThan(0);
-        v.forEach((value) => {
-          expect(isEmptyField(value)).toBeFalsy();
-        });
-        if (k.endsWith('_refs')) {
-          v.forEach((value) => {
-            expect(value.value).toBeDefined();
-            expect(value.x_opencti_id).toBeDefined();
-          });
-        }
-      });
-    }
-    if (data.x_opencti_patch.remove) {
-      Object.entries(data.x_opencti_patch.remove).forEach(([k, v]) => {
-        expect(k.includes('undefined')).toBeFalsy();
-        expect(k.includes('[object Object]')).toBeFalsy();
-        expect(k.endsWith('_ref')).toBeFalsy();
-        expect(v.length).toBeGreaterThan(0);
-        v.forEach((value) => {
-          expect(isEmptyField(value)).toBeFalsy();
-        });
-        if (k.endsWith('_refs')) {
-          v.forEach((value) => {
-            expect(value.value).toBeDefined();
-            expect(value.x_opencti_id).toBeDefined();
-          });
-        }
-      });
-    }
-    if (data.x_opencti_patch.replace) {
-      Object.entries(data.x_opencti_patch.replace).forEach(([k, v]) => {
-        expect(k.includes('undefined')).toBeFalsy();
-        expect(k.includes('[object Object]')).toBeFalsy();
-        expect(v.current).toBeDefined();
-        expect(v.previous).toBeDefined();
-      });
-    }
+    expect(context.previous_patch).toBeDefined();
+    expect(context.previous_patch.length).toBeGreaterThan(0);
   }
   if (data.type === 'relationship') {
     expect(data.relationship_type).toBeDefined();
     expect(isStixRelationship(data.relationship_type)).toBeTruthy();
     expect(data.source_ref).toBeDefined();
     expect(isStixId(data.source_ref)).toBeTruthy();
-    expect(data.x_opencti_source_ref).toBeDefined();
-    expect(isUuid(data.x_opencti_source_ref)).toBeTruthy();
+    expect(octiExt.source_ref).toBeDefined();
+    expect(isUuid(octiExt.source_ref)).toBeTruthy();
     expect(data.target_ref).toBeDefined();
     expect(isStixId(data.target_ref)).toBeTruthy();
-    expect(data.x_opencti_target_ref).toBeDefined();
-    expect(isUuid(data.x_opencti_target_ref)).toBeTruthy();
+    expect(octiExt.target_ref).toBeDefined();
+    expect(isUuid(octiExt.target_ref)).toBeTruthy();
   }
-  if (data.x_opencti_stix_ids) {
-    data.x_opencti_stix_ids.forEach((m) => {
+  if (octiExt.stix_ids) {
+    octiExt.stix_ids.forEach((m) => {
       expect(isStixId(m)).toBeTruthy();
     });
   }
 };
 
 export const checkStreamGenericContent = (type, dataEvent) => {
-  const { data, markings, message } = dataEvent;
-  expect(markings).toBeDefined();
+  const { data, message, context } = dataEvent;
   expect(message.includes('undefined')).toBeFalsy();
   expect(message.includes('[object Object]')).toBeFalsy();
-  if (markings.length > 0) {
-    markings.forEach((m) => {
-      // Markings can have internal or stix depending on the loading.
-      // To have the best performance, sometimes we use directly internal.
-      expect(isUuid(m) || isStixId(m)).toBeTruthy();
-    });
-  }
   expect(message).not.toBeNull();
-  checkStreamData(type, data);
+  checkStreamData(type, data, context);
 };

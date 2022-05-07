@@ -9,11 +9,30 @@ import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import inject18n from '../../../../components/i18n';
-import ItemAuthor from '../../../../components/ItemAuthor';
-import ItemCreator from '../../../../components/ItemCreator';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
+import { DialogTitle } from '@mui/material';
+import DialogContent from '@mui/material/DialogContent';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import { BrushOutlined, Delete } from '@mui/icons-material';
+import DialogActions from '@mui/material/DialogActions';
+import Dialog from '@mui/material/Dialog';
+import * as R from 'ramda';
+import { graphql } from 'react-relay';
+import Slide from '@mui/material/Slide';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import ItemScore from '../../../../components/ItemScore';
+import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
+import ItemCreator from '../../../../components/ItemCreator';
+import ItemAuthor from '../../../../components/ItemAuthor';
+import inject18n from '../../../../components/i18n';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   paper: {
@@ -33,10 +52,64 @@ const styles = (theme) => ({
   },
 });
 
+const stixCyberObservableMutation = graphql`
+  mutation StixCyberObservableOverviewMutation(
+    $id: ID!
+    $input: [EditInput]!
+    $commitMessage: String
+    $references: [String]
+  ) {
+    stixCyberObservableEdit(id: $id) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
+        x_opencti_stix_ids
+      }
+    }
+  }
+`;
+
 class StixCyberObservableOverview extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openStixIds: false,
+    };
+  }
+
+  handleToggleOpenStixIds() {
+    this.setState({ openStixIds: !this.state.openStixIds });
+  }
+
+  deleteStixId(stixId) {
+    const { stixCyberObservable } = this.props;
+    const otherStixIds = stixCyberObservable.x_opencti_stix_ids || [];
+    const stixIds = R.filter(
+      (n) => n !== stixCyberObservable.standard_id && n !== stixId,
+      otherStixIds,
+    );
+    commitMutation({
+      mutation: stixCyberObservableMutation,
+      variables: {
+        id: this.props.stixCyberObservable.id,
+        input: {
+          key: 'x_opencti_stix_ids',
+          value: stixIds,
+        },
+      },
+      onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The STIX ID has been removed')),
+    });
+  }
+
   render() {
     const { t, fldt, classes, stixCyberObservable } = this.props;
-    const stixIds = stixCyberObservable.x_opencti_stix_ids || [];
+    const otherStixIds = stixCyberObservable.x_opencti_stix_ids || [];
+    const stixIds = R.filter(
+      (n) => n !== stixCyberObservable.standard_id,
+      otherStixIds,
+    );
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -61,28 +134,22 @@ class StixCyberObservableOverview extends Component {
                   <InformationOutline fontSize="small" color="primary" />
                 </Tooltip>
               </div>
-              <div className="clearfix" />
-              <pre style={{ margin: 0 }}>{stixCyberObservable.standard_id}</pre>
-            </Grid>
-            <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Other STIX IDs')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip title={t('Other known STIX IDs for this entity.')}>
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
+              <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
+                <IconButton
+                  aria-label="Close"
+                  disableRipple={true}
+                  size="small"
+                  disabled={stixIds.length === 0}
+                  onClick={this.handleToggleOpenStixIds.bind(this)}
+                >
+                  <BrushOutlined
+                    fontSize="small"
+                    color={stixIds.length === 0 ? 'inherit' : 'secondary'}
+                  />
+                </IconButton>
               </div>
               <div className="clearfix" />
-              <pre style={{ margin: 0 }}>
-                {stixIds.length > 0
-                  ? stixIds.map((stixId) => `${stixId}\n`)
-                  : '-'}
-              </pre>
+              <pre style={{ margin: 0 }}>{stixCyberObservable.standard_id}</pre>
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -97,7 +164,6 @@ class StixCyberObservableOverview extends Component {
                 }}
                 label={t(`entity_${stixCyberObservable.entity_type}`)}
               />
-
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -163,6 +229,44 @@ class StixCyberObservableOverview extends Component {
             </Grid>
           </Grid>
         </Paper>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.openStixIds}
+          TransitionComponent={Transition}
+          onClose={this.handleToggleOpenStixIds.bind(this)}
+          fullWidth={true}
+        >
+          <DialogTitle>{t('Other STIX IDs')}</DialogTitle>
+          <DialogContent dividers={true}>
+            <List>
+              {stixIds.map(
+                (stixId) => stixId.length > 0 && (
+                    <ListItem key={stixId} disableGutters={true} dense={true}>
+                      <ListItemText primary={stixId} />
+                      <ListItemSecondaryAction>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={this.deleteStixId.bind(this, stixId)}
+                          size="large"
+                        >
+                          <Delete />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                ),
+              )}
+            </List>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleToggleOpenStixIds.bind(this)}
+              color="primary"
+            >
+              {t('Close')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

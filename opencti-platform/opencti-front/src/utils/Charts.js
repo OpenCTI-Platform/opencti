@@ -269,6 +269,79 @@ export const horizontalBarsChartOptions = (
   },
 });
 
+export const radarChartOptions = (theme, labels, chartColors = []) => ({
+  chart: {
+    type: 'radar',
+    background: 'transparent',
+    toolbar: {
+      show: false,
+    },
+    offsetY: -20,
+  },
+  theme: {
+    mode: theme.palette.mode,
+  },
+  labels,
+  states: {
+    hover: {
+      filter: {
+        type: 'lighten',
+        value: 0.05,
+      },
+    },
+  },
+  legend: {
+    show: false,
+  },
+  tooltip: {
+    theme: theme.palette.mode,
+  },
+  fill: {
+    opacity: 0.2,
+    colors: [theme.palette.primary.main],
+  },
+  stroke: {
+    show: true,
+    width: 1,
+    colors: [theme.palette.primary.main],
+    dashArray: 0,
+  },
+  markers: {
+    shape: 'circle',
+    strokeColors: [theme.palette.primary.main],
+    colors: [theme.palette.primary.main],
+  },
+  xaxis: {
+    labels: {
+      style: {
+        fontFamily: '"IBM Plex Sans", sans-serif',
+        colors: chartColors,
+      },
+    },
+    axisBorder: {
+      show: false,
+    },
+  },
+  yaxis: {
+    show: false,
+  },
+  plotOptions: {
+    radar: {
+      polygons: {
+        strokeColors:
+          theme.palette.mode === 'dark'
+            ? 'rgba(255, 255, 255, .1)'
+            : 'rgba(0, 0, 0, .1)',
+        connectorColors:
+          theme.palette.mode === 'dark'
+            ? 'rgba(255, 255, 255, .1)'
+            : 'rgba(0, 0, 0, .1)',
+        fill: { colors: [theme.palette.background.paper] },
+      },
+    },
+  },
+});
+
 export const polarAreaChartOptions = (
   theme,
   labels,

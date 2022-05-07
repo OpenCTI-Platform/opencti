@@ -4,7 +4,7 @@ import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_USER_SUBSCRIPTION } from '../schema/internalObject';
-import { deleteElementById, fullLoadById, internalLoadById, loadById, updateAttribute } from '../database/middleware';
+import { deleteElementById, storeFullLoadById, internalLoadById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { baseUrl, BUS_TOPICS } from '../config/conf';
@@ -63,7 +63,7 @@ export const createUserSubscription = async (user, input) => {
   return data;
 };
 export const findById = async (user, subscriptionId) => {
-  return loadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION);
+  return storeLoadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION);
 };
 export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_USER_SUBSCRIPTION], args);
@@ -82,13 +82,13 @@ export const userSubscriptionDelete = async (user, subscriptionId) => {
 };
 export const userSubscriptionCleanContext = async (user, subscriptionId) => {
   await delEditContext(user, subscriptionId);
-  return loadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((subscriptionToReturn) => {
+  return storeLoadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((subscriptionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, subscriptionToReturn, user);
   });
 };
 export const userSubscriptionEditContext = async (user, subscriptionId, input) => {
   await setEditContext(user, subscriptionId, input);
-  return loadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((collectionToReturn) => {
+  return storeLoadById(user, subscriptionId, ENTITY_TYPE_USER_SUBSCRIPTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_USER_SUBSCRIPTION].EDIT_TOPIC, collectionToReturn, user);
   });
 };
@@ -276,7 +276,7 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     // eslint-disable-next-line no-restricted-syntax
     for (const containerEntry of R.take(10, data.containersData)) {
-      const fullContainer = await fullLoadById(
+      const fullContainer = await storeFullLoadById(
         user,
         containerEntry.fromId ? containerEntry.fromId : containerEntry.id,
         containerEntry.fromType ? containerEntry.fromType : containerEntry.entity_type
@@ -294,7 +294,7 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     // eslint-disable-next-line no-restricted-syntax
     for (const relationship of R.take(10, data.knowledgeData)) {
-      const fullRelationship = await fullLoadById(user, relationship.id, ABSTRACT_STIX_CORE_RELATIONSHIP);
+      const fullRelationship = await storeFullLoadById(user, relationship.id, ABSTRACT_STIX_CORE_RELATIONSHIP);
       htmlData += relationshipToHtml(baseUrl, fullRelationship);
     }
     htmlData += sectionFooter(footerNumber, 'relationships');
@@ -311,7 +311,7 @@ export const generateDigestForSubscription = async (subscription) => {
     `;
     // eslint-disable-next-line no-restricted-syntax
     for (const technicalRelationship of R.take(10, data.technicalData)) {
-      const fullTechnicalRelationship = await fullLoadById(
+      const fullTechnicalRelationship = await storeFullLoadById(
         user,
         technicalRelationship.id,
         ABSTRACT_STIX_CORE_RELATIONSHIP

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import moment from 'moment';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
@@ -8,12 +8,24 @@ import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from '../sc
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
-import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import {
+  isStixCyberObservableRelationship,
+  STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD
+} from '../schema/stixCyberObservableRelationship';
+import { isStixMetaRelationship, META_FIELD_TO_STIX_ATTRIBUTE } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
+import {
+  INPUT_CREATED_BY,
+  INPUT_EXTERNAL_REFS,
+  INPUT_KILLCHAIN,
+  INPUT_LABELS,
+  INPUT_MARKINGS,
+  INPUT_OBJECTS
+} from '../schema/general';
+import { isStixRelationship } from '../schema/stixRelationship';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 
@@ -71,9 +83,9 @@ export const WRITE_PLATFORM_INDICES = [
 
 export const READ_STIX_INDICES = [
   READ_INDEX_STIX_DOMAIN_OBJECTS,
-  READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
 ];
 export const READ_DATA_INDICES_WITHOUT_INFERRED = [
@@ -258,18 +270,20 @@ const generateCreateDeleteMessage = (type, instance) => {
     }
     return `${type}s a ${entityType} \`${name}\``;
   }
-  // Relation
-  const from = extractEntityMainValue(instance.from);
-  let fromType = instance.from.entity_type;
-  if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-    fromType = 'File';
+  if (isStixRelationship(instance.entity_type)) {
+    const from = extractEntityMainValue(instance.from);
+    let fromType = instance.from.entity_type;
+    if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+      fromType = 'File';
+    }
+    const to = extractEntityMainValue(instance.to);
+    let toType = instance.to.entity_type;
+    if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+      toType = 'File';
+    }
+    return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
   }
-  const to = extractEntityMainValue(instance.to);
-  let toType = instance.to.entity_type;
-  if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-    toType = 'File';
-  }
-  return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
+  return '-';
 };
 export const generateCreateMessage = (instance) => {
   return generateCreateDeleteMessage(EVENT_TYPE_CREATE, instance);
@@ -277,28 +291,48 @@ export const generateCreateMessage = (instance) => {
 export const generateDeleteMessage = (instance) => {
   return generateCreateDeleteMessage(EVENT_TYPE_DELETE, instance);
 };
-export const generateUpdateMessage = (patch) => {
-  const patchElements = Object.entries(patch);
-  return patchElements
-    .map(([operation, element]) => {
-      const elemEntries = Object.entries(element);
-      return `${operation}s ${elemEntries.map(([key, val]) => {
-        const values = Array.isArray(val) ? val : [val];
-        const valMessage = values
-          .map((v) => {
-            if (operation === UPDATE_OPERATION_REPLACE) {
-              if (Array.isArray(v.current)) {
-                return v.current.map((c) => c.reference || c.value || c);
-              }
-              return v.reference?.value || v.current?.value || v.current;
-            }
-            return v.reference || v.value || v;
-          })
-          .join(', ');
-        return `\`${valMessage || 'nothing'}\` in \`${key}\``;
-      })}`;
-    })
-    .join(', ');
+
+export const generateUpdateMessage = (inputs) => {
+  const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
+  const patchElements = Object.entries(inputsByOperations);
+  const generatedMessage = patchElements.map(([type, operations]) => {
+    return `${type}s ${operations.map(({ key, value }) => {
+      let message = 'nothing';
+      const convertedKey = META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key] || key;
+      if (value) {
+        const next = Array.isArray(value) ? value : [value];
+        if (STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]) {
+          message = next.map((val) => observableValue(val)).join(', ');
+        } else {
+          switch (key) {
+            case INPUT_OBJECTS:
+            case INPUT_CREATED_BY:
+              message = next.map((i) => i.name).join(', ');
+              break;
+            case INPUT_MARKINGS:
+              message = next.map((i) => i.definition).join(', ');
+              break;
+            case INPUT_LABELS:
+              message = next.map((i) => i.value).join(', ');
+              break;
+            case INPUT_KILLCHAIN:
+              message = next.map((i) => i.kill_chain_name).join(', ');
+              break;
+            case INPUT_EXTERNAL_REFS:
+              message = next.map((i) => i.source_name).join(', ');
+              break;
+            default:
+              message = next.join(', ');
+          }
+        }
+      }
+      return `\`${message}\` in \`${convertedKey}\``;
+    })}`;
+  }).join(', ');
+  if (isEmptyField(generatedMessage) || generatedMessage.includes('undefined') || generatedMessage.includes('[object Object]')) {
+    throw UnsupportedError('[OPENCTI] Error generating update message', { inputs, message: generatedMessage });
+  }
+  return generatedMessage;
 };
 
 export const pascalize = (s) => {

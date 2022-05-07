@@ -6,6 +6,7 @@ import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 
 // region global queries
+// @deprecated
 export const buildFilters = (args = {}) => {
   const builtFilters = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
@@ -71,6 +72,7 @@ export const buildFilters = (args = {}) => {
   return builtFilters;
 };
 
+// @deprecated
 export const listEntities = async (user, entityTypes, args = {}) => {
   const { indices = READ_ENTITIES_INDICES } = args;
   const paginateArgs = buildFilters({ entityTypes, ...args });

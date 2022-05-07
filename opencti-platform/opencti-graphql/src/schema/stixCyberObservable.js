@@ -36,11 +36,11 @@ export const ENTITY_USER_ACCOUNT = 'User-Account';
 export const ENTITY_WINDOWS_REGISTRY_KEY = 'Windows-Registry-Key';
 export const ENTITY_WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type';
 export const ENTITY_X509_V3_EXTENSIONS_TYPE = 'X509-V3-Extensions-Type';
-export const ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY = 'X-OpenCTI-Cryptographic-Key';
-export const ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET = 'X-OpenCTI-Cryptocurrency-Wallet';
-export const ENTITY_X_OPENCTI_HOSTNAME = 'X-OpenCTI-Hostname';
-export const ENTITY_X_OPENCTI_TEXT = 'X-OpenCTI-Text';
-export const ENTITY_X_OPENCTI_USER_AGENT = 'X-OpenCTI-User-Agent';
+export const ENTITY_CRYPTOGRAPHIC_KEY = 'Cryptographic-Key';
+export const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet';
+export const ENTITY_HOSTNAME = 'Hostname';
+export const ENTITY_TEXT = 'Text';
+export const ENTITY_USER_AGENT = 'User-Agent';
 
 const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
@@ -70,11 +70,11 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
-  ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY,
-  ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET,
-  ENTITY_X_OPENCTI_HOSTNAME,
-  ENTITY_X_OPENCTI_USER_AGENT,
-  ENTITY_X_OPENCTI_TEXT,
+  ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_CRYPTOGRAPHIC_WALLET,
+  ENTITY_HOSTNAME,
+  ENTITY_USER_AGENT,
+  ENTITY_TEXT,
 ];
 schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 
@@ -248,11 +248,11 @@ export const stixCyberObservableFieldsToBeUpdated = {
     'certificate_policies',
     'policy_mappings',
   ],
-  [ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY]: ['x_opencti_description', 'x_opencti_score', 'value'],
-  [ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET]: ['x_opencti_description', 'x_opencti_score', 'value'],
-  [ENTITY_X_OPENCTI_HOSTNAME]: ['x_opencti_description', 'x_opencti_score', 'value'],
-  [ENTITY_X_OPENCTI_TEXT]: ['x_opencti_description', 'x_opencti_score', 'value'],
-  [ENTITY_X_OPENCTI_USER_AGENT]: ['x_opencti_description', 'x_opencti_score', 'value'],
+  [ENTITY_CRYPTOGRAPHIC_KEY]: ['x_opencti_description', 'x_opencti_score', 'value'],
+  [ENTITY_CRYPTOGRAPHIC_WALLET]: ['x_opencti_description', 'x_opencti_score', 'value'],
+  [ENTITY_HOSTNAME]: ['x_opencti_description', 'x_opencti_score', 'value'],
+  [ENTITY_TEXT]: ['x_opencti_description', 'x_opencti_score', 'value'],
+  [ENTITY_USER_AGENT]: ['x_opencti_description', 'x_opencti_score', 'value'],
 };
 
 export const stixCyberObservablesAttributes = {
@@ -666,7 +666,7 @@ export const stixCyberObservablesAttributes = {
     'certificate_policies',
     'policy_mappings',
   ],
-  [ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY]: [
+  [ENTITY_CRYPTOGRAPHIC_KEY]: [
     'internal_id',
     'standard_id',
     'entity_type',
@@ -681,7 +681,7 @@ export const stixCyberObservablesAttributes = {
     'x_opencti_score',
     'value',
   ],
-  [ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET]: [
+  [ENTITY_CRYPTOGRAPHIC_WALLET]: [
     'internal_id',
     'standard_id',
     'entity_type',
@@ -696,7 +696,7 @@ export const stixCyberObservablesAttributes = {
     'x_opencti_score',
     'value',
   ],
-  [ENTITY_X_OPENCTI_HOSTNAME]: [
+  [ENTITY_HOSTNAME]: [
     'internal_id',
     'standard_id',
     'entity_type',
@@ -711,7 +711,7 @@ export const stixCyberObservablesAttributes = {
     'x_opencti_score',
     'value',
   ],
-  [ENTITY_X_OPENCTI_TEXT]: [
+  [ENTITY_TEXT]: [
     'internal_id',
     'standard_id',
     'entity_type',
@@ -726,7 +726,7 @@ export const stixCyberObservablesAttributes = {
     'x_opencti_score',
     'value',
   ],
-  [ENTITY_X_OPENCTI_USER_AGENT]: [
+  [ENTITY_USER_AGENT]: [
     'internal_id',
     'standard_id',
     'entity_type',

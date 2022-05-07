@@ -10,7 +10,7 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   listThroughGetFrom,
-  loadById,
+  storeLoadById,
   updateAttribute,
 } from '../database/middleware';
 import { listEntities } from '../database/repository';
@@ -47,7 +47,7 @@ export const streamCollectionGroups = async (user, collection) => {
   return listThroughGetFrom(user, collection.id, RELATION_ACCESSES_TO, ENTITY_TYPE_GROUP);
 };
 export const findById = async (user, collectionId) => {
-  return loadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+  return storeLoadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
 };
 export const deleteGroupRelation = async (user, collectionId, groupId) => {
   await deleteRelationsByFromAndTo(user, groupId, collectionId, RELATION_ACCESSES_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
@@ -70,13 +70,13 @@ export const streamCollectionDelete = async (user, collectionId) => {
 };
 export const streamCollectionCleanContext = async (user, collectionId) => {
   await delEditContext(user, collectionId);
-  return loadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
+  return storeLoadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
   });
 };
 export const streamCollectionEditContext = async (user, collectionId, input) => {
   await setEditContext(user, collectionId, input);
-  return loadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
+  return storeLoadById(user, collectionId, ENTITY_TYPE_STREAM_COLLECTION).then((collectionToReturn) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, collectionToReturn, user);
   });
 };

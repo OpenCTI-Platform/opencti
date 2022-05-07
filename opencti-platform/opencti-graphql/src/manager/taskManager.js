@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
-import { buildScanEvent, lockResource } from '../database/redis';
+import { buildCreateEvent, lockResource } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_DELETE,
@@ -25,9 +25,8 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
-  listAllRelations,
   mergeEntities,
-  patchAttribute,
+  patchAttribute, storeLoadByIdWithRefs,
 } from '../database/middleware';
 import { now } from '../utils/format';
 import {
@@ -41,9 +40,10 @@ import { elPaginate, elUpdate } from '../database/engine';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { rulesCleanHandler, rulesApplyDerivedEvents, getRule } from './ruleManager';
+import { rulesCleanHandler, rulesApplyHandler, getRule } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
+import { listAllRelations } from '../database/middleware-loader';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -81,16 +81,12 @@ const computeRuleTaskElements = async (task) => {
       after: task_position,
       ...buildFilters(scan),
     };
-    const data = await elPaginate(RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
-    const elements = data.edges;
+    const { edges: elements } = await elPaginate(RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, options);
     // Apply the actions for each element
     for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
       const element = elements[elementIndex];
-      processingElements.push({
-        element: element.node,
-        actions: [{ type: ACTION_TYPE_RULE_APPLY, context: { rule: ruleDefinition } }],
-        next: element.cursor,
-      });
+      const actions = [{ type: ACTION_TYPE_RULE_APPLY, context: { rule: ruleDefinition } }];
+      processingElements.push({ element: element.node, actions, next: element.cursor });
     }
   } else {
     const filters = [{ key: `${RULE_PREFIX}${rule}`, values: ['EXISTS'] }];
@@ -101,22 +97,18 @@ const computeRuleTaskElements = async (task) => {
       after: task_position,
       filters,
     };
-    const data = await elPaginate(RULE_MANAGER_USER, READ_DATA_INDICES, options);
-    const elements = data.edges;
+    const { edges: elements } = await elPaginate(RULE_MANAGER_USER, READ_DATA_INDICES, options);
     // Apply the actions for each element
     for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
       const element = elements[elementIndex];
-      processingElements.push({
-        element: element.node,
-        actions: [{ type: ACTION_TYPE_RULE_CLEAR, context: { rule: ruleDefinition } }],
-        next: element.cursor,
-      });
+      const actions = [{ type: ACTION_TYPE_RULE_CLEAR, context: { rule: ruleDefinition } }];
+      processingElements.push({ element: element.node, actions, next: element.cursor });
     }
   }
   return processingElements;
 };
 const computeQueryTaskElements = async (user, task) => {
-  const { actions, task_position, task_filters, task_search = null } = task;
+  const { actions, task_position, task_filters, task_search = null, task_excluded_ids = [] } = task;
   const processingElements = [];
   // Fetch the information
   const data = await executeTaskQuery(user, task_filters, task_search, task_position);
@@ -125,7 +117,9 @@ const computeQueryTaskElements = async (user, task) => {
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
-    processingElements.push({ element: element.node, actions, next: element.cursor });
+    if (!task_excluded_ids.includes(element.node.id)) {
+      processingElements.push({ element: element.node, actions, next: element.cursor });
+    }
   }
   return processingElements;
 };
@@ -229,13 +223,14 @@ const executeMerge = async (user, context, element) => {
 const executeRuleApply = async (user, taskId, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
-  const event = buildScanEvent(user, element);
-  await rulesApplyDerivedEvents(`task--${taskId}`, [event], [rule]);
+  const instance = await storeLoadByIdWithRefs(user, element.internal_id);
+  const event = buildCreateEvent(user, instance, '-');
+  await rulesApplyHandler([event], [rule]);
 };
 
 const executeRuleClean = async (context, taskId, element) => {
   const { rule } = context;
-  await rulesCleanHandler(`task--${taskId}`, [element], [rule]);
+  await rulesCleanHandler([element], [rule]);
 };
 
 const executeProcessing = async (user, taskId, processingElements) => {

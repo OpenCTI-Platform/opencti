@@ -1,9 +1,9 @@
-import { loadById } from '../database/middleware';
+import { storeLoadById } from '../database/middleware';
 
 const internalRelationshipResolvers = {
   InternalRelationship: {
-    from: (rel, _, { user }) => loadById(user, rel.fromId, rel.fromType),
-    to: (rel, _, { user }) => loadById(user, rel.toId, rel.toType),
+    from: (rel, _, { user }) => storeLoadById(user, rel.fromId, rel.fromType),
+    to: (rel, _, { user }) => storeLoadById(user, rel.toId, rel.toType),
   },
 };
 

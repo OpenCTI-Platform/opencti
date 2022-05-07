@@ -81,7 +81,7 @@ describe('AttackPattern resolver standard behavior', () => {
         x_mitre_id: 'T001',
         stix_id: attackPatternStixId,
         description: 'AttackPattern description',
-        killChainPhases: ['kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a'],
+        killChainPhases: ['kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'],
       },
     };
     const attackPattern = await queryAsAdmin({

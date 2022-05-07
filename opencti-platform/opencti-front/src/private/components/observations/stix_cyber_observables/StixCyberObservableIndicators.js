@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map } from 'ramda';
+import { compose, includes, filter, append } from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
@@ -8,32 +8,26 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Add, KeyboardArrowRight } from '@mui/icons-material';
-import { ShieldSearch } from 'mdi-material-ui';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
+import DialogActions from '@mui/material/DialogActions';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
-import ItemPatternType from '../../../../components/ItemPatternType';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import { Add } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
+import StixCyberObservableAddIndicators from './StixCyberObservableAddIndicators';
+import StixCyberObservableIndicatorPopover from './StixCyberObservableIndicatorPopover';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: 0,
-    padding: 15,
-    borderRadius: 6,
-  },
   itemHead: {
     paddingLeft: 10,
     textTransform: 'uppercase',
@@ -61,18 +55,22 @@ const styles = (theme) => ({
     float: 'left',
     margin: '-5px 0 0 15px',
   },
+  createButton: {
+    float: 'left',
+    marginTop: -15,
+  },
 });
 
 const inlineStyles = {
-  pattern_type: {
+  entity_type: {
     float: 'left',
-    width: '15%',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  name: {
+  observable_value: {
     float: 'left',
     width: '50%',
     height: 20,
@@ -80,15 +78,7 @@ const inlineStyles = {
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  valid_from: {
-    float: 'left',
-    width: '15%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  valid_until: {
+  created_at: {
     float: 'left',
     height: 20,
     whiteSpace: 'nowrap',
@@ -119,8 +109,14 @@ class StixCyberObservableIndicatorsComponent extends Component {
     this.state = {
       anchorEl: null,
       displayPromoteStix: false,
+      displayCreate: false,
       promotingStix: false,
+      deleted: [],
     };
+  }
+
+  onDelete(id) {
+    this.setState({ deleted: append(id, this.state.deleted) });
   }
 
   handleOpen(event) {
@@ -132,12 +128,20 @@ class StixCyberObservableIndicatorsComponent extends Component {
   }
 
   handleOpenPromoteStix() {
-    this.setState({ displayPromoteStix: true });
+    this.setState({ anchorEl: null, displayPromoteStix: true });
     this.handleClose();
   }
 
   handleClosePromoteStix() {
     this.setState({ displayPromoteStix: false });
+  }
+
+  handleOpenCreate() {
+    this.setState({ anchorEl: null, displayCreate: true });
+  }
+
+  handleCloseCreate() {
+    this.setState({ displayCreate: false });
   }
 
   submitPromoteStix() {
@@ -155,17 +159,14 @@ class StixCyberObservableIndicatorsComponent extends Component {
   }
 
   render() {
+    const { displayCreate, anchorEl } = this.state;
     const { t, fd, classes, stixCyberObservable } = this.props;
-    const indicators = map((n) => n.node, stixCyberObservable.indicators.edges);
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+      <div style={{ marginTop: 20 }}>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Indicators composed with this observable')}
         </Typography>
-        <Security
-          needs={[KNOWLEDGE_KNUPDATE]}
-          placeholder={<div style={{ height: 29 }} />}
-        >
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IconButton
             color="secondary"
             aria-label="Label"
@@ -176,100 +177,103 @@ class StixCyberObservableIndicatorsComponent extends Component {
             <Add fontSize="small" />
           </IconButton>
           <Menu
-            anchorEl={this.state.anchorEl}
-            open={Boolean(this.state.anchorEl)}
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
             onClose={this.handleClose.bind(this)}
           >
             <MenuItem onClick={this.handleOpenPromoteStix.bind(this)}>
-              {t('[Promote] Create a STIX indicator')}
+              {t('Create')}
+            </MenuItem>
+            <MenuItem onClick={this.handleOpenCreate.bind(this)}>
+              {t('Add')}
             </MenuItem>
           </Menu>
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <List style={{ marginTop: -10 }}>
-            {indicators.map((indicator) => (
-              <ListItem
-                key={indicator.id}
-                classes={{ root: classes.item }}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/observations/indicators/${indicator.id}`}
-              >
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <ShieldSearch />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.pattern_type}
-                      >
-                        <ItemPatternType
-                          variant="inList"
-                          label={indicator.pattern_type}
-                        />
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.name}
-                      >
-                        {indicator.name}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.valid_from}
-                      >
-                        {fd(indicator.valid_from)}
-                      </div>
-                      <div
-                        className={classes.bodyItem}
-                        style={inlineStyles.valid_until}
-                      >
-                        {fd(indicator.valid_until)}
-                      </div>
+        <List style={{ marginTop: -15 }}>
+          {filter(
+            (n) => !includes(n.node.id, this.state.deleted),
+            stixCyberObservable.indicators.edges,
+          ).map((indicatorEdge) => (
+            <ListItem
+              key={indicatorEdge.node.id}
+              classes={{ root: classes.item }}
+              divider={true}
+              button={true}
+              component={Link}
+              to={`/dashboard/observations/indicators/${indicatorEdge.node.id}`}
+            >
+              <ListItemIcon classes={{ root: classes.itemIcon }}>
+                <ItemIcon type={indicatorEdge.node.entity_type} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.entity_type}
+                    >
+                      {t(`entity_${indicatorEdge.node.entity_type}`)}
                     </div>
-                  }
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.observable_value}
+                    >
+                      {indicatorEdge.node.name}
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={inlineStyles.created_at}
+                    >
+                      {fd(indicatorEdge.node.created_at)}
+                    </div>
+                  </div>
+                }
+              />
+              <ListItemSecondaryAction>
+                <StixCyberObservableIndicatorPopover
+                  observableId={stixCyberObservable.id}
+                  indicatorId={indicatorEdge.node.id}
+                  onDelete={this.onDelete.bind(this, indicatorEdge.node.id)}
                 />
-                <ListItemIcon classes={{ root: classes.goIcon }}>
-                  <KeyboardArrowRight />
-                </ListItemIcon>
-              </ListItem>
-            ))}
-          </List>
-          <Dialog
-            open={this.state.displayPromoteStix}
-            PaperProps={{ elevation: 1 }}
-            keepMounted={true}
-            TransitionComponent={Transition}
-            onClose={this.handleClosePromoteStix.bind(this)}
-          >
-            <DialogContent>
-              <DialogContentText>
-                {t(
-                  'Do you want to create a STIX Indcator from this observable?',
-                )}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                onClick={this.handleClosePromoteStix.bind(this)}
-                disabled={this.state.promotingStix}
-              >
-                {t('Cancel')}
-              </Button>
-              <Button
-                onClick={this.submitPromoteStix.bind(this)}
-                color="secondary"
-                disabled={this.state.promotingStix}
-              >
-                {t('Create')}
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </Paper>
+              </ListItemSecondaryAction>
+            </ListItem>
+          ))}
+        </List>
+        <Dialog
+          open={this.state.displayPromoteStix}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleClosePromoteStix.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to create a STIX Indcator from this observable?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleClosePromoteStix.bind(this)}
+              disabled={this.state.promotingStix}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitPromoteStix.bind(this)}
+              color="secondary"
+              disabled={this.state.promotingStix}
+            >
+              {t('Create')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <StixCyberObservableAddIndicators
+          open={displayCreate}
+          handleClose={this.handleCloseCreate.bind(this)}
+          stixCyberObservableId={stixCyberObservable.id}
+          stixCyberObservableIndicators={stixCyberObservable.indicators.edges}
+        />
       </div>
     );
   }
@@ -289,16 +293,14 @@ const StixCyberObservableIndicators = createFragmentContainer(
     stixCyberObservable: graphql`
       fragment StixCyberObservableIndicators_stixCyberObservable on StixCyberObservable {
         id
-        indicators {
+        indicators(first: 200) @connection(key: "Pagination_indicators") {
           edges {
             node {
               id
+              entity_type
               name
-              pattern_type
-              valid_from
-              valid_until
-              x_opencti_score
-              created
+              created_at
+              updated_at
             }
           }
         }

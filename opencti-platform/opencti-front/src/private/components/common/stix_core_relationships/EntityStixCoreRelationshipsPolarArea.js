@@ -155,10 +155,10 @@ class EntityStixCoreRelationshipsPolarArea extends Component {
     const stixCoreRelationshipsDistributionVariables = {
       fromId: entityId,
       toTypes,
+      relationship_type: relationshipType,
       startDate: startDate || null,
       endDate: endDate || null,
-      relationship_type: relationshipType,
-      field,
+      field: field || 'entity_type',
       dateAttribute,
       limit: 10,
       operation: 'count',

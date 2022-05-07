@@ -694,19 +694,19 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           certificate_policies
           policy_mappings
         }
-        ... on XOpenCTIHostname {
+        ... on Hostname {
           value
         }
-        ... on XOpenCTICryptographicKey {
+        ... on CryptographicKey {
           value
         }
-        ... on XOpenCTICryptocurrencyWallet {
+        ... on CryptocurrencyWallet {
           value
         }
-        ... on XOpenCTIText {
+        ... on Text {
           value
         }
-        ... on XOpenCTIUserAgent {
+        ... on UserAgent {
           value
         }
         x_opencti_score

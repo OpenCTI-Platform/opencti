@@ -3,7 +3,7 @@ import {
   createEntity,
   distributionEntities,
   internalLoadById,
-  loadById,
+  storeLoadById,
   timeSeriesEntities,
 } from '../database/middleware';
 import { listEntities } from '../database/repository';
@@ -22,7 +22,7 @@ export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
 export const findById = (user, reportId) => {
-  return loadById(user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
+  return storeLoadById(user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
 export const findAll = async (user, args) => {

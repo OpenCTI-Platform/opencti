@@ -1,3 +1,5 @@
+import type { StoreMarkingDefinition } from './store';
+
 interface UserRole {
   name: string;
 }
@@ -30,4 +32,5 @@ interface AuthUser {
   roles: Array<UserRole>;
   capabilities: Array<UserCapability>;
   allowed_marking: Array<StoreMarkingDefinition>;
+  all_marking: Array<StoreMarkingDefinition>;
 }

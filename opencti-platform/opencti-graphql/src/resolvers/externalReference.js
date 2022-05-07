@@ -20,7 +20,7 @@ import { buildRefRelationKey } from '../schema/general';
 import { worksForSource } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { filesListing } from '../database/minio';
-import { stixCoreObjectIdImportPush } from '../domain/stixCoreObject';
+import { stixCoreObjectImportPush } from '../domain/stixCoreObject';
 
 const externalReferenceResolvers = {
   Query: {
@@ -47,7 +47,7 @@ const externalReferenceResolvers = {
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
       relationDelete: ({ fromId, relationship_type: relationshipType }) => externalReferenceDeleteRelation(user, id, fromId, relationshipType),
       askEnrichment: ({ connectorId }) => externalReferenceAskEnrichment(user, id, connectorId),
-      importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
+      importPush: ({ file }) => stixCoreObjectImportPush(user, id, file),
     }),
     externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input),
   },

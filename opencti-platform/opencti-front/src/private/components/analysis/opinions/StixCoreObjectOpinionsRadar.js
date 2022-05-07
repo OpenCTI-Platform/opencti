@@ -1,13 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import {
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  Radar,
-} from 'recharts';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -23,6 +16,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
 import { graphql, createRefetchContainer } from 'react-relay';
+import Chart from 'react-apexcharts';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
@@ -30,6 +24,7 @@ import { opinionCreationMutation } from './OpinionCreation';
 import MarkDownField from '../../../../components/MarkDownField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { opinionMutationFieldPatch } from './OpinionEditionOverview';
+import { radarChartOptions } from '../../../../utils/Charts';
 
 const styles = () => ({
   paper: {
@@ -72,14 +67,6 @@ const stixCoreObjectOpinionsRadarMyOpinionQuery = graphql`
   }
 `;
 
-const colors = {
-  'strongly-disagree': '#ff5722',
-  disagree: '#ffc107',
-  neutral: '#cddc39',
-  agree: '#8bc34a',
-  'strongly-agree': '#4caf50',
-};
-
 const opinions = [
   'strongly-disagree',
   'disagree',
@@ -104,23 +91,6 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
 
   handleChangeCurrentOpinion(event, value) {
     this.setState({ currentOpinion: value });
-  }
-
-  tickFormatter(props) {
-    const { classes } = this.props;
-    const { payload, x, y, textAnchor } = props;
-    const color = colors[payload.value];
-    return (
-      <text
-        x={x}
-        y={y}
-        textAnchor={textAnchor}
-        fill={color}
-        className={classes[payload.value]}
-      >
-        {payload.value}
-      </text>
-    );
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -182,7 +152,7 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
   }
 
   renderContent() {
-    const { t, data, field, theme } = this.props;
+    const { t, data, field, theme, height } = this.props;
     if (data && data.opinionsDistribution) {
       let distributionData;
       if (field && field.includes('internal_id')) {
@@ -197,70 +167,39 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
         );
       }
       distributionData = R.indexBy(R.prop('label'), distributionData);
-      const radarData = [
+      const labels = [
+        'strongly-disagree',
+        'disagree',
+        'neutral',
+        'agree',
+        'strongly-agree',
+      ];
+      const chartData = [
         {
-          label: 'strongly-disagree',
-          value: distributionData['strongly-disagree']?.value || 0,
-        },
-        {
-          label: 'disagree',
-          value: distributionData.disagree?.value || 0,
-        },
-        {
-          label: 'neutral',
-          value: distributionData.neutral?.value || 0,
-        },
-        {
-          label: 'agree',
-          value: distributionData.agree?.value || 0,
-        },
-        {
-          label: 'strongly-agree',
-          value: distributionData['strongly-agree']?.value || 0,
+          name: t('Opinions'),
+          data: [
+            distributionData['strongly-disagree']?.value || 0,
+            distributionData.disagree?.value || 0,
+            distributionData.neutral?.value || 0,
+            distributionData.agree?.value || 0,
+            distributionData['strongly-agree']?.value || 0,
+          ],
         },
       ];
-
       return (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            marginLeft: -50,
-          }}
-        >
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart
-              cx="50%"
-              cy="50%"
-              outerRadius="60%"
-              data={radarData}
-              margin={{
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0,
-              }}
-            >
-              <PolarGrid
-                stroke={
-                  theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, .1)'
-                    : 'rgba(0, 0, 0, .1)'
-                }
-              />
-              <PolarAngleAxis
-                dataKey="label"
-                tick={(innerProps) => this.tickFormatter(innerProps)}
-              />
-              <Radar
-                dataKey="value"
-                stroke={theme.palette.primary.main}
-                fill={theme.palette.primary.main}
-                fillOpacity={0.3}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
+        <Chart
+          options={radarChartOptions(theme, labels, [
+            '#ff5722',
+            '#ffc107',
+            '#cddc39',
+            '#8bc34a',
+            '#4caf50',
+          ])}
+          series={chartData}
+          type="radar"
+          width="100%"
+          height={height}
+        />
       );
     }
 

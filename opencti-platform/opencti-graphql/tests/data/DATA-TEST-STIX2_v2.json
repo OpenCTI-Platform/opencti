@@ -27,6 +27,8 @@
     {
       "id": "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
       "type": "observed-data",
+      "created": "2020-02-25T09:02:29.040Z",
+      "modified": "2020-02-25T09:02:29.040Z",
       "spec_version": "2.1",
       "number_observed": 1,
       "first_observed": "2020-02-25T09:02:29.040Z",
@@ -89,9 +91,7 @@
       "created": "2020-03-01T14:02:55.327Z",
       "modified": "2020-03-01T14:09:48.078Z",
       "report_types": ["threat-report"],
-      "x_opencti_report_status": 2,
       "confidence": 3,
-      "x_opencti_graph_data": "eyJub2RlcyI6eyJhYjc4YTYyZi00OTI4LTRkNWEtODc0MC0wM2YwYWY5YzQzMzAiOnsicG9zaXRpb24iOnsieCI6MTIuNSwieSI6NDA1fX0sImU3NjUyY2I2LTc3N2EtNDIyMC05YjY0LTA1NDNlZjM2ZDQ2NyI6eyJwb3NpdGlvbiI6eyJ4IjoyNTIuNSwieSI6Mjk1fX0sImM4NzM5MTE2LWUxZDktNGM0Zi1iMDkxLTU5MDE0N2IzZDdiOSI6eyJwb3NpdGlvbiI6eyJ4IjoxMzIuNSwieSI6Mjk1fX0sIjFjNDc5NzBhLWEyM2ItNGI2Yy04NWNkLWFiNzNkZGI1MDZjNiI6eyJwb3NpdGlvbiI6eyJ4IjozNzcuNSwieSI6MH19LCI5Y2EyZmY0My1iNzY1LTRmMTMtYTIxMy0xMDY2NGEyYWU4ZmMiOnsicG9zaXRpb24iOnsieCI6NDg3LjUsInkiOjQwNX19LCJlMjc1MzMxMi0xMDkwLTQ5MmQtYThmZC01NmNhMzY2NzVkMzUiOnsicG9zaXRpb24iOnsieCI6NDg3LjUsInkiOjU5MH19LCJhZjU3MzljNy02ZGI5LTRmMmItYjg5NS04ZWVkNmJhM2Y1NmMiOnsicG9zaXRpb24iOnsieCI6NDg3LjUsInkiOjc3NX19LCI5ZjdmMDBmOS0zMDRiLTQwNTUtOGM0Zi1mNWVhZGIwMGRlM2IiOnsicG9zaXRpb24iOnsieCI6NSwieSI6NTkwfX0sImQxODgxMTY2LWY0MzEtNDMzNS1iZmVkLWIxYzY0N2U1OWY4OSI6eyJwb3NpdGlvbiI6eyJ4IjozNjcuNSwieSI6NDA1fX0sImYyZWE3ZDM3LTk5NmQtNDMxMy04ZjczLTQyYTg3ODJkMzlhMCI6eyJwb3NpdGlvbiI6eyJ4IjozNjcuNSwieSI6NTkwfX0sIjgyMzE2ZmZkLWEwZWMtNDUxOS1hNDU0LTY1NjZmOGY1Njc2YyI6eyJwb3NpdGlvbiI6eyJ4IjozNzcuNSwieSI6MTg1fX0sImRjYmFkY2QyLTkzNTktNDhhYy04Yjg2LTg4ZTM4YTA5MmEyYiI6eyJwb3NpdGlvbiI6eyJ4IjoxMzIuNSwieSI6NTkwfX0sIjIwOWNiZGYwLWZjNWUtNDdjOS04MDIzLWRkNzI0OTkzYWU1NSI6eyJwb3NpdGlvbiI6eyJ4IjowLCJ5Ijo1MTV9fSwiNTBhMjA1ZmEtOTJlYy00ZWM5LWJmNjItZTA2NWRkODVmNWQ0Ijp7InBvc2l0aW9uIjp7IngiOjEyNy41LCJ5Ijo1MTV9fSwiYzM1NzdlNDItMjliNy00OTg1LWJkYjktMGMwYjRjZTYxZTQzIjp7InBvc2l0aW9uIjp7IngiOjM3Mi41LCJ5IjoxMTB9fSwiODZiNThiZDUtNTA1ZS00MjhlLTg1NjQtZTQzNTJkNmIxYmM2Ijp7InBvc2l0aW9uIjp7IngiOjEyNy41LCJ5Ijo0MjIuNX19LCJlYzgyNDYxMy1hZGIxLTQ2OGUtYmRmMi05OGZiZTViMGFkNWUiOnsicG9zaXRpb24iOnsieCI6MjQ3LjUsInkiOjQyMi41fX0sImMwOTRkYmZlLTcwMzQtNDVmNi1hMjgzLWIwMGI2YTc0MGI2YyI6eyJwb3NpdGlvbiI6eyJ4IjozNjIuNSwieSI6MzEyLjV9fSwiOTdlYmM5YjMtOGEyNS00MjhhLTg1MjMtMWU4N2IyNzAxZDNkIjp7InBvc2l0aW9uIjp7IngiOjcuNSwieSI6MzEyLjV9fSwiMzZkNTkxYjYtNTRiOS00MTUyLWFiODktNzljN2RhZDcwOWY3Ijp7InBvc2l0aW9uIjp7IngiOjQ4Mi41LCJ5IjozMTIuNX19LCI3YmQ4N2VmOC0yMzgzLTQ2MjAtOGE0OC1lM2JlODc4ZmZmMzQiOnsicG9zaXRpb24iOnsieCI6MzYyLjUsInkiOjUxNX19LCIzOTIxODc0Mi02ZjgxLTQ5NWUtYWU0Ny1iODE0ZjhjMGRmNGUiOnsicG9zaXRpb24iOnsieCI6NDgyLjUsInkiOjcwMH19LCJiN2E0ZDg2Zi0yMjBlLTQxMmEtODEzNS02ZTlmYjlmN2IyOTYiOnsicG9zaXRpb24iOnsieCI6NDgyLjUsInkiOjUxNX19fSwiem9vbSI6NzguMTIwMjYyODUwMDE2ODMsIm9mZnNldFgiOjYwMC41NDgxMzg4MzQyMDEsIm9mZnNldFkiOjM2LjUxMTE0NDQxNzM4NDg1NX0=",
       "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17df",
       "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
       "object_refs": [
@@ -172,7 +172,6 @@
       "modified": "2020-01-14T14:01:48.288Z",
       "kill_chain_phases": [
         {
-          "id": "kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a",
           "kill_chain_name": "mitre-attack",
           "phase_name": "persistence",
           "x_opencti_order": 20
@@ -180,19 +179,16 @@
       ],
       "external_references": [
         {
-          "id": "external-reference--70ef875f-4d6e-4a2a-a2a5-d2459b4d0130",
           "source_name": "ESET Sednit Part 2",
           "description": "ESET. (2016, October). En Route with Sednit - Part 2: Observing the Comings and Goings. Retrieved November 21, 2016.",
           "url": "http://www.welivesecurity.com/wp-content/uploads/2016/10/eset-sednit-part-2.pdf"
         },
         {
-          "id": "external-reference--ecd931c0-52c9-4150-97bf-c3a692f06688",
           "source_name": "mitre-attack",
           "url": "https://attack.mitre.org/software/S0045",
           "external_id": "S0045"
         },
         {
-          "id": "external-reference--d79ff8d3-00d2-44a1-a35b-6f91590d6422",
           "source_name": "Kaspersky Sofacy",
           "description": "Kaspersky Lab's Global Research and Analysis Team. (2015, December 4). Sofacy APT hits high profile targets with updated toolset. Retrieved December 10, 2015.",
           "url": "https://securelist.com/sofacy-apt-hits-high-profile-targets-with-updated-toolset/72924/"
@@ -437,7 +433,6 @@
       "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
       "kill_chain_phases": [
         {
-          "id": "kill-chain-phase--8c2055ac-b474-4be0-8e0d-873a4ca97e02",
           "kill_chain_name": "mitre-pre-attack",
           "phase_name": "launch",
           "x_opencti_order": 0
@@ -445,7 +440,6 @@
       ],
       "external_references": [
         {
-          "id": "external-reference--0ad7ab0d-da5f-427b-8d49-c1429c87eab3",
           "source_name": "mitre-pre-attack",
           "url": "https://attack.mitre.org/techniques/T1369",
           "external_id": "T1369"
@@ -527,8 +521,6 @@
       "aliases": ["Winnti"],
       "labels": ["intrusion-set"],
       "description": "[APT41](https://attack.mitre.org/groups/G0096) is a group that carries out Chinese state-sponsored espionage activity in addition to financially motivated activity. [APT41](https://attack.mitre.org/groups/G0096) has been active since as early as 2012. The group has been observed targeting healthcare, telecom, technology, and video game industries in 14 countries.(Citation: FireEye APT41 Aug 2019)",
-      "start_time": "2020-02-26T04:26:43.965Z",
-      "stop_time": "2020-02-26T04:26:43.965Z",
       "created": "2019-09-23T13:43:36.945Z",
       "modified": "2019-10-14T21:52:59.301Z",
       "x_opencti_id": "82316ffd-a0ec-4519-a454-6566f8f5676c",
@@ -536,13 +528,11 @@
       "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
       "external_references": [
         {
-          "id": "external-reference--cfe1345e-4674-4001-b72d-21fa6fb446b6",
           "source_name": "FireEye APT41 Aug 2019",
           "description": "Fraser, N., et al. (2019, August 7). Double DragonAPT41, a dual espionage and cyber crime operation APT41. Retrieved September 23, 2019.",
           "url": "https://content.fireeye.com/apt-41/rpt-apt41"
         },
         {
-          "id": "external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5",
           "source_name": "mitre-attack",
           "url": "https://attack.mitre.org/groups/G0096",
           "external_id": "G0096"
@@ -563,7 +553,6 @@
       "object_marking_refs": ["marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168"],
       "kill_chain_phases": [
         {
-          "id": "kill-chain-phase--8c2055ac-b474-4be0-8e0d-873a4ca97e02",
           "kill_chain_name": "mitre-pre-attack",
           "phase_name": "launch",
           "x_opencti_order": 0
@@ -571,7 +560,6 @@
       ],
       "external_references": [
         {
-          "id": "external-reference--7a6f0e28-ef74-4a87-b6ef-c76057e84586",
           "source_name": "mitre-pre-attack",
           "url": "https://attack.mitre.org/techniques/T1368",
           "external_id": "T1368"

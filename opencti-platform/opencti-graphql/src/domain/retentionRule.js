@@ -1,4 +1,4 @@
-import { deleteElementById, loadById, updateAttribute } from '../database/middleware';
+import { deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { ENTITY_TYPE_RETENTION_RULE } from '../schema/internalObject';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
@@ -56,7 +56,7 @@ export const deleteRetentionRule = async (user, retentionRuleId) => {
 };
 
 export const findById = async (user, retentionRuleId) => {
-  return loadById(user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
+  return storeLoadById(user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
 };
 
 export const findAll = (user, args) => {

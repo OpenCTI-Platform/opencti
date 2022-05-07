@@ -3,8 +3,7 @@ import {
   createEntity,
   batchListThroughGetFrom,
   batchListThroughGetTo,
-  loadById,
-  listRelations,
+  storeLoadById,
   listThroughGetFrom,
   batchLoadThroughGetTo,
 } from '../database/middleware';
@@ -15,9 +14,10 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '
 import { RELATION_PART_OF, RELATION_TARGETS } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { buildPagination } from '../database/utils';
+import { listRelations } from '../database/middleware-loader';
 
 export const findById = (user, sectorId) => {
-  return loadById(user, sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
+  return storeLoadById(user, sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const findAll = (user, args) => {

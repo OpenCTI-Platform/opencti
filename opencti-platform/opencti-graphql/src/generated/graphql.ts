@@ -135,6 +135,11 @@ export type ArtifactImportFilesArgs = {
 };
 
 
+export type ArtifactIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type ArtifactJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -530,6 +535,11 @@ export type AutonomousSystemExternalReferencesArgs = {
 
 
 export type AutonomousSystemImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type AutonomousSystemIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1169,6 +1179,7 @@ export type Container = {
   objects?: Maybe<StixObjectOrStixRelationshipConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
+  relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
@@ -1207,6 +1218,19 @@ export type ContainerObjectsArgs = {
 
 export type ContainerOpinionsArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ContainerRelatedContainersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ContainersFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  viaTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -1753,6 +1777,286 @@ export enum CoursesOfActionOrdering {
   XMitreId = 'x_mitre_id'
 }
 
+export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
+  __typename?: 'CryptocurrencyWallet';
+  connectors?: Maybe<Array<Maybe<Connector>>>;
+  createdBy?: Maybe<Identity>;
+  created_at: Scalars['DateTime'];
+  creator?: Maybe<User>;
+  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
+  entity_type: Scalars['String'];
+  exportFiles?: Maybe<FileConnection>;
+  externalReferences?: Maybe<ExternalReferenceConnection>;
+  id: Scalars['ID'];
+  importFiles?: Maybe<FileConnection>;
+  indicators?: Maybe<IndicatorConnection>;
+  is_inferred: Scalars['Boolean'];
+  jobs?: Maybe<Array<Maybe<Work>>>;
+  notes?: Maybe<NoteConnection>;
+  objectLabel?: Maybe<LabelConnection>;
+  objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observable_value: Scalars['String'];
+  opinions?: Maybe<OpinionConnection>;
+  parent_types: Array<Maybe<Scalars['String']>>;
+  pendingFiles?: Maybe<FileConnection>;
+  reports?: Maybe<ReportConnection>;
+  spec_version: Scalars['String'];
+  standard_id: Scalars['String'];
+  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
+  toStix?: Maybe<Scalars['String']>;
+  updated_at: Scalars['DateTime'];
+  value?: Maybe<Scalars['String']>;
+  x_opencti_description?: Maybe<Scalars['String']>;
+  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_score?: Maybe<Scalars['Int']>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
+
+export type CryptocurrencyWalletConnectorsArgs = {
+  onlyAlive?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type CryptocurrencyWalletExportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletExternalReferencesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletJobsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletOpinionsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletPendingFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletReportsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptocurrencyWalletStixCoreRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type CryptocurrencyWalletStixCyberObservableRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type CryptocurrencyWalletAddInput = {
+  value?: InputMaybe<Scalars['String']>;
+};
+
+export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
+  __typename?: 'CryptographicKey';
+  connectors?: Maybe<Array<Maybe<Connector>>>;
+  createdBy?: Maybe<Identity>;
+  created_at: Scalars['DateTime'];
+  creator?: Maybe<User>;
+  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
+  entity_type: Scalars['String'];
+  exportFiles?: Maybe<FileConnection>;
+  externalReferences?: Maybe<ExternalReferenceConnection>;
+  id: Scalars['ID'];
+  importFiles?: Maybe<FileConnection>;
+  indicators?: Maybe<IndicatorConnection>;
+  is_inferred: Scalars['Boolean'];
+  jobs?: Maybe<Array<Maybe<Work>>>;
+  notes?: Maybe<NoteConnection>;
+  objectLabel?: Maybe<LabelConnection>;
+  objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observable_value: Scalars['String'];
+  opinions?: Maybe<OpinionConnection>;
+  parent_types: Array<Maybe<Scalars['String']>>;
+  pendingFiles?: Maybe<FileConnection>;
+  reports?: Maybe<ReportConnection>;
+  spec_version: Scalars['String'];
+  standard_id: Scalars['String'];
+  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
+  toStix?: Maybe<Scalars['String']>;
+  updated_at: Scalars['DateTime'];
+  value?: Maybe<Scalars['String']>;
+  x_opencti_description?: Maybe<Scalars['String']>;
+  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_score?: Maybe<Scalars['Int']>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
+
+export type CryptographicKeyConnectorsArgs = {
+  onlyAlive?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type CryptographicKeyExportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyExternalReferencesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyJobsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyOpinionsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyPendingFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyReportsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyStixCoreRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type CryptographicKeyStixCyberObservableRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type CryptographicKeyAddInput = {
+  value?: InputMaybe<Scalars['String']>;
+};
+
 /** Dependency information containing the name and the deployed version. */
 export type DependencyVersion = {
   __typename?: 'DependencyVersion';
@@ -1817,6 +2121,11 @@ export type DirectoryExternalReferencesArgs = {
 
 
 export type DirectoryImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type DirectoryIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1968,6 +2277,11 @@ export type DomainNameExternalReferencesArgs = {
 
 
 export type DomainNameImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type DomainNameIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2138,6 +2452,11 @@ export type EmailAddrImportFilesArgs = {
 };
 
 
+export type EmailAddrIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type EmailAddrJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -2276,6 +2595,11 @@ export type EmailMessageExternalReferencesArgs = {
 
 
 export type EmailMessageImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailMessageIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2419,6 +2743,11 @@ export type EmailMimePartTypeExternalReferencesArgs = {
 
 
 export type EmailMimePartTypeImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailMimePartTypeIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2843,6 +3172,11 @@ export type HashedObservableImportFilesArgs = {
 };
 
 
+export type HashedObservableIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type HashedObservableJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -2917,6 +3251,146 @@ export type HashedObservableStixCyberObservableRelationshipsArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
+export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
+  __typename?: 'Hostname';
+  connectors?: Maybe<Array<Maybe<Connector>>>;
+  createdBy?: Maybe<Identity>;
+  created_at: Scalars['DateTime'];
+  creator?: Maybe<User>;
+  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
+  entity_type: Scalars['String'];
+  exportFiles?: Maybe<FileConnection>;
+  externalReferences?: Maybe<ExternalReferenceConnection>;
+  id: Scalars['ID'];
+  importFiles?: Maybe<FileConnection>;
+  indicators?: Maybe<IndicatorConnection>;
+  is_inferred: Scalars['Boolean'];
+  jobs?: Maybe<Array<Maybe<Work>>>;
+  notes?: Maybe<NoteConnection>;
+  objectLabel?: Maybe<LabelConnection>;
+  objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observable_value: Scalars['String'];
+  opinions?: Maybe<OpinionConnection>;
+  parent_types: Array<Maybe<Scalars['String']>>;
+  pendingFiles?: Maybe<FileConnection>;
+  reports?: Maybe<ReportConnection>;
+  spec_version: Scalars['String'];
+  standard_id: Scalars['String'];
+  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
+  toStix?: Maybe<Scalars['String']>;
+  updated_at: Scalars['DateTime'];
+  value?: Maybe<Scalars['String']>;
+  x_opencti_description?: Maybe<Scalars['String']>;
+  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_score?: Maybe<Scalars['Int']>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
+
+export type HostnameConnectorsArgs = {
+  onlyAlive?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type HostnameExportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameExternalReferencesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameJobsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameOpinionsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnamePendingFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameReportsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameStixCoreRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type HostnameStixCyberObservableRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type HostnameAddInput = {
+  value?: InputMaybe<Scalars['String']>;
+};
+
 export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'IPv4Addr';
   connectors?: Maybe<Array<Maybe<Connector>>>;
@@ -2970,6 +3444,11 @@ export type IPv4AddrExternalReferencesArgs = {
 
 
 export type IPv4AddrImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IPv4AddrIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3107,6 +3586,11 @@ export type IPv6AddrExternalReferencesArgs = {
 
 
 export type IPv6AddrImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IPv6AddrIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3705,6 +4189,11 @@ export type IndicatorJobsArgs = {
 
 
 export type IndicatorNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IndicatorObservablesArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4687,6 +5176,7 @@ export type LabelAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   stix_id?: InputMaybe<Scalars['String']>;
+  update?: InputMaybe<Scalars['Boolean']>;
   value: Scalars['String'];
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
@@ -5089,6 +5579,11 @@ export type MacAddrExternalReferencesArgs = {
 
 
 export type MacAddrImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type MacAddrIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -6051,11 +6546,14 @@ export type MutationStixCoreRelationshipEditArgs = {
 export type MutationStixCyberObservableAddArgs = {
   Artifact?: InputMaybe<ArtifactAddInput>;
   AutonomousSystem?: InputMaybe<AutonomousSystemAddInput>;
+  CryptocurrencyWallet?: InputMaybe<CryptocurrencyWalletAddInput>;
+  CryptographicKey?: InputMaybe<CryptographicKeyAddInput>;
   Directory?: InputMaybe<DirectoryAddInput>;
   DomainName?: InputMaybe<DomainNameAddInput>;
   EmailAddr?: InputMaybe<EmailAddrAddInput>;
   EmailMessage?: InputMaybe<EmailMessageAddInput>;
   EmailMimePartType?: InputMaybe<EmailMimePartTypeAddInput>;
+  Hostname?: InputMaybe<HostnameAddInput>;
   IPv4Addr?: InputMaybe<IPv4AddrAddInput>;
   IPv6Addr?: InputMaybe<IPv6AddrAddInput>;
   MacAddr?: InputMaybe<MacAddrAddInput>;
@@ -6064,17 +6562,14 @@ export type MutationStixCyberObservableAddArgs = {
   Process?: InputMaybe<ProcessAddInput>;
   Software?: InputMaybe<SoftwareAddInput>;
   StixFile?: InputMaybe<StixFileAddInput>;
+  Text?: InputMaybe<TextAddInput>;
   Url?: InputMaybe<UrlAddInput>;
   UserAccount?: InputMaybe<UserAccountAddInput>;
+  UserAgent?: InputMaybe<UserAgentAddInput>;
   WindowsRegistryKey?: InputMaybe<WindowsRegistryKeyAddInput>;
   WindowsRegistryValueType?: InputMaybe<WindowsRegistryValueTypeAddInput>;
   X509Certificate?: InputMaybe<X509CertificateAddInput>;
   X509V3ExtensionsType?: InputMaybe<X509V3ExtensionsTypeAddInput>;
-  XOpenCTICryptocurrencyWallet?: InputMaybe<XOpenCtiCryptocurrencyWalletAddInput>;
-  XOpenCTICryptographicKey?: InputMaybe<XOpenCtiCryptographicKeyAddInput>;
-  XOpenCTIHostname?: InputMaybe<XOpenCtiHostnameAddInput>;
-  XOpenCTIText?: InputMaybe<XOpenCtiTextAddInput>;
-  XOpenCTIUserAgent?: InputMaybe<XOpenCtiUserAgentAddInput>;
   clientMutationId?: InputMaybe<Scalars['String']>;
   createIndicator?: InputMaybe<Scalars['Boolean']>;
   createdBy?: InputMaybe<Scalars['String']>;
@@ -6388,6 +6883,11 @@ export type MutexImportFilesArgs = {
 };
 
 
+export type MutexIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type MutexJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -6533,6 +7033,11 @@ export type NetworkTrafficImportFilesArgs = {
 };
 
 
+export type NetworkTrafficIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type NetworkTrafficJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -6612,7 +7117,6 @@ export type NetworkTrafficAddInput = {
   dst_packets?: InputMaybe<Scalars['Int']>;
   dst_port?: InputMaybe<Scalars['Int']>;
   end?: InputMaybe<Scalars['DateTime']>;
-  extensions?: InputMaybe<Scalars['String']>;
   is_active?: InputMaybe<Scalars['Boolean']>;
   protocols?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   src_byte_count?: InputMaybe<Scalars['Int']>;
@@ -6649,6 +7153,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
+  relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
@@ -6714,6 +7219,19 @@ export type NoteOpinionsArgs = {
 
 export type NotePendingFilesArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type NoteRelatedContainersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ContainersFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  viaTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -6887,6 +7405,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
+  relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
@@ -6952,6 +7471,19 @@ export type ObservedDataOpinionsArgs = {
 
 export type ObservedDataPendingFilesArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ObservedDataRelatedContainersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ContainersFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  viaTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -7113,6 +7645,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
+  relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
@@ -7178,6 +7711,19 @@ export type OpinionOpinionsArgs = {
 
 export type OpinionPendingFilesArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type OpinionRelatedContainersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ContainersFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  viaTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -7838,6 +8384,11 @@ export type ProcessImportFilesArgs = {
 };
 
 
+export type ProcessIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type ProcessJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -7917,7 +8468,6 @@ export type ProcessAddInput = {
   created_time?: InputMaybe<Scalars['DateTime']>;
   cwd?: InputMaybe<Scalars['String']>;
   environment_variables?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  extensions?: InputMaybe<Scalars['String']>;
   is_hidden?: InputMaybe<Scalars['Boolean']>;
   pid?: InputMaybe<Scalars['Int']>;
 };
@@ -8041,6 +8591,7 @@ export type Query = {
   statusTemplate?: Maybe<StatusTemplate>;
   statusTemplates?: Maybe<StatusTemplateConnection>;
   statuses?: Maybe<StatusConnection>;
+  stix?: Maybe<Scalars['String']>;
   stixCoreObject?: Maybe<StixCoreObject>;
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']>;
@@ -8896,6 +9447,11 @@ export type QueryStatusesArgs = {
 };
 
 
+export type QueryStixArgs = {
+  id: Scalars['String'];
+};
+
+
 export type QueryStixCoreObjectArgs = {
   id: Scalars['String'];
 };
@@ -9526,6 +10082,7 @@ export type QueryTask = Task & {
 
 export type QueryTaskAddInput = {
   actions: Array<InputMaybe<TaskActionInput>>;
+  excluded_ids?: InputMaybe<Array<InputMaybe<Scalars['ID']>>>;
   filters: Scalars['String'];
   search?: InputMaybe<Scalars['String']>;
 };
@@ -9820,6 +10377,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   parent_types: Array<Maybe<Scalars['String']>>;
   pendingFiles?: Maybe<FileConnection>;
   published?: Maybe<Scalars['DateTime']>;
+  relatedContainers?: Maybe<ContainerConnection>;
   report_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   reports?: Maybe<ReportConnection>;
   revoked: Scalars['Boolean'];
@@ -9886,6 +10444,19 @@ export type ReportOpinionsArgs = {
 
 export type ReportPendingFilesArgs = {
   first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ReportRelatedContainersArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<ContainersFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<ContainersOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  viaTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -10521,6 +11092,11 @@ export type SoftwareImportFilesArgs = {
 };
 
 
+export type SoftwareIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type SoftwareJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -10848,7 +11424,7 @@ export type StixCoreObjectEditMutationsRelationsAddArgs = {
   input?: InputMaybe<StixMetaRelationshipsAddInput>;
 };
 
-export type StixCoreObjectOrStixCoreRelationship = Artifact | AttackPattern | AutonomousSystem | Campaign | City | Country | CourseOfAction | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | MacAddr | Malware | Mutex | NetworkTraffic | Note | ObservedData | Opinion | Organization | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixFile | ThreatActor | Tool | Url | UserAccount | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate | X509V3ExtensionsType | XOpenCtiCryptocurrencyWallet | XOpenCtiCryptographicKey | XOpenCtiHostname | XOpenCtiText | XOpenCtiUserAgent;
+export type StixCoreObjectOrStixCoreRelationship = Artifact | AttackPattern | AutonomousSystem | Campaign | City | Country | CourseOfAction | CryptocurrencyWallet | CryptographicKey | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | MacAddr | Malware | Mutex | NetworkTraffic | Note | ObservedData | Opinion | Organization | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixFile | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate | X509V3ExtensionsType;
 
 export enum StixCoreObjectsFilter {
   Confidence = 'confidence',
@@ -11139,6 +11715,11 @@ export type StixCyberObservableImportFilesArgs = {
 };
 
 
+export type StixCyberObservableIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type StixCyberObservableJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -11372,6 +11953,7 @@ export enum StixCyberObservableRelationshipsOrdering {
   CreatedAt = 'created_at',
   EntityType = 'entity_type',
   Modified = 'modified',
+  RelationshipType = 'relationship_type',
   StartTime = 'start_time',
   StopTime = 'stop_time',
   ToCreatedAt = 'toCreatedAt',
@@ -11748,6 +12330,11 @@ export type StixFileImportFilesArgs = {
 };
 
 
+export type StixFileIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type StixFileJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -11825,7 +12412,6 @@ export type StixFileStixCyberObservableRelationshipsArgs = {
 export type StixFileAddInput = {
   atime?: InputMaybe<Scalars['DateTime']>;
   ctime?: InputMaybe<Scalars['DateTime']>;
-  extensions?: InputMaybe<Scalars['String']>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   magic_number_hex?: InputMaybe<Scalars['String']>;
   mime_type?: InputMaybe<Scalars['String']>;
@@ -11921,7 +12507,7 @@ export type StixObject = {
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
-export type StixObjectOrStixRelationship = Artifact | AttackPattern | AutonomousSystem | Campaign | City | Country | CourseOfAction | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | ExternalReference | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | MacAddr | Malware | MarkingDefinition | Mutex | NetworkTraffic | Note | ObservedData | Opinion | Organization | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixCyberObservableRelationship | StixFile | StixMetaRelationship | StixSightingRelationship | System | ThreatActor | Tool | Url | UserAccount | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate | X509V3ExtensionsType | XOpenCtiCryptocurrencyWallet | XOpenCtiCryptographicKey | XOpenCtiHostname | XOpenCtiText | XOpenCtiUserAgent;
+export type StixObjectOrStixRelationship = Artifact | AttackPattern | AutonomousSystem | Campaign | City | Country | CourseOfAction | CryptocurrencyWallet | CryptographicKey | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | ExternalReference | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | MacAddr | Malware | MarkingDefinition | Mutex | NetworkTraffic | Note | ObservedData | Opinion | Organization | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixCyberObservableRelationship | StixFile | StixMetaRelationship | StixSightingRelationship | System | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate | X509V3ExtensionsType;
 
 export type StixObjectOrStixRelationshipConnection = {
   __typename?: 'StixObjectOrStixRelationshipConnection';
@@ -12799,6 +13385,146 @@ export enum TaxiiCollectionOrdering {
   Name = 'name'
 }
 
+export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
+  __typename?: 'Text';
+  connectors?: Maybe<Array<Maybe<Connector>>>;
+  createdBy?: Maybe<Identity>;
+  created_at: Scalars['DateTime'];
+  creator?: Maybe<User>;
+  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
+  entity_type: Scalars['String'];
+  exportFiles?: Maybe<FileConnection>;
+  externalReferences?: Maybe<ExternalReferenceConnection>;
+  id: Scalars['ID'];
+  importFiles?: Maybe<FileConnection>;
+  indicators?: Maybe<IndicatorConnection>;
+  is_inferred: Scalars['Boolean'];
+  jobs?: Maybe<Array<Maybe<Work>>>;
+  notes?: Maybe<NoteConnection>;
+  objectLabel?: Maybe<LabelConnection>;
+  objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observable_value: Scalars['String'];
+  opinions?: Maybe<OpinionConnection>;
+  parent_types: Array<Maybe<Scalars['String']>>;
+  pendingFiles?: Maybe<FileConnection>;
+  reports?: Maybe<ReportConnection>;
+  spec_version: Scalars['String'];
+  standard_id: Scalars['String'];
+  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
+  toStix?: Maybe<Scalars['String']>;
+  updated_at: Scalars['DateTime'];
+  value?: Maybe<Scalars['String']>;
+  x_opencti_description?: Maybe<Scalars['String']>;
+  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_score?: Maybe<Scalars['Int']>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
+
+export type TextConnectorsArgs = {
+  onlyAlive?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type TextExportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextExternalReferencesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextJobsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextOpinionsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextPendingFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextReportsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type TextStixCoreRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type TextStixCyberObservableRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type TextAddInput = {
+  value?: InputMaybe<Scalars['String']>;
+};
+
 export type ThreatActor = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'ThreatActor';
   aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -13295,6 +14021,11 @@ export type UrlImportFilesArgs = {
 };
 
 
+export type UrlIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type UrlJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -13476,6 +14207,11 @@ export type UserAccountImportFilesArgs = {
 };
 
 
+export type UserAccountIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type UserAccountJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -13561,7 +14297,6 @@ export type UserAccountAddInput = {
   credential?: InputMaybe<Scalars['String']>;
   credential_last_changed?: InputMaybe<Scalars['DateTime']>;
   display_name?: InputMaybe<Scalars['String']>;
-  extensions?: InputMaybe<Scalars['String']>;
   is_disabled?: InputMaybe<Scalars['Boolean']>;
   is_privileged?: InputMaybe<Scalars['Boolean']>;
   is_service_account?: InputMaybe<Scalars['Boolean']>;
@@ -13578,6 +14313,146 @@ export type UserAddInput = {
   roles?: InputMaybe<Array<InputMaybe<Scalars['ID']>>>;
   theme?: InputMaybe<Scalars['String']>;
   user_email?: InputMaybe<Scalars['String']>;
+};
+
+export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
+  __typename?: 'UserAgent';
+  connectors?: Maybe<Array<Maybe<Connector>>>;
+  createdBy?: Maybe<Identity>;
+  created_at: Scalars['DateTime'];
+  creator?: Maybe<User>;
+  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
+  entity_type: Scalars['String'];
+  exportFiles?: Maybe<FileConnection>;
+  externalReferences?: Maybe<ExternalReferenceConnection>;
+  id: Scalars['ID'];
+  importFiles?: Maybe<FileConnection>;
+  indicators?: Maybe<IndicatorConnection>;
+  is_inferred: Scalars['Boolean'];
+  jobs?: Maybe<Array<Maybe<Work>>>;
+  notes?: Maybe<NoteConnection>;
+  objectLabel?: Maybe<LabelConnection>;
+  objectMarking?: Maybe<MarkingDefinitionConnection>;
+  observable_value: Scalars['String'];
+  opinions?: Maybe<OpinionConnection>;
+  parent_types: Array<Maybe<Scalars['String']>>;
+  pendingFiles?: Maybe<FileConnection>;
+  reports?: Maybe<ReportConnection>;
+  spec_version: Scalars['String'];
+  standard_id: Scalars['String'];
+  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
+  toStix?: Maybe<Scalars['String']>;
+  updated_at: Scalars['DateTime'];
+  value?: Maybe<Scalars['String']>;
+  x_opencti_description?: Maybe<Scalars['String']>;
+  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_score?: Maybe<Scalars['Int']>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
+
+export type UserAgentConnectorsArgs = {
+  onlyAlive?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type UserAgentExportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentExternalReferencesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentJobsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentOpinionsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentPendingFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentReportsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentStixCoreRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type UserAgentStixCyberObservableRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['String']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
+  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['String']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type UserAgentAddInput = {
+  value?: InputMaybe<Scalars['String']>;
 };
 
 export type UserConnection = {
@@ -13985,6 +14860,11 @@ export type WindowsRegistryKeyImportFilesArgs = {
 };
 
 
+export type WindowsRegistryKeyIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type WindowsRegistryKeyJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -14120,6 +15000,11 @@ export type WindowsRegistryValueTypeExternalReferencesArgs = {
 
 
 export type WindowsRegistryValueTypeImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type WindowsRegistryValueTypeIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14484,6 +15369,11 @@ export type X509CertificateImportFilesArgs = {
 };
 
 
+export type X509CertificateIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type X509CertificateJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -14645,6 +15535,11 @@ export type X509V3ExtensionsTypeImportFilesArgs = {
 };
 
 
+export type X509V3ExtensionsTypeIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type X509V3ExtensionsTypeJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -14738,681 +15633,6 @@ export type X509V3ExtensionsTypeAddInput = {
   subject_key_identifier?: InputMaybe<Scalars['String']>;
 };
 
-export type XOpenCtiCryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
-  __typename?: 'XOpenCTICryptocurrencyWallet';
-  connectors?: Maybe<Array<Maybe<Connector>>>;
-  createdBy?: Maybe<Identity>;
-  created_at: Scalars['DateTime'];
-  creator?: Maybe<User>;
-  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
-  entity_type: Scalars['String'];
-  exportFiles?: Maybe<FileConnection>;
-  externalReferences?: Maybe<ExternalReferenceConnection>;
-  id: Scalars['ID'];
-  importFiles?: Maybe<FileConnection>;
-  indicators?: Maybe<IndicatorConnection>;
-  is_inferred: Scalars['Boolean'];
-  jobs?: Maybe<Array<Maybe<Work>>>;
-  notes?: Maybe<NoteConnection>;
-  objectLabel?: Maybe<LabelConnection>;
-  objectMarking?: Maybe<MarkingDefinitionConnection>;
-  observable_value: Scalars['String'];
-  opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']>>;
-  pendingFiles?: Maybe<FileConnection>;
-  reports?: Maybe<ReportConnection>;
-  spec_version: Scalars['String'];
-  standard_id: Scalars['String'];
-  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
-  toStix?: Maybe<Scalars['String']>;
-  updated_at: Scalars['DateTime'];
-  value?: Maybe<Scalars['String']>;
-  x_opencti_description?: Maybe<Scalars['String']>;
-  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletConnectorsArgs = {
-  onlyAlive?: InputMaybe<Scalars['Boolean']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletExportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletExternalReferencesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletImportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletJobsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletNotesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletOpinionsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletPendingFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletReportsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletStixCoreRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiCryptocurrencyWalletStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export type XOpenCtiCryptocurrencyWalletAddInput = {
-  value?: InputMaybe<Scalars['String']>;
-};
-
-export type XOpenCtiCryptographicKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
-  __typename?: 'XOpenCTICryptographicKey';
-  connectors?: Maybe<Array<Maybe<Connector>>>;
-  createdBy?: Maybe<Identity>;
-  created_at: Scalars['DateTime'];
-  creator?: Maybe<User>;
-  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
-  entity_type: Scalars['String'];
-  exportFiles?: Maybe<FileConnection>;
-  externalReferences?: Maybe<ExternalReferenceConnection>;
-  id: Scalars['ID'];
-  importFiles?: Maybe<FileConnection>;
-  indicators?: Maybe<IndicatorConnection>;
-  is_inferred: Scalars['Boolean'];
-  jobs?: Maybe<Array<Maybe<Work>>>;
-  notes?: Maybe<NoteConnection>;
-  objectLabel?: Maybe<LabelConnection>;
-  objectMarking?: Maybe<MarkingDefinitionConnection>;
-  observable_value: Scalars['String'];
-  opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']>>;
-  pendingFiles?: Maybe<FileConnection>;
-  reports?: Maybe<ReportConnection>;
-  spec_version: Scalars['String'];
-  standard_id: Scalars['String'];
-  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
-  toStix?: Maybe<Scalars['String']>;
-  updated_at: Scalars['DateTime'];
-  value?: Maybe<Scalars['String']>;
-  x_opencti_description?: Maybe<Scalars['String']>;
-  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiCryptographicKeyConnectorsArgs = {
-  onlyAlive?: InputMaybe<Scalars['Boolean']>;
-};
-
-
-export type XOpenCtiCryptographicKeyExportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptographicKeyExternalReferencesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptographicKeyImportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptographicKeyJobsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptographicKeyNotesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptographicKeyOpinionsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptographicKeyPendingFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptographicKeyReportsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiCryptographicKeyStixCoreRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiCryptographicKeyStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export type XOpenCtiCryptographicKeyAddInput = {
-  value?: InputMaybe<Scalars['String']>;
-};
-
-export type XOpenCtiHostname = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
-  __typename?: 'XOpenCTIHostname';
-  connectors?: Maybe<Array<Maybe<Connector>>>;
-  createdBy?: Maybe<Identity>;
-  created_at: Scalars['DateTime'];
-  creator?: Maybe<User>;
-  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
-  entity_type: Scalars['String'];
-  exportFiles?: Maybe<FileConnection>;
-  externalReferences?: Maybe<ExternalReferenceConnection>;
-  id: Scalars['ID'];
-  importFiles?: Maybe<FileConnection>;
-  indicators?: Maybe<IndicatorConnection>;
-  is_inferred: Scalars['Boolean'];
-  jobs?: Maybe<Array<Maybe<Work>>>;
-  notes?: Maybe<NoteConnection>;
-  objectLabel?: Maybe<LabelConnection>;
-  objectMarking?: Maybe<MarkingDefinitionConnection>;
-  observable_value: Scalars['String'];
-  opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']>>;
-  pendingFiles?: Maybe<FileConnection>;
-  reports?: Maybe<ReportConnection>;
-  spec_version: Scalars['String'];
-  standard_id: Scalars['String'];
-  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
-  toStix?: Maybe<Scalars['String']>;
-  updated_at: Scalars['DateTime'];
-  value?: Maybe<Scalars['String']>;
-  x_opencti_description?: Maybe<Scalars['String']>;
-  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiHostnameConnectorsArgs = {
-  onlyAlive?: InputMaybe<Scalars['Boolean']>;
-};
-
-
-export type XOpenCtiHostnameExportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiHostnameExternalReferencesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiHostnameImportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiHostnameJobsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiHostnameNotesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiHostnameOpinionsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiHostnamePendingFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiHostnameReportsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiHostnameStixCoreRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiHostnameStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export type XOpenCtiHostnameAddInput = {
-  value?: InputMaybe<Scalars['String']>;
-};
-
-export type XOpenCtiText = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
-  __typename?: 'XOpenCTIText';
-  connectors?: Maybe<Array<Maybe<Connector>>>;
-  createdBy?: Maybe<Identity>;
-  created_at: Scalars['DateTime'];
-  creator?: Maybe<User>;
-  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
-  entity_type: Scalars['String'];
-  exportFiles?: Maybe<FileConnection>;
-  externalReferences?: Maybe<ExternalReferenceConnection>;
-  id: Scalars['ID'];
-  importFiles?: Maybe<FileConnection>;
-  indicators?: Maybe<IndicatorConnection>;
-  is_inferred: Scalars['Boolean'];
-  jobs?: Maybe<Array<Maybe<Work>>>;
-  notes?: Maybe<NoteConnection>;
-  objectLabel?: Maybe<LabelConnection>;
-  objectMarking?: Maybe<MarkingDefinitionConnection>;
-  observable_value: Scalars['String'];
-  opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']>>;
-  pendingFiles?: Maybe<FileConnection>;
-  reports?: Maybe<ReportConnection>;
-  spec_version: Scalars['String'];
-  standard_id: Scalars['String'];
-  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
-  toStix?: Maybe<Scalars['String']>;
-  updated_at: Scalars['DateTime'];
-  value?: Maybe<Scalars['String']>;
-  x_opencti_description?: Maybe<Scalars['String']>;
-  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiTextConnectorsArgs = {
-  onlyAlive?: InputMaybe<Scalars['Boolean']>;
-};
-
-
-export type XOpenCtiTextExportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiTextExternalReferencesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiTextImportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiTextJobsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiTextNotesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiTextOpinionsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiTextPendingFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiTextReportsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiTextStixCoreRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiTextStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export type XOpenCtiTextAddInput = {
-  value?: InputMaybe<Scalars['String']>;
-};
-
-export type XOpenCtiUserAgent = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
-  __typename?: 'XOpenCTIUserAgent';
-  connectors?: Maybe<Array<Maybe<Connector>>>;
-  createdBy?: Maybe<Identity>;
-  created_at: Scalars['DateTime'];
-  creator?: Maybe<User>;
-  editContext?: Maybe<Array<Maybe<EditUserContext>>>;
-  entity_type: Scalars['String'];
-  exportFiles?: Maybe<FileConnection>;
-  externalReferences?: Maybe<ExternalReferenceConnection>;
-  id: Scalars['ID'];
-  importFiles?: Maybe<FileConnection>;
-  indicators?: Maybe<IndicatorConnection>;
-  is_inferred: Scalars['Boolean'];
-  jobs?: Maybe<Array<Maybe<Work>>>;
-  notes?: Maybe<NoteConnection>;
-  objectLabel?: Maybe<LabelConnection>;
-  objectMarking?: Maybe<MarkingDefinitionConnection>;
-  observable_value: Scalars['String'];
-  opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']>>;
-  pendingFiles?: Maybe<FileConnection>;
-  reports?: Maybe<ReportConnection>;
-  spec_version: Scalars['String'];
-  standard_id: Scalars['String'];
-  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
-  toStix?: Maybe<Scalars['String']>;
-  updated_at: Scalars['DateTime'];
-  value?: Maybe<Scalars['String']>;
-  x_opencti_description?: Maybe<Scalars['String']>;
-  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_score?: Maybe<Scalars['Int']>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiUserAgentConnectorsArgs = {
-  onlyAlive?: InputMaybe<Scalars['Boolean']>;
-};
-
-
-export type XOpenCtiUserAgentExportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiUserAgentExternalReferencesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiUserAgentImportFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiUserAgentJobsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiUserAgentNotesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiUserAgentOpinionsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiUserAgentPendingFilesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiUserAgentReportsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type XOpenCtiUserAgentStixCoreRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type XOpenCtiUserAgentStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['String']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export type XOpenCtiUserAgentAddInput = {
-  value?: InputMaybe<Scalars['String']>;
-};
-
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -15504,7 +15724,7 @@ export type ResolversTypes = {
   AttributesOrdering: AttributesOrdering;
   AutonomousSystem: ResolverTypeWrapper<AutonomousSystem>;
   AutonomousSystemAddInput: AutonomousSystemAddInput;
-  BasicObject: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['Capability'] | ResolversTypes['City'] | ResolversTypes['Connector'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['ExternalReference'] | ResolversTypes['Group'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Role'] | ResolversTypes['Sector'] | ResolversTypes['Settings'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['User'] | ResolversTypes['UserAccount'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'] | ResolversTypes['XOpenCTICryptocurrencyWallet'] | ResolversTypes['XOpenCTICryptographicKey'] | ResolversTypes['XOpenCTIHostname'] | ResolversTypes['XOpenCTIText'] | ResolversTypes['XOpenCTIUserAgent'];
+  BasicObject: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['Capability'] | ResolversTypes['City'] | ResolversTypes['Connector'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['ExternalReference'] | ResolversTypes['Group'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Role'] | ResolversTypes['Sector'] | ResolversTypes['Settings'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['User'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'];
   BasicRelationship: ResolversTypes['InternalRelationship'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'];
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Campaign: ResolverTypeWrapper<Campaign>;
@@ -15556,6 +15776,10 @@ export type ResolversTypes = {
   CoursesOfActionFilter: CoursesOfActionFilter;
   CoursesOfActionFiltering: CoursesOfActionFiltering;
   CoursesOfActionOrdering: CoursesOfActionOrdering;
+  CryptocurrencyWallet: ResolverTypeWrapper<CryptocurrencyWallet>;
+  CryptocurrencyWalletAddInput: CryptocurrencyWalletAddInput;
+  CryptographicKey: ResolverTypeWrapper<CryptographicKey>;
+  CryptographicKeyAddInput: CryptographicKeyAddInput;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   DependencyVersion: ResolverTypeWrapper<DependencyVersion>;
   Directory: ResolverTypeWrapper<Directory>;
@@ -15599,6 +15823,8 @@ export type ResolversTypes = {
   Hash: ResolverTypeWrapper<Hash>;
   HashInput: HashInput;
   HashedObservable: ResolversTypes['Artifact'] | ResolversTypes['StixFile'] | ResolversTypes['X509Certificate'];
+  Hostname: ResolverTypeWrapper<Hostname>;
+  HostnameAddInput: HostnameAddInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   IPv4Addr: ResolverTypeWrapper<IPv4Addr>;
   IPv4AddrAddInput: IPv4AddrAddInput;
@@ -15836,11 +16062,11 @@ export type ResolversTypes = {
   StatusTemplateEdge: ResolverTypeWrapper<StatusTemplateEdge>;
   StatusTemplateOrdering: StatusTemplateOrdering;
   StatusesFiltering: StatusesFiltering;
-  StixCoreObject: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'] | ResolversTypes['XOpenCTICryptocurrencyWallet'] | ResolversTypes['XOpenCTICryptographicKey'] | ResolversTypes['XOpenCTIHostname'] | ResolversTypes['XOpenCTIText'] | ResolversTypes['XOpenCTIUserAgent'];
+  StixCoreObject: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'];
   StixCoreObjectConnection: ResolverTypeWrapper<StixCoreObjectConnection>;
   StixCoreObjectEdge: ResolverTypeWrapper<StixCoreObjectEdge>;
   StixCoreObjectEditMutations: ResolverTypeWrapper<StixCoreObjectEditMutations>;
-  StixCoreObjectOrStixCoreRelationship: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'] | ResolversTypes['XOpenCTICryptocurrencyWallet'] | ResolversTypes['XOpenCTICryptographicKey'] | ResolversTypes['XOpenCTIHostname'] | ResolversTypes['XOpenCTIText'] | ResolversTypes['XOpenCTIUserAgent'];
+  StixCoreObjectOrStixCoreRelationship: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'];
   StixCoreObjectsFilter: StixCoreObjectsFilter;
   StixCoreObjectsFiltering: StixCoreObjectsFiltering;
   StixCoreObjectsOrdering: StixCoreObjectsOrdering;
@@ -15852,7 +16078,7 @@ export type ResolversTypes = {
   StixCoreRelationshipsFilter: StixCoreRelationshipsFilter;
   StixCoreRelationshipsFiltering: StixCoreRelationshipsFiltering;
   StixCoreRelationshipsOrdering: StixCoreRelationshipsOrdering;
-  StixCyberObservable: ResolversTypes['Artifact'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['MacAddr'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Process'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'] | ResolversTypes['XOpenCTICryptocurrencyWallet'] | ResolversTypes['XOpenCTICryptographicKey'] | ResolversTypes['XOpenCTIHostname'] | ResolversTypes['XOpenCTIText'] | ResolversTypes['XOpenCTIUserAgent'];
+  StixCyberObservable: ResolversTypes['Artifact'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['MacAddr'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Process'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['Text'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'];
   StixCyberObservableConnection: ResolverTypeWrapper<StixCyberObservableConnection>;
   StixCyberObservableEdge: ResolverTypeWrapper<StixCyberObservableEdge>;
   StixCyberObservableEditMutations: ResolverTypeWrapper<StixCyberObservableEditMutations>;
@@ -15887,8 +16113,8 @@ export type ResolversTypes = {
   StixMetaRelationshipsFilter: StixMetaRelationshipsFilter;
   StixMetaRelationshipsFiltering: StixMetaRelationshipsFiltering;
   StixMetaRelationshipsOrdering: StixMetaRelationshipsOrdering;
-  StixObject: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['ExternalReference'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'] | ResolversTypes['XOpenCTICryptocurrencyWallet'] | ResolversTypes['XOpenCTICryptographicKey'] | ResolversTypes['XOpenCTIHostname'] | ResolversTypes['XOpenCTIText'] | ResolversTypes['XOpenCTIUserAgent'];
-  StixObjectOrStixRelationship: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['ExternalReference'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'] | ResolversTypes['System'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'] | ResolversTypes['XOpenCTICryptocurrencyWallet'] | ResolversTypes['XOpenCTICryptographicKey'] | ResolversTypes['XOpenCTIHostname'] | ResolversTypes['XOpenCTIText'] | ResolversTypes['XOpenCTIUserAgent'];
+  StixObject: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['ExternalReference'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'];
+  StixObjectOrStixRelationship: ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['Campaign'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['ExternalReference'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'] | ResolversTypes['X509V3ExtensionsType'];
   StixObjectOrStixRelationshipConnection: ResolverTypeWrapper<StixObjectOrStixRelationshipConnection>;
   StixObjectOrStixRelationshipEdge: ResolverTypeWrapper<Omit<StixObjectOrStixRelationshipEdge, 'node'> & { node: ResolversTypes['StixObjectOrStixRelationship'] }>;
   StixObjectOrStixRelationshipsFilter: StixObjectOrStixRelationshipsFilter;
@@ -15955,6 +16181,8 @@ export type ResolversTypes = {
   TaxiiCollectionEdge: ResolverTypeWrapper<TaxiiCollectionEdge>;
   TaxiiCollectionEditMutations: ResolverTypeWrapper<TaxiiCollectionEditMutations>;
   TaxiiCollectionOrdering: TaxiiCollectionOrdering;
+  Text: ResolverTypeWrapper<Text>;
+  TextAddInput: TextAddInput;
   ThreatActor: ResolverTypeWrapper<ThreatActor>;
   ThreatActorAddInput: ThreatActorAddInput;
   ThreatActorConnection: ResolverTypeWrapper<ThreatActorConnection>;
@@ -15979,6 +16207,8 @@ export type ResolversTypes = {
   UserAccount: ResolverTypeWrapper<UserAccount>;
   UserAccountAddInput: UserAccountAddInput;
   UserAddInput: UserAddInput;
+  UserAgent: ResolverTypeWrapper<UserAgent>;
+  UserAgentAddInput: UserAgentAddInput;
   UserConnection: ResolverTypeWrapper<UserConnection>;
   UserEdge: ResolverTypeWrapper<UserEdge>;
   UserEditMutations: ResolverTypeWrapper<UserEditMutations>;
@@ -16027,16 +16257,6 @@ export type ResolversTypes = {
   X509CertificateAddInput: X509CertificateAddInput;
   X509V3ExtensionsType: ResolverTypeWrapper<X509V3ExtensionsType>;
   X509V3ExtensionsTypeAddInput: X509V3ExtensionsTypeAddInput;
-  XOpenCTICryptocurrencyWallet: ResolverTypeWrapper<XOpenCtiCryptocurrencyWallet>;
-  XOpenCTICryptocurrencyWalletAddInput: XOpenCtiCryptocurrencyWalletAddInput;
-  XOpenCTICryptographicKey: ResolverTypeWrapper<XOpenCtiCryptographicKey>;
-  XOpenCTICryptographicKeyAddInput: XOpenCtiCryptographicKeyAddInput;
-  XOpenCTIHostname: ResolverTypeWrapper<XOpenCtiHostname>;
-  XOpenCTIHostnameAddInput: XOpenCtiHostnameAddInput;
-  XOpenCTIText: ResolverTypeWrapper<XOpenCtiText>;
-  XOpenCTITextAddInput: XOpenCtiTextAddInput;
-  XOpenCTIUserAgent: ResolverTypeWrapper<XOpenCtiUserAgent>;
-  XOpenCTIUserAgentAddInput: XOpenCtiUserAgentAddInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -16060,7 +16280,7 @@ export type ResolversParentTypes = {
   AttributeEditMutations: AttributeEditMutations;
   AutonomousSystem: AutonomousSystem;
   AutonomousSystemAddInput: AutonomousSystemAddInput;
-  BasicObject: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['Capability'] | ResolversParentTypes['City'] | ResolversParentTypes['Connector'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Group'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Role'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Settings'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['User'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'] | ResolversParentTypes['XOpenCTICryptocurrencyWallet'] | ResolversParentTypes['XOpenCTICryptographicKey'] | ResolversParentTypes['XOpenCTIHostname'] | ResolversParentTypes['XOpenCTIText'] | ResolversParentTypes['XOpenCTIUserAgent'];
+  BasicObject: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['Capability'] | ResolversParentTypes['City'] | ResolversParentTypes['Connector'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Group'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Role'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Settings'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['User'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'];
   BasicRelationship: ResolversParentTypes['InternalRelationship'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'];
   Boolean: Scalars['Boolean'];
   Campaign: Campaign;
@@ -16100,6 +16320,10 @@ export type ResolversParentTypes = {
   CourseOfActionEdge: CourseOfActionEdge;
   CourseOfActionEditMutations: CourseOfActionEditMutations;
   CoursesOfActionFiltering: CoursesOfActionFiltering;
+  CryptocurrencyWallet: CryptocurrencyWallet;
+  CryptocurrencyWalletAddInput: CryptocurrencyWalletAddInput;
+  CryptographicKey: CryptographicKey;
+  CryptographicKeyAddInput: CryptographicKeyAddInput;
   DateTime: Scalars['DateTime'];
   DependencyVersion: DependencyVersion;
   Directory: Directory;
@@ -16138,6 +16362,8 @@ export type ResolversParentTypes = {
   Hash: Hash;
   HashInput: HashInput;
   HashedObservable: ResolversParentTypes['Artifact'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['X509Certificate'];
+  Hostname: Hostname;
+  HostnameAddInput: HostnameAddInput;
   ID: Scalars['ID'];
   IPv4Addr: IPv4Addr;
   IPv4AddrAddInput: IPv4AddrAddInput;
@@ -16325,11 +16551,11 @@ export type ResolversParentTypes = {
   StatusTemplateConnection: StatusTemplateConnection;
   StatusTemplateEdge: StatusTemplateEdge;
   StatusesFiltering: StatusesFiltering;
-  StixCoreObject: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'] | ResolversParentTypes['XOpenCTICryptocurrencyWallet'] | ResolversParentTypes['XOpenCTICryptographicKey'] | ResolversParentTypes['XOpenCTIHostname'] | ResolversParentTypes['XOpenCTIText'] | ResolversParentTypes['XOpenCTIUserAgent'];
+  StixCoreObject: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'];
   StixCoreObjectConnection: StixCoreObjectConnection;
   StixCoreObjectEdge: StixCoreObjectEdge;
   StixCoreObjectEditMutations: StixCoreObjectEditMutations;
-  StixCoreObjectOrStixCoreRelationship: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'] | ResolversParentTypes['XOpenCTICryptocurrencyWallet'] | ResolversParentTypes['XOpenCTICryptographicKey'] | ResolversParentTypes['XOpenCTIHostname'] | ResolversParentTypes['XOpenCTIText'] | ResolversParentTypes['XOpenCTIUserAgent'];
+  StixCoreObjectOrStixCoreRelationship: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'];
   StixCoreObjectsFiltering: StixCoreObjectsFiltering;
   StixCoreRelationship: Omit<StixCoreRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']> };
   StixCoreRelationshipAddInput: StixCoreRelationshipAddInput;
@@ -16337,7 +16563,7 @@ export type ResolversParentTypes = {
   StixCoreRelationshipEdge: StixCoreRelationshipEdge;
   StixCoreRelationshipEditMutations: StixCoreRelationshipEditMutations;
   StixCoreRelationshipsFiltering: StixCoreRelationshipsFiltering;
-  StixCyberObservable: ResolversParentTypes['Artifact'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Process'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'] | ResolversParentTypes['XOpenCTICryptocurrencyWallet'] | ResolversParentTypes['XOpenCTICryptographicKey'] | ResolversParentTypes['XOpenCTIHostname'] | ResolversParentTypes['XOpenCTIText'] | ResolversParentTypes['XOpenCTIUserAgent'];
+  StixCyberObservable: ResolversParentTypes['Artifact'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Process'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['Text'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'];
   StixCyberObservableConnection: StixCyberObservableConnection;
   StixCyberObservableEdge: StixCyberObservableEdge;
   StixCyberObservableEditMutations: StixCyberObservableEditMutations;
@@ -16364,8 +16590,8 @@ export type ResolversParentTypes = {
   StixMetaRelationshipEdge: StixMetaRelationshipEdge;
   StixMetaRelationshipsAddInput: StixMetaRelationshipsAddInput;
   StixMetaRelationshipsFiltering: StixMetaRelationshipsFiltering;
-  StixObject: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'] | ResolversParentTypes['XOpenCTICryptocurrencyWallet'] | ResolversParentTypes['XOpenCTICryptographicKey'] | ResolversParentTypes['XOpenCTIHostname'] | ResolversParentTypes['XOpenCTIText'] | ResolversParentTypes['XOpenCTIUserAgent'];
-  StixObjectOrStixRelationship: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'] | ResolversParentTypes['System'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'] | ResolversParentTypes['XOpenCTICryptocurrencyWallet'] | ResolversParentTypes['XOpenCTICryptographicKey'] | ResolversParentTypes['XOpenCTIHostname'] | ResolversParentTypes['XOpenCTIText'] | ResolversParentTypes['XOpenCTIUserAgent'];
+  StixObject: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'];
+  StixObjectOrStixRelationship: ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'] | ResolversParentTypes['X509V3ExtensionsType'];
   StixObjectOrStixRelationshipConnection: StixObjectOrStixRelationshipConnection;
   StixObjectOrStixRelationshipEdge: Omit<StixObjectOrStixRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixObjectOrStixRelationship'] };
   StixObjectOrStixRelationshipsFiltering: StixObjectOrStixRelationshipsFiltering;
@@ -16415,6 +16641,8 @@ export type ResolversParentTypes = {
   TaxiiCollectionConnection: TaxiiCollectionConnection;
   TaxiiCollectionEdge: TaxiiCollectionEdge;
   TaxiiCollectionEditMutations: TaxiiCollectionEditMutations;
+  Text: Text;
+  TextAddInput: TextAddInput;
   ThreatActor: ThreatActor;
   ThreatActorAddInput: ThreatActorAddInput;
   ThreatActorConnection: ThreatActorConnection;
@@ -16435,6 +16663,8 @@ export type ResolversParentTypes = {
   UserAccount: UserAccount;
   UserAccountAddInput: UserAccountAddInput;
   UserAddInput: UserAddInput;
+  UserAgent: UserAgent;
+  UserAgentAddInput: UserAgentAddInput;
   UserConnection: UserConnection;
   UserEdge: UserEdge;
   UserEditMutations: UserEditMutations;
@@ -16474,16 +16704,6 @@ export type ResolversParentTypes = {
   X509CertificateAddInput: X509CertificateAddInput;
   X509V3ExtensionsType: X509V3ExtensionsType;
   X509V3ExtensionsTypeAddInput: X509V3ExtensionsTypeAddInput;
-  XOpenCTICryptocurrencyWallet: XOpenCtiCryptocurrencyWallet;
-  XOpenCTICryptocurrencyWalletAddInput: XOpenCtiCryptocurrencyWalletAddInput;
-  XOpenCTICryptographicKey: XOpenCtiCryptographicKey;
-  XOpenCTICryptographicKeyAddInput: XOpenCtiCryptographicKeyAddInput;
-  XOpenCTIHostname: XOpenCtiHostname;
-  XOpenCTIHostnameAddInput: XOpenCtiHostnameAddInput;
-  XOpenCTIText: XOpenCtiText;
-  XOpenCTITextAddInput: XOpenCtiTextAddInput;
-  XOpenCTIUserAgent: XOpenCtiUserAgent;
-  XOpenCTIUserAgentAddInput: XOpenCtiUserAgentAddInput;
 };
 
 export type AuthDirectiveArgs = {
@@ -16567,7 +16787,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ArtifactImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ArtifactIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ArtifactJobsArgs>>;
   mime_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -16703,7 +16923,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<AutonomousSystemExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AutonomousSystemImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<AutonomousSystemIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AutonomousSystemJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -16731,7 +16951,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
 };
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = {
-  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'Capability' | 'City' | 'Connector' | 'Country' | 'CourseOfAction' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'ExternalReference' | 'Group' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Role' | 'Sector' | 'Settings' | 'Software' | 'StixFile' | 'System' | 'ThreatActor' | 'Tool' | 'Url' | 'User' | 'UserAccount' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType' | 'XOpenCTICryptocurrencyWallet' | 'XOpenCTICryptographicKey' | 'XOpenCTIHostname' | 'XOpenCTIText' | 'XOpenCTIUserAgent', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'Capability' | 'City' | 'Connector' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'ExternalReference' | 'Group' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Role' | 'Sector' | 'Settings' | 'Software' | 'StixFile' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -16965,6 +17185,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<ContainerObjectsArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ContainerOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ContainerRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ContainerReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -17144,6 +17365,78 @@ export type CourseOfActionEditMutationsResolvers<ContextType = any, ParentType e
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends ResolversParentTypes['CryptocurrencyWallet'] = ResolversParentTypes['CryptocurrencyWallet']> = {
+  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CryptocurrencyWalletConnectorsArgs>>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletExportFilesArgs>>;
+  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletExternalReferencesArgs>>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletImportFilesArgs>>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletIndicatorsArgs>>;
+  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptocurrencyWalletJobsArgs>>;
+  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletNotesArgs>>;
+  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletOpinionsArgs>>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletPendingFilesArgs>>;
+  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletReportsArgs>>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletStixCoreRelationshipsArgs>>;
+  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletStixCyberObservableRelationshipsArgs>>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type CryptographicKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['CryptographicKey'] = ResolversParentTypes['CryptographicKey']> = {
+  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CryptographicKeyConnectorsArgs>>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyExportFilesArgs>>;
+  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CryptographicKeyExternalReferencesArgs>>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyImportFilesArgs>>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptographicKeyIndicatorsArgs>>;
+  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptographicKeyJobsArgs>>;
+  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptographicKeyNotesArgs>>;
+  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<CryptographicKeyOpinionsArgs>>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyPendingFilesArgs>>;
+  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CryptographicKeyReportsArgs>>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CryptographicKeyStixCoreRelationshipsArgs>>;
+  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<CryptographicKeyStixCyberObservableRelationshipsArgs>>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
   name: 'DateTime';
 }
@@ -17167,7 +17460,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<DirectoryExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DirectoryImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DirectoryIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DirectoryJobsArgs>>;
   mtime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -17217,7 +17510,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<DomainNameExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DomainNameImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DomainNameIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DomainNameJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DomainNameNotesArgs>>;
@@ -17268,7 +17561,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailAddrExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailAddrImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailAddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailAddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailAddrNotesArgs>>;
@@ -17307,7 +17600,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailMessageExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMessageImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMessageIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_multipart?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMessageJobsArgs>>;
@@ -17349,7 +17642,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMimePartTypeJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeNotesArgs>>;
@@ -17524,7 +17817,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HashedObservableImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HashedObservableIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HashedObservableJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HashedObservableNotesArgs>>;
@@ -17546,6 +17839,42 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
 };
 
+export type HostnameResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hostname'] = ResolversParentTypes['Hostname']> = {
+  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<HostnameConnectorsArgs>>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnameExportFilesArgs>>;
+  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<HostnameExternalReferencesArgs>>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnameImportFilesArgs>>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HostnameIndicatorsArgs>>;
+  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HostnameJobsArgs>>;
+  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HostnameNotesArgs>>;
+  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<HostnameOpinionsArgs>>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnamePendingFilesArgs>>;
+  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<HostnameReportsArgs>>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HostnameStixCoreRelationshipsArgs>>;
+  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<HostnameStixCyberObservableRelationshipsArgs>>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversParentTypes['IPv4Addr'] = ResolversParentTypes['IPv4Addr']> = {
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IPv4AddrConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -17557,7 +17886,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IPv4AddrExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv4AddrImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv4AddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv4AddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv4AddrNotesArgs>>;
@@ -17593,7 +17922,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IPv6AddrExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv6AddrImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv6AddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv6AddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv6AddrNotesArgs>>;
@@ -17779,7 +18108,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IndicatorNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  observables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType>;
+  observables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<IndicatorObservablesArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IndicatorOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pattern?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -18274,7 +18603,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MacAddrExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MacAddrImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MacAddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MacAddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MacAddrNotesArgs>>;
@@ -18565,7 +18894,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MutexExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MutexImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MutexIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MutexJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -18606,7 +18935,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<NetworkTrafficExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NetworkTrafficImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<NetworkTrafficIndicatorsArgs>>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NetworkTrafficJobsArgs>>;
@@ -18663,6 +18992,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<NoteOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NotePendingFilesArgs>>;
+  relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<NoteRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NoteReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -18741,6 +19071,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<ObservedDataOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataPendingFilesArgs>>;
+  relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ObservedDataRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ObservedDataReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -18805,6 +19136,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<OpinionOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionPendingFilesArgs>>;
+  relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<OpinionRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<OpinionReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -19017,7 +19349,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ProcessExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ProcessIndicatorsArgs>>;
   is_hidden?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ProcessJobsArgs>>;
@@ -19161,6 +19493,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   statusTemplate?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, RequireFields<QueryStatusTemplateArgs, 'id'>>;
   statusTemplates?: Resolver<Maybe<ResolversTypes['StatusTemplateConnection']>, ParentType, ContextType, Partial<QueryStatusTemplatesArgs>>;
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType, Partial<QueryStatusesArgs>>;
+  stix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixArgs, 'id'>>;
   stixCoreObject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectArgs, 'id'>>;
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;
@@ -19381,6 +19714,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ReportPendingFilesArgs>>;
   published?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ReportRelatedContainersArgs>>;
   report_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ReportReportsArgs>>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -19667,7 +20001,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SoftwareExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SoftwareImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<SoftwareIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SoftwareJobsArgs>>;
   languages?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -19738,7 +20072,7 @@ export type StatusTemplateEdgeResolvers<ContextType = any, ParentType extends Re
 };
 
 export type StixCoreObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObject'] = ResolversParentTypes['StixCoreObject']> = {
-  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'City' | 'Country' | 'CourseOfAction' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'MacAddr' | 'Malware' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixFile' | 'System' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType' | 'XOpenCTICryptocurrencyWallet' | 'XOpenCTICryptographicKey' | 'XOpenCTIHostname' | 'XOpenCTIText' | 'XOpenCTIUserAgent', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'City' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'MacAddr' | 'Malware' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixFile' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType', ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixCoreObjectConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -19792,7 +20126,7 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
 };
 
 export type StixCoreObjectOrStixCoreRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectOrStixCoreRelationship'] = ResolversParentTypes['StixCoreObjectOrStixCoreRelationship']> = {
-  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'City' | 'Country' | 'CourseOfAction' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'MacAddr' | 'Malware' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType' | 'XOpenCTICryptocurrencyWallet' | 'XOpenCTICryptographicKey' | 'XOpenCTIHostname' | 'XOpenCTIText' | 'XOpenCTIUserAgent', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'City' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'MacAddr' | 'Malware' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType', ParentType, ContextType>;
 };
 
 export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreRelationship'] = ResolversParentTypes['StixCoreRelationship']> = {
@@ -19859,7 +20193,7 @@ export type StixCoreRelationshipEditMutationsResolvers<ContextType = any, Parent
 };
 
 export type StixCyberObservableResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservable'] = ResolversParentTypes['StixCyberObservable']> = {
-  __resolveType: TypeResolveFn<'Artifact' | 'AutonomousSystem' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'IPv4Addr' | 'IPv6Addr' | 'MacAddr' | 'Mutex' | 'NetworkTraffic' | 'Process' | 'Software' | 'StixFile' | 'Url' | 'UserAccount' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType' | 'XOpenCTICryptocurrencyWallet' | 'XOpenCTICryptographicKey' | 'XOpenCTIHostname' | 'XOpenCTIText' | 'XOpenCTIUserAgent', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Artifact' | 'AutonomousSystem' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'MacAddr' | 'Mutex' | 'NetworkTraffic' | 'Process' | 'Software' | 'StixFile' | 'Text' | 'Url' | 'UserAccount' | 'UserAgent' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType', ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixCyberObservableConnectorsArgs>>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -19870,7 +20204,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixCyberObservableExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservableImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixCyberObservableIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixCyberObservableJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCyberObservableNotesArgs>>;
@@ -20045,7 +20379,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixFileImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixFileIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixFileJobsArgs>>;
   magic_number_hex?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -20122,7 +20456,7 @@ export type StixMetaRelationshipEdgeResolvers<ContextType = any, ParentType exte
 };
 
 export type StixObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObject'] = ResolversParentTypes['StixObject']> = {
-  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'City' | 'Country' | 'CourseOfAction' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'ExternalReference' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixFile' | 'System' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType' | 'XOpenCTICryptocurrencyWallet' | 'XOpenCTICryptographicKey' | 'XOpenCTIHostname' | 'XOpenCTIText' | 'XOpenCTIUserAgent', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'City' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'ExternalReference' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixFile' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType', ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -20136,7 +20470,7 @@ export type StixObjectResolvers<ContextType = any, ParentType extends ResolversP
 };
 
 export type StixObjectOrStixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationship'] = ResolversParentTypes['StixObjectOrStixRelationship']> = {
-  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'City' | 'Country' | 'CourseOfAction' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'ExternalReference' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixFile' | 'StixMetaRelationship' | 'StixSightingRelationship' | 'System' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType' | 'XOpenCTICryptocurrencyWallet' | 'XOpenCTICryptographicKey' | 'XOpenCTIHostname' | 'XOpenCTIText' | 'XOpenCTIUserAgent', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'Campaign' | 'City' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'ExternalReference' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'Mutex' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixFile' | 'StixMetaRelationship' | 'StixSightingRelationship' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate' | 'X509V3ExtensionsType', ParentType, ContextType>;
 };
 
 export type StixObjectOrStixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipConnection']> = {
@@ -20484,6 +20818,42 @@ export type TaxiiCollectionEditMutationsResolvers<ContextType = any, ParentType 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type TextResolvers<ContextType = any, ParentType extends ResolversParentTypes['Text'] = ResolversParentTypes['Text']> = {
+  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<TextConnectorsArgs>>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextExportFilesArgs>>;
+  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<TextExternalReferencesArgs>>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextImportFilesArgs>>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<TextIndicatorsArgs>>;
+  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TextJobsArgs>>;
+  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<TextNotesArgs>>;
+  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<TextOpinionsArgs>>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextPendingFilesArgs>>;
+  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<TextReportsArgs>>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<TextStixCoreRelationshipsArgs>>;
+  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<TextStixCyberObservableRelationshipsArgs>>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ThreatActorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActor'] = ResolversParentTypes['ThreatActor']> = {
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -20645,7 +21015,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UrlExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UrlImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UrlIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UrlJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UrlNotesArgs>>;
@@ -20719,7 +21089,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UserAccountExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAccountImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAccountIndicatorsArgs>>;
   is_disabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_privileged?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -20740,6 +21110,42 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UserAgentResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserAgent'] = ResolversParentTypes['UserAgent']> = {
+  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<UserAgentConnectorsArgs>>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentExportFilesArgs>>;
+  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UserAgentExternalReferencesArgs>>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentImportFilesArgs>>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAgentIndicatorsArgs>>;
+  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UserAgentJobsArgs>>;
+  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UserAgentNotesArgs>>;
+  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<UserAgentOpinionsArgs>>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentPendingFilesArgs>>;
+  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<UserAgentReportsArgs>>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UserAgentStixCoreRelationshipsArgs>>;
+  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<UserAgentStixCyberObservableRelationshipsArgs>>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -20888,7 +21294,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryKeyJobsArgs>>;
   modified_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -20927,7 +21333,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryValueTypeJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -21059,7 +21465,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509CertificateImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<X509CertificateIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_self_signed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   issuer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -21110,7 +21516,7 @@ export type X509V3ExtensionsTypeResolvers<ContextType = any, ParentType extends 
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<X509V3ExtensionsTypeExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509V3ExtensionsTypeImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<X509V3ExtensionsTypeIndicatorsArgs>>;
   inhibit_any_policy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   issuer_alternative_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -21138,186 +21544,6 @@ export type X509V3ExtensionsTypeResolvers<ContextType = any, ParentType extends 
   subject_key_identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type XOpenCtiCryptocurrencyWalletResolvers<ContextType = any, ParentType extends ResolversParentTypes['XOpenCTICryptocurrencyWallet'] = ResolversParentTypes['XOpenCTICryptocurrencyWallet']> = {
-  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletConnectorsArgs>>;
-  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletExportFilesArgs>>;
-  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletExternalReferencesArgs>>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
-  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletJobsArgs>>;
-  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletNotesArgs>>;
-  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
-  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletPendingFilesArgs>>;
-  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletReportsArgs>>;
-  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletStixCoreRelationshipsArgs>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptocurrencyWalletStixCyberObservableRelationshipsArgs>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type XOpenCtiCryptographicKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['XOpenCTICryptographicKey'] = ResolversParentTypes['XOpenCTICryptographicKey']> = {
-  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyConnectorsArgs>>;
-  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyExportFilesArgs>>;
-  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyExternalReferencesArgs>>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
-  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyJobsArgs>>;
-  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyNotesArgs>>;
-  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
-  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyPendingFilesArgs>>;
-  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyReportsArgs>>;
-  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyStixCoreRelationshipsArgs>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiCryptographicKeyStixCyberObservableRelationshipsArgs>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type XOpenCtiHostnameResolvers<ContextType = any, ParentType extends ResolversParentTypes['XOpenCTIHostname'] = ResolversParentTypes['XOpenCTIHostname']> = {
-  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<XOpenCtiHostnameConnectorsArgs>>;
-  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnameExportFilesArgs>>;
-  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnameExternalReferencesArgs>>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnameImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
-  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<XOpenCtiHostnameJobsArgs>>;
-  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnameNotesArgs>>;
-  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
-  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnameOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnamePendingFilesArgs>>;
-  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnameReportsArgs>>;
-  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnameStixCoreRelationshipsArgs>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiHostnameStixCyberObservableRelationshipsArgs>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type XOpenCtiTextResolvers<ContextType = any, ParentType extends ResolversParentTypes['XOpenCTIText'] = ResolversParentTypes['XOpenCTIText']> = {
-  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<XOpenCtiTextConnectorsArgs>>;
-  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiTextExportFilesArgs>>;
-  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<XOpenCtiTextExternalReferencesArgs>>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiTextImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
-  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<XOpenCtiTextJobsArgs>>;
-  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<XOpenCtiTextNotesArgs>>;
-  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
-  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<XOpenCtiTextOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiTextPendingFilesArgs>>;
-  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<XOpenCtiTextReportsArgs>>;
-  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiTextStixCoreRelationshipsArgs>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiTextStixCyberObservableRelationshipsArgs>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type XOpenCtiUserAgentResolvers<ContextType = any, ParentType extends ResolversParentTypes['XOpenCTIUserAgent'] = ResolversParentTypes['XOpenCTIUserAgent']> = {
-  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<XOpenCtiUserAgentConnectorsArgs>>;
-  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  editContext?: Resolver<Maybe<Array<Maybe<ResolversTypes['EditUserContext']>>>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentExportFilesArgs>>;
-  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentExternalReferencesArgs>>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
-  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<XOpenCtiUserAgentJobsArgs>>;
-  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentNotesArgs>>;
-  objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
-  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  observable_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentPendingFilesArgs>>;
-  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentReportsArgs>>;
-  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentStixCoreRelationshipsArgs>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<XOpenCtiUserAgentStixCyberObservableRelationshipsArgs>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -21371,6 +21597,8 @@ export type Resolvers<ContextType = any> = {
   CourseOfActionConnection?: CourseOfActionConnectionResolvers<ContextType>;
   CourseOfActionEdge?: CourseOfActionEdgeResolvers<ContextType>;
   CourseOfActionEditMutations?: CourseOfActionEditMutationsResolvers<ContextType>;
+  CryptocurrencyWallet?: CryptocurrencyWalletResolvers<ContextType>;
+  CryptographicKey?: CryptographicKeyResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   DependencyVersion?: DependencyVersionResolvers<ContextType>;
   Directory?: DirectoryResolvers<ContextType>;
@@ -21397,6 +21625,7 @@ export type Resolvers<ContextType = any> = {
   GroupEditMutations?: GroupEditMutationsResolvers<ContextType>;
   Hash?: HashResolvers<ContextType>;
   HashedObservable?: HashedObservableResolvers<ContextType>;
+  Hostname?: HostnameResolvers<ContextType>;
   IPv4Addr?: IPv4AddrResolvers<ContextType>;
   IPv6Addr?: IPv6AddrResolvers<ContextType>;
   Identity?: IdentityResolvers<ContextType>;
@@ -21593,6 +21822,7 @@ export type Resolvers<ContextType = any> = {
   TaxiiCollectionConnection?: TaxiiCollectionConnectionResolvers<ContextType>;
   TaxiiCollectionEdge?: TaxiiCollectionEdgeResolvers<ContextType>;
   TaxiiCollectionEditMutations?: TaxiiCollectionEditMutationsResolvers<ContextType>;
+  Text?: TextResolvers<ContextType>;
   ThreatActor?: ThreatActorResolvers<ContextType>;
   ThreatActorConnection?: ThreatActorConnectionResolvers<ContextType>;
   ThreatActorEdge?: ThreatActorEdgeResolvers<ContextType>;
@@ -21606,6 +21836,7 @@ export type Resolvers<ContextType = any> = {
   Url?: UrlResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
   UserAccount?: UserAccountResolvers<ContextType>;
+  UserAgent?: UserAgentResolvers<ContextType>;
   UserConnection?: UserConnectionResolvers<ContextType>;
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserEditMutations?: UserEditMutationsResolvers<ContextType>;
@@ -21632,11 +21863,6 @@ export type Resolvers<ContextType = any> = {
   WorkspaceEditMutations?: WorkspaceEditMutationsResolvers<ContextType>;
   X509Certificate?: X509CertificateResolvers<ContextType>;
   X509V3ExtensionsType?: X509V3ExtensionsTypeResolvers<ContextType>;
-  XOpenCTICryptocurrencyWallet?: XOpenCtiCryptocurrencyWalletResolvers<ContextType>;
-  XOpenCTICryptographicKey?: XOpenCtiCryptographicKeyResolvers<ContextType>;
-  XOpenCTIHostname?: XOpenCtiHostnameResolvers<ContextType>;
-  XOpenCTIText?: XOpenCtiTextResolvers<ContextType>;
-  XOpenCTIUserAgent?: XOpenCtiUserAgentResolvers<ContextType>;
 };
 
 export type DirectiveResolvers<ContextType = any> = {

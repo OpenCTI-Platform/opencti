@@ -28,7 +28,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObject';
-import { stixCoreObjectIdImportPush } from '../domain/stixCoreObject';
+import { stixCoreObjectImportPush } from '../domain/stixCoreObject';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -59,7 +59,7 @@ const stixDomainObjectResolvers = {
     },
     importFiles: (entity, { first }, { user }) => filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
     exportFiles: (entity, { first }, { user }) => filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
-    status: (entity, _, { user }) => (entity.status_id ? findStatusById(user, entity.status_id) : null),
+    status: (entity, _, { user }) => (entity.x_opencti_workflow_id ? findStatusById(user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (entity, _, { user }) => {
       const statusesEdges = await getTypeStatuses(user, entity.entity_type);
       return statusesEdges.edges.length > 0;
@@ -74,7 +74,7 @@ const stixDomainObjectResolvers = {
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
       relationsAdd: ({ input }) => stixDomainObjectAddRelations(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
-      importPush: ({ file }) => stixCoreObjectIdImportPush(user, id, file),
+      importPush: ({ file }) => stixCoreObjectImportPush(user, id, file),
       exportAsk: (args) => stixDomainObjectExportAsk(user, R.assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, id, file),
     }),

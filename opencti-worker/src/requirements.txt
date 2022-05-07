@@ -1,1 +1,1 @@
-pycti==5.2.4
+git+https://github.com/opencti-platform/client-python@stix_refactor#pycti

@@ -39,7 +39,8 @@
     "arrow-body-style": "off",
     "object-curly-newline": "off",
     "@typescript-eslint/naming-convention": "off",
-    "@typescript-eslint/comma-dangle": "off"
+    "@typescript-eslint/comma-dangle": "off",
+    "@typescript-eslint/no-explicit-any": "off"
   },
   "overrides": [
     {

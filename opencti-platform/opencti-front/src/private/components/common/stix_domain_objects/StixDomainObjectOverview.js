@@ -118,22 +118,6 @@ class StixDomainObjectOverview extends Component {
                   <InformationOutline fontSize="small" color="primary" />
                 </Tooltip>
               </div>
-              <div className="clearfix" />
-              <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
-            </Grid>
-            <Grid item={true} xs={12}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Other STIX IDs')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip title={t('Other known STIX IDs for this entity.')}>
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
-              </div>
               <div style={{ float: 'right', margin: '-5px 0 0 8px' }}>
                 <IconButton
                   aria-label="Close"
@@ -149,11 +133,7 @@ class StixDomainObjectOverview extends Component {
                 </IconButton>
               </div>
               <div className="clearfix" />
-              <pre style={{ margin: 0 }}>
-                {stixIds.length > 0
-                  ? stixIds.slice(0, 2).map((stixId) => `${stixId}\n`)
-                  : '-'}
-              </pre>
+              <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
             </Grid>
             <Grid item={true} xs={6}>
               {withPattern && (
@@ -202,13 +182,13 @@ class StixDomainObjectOverview extends Component {
               <StixCoreObjectOpinions
                 stixCoreObjectId={stixDomainObject.id}
                 variant="inEntity"
-                height={160}
+                height={260}
                 marginTop={20}
               />
               <Typography
                 variant="h3"
                 gutterBottom={true}
-                style={{ marginTop: 20 }}
+                style={{ marginTop: -40 }}
               >
                 {t('Creation date')}
               </Typography>
@@ -224,6 +204,17 @@ class StixDomainObjectOverview extends Component {
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
+                {t('Processing status')}
+              </Typography>
+              <ItemStatus
+                status={stixDomainObject.status}
+                disabled={!stixDomainObject.workflowEnabled}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Revoked')}
               </Typography>
               <ItemBoolean
@@ -260,17 +251,6 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Processing status')}
-              </Typography>
-              <ItemStatus
-                status={stixDomainObject.status}
-                disabled={!stixDomainObject.workflowEnabled}
-              />
             </Grid>
           </Grid>
         </Paper>
