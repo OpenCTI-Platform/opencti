@@ -56,8 +56,7 @@ export const authDirectiveBuilder = (directiveName) => {
               const isAccessForbidden = numberOfAvailableCapabilities === 0
                   || (requiredAll && numberOfAvailableCapabilities !== requiredCapabilities.length);
               if (isAccessForbidden) {
-                const [, , , infoPath] = args;
-                const executionPath = responsePathAsArray(infoPath.path);
+                const executionPath = responsePathAsArray(info.path);
                 logAudit.error(user, ACCESS_CONTROL, { path: executionPath });
                 throw ForbiddenAccess();
               }

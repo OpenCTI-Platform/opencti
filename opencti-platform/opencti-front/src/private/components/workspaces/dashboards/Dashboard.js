@@ -515,13 +515,13 @@ class DashboardComponent extends Component {
                 <Grid container={true} spacing={1}>
                   <Grid item={true} xs="auto">
                     <FormControl style={{ width: 194, marginRight: 20 }}>
-                      <InputLabel id="timeField">
+                      <InputLabel id="timeField" variant="standard">
                         {t('Date reference')}
                       </InputLabel>
                       <Select
                         variant="standard"
                         labelId="timeField"
-                        value={relativeDate === null ? '' : relativeDate}
+                        value={timeField === null ? '' : timeField}
                         onChange={this.handleTimeFieldChange.bind(this)}
                         disabled={true}
                       >
@@ -536,7 +536,7 @@ class DashboardComponent extends Component {
                   </Grid>
                   <Grid item={true} xs="auto">
                     <FormControl style={{ width: 194, marginRight: 20 }}>
-                      <InputLabel id="relative">
+                      <InputLabel id="relative" variant="standard">
                         {t('Relative time')}
                       </InputLabel>
                       <Select

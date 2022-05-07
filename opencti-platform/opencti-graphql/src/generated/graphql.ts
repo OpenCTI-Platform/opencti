@@ -135,6 +135,11 @@ export type ArtifactImportFilesArgs = {
 };
 
 
+export type ArtifactIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type ArtifactJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -530,6 +535,11 @@ export type AutonomousSystemExternalReferencesArgs = {
 
 
 export type AutonomousSystemImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type AutonomousSystemIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -1824,6 +1834,11 @@ export type CryptocurrencyWalletImportFilesArgs = {
 };
 
 
+export type CryptocurrencyWalletIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type CryptocurrencyWalletJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -1955,6 +1970,11 @@ export type CryptographicKeyExternalReferencesArgs = {
 
 
 export type CryptographicKeyImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type CryptographicKeyIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2101,6 +2121,11 @@ export type DirectoryExternalReferencesArgs = {
 
 
 export type DirectoryImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type DirectoryIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2252,6 +2277,11 @@ export type DomainNameExternalReferencesArgs = {
 
 
 export type DomainNameImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type DomainNameIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2422,6 +2452,11 @@ export type EmailAddrImportFilesArgs = {
 };
 
 
+export type EmailAddrIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type EmailAddrJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -2560,6 +2595,11 @@ export type EmailMessageExternalReferencesArgs = {
 
 
 export type EmailMessageImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailMessageIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -2703,6 +2743,11 @@ export type EmailMimePartTypeExternalReferencesArgs = {
 
 
 export type EmailMimePartTypeImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type EmailMimePartTypeIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3127,6 +3172,11 @@ export type HashedObservableImportFilesArgs = {
 };
 
 
+export type HashedObservableIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type HashedObservableJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -3254,6 +3304,11 @@ export type HostnameExternalReferencesArgs = {
 
 
 export type HostnameImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type HostnameIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -3393,6 +3448,11 @@ export type IPv4AddrImportFilesArgs = {
 };
 
 
+export type IPv4AddrIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type IPv4AddrJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -3526,6 +3586,11 @@ export type IPv6AddrExternalReferencesArgs = {
 
 
 export type IPv6AddrImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IPv6AddrIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -4124,6 +4189,11 @@ export type IndicatorJobsArgs = {
 
 
 export type IndicatorNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type IndicatorObservablesArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -5513,6 +5583,11 @@ export type MacAddrImportFilesArgs = {
 };
 
 
+export type MacAddrIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type MacAddrJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -6808,6 +6883,11 @@ export type MutexImportFilesArgs = {
 };
 
 
+export type MutexIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type MutexJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -6949,6 +7029,11 @@ export type NetworkTrafficExternalReferencesArgs = {
 
 
 export type NetworkTrafficImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type NetworkTrafficIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -8295,6 +8380,11 @@ export type ProcessExternalReferencesArgs = {
 
 
 export type ProcessImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type ProcessIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -11002,6 +11092,11 @@ export type SoftwareImportFilesArgs = {
 };
 
 
+export type SoftwareIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type SoftwareJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -11620,6 +11715,11 @@ export type StixCyberObservableImportFilesArgs = {
 };
 
 
+export type StixCyberObservableIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type StixCyberObservableJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -11853,6 +11953,7 @@ export enum StixCyberObservableRelationshipsOrdering {
   CreatedAt = 'created_at',
   EntityType = 'entity_type',
   Modified = 'modified',
+  RelationshipType = 'relationship_type',
   StartTime = 'start_time',
   StopTime = 'stop_time',
   ToCreatedAt = 'toCreatedAt',
@@ -12225,6 +12326,11 @@ export type StixFileExternalReferencesArgs = {
 
 
 export type StixFileImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixFileIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -13336,6 +13442,11 @@ export type TextImportFilesArgs = {
 };
 
 
+export type TextIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type TextJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -13910,6 +14021,11 @@ export type UrlImportFilesArgs = {
 };
 
 
+export type UrlIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type UrlJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -14091,6 +14207,11 @@ export type UserAccountImportFilesArgs = {
 };
 
 
+export type UserAccountIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type UserAccountJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -14247,6 +14368,11 @@ export type UserAgentExternalReferencesArgs = {
 
 
 export type UserAgentImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type UserAgentIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -14734,6 +14860,11 @@ export type WindowsRegistryKeyImportFilesArgs = {
 };
 
 
+export type WindowsRegistryKeyIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type WindowsRegistryKeyJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -14869,6 +15000,11 @@ export type WindowsRegistryValueTypeExternalReferencesArgs = {
 
 
 export type WindowsRegistryValueTypeImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type WindowsRegistryValueTypeIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -15233,6 +15369,11 @@ export type X509CertificateImportFilesArgs = {
 };
 
 
+export type X509CertificateIndicatorsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type X509CertificateJobsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
@@ -15390,6 +15531,11 @@ export type X509V3ExtensionsTypeExternalReferencesArgs = {
 
 
 export type X509V3ExtensionsTypeImportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type X509V3ExtensionsTypeIndicatorsArgs = {
   first?: InputMaybe<Scalars['Int']>;
 };
 
@@ -16641,7 +16787,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ArtifactImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ArtifactIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ArtifactJobsArgs>>;
   mime_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -16777,7 +16923,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<AutonomousSystemExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<AutonomousSystemImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<AutonomousSystemIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AutonomousSystemJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -17230,7 +17376,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptocurrencyWalletJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletNotesArgs>>;
@@ -17266,7 +17412,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<CryptographicKeyExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CryptographicKeyImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptographicKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptographicKeyJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptographicKeyNotesArgs>>;
@@ -17314,7 +17460,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<DirectoryExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DirectoryImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DirectoryIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DirectoryJobsArgs>>;
   mtime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -17364,7 +17510,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<DomainNameExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<DomainNameImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DomainNameIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DomainNameJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DomainNameNotesArgs>>;
@@ -17415,7 +17561,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailAddrExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailAddrImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailAddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailAddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailAddrNotesArgs>>;
@@ -17454,7 +17600,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailMessageExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMessageImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMessageIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_multipart?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMessageJobsArgs>>;
@@ -17496,7 +17642,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMimePartTypeJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeNotesArgs>>;
@@ -17671,7 +17817,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HashedObservableImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HashedObservableIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HashedObservableJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HashedObservableNotesArgs>>;
@@ -17704,7 +17850,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<HostnameExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HostnameImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HostnameIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HostnameJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HostnameNotesArgs>>;
@@ -17740,7 +17886,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IPv4AddrExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv4AddrImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv4AddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv4AddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv4AddrNotesArgs>>;
@@ -17776,7 +17922,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<IPv6AddrExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<IPv6AddrImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv6AddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv6AddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv6AddrNotesArgs>>;
@@ -17962,7 +18108,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IndicatorNotesArgs>>;
   objectLabel?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  observables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType>;
+  observables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<IndicatorObservablesArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<IndicatorOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pattern?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -18457,7 +18603,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MacAddrExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MacAddrImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MacAddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MacAddrJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MacAddrNotesArgs>>;
@@ -18748,7 +18894,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<MutexExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<MutexImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MutexIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MutexJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -18789,7 +18935,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<NetworkTrafficExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NetworkTrafficImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<NetworkTrafficIndicatorsArgs>>;
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NetworkTrafficJobsArgs>>;
@@ -19203,7 +19349,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<ProcessExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ProcessImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ProcessIndicatorsArgs>>;
   is_hidden?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ProcessJobsArgs>>;
@@ -19855,7 +20001,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SoftwareExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SoftwareImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<SoftwareIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SoftwareJobsArgs>>;
   languages?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -20058,7 +20204,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixCyberObservableExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCyberObservableImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixCyberObservableIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixCyberObservableJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCyberObservableNotesArgs>>;
@@ -20233,7 +20379,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixFileImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixFileIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixFileJobsArgs>>;
   magic_number_hex?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -20683,7 +20829,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<TextExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TextImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<TextIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TextJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<TextNotesArgs>>;
@@ -20869,7 +21015,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UrlExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UrlImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UrlIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UrlJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UrlNotesArgs>>;
@@ -20943,7 +21089,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UserAccountExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAccountImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAccountIndicatorsArgs>>;
   is_disabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_privileged?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -20982,7 +21128,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<UserAgentExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<UserAgentImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAgentIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UserAgentJobsArgs>>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UserAgentNotesArgs>>;
@@ -21148,7 +21294,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryKeyJobsArgs>>;
   modified_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -21187,7 +21333,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryValueTypeJobsArgs>>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -21319,7 +21465,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   hashes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Hash']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509CertificateImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<X509CertificateIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   is_self_signed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   issuer?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -21370,7 +21516,7 @@ export type X509V3ExtensionsTypeResolvers<ContextType = any, ParentType extends 
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<X509V3ExtensionsTypeExternalReferencesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<X509V3ExtensionsTypeImportFilesArgs>>;
-  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType>;
+  indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<X509V3ExtensionsTypeIndicatorsArgs>>;
   inhibit_any_policy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   issuer_alternative_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

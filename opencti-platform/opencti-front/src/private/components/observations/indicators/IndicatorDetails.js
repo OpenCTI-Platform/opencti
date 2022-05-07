@@ -137,7 +137,6 @@ class IndicatorDetailsComponent extends Component {
                   })}
                 </List>
               )}
-
               <Typography
                 variant="h3"
                 gutterBottom={true}

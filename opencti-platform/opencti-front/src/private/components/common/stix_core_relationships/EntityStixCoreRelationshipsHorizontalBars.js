@@ -173,8 +173,13 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
             const data = props.stixCoreRelationshipsDistribution.map((n) => ({
-              // eslint-disable-next-line no-nested-ternary
-              x: field === 'internal_id' ? n.entity.name : field === 'entity_type' ? t(`entity_${n.label}`) : n.label,
+              x:
+                // eslint-disable-next-line no-nested-ternary
+                field === 'internal_id'
+                  ? n.entity.name
+                  : field === 'entity_type'
+                    ? t(`entity_${n.label}`)
+                    : n.label,
               y: n.value,
               fillColor:
                 field === 'internal_id'
@@ -242,7 +247,13 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
           variant={variant === 'inEntity' ? 'h3' : 'h4'}
           gutterBottom={true}
           style={{
-            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+            margin:
+              // eslint-disable-next-line no-nested-ternary
+              variant === 'inEntity'
+                ? 0
+                : variant !== 'inLine'
+                  ? '0 0 10px 0'
+                  : '-10px 0 10px -7px',
           }}
         >
           {title || t('StixDomainObjects distribution')}

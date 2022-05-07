@@ -12,9 +12,14 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
-import { DescriptionOutlined } from '@mui/icons-material';
+import {
+  DescriptionOutlined,
+  ExpandLessOutlined,
+  ExpandMoreOutlined,
+} from '@mui/icons-material';
+import * as R from 'ramda';
+import Button from '@mui/material/Button';
 import inject18n from '../../../../components/i18n';
-import ItemStatus from '../../../../components/ItemStatus';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import ItemMarking from '../../../../components/ItemMarking';
@@ -26,6 +31,7 @@ const styles = (theme) => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+    position: 'relative',
   },
   chip: {
     fontSize: 12,
@@ -56,6 +62,26 @@ const styles = (theme) => ({
     marginRight: 0,
     color: theme.palette.grey[700],
   },
+  buttonExpand: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+    width: '100%',
+    height: 25,
+    color: theme.palette.primary.main,
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, .1)'
+        : 'rgba(0, 0, 0, .1)',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    '&:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, .2)'
+          : 'rgba(0, 0, 0, .2)',
+    },
+  },
 });
 
 const inlineStyles = {
@@ -81,8 +107,21 @@ const inlineStyles = {
 };
 
 class ReportDetailsComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      expanded: false,
+    };
+  }
+
+  handleToggleExpand() {
+    this.setState({ expanded: !this.state.expanded });
+  }
+
   render() {
-    const { t, fsd, classes, report } = this.props;
+    const { t, fldt, fsd, classes, report } = this.props;
+    const { expanded } = this.state;
+    const expandable = report.relatedContainers.edges.length > 5;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -114,12 +153,9 @@ class ReportDetailsComponent extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Processing status')}
+                {t('Publication date')}
               </Typography>
-              <ItemStatus
-                status={report.status}
-                disabled={!report.workflowEnabled}
-              />
+              {fldt(report.published)}
             </Grid>
             <Grid item={true} xs={6}>
               <EntityStixCoreRelationshipsHorizontalBars
@@ -137,7 +173,7 @@ class ReportDetailsComponent extends Component {
             {t('Related reports')}
           </Typography>
           <List>
-            {report.relatedContainers.edges
+            {R.take(expanded ? 200 : 5, report.relatedContainers.edges)
               .filter(
                 (relatedContainerEdge) => relatedContainerEdge.node.id !== report.id,
               )
@@ -185,6 +221,20 @@ class ReportDetailsComponent extends Component {
                 );
               })}
           </List>
+          {expandable && (
+            <Button
+              variant="contained"
+              size="small"
+              onClick={this.handleToggleExpand.bind(this)}
+              classes={{ root: classes.buttonExpand }}
+            >
+              {expanded ? (
+                <ExpandLessOutlined fontSize="small" />
+              ) : (
+                <ExpandMoreOutlined fontSize="small" />
+              )}
+            </Button>
+          )}
         </Paper>
       </div>
     );
@@ -202,6 +252,7 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
   report: graphql`
     fragment ReportDetails_report on Report {
       id
+      published
       report_types
       description
       relatedContainers(
@@ -236,15 +287,6 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
           }
         }
       }
-      status {
-        id
-        order
-        template {
-          name
-          color
-        }
-      }
-      workflowEnabled
     }
   `,
 });

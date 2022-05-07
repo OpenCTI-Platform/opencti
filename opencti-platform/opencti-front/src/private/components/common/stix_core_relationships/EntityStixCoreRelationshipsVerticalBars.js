@@ -2,23 +2,17 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import {
-  BarChart,
-  ResponsiveContainer,
-  CartesianGrid,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from 'recharts';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import Chart from 'react-apexcharts';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import { verticalBarsChartOptions } from '../../../../utils/Charts';
+import { simpleNumberFormat } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
@@ -82,11 +76,11 @@ class EntityStixCoreRelationshipsVerticalBars extends Component {
       entityId,
       toTypes,
       relationshipType,
-      md,
       field,
       startDate,
       endDate,
       theme,
+      fsd,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
@@ -109,50 +103,31 @@ class EntityStixCoreRelationshipsVerticalBars extends Component {
         variables={stixCoreRelationshipsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.stixCoreRelationshipsTimeSeries) {
+            const chartData = props.stixCoreRelationshipsTimeSeries.map(
+              (entry) => ({
+                x: new Date(entry.date),
+                y: entry.value,
+              }),
+            );
             return (
-              <ResponsiveContainer height="100%" width="100%">
-                <BarChart
-                  data={props.stixCoreRelationshipsTimeSeries}
-                  margin={{
-                    top: 20,
-                    right: 50,
-                    bottom: 20,
-                    left: -10,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="2 2"
-                    stroke={theme.palette.background.default}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke={theme.palette.text.primary}
-                    interval={interval}
-                    angle={-45}
-                    textAnchor="end"
-                    tickFormatter={md}
-                  />
-                  <YAxis stroke={theme.palette.text.primary} />
-                  <Tooltip
-                    cursor={{
-                      fill: 'rgba(0, 0, 0, 0.2)',
-                      stroke: 'rgba(0, 0, 0, 0.2)',
-                      strokeWidth: 2,
-                    }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                      fontSize: 12,
-                      borderRadius: 10,
-                    }}
-                    labelFormatter={md}
-                  />
-                  <Bar
-                    fill={theme.palette.primary.main}
-                    dataKey="value"
-                    barSize={5}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={verticalBarsChartOptions(
+                  theme,
+                  fsd,
+                  simpleNumberFormat,
+                  false,
+                  true,
+                )}
+                series={[
+                  {
+                    name: t('Number of relationships'),
+                    data: chartData,
+                  },
+                ]}
+                type="bar"
+                width="100%"
+                height="100%"
+              />
             );
           }
           if (props) {

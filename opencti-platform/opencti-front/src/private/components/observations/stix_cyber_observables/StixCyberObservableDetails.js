@@ -8,10 +8,12 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { GetAppOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { ignoredAttributes } from './StixCyberObservableCreation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
+import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 
 const styles = () => ({
   paper: {
@@ -103,6 +105,10 @@ class StixCyberObservableDetailsComponent extends Component {
               );
             })}
           </Grid>
+          <Divider />
+          <StixCyberObservableIndicators
+            stixCyberObservable={stixCyberObservable}
+          />
         </Paper>
       </div>
     );
@@ -316,6 +322,7 @@ const StixCyberObservableDetails = createFragmentContainer(
         ... on UserAgent {
           value
         }
+        ...StixCyberObservableIndicators_stixCyberObservable
       }
     `,
   },

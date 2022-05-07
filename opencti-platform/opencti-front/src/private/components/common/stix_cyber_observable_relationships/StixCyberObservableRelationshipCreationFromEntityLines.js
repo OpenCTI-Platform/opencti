@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createPaginationContainer } from 'react-relay';
-import { map, keys, groupBy, assoc, compose } from 'ramda';
+import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -15,6 +15,7 @@ import { ExpandMore } from '@mui/icons-material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import { defaultValue } from '../../../../utils/Graph';
 
 const styles = (theme) => ({
   container: {
@@ -51,7 +52,7 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
 
   handleChangePanel(panelKey, event, expanded) {
     this.setState({
-      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
+      expandedPanels: R.assoc(panelKey, expanded, this.state.expandedPanels),
     });
   }
 
@@ -67,25 +68,23 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
 
   render() {
     const { t, classes, data, handleSelect } = this.props;
-    const stixCyberObservablesNodes = map(
+    const stixCyberObservablesNodes = R.map(
       (n) => n.node,
-      data.stixCyberObservables.edges,
+      data.stixCoreObjects.edges,
     );
-    const byType = groupBy(
-      (stixCyberObservable) => stixCyberObservable.entity_type,
-    );
-    const stixCyberObservables = byType(stixCyberObservablesNodes);
-    const stixCyberObservablesTypes = keys(stixCyberObservables);
+    const byType = R.groupBy((stixCoreObject) => stixCoreObject.entity_type);
+    const stixCoreObjects = byType(stixCyberObservablesNodes);
+    const stixCoreObjectsTypes = R.keys(stixCoreObjects);
     return (
       <div className={classes.container}>
-        {stixCyberObservablesTypes.length > 0 ? (
-          stixCyberObservablesTypes.map((type) => (
+        {stixCoreObjectsTypes.length > 0 ? (
+          stixCoreObjectsTypes.map((type) => (
             <Accordion
               key={type}
               expanded={this.isExpanded(
                 type,
-                stixCyberObservables[type].length,
-                stixCyberObservablesTypes.length,
+                stixCoreObjects[type].length,
+                stixCoreObjectsTypes.length,
               )}
               onChange={this.handleChangePanel.bind(this, type)}
               elevation={3}
@@ -95,29 +94,26 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
                   {t(`entity_${type}`)}
                 </Typography>
                 <Typography className={classes.secondaryHeading}>
-                  {stixCyberObservables[type].length} {t('entitie(s)')}
+                  {stixCoreObjects[type].length} {t('entitie(s)')}
                 </Typography>
               </AccordionSummary>
               <AccordionDetails
                 classes={{ root: classes.expansionPanelContent }}
               >
                 <List classes={{ root: classes.list }}>
-                  {stixCyberObservables[type].map((stixCyberObservable) => (
+                  {stixCoreObjects[type].map((stixCoreObject) => (
                     <ListItem
-                      key={stixCyberObservable.id}
+                      key={stixCoreObject.id}
                       classes={{ root: classes.menuItem }}
                       divider={true}
                       button={true}
-                      onClick={handleSelect.bind(this, stixCyberObservable)}
+                      onClick={handleSelect.bind(this, stixCoreObject)}
                     >
                       <ListItemIcon>
                         <ItemIcon type={type} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={truncate(
-                          stixCyberObservable.observable_value,
-                          100,
-                        )}
+                        primary={truncate(defaultValue(stixCoreObject), 100)}
                       />
                     </ListItem>
                   ))}
@@ -151,7 +147,7 @@ export const stixCyberObservableRelationshipCreationFromEntityLinesQuery = graph
     $types: [String]
     $count: Int!
     $cursor: ID
-    $orderBy: StixCyberObservablesOrdering
+    $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {
     ...StixCyberObservableRelationshipCreationFromEntityLines_data
@@ -176,25 +172,105 @@ const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationC
           types: { type: "[String]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: created_at
-          }
+          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
           orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
-          stixCyberObservables(
+          stixCoreObjects(
             search: $search
             types: $types
             first: $count
             after: $cursor
             orderBy: $orderBy
             orderMode: $orderMode
-          ) @connection(key: "Pagination_stixCyberObservables") {
+          ) @connection(key: "Pagination_stixCoreObjects") {
             edges {
               node {
-                id
-                entity_type
-                observable_value
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixObject {
+                  created_at
+                  updated_at
+                }
+                ... on AttackPattern {
+                  name
+                  description
+                }
+                ... on Campaign {
+                  name
+                  description
+                }
+                ... on CourseOfAction {
+                  name
+                  description
+                }
+                ... on Individual {
+                  name
+                  description
+                }
+                ... on Organization {
+                  name
+                  description
+                }
+                ... on Sector {
+                  name
+                  description
+                }
+                ... on System {
+                  name
+                  description
+                }
+                ... on Indicator {
+                  name
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                  description
+                }
+                ... on Position {
+                  name
+                  description
+                }
+                ... on City {
+                  name
+                  description
+                }
+                ... on Country {
+                  name
+                  description
+                }
+                ... on Region {
+                  name
+                  description
+                }
+                ... on Malware {
+                  name
+                  description
+                }
+                ... on ThreatActor {
+                  name
+                  description
+                }
+                ... on Tool {
+                  name
+                  description
+                }
+                ... on Vulnerability {
+                  name
+                  description
+                }
+                ... on Incident {
+                  name
+                  description
+                }
+                ... on StixCyberObservable {
+                  observable_value
+                }
               }
             }
           }
@@ -226,7 +302,7 @@ const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationC
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCyberObservableRelationshipCreationFromEntityLines);

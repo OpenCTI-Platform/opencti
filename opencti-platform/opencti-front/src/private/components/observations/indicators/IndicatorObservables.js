@@ -169,7 +169,7 @@ const IndicatorObservables = createFragmentContainer(
     indicator: graphql`
       fragment IndicatorObservables_indicator on Indicator {
         id
-        observables {
+        observables(first: 200) @connection(key: "Pagination_observables") {
           edges {
             node {
               id

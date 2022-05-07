@@ -12,6 +12,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { ExpandMore, CheckCircle } from '@mui/icons-material';
+import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
@@ -89,6 +90,13 @@ class IndicatorAddObservablesLinesContainer extends Component {
           fromId: indicatorId,
           toId: stixCyberObservable.id,
           relationship_type: 'based-on',
+        },
+        updater: (store) => {
+          const conn = ConnectionHandler.getConnection(
+            store.get(indicatorId),
+            'Pagination_observables',
+          );
+          ConnectionHandler.deleteNode(conn, stixCyberObservable.id);
         },
       });
     } else {

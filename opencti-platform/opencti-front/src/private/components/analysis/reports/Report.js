@@ -108,6 +108,15 @@ const Report = createFragmentContainer(ReportComponent, {
           }
         }
       }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...ReportDetails_report
       ...ContainerHeader_container
     }

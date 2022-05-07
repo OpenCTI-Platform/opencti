@@ -70,7 +70,7 @@ class IndicatorsAreaChart extends Component {
         variables={indicatorsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.indicatorsTimeSeries) {
-            const chartData = props.stixCoreRelationshipsTimeSeries.map(
+            const chartData = props.indicatorsTimeSeries.map(
               (entry) => ({
                 x: new Date(entry.date),
                 y: entry.value,

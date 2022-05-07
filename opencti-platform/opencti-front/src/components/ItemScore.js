@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
 import Chip from '@mui/material/Chip';
 import inject18n from './i18n';
 
@@ -26,8 +27,12 @@ const styles = () => ({
 
 const inlineStyles = {
   white: {
-    backgroundColor: '#ffffff',
-    color: '#2b2b2b',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    color: '#ffffff',
+  },
+  whiteLight: {
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    color: '#000000',
   },
   green: {
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
@@ -49,8 +54,21 @@ const inlineStyles = {
 
 class ItemScore extends Component {
   render() {
-    const { score, classes, variant } = this.props;
+    const { score, classes, variant, t, theme } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
+    if (!score) {
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={
+            theme.palette.mode === 'dark'
+              ? inlineStyles.white
+              : inlineStyles.whiteLight
+          }
+          label={t('Unknown')}
+        />
+      );
+    }
     if (score <= 20) {
       return (
         <Chip
@@ -103,4 +121,4 @@ ItemScore.propTypes = {
   score: PropTypes.number,
 };
 
-export default compose(inject18n, withStyles(styles))(ItemScore);
+export default compose(withTheme, inject18n, withStyles(styles))(ItemScore);
