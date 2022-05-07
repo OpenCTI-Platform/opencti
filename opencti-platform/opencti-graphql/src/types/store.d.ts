@@ -14,7 +14,7 @@ import {
   INPUT_ENCAPSULATED_BY,
   INPUT_ENCAPSULATES,
   INPUT_FROM,
-  INPUT_IMAGE,
+  INPUT_IMAGE, INPUT_LINKED,
   INPUT_OPENED_CONNECTION,
   INPUT_PARENT,
   INPUT_PARENT_DIRECTORY,
@@ -24,7 +24,7 @@ import {
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
-  INPUT_VALUES,
+  INPUT_VALUES
 } from '../schema/stixCyberObservableRelationship';
 import {
   INPUT_CREATED_BY,
@@ -407,6 +407,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
 }
 interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_CREATED_BY]: BasicStoreEntity;
+  [INPUT_LINKED]: Array<BasicStoreObject>;
   [INPUT_CONTAINS]: Array<BasicStoreObject>;
   [INPUT_BODY_MULTIPART]: Array<BasicStoreEntity>;
   [INPUT_PARENT_DIRECTORY]: BasicStoreObject;

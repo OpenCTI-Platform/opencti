@@ -19,7 +19,7 @@ import {
   INPUT_ENCAPSULATED_BY,
   INPUT_ENCAPSULATES,
   INPUT_FROM,
-  INPUT_IMAGE,
+  INPUT_IMAGE, INPUT_LINKED,
   INPUT_OPENED_CONNECTION,
   INPUT_PARENT,
   INPUT_PARENT_DIRECTORY,
@@ -292,6 +292,7 @@ const buildStixCyberObservable = (instance: StoreCyberObservable): S.StixCyberOb
         description: instance.x_opencti_description,
         score: instance.x_opencti_score,
         created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+        linked_to_refs: (instance[INPUT_LINKED] ?? []).map((m) => m.standard_id),
         external_references: buildExternalReferences(instance)
       })
     }

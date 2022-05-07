@@ -10,7 +10,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   isStixCyberObservableRelationship,
-  STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD
+  STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE
 } from '../schema/stixCyberObservableRelationship';
 import { isStixMetaRelationship, META_FIELD_TO_STIX_ATTRIBUTE } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
@@ -298,10 +298,10 @@ export const generateUpdateMessage = (inputs) => {
   const generatedMessage = patchElements.map(([type, operations]) => {
     return `${type}s ${operations.map(({ key, value }) => {
       let message = 'nothing';
-      const convertedKey = META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key] || key;
+      const convertedKey = META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key] || key;
       if (value) {
         const next = Array.isArray(value) ? value : [value];
-        if (STIX_ATTRIBUTE_TO_CYBER_OBSERVABLE_FIELD[key]) {
+        if (STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
           message = next.map((val) => observableValue(val)).join(', ');
         } else {
           switch (key) {

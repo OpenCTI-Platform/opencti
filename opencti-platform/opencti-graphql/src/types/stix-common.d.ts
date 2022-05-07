@@ -89,6 +89,7 @@ interface CyberObjectExtension {
   description: string;
   score: number;
   created_by_ref: StixId | undefined;
+  linked_to_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
 }
 

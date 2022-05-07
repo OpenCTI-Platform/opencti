@@ -14,7 +14,7 @@ import {
   isEmptyField,
   isInferredIndex,
   UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
+  UPDATE_OPERATION_REMOVE
 } from './utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
@@ -24,7 +24,7 @@ import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
 import { getInstanceIds } from '../schema/identifier';
-import { isStixEmbeddedRelationship, STIX_EMBEDDED_RELATION_TO_FIELD, } from '../schema/stixEmbeddedRelationship';
+import { isStixEmbeddedRelationship, STIX_EMBEDDED_RELATION_TO_FIELD } from '../schema/stixEmbeddedRelationship';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthUser } from '../types/user';
@@ -35,7 +35,7 @@ import type {
   Event,
   MergeEvent,
   StreamEvent,
-  UpdateEvent,
+  UpdateEvent
 } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
@@ -543,11 +543,12 @@ const mapStreamToJS = ([id, data]: any): StreamEvent => {
 };
 export const fetchStreamInfo = async () => {
   const res: any = await clientBase.xinfo('STREAM', REDIS_STREAM_NAME);
-  const [, size, , , , , , lastId, , , , [firstId], ,] = res;
+  const info: any = R.fromPairs(R.splitEvery(2, res) as any);
+  const firstId = info['first-entry'][0];
   const firstEventDate = utcDate(parseInt(firstId.split('-')[0], 10)).toISOString();
-  const lastEventTime = lastId.split('-')[0];
-  const lastEventDate = utcDate(parseInt(lastEventTime, 10)).toISOString();
-  return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: size };
+  const lastId = info['last-entry'][0];
+  const lastEventDate = utcDate(parseInt(lastId.split('-')[0], 10)).toISOString();
+  return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: info.length };
 };
 
 const processStreamResult = async (results: Array<any>, callback: any) => {

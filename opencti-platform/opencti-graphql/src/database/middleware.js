@@ -1646,7 +1646,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
             const element = await internalLoadById(user, targetCreated);
             const previous = currentValue ? [currentValue] : currentValue;
             updatedInputs.push({ key, value: [element], previous });
-            updatedInstance[key] = [element];
+            updatedInstance[key] = element;
           } else if (currentValue) {
             // Just replace by nothing
             updatedInputs.push({ key, value: null, previous: [currentValue] });
