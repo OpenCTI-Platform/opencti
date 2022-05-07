@@ -805,6 +805,14 @@ const riskResolvers = {
           }
           if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
+            //TODO: WORKAROUND data issues
+            if (response[0].hasOwnProperty('entry_type')) {
+              for (let entry in response[0].entry_type) {
+                response[0].entry_type[entry] = response[0].entry_type[entry].replace(/_/g,'-');
+              }
+            }
+            //END WORKAROUND
+
             if ( limit ) {
               let edge = {
                 cursor: iri,

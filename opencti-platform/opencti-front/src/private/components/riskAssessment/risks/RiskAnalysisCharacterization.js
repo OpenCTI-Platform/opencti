@@ -129,7 +129,7 @@ class RiskAnalysisCharacterizationComponent extends Component {
                       gutterBottom={true}
                       className={classes.tableText}
                     >
-                      {DetectionSource.actor_ref.name && t(DetectionSource.actor_ref.name)}
+                      {DetectionSource?.actor_ref && t(DetectionSource?.actor_ref?.name)}
                     </Typography>
                   </Grid>
                 </Grid>

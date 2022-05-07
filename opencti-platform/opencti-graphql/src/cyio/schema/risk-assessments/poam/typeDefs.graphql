@@ -156,12 +156,14 @@
   }
 
   enum POAMOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "POAM ID"
     poam_id
-    "Created"
-    created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
-    "Modified"
-    modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Name"
     name
     "Last Modified"
@@ -170,21 +172,25 @@
     published
     "System Identifier"
     system_id
-    "Label"
-    labels
   }
 
   enum POAMFilter {
     "Created"
-    created         # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    created
     "Modified"
-    modified        # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
+    modified
+    "Label"
+    label_name
+    "POAM ID"
+    poam_id
+    "Name"
+    name
     "Last Modified"
     last_modified
     "Published"
     published
-    "Label"
-    label_name
+    "System Identifier"
+    system_id
   }
 
 
@@ -277,14 +283,14 @@
   }
 
   enum POAMItemsOrdering {
-    "POAM ID"
-    poam_id
     "Created"
     created       # Created before/Created after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Modified"
     modified      # Modified before/Mreated after (key: created, values: ["2021-11-10"], operator: "gt|lt")
     "Label"
     label_name
+    "POAM ID"
+    poam_id
     "Name"
     name
     "Risk Level"
