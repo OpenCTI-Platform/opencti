@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor, lockResource } from '../database/redis';
 import conf, { logApp } from '../config/conf';
@@ -67,7 +68,7 @@ export const eventsApplyHandler = async (events: Array<StreamEvent>) => {
     if (isStixSightingRelationship(event.data.type)) {
       const sighting: StixSighting = stix as StixSighting;
       contextData.from_id = sighting.extensions[STIX_EXT_OCTI].sighting_of_ref;
-      // contextData.to_id = sighting.extensions[STIX_EXT_OCTI].where_sighted_refs[0];
+      contextData.to_id = R.head(sighting.extensions[STIX_EXT_OCTI].where_sighted_refs);
     }
     const activityDate = utcDate(eventDate).toDate();
     const standardId = generateStandardId(ENTITY_TYPE_HISTORY, { internal_id: event.id }) as StixId;
