@@ -191,9 +191,6 @@
         ]
     },
     "software": {
-        "malware": [
-            "operating-system"
-        ],
         "malware-analysis": [
             "host-vm",
             "operating-system",
@@ -201,12 +198,6 @@
         ]
     },
     "file": {
-        "malware": [
-            "sample"
-        ],
-        "malware-analysis": [
-            "sample"
-        ],
         "email-mime-part-type": [
             "body-raw"
         ],
@@ -224,12 +215,6 @@
         ]
     },
     "artifact": {
-        "malware": [
-            "sample"
-        ],
-        "malware-analysis": [
-            "sample"
-        ],
         "email-message": [
             "raw-email"
         ],
@@ -286,9 +271,13 @@
         ],
         "file": [
             "downloads",
-            "drops"
+            "drops",
+            "sample"
         ],
-        "vulnerability": [
+        "artifact": [
+            "sample"
+        ],
+        "vulnerabilimalware_softwarety": [
             "exploits",
             "targets"
         ],
@@ -304,6 +293,9 @@
         ],
         "system": [
             "targets"
+        ],
+        "software": [
+            "operating-system"
         ]
     },
     "malware-analysis": {
@@ -312,9 +304,6 @@
         ]
     },
     "network-traffic": {
-        "malware-analysis": [
-            "sample"
-        ],
         "network-traffic": [
             "encapsulates",
             "encapsulated-by"
