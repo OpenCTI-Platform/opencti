@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
@@ -11,9 +11,28 @@ import { UserContext } from '../utils/Security';
 import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
 
+const getFaviconEl = () => document.getElementById('favicon');
+
 const AppThemeProvider = (props) => {
   const { children } = props;
   const { me } = useContext(UserContext);
+  const platformTitle = R.pathOr(
+    'OpenCTI - Cyber Threat Intelligence Platform',
+    ['settings', 'platform_title'],
+    props,
+  );
+  const platformFavicon = R.pathOr(
+    null,
+    ['settings', 'platform_favicon'],
+    props,
+  );
+  useEffect(() => {
+    document.title = platformTitle;
+    if (platformFavicon) {
+      const favicon = getFaviconEl();
+      favicon.href = platformFavicon;
+    }
+  }, []);
   const platformThemeSettings = R.pathOr(
     null,
     ['settings', 'platform_theme'],
@@ -136,6 +155,8 @@ export const ConnectedThemeProvider = createFragmentContainer(
   {
     settings: graphql`
       fragment AppThemeProvider_settings on Settings {
+        platform_title
+        platform_favicon
         platform_theme
         platform_theme_dark_background
         platform_theme_dark_paper

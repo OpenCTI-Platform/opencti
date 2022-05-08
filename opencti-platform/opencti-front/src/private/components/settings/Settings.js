@@ -54,6 +54,7 @@ const settingsQuery = graphql`
     settings {
       id
       platform_title
+      platform_favicon
       platform_email
       platform_theme
       platform_language
@@ -97,6 +98,7 @@ const settingsMutationFieldPatch = graphql`
       fieldPatch(input: $input) {
         id
         platform_title
+        platform_favicon
         platform_email
         platform_theme
         platform_theme_dark_background
@@ -146,6 +148,7 @@ const settingsAboutQuery = graphql`
 
 const settingsValidation = (t) => Yup.object().shape({
   platform_title: Yup.string().required(t('This field is required')),
+  platform_favicon: Yup.string().nullable(),
   platform_email: Yup.string()
     .required(t('This field is required'))
     .email(t('The value must be an email address')),
@@ -235,6 +238,7 @@ class Settings extends Component {
               const initialValues = R.pick(
                 [
                   'platform_title',
+                  'platform_favicon',
                   'platform_email',
                   'platform_theme',
                   'platform_language',
@@ -285,7 +289,7 @@ class Settings extends Component {
                                 component={TextField}
                                 variant="standard"
                                 name="platform_title"
-                                label={t('Name')}
+                                label={t('Platform title')}
                                 fullWidth={true}
                                 onFocus={this.handleChangeFocus.bind(this, id)}
                                 onSubmit={this.handleSubmitField.bind(this, id)}
@@ -293,6 +297,22 @@ class Settings extends Component {
                                   <SubscriptionFocus
                                     context={editContext}
                                     fieldName="platform_title"
+                                  />
+                                }
+                              />
+                              <Field
+                                component={TextField}
+                                variant="standard"
+                                name="platform_favicon"
+                                label={t('Platform favicon URL')}
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                                onFocus={this.handleChangeFocus.bind(this, id)}
+                                onSubmit={this.handleSubmitField.bind(this, id)}
+                                helperText={
+                                  <SubscriptionFocus
+                                    context={editContext}
+                                    fieldName="platform_favicon"
                                   />
                                 }
                               />

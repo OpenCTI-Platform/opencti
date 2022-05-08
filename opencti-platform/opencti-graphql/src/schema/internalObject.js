@@ -63,6 +63,7 @@ export const internalObjectsAttributes = {
     'standard_id',
     'entity_type',
     'platform_title',
+    'platform_favicon',
     'platform_email',
     'platform_theme',
     'platform_theme_dark_background',
