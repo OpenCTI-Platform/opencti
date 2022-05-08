@@ -33,7 +33,6 @@ export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'openct
 export const UPDATE_OPERATION_ADD = 'add';
 export const UPDATE_OPERATION_REPLACE = 'replace';
 export const UPDATE_OPERATION_REMOVE = 'remove';
-export const UPDATE_OPERATION_CHANGE = 'change';
 
 // Entities
 export const INDEX_HISTORY = `${ES_INDEX_PREFIX}_history`;

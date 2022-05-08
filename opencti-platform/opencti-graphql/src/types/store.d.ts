@@ -70,19 +70,15 @@ interface StoreFile {
 
 interface StoreBase {
   _index: string;
-  name: string;
   standard_id: StixId;
   internal_id: string;
   entity_type: string;
-  base_type: string;
-  x_opencti_lastname: string;
-  x_opencti_firstname: string;
-  x_opencti_files: Array<StoreFile>;
-  x_opencti_aliases: Array<string>;
-  x_opencti_stix_ids: Array<StixId>;
-  x_opencti_inferences: Array<StoreRule> | undefined;
+  base_type: 'ENTITY' | 'RELATION';
   created_at: Date;
   updated_at: Date;
+  x_opencti_files?: Array<StoreFile>;
+  x_opencti_aliases?: Array<string>;
+  x_opencti_stix_ids?: Array<StixId>;
 }
 
 interface StoreMarkingDefinition extends StoreBase {
@@ -148,13 +144,13 @@ interface BasicStoreCommon extends StoreBase {
   [k: `i_rule_${string}`]: Array<StoreRawRule>;
   // [k: `rel_${string}`]: Array<string>;
   // object
-  hashes: { [k: string]: string };
+  hashes?: { [k: string]: string };
   sort?: SortResults;
   // inputs
   // [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
-  [RELATION_OBJECT_MARKING]: Array<string>;
+  [RELATION_OBJECT_MARKING]?: Array<string>;
   // [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
-  [RELATION_EXTERNAL_REFERENCE]: Array<string>;
+  [RELATION_EXTERNAL_REFERENCE]?: Array<string>;
 }
 
 interface StoreCommon {
@@ -163,7 +159,10 @@ interface StoreCommon {
   [INPUT_EXTERNAL_REFS]?: Array<StoreExternalReferences>;
 }
 
-interface StoreRawRelation extends BasicStoreCommon {
+interface StoreProxyRelation extends BasicStoreCommon {
+  _index: string;
+}
+interface StoreRawRelation extends StoreProxyRelation {
   lang: string;
   relationship_type: string;
   description: string;
@@ -202,7 +201,11 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_LABELS]: Array<StoreLabel>;
 }
 
-interface BasicStoreEntity extends BasicStoreCommon {
+interface StoreProxyEntity extends BasicStoreCommon {
+  _index: string;
+}
+interface BasicStoreEntity extends StoreProxyEntity {
+  name: string;
   content_type: string;
   content_disposition: string;
   body: string;
@@ -249,6 +252,9 @@ interface BasicStoreEntity extends BasicStoreCommon {
   x_opencti_confidentiality_impact: string;
   x_opencti_integrity_impact: string;
   x_opencti_main_observable_type: string;
+  x_opencti_lastname: string;
+  x_opencti_firstname: string;
+  x_opencti_inferences: Array<StoreRule> | undefined;
   // rels
   [RELATION_CREATED_BY]: string;
   // Array

@@ -3,7 +3,7 @@ import { offsetToCursor, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } fro
 import { elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthUser } from '../types/user';
-import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../types/store';
+import type { BasicStoreCommon, StoreProxyEntity, StoreProxyRelation } from '../types/store';
 
 const MAX_SEARCH_SIZE = 5000;
 
@@ -23,6 +23,8 @@ interface ListFilter<T extends BasicStoreCommon> {
   first?: number;
   infinite?: boolean;
   after?: string;
+  orderBy?: Array<string>,
+  orderMode?: 'asc' | 'desc' | undefined,
   filters?: Array<Filter>;
   callback?: (result: Array<T>) => Promise<boolean | void>
 }
@@ -191,36 +193,36 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
   }
   return R.pipe(R.assoc('types', relationsToGet), R.assoc('filters', finalFilters))(args);
 };
-export const listRelations = async <T extends BasicStoreRelation>(user: AuthUser, type: string | Array<string>, args: RelationOptions<T> = {}): Promise<Array<T>> => {
+export const listRelations = async <T extends StoreProxyRelation>(user: AuthUser, type: string | Array<string>, args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(type, args);
   return elPaginate(user, indices, paginateArgs);
 };
-export const listAllRelations = async <T extends BasicStoreRelation>(user: AuthUser, type: string | Array<string>, args: RelationOptions<T> = {}): Promise<Array<T>> => {
+export const listAllRelations = async <T extends StoreProxyRelation>(user: AuthUser, type: string | Array<string>, args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_RELATIONSHIPS_INDICES } = args;
   const paginateArgs = buildRelationsFilter(type, args);
   return elList(user, indices, paginateArgs);
 };
 
 // entities
-interface EntityFilters<T extends BasicStoreEntity> extends ListFilter<T> {
+interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   connectionFormat?: boolean;
   elementId?: string;
   fromId?: string;
   fromRole?: string;
   toId?: string;
   toRole?: string;
-  fromTypes?: Array<string>,
-  toTypes?: Array<string>,
-  types?: Array<string>,
-  entityTypes?: Array<string>,
-  relationshipTypes?: Array<string>,
-  elementWithTargetTypes?: Array<string>,
+  fromTypes?: Array<string>;
+  toTypes?: Array<string>;
+  types?: Array<string>;
+  entityTypes?: Array<string>;
+  relationshipTypes?: Array<string>;
+  elementWithTargetTypes?: Array<string>;
 }
-interface EntityOptions<T extends BasicStoreEntity> extends EntityFilters<T> {
+interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
   indices?: Array<string>;
 }
-const buildEntityFilters = <T extends BasicStoreEntity>(args: EntityFilters<T> = {}) => {
+const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> = {}) => {
   const builtFilters = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
   const { elementId, elementWithTargetTypes = [] } = args;
@@ -284,7 +286,7 @@ const buildEntityFilters = <T extends BasicStoreEntity>(args: EntityFilters<T> =
   builtFilters.filters = customFilters;
   return builtFilters;
 };
-export const listEntities = async <T extends BasicStoreEntity>(user: AuthUser, entityTypes: Array<string>, args:EntityOptions<T> = {}): Promise<Array<T>> => {
+export const listEntities = async <T extends StoreProxyEntity>(user: AuthUser, entityTypes: Array<string>, args:EntityOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_ENTITIES_INDICES } = args;
   const paginateArgs = buildEntityFilters({ entityTypes, ...args });
   return elPaginate(user, indices, paginateArgs);

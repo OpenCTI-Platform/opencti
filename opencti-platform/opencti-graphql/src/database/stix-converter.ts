@@ -169,7 +169,7 @@ const buildOCTIExtensions = (instance: StoreBase): S.StixOpenctiExtension => {
     id: instance.internal_id,
     type: instance.entity_type,
     created_at: instance.created_at,
-    aliases: instance.x_opencti_aliases,
+    aliases: instance.x_opencti_aliases ?? [],
     files: (instance.x_opencti_files ?? []).map((file) => ({
       name: file.name,
       uri: `${baseUrl}${basePath}/storage/get/${file.id}`,
@@ -194,11 +194,10 @@ const buildMITREExtensions = (instance: StoreEntity): S.StixMitreExtension => {
 
 // Builders
 const buildStixObject = (instance: BasicStoreCommon): S.StixObject => {
-  const isFullStix = instance.entity_type !== undefined;
   return {
     id: instance.standard_id,
-    spec_version: isFullStix ? '2.1' : undefined,
-    type: isFullStix ? convertTypeToStixType(instance.entity_type) : undefined,
+    spec_version: '2.1',
+    type: convertTypeToStixType(instance.entity_type),
     extensions: {
       [STIX_EXT_OCTI]: buildOCTIExtensions(instance),
     }
@@ -576,7 +575,7 @@ const convertArtifactToStix = (instance: StoreCyberObservable, type: string): SC
     mime_type: instance.mime_type,
     payload_bin: instance.payload_bin,
     url: instance.url,
-    hashes: instance.hashes,
+    hashes: instance.hashes ?? {}, // TODO JRI Find a way to make that mandatory
     encryption_algorithm: instance.encryption_algorithm,
     decryption_key: instance.decryption_key,
     extensions: {
@@ -686,7 +685,7 @@ const convertFileToStix = (instance: StoreCyberObservable, type: string): SCO.St
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
     ...stixCyberObject,
-    hashes: instance.hashes,
+    hashes: instance.hashes ?? {}, // TODO JRI Find a way to make that mandatory
     size: instance.size,
     name: instance.name,
     name_enc: instance.name_enc,
@@ -869,7 +868,7 @@ const convertX509CertificateToStix = (instance: StoreCyberObservable, type: stri
   return {
     ...buildStixCyberObservable(instance),
     is_self_signed: instance.is_self_signed,
-    hashes: instance.hashes,
+    hashes: instance.hashes ?? {}, // TODO JRI Find a way to make that mandatory
     version: instance.version,
     serial_number: instance.serial_number,
     signature_algorithm: instance.signature_algorithm,
@@ -1012,7 +1011,7 @@ const convertExternalReferenceToStix = (instance: StoreEntity): SMO.StixExternal
     source_name: instance.source_name,
     description: instance.description,
     url: instance.url,
-    hashes: instance.hashes,
+    hashes: instance.hashes ?? {}, // TODO JRI Find a way to make that mandatory
     external_id: instance.external_id,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

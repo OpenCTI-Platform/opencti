@@ -46,9 +46,9 @@ interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
 }
 
 interface StixObject {
-  type: string | undefined;
-  spec_version: string | undefined;
   id: StixId;
+  type: string;
+  spec_version: string;
   // TODO Implement granular_markings
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtension;

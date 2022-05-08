@@ -11,16 +11,8 @@ interface UserCapability {
 interface UserOrigin {
   name?: string;
   user_id?: string;
+  applicant_id?: string;
   referer?: string;
-}
-
-interface UserMarking {
-  name: string;
-  user_email: string;
-  origin: Partial<UserOrigin>;
-  roles: Array<UserRole>;
-  capabilities: Array<UserCapability>;
-  allowed_marking: Array<StoreMarkingDefinition>;
 }
 
 interface AuthUser {

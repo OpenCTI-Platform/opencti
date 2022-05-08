@@ -18,7 +18,7 @@ import type { StixSighting } from '../../types/stix-sro';
 import type { Event } from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixObject } from '../../types/stix-common';
-import type { StoreObject } from '../../types/store';
+import type { BasicStoreRelation, StoreObject } from '../../types/store';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
 // '**identity B**, then create **Incident C** `related-to` **indicator A** and ' +
@@ -44,7 +44,7 @@ const ruleSightingIncidentBuilder = () => {
     const { name, pattern, revoked, object_marking_refs, confidence } = indicator;
     if (!revoked) {
       const sightingsArgs = { toType: ENTITY_TYPE_IDENTITY, fromId: indicatorId };
-      const sightingsRelations = await listAllRelations(RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, sightingsArgs);
+      const sightingsRelations = await listAllRelations<BasicStoreRelation>(RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, sightingsArgs);
       for (let index = 0; index < sightingsRelations.length; index += 1) {
         const { internal_id: sightingId, toId: identityId, first_seen, last_seen } = sightingsRelations[index];
         const dependencies = generateDependencies(indicatorId, identityId, sightingId);

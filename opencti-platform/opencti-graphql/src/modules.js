@@ -7,11 +7,13 @@ import conf, {
   logApp,
   ENABLED_SYNC_MANAGER,
   ENABLED_RETENTION_MANAGER,
+  ENABLED_HISTORY_MANAGER,
 } from './config/conf';
 import expiredManager from './manager/expiredManager';
 import subscriptionManager from './manager/subscriptionManager';
 import taskManager from './manager/taskManager';
 import ruleEngine from './manager/ruleManager';
+import historyManager from './manager/historyManager';
 import syncManager from './manager/syncManager';
 import retentionManager from './manager/retentionManager';
 import httpServer from './http/httpServer';
@@ -68,6 +70,13 @@ export const startModules = async () => {
     logApp.info('[OPENCTI-MODULE] Sync manager not started (disabled by configuration)');
   }
   // endregion
+  // region History manager
+  if (ENABLED_HISTORY_MANAGER) {
+    await historyManager.start();
+  } else {
+    logApp.info('[OPENCTI-MODULE] History manager not started (disabled by configuration)');
+  }
+  // endregion
 };
 
 export const shutdownModules = async () => {
@@ -98,5 +107,9 @@ export const shutdownModules = async () => {
   // region Sync manager
   await syncManager.shutdown();
   logApp.info('[OPENCTI-MODULE] Sync manager stopped');
+  // endregion
+  // region History manager
+  await historyManager.shutdown();
+  logApp.info('[OPENCTI-MODULE] History manager stopped');
   // endregion
 };
