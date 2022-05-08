@@ -15,17 +15,17 @@ import {
   INPUT_ENCAPSULATES,
   INPUT_FROM,
   INPUT_IMAGE, INPUT_LINKED,
-  INPUT_OPENED_CONNECTION,
+  INPUT_OPENED_CONNECTION, INPUT_OPERATING_SYSTEM,
   INPUT_PARENT,
   INPUT_PARENT_DIRECTORY,
   INPUT_RAW_EMAIL,
-  INPUT_RESOLVES_TO,
+  INPUT_RESOLVES_TO, INPUT_SAMPLE,
   INPUT_SENDER,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
   INPUT_VALUES
-} from '../schema/stixCyberObservableRelationship';
+} from "../schema/stixCyberObservableRelationship";
 import {
   INPUT_CREATED_BY,
   INPUT_DOMAIN_FROM,
@@ -296,6 +296,8 @@ interface BasicStoreEntity extends BasicStoreCommon {
 }
 interface StoreEntity extends BasicStoreEntity, StoreCommon {
   [INPUT_CREATED_BY]: BasicStoreEntity;
+  [INPUT_OPERATING_SYSTEM]: Array<StoreCyberObservable>;
+  [INPUT_SAMPLE]: Array<StoreCyberObservable>;
   [INPUT_RAW_EMAIL]: Array<BasicStoreEntity>;
   [INPUT_OBJECTS]: Array<BasicStoreEntity>;
   [INPUT_LABELS]: Array<StoreLabel>;

@@ -246,7 +246,6 @@ export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS = [
 ];
 export const isStixCyberObservableRelationship = (type: string): boolean => R.includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 export const singleStixCyberObservableRelationships = [
-  RELATION_SAMPLE,
   RELATION_FROM,
   RELATION_SENDER,
   RELATION_RAW_EMAIL,

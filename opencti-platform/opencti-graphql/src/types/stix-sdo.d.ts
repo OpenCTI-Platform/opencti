@@ -163,8 +163,8 @@ interface StixMalware extends StixDomainObject {
   architecture_execution_envs: Array<string>; // optional
   implementation_languages: Array<string>; // optional
   capabilities: Array<string>; // optional
-  // operating_system_refs: Array<StixId>; // optional
-  // sample_refs: Array<StixId>; // optional
+  operating_system_refs: Array<StixId>; // optional
+  sample_refs: Array<StixId>; // optional
 }
 
 // TODO Add support for Malware analysis

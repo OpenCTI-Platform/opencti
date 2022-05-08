@@ -20,11 +20,11 @@ import {
   INPUT_ENCAPSULATES,
   INPUT_FROM,
   INPUT_IMAGE, INPUT_LINKED,
-  INPUT_OPENED_CONNECTION,
+  INPUT_OPENED_CONNECTION, INPUT_OPERATING_SYSTEM,
   INPUT_PARENT,
   INPUT_PARENT_DIRECTORY,
   INPUT_RAW_EMAIL,
-  INPUT_RESOLVES_TO,
+  INPUT_RESOLVES_TO, INPUT_SAMPLE,
   INPUT_SENDER,
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
@@ -506,8 +506,8 @@ const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.StixMalw
     architecture_execution_envs: instance.architecture_execution_envs,
     implementation_languages: instance.implementation_languages,
     capabilities: instance.capabilities,
-    // operating_system_refs: Array<StixId>; // optional
-    // sample_refs: Array<StixId>; // optional
+    operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
+    sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
   };
 };
 const convertAttackPatternToStix = (instance: StoreEntity, type: string): SDO.StixAttackPattern => {

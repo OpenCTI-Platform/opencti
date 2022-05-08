@@ -24,7 +24,10 @@ import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
 import { getInstanceIds } from '../schema/identifier';
-import { isStixEmbeddedRelationship, STIX_EMBEDDED_RELATION_TO_FIELD } from '../schema/stixEmbeddedRelationship';
+import {
+  isStixEmbeddedRelationship,
+  STIX_EMBEDDED_RELATION_TO_FIELD
+} from '../schema/stixEmbeddedRelationship';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthUser } from '../types/user';
@@ -452,7 +455,12 @@ export const storeCreateRelationEvent = async (
         const from = await stixLoadById(user, relation.from.internal_id);
         // region Generate the previous version of the element
         const previous = { ...from } as any;
+        // TODO JRI Fix nested single relationship previous resolution
+        // if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
+        //   previous[key] = previous[key].internal_id !== relation.to.internal_id ? relation.to.internal_id : null;
+        // } else {
         previous[key] = (previous[key] ?? []).filter((p: StoreObject) => p.internal_id !== relation.to.internal_id);
+        // }
         previous.updated_at = relation.from.updated_at;
         // endregion
         const inputs = [{ key, value: [relation.to], operation: UPDATE_OPERATION_ADD }];
