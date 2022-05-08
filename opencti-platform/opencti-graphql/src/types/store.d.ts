@@ -25,7 +25,7 @@ import {
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
   INPUT_VALUES
-} from "../schema/stixCyberObservableRelationship";
+} from '../schema/stixCyberObservableRelationship';
 import {
   INPUT_CREATED_BY,
   INPUT_DOMAIN_FROM,
