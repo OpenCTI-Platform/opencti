@@ -90,14 +90,13 @@ class EntityLocationLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.type.width }}
               >
-                {/* {node.entity_type
-                  && <ItemIcon type={node.entity_type} />} */}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.name && node.name}
+                {node.name && t(node.name)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -159,6 +158,7 @@ const EntityLocationLineFragment = createFragmentContainer(
       fragment EntityLocationLine_node on OscalLocation {
         __typename
         id
+        entity_type
         description
         name
         created

@@ -226,6 +226,7 @@ const EntityLocationDetails = createFragmentContainer(
       fragment EntityLocationDetails_location on OscalLocation {
         __typename
         id
+        entity_type
         created
         modified
         name
@@ -236,6 +237,10 @@ const EntityLocationDetails = createFragmentContainer(
           id
           address_type
           street_address
+          city
+          administrative_area
+          country_code
+          postal_code
         }
         email_addresses
         telephone_numbers {
@@ -243,7 +248,7 @@ const EntityLocationDetails = createFragmentContainer(
           usage_type
           phone_number
         }
-        urls
+        urls 
         labels {
           __typename
           id

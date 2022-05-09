@@ -154,7 +154,7 @@ class EntityLocationCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {node.entity_type && node.entity_type}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <Grid
                 item={true}
@@ -183,7 +183,7 @@ class EntityLocationCardComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <Typography>
-                  {node?.name && node?.name}
+                  {node?.name && t(node?.name)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -269,6 +269,7 @@ const EntityLocationCardFragment = createFragmentContainer(
       fragment EntityLocationCard_node on OscalLocation {
         __typename
         id
+        entity_type
         description
         name
         created
