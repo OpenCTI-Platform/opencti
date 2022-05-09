@@ -12,6 +12,7 @@ export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
+export const ENTITY_TYPE_HISTORY = 'History';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_TASK = 'Task';
 export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';
@@ -50,6 +51,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_WORKSPACE,
+  ENTITY_TYPE_HISTORY,
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 schemaTypes.register(ABSTRACT_INTERNAL_OBJECT, INTERNAL_OBJECTS);
@@ -63,6 +65,7 @@ export const internalObjectsAttributes = {
     'standard_id',
     'entity_type',
     'platform_title',
+    'platform_favicon',
     'platform_email',
     'platform_theme',
     'platform_theme_dark_background',

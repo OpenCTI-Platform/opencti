@@ -64,6 +64,10 @@
     "lock_key": "rule_engine_lock",
     "status_writing_delay": 2000
   },
+  "history_manager": {
+    "enabled": false,
+    "lock_key": "history_manager_lock"
+  },
   "task_scheduler": {
     "enabled": true,
     "lock_key": "task_manager_lock",

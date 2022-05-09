@@ -24,7 +24,6 @@ import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
-import { isBasicRelationship } from './stixRelationship';
 import { isNotEmptyField } from '../database/utils';
 
 // region hashes
@@ -35,7 +34,6 @@ const SHA_512 = 'SHA-512';
 const SHA3_256 = 'SHA3-256';
 const SHA3_512 = 'SHA3-512';
 const SSDEEP = 'SSDEEP';
-export const STANDARD_HASHES = [MD5, SHA_1, SHA_256, SHA_512, SHA3_256, SHA3_512, SSDEEP];
 const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
@@ -51,9 +49,6 @@ export const FIRST_OBSERVED = 'first_observed';
 export const LAST_OBSERVED = 'last_observed';
 export const VALID_UNTIL = 'valid_until';
 export const REVOKED = 'revoked';
-export const CONTENT_FIELD = 'content';
-export const OPINION_FIELD = 'opinion';
-export const PID_FIELD = 'pid';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
 export const X_DETECTION = 'x_opencti_detection';
 // endregion
@@ -141,6 +136,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_RULE_MANAGER]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_RULE]: [{ src: 'internal_id' }],
+    [I.ENTITY_TYPE_HISTORY]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_WORKSPACE]: [], // ALL
     [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     [I.ENTITY_TYPE_TASK]: [], // ALL
@@ -214,26 +210,6 @@ export const idGenFromData = (type, data) => {
   const dataCanonicalize = jsonCanonicalize(data);
   const uuid = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
   return `${convertEntityTypeToStixType(type)}--${uuid}`;
-};
-export const isTypeHasAliasIDs = (entityType) => {
-  if (isBasicRelationship(entityType)) return false;
-  if (isStixDomainObjectIdentity(entityType) || isStixDomainObjectLocation(entityType)) return true;
-  const contrib = resolveContribution(entityType);
-  const properties = contrib.definition[entityType];
-  if (!properties) {
-    throw DatabaseError(`Unknown definition for type ${entityType}`);
-  }
-  if (properties.length === 0) return true;
-  if (Array.isArray(R.head(properties))) {
-    // eslint-disable-next-line no-restricted-syntax
-    for (const property of properties) {
-      if (property.length === 1 && R.head(property).src === NAME_FIELD) {
-        return true;
-      }
-    }
-    return false;
-  }
-  return properties.length === 1 && R.head(properties).src === NAME_FIELD;
 };
 export const fieldsContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;

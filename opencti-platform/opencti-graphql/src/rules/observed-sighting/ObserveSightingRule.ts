@@ -17,7 +17,7 @@ import type { RuleRuntime } from '../../types/rules';
 import type { StixObject, StixDomainObject } from '../../types/stix-common';
 import type { StixIndicator, StixObservedData } from '../../types/stix-sdo';
 import type { StixRelation } from '../../types/stix-sro';
-import type { BasicStoreEntity } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { listAllRelations } from '../../database/middleware-loader';
 import type { Event } from '../../types/event';
@@ -53,12 +53,12 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
     const { id: indicatorId } = indicator.extensions[STIX_EXT_OCTI];
     const { object_marking_refs: indicatorMarkings } = indicator;
     const baseOnArgs = { toType: ABSTRACT_STIX_CYBER_OBSERVABLE, fromId: indicatorId };
-    const baseOnRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
+    const baseOnRelations = await listAllRelations<BasicStoreRelation>(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
     for (let index = 0; index < baseOnRelations.length; index += 1) {
       const { internal_id: baseOnId, toId: observableId } = baseOnRelations[index];
       // Get the observed-data
       const objectsArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], toId: observableId };
-      const objectsRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, objectsArgs);
+      const objectsRelations = await listAllRelations<BasicStoreRelation>(RULE_MANAGER_USER, RELATION_OBJECT, objectsArgs);
       for (let objectIndex = 0; objectIndex < objectsRelations.length; objectIndex += 1) {
         const { internal_id: objectId, fromId: observedDataId } = objectsRelations[objectIndex];
         const observedData = (await internalLoadById(RULE_MANAGER_USER, observedDataId)) as unknown as BasicStoreEntity;
@@ -106,12 +106,12 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
       const { [RELATION_OBJECT_MARKING]: organizationMarkings } = organization;
       // Get all observable of this observed-data
       const listFromArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], fromId: observedDataId };
-      const objectsRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_OBJECT, listFromArgs);
+      const objectsRelations = await listAllRelations<BasicStoreRelation>(RULE_MANAGER_USER, RELATION_OBJECT, listFromArgs);
       for (let objectIndex = 0; objectIndex < objectsRelations.length; objectIndex += 1) {
         const { internal_id: objectId, toId: observableId } = objectsRelations[objectIndex];
         // Get all base-on indicators of this observable
         const baseOnArgs = { fromTypes: [ENTITY_TYPE_INDICATOR], toId: observableId };
-        const baseOnRelations = await listAllRelations(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
+        const baseOnRelations = await listAllRelations<BasicStoreRelation>(RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
         for (let index = 0; index < baseOnRelations.length; index += 1) {
           const { internal_id: baseOnId, fromId: indicatorId } = baseOnRelations[index];
           const indicator = (await internalLoadById(RULE_MANAGER_USER, indicatorId)) as unknown as BasicStoreEntity;

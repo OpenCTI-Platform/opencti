@@ -476,8 +476,8 @@ const loadElementDependencies = async (user, element, args = {}) => {
         const resolvedElement = toResolved[v.toId];
         return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
       }, values).filter((d) => isNotEmptyField(d));
-      const test = FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION[key];
-      data[key] = isSingleStixEmbeddedRelationship(test) ? R.head(resolvedRelations) : resolvedRelations;
+      const metaRefKey = FIELD_ATTRIBUTE_TO_EMBEDDED_RELATION[key];
+      data[key] = isSingleStixEmbeddedRelationship(metaRefKey) ? R.head(resolvedRelations) : resolvedRelations;
     }
     if (fullResolve) {
       const flatRelations = fromRelations.map((rel) => ({ ...toResolved[rel.toId], i_relation: rel }));
@@ -1646,7 +1646,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
             const element = await internalLoadById(user, targetCreated);
             const previous = currentValue ? [currentValue] : currentValue;
             updatedInputs.push({ key, value: [element], previous });
-            updatedInstance[key] = [element];
+            updatedInstance[key] = element;
           } else if (currentValue) {
             // Just replace by nothing
             updatedInputs.push({ key, value: null, previous: [currentValue] });
