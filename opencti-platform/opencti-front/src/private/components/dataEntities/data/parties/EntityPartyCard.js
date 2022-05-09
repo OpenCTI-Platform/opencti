@@ -196,7 +196,7 @@ class EntityPartyCardComponent extends Component {
                   {t('Creation Date')}
                 </Typography>
                 <Typography>
-                  {/* {node.created && fsd(node.created)} */}
+                  {node.created && fsd(node.created)}
                 </Typography>
               </Grid>
             </Grid>
@@ -271,6 +271,7 @@ const EntityPartyCardFragment = createFragmentContainer(
         id
         name
         party_type
+        created
         labels {
           __typename
           id

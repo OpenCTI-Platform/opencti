@@ -126,7 +126,7 @@ class EntitiesPartiesCreation extends Component {
       R.assoc('name', values.name),
     )(adaptedValues);
     CM(environmentDarkLight, {
-      // mutation: entitiesPartiesCreationMutation,
+      mutation: entitiesPartiesCreationMutation,
       variables: {
         input: finalValues,
       },

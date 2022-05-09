@@ -118,7 +118,7 @@ class EntityPartyLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.creation_date.width }}
               >
-                {/* {node.created && fd(node.created)} */}
+                {node.created && fd(node.created)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -160,6 +160,7 @@ const EntityPartyLineFragment = createFragmentContainer(
         id
         name
         party_type
+        created
         labels {
           __typename
           id

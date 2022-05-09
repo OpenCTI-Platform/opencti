@@ -93,6 +93,7 @@ class RoleEntityEdition extends Component {
                 <PartyEntityEditionContainer
                   displayEdit={displayEdit}
                   history={history}
+                  party={props.oscalParty}
                   handleDisplayEdit={handleDisplayEdit}
                 />
               );

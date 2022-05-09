@@ -10,6 +10,7 @@ import {
   pipe,
   pathOr,
 } from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import InsertLinkIcon from '@material-ui/icons/InsertLink';
@@ -28,6 +29,27 @@ import NewTextField from '../../../../components/TextField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { cyioLabelsQuery } from '../../settings/CyioLabelsQuery';
+
+const LocationFieldSearchQuery = graphql`
+  query LocationFieldSearchQuery(
+    $orderedBy: OscalLocationOrdering
+    $orderMode: OrderingMode
+  ){
+    oscalLocations(
+      orderedBy: $orderedBy
+      orderMode: $orderMode
+    ) {
+      edges {
+        node {
+          id
+          created
+          name
+          location_type
+        }
+      }
+    }
+  }
+`;
 
 const styles = (theme) => ({
   paper: {
@@ -86,13 +108,14 @@ class LocationField extends Component {
   }
 
   searchData = (event) => {
-    fetchDarklightQuery(cyioLabelsQuery, {
-      search: event && event.target.value !== 0 ? event.target.value : '',
+    fetchDarklightQuery(LocationFieldSearchQuery, {
+      orderedBy: 'name',
+      orderMode: 'asc',
     })
       .toPromise()
       .then((data) => {
         const transformLabels = pipe(
-          pathOr([], ['cyioLabels', 'edges']),
+          pathOr([], ['oscalLocations', 'edges']),
           map((n) => ({
             label: n.node.name,
             value: n.node.id,
@@ -104,17 +127,17 @@ class LocationField extends Component {
 
   handleSubmit() {
     this.setState({ open: false }, () => (
-      this.props.setFieldValue(this.props.name, this.state.ipAddress)
+      this.props.setFieldValue(this.props.name,
+        this.state.ipAddress.map((location) => location.value))
     ));
   }
 
   handleOpenCreate() {
-    console.log('LocationField', this.props.addressValues);
     if (this.props.addressValues.length === 0) {
       return;
     }
-    if (this.state.ipAddress.every((value) => value !== this.props.addressValues.label)) {
-      this.setState({ ipAddress: [...this.state.ipAddress, this.props.addressValues.label] });
+    if (this.state.ipAddress.every((value) => value.label !== this.props.addressValues.label)) {
+      this.setState({ ipAddress: [...this.state.ipAddress, this.props.addressValues] });
     }
   }
 
@@ -151,7 +174,7 @@ class LocationField extends Component {
               {this.state.ipAddress && this.state.ipAddress.map((address, key) => (
                 <div key={key} className={classes.descriptionBox}>
                   <Typography>
-                    {address && t(address)}
+                    {address && t(address.label)}
                   </Typography>
                   <IconButton size='small' onClick={this.handleDeleteAddress.bind(this, key)}>
                     <LinkOffIcon />
@@ -202,7 +225,7 @@ class LocationField extends Component {
                   {this.state.ipAddress.map((address, key) => (
                     <div key={key} className={classes.descriptionBox}>
                       <Typography>
-                        {address && t(address)}
+                        {address && t(address.label)}
                       </Typography>
                       <IconButton size='small' onClick={this.handleDeleteAddress.bind(this, key)}>
                         <LinkOffIcon />

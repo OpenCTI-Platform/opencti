@@ -145,7 +145,7 @@ class PartyEntityEditionContainer extends Component {
     CM(environmentDarkLight, {
       mutation: partyEntityEditionContainerMutation,
       variables: {
-        id: this.props.cyioCoreRelationshipId,
+        id: this.props.party.id,
         input: finalValues,
       },
       setSubmitting,

@@ -139,7 +139,7 @@ class EntityPartyDetailsComponent extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {party.external_identifiers && t(party.external_identifiers.map((value) => value.entity_type))}
+                {party.external_identifiers && t(party.external_identifiers.map((value) => value.identifier))}
               </div>
               <div>
                 <Typography
@@ -269,7 +269,7 @@ class EntityPartyDetailsComponent extends Component {
                       parserOptions={{ commonmark: true }}
                       className="markdown"
                     >
-                      {party.desctiption && t(party.desctiption)}
+                      {party.description && t(party.description)}
                     </Markdown>
                   </div>
                 </div>
@@ -391,33 +391,54 @@ const EntityPartyDetails = createFragmentContainer(
         id
         created
         modified
-        name
-        description
+        entity_type
         party_type
-        email_addresses
+        name
         short_name
+        description
+        job_title
         mail_stop
         office
-        job_title
-        addresses {
+        email_addresses
+        telephone_numbers {
+          __typename
           id
+          entity_type
+          usage_type
+          phone_number
+        }
+        external_identifiers {
+          __typename
+          id
+          entity_type
+          scheme
+          identifier
+        }
+        addresses {
+          __typename
+          id
+          entity_type
           address_type
           street_address
+          city
+          administrative_area
+          country_code
+          postal_code
         }
         locations {
           id
           name
           location_type
           location_class
-        }
-        telephone_numbers {
-          id
-          usage_type
-          phone_number
-        }
-        external_identifiers {
-          id
-          entity_type
+          address {
+            id
+            address_type
+            street_address
+            city
+            administrative_area
+            country_code
+            postal_code
+          }
         }
         member_of_organizations {
           id
