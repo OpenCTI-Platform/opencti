@@ -98,7 +98,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
       return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
     default:
-      return stixCyberObservable.value || 'Unknown';
+      return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }
 };
 
