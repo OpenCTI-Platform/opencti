@@ -584,7 +584,7 @@ class PartyEntityEditionContainer extends Component {
                           addressValues={values.address}
                           title='Address(es)'
                           name='address'
-                          validation={emailAddressRegex}
+                          // validation={emailAddressRegex}
                           helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                         />
                       ) : (
@@ -594,7 +594,6 @@ class PartyEntityEditionContainer extends Component {
                           addressValues={values.locations}
                           title='Location(s)'
                           name='locations'
-                          // validation={macAddrRegex}
                           helperText='Please enter a valid MAC Address. Example: 78:B0:92:0D:EF:1C'
                         />
                       )}
