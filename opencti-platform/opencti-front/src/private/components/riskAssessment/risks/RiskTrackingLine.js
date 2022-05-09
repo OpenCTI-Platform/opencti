@@ -269,7 +269,7 @@ class RiskTrackingLineContainer extends Component {
                     <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
                     <div style={{ marginLeft: '16px', paddingTop: '10px' }}>
                       <Typography>
-                        {t('Risk Log Entry Title')}
+                        {node.name && t(node.name)}
                       </Typography>
                       <Typography color="textSecondary" variant="h3">
                         {t('Logged By')}

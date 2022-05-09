@@ -130,6 +130,10 @@ class RiskTrackingPopover extends Component {
     this.handleClose();
   }
 
+  handleCloseEditUpdate(){
+    this.setState({ displayUpdate: false });
+  }
+
   handleCloseUpdate() {
     this.setState({ displayUpdate: false, displayCancel: true });
   }
@@ -150,9 +154,7 @@ class RiskTrackingPopover extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     if(values.logged_by.length > 0){
       this.setState({
-        logged_by: values.logged_by.map((value) => {
-          return {'party': value }
-        }),
+        logged_by: [{'party': values.logged_by}],
       })
     }
     const finalValues = R.pipe(
@@ -173,10 +175,13 @@ class RiskTrackingPopover extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        this.handleCloseEditUpdate();
         this.props.refreshQuery();
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Request Failed');
+      },
     });
 
     // commitMutation({
@@ -212,7 +217,10 @@ class RiskTrackingPopover extends Component {
         this.handleCloseDelete();
         this.props.refreshQuery();
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Request Failed');
+      },
     });
     // commitMutation({
     //   mutation: RiskTrackingPopoverDeletionMutation,
@@ -253,7 +261,7 @@ class RiskTrackingPopover extends Component {
     )(node);
     const initialValues = R.pipe(
       R.assoc('entry_type', node?.entry_type || []),
-      R.assoc('title', node?.name || ''),
+      R.assoc('name', node?.name || ''),
       R.assoc('description', node?.description || ''),
       R.assoc('event_start', dateFormat(node?.event_start)),
       R.assoc('event_end', dateFormat(node?.event_end)),
@@ -262,7 +270,7 @@ class RiskTrackingPopover extends Component {
       R.assoc('related_responses', riskStatusResponse.map((value) => value.id) || []),
       R.pick([
         'entry_type',
-        'title',
+        'name',
         'description',
         'event_start',
         'event_end',
@@ -409,7 +417,7 @@ class RiskTrackingPopover extends Component {
                           component={TextField}
                           variant='outlined'
                           size='small'
-                          name="title"
+                          name="name"
                           fullWidth={true}
                           containerstyle={{ width: '100%' }}
                         />

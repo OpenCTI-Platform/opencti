@@ -81,7 +81,6 @@ class RelatedResponse extends Component {
           name={name}
           label={label}
           fullWidth={true}
-          multiple={true}
           containerstyle={containerstyle}
           variant={variant}
           disabled={disabled || false}
