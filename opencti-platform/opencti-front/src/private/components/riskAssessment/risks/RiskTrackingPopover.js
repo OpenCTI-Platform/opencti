@@ -654,7 +654,7 @@ class RiskTrackingPopover extends Component {
             <Button
               // onClick={this.submitDelete.bind(this)}
               // disabled={this.state.deleting}
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/tracking`)}
               color="primary"
               classes={{ root: classes.buttonPopover }}
               variant="contained"
