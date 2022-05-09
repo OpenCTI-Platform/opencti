@@ -210,6 +210,7 @@ class Risks extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'name_m',
           'risk_level',
           'risk_status',
           'risk_response',
@@ -350,6 +351,7 @@ class Risks extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'name_m',
           'risk_level',
           'risk_status',
           'risk_response',

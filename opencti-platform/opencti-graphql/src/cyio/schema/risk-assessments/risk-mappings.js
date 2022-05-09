@@ -141,7 +141,6 @@ export const riskSingularizeSchema = {
     "integrity_requirement": true,
     "job_title": true,
     "mail_stop": true,
-    "occurrences": true,
     "office": true,
     "on_date": true,
     "party_type": true,
@@ -213,6 +212,14 @@ export const riskSingularizeSchema = {
     "vector_string": true,
     "vendor_dependency": true,
     "vulnerability_id": true,
+    // dynamic risk data
+    "cvssV2Base_score": true,
+    "cvssV2Temporal_score": true,
+    "cvssV3Base_score": true,
+    "cvssV3Temporal_score": true,
+    "remediation_lifecycle_values": true,
+    "remediation_type_values": true,
+    "occurrences": true,
   }
 };
 

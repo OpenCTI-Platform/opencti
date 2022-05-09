@@ -48,6 +48,7 @@ import CyioCoreObjectExternalReferences from '../../../analysis/external_referen
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   item: {
@@ -232,7 +233,10 @@ class RequiredResourceCreation extends Component {
           this.props.onCreate(response.externalReferenceAdd, true);
         }
       },
-      onError: (err) => console.log('ExternalReferenceCreationMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create Required Resource');
+      },
     });
     // commitMutation({
     //   mutation: RequiredResourceCreationMutation,
@@ -515,18 +519,20 @@ class RequiredResourceCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        disableAdd={true}
                         fieldName='links'
-                        typename={requiredResourceData.__typename}
-                        externalReferences={requiredResourceData.links}
+                        typename='CyioExternalReference'
+                        externalReferences={[]}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '25px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
+                        disableAdd={true}
                         fieldName='remarks'
-                        typename={requiredResourceData.__typename}
-                        notes={requiredResourceData.remarks}
+                        typename='CyioNotes'
+                        notes={[]}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         // data={props}
                         marginTop='0px'

@@ -28,7 +28,7 @@ import {
   itAssetFiltersNetworkFieldsQuery,
   itAssetFiltersSoftwareFieldsQuery,
 } from '../../settings/ItAssetFilters';
-import { RiskFiltersQuery } from '../../settings/RiskFilters';
+import { RiskFiltersQuery, riskFiltersNameQuery } from '../../settings/RiskFilters';
 import { attributesSearchQuery } from '../../settings/AttributesQuery';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -175,6 +175,10 @@ class Filters extends Component {
         if (this.props.filterEntityType === 'Software') {
           nameQuery = itAssetFiltersSoftwareFieldsQuery;
           namePath = ['softwareAssetList', 'edges'];
+        }
+        if (this.props.filterEntityType === 'Risk') {
+          nameQuery = riskFiltersNameQuery;
+          namePath = ['risks', 'edges'];
         }
         fetchDarklightQuery(nameQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
