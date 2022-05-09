@@ -1271,21 +1271,28 @@ class OpenCTIStix2:
                 "Vulnerability": self.opencti.vulnerability.read,
                 "Incident": self.opencti.incident.read,
                 "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
-                "stix_core_relationship": self.opencti.stix_core_relationship.read,
+                "stix-core-relationship": self.opencti.stix_core_relationship.read,
+                "stix-sighting-relationship": self.opencti.stix_sighting_relationship.read,
             }
             # Get extra objects
             for entity_object in objects_to_get:
                 # Map types
                 if entity_object["entity_type"] == "StixFile":
                     entity_object["entity_type"] = "File"
-                if IdentityTypes.has_value(entity_object["entity_type"]):
+                elif IdentityTypes.has_value(entity_object["entity_type"]):
                     entity_object["entity_type"] = "Identity"
-                if LocationTypes.has_value(entity_object["entity_type"]):
+                elif LocationTypes.has_value(entity_object["entity_type"]):
                     entity_object["entity_type"] = "Location"
-                if StixCyberObservableTypes.has_value(entity_object["entity_type"]):
+                elif StixCyberObservableTypes.has_value(entity_object["entity_type"]):
                     entity_object["entity_type"] = "Stix-Cyber-Observable"
-                if "relationship_type" in entity_object:
-                    entity_object["entity_type"] = "stix_core_relationship"
+                elif "stix-core-relationship" in entity_object["parent_types"]:
+                    entity_object["entity_type"] = "stix-core-relationship"
+                elif (
+                    "stix-cyber-observable-relationship"
+                    in entity_object["parent_types"]
+                ):
+                    entity_object["entity_type"] = "stix-cyber-observable-relationship"
+
                 do_read = reader.get(
                     entity_object["entity_type"],
                     lambda **kwargs: self.unknown_type(
