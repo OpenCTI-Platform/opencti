@@ -160,9 +160,7 @@ class RiskLogCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     if(values.logged_by.length > 0){
       this.setState({
-        logged_by: values.logged_by.map((value) => {
-          return {'party': value }
-        }),
+        logged_by: [{'party': values.logged_by}],
       })
     }
     const adaptedValues = evolve(

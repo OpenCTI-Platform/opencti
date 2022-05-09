@@ -130,6 +130,10 @@ class RiskTrackingPopover extends Component {
     this.handleClose();
   }
 
+  handleCloseEditUpdate(){
+    this.setState({ displayUpdate: false });
+  }
+
   handleCloseUpdate() {
     this.setState({ displayUpdate: false, displayCancel: true });
   }
@@ -150,9 +154,7 @@ class RiskTrackingPopover extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     if(values.logged_by.length > 0){
       this.setState({
-        logged_by: values.logged_by.map((value) => {
-          return {'party': value }
-        }),
+        logged_by: [{'party': values.logged_by}],
       })
     }
     const finalValues = R.pipe(
@@ -173,10 +175,13 @@ class RiskTrackingPopover extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        this.handleCloseEditUpdate();
         this.props.refreshQuery();
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Request Failed');
+      },
     });
 
     // commitMutation({
@@ -212,7 +217,10 @@ class RiskTrackingPopover extends Component {
         this.handleCloseDelete();
         this.props.refreshQuery();
       },
-      onError: (err) => toastGenericError('Request Failed'),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Request Failed');
+      },
     });
     // commitMutation({
     //   mutation: RiskTrackingPopoverDeletionMutation,
