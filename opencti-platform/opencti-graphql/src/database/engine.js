@@ -104,12 +104,10 @@ export const isImpactedTypeAndSide = (type, side) => {
 };
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
-let ca = null;
-if (conf.get('elasticsearch:ssl:ca')) {
-  ca = readFileSync(conf.get('elasticsearch:ssl:ca'));
-} else if (conf.get('elasticsearch:ssl:ca_plain')) {
-  ca = conf.get('elasticsearch:ssl:ca_plain');
-}
+const ca = conf.get('elasticsearch:ssl:ca')
+  ? readFileSync(conf.get('elasticsearch:ssl:ca'))
+  : conf.get('elasticsearch:ssl:ca_plain') || null;
+
 const searchConfiguration = {
   node: conf.get('elasticsearch:url'),
   proxy: conf.get('elasticsearch:proxy') || null,

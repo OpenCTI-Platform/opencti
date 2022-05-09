@@ -44,7 +44,13 @@ export const config = () => {
 const amqpExecute = (execute) => {
   return new Promise((resolve, reject) => {
     amqp
-      .connect(amqpUri(), USE_SSL ? { ...amqpCred(), ...configureCA(RABBITMQ_CA) } : amqpCred())
+      .connect(amqpUri(), USE_SSL ? {
+        ...amqpCred(),
+        tls: {
+          ...configureCA(RABBITMQ_CA),
+          servername: conf.get('rabbitmq:hostname'),
+        }
+      } : amqpCred())
       .then((connection) => {
         return connection
           .createConfirmChannel()
@@ -83,9 +89,11 @@ export const send = (exchangeName, routingKey, message) => {
 };
 
 export const metrics = async () => {
-  const baseURL = `http${conf.get('rabbitmq:management_ssl') === true ? 's' : ''}://${conf.get(
-    'rabbitmq:hostname'
-  )}:${conf.get('rabbitmq:port_management')}`;
+  const baseURL = `http${
+    conf.get('rabbitmq:management_ssl') === true ? 's' : ''
+  }://${
+    conf.get('rabbitmq:hostname_management') || conf.get('rabbitmq:hostname')
+  }:${conf.get('rabbitmq:port_management')}`;
   const overview = await axios
     .get('/api/overview', {
       baseURL,
