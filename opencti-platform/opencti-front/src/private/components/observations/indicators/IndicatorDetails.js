@@ -12,6 +12,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { Launch, SettingsApplications } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
 import inject18n from '../../../../components/i18n';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
@@ -51,7 +52,11 @@ class IndicatorDetailsComponent extends Component {
             {t('Indicator pattern')}
           </Typography>
           <ExpandablePre source={indicator.pattern} limit={300} />
-          <Grid container={true} spacing={3} style={{ marginTop: 10 }}>
+          <Grid
+            container={true}
+            spacing={3}
+            style={{ marginTop: 10, marginBottom: 10 }}
+          >
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Valid from')}
@@ -156,6 +161,7 @@ class IndicatorDetailsComponent extends Component {
               </List>
             </Grid>
           </Grid>
+          <Divider />
           <IndicatorObservables indicator={indicator} />
         </Paper>
       </div>

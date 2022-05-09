@@ -110,7 +110,7 @@ const IncidentValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
-  status_id: Yup.object(),
+  x_opencti_workflow_id: Yup.object(),
   references: Yup.array().required(t('This field is required')),
 });
 
@@ -133,7 +133,7 @@ class IncidentEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('status_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -161,7 +161,7 @@ class IncidentEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     let finalValue = value;
-    if (name === 'status_id') {
+    if (name === 'x_opencti_workflow_id') {
       finalValue = value.value;
     }
     IncidentValidation(this.props.t)
@@ -268,7 +268,7 @@ class IncidentEditionOverviewComponent extends Component {
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('status_id', status),
+      R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'name',
         'confidence',
@@ -276,7 +276,7 @@ class IncidentEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
-        'status_id',
+        'x_opencti_workflow_id',
       ]),
     )(incident);
     return (
@@ -335,14 +335,14 @@ class IncidentEditionOverviewComponent extends Component {
             />
             {incident.workflowEnabled && (
               <StatusField
-                name="status_id"
+                name="x_opencti_workflow_id"
                 type="Incident"
                 onFocus={this.handleChangeFocus.bind(this)}
                 onChange={this.handleSubmitField.bind(this)}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="status_id" />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}

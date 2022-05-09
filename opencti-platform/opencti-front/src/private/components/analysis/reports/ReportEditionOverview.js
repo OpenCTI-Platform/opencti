@@ -119,7 +119,7 @@ const reportValidation = (t) => Yup.object().shape({
   report_types: Yup.array().required(t('This field is required')),
   description: Yup.string().nullable(),
   confidence: Yup.number(),
-  status_id: Yup.object(),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class ReportEditionOverviewComponent extends Component {
@@ -142,7 +142,7 @@ class ReportEditionOverviewComponent extends Component {
       R.dissoc('message'),
       R.dissoc('references'),
       R.assoc('published', parse(values.published).format()),
-      R.assoc('status_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('report_types', R.pluck('value', values.report_types)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -172,7 +172,7 @@ class ReportEditionOverviewComponent extends Component {
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
       let finalValue = value;
-      if (name === 'status_id') {
+      if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
       if (name === 'report_types') {
@@ -274,7 +274,7 @@ class ReportEditionOverviewComponent extends Component {
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
       R.assoc('published', dateFormat(report.published)),
-      R.assoc('status_id', status),
+      R.assoc('x_opencti_workflow_id', status),
       R.assoc(
         'report_types',
         (report.report_types || []).map((n) => ({ label: n, value: n })),
@@ -287,7 +287,7 @@ class ReportEditionOverviewComponent extends Component {
         'createdBy',
         'objectMarking',
         'confidence',
-        'status_id',
+        'x_opencti_workflow_id',
       ]),
     )(report);
     return (
@@ -458,7 +458,7 @@ class ReportEditionOverviewComponent extends Component {
                         />
                         {report.workflowEnabled && (
                           <StatusField
-                            name="status_id"
+                            name="x_opencti_workflow_id"
                             type="Report"
                             onFocus={this.handleChangeFocus.bind(this)}
                             onChange={this.handleSubmitField.bind(this)}
@@ -467,7 +467,7 @@ class ReportEditionOverviewComponent extends Component {
                             helpertext={
                               <SubscriptionFocus
                                 context={context}
-                                fieldName="status_id"
+                                fieldName="x_opencti_workflow_id"
                               />
                             }
                           />

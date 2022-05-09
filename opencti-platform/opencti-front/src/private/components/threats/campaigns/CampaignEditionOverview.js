@@ -111,7 +111,7 @@ const campaignValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
-  status_id: Yup.object(),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class CampaignEditionOverviewComponent extends Component {
@@ -133,7 +133,7 @@ class CampaignEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('status_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -162,7 +162,7 @@ class CampaignEditionOverviewComponent extends Component {
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
       let finalValue = value;
-      if (name === 'status_id') {
+      if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
       campaignValidation(this.props.t)
@@ -264,14 +264,14 @@ class CampaignEditionOverviewComponent extends Component {
     const initialValues = R.pipe(
       R.assoc('createdBy', createdBy),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('status_id', status),
+      R.assoc('x_opencti_workflow_id', status),
       R.pick([
         'name',
         'confidence',
         'description',
         'createdBy',
         'objectMarking',
-        'status_id',
+        'x_opencti_workflow_id',
       ]),
     )(campaign);
     return (
@@ -327,14 +327,14 @@ class CampaignEditionOverviewComponent extends Component {
             />
             {campaign.workflowEnabled && (
               <StatusField
-                name="status_id"
+                name="x_opencti_workflow_id"
                 type="Threat-Actor"
                 onFocus={this.handleChangeFocus.bind(this)}
                 onChange={this.handleSubmitField.bind(this)}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="status_id" />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}

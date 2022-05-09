@@ -262,7 +262,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               'report_types',
               'container_types',
               'confidence_gt',
-              'status_id',
+              'x_opencti_workflow_id',
               'labelledBy',
               'createdBy',
               'markedBy',

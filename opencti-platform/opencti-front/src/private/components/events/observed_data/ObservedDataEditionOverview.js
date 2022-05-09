@@ -133,7 +133,7 @@ class ObservedDataEditionOverviewComponent extends Component {
       R.dissoc('references'),
       R.assoc('first_observed', parse(values.first_observed).format()),
       R.assoc('last_observed', parse(values.last_observed).format()),
-      R.assoc('status_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -335,7 +335,7 @@ class ObservedDataEditionOverviewComponent extends Component {
               />
               {observedData.workflowEnabled && (
                 <StatusField
-                  name="status_id"
+                  name="x_opencti_workflow_id"
                   type="Observed-Data"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
@@ -344,7 +344,7 @@ class ObservedDataEditionOverviewComponent extends Component {
                   helpertext={
                     <SubscriptionFocus
                       context={context}
-                      fieldName="status_id"
+                      fieldName="x_opencti_workflow_id"
                     />
                   }
                 />

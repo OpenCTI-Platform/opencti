@@ -114,7 +114,7 @@ const threatActorValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   references: Yup.array().required(t('This field is required')),
-  status_id: Yup.object(),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 class ThreatActorEditionOverviewComponent extends Component {
@@ -136,7 +136,7 @@ class ThreatActorEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('status_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,
@@ -165,7 +165,7 @@ class ThreatActorEditionOverviewComponent extends Component {
   handleSubmitField(name, value) {
     if (!this.props.enableReferences) {
       let finalValue = value;
-      if (name === 'status_id') {
+      if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
       threatActorValidation(this.props.t)
@@ -272,7 +272,7 @@ class ThreatActorEditionOverviewComponent extends Component {
       R.assoc('createdBy', createdBy),
       R.assoc('killChainPhases', killChainPhases),
       R.assoc('objectMarking', objectMarking),
-      R.assoc('status_id', status),
+      R.assoc('x_opencti_workflow_id', status),
       R.assoc(
         'threat_actor_types',
         threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
@@ -285,7 +285,7 @@ class ThreatActorEditionOverviewComponent extends Component {
         'createdBy',
         'killChainPhases',
         'objectMarking',
-        'status_id',
+        'x_opencti_workflow_id',
       ]),
     )(threatActor);
     return (
@@ -395,14 +395,17 @@ class ThreatActorEditionOverviewComponent extends Component {
             />
             {threatActor.workflowEnabled && (
               <StatusField
-                name="status_id"
+                name="x_opencti_workflow_id"
                 type="Threat-Actor"
                 onFocus={this.handleChangeFocus.bind(this)}
                 onChange={this.handleSubmitField.bind(this)}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="status_id" />
+                  <SubscriptionFocus
+                    context={context}
+                    field="x_opencti_workflow_id"
+                  />
                 }
               />
             )}

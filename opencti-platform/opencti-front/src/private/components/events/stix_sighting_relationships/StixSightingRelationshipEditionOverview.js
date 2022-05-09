@@ -161,7 +161,7 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
   description: Yup.string().nullable(),
   x_opencti_negative: Yup.boolean(),
-  status_id: Yup.object(),
+  x_opencti_workflow_id: Yup.object(),
 });
 
 const StixSightingRelationshipEditionContainer = ({
@@ -243,7 +243,7 @@ const StixSightingRelationshipEditionContainer = ({
   };
   const handleSubmitField = (name, value) => {
     let finalValue = value;
-    if (name === 'status_id') {
+    if (name === 'x_opencti_workflow_id') {
       finalValue = value.value;
     }
     stixSightingRelationshipValidation(t)
@@ -296,7 +296,7 @@ const StixSightingRelationshipEditionContainer = ({
     assoc('last_seen', dateFormat(stixSightingRelationship.last_seen)),
     assoc('createdBy', createdBy),
     assoc('objectMarking', objectMarking),
-    assoc('status_id', status),
+    assoc('x_opencti_workflow_id', status),
     pick([
       'attribute_count',
       'confidence',
@@ -306,7 +306,7 @@ const StixSightingRelationshipEditionContainer = ({
       'x_opencti_negative',
       'createdBy',
       'objectMarking',
-      'status_id',
+      'x_opencti_workflow_id',
     ]),
   )(stixSightingRelationship);
   const link = stixDomainObject
@@ -424,7 +424,7 @@ const StixSightingRelationshipEditionContainer = ({
               />
               {stixSightingRelationship.workflowEnabled && (
                 <StatusField
-                  name="status_id"
+                  name="x_opencti_workflow_id"
                   type="stix-sighting-relationship"
                   onFocus={handleChangeFocus}
                   onChange={handleSubmitField}
@@ -433,7 +433,7 @@ const StixSightingRelationshipEditionContainer = ({
                   helpertext={
                     <SubscriptionFocus
                       context={editContext}
-                      fieldName="status_id"
+                      fieldName="x_opencti_workflow_id"
                     />
                   }
                 />

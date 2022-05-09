@@ -132,7 +132,7 @@ class PositionEditionOverviewComponent extends Component {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('status_id', values.status_id?.value),
+      R.assoc('x_opencti_workflow_id', values.status_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.toPairs,

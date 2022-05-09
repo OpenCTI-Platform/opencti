@@ -138,6 +138,15 @@ const Incident = createFragmentContainer(IncidentComponent, {
       }
       name
       aliases
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...IncidentDetails_incident
     }
   `,

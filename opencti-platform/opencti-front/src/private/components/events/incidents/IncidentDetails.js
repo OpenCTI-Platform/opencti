@@ -36,17 +36,6 @@ class IncidentDetailsComponent extends Component {
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown source={incident.description} limit={400} />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Processing status')}
-              </Typography>
-              <ItemStatus
-                status={incident.status}
-                disabled={!incident.workflowEnabled}
-              />
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -70,16 +59,31 @@ class IncidentDetailsComponent extends Component {
               </Typography>
               <ExpandableMarkdown source={incident.objective} limit={100} />
             </Grid>
+            <Grid item={true} xs={6}>
+              <EntityStixCoreRelationshipsDonut
+                entityId={incident.id}
+                toTypes={['Stix-Domain-Object']}
+                relationshipType="stix-core-relationship"
+                field="entity_type"
+                height={260}
+                variant="inEntity"
+                isTo={false}
+                title={t('Entities distribution')}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <EntityStixCoreRelationshipsDonut
+                entityId={incident.id}
+                toTypes={['Stix-Cyber-Observable']}
+                relationshipType="stix-core-relationship"
+                field="entity_type"
+                height={260}
+                variant="inEntity"
+                isTo={true}
+                title={t('Observables distribution')}
+              />
+            </Grid>
           </Grid>
-          <EntityStixCoreRelationshipsDonut
-            entityId={incident.id}
-            toTypes={['Stix-Cyber-Observable']}
-            relationshipType="related-to"
-            field="entity_type"
-            height={260}
-            variant="inEntity"
-            isTo={true}
-          />
         </Paper>
       </div>
     );

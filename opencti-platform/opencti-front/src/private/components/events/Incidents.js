@@ -236,7 +236,7 @@ class Incidents extends Component {
             availableFilterKeys={[
               'labelledBy',
               'markedBy',
-              'status_id',
+              'x_opencti_workflow_id',
               'created_start_date',
               'created_end_date',
               'createdBy',

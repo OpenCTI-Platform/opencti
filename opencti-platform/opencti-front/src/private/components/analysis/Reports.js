@@ -245,7 +245,7 @@ class Reports extends Component {
           availableFilterKeys={[
             'report_types',
             'confidence_gt',
-            'status_id',
+            'x_opencti_workflow_id',
             'labelledBy',
             'createdBy',
             'markedBy',

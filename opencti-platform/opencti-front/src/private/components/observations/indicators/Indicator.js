@@ -139,6 +139,15 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
       }
       name
       pattern_type
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
       ...IndicatorDetails_indicator
     }
   `,
