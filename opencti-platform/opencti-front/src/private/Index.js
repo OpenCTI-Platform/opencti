@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, Switch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
@@ -51,22 +51,25 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Index = (me) => {
+  const [clientId, setClientId] = useState(localStorage.getItem('client_id'));
 
   useEffect(() => {
-    if (!localStorage.getItem('client_id')) {
+    if (!clientId) {
       getAccount().then((res) => {
         const account = res.data;
         if (account) {
-          const clientId = account.clients?.[0].client_id;
-          localStorage.setItem('client_id', clientId);
+          const id = account.clients?.[0].client_id;
+          localStorage.setItem('client_id', id);
+          setClientId(id)
         } else {
-          clearToken();
+          clearStorage();
         }
       });
     }
   });
 
-  const clearClientId = () => {
+  const clearStorage = () => {
+    localStorage.removeItem('token')
     localStorage.removeItem('client_id');
   };
 
@@ -74,7 +77,7 @@ const Index = (me) => {
   return (
     <div className={classes.root}>
       <TopBarBreadcrumbs />
-      <LeftBar />
+      <LeftBar clientId={clientId}/>
       <Message />
       <main className={classes.content} style={{ paddingRight: 24 }}>
         <div className={classes.toolbar} />
