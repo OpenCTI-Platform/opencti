@@ -856,7 +856,7 @@ type Settings implements InternalObject & BasicObject {
   platform_title: String
   platform_favicon: String
   platform_url: String
-  platform_email: String
+  platform_email: String @auth(for: [SETTINGS])
   platform_modules: [Module]
   platform_providers: [Provider]
   platform_language: String
