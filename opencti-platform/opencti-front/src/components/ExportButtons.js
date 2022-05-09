@@ -10,6 +10,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
 import themeLight from './ThemeLight';
 import themeDark from './ThemeDark';
 import { commitLocalUpdate } from '../relay/environment';
@@ -150,16 +152,18 @@ class ExportButtons extends Component {
     const { classes, t, domElementId, name, csvData } = this.props;
     return (
       <div className={classes.exportButtons}>
-        <Tooltip title={t('Export to image')}>
-          <IconButton
-            onClick={this.handleOpenImage.bind(this)}
-            aria-haspopup="true"
-            color="primary"
-            size="large"
-          >
-            <ImageOutlined />
-          </IconButton>
-        </Tooltip>
+        <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+          <Tooltip title={t('Export to image')}>
+            <ToggleButton onClick={this.handleOpenImage.bind(this)}>
+              <ImageOutlined fontSize="small" color="primary" />
+            </ToggleButton>
+          </Tooltip>
+          <Tooltip title={t('Export to PDF')}>
+            <ToggleButton onClick={this.handleOpenPdf.bind(this)}>
+              <FilePdfBox fontSize="small" color="primary" />
+            </ToggleButton>
+          </Tooltip>
+        </ToggleButtonGroup>
         <Menu
           anchorEl={anchorElImage}
           open={Boolean(anchorElImage)}
@@ -210,16 +214,6 @@ class ExportButtons extends Component {
             {t('Light (without background)')}
           </MenuItem>
         </Menu>
-        <Tooltip title={t('Export to PDF')}>
-          <IconButton
-            onClick={this.handleOpenPdf.bind(this)}
-            aria-haspopup="true"
-            color="primary"
-            size="large"
-          >
-            <FilePdfBox />
-          </IconButton>
-        </Tooltip>
         <Menu
           anchorEl={anchorElPdf}
           open={Boolean(anchorElPdf)}

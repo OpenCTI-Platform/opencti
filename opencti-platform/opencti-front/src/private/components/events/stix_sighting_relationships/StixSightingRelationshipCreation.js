@@ -24,11 +24,11 @@ import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
 import { truncate } from '../../../../utils/String';
-import KillChainPhasesField from '../form/KillChainPhasesField';
-import CreatedByField from '../form/CreatedByField';
-import ObjectMarkingField from '../form/ObjectMarkingField';
-import ConfidenceField from '../form/ConfidenceField';
-import ExternalReferencesField from '../form/ExternalReferencesField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import { defaultValue } from '../../../../utils/Graph';
+import TextField from '../../../../components/TextField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -137,19 +137,22 @@ const styles = (theme) => ({
   },
 });
 
-export const stixCoreRelationshipCreationQuery = graphql`
-  query StixCoreRelationshipCreationQuery($fromId: String!, $toId: String!) {
-    stixCoreRelationships(fromId: $fromId, toId: $toId) {
+export const stixSightingRelationshipCreationQuery = graphql`
+  query StixSightingRelationshipCreationQuery(
+    $fromId: String!
+    $toId: String!
+  ) {
+    stixSightingRelationships(fromId: $fromId, toId: $toId) {
       edges {
         node {
           id
           parent_types
           entity_type
-          relationship_type
           description
           confidence
-          start_time
-          stop_time
+          first_seen
+          last_seen
+          attribute_count
           created
           from {
             ... on BasicObject {
@@ -206,18 +209,18 @@ export const stixCoreRelationshipCreationQuery = graphql`
   }
 `;
 
-const stixCoreRelationshipCreationMutation = graphql`
-  mutation StixCoreRelationshipCreationMutation(
-    $input: StixCoreRelationshipAddInput!
+const stixSightingRelationshipCreationMutation = graphql`
+  mutation StixSightingRelationshipCreationMutation(
+    $input: StixSightingRelationshipAddInput!
   ) {
-    stixCoreRelationshipAdd(input: $input) {
+    stixSightingRelationshipAdd(input: $input) {
       id
       entity_type
       parent_types
-      relationship_type
       confidence
-      start_time
-      stop_time
+      first_seen
+      last_seen
+      attribute_count
       from {
         ... on BasicObject {
           id
@@ -231,6 +234,7 @@ const stixCoreRelationshipCreationMutation = graphql`
         }
         ... on StixCoreRelationship {
           relationship_type
+          created
         }
       }
       to {
@@ -246,6 +250,7 @@ const stixCoreRelationshipCreationMutation = graphql`
         }
         ... on StixCoreRelationship {
           relationship_type
+          created
         }
       }
       created_at
@@ -269,28 +274,31 @@ const stixCoreRelationshipCreationMutation = graphql`
   }
 `;
 
-const stixCoreRelationshipValidation = (t) => Yup.object().shape({
-  relationship_type: Yup.string().required(t('This field is required')),
+const stixSightingRelationshipValidation = (t) => Yup.object().shape({
+  attribute_count: Yup.number()
+    .typeError(t('The value must be a number'))
+    .integer(t('The value must be a number'))
+    .required(t('This field is required')),
   confidence: Yup.number()
     .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number')),
-  start_time: Yup.date()
-    .nullable()
-    .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  stop_time: Yup.date()
-    .nullable()
-    .default(null)
-    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+    .integer(t('The value must be a number'))
+    .required(t('This field is required')),
+  first_seen: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
+  last_seen: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
   description: Yup.string().nullable(),
+  x_opencti_negative: Yup.boolean(),
 });
 
-class StixCoreRelationshipCreation extends Component {
+class StixSightingRelationshipCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
       step: 0,
-      existingRelations: [],
+      existingSightings: [],
     };
   }
 
@@ -299,32 +307,28 @@ class StixCoreRelationshipCreation extends Component {
       R.forEach((toObject) => {
         const finalValues = R.pipe(
           R.assoc('confidence', parseInt(values.confidence, 10)),
+          R.assoc('attribute_count', parseInt(values.attribute_count, 10)),
           R.assoc('fromId', fromObject.id),
           R.assoc('toId', toObject.id),
           R.assoc(
-            'start_time',
-            values.start_time ? parse(values.start_time).format() : null,
+            'first_seen',
+            values.first_seen ? parse(values.first_seen).format() : null,
           ),
           R.assoc(
-            'stop_time',
-            values.stop_time ? parse(values.stop_time).format() : null,
+            'last_seen',
+            values.first_seen ? parse(values.last_seen).format() : null,
           ),
           R.assoc('createdBy', values.createdBy?.value),
-          R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-          R.assoc(
-            'externalReferences',
-            R.pluck('value', values.externalReferences),
-          ),
         )(values);
         commitMutation({
-          mutation: stixCoreRelationshipCreationMutation,
+          mutation: stixSightingRelationshipCreationMutation,
           variables: {
             input: finalValues,
           },
           setSubmitting,
           onCompleted: (response) => {
-            this.props.handleResult(response.stixCoreRelationshipAdd);
+            this.props.handleResult(response.stixSightingRelationshipAdd);
           },
         });
       }, this.props.toObjects);
@@ -347,7 +351,7 @@ class StixCoreRelationshipCreation extends Component {
         this.props.fromObjects.length === 1
         && this.props.toObjects.length === 1
       ) {
-        fetchQuery(stixCoreRelationshipCreationQuery, {
+        fetchQuery(stixSightingRelationshipCreationQuery, {
           fromId: this.props.fromObjects[0].id,
           toId: this.props.toObjects[0].id,
         })
@@ -355,11 +359,11 @@ class StixCoreRelationshipCreation extends Component {
           .then((data) => {
             this.setState({
               step:
-                data.stixCoreRelationships.edges
-                && data.stixCoreRelationships.edges.length > 0
+                data.stixSightingRelationships.edges
+                && data.stixSightingRelationships.edges.length > 0
                   ? 1
                   : 2,
-              existingRelations: data.stixCoreRelationships.edges,
+              existingSightings: data.stixSightingRelationships.edges,
             });
           });
       } else {
@@ -368,8 +372,8 @@ class StixCoreRelationshipCreation extends Component {
     }
   }
 
-  handleSelectRelation(relation) {
-    this.props.handleResult(relation);
+  handleSelectSighting(sighting) {
+    this.props.handleResult(sighting);
     this.handleClose();
   }
 
@@ -377,12 +381,12 @@ class StixCoreRelationshipCreation extends Component {
     this.setState({ step: 2 });
   }
 
-  handleReverseRelation() {
-    this.setState({ existingRelations: [], step: 0 }, () => this.props.handleReverseRelation());
+  handleReverseSighting() {
+    this.setState({ existingSightings: [], step: 0 }, () => this.props.handleReverseSighting());
   }
 
   handleClose() {
-    this.setState({ existingRelations: [], step: 0 });
+    this.setState({ existingSightings: [], step: 0 });
     this.props.handleClose();
   }
 
@@ -393,32 +397,20 @@ class StixCoreRelationshipCreation extends Component {
       fromObjects,
       toObjects,
       confidence,
-      startTime,
-      stopTime,
+      firstSeen,
+      lastSeen,
       defaultCreatedBy,
       defaultMarkingDefinitions,
     } = this.props;
-    const relationshipTypes = resolveRelationsTypes(
-      fromObjects[0].entity_type,
-      toObjects[0].entity_type,
-    );
-    // eslint-disable-next-line no-nested-ternary
-    const defaultRelationshipType = R.head(relationshipTypes)
-      ? R.head(relationshipTypes)
-      : relationshipTypes.includes('related-to')
-        ? 'related-to'
-        : '';
     const defaultConfidence = confidence || 15;
-    const defaultStartTime = startTime || null;
-    const defaultEndTime = stopTime || null;
+    const defaultFirstSeen = firstSeen || null;
+    const defaultLastSeen = lastSeen || null;
     const initialValues = {
-      relationship_type: defaultRelationshipType,
+      attribute_count: 1,
       confidence: defaultConfidence,
-      start_time: defaultStartTime,
-      stop_time: defaultEndTime,
+      first_seen: defaultFirstSeen,
+      last_seen: defaultLastSeen,
       description: '',
-      killChainPhases: [],
-      externalReferences: [],
       createdBy: defaultCreatedBy
         ? {
           label: defaultCreatedBy.name,
@@ -441,7 +433,7 @@ class StixCoreRelationshipCreation extends Component {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={stixCoreRelationshipValidation(t)}
+        validationSchema={stixSightingRelationshipValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >
         {({ submitForm, isSubmitting, setFieldValue }) => (
@@ -455,7 +447,7 @@ class StixCoreRelationshipCreation extends Component {
               >
                 <Close fontSize="small" color="primary" />
               </IconButton>
-              <Typography variant="h6">{t('Create a relationship')}</Typography>
+              <Typography variant="h6">{t('Create a sighting')}</Typography>
             </div>
             <div className={classes.container}>
               <div className={classes.relationCreate}>
@@ -508,7 +500,7 @@ class StixCoreRelationshipCreation extends Component {
                   <br />
                   <Button
                     variant="outlined"
-                    onClick={this.handleReverseRelation.bind(this)}
+                    onClick={this.handleReverseSighting.bind(this)}
                     color="secondary"
                     size="small"
                   >
@@ -559,22 +551,14 @@ class StixCoreRelationshipCreation extends Component {
                 </div>
               </div>
               <Field
-                component={SelectField}
+                component={TextField}
                 variant="standard"
-                name="relationship_type"
-                label={t('Relationship type')}
+                name="attribute_count"
+                label={t('Count')}
                 fullWidth={true}
-                containerstyle={{ marginTop: 20, width: '100%' }}
-              >
-                {R.map(
-                  (type) => (
-                    <MenuItem key={type} value={type}>
-                      {t(`relationship_${type}`)}
-                    </MenuItem>
-                  ),
-                  relationshipTypes,
-                )}
-              </Field>
+                type="number"
+                style={{ marginTop: 20 }}
+              />
               <ConfidenceField
                 name="confidence"
                 label={t('Confidence level')}
@@ -583,10 +567,10 @@ class StixCoreRelationshipCreation extends Component {
               />
               <Field
                 component={DatePickerField}
-                name="start_time"
+                name="first_seen"
                 invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
-                  label: t('Start time'),
+                  label: t('First seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -594,10 +578,10 @@ class StixCoreRelationshipCreation extends Component {
               />
               <Field
                 component={DatePickerField}
-                name="stop_time"
+                name="last_seen"
                 invalidDateMessage={t('The value must be a date (mm/dd/yyyy)')}
                 TextFieldProps={{
-                  label: t('Stop time'),
+                  label: t('Last seen'),
                   variant: 'standard',
                   fullWidth: true,
                   style: { marginTop: 20 },
@@ -612,10 +596,6 @@ class StixCoreRelationshipCreation extends Component {
                 rows="4"
                 style={{ marginTop: 20 }}
               />
-              <KillChainPhasesField
-                name="killChainPhases"
-                style={{ marginTop: 20, width: '100%' }}
-              />
               <CreatedByField
                 name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}
@@ -623,10 +603,6 @@ class StixCoreRelationshipCreation extends Component {
               />
               <ObjectMarkingField
                 name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
-              />
-              <ExternalReferencesField
-                name="externalReferences"
                 style={{ marginTop: 20, width: '100%' }}
               />
               <div className={classes.buttons}>
@@ -655,9 +631,9 @@ class StixCoreRelationshipCreation extends Component {
     );
   }
 
-  renderSelectRelation() {
+  renderSelectSighting() {
     const { fsd, t, classes, fromObjects, toObjects, theme } = this.props;
-    const { existingRelations } = this.state;
+    const { existingSightings } = this.state;
     return (
       <div>
         <div className={classes.header}>
@@ -669,14 +645,14 @@ class StixCoreRelationshipCreation extends Component {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Select a relationship')}</Typography>
+          <Typography variant="h6">{t('Select a sighting')}</Typography>
         </div>
         <div className={classes.container}>
-          {existingRelations.map((relation) => (
+          {existingSightings.map((sighting) => (
             <div
-              key={relation.node.id}
+              key={sighting.node.id}
               className={classes.relation}
-              onClick={this.handleSelectRelation.bind(this, relation.node)}
+              onClick={this.handleSelectSighting.bind(this, sighting.node)}
             >
               <div
                 className={classes.item}
@@ -721,7 +697,7 @@ class StixCoreRelationshipCreation extends Component {
                 <ArrowRightAlt fontSize="small" />
                 <br />
                 <Tooltip
-                  title={relation.node.description}
+                  title={sighting.node.description}
                   aria-label="Description"
                   placement="top"
                 >
@@ -734,11 +710,11 @@ class StixCoreRelationshipCreation extends Component {
                       display: 'inline-block',
                     }}
                   >
-                    {t(`relationship_${relation.node.relationship_type}`)}
+                    {t('sig')}
                     <br />
-                    {t('First obs.')} {fsd(relation.node.start_time)}
+                    {t('First obs.')} {fsd(sighting.node.first_seen)}
                     <br />
-                    {t('Last obs.')} {fsd(relation.node.stop_time)}
+                    {t('Last obs.')} {fsd(sighting.node.last_seen)}
                   </div>
                 </Tooltip>
               </div>
@@ -773,7 +749,7 @@ class StixCoreRelationshipCreation extends Component {
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>
-                    {truncate(toObjects[0].name, 20)}
+                    {truncate(defaultValue(toObjects[0]), 20)}
                   </span>
                 </div>
               </div>
@@ -814,7 +790,7 @@ class StixCoreRelationshipCreation extends Component {
                   {fromObjects.length > 1 ? (
                     <em>{t('Multiple entities selected')}</em>
                   ) : (
-                    truncate(fromObjects[0].name)
+                    truncate(defaultValue(fromObjects[0]))
                   )}
                 </span>
               </div>
@@ -831,7 +807,7 @@ class StixCoreRelationshipCreation extends Component {
                   display: 'inline-block',
                 }}
               >
-                {t('Create a relationship')}
+                {t('Create a sighting')}
               </div>
             </div>
             <div
@@ -911,14 +887,14 @@ class StixCoreRelationshipCreation extends Component {
         || toObjects === null
           ? this.renderLoader()
           : ''}
-        {step === 1 ? this.renderSelectRelation() : ''}
+        {step === 1 ? this.renderSelectSighting() : ''}
         {step === 2 ? this.renderForm() : ''}
       </Drawer>
     );
   }
 }
 
-StixCoreRelationshipCreation.propTypes = {
+StixSightingRelationshipCreation.propTypes = {
   open: PropTypes.bool,
   fromObjects: PropTypes.object,
   toObjects: PropTypes.array,
@@ -927,17 +903,17 @@ StixCoreRelationshipCreation.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
-  startTime: PropTypes.string,
-  stopTime: PropTypes.string,
+  firstSeen: PropTypes.string,
+  lastSeen: PropTypes.string,
   confidence: PropTypes.number,
   defaultCreatedBy: PropTypes.object,
   defaultMarkingDefinitions: PropTypes.object,
   handleClose: PropTypes.func,
-  handleReverseRelation: PropTypes.func,
+  handleReverseSighting: PropTypes.func,
 };
 
 export default R.compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(StixCoreRelationshipCreation);
+)(StixSightingRelationshipCreation);

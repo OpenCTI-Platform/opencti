@@ -27,7 +27,7 @@ export const reportKnowledgeGraphtMutationRelationAddMutation = graphql`
   }
 `;
 
-export const reportKnowledgeGraphtMutationRelationDeleteMutation = graphql`
+export const reportKnowledgeGraphMutationRelationDeleteMutation = graphql`
   mutation ReportKnowledgeGraphQueryRelationDeleteMutation(
     $id: ID!
     $toId: String!
@@ -37,6 +37,14 @@ export const reportKnowledgeGraphtMutationRelationDeleteMutation = graphql`
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         id
       }
+    }
+  }
+`;
+
+export const reportKnowledgeGraphQueryStixRelationshipDeleteMutation = graphql`
+  mutation ReportKnowledgeGraphQueryStixRelationshipDeleteMutation($id: ID!) {
+    stixRelationshipEdit(id: $id) {
+      delete
     }
   }
 `;

@@ -312,7 +312,6 @@ const TopBar = ({
                   'created_at_start_date',
                   'created_at_end_date',
                 ]}
-                currentFilters={{}}
                 disabled={location.pathname.includes('/dashboard/search')}
               />
             </div>

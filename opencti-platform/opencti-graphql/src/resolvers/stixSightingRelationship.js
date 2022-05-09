@@ -57,6 +57,7 @@ const stixSightingRelationshipResolvers = {
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   },
   StixSightingRelationship: {
+    relationship_type: () => 'stix-sighting-relationship',
     from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
     to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
     toStix: (rel, _, { user }) => stixLoadByIdStringify(user, rel.id),

@@ -12638,6 +12638,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   objectMarking?: Maybe<MarkingDefinitionConnection>;
   opinions?: Maybe<OpinionConnection>;
   parent_types: Array<Maybe<Scalars['String']>>;
+  relationship_type: Scalars['String'];
   reports?: Maybe<ReportConnection>;
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -20537,6 +20538,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipOpinionsArgs>>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipReportsArgs>>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

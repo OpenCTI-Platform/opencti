@@ -1,5 +1,5 @@
 import { includes } from 'ramda';
-import { findById, findAll } from '../domain/stixRelationship';
+import { findById, findAll, stixRelationshipDelete } from '../domain/stixRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
@@ -30,6 +30,11 @@ const stixRelationshipResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
+  },
+  Mutation: {
+    stixRelationshipEdit: (_, { id }, { user }) => ({
+      delete: () => stixRelationshipDelete(user, id),
+    }),
   },
 };
 

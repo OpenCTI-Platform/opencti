@@ -52,6 +52,7 @@ class StixSightingRelationshipEdition extends Component {
       handleClose,
       handleDelete,
       inferred,
+      noStoreUpdate,
     } = this.props;
     return (
       <Drawer
@@ -82,6 +83,7 @@ class StixSightingRelationshipEdition extends Component {
                         : null
                     }
                     inferred={inferred}
+                    noStoreUpdate={noStoreUpdate}
                   />
                 );
               }
@@ -106,6 +108,7 @@ StixSightingRelationshipEdition.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   inferred: PropTypes.bool,
+  noStoreUpdate: PropTypes.bool,
 };
 
 export default compose(

@@ -517,6 +517,7 @@ StixSightingRelationshipEditionContainer.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   inferred: PropTypes.bool,
+  noStoreUpdate: PropTypes.bool,
 };
 
 const StixSightingRelationshipEditionFragment = createFragmentContainer(

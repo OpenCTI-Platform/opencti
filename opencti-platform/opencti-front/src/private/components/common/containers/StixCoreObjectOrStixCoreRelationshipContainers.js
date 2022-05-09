@@ -317,7 +317,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
           <Filters
             availableFilterKeys={availableFilterKeys}
             handleAddFilter={this.handleAddFilter.bind(this)}
-            currentFilters={filters}
           />
           <div className={classes.filters}>
             {map((currentFilter) => {

@@ -29,7 +29,7 @@ export const findAll = async (user, args) => {
 // Entities tab
 export const objects = async (user, containerId, args) => {
   const key = buildRefRelationKey(RELATION_OBJECT);
-  let types = ['Stix-Core-Object', 'stix-core-relationship'];
+  let types = ['Stix-Core-Object', 'stix-core-relationship', 'stix-sighting-relationship', 'stix-cyber-observable-relationship'];
   if (args.types) {
     types = args.types;
   }
@@ -47,6 +47,9 @@ export const relatedContainers = async (user, containerId, args) => {
   }
   const filters = [{ key, values: [containerId] }];
   const elements = await listAllThings(user, types, { filters });
+  if (elements.length === 0) {
+    return buildPagination(0, null, [], 0);
+  }
   const elementsIds = elements.map((element) => element.id);
   const queryArgs = {
     ...args,

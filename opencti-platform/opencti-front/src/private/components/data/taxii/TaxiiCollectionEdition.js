@@ -187,7 +187,6 @@ const TaxiiCollectionEditionContainer = (props) => {
                     'confidence_gt',
                     'pattern_type',
                   ]}
-                  currentFilters={[]}
                   handleAddFilter={handleAddFilter}
                   noDirectFilters={true}
                 />

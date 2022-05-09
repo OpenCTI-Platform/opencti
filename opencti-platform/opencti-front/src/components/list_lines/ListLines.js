@@ -195,11 +195,11 @@ class ListLines extends Component {
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
-              currentFilters={filters}
             />
           )}
           {(!availableFilterKeys || availableFilterKeys.length === 0)
-            && !noHeaders && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
+            && !noHeaders
+            && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
           <div className={classes.filters}>
             {map((currentFilter) => {
               const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;

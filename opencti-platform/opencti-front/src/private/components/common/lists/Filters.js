@@ -1018,7 +1018,6 @@ Filters.propTypes = {
   nsd: PropTypes.func,
   availableFilterKeys: PropTypes.array,
   handleAddFilter: PropTypes.func,
-  currentFilters: PropTypes.array,
   variant: PropTypes.string,
   disabled: PropTypes.bool,
   noDirectFilters: PropTypes.bool,
