@@ -249,7 +249,6 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {/* {t('Lorem Ipsum')} */}
                       {data.name && t(data.name)}
                     </Typography>
                   </div>
@@ -265,7 +264,6 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('ID')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {/* {t('Lorem Ipsum')} */}
                       {data.id && t(data.id)}
                     </Typography>
                   </div>

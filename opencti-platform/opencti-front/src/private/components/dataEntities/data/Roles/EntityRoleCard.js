@@ -225,7 +225,8 @@ class EntityRoleCardComponent extends Component {
                   {t('Author')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
+                  {/* TODO: 'Add Author Info' */}
+                  {t('')}
                 </Typography>
               </Grid>
             </Grid>

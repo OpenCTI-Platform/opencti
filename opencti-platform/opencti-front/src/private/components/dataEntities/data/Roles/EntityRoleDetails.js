@@ -98,7 +98,8 @@ class EntityRoleDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {/* TODO 'Add Name info' */}
+                {t('')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -120,7 +121,8 @@ class EntityRoleDetailsComponent extends Component {
                   {t('Short Name')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {/* TODO ' Ad Short Name info' */}
+                {t('')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -144,7 +146,8 @@ class EntityRoleDetailsComponent extends Component {
                   {t('ID')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {/* TODO 'Add ID' */}
+                {t('')}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -155,7 +158,8 @@ class EntityRoleDetailsComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Lorem Ipsum')}
+                {/* TODO: 'Add Last Modified' */}
+                {t('')}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -170,7 +174,8 @@ class EntityRoleDetailsComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {t('Lorem Ipsum')}
+                    {/* TODO: 'Add Description' */}
+                    {t('')}
                   </div>
                 </div>
               </div>

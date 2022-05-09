@@ -109,7 +109,6 @@ class RemediationGeneralOverviewComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
                 {remediation.name && t(remediation.name)}
               </div>
               <div style={{ marginBottom: '20px' }}>
@@ -122,7 +121,6 @@ class RemediationGeneralOverviewComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {/* {t('Lorem Ipsum Dolor Sit Amet')} */}
                 {remediation.created && fd(remediation.created)}
               </div>
               <div>
@@ -151,7 +149,6 @@ class RemediationGeneralOverviewComponent extends Component {
                       && t(remediationOriginData.actor_ref?.name)}
                     </Typography>
                     <Typography color="textSecondary" variant="disabled">
-                      {/* {t('Lorem Ipsum Dolor Ist')} */}
                     </Typography>
                   </div>
                 </div>
