@@ -626,3 +626,19 @@ class OpenCTIApiClient:
                 "[upload] Missing parameters: file_name or data",
             )
             return None
+
+    def get_stix_content(self, id):
+        """get the STIX content of any entity
+
+        return: the STIX content in JSON
+        rtype: dict
+        """
+
+        logging.info("Entity in JSON " + id)
+        query = """
+            query StixQuery($id: String!) {
+                stix(id: $id)
+            }
+        """
+        result = self.query(query, {"id": id})
+        return json.loads(result["data"]["stix"])
