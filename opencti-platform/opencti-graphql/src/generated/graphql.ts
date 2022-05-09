@@ -6092,6 +6092,7 @@ export type Mutation = {
   stixDomainObjectsExportAsk?: Maybe<FileConnection>;
   stixDomainObjectsExportPush?: Maybe<Scalars['Boolean']>;
   stixEdit?: Maybe<StixEditMutations>;
+  stixRelationshipEdit?: Maybe<StixRelationshipEditMutations>;
   stixSightingRelationshipAdd?: Maybe<StixSightingRelationship>;
   stixSightingRelationshipEdit?: Maybe<StixSightingRelationshipEditMutations>;
   streamCollectionAdd?: Maybe<StreamCollection>;
@@ -6656,6 +6657,11 @@ export type MutationStixDomainObjectsExportPushArgs = {
 
 
 export type MutationStixEditArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationStixRelationshipEditArgs = {
   id: Scalars['ID'];
 };
 
@@ -12574,6 +12580,11 @@ export type StixRelationshipEdge = {
   node: StixRelationship;
 };
 
+export type StixRelationshipEditMutations = {
+  __typename?: 'StixRelationshipEditMutations';
+  delete?: Maybe<Scalars['ID']>;
+};
+
 export enum StixRelationshipsFilter {
   Confidence = 'confidence',
   Created = 'created',
@@ -16125,6 +16136,7 @@ export type ResolversTypes = {
   StixRelationship: ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'];
   StixRelationshipConnection: ResolverTypeWrapper<StixRelationshipConnection>;
   StixRelationshipEdge: ResolverTypeWrapper<StixRelationshipEdge>;
+  StixRelationshipEditMutations: ResolverTypeWrapper<StixRelationshipEditMutations>;
   StixRelationshipsFilter: StixRelationshipsFilter;
   StixRelationshipsFiltering: StixRelationshipsFiltering;
   StixRelationshipsOrdering: StixRelationshipsOrdering;
@@ -16600,6 +16612,7 @@ export type ResolversParentTypes = {
   StixRelationship: ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'];
   StixRelationshipConnection: StixRelationshipConnection;
   StixRelationshipEdge: StixRelationshipEdge;
+  StixRelationshipEditMutations: StixRelationshipEditMutations;
   StixRelationshipsFiltering: StixRelationshipsFiltering;
   StixSightingRelationship: Omit<StixSightingRelationship, 'from' | 'to'> & { from?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']>, to?: Maybe<ResolversParentTypes['StixObjectOrStixRelationship']> };
   StixSightingRelationshipAddInput: StixSightingRelationshipAddInput;
@@ -18850,6 +18863,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixDomainObjectsExportAsk?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format' | 'type'>>;
   stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'file' | 'type'>>;
   stixEdit?: Resolver<Maybe<ResolversTypes['StixEditMutations']>, ParentType, ContextType, RequireFields<MutationStixEditArgs, 'id'>>;
+  stixRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRelationshipEditArgs, 'id'>>;
   stixSightingRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, Partial<MutationStixSightingRelationshipAddArgs>>;
   stixSightingRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixSightingRelationshipEditArgs, 'id'>>;
   streamCollectionAdd?: Resolver<Maybe<ResolversTypes['StreamCollection']>, ParentType, ContextType, Partial<MutationStreamCollectionAddArgs>>;
@@ -20515,6 +20529,11 @@ export type StixRelationshipEdgeResolvers<ContextType = any, ParentType extends 
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type StixRelationshipEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipEditMutations'] = ResolversParentTypes['StixRelationshipEditMutations']> = {
+  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type StixSightingRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixSightingRelationship'] = ResolversParentTypes['StixSightingRelationship']> = {
   attribute_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -21795,6 +21814,7 @@ export type Resolvers<ContextType = any> = {
   StixRelationship?: StixRelationshipResolvers<ContextType>;
   StixRelationshipConnection?: StixRelationshipConnectionResolvers<ContextType>;
   StixRelationshipEdge?: StixRelationshipEdgeResolvers<ContextType>;
+  StixRelationshipEditMutations?: StixRelationshipEditMutationsResolvers<ContextType>;
   StixSightingRelationship?: StixSightingRelationshipResolvers<ContextType>;
   StixSightingRelationshipConnection?: StixSightingRelationshipConnectionResolvers<ContextType>;
   StixSightingRelationshipEditMutations?: StixSightingRelationshipEditMutationsResolvers<ContextType>;
