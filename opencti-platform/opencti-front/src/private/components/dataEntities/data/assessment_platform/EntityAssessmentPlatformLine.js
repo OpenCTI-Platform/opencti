@@ -90,8 +90,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ height: '24px', width: dataColumns.type.width }}
               >
-                {node.entity_type
-                  && <ItemIcon type={node.entity_type} />}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -103,7 +102,7 @@ class EntityAssessmentPlatformLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.author.width }}
               >
-                {node.entity_type && t(node.entity_type)}
+                {/* {node.entity_type && t(node.entity_type)} */}
               </div>
               <div
                 className={classes.bodyItem}

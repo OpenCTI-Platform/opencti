@@ -72,7 +72,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
       classes,
       refreshQuery,
       assessmentPlatform,
-      fd,
+      fldt,
       history,
     } = this.props;
     return (
@@ -103,7 +103,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {assessmentPlatform.created && fd(assessmentPlatform.created)}
+                {assessmentPlatform.created && fldt(assessmentPlatform.created)}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -138,7 +138,7 @@ class EntityAssessmentPlatformDetailsComponent extends Component {
                   {t('Last Modified')}
                 </Typography>
                 <div className="clearfix" />
-                {assessmentPlatform.modified && fd(assessmentPlatform.modified)}
+                {assessmentPlatform.modified && fldt(assessmentPlatform.modified)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -202,7 +202,7 @@ EntityAssessmentPlatformDetailsComponent.propTypes = {
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
-  fd: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const EntityAssessmentPlatformDetails = createFragmentContainer(
@@ -217,6 +217,12 @@ const EntityAssessmentPlatformDetails = createFragmentContainer(
         modified
         name
         description
+        uses_components {
+          __typename
+          id
+          entity_type
+          name
+        }
         labels {
           __typename
           id
@@ -224,10 +230,6 @@ const EntityAssessmentPlatformDetails = createFragmentContainer(
           color
           entity_type
           description
-        }
-        uses_components {
-          id
-          name
         }
       }
     `,
