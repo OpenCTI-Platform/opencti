@@ -14,3 +14,17 @@ export const RiskFiltersQuery = graphql`
     }
   }
 `;
+
+export const riskFiltersNameQuery = graphql`
+  query RiskFiltersNameQuery(
+    $search: String
+  ) {
+    risks(search: $search) {
+      edges {
+        node {
+          name
+        }
+      }
+    }
+  }
+`;

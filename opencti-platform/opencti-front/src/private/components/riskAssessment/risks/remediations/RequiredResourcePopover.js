@@ -39,6 +39,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/C
 import MarkDownField from '../../../../../components/MarkDownField';
 import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -178,7 +179,6 @@ class RequiredResourcePopover extends Component {
         name: values.name,
       }],
     });
-    console.log('requiredResourcePopover', values, this.state.subjects);
     // CM(environmentDarkLight, {
     //   mutation: cyioRequiredResourceEditionQuery,
     //   variables: {
@@ -212,7 +212,10 @@ class RequiredResourcePopover extends Component {
         this.setState({ deleting: false });
         this.handleCloseDelete();
       },
-      onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to delete Required Resource');
+      },
     });
     // commitMutation({
     //   mutation: requiredResourcePopoverDeletionMutation,
@@ -245,7 +248,6 @@ class RequiredResourcePopover extends Component {
       refreshQuery,
       inputValue,
       remediationId,
-      requiredResourceData,
       data,
     } = this.props;
     const requiredResourceNode = R.pipe(
@@ -258,7 +260,6 @@ class RequiredResourcePopover extends Component {
       })),
       R.mergeAll,
     )(data);
-    console.log('RequiredResourceEdition', data);
     const initialValues = R.pipe(
       R.assoc('id', data.id || ''),
       R.assoc('name', requiredResourceNode?.name || ''),
@@ -496,17 +497,17 @@ class RequiredResourcePopover extends Component {
                     </Grid>
                     <Grid style={{ marginTop: '5px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
-                        typename={requiredResourceData.__typename}
+                        typename={data.__typename}
                         fieldName='links'
-                        externalReferences={requiredResourceData.links}
+                        externalReferences={data.links}
                         cyioCoreObjectId={remediationId}
                         refreshQuery={refreshQuery}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
-                        typename={requiredResourceData.__typename}
-                        notes={requiredResourceData.remarks}
+                        typename={data.__typename}
+                        notes={data.remarks}
                         fieldName='remarks'
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop='0px'
@@ -583,7 +584,6 @@ class RequiredResourcePopover extends Component {
 }
 
 RequiredResourcePopover.propTypes = {
-  requiredResourceData: PropTypes.object,
   remediationId: PropTypes.string,
   externalReferenceId: PropTypes.string,
   paginationOptions: PropTypes.object,
