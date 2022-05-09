@@ -30,7 +30,7 @@ steps:
       - yarn install
       - yarn build
       - yarn lint
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - sleep 160
       - yarn test
 
@@ -128,7 +128,7 @@ services:
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - yarn start
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
@@ -152,7 +152,7 @@ services:
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - yarn start
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
@@ -176,7 +176,7 @@ services:
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - yarn start
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.10-nodejs16-alpine
@@ -200,5 +200,5 @@ services:
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@stix_refactor
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
       - yarn start
