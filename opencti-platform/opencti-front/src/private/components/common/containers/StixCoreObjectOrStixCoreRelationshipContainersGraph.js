@@ -116,7 +116,10 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
+      width: null,
+      height: null,
       zoomed: false,
+      keyword: '',
     };
   }
 
@@ -403,6 +406,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           this.state.createdBy,
           ignoredStixCoreObjectsTypes,
           this.state.selectedTimeRangeInterval,
+          this.state.keyword,
         ),
       },
       () => {
@@ -424,6 +428,22 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
         this.state.createdBy,
         [],
         selectedTimeRangeInterval,
+        this.state.keyword,
+      ),
+    });
+  }
+
+  handleSearch(keyword) {
+    this.setState({
+      keyword,
+      graphData: applyFilters(
+        this.graphData,
+        this.state.stixCoreObjectsTypes,
+        this.state.markedBy,
+        this.state.createdBy,
+        [],
+        this.state.selectedTimeRangeInterval,
+        keyword,
       ),
     });
   }
@@ -490,6 +510,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}
           handleChangeView={handleChangeView.bind(this)}
+          handleSearch={this.handleSearch.bind(this)}
         />
         {mode3D ? (
           <ForceGraph3D

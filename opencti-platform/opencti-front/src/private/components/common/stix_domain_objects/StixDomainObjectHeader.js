@@ -57,11 +57,11 @@ const styles = () => ({
     float: 'right',
   },
   viewAsField: {
-    marginTop: -3,
+    marginTop: -6,
     float: 'left',
   },
   viewAsFieldLabel: {
-    margin: '5px 15px 0 0',
+    margin: '2px 15px 0 0',
     fontSize: 14,
     float: 'left',
   },

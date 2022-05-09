@@ -59,6 +59,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
 import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
+import SearchInput from '../../../../components/SearchInput';
 
 const styles = () => ({
   bottomNav: {
@@ -317,9 +318,17 @@ class ReportKnowledgeGraphBar extends Component {
         const remoteRelevant = selectedLinks[0].source.relationship_type
           ? selectedLinks[0].target
           : selectedLinks[0].source;
-        viewLink = `${resolveLink(remoteRelevant.entity_type)}/${
-          remoteRelevant.id
-        }/knowledge/relations/${selectedLinks[0].id}`;
+        if (selectedLinks[0].entity_type === 'stix-sighting-relationship') {
+          viewLink = `${resolveLink(remoteRelevant.entity_type)}/${
+            remoteRelevant.id
+          }/knowledge/sightings/${selectedLinks[0].id}`;
+        } else if (
+          !selectedLinks[0].parent_types.includes('stix-meta-relationship')
+        ) {
+          viewLink = `${resolveLink(remoteRelevant.entity_type)}/${
+            remoteRelevant.id
+          }/knowledge/relations/${selectedLinks[0].id}`;
+        }
       }
     }
     const editionEnabled = (!isInferred
@@ -468,17 +477,6 @@ class ReportKnowledgeGraphBar extends Component {
                   </IconButton>
                 </span>
               </Tooltip>
-              <Tooltip title={t('Display time range selector')}>
-                <span>
-                  <IconButton
-                    color={displayTimeRange ? 'secondary' : 'primary'}
-                    onClick={handleToggleDisplayTimeRange.bind(this)}
-                    size="large"
-                  >
-                    <DateRangeOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
               <Tooltip title={t('Fit graph to canvas')}>
                 <span>
                   <IconButton
@@ -503,6 +501,73 @@ class ReportKnowledgeGraphBar extends Component {
                 </span>
               </Tooltip>
               <Divider className={classes.divider} orientation="vertical" />
+              <Tooltip title={t('Select by entity type')}>
+                <span>
+                  <IconButton
+                    color="primary"
+                    onClick={this.handleOpenSelectByType.bind(this)}
+                    size="large"
+                  >
+                    <SelectGroup />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Popover
+                classes={{ paper: classes.container }}
+                open={openSelectByType}
+                anchorEl={anchorElSelectByType}
+                onClose={this.handleCloseSelectByType.bind(this)}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'center',
+                }}
+              >
+                <List>
+                  {stixCoreObjectsTypes.map((stixCoreObjectType) => (
+                    <ListItem
+                      key={stixCoreObjectType}
+                      role={undefined}
+                      dense={true}
+                      button={true}
+                      onClick={this.handleSelectByType.bind(
+                        this,
+                        stixCoreObjectType,
+                      )}
+                    >
+                      <ListItemText
+                        primary={t(`entity_${stixCoreObjectType}`)}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Popover>
+              <Tooltip title={t('Select all nodes')}>
+                <span>
+                  <IconButton
+                    color="primary"
+                    onClick={handleSelectAll.bind(this)}
+                    size="large"
+                  >
+                    <SelectAll />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Divider className={classes.divider} orientation="vertical" />
+              <Tooltip title={t('Display time range selector')}>
+                <span>
+                  <IconButton
+                    color={displayTimeRange ? 'secondary' : 'primary'}
+                    onClick={handleToggleDisplayTimeRange.bind(this)}
+                    size="large"
+                  >
+                    <DateRangeOutlined />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Tooltip title={t('Filter entity types')}>
                 <span>
                   <IconButton
@@ -659,61 +724,12 @@ class ReportKnowledgeGraphBar extends Component {
                 </List>
               </Popover>
               <Divider className={classes.divider} orientation="vertical" />
-              <Tooltip title={t('Select by entity type')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={this.handleOpenSelectByType.bind(this)}
-                    size="large"
-                  >
-                    <SelectGroup />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Popover
-                classes={{ paper: classes.container }}
-                open={openSelectByType}
-                anchorEl={anchorElSelectByType}
-                onClose={this.handleCloseSelectByType.bind(this)}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <List>
-                  {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                    <ListItem
-                      key={stixCoreObjectType}
-                      role={undefined}
-                      dense={true}
-                      button={true}
-                      onClick={this.handleSelectByType.bind(
-                        this,
-                        stixCoreObjectType,
-                      )}
-                    >
-                      <ListItemText
-                        primary={t(`entity_${stixCoreObjectType}`)}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Popover>
-              <Tooltip title={t('Select all nodes')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={handleSelectAll.bind(this)}
-                    size="large"
-                  >
-                    <SelectAll />
-                  </IconButton>
-                </span>
-              </Tooltip>
+              <div style={{ margin: '9px 0 0 10px' }}>
+                <SearchInput
+                  variant="thin"
+                  onSubmit={this.props.handleSearch.bind(this)}
+                />
+              </div>
             </div>
             {report && (
               <div
@@ -749,7 +765,7 @@ class ReportKnowledgeGraphBar extends Component {
                       component={Link}
                       target="_blank"
                       to={viewLink}
-                      disabled={!viewEnabled}
+                      disabled={!viewEnabled || !viewLink}
                       size="large"
                     >
                       <InfoOutlined />

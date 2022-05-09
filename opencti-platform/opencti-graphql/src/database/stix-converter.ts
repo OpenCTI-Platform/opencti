@@ -953,7 +953,7 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
         sighting_of_type: instance.from?.entity_type,
         where_sighted_refs: instance.to?.internal_id ? [instance.to?.internal_id] : [],
         where_sighted_types: instance.to?.entity_type ? [instance.to?.entity_type] : [],
-        negative: instance.negative,
+        negative: instance.x_opencti_negative,
       })
     }
   };

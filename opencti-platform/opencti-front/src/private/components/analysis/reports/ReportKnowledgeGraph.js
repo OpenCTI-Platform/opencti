@@ -387,6 +387,8 @@ class ReportKnowledgeGraphComponent extends Component {
       numberOfSelectedLinks: 0,
       width: null,
       height: null,
+      zoomed: false,
+      keyword: '',
     };
   }
 
@@ -611,6 +613,7 @@ class ReportKnowledgeGraphComponent extends Component {
           stixCoreObjectsTypes: allStixCoreObjectsTypes,
           markedBy: allMarkedBy.map((n) => n.id),
           createdBy: allCreatedBy.map((n) => n.id),
+          keyword: '',
         },
         () => {
           this.saveParameters(false);
@@ -804,6 +807,7 @@ class ReportKnowledgeGraphComponent extends Component {
         this.state.createdBy,
         ignoredStixCoreObjectsTypes,
         this.state.selectedTimeRangeInterval,
+        this.state.keyword,
       ),
     });
   }
@@ -895,6 +899,7 @@ class ReportKnowledgeGraphComponent extends Component {
         this.state.createdBy,
         ignoredStixCoreObjectsTypes,
         this.state.selectedTimeRangeInterval,
+        this.state.keyword,
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
@@ -926,6 +931,7 @@ class ReportKnowledgeGraphComponent extends Component {
               this.state.createdBy,
               ignoredStixCoreObjectsTypes,
               this.state.selectedTimeRangeInterval,
+              this.state.keyword,
             ),
           });
         });
@@ -957,6 +963,7 @@ class ReportKnowledgeGraphComponent extends Component {
               this.state.createdBy,
               ignoredStixCoreObjectsTypes,
               this.state.selectedTimeRangeInterval,
+              this.state.keyword,
             ),
           });
         });
@@ -991,6 +998,7 @@ class ReportKnowledgeGraphComponent extends Component {
           this.state.createdBy,
           ignoredStixCoreObjectsTypes,
           this.state.selectedTimeRangeInterval,
+          this.state.keyword,
         ),
       },
       () => {
@@ -1012,6 +1020,22 @@ class ReportKnowledgeGraphComponent extends Component {
         this.state.createdBy,
         [],
         selectedTimeRangeInterval,
+        this.state.keyword,
+      ),
+    });
+  }
+
+  handleSearch(keyword) {
+    this.setState({
+      keyword,
+      graphData: applyFilters(
+        this.graphData,
+        this.state.stixCoreObjectsTypes,
+        this.state.markedBy,
+        this.state.createdBy,
+        [],
+        this.state.selectedTimeRangeInterval,
+        keyword,
       ),
     });
   }
@@ -1098,6 +1122,7 @@ class ReportKnowledgeGraphComponent extends Component {
           selectedTimeRangeInterval={selectedTimeRangeInterval}
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}
+          handleSearch={this.handleSearch.bind(this)}
         />
         {mode3D ? (
           <ForceGraph3D

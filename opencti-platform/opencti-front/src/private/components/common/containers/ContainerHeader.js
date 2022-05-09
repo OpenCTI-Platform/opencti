@@ -38,14 +38,14 @@ const styles = () => ({
     float: 'right',
   },
   modes: {
-    margin: '-8px 20px 0 0',
+    margin: '-6px 20px 0 0',
     float: 'right',
   },
   button: {
     marginRight: 20,
   },
   export: {
-    margin: '-8px 0 0 0',
+    margin: '-6px 0 0 0',
     float: 'right',
   },
 });

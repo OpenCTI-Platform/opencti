@@ -34,7 +34,7 @@ const styles = () => ({
   },
   export: {
     float: 'right',
-    marginTop: '-13px',
+    margin: '-8px 0 0 10px',
   },
   tags: {
     float: 'right',

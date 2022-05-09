@@ -1099,7 +1099,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/typescript@npm:2.4.10, @graphql-codegen/typescript@npm:^2.4.10":
+"@graphql-codegen/typescript@npm:2.4.10":
   version: 2.4.10
   resolution: "@graphql-codegen/typescript@npm:2.4.10"
   dependencies:
@@ -1111,6 +1111,21 @@ __metadata:
   peerDependencies:
     graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
   checksum: f491e9770185d7b8ed22ec3e2c6fca08d81f9518fd7154e2a7acc144f5df226d00f46cb03aaebac32a02a810eff0cd7480e47c968863d0edc42688db55d03173
+  languageName: node
+  linkType: hard
+
+"@graphql-codegen/typescript@npm:^2.4.10":
+  version: 2.4.11
+  resolution: "@graphql-codegen/typescript@npm:2.4.11"
+  dependencies:
+    "@graphql-codegen/plugin-helpers": ^2.4.0
+    "@graphql-codegen/schema-ast": ^2.4.1
+    "@graphql-codegen/visitor-plugin-common": 2.8.0
+    auto-bind: ~4.0.0
+    tslib: ~2.4.0
+  peerDependencies:
+    graphql: ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+  checksum: 481b581ab8505434c4ed84648b225e9bc4a4dcde488179014539e2093dc4f8bb4ee20e2d8899b4ce457da3036eaa5886b7d71b3ddb6b9a115bb78457d273711c
   languageName: node
   linkType: hard
 
@@ -1131,6 +1146,26 @@ __metadata:
   peerDependencies:
     graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
   checksum: 03e82ee7f669409c8e66d06115aedd41f1669a7f35779b4f502edabba7562120456b6c6683aef275fde8f9d21072b000d236e69093d433d1efb5cc67728c0f94
+  languageName: node
+  linkType: hard
+
+"@graphql-codegen/visitor-plugin-common@npm:2.8.0":
+  version: 2.8.0
+  resolution: "@graphql-codegen/visitor-plugin-common@npm:2.8.0"
+  dependencies:
+    "@graphql-codegen/plugin-helpers": ^2.4.0
+    "@graphql-tools/optimize": ^1.0.1
+    "@graphql-tools/relay-operation-optimizer": ^6.3.7
+    "@graphql-tools/utils": ^8.3.0
+    auto-bind: ~4.0.0
+    change-case-all: 1.0.14
+    dependency-graph: ^0.11.0
+    graphql-tag: ^2.11.0
+    parse-filepath: ^1.0.2
+    tslib: ~2.4.0
+  peerDependencies:
+    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+  checksum: 84f1e0b900d5df80537e5ec2dc2f8b245f572994308cef9119bc602d4042c5d91a45dcb298fc334431a82fb36b47b5772209c29f8db6d14506a7467366c3fe35
   languageName: node
   linkType: hard
 
@@ -9642,8 +9677,8 @@ __metadata:
   linkType: hard
 
 "make-fetch-happen@npm:^10.0.3":
-  version: 10.1.2
-  resolution: "make-fetch-happen@npm:10.1.2"
+  version: 10.1.3
+  resolution: "make-fetch-happen@npm:10.1.3"
   dependencies:
     agentkeepalive: ^4.2.1
     cacache: ^16.0.2
@@ -9661,7 +9696,7 @@ __metadata:
     promise-retry: ^2.0.1
     socks-proxy-agent: ^6.1.1
     ssri: ^9.0.0
-  checksum: 42825d119a7e4f5b1a8e7048a86d328cd36bb1ff875d155ce7079d9a0afdd310c198fb310096af358cfa9ecdf643cecf960380686792457dccb36e17efe89eb0
+  checksum: 14b9bc5fb65a1a1f53b4579c947d1ebdb18db71eb0b35a2eab612e9642a14127917528fe4ffb2c37aaa0d27dfd7507e4044e6e2e47b43985e8fa18722f535b8f
   languageName: node
   linkType: hard
 

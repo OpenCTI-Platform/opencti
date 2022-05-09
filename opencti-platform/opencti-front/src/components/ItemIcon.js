@@ -147,11 +147,11 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Windows-Registry-Key':
     case 'Windows-Registry-Value-Type':
     case 'X509-V3-Extensions-Type':
-    case 'X-OpenCTI-Cryptographic-Key':
-    case 'X-OpenCTI-Cryptocurrency-Wallet':
-    case 'X-OpenCTI-Hostname':
-    case 'X-OpenCTI-Text':
-    case 'X-OpenCTI-User-Agent':
+    case 'Cryptographic-Key':
+    case 'Cryptocurrency-Wallet':
+    case 'Hostname':
+    case 'Text':
+    case 'User-Agent':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
       return <Visibility style={style} fontSize={fontSize} role="img" />;

@@ -787,6 +787,7 @@ class InvestigationGraphComponent extends Component {
       width: null,
       height: null,
       zoomed: false,
+      keyword: '',
     };
   }
 
@@ -1016,6 +1017,7 @@ class InvestigationGraphComponent extends Component {
           stixCoreObjectsTypes: allStixCoreObjectsTypes,
           markedBy: allMarkedBy.map((n) => n.id),
           createdBy: allCreatedBy.map((n) => n.id),
+          keyword: '',
         },
         () => {
           this.saveParameters(false);
@@ -1463,6 +1465,7 @@ class InvestigationGraphComponent extends Component {
           this.state.createdBy,
           [],
           this.state.selectedTimeRangeInterval,
+          this.state.keyword,
         ),
       },
       () => {
@@ -1483,8 +1486,24 @@ class InvestigationGraphComponent extends Component {
         this.state.createdBy,
         [],
         interval,
+        this.state.keyword,
       ),
       selectedTimeRangeInterval: interval,
+    });
+  }
+
+  handleSearch(keyword) {
+    this.setState({
+      keyword,
+      graphData: applyFilters(
+        this.graphData,
+        this.state.stixCoreObjectsTypes,
+        this.state.markedBy,
+        this.state.createdBy,
+        [],
+        this.state.selectedTimeRangeInterval,
+        keyword,
+      ),
     });
   }
 
@@ -1567,6 +1586,7 @@ class InvestigationGraphComponent extends Component {
           selectedTimeRangeInterval={selectedTimeRangeInterval}
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}
+          handleSearch={this.handleSearch.bind(this)}
         />
         {mode3D ? (
           <ForceGraph3D

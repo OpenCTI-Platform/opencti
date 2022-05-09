@@ -177,7 +177,7 @@ interface StoreRawRelation extends StoreProxyRelation {
   created: Date;
   // boolean
   revoked: boolean;
-  negative: boolean;
+  x_opencti_negative: boolean;
   // number
   confidence: number;
   attribute_count: number;

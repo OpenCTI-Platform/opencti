@@ -8569,7 +8569,7 @@ input StixMetaRelationshipsAddInput {
 
 type Query {
   ###### TEST
-  stix(id: String!): String
+  stix(id: String!): String @auth(for: [KNOWLEDGE])
   ###### INTERNAL
 
   platform_theme: String

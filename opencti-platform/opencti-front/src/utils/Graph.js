@@ -99,11 +99,11 @@ export const graphImages = {
   'Windows-Registry-Key': genImage(StixCyberObservable),
   'Windows-Registry-Value-Type': genImage(StixCyberObservable),
   'X509-V3-Extensions-Type': genImage(StixCyberObservable),
-  'X-OpenCTI-Cryptographic-Key': genImage(StixCyberObservable),
-  'X-OpenCTI-Cryptocurrency-Wallet': genImage(StixCyberObservable),
-  'X-OpenCTI-Hostname': genImage(StixCyberObservable),
-  'X-OpenCTI-User-Agent': genImage(StixCyberObservable),
-  'X-OpenCTI-Text': genImage(StixCyberObservable),
+  'Cryptographic-Key': genImage(StixCyberObservable),
+  Wallet: genImage(StixCyberObservable),
+  Hostname: genImage(StixCyberObservable),
+  'User-Agent': genImage(StixCyberObservable),
+  Text: genImage(StixCyberObservable),
   relationship: genImage(relationship),
 };
 
@@ -153,11 +153,11 @@ export const graphLevel = {
   'Windows-Registry-Key': 1,
   'Windows-Registry-Value-Type': 1,
   'X509-V3-Extensions-Type': 1,
-  'X-OpenCTI-Cryptographic-Key': 1,
-  'X-OpenCTI-Cryptocurrency-Wallet': 1,
-  'X-OpenCTI-Hostname': 1,
-  'X-OpenCTI-User-Agent': 1,
-  'X-OpenCTI-Text': 1,
+  'Cryptographic-Key': 1,
+  'Cryptocurrency-Wallet': 1,
+  Hostname: 1,
+  'User-Agent': 1,
+  Text: 1,
   relationship: 1,
 };
 
@@ -210,11 +210,11 @@ export const graphRawImages = {
   'Windows-Registry-Key': StixCyberObservable,
   'Windows-Registry-Value-Type': StixCyberObservable,
   'X509-V3-Extensions-Type': StixCyberObservable,
-  'X-OpenCTI-Cryptographic-Key': StixCyberObservable,
-  'X-OpenCTI-Cryptocurrency-Wallet': StixCyberObservable,
-  'X-OpenCTI-Hostname': StixCyberObservable,
-  'X-OpenCTI-User-Agent': StixCyberObservable,
-  'X-OpenCTI-Text': StixCyberObservable,
+  'Cryptographic-Key': StixCyberObservable,
+  'Cryptocurrency-Wallet': StixCyberObservable,
+  Hostname: StixCyberObservable,
+  'User-Agent': StixCyberObservable,
+  Text: StixCyberObservable,
 };
 
 export const encodeGraphData = (graphData) => toB64(JSON.stringify(graphData));
@@ -388,17 +388,28 @@ export const applyNodeFilters = (
   createdBy = [],
   excludedStixCoreObjectsTypes = [],
   interval = [],
-) => R.pipe(
-  R.filter((n) => !R.includes(n.entity_type, excludedStixCoreObjectsTypes)),
-  R.filter((n) => R.includes(n.entity_type, stixCoreObjectsTypes)),
-  R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
-  R.filter((n) => R.includes(n.createdBy.id, createdBy)),
-  R.filter(
-    (n) => interval.length === 0
+  keyword = '',
+) => {
+  const filterByKeyword = (n) => keyword === ''
+    || (defaultValue(n) || '').toLowerCase().indexOf(keyword.toLowerCase())
+      !== -1
+    || (defaultSecondaryValue(n) || '')
+      .toLowerCase()
+      .indexOf(keyword.toLowerCase()) !== -1
+    || (n.entity_type || '').toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+  return R.pipe(
+    R.filter((n) => !R.includes(n.entity_type, excludedStixCoreObjectsTypes)),
+    R.filter((n) => R.includes(n.entity_type, stixCoreObjectsTypes)),
+    R.filter((n) => R.any((m) => R.includes(m.id, markedBy), n.markedBy)),
+    R.filter((n) => R.includes(n.createdBy.id, createdBy)),
+    R.filter(
+      (n) => interval.length === 0
         || isNone(n.defaultDate)
         || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
-  ),
-)(nodesData);
+    ),
+    R.filter(filterByKeyword),
+  )(nodesData);
+};
 
 export const applyLinkFilters = (
   linksData,
@@ -422,6 +433,7 @@ export const applyFilters = (
   createdBy = [],
   excludedStixCoreObjectsTypes = [],
   interval = [],
+  keyword = '',
 ) => {
   const nodes = applyNodeFilters(
     graphData.nodes,
@@ -430,6 +442,7 @@ export const applyFilters = (
     createdBy,
     excludedStixCoreObjectsTypes,
     interval,
+    keyword,
   );
   const filteredLinks = applyLinkFilters(
     graphData.links,
@@ -537,6 +550,7 @@ export const buildCorrelationData = (
     filterAdjust.createdBy,
     [],
     filterAdjust.selectedTimeRangeInterval,
+    filterAdjust.keyword,
   );
   const links = R.pipe(
     R.map((n) => R.map(

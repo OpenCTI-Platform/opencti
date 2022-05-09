@@ -63,6 +63,7 @@ import TextField from '../../../../components/TextField';
 import { dateFormat } from '../../../../utils/Time';
 import { parseDomain } from '../../../../utils/Graph';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
+import SearchInput from '../../../../components/SearchInput';
 
 const styles = () => ({
   bottomNav: {
@@ -494,6 +495,62 @@ class InvestigationGraphBar extends Component {
                 </span>
               </Tooltip>
               <Divider className={classes.divider} orientation="vertical" />
+              <Tooltip title={t('Select by entity type')}>
+                <span>
+                  <IconButton
+                    color="primary"
+                    onClick={this.handleOpenSelectByType.bind(this)}
+                    size="large"
+                  >
+                    <SelectGroup />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Popover
+                classes={{ paper: classes.container }}
+                open={openSelectByType}
+                anchorEl={anchorElSelectByType}
+                onClose={this.handleCloseSelectByType.bind(this)}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'center',
+                }}
+              >
+                <List>
+                  {stixCoreObjectsTypes.map((stixCoreObjectType) => (
+                    <ListItem
+                      key={stixCoreObjectType}
+                      role={undefined}
+                      dense={true}
+                      button={true}
+                      onClick={this.handleSelectByType.bind(
+                        this,
+                        stixCoreObjectType,
+                      )}
+                    >
+                      <ListItemText
+                        primary={t(`entity_${stixCoreObjectType}`)}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Popover>
+              <Tooltip title={t('Select all nodes')}>
+                <span>
+                  <IconButton
+                    color="primary"
+                    onClick={handleSelectAll.bind(this)}
+                    size="large"
+                  >
+                    <SelectAll />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Divider className={classes.divider} orientation="vertical" />
               <Tooltip title={t('Filter entity types')}>
                 <span>
                   <IconButton
@@ -650,61 +707,12 @@ class InvestigationGraphBar extends Component {
                 </List>
               </Popover>
               <Divider className={classes.divider} orientation="vertical" />
-              <Tooltip title={t('Select by entity type')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={this.handleOpenSelectByType.bind(this)}
-                    size="large"
-                  >
-                    <SelectGroup />
-                  </IconButton>
-                </span>
-              </Tooltip>
-              <Popover
-                classes={{ paper: classes.container }}
-                open={openSelectByType}
-                anchorEl={anchorElSelectByType}
-                onClose={this.handleCloseSelectByType.bind(this)}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
-                }}
-              >
-                <List>
-                  {stixCoreObjectsTypes.map((stixCoreObjectType) => (
-                    <ListItem
-                      key={stixCoreObjectType}
-                      role={undefined}
-                      dense={true}
-                      button={true}
-                      onClick={this.handleSelectByType.bind(
-                        this,
-                        stixCoreObjectType,
-                      )}
-                    >
-                      <ListItemText
-                        primary={t(`entity_${stixCoreObjectType}`)}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Popover>
-              <Tooltip title={t('Select all nodes')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={handleSelectAll.bind(this)}
-                    size="large"
-                  >
-                    <SelectAll />
-                  </IconButton>
-                </span>
-              </Tooltip>
+              <div style={{ margin: '9px 0 0 10px' }}>
+                <SearchInput
+                  variant="thin"
+                  onSubmit={this.props.handleSearch.bind(this)}
+                />
+              </div>
             </div>
             {workspace && (
               <div

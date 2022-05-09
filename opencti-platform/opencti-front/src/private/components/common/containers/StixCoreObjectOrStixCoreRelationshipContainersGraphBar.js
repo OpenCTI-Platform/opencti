@@ -297,17 +297,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     </IconButton>
                   </span>
                 </Tooltip>
-                <Tooltip title={t('Display time range selector')}>
-                  <span>
-                    <IconButton
-                      color={displayTimeRange ? 'secondary' : 'primary'}
-                      disabled={true}
-                      size="large"
-                    >
-                      <DateRangeOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
                 <Tooltip title={t('Fit graph to canvas')}>
                   <span>
                     <IconButton color="primary" disabled={true} size="large">
@@ -331,6 +320,17 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   </span>
                 </Tooltip>
                 <Tooltip title={t('Filter marking definitions')}>
+                  <Tooltip title={t('Display time range selector')}>
+                    <span>
+                      <IconButton
+                        color={displayTimeRange ? 'secondary' : 'primary'}
+                        disabled={true}
+                        size="large"
+                      >
+                        <DateRangeOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
                   <span>
                     <IconButton color="primary" disabled={true} size="large">
                       <CenterFocusStrongOutlined />

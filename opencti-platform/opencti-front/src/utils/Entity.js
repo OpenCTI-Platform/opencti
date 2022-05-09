@@ -69,11 +69,11 @@ export const resolveLink = (type) => {
     case 'Windows-Registry-Key':
     case 'Windows-Registry-Value-Type':
     case 'X509-V3-Extensions-Type':
-    case 'X-OpenCTI-Cryptographic-Key':
-    case 'X-OpenCTI-Cryptocurrency-Wallet':
-    case 'X-OpenCTI-Hostname':
-    case 'X-OpenCTI-Text':
-    case 'X-OpenCTI-User-Agent':
+    case 'Cryptographic-Key':
+    case 'Cryptocurrency-Wallet':
+    case 'Hostname':
+    case 'Text':
+    case 'User-Agent':
       return '/dashboard/observations/observables';
     default:
       return null;
@@ -96,16 +96,6 @@ export const observableKeyToType = (key) => {
     type = 'IPv4-Addr';
   } else if (type.toLowerCase() === 'ipv6-addr') {
     type = 'IPv6-Addr';
-  } else if (type.toLowerCase() === 'x-opencti-hostname') {
-    type = 'X-OpenCTI-Hostname';
-  } else if (type.toLowerCase() === 'x-opencti-cryptocurrency-wallet') {
-    type = 'X-OpenCTI-Cryptocurrency-Wallet';
-  } else if (type.toLowerCase() === 'x-opencti-user-agent') {
-    type = 'X-OpenCTI-User-Agent';
-  } else if (type.toLowerCase() === 'x-opencti-cryptographic-key') {
-    type = 'X-OpenCTI-Cryptographic-Key';
-  } else if (type.toLowerCase() === 'x-opencti-text') {
-    type = 'X-OpenCTI-Text';
   }
   return type;
 };
