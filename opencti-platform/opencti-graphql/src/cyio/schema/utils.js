@@ -69,7 +69,9 @@ export function compareValues( key, order = 'asc') {
 // determines if object matches filters
 export function filterValues( item, filters, filterMode = 'or') {
   let filterMatch = false ;
+  if (filters.length === 1 && filters[0] === null) return true;
   for (let filter of filters ) {
+    if (filter === undefined || filter === null) continue;
     if (!item.hasOwnProperty(filter.key)) {
       continue
     }
