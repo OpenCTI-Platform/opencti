@@ -1,3 +1,4 @@
+import { UserInputError } from "apollo-server-express";
 import {
   optionalizePredicate, 
   parameterizePredicate, 
@@ -34,7 +35,11 @@ export const componentReducer = (item) => {
         item.component_type = 'network';
         break;
       default:
-        throw new UserInputError(`Unknown component type '${item.asset_type}'`);        
+        console.error(`[CYIO] UNKNOWN-COMPONENT Unknown component type '${item.component_type}' for object ${item.iri}`);        
+        console.error(`[CYIO] UNKNOWN-TYPE Unknown asset type '${item.asset_type}' for object ${item.iri}`);        
+        if (item.iri.includes('Software')) item.component_type = 'software';
+        if (item.iri.includes('Network')) item.component_type = 'network';
+        if (item.component_type === undefined) return null;
     }
   }
   // END WORKAROUND
@@ -100,7 +105,15 @@ export const insertComponentQuery = (propValues) => {
     ...(propValues.methods && {"methods": propValues.methods}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/common#Component-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => componentPredicateMap.hasOwnProperty(propPair[0]))
@@ -128,6 +141,9 @@ export const selectComponentQuery = (id, select) => {
 export const selectComponentByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(componentPredicateMap);
+  if (!select.includes('component_type')) select.push('component_type');
+  if (!select.includes('asset_type')) select.push('asset_type');
+
   const { selectionClause, predicates } = buildSelectVariables(componentPredicateMap, select);
   return `
   SELECT ${selectionClause}
@@ -142,6 +158,8 @@ export const selectComponentByIriQuery = (iri, select) => {
 export const selectAllComponents = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(componentPredicateMap);
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('component_type')) select.push('component_type');
+  if (!select.includes('asset_type')) select.push('asset_type');
 
   if (args !== undefined) {
     // add value of filter's key to cause special predicates to be included

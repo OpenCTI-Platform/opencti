@@ -14,12 +14,6 @@ import {
 import inject18n from '../../../components/i18n';
 import CyioListCards from '../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../components/list_lines/CyioListLines';
-// import RisksCards, {
-//   risksCardsQuery,
-// } from './risks/RisksCards';
-// import RisksLines, {
-//   risksLinesQuery,
-// } from './risks/RisksLines';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 import { isUniqFilter } from '../common/lists/Filters';
 import DataSourceCreation from './data/DataSourceCreation';
@@ -46,12 +40,11 @@ class DataSources extends Component {
       selectedElements: null,
       selectAll: false,
       openDataCreation: false,
-      selectedDataEntity: '',
     };
   }
 
   saveView() {
-    // this.handleRefresh();
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -123,10 +116,6 @@ class DataSources extends Component {
     }
   }
 
-  handleDataEntities(dataEntity) {
-    this.setState({ selectedDataEntity: dataEntity }, () => this.saveView());
-  }
-
   handleAddFilter(key, id, value, event = null) {
     if (event) {
       event.stopPropagation();
@@ -176,7 +165,6 @@ class DataSources extends Component {
       numberOfElements,
       selectedElements,
       selectAll,
-      selectedDataEntity,
     } = this.state;
     const dataColumns = {
       type: {
@@ -203,8 +191,6 @@ class DataSources extends Component {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
-        selectedDataEntity={selectedDataEntity}
-        handleDataEntities={this.handleDataEntities.bind(this)}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
@@ -218,7 +204,7 @@ class DataSources extends Component {
         CreateItemComponent={<DataSourceCreation />}
         OperationsComponent={<DataSourceDeletion />}
         openExports={openExports}
-        filterEntityType="DataSources"
+        filterEntityType='DataSources'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -247,7 +233,6 @@ class DataSources extends Component {
       openExports,
       selectedElements,
       numberOfElements,
-      selectedDataEntity,
     } = this.state;
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
@@ -290,8 +275,6 @@ class DataSources extends Component {
         sortBy={sortBy}
         orderAsc={orderAsc}
         dataColumns={dataColumns}
-        selectedDataEntity={selectedDataEntity}
-        handleDataEntities={this.handleDataEntities.bind(this)}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
@@ -306,7 +289,7 @@ class DataSources extends Component {
         OperationsComponent={<DataSourceDeletion />}
         openExports={openExports}
         selectAll={selectAll}
-        filterEntityType="DataSources"
+        filterEntityType='DataSources'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

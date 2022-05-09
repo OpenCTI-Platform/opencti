@@ -241,7 +241,7 @@ class SoftwareEditionDetailsComponent extends Component {
                     fullWidth={true}
                   // helperText={
                   //   <SubscriptionFocus
-                  //   fieldName="motherboard_id"
+                  //   fieldName="cpe_identifier"
                   //   />
                   // }
                   />

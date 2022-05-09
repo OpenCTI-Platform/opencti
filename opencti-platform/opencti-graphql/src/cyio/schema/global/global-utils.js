@@ -99,6 +99,11 @@ export const selectObjectIriByIdQuery = (id, type) => {
     }
     if (!found) throw new UserInputError(`Unknown object type '${type}'`);
   }
+
+  // determine the parent, if any, to select the correct object type
+  while (objectMap[type].parent !== undefined) {
+    type = objectMap[type].parent;
+  }
   
   return `
   SELECT DISTINCT ?iri 
@@ -418,6 +423,7 @@ export const objectMap = {
     attachQuery: attachToSoftwareQuery,
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "SoftwareAsset",
+    alternateKey: "tool",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
   },
   "subject": {

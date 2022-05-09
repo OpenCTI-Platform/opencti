@@ -304,7 +304,7 @@ const networkResolvers = {
       });
       return id;
     },
-    editNetworkAsset: async (_, { id, input }, {dbName, dataSources}) => {
+    editNetworkAsset: async (_, { id, input }, {dbName, dataSources, selectMap}) => {
       // check that the object to be edited exists with the predicates - only get the minimum of data
       let editSelect = ['id'];
       for (let editItem of input) {

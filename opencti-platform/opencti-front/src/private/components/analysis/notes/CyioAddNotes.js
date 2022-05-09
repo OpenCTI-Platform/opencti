@@ -87,6 +87,9 @@ const styles = (theme) => ({
     padding: '24px',
     background: theme.palette.background.paper,
   },
+  menuItemName: {
+    padding: '15px 50px',
+  },
 });
 
 class CyioAddNotes extends Component {
@@ -128,7 +131,9 @@ class CyioAddNotes extends Component {
           onCompleted: (response) => {
             this.handleClose();
             this.setState({ totalNotes: [] });
-            this.props.refreshQuery();
+            if (this.props.refreshQuery) {
+              this.props.refreshQuery();
+            }
           },
           // updater: (store) => {
           //   const payload = store
@@ -155,7 +160,9 @@ class CyioAddNotes extends Component {
         },
         onCompleted: (response) => {
           this.setState({ totalNotes: [] });
-          this.props.refreshQuery();
+          if (this.props.refreshQuery) {
+            this.props.refreshQuery();
+          }
         },
         // updater: (store) => {
         //   const payload = store
@@ -203,6 +210,7 @@ class CyioAddNotes extends Component {
       classes,
       typename,
       disableAdd,
+      menuItemName,
       cyioCoreObjectOrStixCoreRelationshipId,
       cyioCoreObjectOrStixCoreRelationshipNotes,
     } = this.props;
@@ -211,15 +219,26 @@ class CyioAddNotes extends Component {
     };
     return (
       <div>
-        <IconButton
-          color="default"
-          aria-label="Add"
-          disabled={disableAdd}
-          onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
-        >
-          <Add fontSize="small" />
-        </IconButton>
+        {
+          menuItemName ? (
+            <div
+              className={classes.menuItemName}
+              onClick={this.handleOpen.bind(this)}
+            >
+              {t(menuItemName)}
+            </div>
+          ) : (
+            <IconButton
+              color="default"
+              aria-label="Add"
+              disabled={disableAdd}
+              onClick={this.handleOpen.bind(this)}
+              classes={{ root: classes.createButton }}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          )
+        }
         <div classes={{ root: classes.dialogRoot }}>
           <Dialog
             maxWidth='md'
@@ -278,11 +297,9 @@ class CyioAddNotes extends Component {
                   query={cyioAddNotesLinesQuery}
                   variables={{
                     search: this.state.search,
-                    count: 4,
                   }}
                   render={({ props }) => {
                     if (props) {
-                      console.log('cyioAddNotes', props, cyioCoreObjectOrStixCoreRelationshipNotes);
                       return (
                         <CyioAddNotesLines
                           cyioCoreObjectOrStixCoreRelationshipId={
@@ -340,12 +357,13 @@ class CyioAddNotes extends Component {
             </Collapse>
           </Dialog>
         </div>
-      </div>
+      </div >
     );
   }
 }
 
 CyioAddNotes.propTypes = {
+  menuItemName: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
   refreshQuery: PropTypes.func,

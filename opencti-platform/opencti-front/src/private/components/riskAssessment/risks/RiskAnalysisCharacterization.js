@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
@@ -56,7 +58,6 @@ class RiskAnalysisCharacterizationComponent extends Component {
     } = this.props;
     const riskAnalysisCharacterization = pipe(
       pathOr([], ['characterizations']),
-      mergeAll,
     )(risk);
     return (
       <div style={{ height: '100%' }} className="break">
@@ -93,46 +94,47 @@ class RiskAnalysisCharacterizationComponent extends Component {
               </Typography>
             </Grid>
           </Grid>
-          {riskAnalysisCharacterization.facets.map((characterizationData) => {
-            const DetectionSource = pipe(
-              pathOr([], ['origins']),
-              mergeAll,
-              path(['origin_actors']),
-              mergeAll,
-            )(riskAnalysisCharacterization);
-            return (
-              <Grid key={characterizationData.id} container={true}
-                style={{ borderBottom: '1px solid grey' }}>
-                <Grid item={true} xs={4}>
-                  <Typography
-                    variant="h2"
-                    gutterBottom={true}
-                    className={classes.tableText}
-                  >
-                    {characterizationData.facet_name && t(characterizationData.facet_name)}
-                  </Typography>
+          {riskAnalysisCharacterization.map((characterization) =>
+            characterization.facets.map((characterizationData) => {
+              const DetectionSource = pipe(
+                pathOr([], ['origins']),
+                mergeAll,
+                path(['origin_actors']),
+                mergeAll,
+              )(characterization);
+              return (
+                <Grid key={characterizationData.id} container={true}
+                  style={{ borderBottom: '1px solid grey' }}>
+                  <Grid item={true} xs={4}>
+                    <Typography
+                      variant="h2"
+                      gutterBottom={true}
+                      className={classes.tableText}
+                    >
+                      {characterizationData.facet_name && t(characterizationData.facet_name)}
+                    </Typography>
+                  </Grid>
+                  <Grid item={true} xs={4}>
+                    <Typography
+                      variant="h2"
+                      gutterBottom={true}
+                      className={classes.tableText}
+                    >
+                      {characterizationData?.facet_value && t(characterizationData?.facet_value)}
+                    </Typography>
+                  </Grid>
+                  <Grid item={true} xs={4}>
+                    <Typography
+                      variant="h2"
+                      gutterBottom={true}
+                      className={classes.tableText}
+                    >
+                      {DetectionSource?.actor_ref && t(DetectionSource?.actor_ref?.name)}
+                    </Typography>
+                  </Grid>
                 </Grid>
-                <Grid item={true} xs={4}>
-                  <Typography
-                    variant="h2"
-                    gutterBottom={true}
-                    className={classes.tableText}
-                  >
-                    {characterizationData?.facet_value && t(characterizationData?.facet_value)}
-                  </Typography>
-                </Grid>
-                <Grid item={true} xs={4}>
-                  <Typography
-                    variant="h2"
-                    gutterBottom={true}
-                    className={classes.tableText}
-                  >
-                    {DetectionSource.actor_ref.name && t(DetectionSource.actor_ref.name)}
-                  </Typography>
-                </Grid>
-              </Grid>
-            );
-          })}
+              );
+            }))}
         </Paper>
       </div>
     );

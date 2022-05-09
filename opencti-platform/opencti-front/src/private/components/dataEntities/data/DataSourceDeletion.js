@@ -75,7 +75,7 @@ const DataSourceDeletionMutation = graphql`
 
 const DataSourceDeletionDarkLightMutation = graphql`
   mutation DataSourceDeletionDarkLightMutation($id: ID!) {
-  deleteComputingDeviceAsset(id: $id)
+  deleteOscalRole(id: $id)
 }
 `;
 
@@ -116,27 +116,6 @@ class DataSourceDeletion extends Component {
     this.setState({ displayEdit: false });
   }
 
-  // submitDelete() {
-  //   this.setState({ deleting: true });
-  //   commitMutation({
-  //     mutation: DataSourceDeletionMutation,
-  //     variables: {
-  //       id: this.props.id,
-  //     },
-  //     config: [
-  //       {
-  //         type: 'NODE_DELETE',
-  //         deletedIDFieldName: 'id',
-  //       },
-  //     ],
-  //     onCompleted: () => {
-  //       this.setState({ deleting: false });
-  //       this.handleClose();
-  //       this.props.history.push('/activities/risk assessment/risks');
-  //     },
-  //   });
-  // }
-
   submitDelete() {
     this.setState({ deleting: true });
     CM(environmentDarkLight, {
@@ -147,27 +126,9 @@ class DataSourceDeletion extends Component {
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
       onError: (err) => console.error(err),
     });
-    // commitMutation({
-    //   mutation: DataSourceDeletionDarkLightMutation,
-    //   variables: {
-    //     id: this.props.id,
-    //   },
-    //   config: [
-    //     {
-    //       type: 'NODE_DELETE',
-    //       deletedIDFieldName: 'id',
-    //     },
-    //   ],
-    //   onCompleted: () => {
-    //     this.setState({ deleting: false });
-    //     this.handleClose();
-    //     this.props.history.push('/activities/risk assessment/risks');
-    //   },
-    // });
   }
 
   render() {
@@ -205,7 +166,7 @@ class DataSourceDeletion extends Component {
                 lineHeight: '24px',
                 color: 'white',
               }} >
-                {t('Are you sure you’d like to delete this Risk?')}
+                {t('Are you sure you’d like to delete this data source?')}
               </Typography>
               <DialogContentText>
                 {t('This action can’t be undone')}

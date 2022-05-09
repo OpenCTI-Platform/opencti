@@ -69,7 +69,9 @@ export function compareValues( key, order = 'asc') {
 // determines if object matches filters
 export function filterValues( item, filters, filterMode = 'or') {
   let filterMatch = false ;
+  if (filters.length === 1 && filters[0] === null) return true;
   for (let filter of filters ) {
+    if (filter === undefined || filter === null) continue;
     if (!item.hasOwnProperty(filter.key)) {
       continue
     }
@@ -184,22 +186,42 @@ export const buildSelectVariables = (predicateMap, selects) => {
 }
 
 export const updateQuery = (iri, type, input, predicateMap) => {
-  let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [];
+  let deletePredicates = [], insertPredicates = [], replaceBindingPredicates = [], replacementPredicate;
   for(const {key, value, operation} of input) {
-    if (!predicateMap.hasOwnProperty(key)) continue;
-    for(const itr of value) {
-      const predicate = predicateMap[key].binding(`<${iri}>`, itr);
+    if (!predicateMap.hasOwnProperty(key)) {
+      console.error(`[CYIO] UNKNOWN-FIELD Unknown field '${key}' for object ${iri}`);        
+      continue;
+    }
+    let itr;
+    for(itr of value) {
+      if (key === 'description' || key === 'statement') {
+        // escape any special characters (e.g., newline)
+        if (key === 'description') {
+          if (itr.includes('\n')) itr = itr.replace(/\n/g, '\\n');
+          if (itr.includes('\"')) itr = itr.replace(/\"/g, '\\"');
+          if (itr.includes("\'")) itr = itr.replace(/\'/g, "\\'");
+        }
+        if (key === 'statement') {
+          if (itr.includes('\n')) itr = itr.replace(/\n/g, '\\n');
+          if (itr.includes('\"')) itr = itr.replace(/\"/g, '\\"');
+          if (itr.includes("\'")) itr = itr.replace(/\'/g, "\\'");
+        }
+      }
+      const predicate = predicateMap[key].binding(`<${iri}>`, itr) + ' .';
       switch (operation) {
         case UpdateOps.ADD:
+          if (insertPredicates.includes(predicate)) continue;
           insertPredicates.push(predicate);
           break;
         case UpdateOps.REMOVE:
+          if (deletePredicates.includes(predicate)) continue;
           deletePredicates.push(predicate);
           break;
         case UpdateOps.REPLACE:
         default:    // replace is the default behavior when the operation is not supplied.
-          insertPredicates.push(predicate);
-          replaceBindingPredicates.push(predicateMap[key].binding(`<${iri}>`))
+          replacementPredicate = predicateMap[key].binding(`<${iri}>`) + ' .';
+          if (!insertPredicates.includes(predicate)) insertPredicates.push(predicate);
+          if (!replaceBindingPredicates.includes(replacementPredicate)) replaceBindingPredicates.push(replacementPredicate)
           break;
         }
     }

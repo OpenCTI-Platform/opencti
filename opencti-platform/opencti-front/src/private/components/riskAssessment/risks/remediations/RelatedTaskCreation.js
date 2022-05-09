@@ -48,7 +48,7 @@ import ResponsibleParties from '../../../common/form/ResponsibleParties';
 import Dependencies from '../../../common/form/Dependencies';
 import ResourceNameField from '../../../common/form/ResourceNameField';
 import ResourceTypeField from '../../../common/form/ResourceTypeField';
-import {toastGenericError} from "../../../../../utils/bakedToast";
+import { toastGenericError } from "../../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -136,8 +136,21 @@ const RelatedTaskCreationMutation = graphql`
     $input: OscalTaskAddInput
   ) {
     createOscalTask(input: $input) {
+      __typename
       id
     }
+  }
+`;
+
+export const RelatedTaskCreationAddReferenceMutation = graphql`
+  mutation RelatedTaskCreationAddReferenceMutation(
+    $fieldName: String!
+    $fromId: ID!
+    $toId: ID!
+    $to_type: String
+    $from_type: String
+  ) {
+    addReference(input: {field_name: $fieldName, from_id: $fromId, to_id: $toId, to_type: $to_type, from_type: $from_type})
   }
 `;
 
@@ -156,25 +169,9 @@ class RelatedTaskCreation extends Component {
       open: false,
       close: false,
       resourceName: '',
-      responsible_roles: [
-        {
-          roles: '',
-          parties: [],
-        }
-      ],
-      subjects: [
-        {
-          subject_type: '',
-          subject_ref: '',
-          name: '',
-        },
-      ],
-      timing: {
-        within_date_range: 
-        {
-          start_date: '',
-          end_date: '',
-        }},
+      responsible_roles: [],
+      associated_activities: [],
+      timing: {},
     };
   }
 
@@ -191,62 +188,53 @@ class RelatedTaskCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    if (values.resource_type === '' && values.resource === '' || values.responsible_roles === '') {
+    if (values.responsible_roles.length > 0) {
       this.setState({
-        subjects: [],
-        responsible_roles: [],
+        responsible_roles: values.responsible_roles.map((value) => (
+          { role: value }
+        )),
       });
-    } else {
-    this.setState({
-      subjects: [
-        {
-          subject_type: values.resource_type,
-          subject_ref: values.resource,
+    }
+    if (values.associated_activities.length > 0) {
+      this.setState({
+        associated_activities: values.associated_activities.map((value) => (
+          { 'activity_id': value }
+        )),
+      });
+    }
+    if (values.start_date && values.end_date) {
+      this.setState({
+        timing: {
+          within_date_range: {
+            start_date: values.start_date === null ? null : parse(values.start_date),
+            end_date: values.end_date === null ? null : parse(values.end_date),
+          }
         },
-      ],
-      timing: {
-        within_date_range: {
-          start_date: values.start_date === null ? null : parse(values.start_date).format(),
-          end_date: values.end_date === null ? null : parse(values.end_date).format(),
-        }
-      },
-      responsible_roles: [
-        {
-          role: values.responsible_roles,
-          parties: [],
-        }
-      ]
-    });
-  }
+      })
+    }
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      assoc('timing', this.state.timing),
       dissoc('resource_type'),
       dissoc('resource'),
-      assoc('subjects', this.state.subjects),
+      assoc('timing', this.state.timing),
       assoc('responsible_roles', this.state.responsible_roles),
     )(values);
-    console.log('finalValues', finalValues);
     CM(environmentDarkLight, {
       mutation: RelatedTaskCreationMutation,
       variables: {
         input: finalValues,
       },
-      // updater: (store) => insertNode(
-      //   store,
-      //   'Pagination_externalReferences',
-      //   this.props.paginationOptions,
-      //   'externalReferenceAdd',
-      // ),
       setSubmitting,
       onCompleted: (response) => {
+        this.handleAddReferenceMutation(response.createOscalTask);
         setSubmitting(false);
         resetForm();
         this.handleClose();
       },
       onError: (err) => {
-        toastGenericError("Failed to create Related Task")
+        toastGenericError("Failed to create related task")
+        console.error(err);
       }
     });
     // commitMutation({
@@ -270,6 +258,25 @@ class RelatedTaskCreation extends Component {
     //     }
     //   },
     // });
+  }
+  handleAddReferenceMutation(taskResponse) {
+    CM(environmentDarkLight, {
+      mutation: RelatedTaskCreationAddReferenceMutation,
+      variables: {
+        toId: taskResponse.id,
+        fromId: this.props.remediationId,
+        fieldName: 'tasks',
+        to_type: 'OscalTask',
+        from_type: 'RiskResponse',
+      },
+      onCompleted: () => {
+        this.props.refreshQuery();
+      },
+      onError: (err) => {
+        toastGenericError("Failed to Add related task")
+        console.error(err);
+      }
+    });
   }
 
   onResetClassic() {
@@ -494,7 +501,7 @@ class RelatedTaskCreation extends Component {
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
                         >
-                           {remediationId && t(remediationId)}
+                          {this.props.remediationId}
                         </Field>
                       </div>
                     </Grid>
@@ -632,15 +639,15 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                          <ResourceTypeField
-                            name='resource_type'
-                            fullWidth={true}
-                            variant='outlined'
-                            handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
-                            type='hardware'
-                            style={{ height: '38.09px' }}
-                            containerstyle={{ width: '100%' }}
-                          />
+                        <ResourceTypeField
+                          name='resource_type'
+                          fullWidth={true}
+                          variant='outlined'
+                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
+                          type='hardware'
+                          style={{ height: '38.09px' }}
+                          containerstyle={{ width: '100%' }}
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -688,9 +695,10 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                         <RelatedTaskFields
+                        <RelatedTaskFields
                           name="related_tasks"
                           fullWidth={true}
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -713,16 +721,10 @@ class RelatedTaskCreation extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        {/* <AssociatedActivities
-                           name="associated_activities"
-                           fullWidth={true}
-                           variant='outlined'
-                           style={{ height: '38.09px' }}
-                           containerstyle={{ width: '100%' }}
-                        /> */}
-                         <RelatedTaskFields
+                        <RelatedTaskFields
                           name="associated_activities"
                           fullWidth={true}
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -749,18 +751,11 @@ class RelatedTaskCreation extends Component {
                         <RelatedTaskFields
                           name="responsible_roles"
                           fullWidth={true}
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
-                        {/* <ResponsibleParties
-                          style={{ height: '38.09px' }}
-                          variant='outlined'
-                          name="responsible_roles"
-                          size='small'
-                          fullWidth={true}
-                          containerstyle={{ width: '100%' }}
-                        /> */}
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -782,17 +777,11 @@ class RelatedTaskCreation extends Component {
                         <RelatedTaskFields
                           name="task_dependencies"
                           fullWidth={true}
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
-                        {/* <Dependencies
-                           name="task_dependencies"
-                           fullWidth={true}
-                           variant='outlined'
-                           style={{ height: '38.09px' }}
-                           containerstyle={{ width: '100%' }}
-                        /> */}
                       </div>
                     </Grid>
                   </Grid>
@@ -800,17 +789,19 @@ class RelatedTaskCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        disableAdd={true}
                         fieldName='links'
-                        typename={relatedTaskData.__typename}
-                        externalReferences={relatedTaskData.links}
+                        typename='CyioExternalReference'
+                        externalReferences={[]}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
-                        typename={relatedTaskData.__typename}
-                        notes={relatedTaskData.remarks}
+                        disableAdd={true}
+                        typename='CyioNotes'
+                        notes={[]}
                         fieldName='remarks'
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"

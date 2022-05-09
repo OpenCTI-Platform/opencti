@@ -47,7 +47,7 @@ import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import MarkDownField from '../../../../../components/MarkDownField';
-
+import { toastGenericError } from '../../../../../utils/bakedToast';
 const styles = (theme) => ({
   container: {
     margin: 0,
@@ -160,7 +160,6 @@ class RelatedTaskPopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('relatedTask', values);
     this.setState({
       timings: {
         start_date: values.start_date,
@@ -178,7 +177,6 @@ class RelatedTaskPopover extends Component {
       //   'value': n[1],
       // }))
     )(values);
-    console.log('relatedTasksPopoverFinal', finalValues);
     // CM(environmentDarkLight, {
     //   mutation: relatedTaskEditionQuery,
     //   variables: {
@@ -197,7 +195,6 @@ class RelatedTaskPopover extends Component {
     //     resetForm();
     //     this.handleCloseUpdate();
     //   },
-    //   // onError: (err) => console.log('CyioNoteEditionDarkLightMutationError', err),
     // });
   }
 
@@ -212,7 +209,10 @@ class RelatedTaskPopover extends Component {
         this.setState({ deleting: false });
         this.handleCloseDelete();
       },
-      onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to delete Related Task');
+      },
     });
     // commitMutation({
     //   mutation: relatedTaskPopoverDeletionMutation,
@@ -267,7 +267,7 @@ class RelatedTaskPopover extends Component {
       R.assoc('related_tasks', ''),
       R.assoc('associated_activities', ''),
       R.assoc('dependencies', taskDependency?.name || ''),
-      R.assoc('responsible_parties', responsibleRoles.role_identifier || ''),
+      R.assoc('responsible_parties', responsibleRoles?.role_identifier || ''),
       R.pick([
         'id',
         'name',
@@ -753,8 +753,8 @@ class RelatedTaskPopover extends Component {
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
                         fieldName='links'
-                        typename={relatedTaskData.__typename}
-                        externalReferences={relatedTaskData.links}
+                        typename={data.__typename}
+                        externalReferences={data.links}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
@@ -762,8 +762,8 @@ class RelatedTaskPopover extends Component {
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
                         fieldName='remarks'
-                        typename={relatedTaskData.__typename}
-                        notes={relatedTaskData.remarks}
+                        typename={data.__typename}
+                        notes={data.remarks}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
                       // data={props}
@@ -838,7 +838,6 @@ class RelatedTaskPopover extends Component {
 }
 
 RelatedTaskPopover.propTypes = {
-  relatedTaskData: PropTypes.object,
   remediationId: PropTypes.string,
   externalReferenceId: PropTypes.string,
   refreshQuery: PropTypes.func,

@@ -1,5 +1,6 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
+import {selectObjectIriByIdQuery} from '../../../global/global-utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -13,9 +14,17 @@ import {
   selectRiskResponseQuery,
   selectAllRiskResponses,
   deleteRiskResponseQuery,
+  attachToRiskResponseQuery,
   selectOscalTaskByIriQuery,
   selectRequiredAssetByIriQuery,
+  insertActorsQuery,
+  attachToOriginQuery,
+  insertOriginQuery,
+  deleteOriginByIriQuery,
   selectOriginByIriQuery,
+  attachToRiskQuery,
+  detachFromRiskQuery,
+  selectRiskQuery,
   riskResponsePredicateMap,
 } from './sparql-query.js';
 
@@ -78,7 +87,7 @@ const riskResponseResolvers = {
           // if haven't reached limit to be returned
           if (limit) {
             let edge = {
-              cursor: risk.iri,
+              cursor: riskResponse.iri,
               node: reducer(riskResponse),
             }
             edges.push(edge)
@@ -156,15 +165,85 @@ const riskResponseResolvers = {
   },
   Mutation: {
     createRiskResponse: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
-      // Setup to handle embedded objects to be created
-      let origins, assets, tasks, riskId;
-      if (input.origins !== undefined) origins = input.origins;
-      if (input.required_assets !== undefined) assets = input.required_assets;
-      if (input.tasks !== undefined) tasks = input.tasks;
-      if (input.risk_id !== undefined) riskId = input.risk_id;
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
 
-      // create the Risk Response
-      const {id, query} = insertRiskResponseQuery(input);
+      // Setup to handle embedded objects to be created
+      let origins, assetIris = [], taskIris = [], relatedTasks = [], riskId;
+      if (input.risk_id !== undefined) {
+        // check that the risk exists
+        const sparqlQuery = selectRiskQuery(input.risk_id, ['id']);
+        let response;
+        try {
+          response = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select Risk",
+            singularizeSchema
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+        if (response.length === 0) throw new UserInputError(`Risk does not exist with ID ${id}`);
+        riskId = input.risk_id;
+      }
+      if (input.origins !== undefined) {
+        if (input.origins.length === 0) throw new UserInputError(`No origin of the Risk Response provided.`)
+        origins = input.origins;
+      }
+      if (input.required_assets !== undefined) {
+        for (let assetId of input.required_assets) {
+          let sparqlQuery, result;
+          sparqlQuery = selectObjectIriByIdQuery( assetId, 'required-asset');
+          try {
+            result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+  
+          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${assetId}`);
+          assetIris.push(`<${result[0].iri}>`);
+        }
+      }
+      if (input.tasks !== undefined) {
+        for (let taskId of input.tasks) {
+          let sparqlQuery, result;
+          sparqlQuery = selectObjectIriByIdQuery( taskId, 'oscal-task');
+          try {
+            result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+  
+          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${taskId}`);
+          taskIris.push(`<${result[0].iri}>`);
+        }
+      }
+
+      // // create the Risk Response
+      const {iri, id, query} = insertRiskResponseQuery(input);
       try {
         await dataSources.Stardog.create({
           dbName,
@@ -176,9 +255,158 @@ const riskResponseResolvers = {
         throw e
       }
 
-      // add the Risk Response to the Risk
+      // create any origins supplied and attach them to the Risk Response
+      if (origins !== undefined && origins !== null ) {
+        let originIris = [];
+        for (let origin of origins) {
+          let actors = origin.origin_actors;
+          let relatedTasks = origin.related_tasks;
+
+          // create the origin
+          const {iri, id, query} = insertOriginQuery(origin);
+          try {
+            await dataSources.Stardog.create({
+              dbName,
+              sparqlQuery: query,
+              queryId: "Create Origin"
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+
+          // create any Actors supplied and attach them to the Origin
+          if (actors !== undefined && actors !== null ) {
+            let sparqlQuery, result;
+            for (let actor of actors) {
+              // check to see if the referenced actor exists and get its IRI
+              sparqlQuery = selectObjectIriByIdQuery( actor.actor_ref, actor.actor_type);
+              try {
+                result = await dataSources.Stardog.queryById({
+                  dbName,
+                  sparqlQuery,
+                  queryId: "Select Object",
+                  singularizeSchema
+                });
+              } catch (e) {
+                console.log(e)
+                throw e
+              }
+              if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.actor_ref}`);
+              actor.actor_ref = result[0].iri;
+              // if a role reference was provided
+              if (actor.role_ref !== undefined) {
+                // check if the role reference exists and get its IRI
+                sparqlQuery = selectObjectIriByIdQuery( actor.role_ref, 'role');
+                try {
+                  result = await dataSources.Stardog.queryById({
+                    dbName,
+                    sparqlQuery,
+                    queryId: "Select Object",
+                    singularizeSchema
+                  });
+                } catch (e) {
+                  console.log(e)
+                  throw e
+                }
+                if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.role_ref}`);
+                actor.role_ref = result[0].iri;
+              }
+            }
+            // create the Actors
+            const { actorIris, query } = insertActorsQuery( actors );
+            try {
+              await dataSources.Stardog.create({
+                dbName,
+                sparqlQuery: query,
+                queryId: "Create Actors of Origin"
+              });
+            } catch (e) {
+              console.log(e)
+              throw e
+            }
+
+            // attach Actor(s) to the Origin
+            const actorAttachQuery = attachToOriginQuery(id, 'origin_actors', actorIris );
+            try {
+              await dataSources.Stardog.create({
+                dbName,
+                queryId: "Add Actor to Origin",
+                sparqlQuery: actorAttachQuery
+              });
+            } catch (e) {
+              console.log(e)
+              throw e
+            }
+          }
+
+          // TODO: create and attach task references; these are different than OscalTasks
+          if (relatedTasks !== undefined && relatedTasks != null) {
+            // attach related tasks to the Origin
+            const actorAttachQuery = attachToOriginQuery(id, 'related_tasks', relatedTaskIris );
+            try {
+              await dataSources.Stardog.create({
+                dbName,
+                queryId: "Add related task(s) to Origin",
+                sparqlQuery: actorAttachQuery
+              });
+            } catch (e) {
+              console.log(e)
+              throw e
+            }
+          }
+          originIris.push(iri);
+        }
+
+        if (originIris.length > 0) {
+          // attach the origin(s) to the Risk Response
+          const originAttachQuery = attachToRiskResponseQuery(id, 'origins', originIris );
+          try {
+            await dataSources.Stardog.create({
+              dbName,
+              queryId: "Add Asset to Risk Response",
+              sparqlQuery: originAttachQuery
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+        }
+      }
+
+      // attach any related assets referenced to the Risk Response
+      if (assetIris !== undefined && assetIris.length > 0) {
+        // attach task to the Risk Response
+        const assetAttachQuery = attachToRiskResponseQuery(id, 'related_assets', assetIris );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Add Asset to Risk Response",
+            sparqlQuery: assetAttachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
+      // create any task supplied and attach them to the Risk Response
+      if (taskIris !== undefined && taskIris.length > 0) {
+        // attach task to the Risk Response
+        const taskAttachQuery = attachToRiskResponseQuery(id, 'tasks', taskIris );
+        try {
+          await dataSources.Stardog.create({
+            dbName,
+            queryId: "Add Task to Risk Response",
+            sparqlQuery: taskAttachQuery
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
+      // attach the Risk Response to the Risk
       if (riskId !== undefined && riskId !== null) {
-        const attachQuery = attachToRiskQuery( riskId, 'remediation', iri );
+        const attachQuery = attachToRiskQuery( riskId, 'remediations', iri );
         try {
           await dataSources.Stardog.create({
             dbName,
@@ -188,23 +416,7 @@ const riskResponseResolvers = {
         } catch (e) {
           console.log(e)
           throw e
-        }  
-      }
-
-      // create any assets supplied and attach them to the Risk Response
-      if (assets !== undefined && assets !== null ) {
-        // create the Task
-        // attach task to the Risk Response
-      }
-      // create any task supplied and attach them to the Risk Response
-      if (tasks !== undefined && tasks !== null ) {
-        // create the task
-        // attach task ot the Risk Response
-      }
-      // create any origins supplied and attach them to the Risk Response
-      if (origins !== undefined && origins !== null ) {
-        // create the origin
-        // attach origin ot the Characterization
+        } 
       }
 
       // retrieve information about the newly created Characterization to return to the user
@@ -244,6 +456,22 @@ const riskResponseResolvers = {
       let reducer = getReducer("RISK-RESPONSE");
       const riskResponse = (reducer(response[0]));
       
+      // detach the Risk Response from the Risk
+      if (riskId !== undefined && riskId !== null) {
+        const iri = `http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse-${id}`
+        const detachQuery = detachFromRiskQuery( riskId, 'remediations', iri );
+        try {
+          await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery: detachQuery,
+            queryId: "Detach Risk Response from Risk"
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+      }
+      
       // Delete any attached origins
       if (riskResponse.hasOwnProperty('origins_iri')) {
         for (const originIri of riskResponse.origins_iri) {
@@ -261,22 +489,6 @@ const riskResponseResolvers = {
         }
       }
 
-      // detach the Risk Response from the Risk
-      if (riskId !== undefined && riskId !== null) {
-        const iri = `http://csrc.nist.gov/ns/oscal/assessment/common#RiskResponse-${id}`
-        const detachQuery = detachFromRiskQuery( riskId, 'remediations', iri );
-        try {
-          await dataSources.Stardog.delete({
-            dbName,
-            sparqlQuery: detachQuery,
-            queryId: "Detach Risk Response from Risk"
-          });
-        } catch (e) {
-          console.log(e)
-          throw e
-        }
-      }
-      
       // Delete the characterization itself
       const query = deleteRiskResponseQuery(id);
       try {

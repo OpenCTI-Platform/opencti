@@ -8,6 +8,7 @@ import {
   selectAddressByIriQuery,
   selectPhoneNumberByIriQuery,
   deleteAddressByIriQuery,
+  deletePhoneNumberByIriQuery,
   insertAddressesQuery,
   insertPhoneNumbersQuery,
   getReducer as getGlobalReducer,
@@ -26,6 +27,9 @@ import {
   insertExternalIdentifiersQuery,  
   selectExternalIdentifierByIriQuery
 } from './sparql-query.js';
+import {
+  getReducer as getCommonReducer,
+} from '../../oscal-common/resolvers/sparql-query.js'
 
 
 const oscalPartyResolvers = {
@@ -266,7 +270,7 @@ const oscalPartyResolvers = {
       // create any locations supplied and attach them to the Party
       if (locations !== undefined && locations !== null) {
         const locationIris = []
-        for (let locationId of locations) locationIris.push(`<http://csrc.nist.gov/ns/oscal/common#Party-${locationId}>`);
+        for (let locationId of locations) locationIris.push(`<http://csrc.nist.gov/ns/oscal/common#Location-${locationId}>`);
 
         // attach the reference of a Party to this Party
         const partyAttachQuery = attachToPartyQuery(id, 'locations', locationIris);
@@ -640,7 +644,7 @@ const oscalPartyResolvers = {
       let iriArray = parent.locations_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("LOCATION");
+        const reducer = getCommonReducer("LOCATION");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Location')) continue;
           const sparqlQuery = selectLocationByIriQuery(iri, selectMap.getNode("locations"));
@@ -759,9 +763,9 @@ const oscalPartyResolvers = {
       // this is necessary to work around an issue were an array a strings is returned as a single value.
       if (parent.email_addresses === undefined) return [];
       const results = [];
-      let phoneNumbers = parent.email_addresses[0].split(",")
-      for (let phoneNumber of phoneNumbers) {
-        results.push(phoneNumber)
+      let emailAddresses = parent.email_addresses[0].split(",")
+      for (let emailAddress of emailAddresses) {
+        results.push(emailAddress)
       }
       return results;
     }

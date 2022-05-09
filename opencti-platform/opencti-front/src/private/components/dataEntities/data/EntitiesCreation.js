@@ -38,6 +38,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/Cyio
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../components/Loader';
 import RiskCreationDetails from '../../riskAssessment/risks/RiskCreationDetails';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -89,39 +90,16 @@ const styles = (theme) => ({
   },
 });
 
-// const entitiesCreationMutation = graphql`
-//   mutation EntitiesCreationMutation($input: RiskAddInput) {
-//     createRisk (input: $input) {
-//       id
-//       # ...RiskCard_node
-//       # ...RiskDetails_risk
-//       # operational_status
-//       # serial_number
-//       # release_date
-//       # description
-//       # version
-//       # name
-//     }
-//   }
-// `;
+const entitiesCreationMutation = graphql`
+  mutation EntitiesCreationMutation($input: OscalRoleAddInput) {
+    createOscalRole (input: $input) {
+      id
+    }
+  }
+`;
 
 const riskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // asset_type: Yup.array().required(t('This field is required')),
-  // implementation_point: Yup.string().required(t('This field is required')),
-  // operational_status: Yup.string().required(t('This field is required')),
-  // first_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // last_seen: Yup.date()
-  //   .nullable()
-  //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-  // sophistication: Yup.string().nullable(),
-  // resource_level: Yup.string().nullable(),
-  // primary_motivation: Yup.string().nullable(),
-  // secondary_motivations: Yup.array().nullable(),
-  // personal_motivations: Yup.array().nullable(),
-  // goals: Yup.string().nullable(),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -156,19 +134,11 @@ class EntitiesCreation extends Component {
       },
       values,
     );
-    const relatedRisks = {
-      created: values.riskDetailsCreated,
-      // remediations: {
-      //   response_type: values.response_type,
-      //   lifecycle: values.lifecycle,
-      // }
-    };
     const finalValues = R.pipe(
       R.assoc('name', values.name),
     )(adaptedValues);
-    console.log('RiskCreationFinal', finalValues);
     CM(environmentDarkLight, {
-      // mutation: entitiesCreationMutation,
+      mutation: entitiesCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -177,28 +147,12 @@ class EntitiesCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        // this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.error(err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create entity');
+      },
     });
-    // commitMutation({
-    //   mutation: entitiesCreationMutation,
-    //   variables: {
-    //     input: values,
-    //   },
-    // //   // updater: (store) => insertNode(
-    // //   //   store,
-    // //   //   'Pagination_threatActors',
-    // //   //   this.props.paginationOptions,
-    // //   //   'threatActorAdd',
-    // //   // ),
-    //   setSubmitting,
-    //   onCompleted: () => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //   },
-    // });
   }
 
   handleClose() {
@@ -245,7 +199,7 @@ class EntitiesCreation extends Component {
                   gutterBottom={true}
                   classes={{ root: classes.title }}
                 >
-                  {t('New Risk')}
+                  {t('New Entities')}
                 </Typography>
                 <div className={classes.rightContainer}>
                   <Tooltip title={t('Cancel')}>
@@ -281,38 +235,8 @@ class EntitiesCreation extends Component {
                   spacing={3}
                   classes={{ container: classes.gridContainer }}
                 >
-                  <Grid item={true} xs={6}>
-                    {/* <RiskCreationOverview
-                      setFieldValue={setFieldValue}
-                      values={values}
-                    /> */}
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    {/* <RiskCreationDetails values={values} setFieldValue={setFieldValue} /> */}
-                  </Grid>
                 </Grid>
               </Form>
-              <Grid
-                container={true}
-                spacing={3}
-                classes={{ container: classes.gridContainer }}
-                style={{ marginTop: 25 }}
-              >
-                <Grid item={true} xs={6}>
-                  {/* <CyioExternalReferences
-                      cyioCoreObjectId={risk.id}
-                    /> */}
-                  {/* <CyioCoreObjectAssetCreationExternalReferences
-                    cyioCoreObjectId={riskId}
-                  /> */}
-                </Grid>
-                <Grid item={true} xs={6}>
-                  {/* <CyioCoreObjectOrCyioCoreRelationshipNotes
-                    cyioCoreObjectOrCyioCoreRelationshipId={riskId}
-                    marginTop='0px'
-                  /> */}
-                </Grid>
-              </Grid>
             </>
           )}
         </Formik>

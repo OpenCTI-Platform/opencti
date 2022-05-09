@@ -210,6 +210,7 @@ class Risks extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'name_m',
           'risk_level',
           'risk_status',
           'risk_response',
@@ -225,7 +226,7 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <RisksCards
@@ -291,7 +292,7 @@ class Risks extends Component {
       name: {
         label: 'Name',
         width: '16%',
-        isSortable: false,
+        isSortable: true,
       },
       risk_level: {
         label: 'Risk',
@@ -321,7 +322,7 @@ class Risks extends Component {
       deadline: {
         label: 'Deadline',
         width: '10%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
@@ -350,6 +351,7 @@ class Risks extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'name_m',
           'risk_level',
           'risk_status',
           'risk_response',
@@ -366,7 +368,7 @@ class Risks extends Component {
           render={({ error, props }) => {
             console.log(`props : ${props} Error : ${error}`);
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <RisksLines

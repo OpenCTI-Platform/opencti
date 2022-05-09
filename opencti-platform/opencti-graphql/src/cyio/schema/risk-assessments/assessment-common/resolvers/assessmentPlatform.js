@@ -18,6 +18,7 @@ import {
   deleteAssessmentPlatformQuery,
   insertAssessmentPlatformQuery,
   selectAssessmentPlatformQuery,
+  attachToAssessmentPlatformQuery,
   detachFromAssessmentPlatformQuery,
   assessmentPlatformPredicateMap,
 } from './sparql-query.js';
@@ -176,7 +177,7 @@ const assessmentPlatformResolvers = {
 							throw e
 					}
 					if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${componentId}`);
-					componentIris.push(result[0].iri)
+					componentIris.push(`<${result[0].iri}>`)
 				}
 				if (componentIris.length > 0) input.uses_components = componentIris;
 			}
@@ -184,7 +185,7 @@ const assessmentPlatformResolvers = {
       // create the Assessment Platform
       const {id, query} = insertAssessmentPlatformQuery(input);
       try {
-        await dataSources.Stardog.create({
+        let result = await dataSources.Stardog.create({
           dbName,
           sparqlQuery: query,
           queryId: "Create Assessment Platform"
@@ -192,6 +193,17 @@ const assessmentPlatformResolvers = {
       } catch (e) {
         console.log(e)
         throw e
+      }
+
+      // attach each of the components used by the platform
+			if (input.uses_components !== undefined && input.uses_components !== null) {
+        // attach component(s) to the Assessment Platform
+        let attachQuery = attachToAssessmentPlatformQuery( id, 'uses_components', input.uses_components);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the component(s) to the Assessment Platform"
+        });
       }
 
       // retrieve information about the newly created Characterization to return to the user
@@ -441,7 +453,7 @@ const assessmentPlatformResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getComponentReducer("COMPONENT");
         for (let iri of iriArray) {
-          if (iri === undefined || !iri.includes('Component')) {
+          if (iri === undefined || (!iri.includes('Component') && !iri.includes('Software') && !iri.includes('Network'))) {
             continue;
           }
           const sparqlQuery = selectComponentByIriQuery(iri, null);
