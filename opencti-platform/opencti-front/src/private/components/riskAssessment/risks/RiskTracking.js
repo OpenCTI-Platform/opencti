@@ -63,7 +63,6 @@ class RiskTracking extends Component {
       riskId,
       history,
     } = this.props;
-    console.log('RiskTrackingItems', risk);
     return (
       <>
         <CyioDomainObjectHeader

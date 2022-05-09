@@ -17,6 +17,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -103,6 +104,10 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
 });
 
 const RiskLogCreationMutation = graphql`
@@ -146,7 +151,7 @@ class RiskLogCreation extends Component {
   }
 
   handleOpenCancelButton() {
-    this.setState({ displayCancel: true });
+    this.setState({ displayCancel: true, open: false });
   }
 
   handleCancelButton() {
@@ -636,9 +641,9 @@ class RiskLogCreation extends Component {
             <Typography className={classes.popoverDialog} >
               {t('Are you sure you’d like to delete this item?')}
             </Typography>
-            <DialogContent>
+            <DialogContentText>
               {t('This action can’t be undone')}
-            </DialogContent>
+            </DialogContentText>
           </DialogContent>
           <DialogActions className={classes.dialogActions}>
             <Button
@@ -651,7 +656,7 @@ class RiskLogCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${riskId}/tracking`)}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
