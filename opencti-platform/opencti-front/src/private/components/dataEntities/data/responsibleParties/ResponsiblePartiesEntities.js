@@ -378,7 +378,7 @@ class ResponsiblePartiesEntities extends Component {
     const paginationOptions = {
       search: searchTerm,
       // orderedBy: sortBy,
-      orderedBy: 'labels',
+      orderedBy: 'label_name',
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',

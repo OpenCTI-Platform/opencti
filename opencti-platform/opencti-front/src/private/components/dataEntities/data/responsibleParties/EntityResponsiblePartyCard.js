@@ -154,7 +154,7 @@ class EntityResponsiblePartyCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {/* {node.entity_type && node.entity_type} */}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <Grid
                 item={true}
@@ -183,7 +183,7 @@ class EntityResponsiblePartyCardComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <Typography>
-                  {/* {node?.name && node?.name} */}
+                  {node.parties.length > 0 && node.parties.map((party) => (party.name))}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -269,6 +269,17 @@ const EntityResponsiblePartyCardFragment = createFragmentContainer(
       fragment EntityResponsiblePartyCard_node on OscalResponsibleParty {
         __typename
         id
+        entity_type
+        role {
+          id
+          entity_type
+          role_identifier
+        }
+        parties {
+          id
+          entity_type
+          name
+        }
         labels {
           __typename
           id

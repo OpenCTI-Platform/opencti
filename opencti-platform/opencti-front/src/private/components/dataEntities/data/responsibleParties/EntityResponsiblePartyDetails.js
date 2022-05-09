@@ -2,7 +2,7 @@
 /* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, pipe, pathOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -75,6 +75,9 @@ class EntityResponsiblePartyDetailsComponent extends Component {
       fldt,
       history,
     } = this.props;
+    const partyData = pipe(
+      pathOr([], ['parties']),
+    )(responsibleParty);
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -92,7 +95,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                {responsibleParty?.name && t(responsibleParty?.name)}
+                {partyData.length > 0 && partyData.map((party) => (party.name))}
               </div>
               <div style={{ marginTop: '20px' }}>
                 <Typography
@@ -103,7 +106,6 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <div className="clearfix" />
-                {t('Jun 3, 2022')}
                 {responsibleParty?.created && fldt(responsibleParty?.created)}
               </div>
               <div style={{ marginTop: '20px' }}>
@@ -126,7 +128,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   {t('Role Identifier')}
                 </Typography>
                 <div className="clearfix" />
-                {responsibleParty?.role_identifier && t(responsibleParty?.role_identifier)}
+                {responsibleParty?.role && t(responsibleParty.role.role_identifier)}
               </div>
             </Grid>
             <Grid item={true} xs={4}>
@@ -224,6 +226,17 @@ const EntityResponsiblePartyDetails = createFragmentContainer(
       fragment EntityResponsiblePartyDetails_responsibleParty on OscalResponsibleParty {
         __typename
         id
+        entity_type
+        role {
+          id
+          entity_type
+          role_identifier
+        }
+        parties {
+          id
+          entity_type
+          name
+        }
         labels {
           __typename
           id

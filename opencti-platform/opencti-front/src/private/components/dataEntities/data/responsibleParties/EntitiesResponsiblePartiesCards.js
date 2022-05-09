@@ -126,7 +126,7 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        orderedBy: { type: "OscalResponsiblePartyOrdering", defaultValue: labels }
+        orderedBy: { type: "OscalResponsiblePartyOrdering", defaultValue: label_name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[OscalResponsiblePartyFiltering]" }
         filterMode: { type: "FilterMode" }
