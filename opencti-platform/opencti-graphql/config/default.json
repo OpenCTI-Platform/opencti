@@ -65,7 +65,7 @@
     "status_writing_delay": 2000
   },
   "history_manager": {
-    "enabled": false,
+    "enabled": true,
     "lock_key": "history_manager_lock"
   },
   "task_scheduler": {

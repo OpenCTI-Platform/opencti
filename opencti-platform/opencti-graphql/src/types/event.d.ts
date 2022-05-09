@@ -9,6 +9,15 @@ interface CommitContext {
 
 interface CreateEventOpts {
   withoutMessage?: boolean;
+  publishStreamEvent?: boolean;
+}
+
+interface UpdateEventOpts {
+  publishStreamEvent?: boolean;
+}
+
+interface DeleteEventOpts {
+  publishStreamEvent?: boolean;
 }
 
 // stream

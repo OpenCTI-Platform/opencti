@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
-import { buildCreateEvent, lockResource } from '../database/redis';
+import { lockResource, storeCreateEntityEvent } from '../database/redis';
 import {
   ACTION_TYPE_ADD,
   ACTION_TYPE_DELETE,
@@ -224,7 +224,7 @@ const executeRuleApply = async (user, taskId, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(user, element.internal_id);
-  const event = buildCreateEvent(user, instance, '-');
+  const event = await storeCreateEntityEvent(user, instance, '-', { publishStreamEvent: false });
   await rulesApplyHandler([event], [rule]);
 };
 

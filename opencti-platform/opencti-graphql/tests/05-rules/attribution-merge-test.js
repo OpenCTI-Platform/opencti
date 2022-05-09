@@ -1,7 +1,7 @@
 import { shutdownModules, startModules } from '../../src/modules';
 import { addThreatActor } from '../../src/domain/threatActor';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { createRelation, deleteElement, mergeEntities } from '../../src/database/middleware';
+import { createRelation, internalDeleteElementById, mergeEntities } from '../../src/database/middleware';
 import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCoreRelationship';
 import { RULE_PREFIX } from '../../src/schema/general';
 import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRule';
@@ -62,7 +62,7 @@ describe('Attribute use rule when merging', () => {
       // Disable the rule
       await disableRule(AttributionUseRule.id);
       // Clean
-      await deleteElement(SYSTEM_USER, threat);
+      await internalDeleteElementById(SYSTEM_USER, threat.internal_id);
       // Stop
       await shutdownModules();
     },

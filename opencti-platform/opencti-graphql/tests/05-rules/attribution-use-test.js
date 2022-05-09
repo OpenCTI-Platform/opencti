@@ -1,7 +1,7 @@
 import { shutdownModules, startModules } from '../../src/modules';
 import { addThreatActor } from '../../src/domain/threatActor';
 import { SYSTEM_USER } from '../../src/utils/access';
-import { createRelation, deleteElement } from '../../src/database/middleware';
+import { createRelation, internalDeleteElementById } from '../../src/database/middleware';
 import { RELATION_ATTRIBUTED_TO, RELATION_USES } from '../../src/schema/stixCoreRelationship';
 import { RULE_PREFIX } from '../../src/schema/general';
 import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRule';
@@ -78,8 +78,8 @@ describe('Attribute use rule', () => {
       const afterDisableRelations = await getInferences(RELATION_USES);
       expect(afterDisableRelations.length).toBe(0);
       // Clean
-      await deleteElement(SYSTEM_USER, aptUseSpelevo);
-      await deleteElement(SYSTEM_USER, threat);
+      await internalDeleteElementById(SYSTEM_USER, aptUseSpelevo.internal_id);
+      await internalDeleteElementById(SYSTEM_USER, threat.internal_id);
       // Stop
       await shutdownModules();
     },

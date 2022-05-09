@@ -1,7 +1,7 @@
 import 'typeface-ibm-plex-sans';
 import 'typeface-roboto';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { RelayEnvironmentProvider } from 'react-relay/hooks';
 import './resources/css/index.css';
 import './resources/css/leaflet.css';
@@ -27,13 +27,16 @@ const Loading = () => (
   </div>
 );
 
-ReactDOM.render(
+const container = document.getElementById('root');
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const root = createRoot(container!);
+
+root.render(
   <RelayEnvironmentProvider environment={environment}>
     <Suspense fallback={<Loading />}>
       <App />
     </Suspense>
   </RelayEnvironmentProvider>,
-  document.getElementById('root'),
 );
 
 // If you want your app to work offline and load faster, you can change

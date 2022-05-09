@@ -128,7 +128,6 @@ class ListCards extends Component {
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
-              currentFilters={filters}
             />
           )}
           <InputLabel

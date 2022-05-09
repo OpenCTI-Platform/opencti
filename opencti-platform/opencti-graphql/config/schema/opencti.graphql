@@ -856,7 +856,7 @@ type Settings implements InternalObject & BasicObject {
   platform_title: String
   platform_favicon: String
   platform_url: String
-  platform_email: String
+  platform_email: String @auth(for: [SETTINGS])
   platform_modules: [Module]
   platform_providers: [Provider]
   platform_language: String
@@ -8393,6 +8393,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
   # StixSightingRelationship
+  relationship_type: String!
   description: String
   first_seen: DateTime
   last_seen: DateTime
@@ -9931,6 +9932,10 @@ type StixCyberObservableEditMutations {
 
 ######## STIX RELATIONSHIPS
 
+type StixRelationshipEditMutations {
+  delete: ID
+}
+
 ######## STIX CORE RELATIONSHIPS
 
 type StixCoreRelationshipEditMutations {
@@ -10183,6 +10188,7 @@ type Mutation {
   ): Artifact
 
   ######## STIX RELATIONSHIPS
+  stixRelationshipEdit(id: ID!): StixRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX CORE RELATIONSHIPS
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship

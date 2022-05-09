@@ -335,10 +335,12 @@ export const defaultSecondaryValue = (n) => {
 };
 
 export const computeTimeRangeInterval = (objects) => {
-  const filteredDates = objects.filter((o) => {
-    const n = defaultDate(o);
-    return !R.isNil(n) && !isDateStringNone(n);
-  }).map((n) => jsDate(defaultDate(n)));
+  const filteredDates = objects
+    .filter((o) => {
+      const n = defaultDate(o);
+      return !R.isNil(n) && !isDateStringNone(n);
+    })
+    .map((n) => jsDate(defaultDate(n)));
   const orderedElementsDate = R.sort((a, b) => a - b, filteredDates);
   let startDate = jsDate(daysAgo(1));
   let endDate = jsDate(dayEndDate());
@@ -623,9 +625,13 @@ export const buildGraphData = (objects, graphData, t) => {
           ? `<strong>${t(`relationship_${n.relationship_type}`)}</strong>\n${t(
             'Created the',
           )} ${dateFormat(n.created)}\n${t('Start time')} ${
-            isNone(n.start_time) ? '-' : dateFormat(n.start_time)
+            isNone(n.start_time || n.first_seen)
+              ? '-'
+              : dateFormat(n.start_time || n.first_seen)
           }\n${t('Stop time')} ${
-            isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
+            isNone(n.stop_time || n.last_seen)
+              ? '-'
+              : dateFormat(n.stop_time || n.last_seen)
           }`
           : defaultValue(n, true)
       }\n${dateFormat(defaultDate(n))}`,
@@ -696,9 +702,13 @@ export const buildGraphData = (objects, graphData, t) => {
       name: `<strong>${t(`relationship_${n.entity_type}`)}</strong>\n${t(
         'Created the',
       )} ${dateFormat(n.created)}\n${t('Start time')} ${
-        isNone(n.start_time) ? '-' : dateFormat(n.start_time)
+        isNone(n.start_time || n.first_seen)
+          ? '-'
+          : dateFormat(n.start_time || n.first_seen)
       }\n${t('Stop time')} ${
-        isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
+        isNone(n.stop_time || n.last_seen)
+          ? '-'
+          : dateFormat(n.stop_time || n.last_seen)
       }`,
       source_id: n.from.id,
       target_id: n.to.id,

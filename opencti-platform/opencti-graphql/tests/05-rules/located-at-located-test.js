@@ -1,6 +1,6 @@
 import { shutdownModules, startModules } from '../../src/modules';
 import { FIVE_MINUTES, FIVE_SECS, sleep } from '../utils/testQuery';
-import { createRelation, deleteElement, internalLoadById } from '../../src/database/middleware';
+import { createRelation, internalDeleteElementById, internalLoadById } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_LOCATED_AT } from '../../src/schema/stixCoreRelationship';
 import LocatedAtLocatedRule from '../../src/rules/located-at-located/LocatedAtLocatedRule';
@@ -101,7 +101,7 @@ describe('Located at located rule', () => {
       expect(parisToEuropeMarkings.includes(TLP_WHITE_INSTANCE.internal_id)).toBeTruthy();
       expect(parisToEuropeMarkings.includes(TLP_TEST_INSTANCE.internal_id)).toBeTruthy();
       // Remove the relation must remove the inferences
-      await deleteElement(SYSTEM_USER, parisLocatedToFrance);
+      await internalDeleteElementById(SYSTEM_USER, parisLocatedToFrance.internal_id);
       await sleep(FIVE_SECS); // let some time to rule manager to delete the elements
       const afterRelDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRelDeletionRelations.length).toBe(3);
@@ -111,7 +111,7 @@ describe('Located at located rule', () => {
       const afterRecreationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRecreationRelations.length).toBe(5);
       // Remove the city
-      await deleteElement(SYSTEM_USER, paris);
+      await internalDeleteElementById(SYSTEM_USER, paris.internal_id);
       await sleep(FIVE_SECS); // let some time to rule manager to delete the elements
       const afterParisDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterParisDeletionRelations.length).toBe(3);

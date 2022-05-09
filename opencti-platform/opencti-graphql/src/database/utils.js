@@ -17,14 +17,6 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
-import {
-  INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
-  INPUT_KILLCHAIN,
-  INPUT_LABELS,
-  INPUT_MARKINGS,
-  INPUT_OBJECTS
-} from '../schema/general';
 import { isStixRelationship } from '../schema/stixRelationship';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
@@ -239,6 +231,8 @@ const extractEntityMainValue = (entityData) => {
     mainValue = entityData.indicator_pattern;
   } else if (entityData.source_name) {
     mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
+  } else if (entityData.kill_chain_name) {
+    mainValue = entityData.kill_chain_name;
   } else if (entityData.phase_name) {
     mainValue = entityData.phase_name;
   } else if (entityData.first_observed && entityData.last_observed) {
@@ -297,38 +291,28 @@ export const generateUpdateMessage = (inputs) => {
   const generatedMessage = patchElements.map(([type, operations]) => {
     return `${type}s ${operations.map(({ key, value }) => {
       let message = 'nothing';
-      const convertedKey = META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key] || key;
-      if (value) {
+      let convertedKey = key;
+      if (META_FIELD_TO_STIX_ATTRIBUTE[key]) {
+        convertedKey = META_FIELD_TO_STIX_ATTRIBUTE[key];
+      }
+      if (STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
+        convertedKey = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key];
+      }
+      if (isNotEmptyField(value)) {
         const next = Array.isArray(value) ? value : [value];
-        if (STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
-          message = next.map((val) => observableValue(val)).join(', ');
+        // If update is based on internal ref, we need to extract the value
+        if (META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
+          message = next.map((val) => extractEntityMainValue(val)).join(', ');
         } else {
-          switch (key) {
-            case INPUT_OBJECTS:
-            case INPUT_CREATED_BY:
-              message = next.map((i) => i.name).join(', ');
-              break;
-            case INPUT_MARKINGS:
-              message = next.map((i) => i.definition).join(', ');
-              break;
-            case INPUT_LABELS:
-              message = next.map((i) => i.value).join(', ');
-              break;
-            case INPUT_KILLCHAIN:
-              message = next.map((i) => i.kill_chain_name).join(', ');
-              break;
-            case INPUT_EXTERNAL_REFS:
-              message = next.map((i) => i.source_name).join(', ');
-              break;
-            default:
-              message = next.join(', ');
-          }
+          // If standard primitive data, just join the values
+          message = next.join(', ');
         }
       }
       return `\`${message}\` in \`${convertedKey}\``;
     })}`;
   }).join(', ');
-  if (isEmptyField(generatedMessage) || generatedMessage.includes('undefined') || generatedMessage.includes('[object Object]')) {
+  if (isEmptyField(generatedMessage) || generatedMessage.includes('``')
+      || generatedMessage.includes('undefined') || generatedMessage.includes('[object Object]')) {
     throw UnsupportedError('[OPENCTI] Error generating update message', { inputs, message: generatedMessage });
   }
   return generatedMessage;

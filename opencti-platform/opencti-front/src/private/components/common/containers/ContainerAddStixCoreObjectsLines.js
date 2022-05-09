@@ -31,7 +31,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import {
   reportKnowledgeGraphtMutationRelationAddMutation,
-  reportKnowledgeGraphtMutationRelationDeleteMutation,
+  reportKnowledgeGraphMutationRelationDeleteMutation,
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
 
 const styles = (theme) => ({
@@ -125,7 +125,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
-          mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
+          mutation: reportKnowledgeGraphMutationRelationDeleteMutation,
           variables: {
             id: containerId,
             toId: stixCoreObject.id,

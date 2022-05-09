@@ -16,6 +16,7 @@ import {
   InfoOutlined,
   ScatterPlotOutlined,
   DateRangeOutlined,
+  VisibilityOutlined,
 } from '@mui/icons-material';
 import {
   Video3d,
@@ -56,6 +57,8 @@ import StixCoreRelationshipEdition from '../../common/stix_core_relationships/St
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
+import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
+import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 
 const styles = () => ({
   bottomNav: {
@@ -89,8 +92,11 @@ class ReportKnowledgeGraphBar extends Component {
       openSelectByType: false,
       anchorElSelectByType: null,
       openCreatedRelation: false,
+      openCreatedSighting: false,
       relationReversed: false,
+      sightingReversed: false,
       openEditRelation: false,
+      openEditSighting: false,
       openEditEntity: false,
       displayRemove: false,
     };
@@ -166,17 +172,44 @@ class ReportKnowledgeGraphBar extends Component {
     this.setState({ relationReversed: !this.state.relationReversed });
   }
 
+  handleOpenCreateSighting() {
+    this.setState({ openCreatedSighting: true });
+  }
+
+  handleCloseCreateSighting() {
+    this.setState({ openCreatedSighting: false });
+  }
+
+  handleReverseSighting() {
+    this.setState({ sightingReversed: !this.state.sightingReversed });
+  }
+
   handleOpenEditItem() {
     if (
       this.props.numberOfSelectedNodes === 1
-      && !this.props.selectedNodes[0].relationship_type
+      && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
     ) {
       this.setState({ openEditEntity: true });
     } else if (
-      this.props.numberOfSelectedLinks === 1
-      || this.props.selectedNodes[0].relationship_type
+      (this.props.numberOfSelectedLinks === 1
+        && this.props.selectedLinks[0].parent_types.includes(
+          'stix-core-relationship',
+        ))
+      || (this.props.numberOfSelectedNodes === 1
+        && this.props.selectedNodes[0].parent_types.includes(
+          'stix-core-relationship',
+        ))
     ) {
       this.setState({ openEditRelation: true });
+    } else if (
+      (this.props.numberOfSelectedLinks === 1
+        && this.props.selectedLinks[0].entity_type
+          === 'stix-sighting-relationship')
+      || (this.props.numberOfSelectedNodes === 1
+        && this.props.selectedNodes[0].entity_type
+          === 'stix-sighting-relationship')
+    ) {
+      this.setState({ openEditSighting: true });
     }
   }
 
@@ -189,6 +222,13 @@ class ReportKnowledgeGraphBar extends Component {
 
   handleCloseRelationEdition() {
     this.setState({ openEditRelation: false });
+    this.props.handleCloseRelationEdition(
+      R.propOr(null, 'id', this.props.selectedLinks[0]),
+    );
+  }
+
+  handleCloseSightingEdition() {
+    this.setState({ openEditSighting: false });
     this.props.handleCloseRelationEdition(
       R.propOr(null, 'id', this.props.selectedLinks[0]),
     );
@@ -250,8 +290,11 @@ class ReportKnowledgeGraphBar extends Component {
       openSelectByType,
       anchorElSelectByType,
       openCreatedRelation,
+      openCreatedSighting,
       relationReversed,
+      sightingReversed,
       openEditRelation,
+      openEditSighting,
       openEditEntity,
     } = this.state;
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
@@ -298,27 +341,30 @@ class ReportKnowledgeGraphBar extends Component {
     const relationEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
+    const sightingEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
     let relationFromObjects = null;
     let relationToObjects = null;
     if (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
-      relationFromObjects = relationReversed
+      relationFromObjects = relationReversed || sightingReversed
         ? [R.last(selectedNodes)]
         : R.init(selectedNodes);
-      relationToObjects = relationReversed
+      relationToObjects = relationReversed || sightingReversed
         ? R.init(selectedNodes)
         : [R.last(selectedNodes)];
     } else if (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
-      relationFromObjects = relationReversed
+      relationFromObjects = relationReversed || sightingReversed
         ? R.tail(selectedNodes)
         : [R.head(selectedNodes)];
-      relationToObjects = relationReversed
+      relationToObjects = relationReversed || sightingReversed
         ? [R.head(selectedNodes)]
         : R.tail(selectedNodes);
     } else if (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1) {
-      relationFromObjects = relationReversed
+      relationFromObjects = relationReversed || sightingReversed
         ? [selectedNodes[0]]
         : [selectedLinks[0]];
-      relationToObjects = relationReversed
+      relationToObjects = relationReversed || sightingReversed
         ? [selectedLinks[0]]
         : [selectedNodes[0]];
     }
@@ -737,6 +783,15 @@ class ReportKnowledgeGraphBar extends Component {
                   handleClose={this.handleCloseRelationEdition.bind(this)}
                   noStoreUpdate={true}
                 />
+                <StixSightingRelationshipEdition
+                  open={openEditSighting}
+                  stixSightingRelationshipId={
+                    R.propOr(null, 'id', selectedNodes[0])
+                    || R.propOr(null, 'id', selectedLinks[0])
+                  }
+                  handleClose={this.handleCloseSightingEdition.bind(this)}
+                  noStoreUpdate={true}
+                />
                 {onAddRelation && (
                   <Tooltip title={t('Create a relationship')}>
                     <span>
@@ -764,6 +819,42 @@ class ReportKnowledgeGraphBar extends Component {
                     handleClose={this.handleCloseCreateRelationship.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseRelation.bind(
+                      this,
+                    )}
+                    defaultCreatedBy={R.propOr(null, 'createdBy', report)}
+                    defaultMarkingDefinitions={R.map(
+                      (n) => n.node,
+                      R.pathOr([], ['objectMarking', 'edges'], report),
+                    )}
+                  />
+                )}
+                {onAddRelation && (
+                  <Tooltip title={t('Create a sighting')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleOpenCreateSighting.bind(this)}
+                        disabled={!sightingEnabled}
+                        size="large"
+                      >
+                        <VisibilityOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {onAddRelation && (
+                  <StixSightingRelationshipCreation
+                    open={openCreatedSighting}
+                    fromObjects={relationFromObjects}
+                    toObjects={relationToObjects}
+                    firstSeen={
+                      lastLinkFirstSeen || dateFormat(report.published)
+                    }
+                    lastSeen={lastLinkLastSeen || dateFormat(report.published)}
+                    confidence={report.confidence}
+                    handleClose={this.handleCloseCreateSighting.bind(this)}
+                    handleResult={onAddRelation}
+                    handleReverseSighting={this.handleReverseSighting.bind(
                       this,
                     )}
                     defaultCreatedBy={R.propOr(null, 'createdBy', report)}

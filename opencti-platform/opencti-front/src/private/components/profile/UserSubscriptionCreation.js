@@ -455,7 +455,6 @@ class UserSubscriptionCreation extends Component {
                         'createdBy',
                         'confidence_gt',
                       ]}
-                      currentFilters={[]}
                       handleAddFilter={this.handleAddFilter.bind(this)}
                       noDirectFilters={true}
                     />

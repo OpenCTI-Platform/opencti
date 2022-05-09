@@ -1,4 +1,4 @@
-FROM docker.io/library/node:16-alpine AS base
+FROM node:18.1.0-alpine3.15 AS base
 
 RUN corepack enable
 

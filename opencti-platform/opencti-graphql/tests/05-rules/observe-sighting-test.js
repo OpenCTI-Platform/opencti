@@ -6,7 +6,7 @@ import RuleObserveSighting from '../../src/rules/observed-sighting/ObserveSighti
 import { RULE_PREFIX } from '../../src/schema/general';
 import { shutdownModules, startModules } from '../../src/modules';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import { createRelation, deleteElement, patchAttribute } from '../../src/database/middleware';
+import { createRelation, internalDeleteElementById, patchAttribute } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../src/schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../src/schema/stixSightingRelationship';
@@ -84,7 +84,7 @@ describe('Observed sighting rule', () => {
       expect(cbrickToMitreRescan.i_inference_weight).toBeUndefined();
       expect((cbrickToMitreRescan.object_marking_refs || []).length).toBe(0);
       // Cleanup
-      await deleteElement(SYSTEM_USER, cbrickToFile);
+      await internalDeleteElementById(SYSTEM_USER, cbrickToFile.internal_id);
       await assertInferencesSize(0);
       // Disable the rule
       await disableRule(RuleObserveSighting.id);

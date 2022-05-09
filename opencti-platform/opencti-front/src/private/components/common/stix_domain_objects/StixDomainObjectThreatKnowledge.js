@@ -471,9 +471,7 @@ class StixDomainObjectThreatKnowledge extends Component {
                 'created_end_date',
               ]}
               handleAddFilter={this.handleAddFilter.bind(this)}
-              currentFilters={filters}
               allEntityTypes={true}
-              variant=""
             />
             <IconButton
               color="primary"

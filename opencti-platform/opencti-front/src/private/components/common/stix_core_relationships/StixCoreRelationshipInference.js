@@ -122,7 +122,6 @@ class StixCoreRelationshipInference extends Component {
           linkDirectionalArrowLength={3}
           linkDirectionalArrowRelPos={0.99}
           onLinkClick={this.handleLinkClick.bind(this)}
-          cooldownTicks={'Infinity'}
           enableZoomInteraction={false}
           enablePanInteraction={false}
           enableNodeDrag={false}

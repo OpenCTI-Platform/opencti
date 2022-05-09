@@ -11,7 +11,6 @@ import {
   batchListThroughGetFrom,
   storeLoadById,
   mergeEntities,
-  updateAttribute,
   batchLoadThroughGetTo,
   storeLoadByIdWithRefs,
 } from '../database/middleware';
@@ -20,7 +19,7 @@ import { findAll as relationFindAll } from './stixCoreRelationship';
 import { lockResource, notify, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
+import { isStixCoreObject } from '../schema/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   isStixMetaRelationship,
@@ -140,29 +139,12 @@ export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId,
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
 };
 
-export const stixCoreObjectEditField = async (user, stixCoreObjectId, input) => {
-  const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-  if (!stixCoreObject) {
-    throw FunctionalError('Cannot edit the field, Stix-Core-Object cannot be found.');
-  }
-  const { element } = await updateAttribute(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, input);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, element, user);
-};
-
 export const stixCoreObjectDelete = async (user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
   }
   return deleteElementById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-};
-
-export const stixCoreObjectsDelete = async (user, stixCoreObjectsIds) => {
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < stixCoreObjectsIds.length; i += 1) {
-    await stixCoreObjectDelete(user, stixCoreObjectsIds[i]);
-  }
-  return stixCoreObjectsIds;
 };
 
 export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
@@ -287,25 +269,11 @@ export const askListExport = async (user, format, entityType, listParams, type =
   return worksForExport;
 };
 
-export const stixCoreObjectsExportAsk = async (user, args) => {
-  const { format, type, exportType, maxMarkingDefinition } = args;
-  const { search, orderBy, orderMode, filters, filterMode } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
-  const filtersOpts = stixCoreObjectOptions.StixCoreObjectsFilter;
-  const ordersOpts = stixCoreObjectOptions.StixCoreObjectsOrdering;
-  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
-  const works = await askListExport(user, format, type, listParams, exportType, maxMarkingDefinition);
-  return map((w) => workToExportFile(w), works);
-};
 export const stixCoreObjectExportAsk = async (user, args) => {
   const { format, stixCoreObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
   const entity = stixCoreObjectId ? await storeLoadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
   const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
-};
-export const stixCoreObjectsExportPush = async (user, type, file, listFilters) => {
-  await upload(user, `export/${type}`, file, { list_filters: listFilters });
-  return true;
 };
 export const stixCoreObjectExportPush = async (user, entityId, file) => {
   const entity = await internalLoadById(user, entityId);
@@ -335,7 +303,7 @@ export const stixCoreObjectImportPush = async (user, id, file) => {
     await elUpdateElement({ _index: previous._index, internal_id: internalId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(user, previous, instance, `${up.name} added in files`, undefined);
+    await storeUpdateEvent(user, previous, instance, `adds \`${up.name}\` in \`files\``, undefined);
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -370,7 +338,7 @@ export const stixCoreObjectImportDelete = async (user, fileId) => {
     await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(user, previous, instance, `${up.name} remove from files`, undefined);
+    await storeUpdateEvent(user, previous, instance, `removes \`${up.name}\` in \`files\``, undefined);
     return true;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {

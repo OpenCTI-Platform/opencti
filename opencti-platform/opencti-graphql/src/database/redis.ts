@@ -10,11 +10,8 @@ import {
   generateCreateMessage,
   generateDeleteMessage,
   generateMergeMessage,
-  generateUpdateMessage,
   isEmptyField,
   isInferredIndex,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE
 } from './utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
@@ -24,10 +21,6 @@ import { now, utcDate } from '../utils/format';
 import RedisStore from './sessionStore-redis';
 import SessionStoreMemory from './sessionStore-memory';
 import { getInstanceIds } from '../schema/identifier';
-import {
-  isStixEmbeddedRelationship,
-  STIX_EMBEDDED_RELATION_TO_FIELD
-} from '../schema/stixEmbeddedRelationship';
 import { convertStoreToStix } from './stix-converter';
 import type { StoreObject, StoreRelation } from '../types/store';
 import type { AuthUser } from '../types/user';
@@ -35,10 +28,12 @@ import type {
   CommitContext,
   CreateEventOpts,
   DeleteEvent,
+  DeleteEventOpts,
   Event,
   MergeEvent,
   StreamEvent,
-  UpdateEvent
+  UpdateEvent,
+  UpdateEventOpts
 } from '../types/event';
 import type { StixCoreObject } from '../types/stix-common';
 import type { EditContext } from '../generated/graphql';
@@ -398,7 +393,7 @@ export const storeMergeEvent = async (user: AuthUser, initialInstance: StoreObje
   }
 };
 // Update
-export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, commit: CommitContext | undefined): UpdateEvent => {
+const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, commit: CommitContext | undefined): UpdateEvent => {
   // Build and send the event
   const stix = convertStoreToStix(instance) as StixCoreObject;
   const previousStix = convertStoreToStix(previous) as StixCoreObject;
@@ -418,11 +413,20 @@ export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance
     }
   };
 };
-export const storeUpdateEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, commit: CommitContext | undefined) => {
+export const storeUpdateEvent = async (
+  user: AuthUser,
+  previous: StoreObject,
+  instance: StoreObject,
+  message: string,
+  commit: CommitContext | undefined,
+  opts: UpdateEventOpts = { publishStreamEvent: true }
+) => {
   try {
     if (isStixData(instance)) {
       const event = buildUpdateEvent(user, previous, instance, message, commit);
-      await pushToStream(clientBase, instance, event);
+      if (opts.publishStreamEvent) {
+        await pushToStream(clientBase, instance, event);
+      }
       return event;
     }
     return undefined;
@@ -431,7 +435,7 @@ export const storeUpdateEvent = async (user: AuthUser, previous: StoreObject, in
   }
 };
 // Create
-export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): Event => {
+const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string): Event => {
   const stix = convertStoreToStix(instance) as StixCoreObject;
   return {
     version: EVENT_VERSION_V4,
@@ -443,36 +447,17 @@ export const buildCreateEvent = (user: AuthUser, instance: StoreObject, message:
 };
 export const storeCreateRelationEvent = async (
   user: AuthUser,
-  instance: StoreObject,
-  stixLoadById: (user: AuthUser, id: string) => Promise<StoreObject>,
-  opts: CreateEventOpts = {}
+  instance: StoreRelation,
+  opts: CreateEventOpts = { publishStreamEvent: true }
 ) => {
   try {
     if (isStixData(instance)) {
-      if (isStixEmbeddedRelationship(instance.entity_type)) {
-        const relation = instance as StoreRelation;
-        const key = STIX_EMBEDDED_RELATION_TO_FIELD[instance.entity_type];
-        const from = await stixLoadById(user, relation.from.internal_id);
-        // region Generate the previous version of the element
-        const previous = { ...from } as any;
-        // TODO JRI Fix nested single relationship previous resolution
-        // if (isSingleStixEmbeddedRelationship(instance.entity_type)) {
-        //   previous[key] = previous[key].internal_id !== relation.to.internal_id ? relation.to.internal_id : null;
-        // } else {
-        previous[key] = (previous[key] ?? []).filter((p: StoreObject) => p.internal_id !== relation.to.internal_id);
-        // }
-        previous.updated_at = relation.from.updated_at;
-        // endregion
-        const inputs = [{ key, value: [relation.to], operation: UPDATE_OPERATION_ADD }];
-        const message = generateUpdateMessage(inputs);
-        const event = buildUpdateEvent(user, previous, from, message, undefined);
-        await pushToStream(clientBase, instance, event);
-        return event;
-      }
       const { withoutMessage = false } = opts;
       const message = withoutMessage ? '-' : generateCreateMessage(instance);
       const event = buildCreateEvent(user, instance, message);
-      await pushToStream(clientBase, instance, event);
+      if (opts.publishStreamEvent) {
+        await pushToStream(clientBase, instance, event);
+      }
       return event;
     }
     return undefined;
@@ -480,11 +465,18 @@ export const storeCreateRelationEvent = async (
     throw DatabaseError('Error in store create relation event', { error: e });
   }
 };
-export const storeCreateEntityEvent = async (user: AuthUser, instance: StoreObject, message: string) => {
+export const storeCreateEntityEvent = async (
+  user: AuthUser,
+  instance: StoreObject,
+  message: string,
+  opts: CreateEventOpts = { publishStreamEvent: true }
+) => {
   try {
     if (isStixData(instance)) {
       const event = buildCreateEvent(user, instance, message);
-      await pushToStream(clientBase, instance, event);
+      if (opts.publishStreamEvent) {
+        await pushToStream(clientBase, instance, event);
+      }
       return event;
     }
     return undefined;
@@ -511,28 +503,15 @@ export const storeDeleteEvent = async (
   user: AuthUser,
   instance: StoreObject,
   deletions: Array<StoreObject>,
-  stixLoadById: (user: AuthUser, id: string) => Promise<StoreObject>
+  opts: DeleteEventOpts = { publishStreamEvent: true }
 ) => {
   try {
     if (isStixData(instance)) {
-      if (isStixEmbeddedRelationship(instance.entity_type)) {
-        const relation = instance as StoreRelation;
-        const key = STIX_EMBEDDED_RELATION_TO_FIELD[instance.entity_type];
-        const from = await stixLoadById(user, relation.from.internal_id);
-        // region Generate the previous version of the element
-        const previous = { ...from } as any;
-        previous[key] = [...(previous[key] ?? []), relation.to];
-        previous.updated_at = relation.from.updated_at;
-        // endregion
-        const inputs = [{ key, value: [relation.to], operation: UPDATE_OPERATION_REMOVE }];
-        const message = generateUpdateMessage(inputs);
-        const event = buildUpdateEvent(user, previous, from, message, undefined);
-        await pushToStream(clientBase, instance, event);
-        return event;
-      }
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message, deletions);
-      await pushToStream(clientBase, instance, event);
+      if (opts.publishStreamEvent) {
+        await pushToStream(clientBase, instance, event);
+      }
       return event;
     }
     return undefined;

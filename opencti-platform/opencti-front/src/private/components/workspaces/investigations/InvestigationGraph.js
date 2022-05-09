@@ -1650,7 +1650,7 @@ class InvestigationGraphComponent extends Component {
             }}
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : 'Infinity'}
+            cooldownTicks={modeFixed ? 0 : undefined}
             dagMode={
               // eslint-disable-next-line no-nested-ternary
               modeTree === 'horizontal'
@@ -1730,7 +1730,7 @@ class InvestigationGraphComponent extends Component {
             }}
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : 'Infinity'}
+            cooldownTicks={modeFixed ? 0 : undefined}
             dagMode={
               // eslint-disable-next-line no-nested-ternary
               modeTree === 'horizontal'

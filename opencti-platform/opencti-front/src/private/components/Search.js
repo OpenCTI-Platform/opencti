@@ -152,7 +152,6 @@ class Search extends Component {
               'created_at_end_date',
             ]}
             handleAddFilter={this.handleAddFilter.bind(this)}
-            currentFilters={filters}
           />
           <div className={classes.filters}>
             {R.map((currentFilter) => {
