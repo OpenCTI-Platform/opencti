@@ -36,8 +36,6 @@ import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
-export const MIN_LIVE_STREAM_EVENT_VERSION = 2;
-
 let heartbeat;
 const broadcastClients = {};
 

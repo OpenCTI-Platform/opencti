@@ -12,6 +12,7 @@ config/development.json
 config/development.json.bak
 config/production.json
 config/reference.json
+config/tanium.json
 config/test.json
 config/local.json
 config/sync.json

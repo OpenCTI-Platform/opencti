@@ -182,7 +182,7 @@ export const inputHashesToStix = (data: Array<HashInput>) => {
 };
 // Must only be call in generic resolvers for data output
 export const stixHashesToInput = (instance: StixArtifact | StixFile | StixX509Certificate): Array<HashInput> => {
-  const attributeValue = instance.hashes;
+  const attributeValue = instance.hashes ?? {};
   const entries = Object.entries(attributeValue);
   return entries.map(([lab, val]) => {
     return { algorithm: lab.toUpperCase(), hash: val.toLowerCase() };

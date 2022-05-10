@@ -1,57 +1,58 @@
 /* eslint-disable camelcase */
-import * as R from 'ramda';
-import type { Operation } from 'fast-json-patch';
-import * as jsonpatch from 'fast-json-patch';
-import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { createStreamProcessor, EVENT_VERSION_V4, lockResource } from '../database/redis';
-import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
+import * as R from "ramda";
+import type { Operation } from "fast-json-patch";
+import * as jsonpatch from "fast-json-patch";
+import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from "set-interval-async/fixed";
+import { createStreamProcessor, EVENT_VERSION_V4, lockResource } from "../database/redis";
+import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from "../config/conf";
 import {
   createEntity,
   internalLoadById,
   patchAttribute,
   stixLoadById,
-  storeLoadByIdWithRefs,
-} from '../database/middleware';
-import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
-import { RULE_PREFIX } from '../schema/general';
-import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER, ENTITY_TYPE_TASK } from '../schema/internalObject';
-import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { createRuleTask, deleteTask } from '../domain/task';
-import { RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
-import { MIN_LIVE_STREAM_EVENT_VERSION } from '../graphql/sseMiddleware';
-import { getParentTypes } from '../schema/schemaUtils';
-import { isBasicRelationship } from '../schema/stixRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { elList, listEntities } from '../database/middleware-loader';
-import { SYSTEM_USER } from '../utils/access';
+  storeLoadByIdWithRefs
+} from "../database/middleware";
+import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from "../database/utils";
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from "../database/rabbitmq";
+import { RULE_PREFIX } from "../schema/general";
+import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER, ENTITY_TYPE_TASK } from "../schema/internalObject";
+import { TYPE_LOCK_ERROR, UnsupportedError } from "../config/errors";
+import { createRuleTask, deleteTask } from "../domain/task";
+import { RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from "../rules/rules";
+import { getParentTypes } from "../schema/schemaUtils";
+import { isBasicRelationship } from "../schema/stixRelationship";
+import { isStixSightingRelationship } from "../schema/stixSightingRelationship";
+import { elList, listEntities } from "../database/middleware-loader";
+import { SYSTEM_USER } from "../utils/access";
 // Import all rules
-import AttributedToAttributedRule from '../rules/attributed-to-attributed/AttributedToAttributedRule';
-import AttributionTargetsRule from '../rules/attribution-targets/AttributionTargetsRule';
-import AttributionUseRule from '../rules/attribution-use/AttributionUseRule';
-import RuleLocalizationOfTargets from '../rules/localization-of-targets/LocalizationOfTargetsRule';
-import LocatedAtLocatedRule from '../rules/located-at-located/LocatedAtLocatedRule';
-import LocationTargetsRule from '../rules/location-targets/LocationTargetsRule';
-import RuleObservableRelatedObservable from '../rules/observable-related/ObservableRelatedRule';
-import PartOfPartRule from '../rules/part-of-part/PartOfPartRule';
-import PartOfTargetsRule from '../rules/part-of-targets/PartOfTargetsRule';
-import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRule';
-import RuleSightingIncident from '../rules/sighting-incident/SightingIncidentRule';
-import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule';
-import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
+import AttributedToAttributedRule from "../rules/attributed-to-attributed/AttributedToAttributedRule";
+import AttributionTargetsRule from "../rules/attribution-targets/AttributionTargetsRule";
+import AttributionUseRule from "../rules/attribution-use/AttributionUseRule";
+import RuleLocalizationOfTargets from "../rules/localization-of-targets/LocalizationOfTargetsRule";
+import LocatedAtLocatedRule from "../rules/located-at-located/LocatedAtLocatedRule";
+import LocationTargetsRule from "../rules/location-targets/LocationTargetsRule";
+import RuleObservableRelatedObservable from "../rules/observable-related/ObservableRelatedRule";
+import PartOfPartRule from "../rules/part-of-part/PartOfPartRule";
+import PartOfTargetsRule from "../rules/part-of-targets/PartOfTargetsRule";
+import RelatedToRelatedRule from "../rules/related-to-related/RelatedToRelatedRule";
+import RuleSightingIncident from "../rules/sighting-incident/SightingIncidentRule";
+import RuleObserveSighting from "../rules/observed-sighting/ObserveSightingRule";
+import type { RuleDefinition, RuleRuntime, RuleScope } from "../types/rules";
 import type {
   BasicManagerEntity,
   BasicRuleEntity,
   BasicStoreCommon,
   BasicStoreEntity,
-  BasicTaskEntity,
-} from '../types/store';
-import type { AuthUser } from '../types/user';
-import type { RuleManager } from '../generated/graphql';
-import type { StixCoreObject } from '../types/stix-common';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import type { StixRelation, StixSighting } from '../types/stix-sro';
-import type { DeleteEvent, Event, MergeEvent, StreamEvent, UpdateEvent } from '../types/event';
+  BasicTaskEntity
+} from "../types/store";
+import type { AuthUser } from "../types/user";
+import type { RuleManager } from "../generated/graphql";
+import type { StixCoreObject } from "../types/stix-common";
+import { STIX_EXT_OCTI } from "../types/stix-extensions";
+import type { StixRelation, StixSighting } from "../types/stix-sro";
+import type { DeleteEvent, Event, MergeEvent, StreamEvent, UpdateEvent } from "../types/event";
+
+const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
 // let activatedRules: Array<RuleRuntime> = [];
 const RULE_ENGINE_ID = 'rule_engine_settings';
@@ -347,8 +348,10 @@ const ruleStreamHandler = async (streamEvents: Array<StreamEvent>) => {
   const compatibleEvents = streamEvents.filter((event) => {
     const eventVersion = parseInt(event.data?.version ?? '0', 10);
     const isCompatibleVersion = eventVersion >= MIN_LIVE_STREAM_EVENT_VERSION;
-    const isInferenceEvent = event.data?.data?.extensions[STIX_EXT_OCTI].is_inferred ?? false;
-    return isCompatibleVersion && !isInferenceEvent;
+    if (!isCompatibleVersion) {
+      return false;
+    }
+    return !(event.data?.data?.extensions[STIX_EXT_OCTI].is_inferred ?? false);
   });
   if (compatibleEvents.length > 0) {
     const ruleEvents: Array<Event> = compatibleEvents.map((e) => e.data);
