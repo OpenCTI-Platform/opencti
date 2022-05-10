@@ -29,6 +29,9 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
+  dialogMain: {
+    overflowY: 'hidden',
+  },
   dialogClosebutton: {
     float: 'left',
     marginLeft: '15px',
@@ -45,6 +48,7 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflowY: 'scroll',
+    height: '650px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -159,6 +163,7 @@ class EntitiesAssessmentPlatformsCreation extends Component {
         <Dialog
           open={openDataCreation}
           keepMounted={true}
+          className={classes.dialogMain}
           onClose={() => handleAssessPlatformCreation()}
         >
           <Formik
@@ -202,6 +207,7 @@ class EntitiesAssessmentPlatformsCreation extends Component {
                         component={TextField}
                         name="id"
                         fullWidth={true}
+                        disabled={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
                         variant='outlined'
@@ -229,6 +235,7 @@ class EntitiesAssessmentPlatformsCreation extends Component {
                           component={DatePickerField}
                           name="created"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -283,6 +290,7 @@ class EntitiesAssessmentPlatformsCreation extends Component {
                           component={DatePickerField}
                           name="modified"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           invalidDateMessage={t(
