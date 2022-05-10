@@ -4,7 +4,7 @@ import { DatabaseError } from '../config/errors';
 import { logApp } from '../config/conf';
 
 export const up = async (next) => {
-  logApp.info('[MIGRATION] Changing status attribute to new format');
+  logApp.info('[MIGRATION] Starting 1651939301056-workflow_rename.js');
   await searchClient()
     .updateByQuery({
       index: READ_DATA_INDICES,
@@ -25,7 +25,7 @@ export const up = async (next) => {
     .catch((err) => {
       throw DatabaseError('Error updating elastic', { error: err });
     });
-  logApp.info('[MIGRATION] Migration finished');
+  logApp.info('[MIGRATION] 1651939301056-workflow_rename.js finished');
   next();
 };
 

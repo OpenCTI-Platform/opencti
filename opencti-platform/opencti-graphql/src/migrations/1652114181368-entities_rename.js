@@ -1,10 +1,3 @@
-// TODO JRI Create needed migrations
-/*
-// 02. Migrate files to insert information in elastic
-const filesList = await rawFilesListing(user, `import/${instance.entity_type}/${instance.id}/`);
-instance.x_opencti_files = filesList.map((f) => f.id);
-*/
-
 import { logApp } from '../config/conf';
 import { searchClient } from '../database/engine';
 import { READ_DATA_INDICES } from '../database/utils';
@@ -18,8 +11,7 @@ export const up = async (next) => {
     { source: 'X-OpenCTI-Text', destination: 'Text' },
     { source: 'X-OpenCTI-User-Agent', destination: 'User-Agent' },
   ];
-
-  logApp.info('[MIGRATION] Changing entity custom names');
+  logApp.info('[MIGRATION] Starting 1652114181368-entities_rename.js');
   for (let index = 0; index < entities.length; index += 1) {
     const { source, destination } = entities[index];
     logApp.info(`[MIGRATION] Renaming entity ${source}`);
@@ -43,7 +35,7 @@ export const up = async (next) => {
         throw DatabaseError('Error updating elastic', { error: err });
       });
   }
-  logApp.info('[MIGRATION] Migration finished');
+  logApp.info('[MIGRATION] 1652114181368-entities_rename.js finished');
   next();
 };
 
