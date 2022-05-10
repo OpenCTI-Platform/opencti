@@ -407,6 +407,7 @@ export const selectPOAMByIriQuery = (iri, select) => {
 }
 export const selectAllPOAMs = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(poamPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -518,7 +519,15 @@ export const insertPOAMItemQuery = (propValues) => {
     ...(propValues.name && {"name": propValues.name}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => poamItemPredicateMap.hasOwnProperty(propPair[0]))
@@ -560,7 +569,8 @@ export const selectPOAMItemByIriQuery = (iri, select) => {
 }
 export const selectAllPOAMItems = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(poamItemPredicateMap);
-  
+  if (!select.includes('id')) select.push('id');
+
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
       for( const filter of args.filters) {

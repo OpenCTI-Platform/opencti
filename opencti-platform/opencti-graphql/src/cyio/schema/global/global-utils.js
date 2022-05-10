@@ -58,6 +58,27 @@ import {
   poamLocalDefinitionPredicateMap, 
 } from '../risk-assessments/poam/resolvers/sparql-query.js';
 
+
+// find IRI of parent
+export const findParentIriQuery = (iri, field, predicateMap) => {
+  if (!predicateMap.hasOwnProperty(field)) return null;
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  const predicate = predicateMap[field].predicate;
+  // return the current IRI if predicate isn't a inverse property path
+  if (!predicate.startsWith('^')) return iri;
+  // remove the datatype Property portion of the inverse property path
+  let index = predicate.lastIndexOf('/<');
+  let idPredicate = predicate.substring(0, index);
+  return `
+  SELECT DISTINCT ?parentIri ?objectType
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    ${iri} ${idPredicate} ?parentIri .
+    ?parentIri <http://darklight.ai/ns/common#object_type> ?objectType .
+  }
+  `
+}
+
 // Replacement for getSubjectIriByIdQuery
 export const selectObjectIriByIdQuery = (id, type) => {
   if (!objectMap.hasOwnProperty(type)) {
@@ -78,6 +99,11 @@ export const selectObjectIriByIdQuery = (id, type) => {
     }
     if (!found) throw new UserInputError(`Unknown object type '${type}'`);
   }
+
+  // determine the parent, if any, to select the correct object type
+  while (objectMap[type].parent !== undefined) {
+    type = objectMap[type].parent;
+  }
   
   return `
   SELECT DISTINCT ?iri 
@@ -92,7 +118,7 @@ export const selectObjectIriByIdQuery = (id, type) => {
 export const selectObjectByIriQuery = (iri, type, select) => {
   // due to a limitation in the selectMap.getNode capability, its possible to only get back 
   // a reference to the __typename meta type if all the other members are fragments.
-  if (select.length === 1 && select.includes('__typename')) select = null;
+  if (select === undefined || (select.length === 1 && select.includes('__typename'))) select = null;
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (!objectMap.hasOwnProperty(type)) {
     let found = false;
@@ -397,6 +423,7 @@ export const objectMap = {
     attachQuery: attachToSoftwareQuery,
     detachQuery: detachFromSoftwareQuery,
     graphQLType: "SoftwareAsset",
+    alternateKey: "tool",
     iriTemplate: "http://scap.nist.gov/ns/asset-identification#Software"
   },
   "subject": {

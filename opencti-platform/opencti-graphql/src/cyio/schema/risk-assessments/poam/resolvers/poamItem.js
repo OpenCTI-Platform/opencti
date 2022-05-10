@@ -1,6 +1,7 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues} from '../../../utils.js';
 import {UserInputError} from "apollo-server-express";
+import { calculateRiskLevel, getLatestRemediationInfo } from '../../riskUtils.js';
 import {
   getReducer, 
   insertPOAMItemQuery,
@@ -44,8 +45,10 @@ const poamItemResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("POAM-ITEM");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let itemList ;
         if (args.orderedBy !== undefined ) {
           itemList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -63,16 +66,12 @@ const poamItemResolvers = {
             continue
           }
 
-          if (item.id === undefined || item.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${item.iri} missing field 'id'; skipping`);
-            continue;
-          }
-
           // filter out non-matching entries if a filter is to be applied
           if ('filters' in args && args.filters != null && args.filters.length > 0) {
             if (!filterValues(item, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -83,16 +82,30 @@ const poamItemResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = itemList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < itemList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: itemList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -183,21 +196,26 @@ const poamItemResolvers = {
       return id;
     },
     editPOAMItem: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the risk exists
-      const sparqlQuery = selectPOAMItemQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select POAM Item",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
+      const sparqlQuery = selectPOAMItemQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select POAM Item",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/poam#Item-${id}`,
         "http://csrc.nist.gov/ns/oscal/poam#Item",
@@ -264,8 +282,8 @@ const poamItemResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -304,8 +322,8 @@ const poamItemResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -349,9 +367,18 @@ const poamItemResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const edges = [];
         const reducer = getAssessmentReducer("OBSERVATION");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let filterCount, resultCount, risk, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
+        if (offset > iriArray.length) return null;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
+          // skip down past the offset
+          if (offset) {
+            offset--
+            continue
+          }
           const sparqlQuery = selectObservationByIriQuery(iri, selectMap.getNode("node"));
           let response;
           try {
@@ -366,34 +393,47 @@ const poamItemResolvers = {
             throw e
           }
           if (response === undefined) return null;
-          if (Array.isArray(response) && response.length > 0) {
-            if ( limit ) {
-              let edge = {
-                cursor: iri,
-                node: reducer(response[0]),
-              }
-              edges.push(edge);
-              limit--;
-            }
+
+          // Handle reporting Stardog Error
+          if (typeof (response) === 'object' && 'body' in response) {
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
           }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
+
+          if (Array.isArray(response) && response.length > 0) risk = response[0];
+          if ( limit ) {
+            let edge = {
+              cursor: iri,
+              node: reducer(risk),
             }
-          }  
+            edges.push(edge);
+            limit--;
+            if (limit === 0) break;
+          }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < iriArray.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: iriArray.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -407,11 +447,19 @@ const poamItemResolvers = {
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         let edges = [];
         const reducer = getAssessmentReducer("RISK");
-        let limit = (args.first === undefined ? iriArray.length : args.first) ;
+        let filterCount, resultCount, risk, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? iriArray.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
+        if (offset > iriArray.length) return null;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Risk')) continue ;
-          const select = selectMap.getNode('node')
-          const sparqlQuery = selectRiskByIriQuery(iri, select);
+          // skip down past the offset
+          if (offset) {
+            offset--
+            continue
+          }
+          const sparqlQuery = selectRiskByIriQuery(iri, selectMap.getNode('node'));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -425,64 +473,86 @@ const poamItemResolvers = {
             throw e
           }
           if (response === undefined) return null;
-          if (Array.isArray(response) && response.length > 0) {
-            let risk = response[0];
+          
+          // Handle reporting Stardog Error
+          if (typeof (response) === 'object' && 'body' in response) {
+            throw new UserInputError(response.statusText, {
+              error_details: (response.body.message ? response.body.message : response.body),
+              error_code: (response.body.code ? response.body.code : 'N/A')
+            });
+          }
+
+          if (Array.isArray(response) && response.length > 0) risk = response[0];
+
+          // calculate the risk level
+          risk.risk_level = 'unknown';
+          if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
+            // calculate the risk level
+            const {riskLevel, riskScore} = calculateRiskLevel(risk);
+            risk.risk_score = riskScore;
+            risk.risk_level = riskLevel;
+
+            // clean up
+            delete risk.cvss2_base_score;
+            delete risk.cvss2_temporal_score;
+            delete risk.cvss3_base_score
+            delete risk.cvss3_temporal_score;
+            delete risk.available_exploit;
+            delete risk.exploitability_ease;
+          }
+
+          // retrieve most recent remediation state
+          if (risk.remediation_type !== undefined) {
+            const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
+            if (responseType !== undefined) risk.response_type = responseType;
+            if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
+            // clean up
+            delete risk.remediation_response_date;
+            delete risk.remediation_type;
+            delete risk.remediation_lifecycle;
+          }
+
+          // calculate the occurrence count
+          if (risk.related_observations) {
+            risk.occurrences = risk.related_observations.length;
+          }
 
           if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
             risk.risk_status = risk.risk_status.replace('_', '-');
           }
 
-          // calculate the risk level
-            risk.risk_level = 'unknown';
-            if (risk.cvss20_base_score !== undefined || risk.cvss30_base_score !== undefined) {
-              let riskLevel;
-              let score = risk.cvss30_base_score !== undefined ? parseFloat(risk.cvss30_base_score) : parseFloat(risk.cvss20_base_score) ;
-              if (score <= 10 && score >= 9.0) riskLevel = 'very-high';
-              if (score <= 8.9 && score >= 7.0) riskLevel = 'high';
-              if (score <= 6.9 && score >= 4.0) riskLevel = 'moderate';
-              if (score <= 3.9 && score >= 0.1) riskLevel = 'low';
-              if (score == 0) riskLevel = 'very-low';
-              risk.risk_score = score;
-              risk.risk_level = riskLevel;
-
-              // clean up
-              delete risk.cvss20_base_score;
-              delete risk.cvss20_temporal_score;
-              delete risk.cvss30_base_score
-              delete risk.cvss30_temporal_score;
-              delete risk.exploit_available;
-              delete risk.exploitability;
+          if ( limit ) {
+            let edge = {
+              cursor: iri,
+              node: reducer(risk),
             }
-
-            if ( limit ) {
-              let edge = {
-                cursor: iri,
-                node: reducer(risk),
-              }
-              edges.push(edge);
-              limit--;
-            }
+            edges.push(edge);
+            limit--;
+            if (limit === 0) break;
           }
-          else {
-            // Handle reporting Stardog Error
-            if (typeof (response) === 'object' && 'body' in response) {
-              throw new UserInputError(response.statusText, {
-                error_details: (response.body.message ? response.body.message : response.body),
-                error_code: (response.body.code ? response.body.code : 'N/A')
-              });
-            }
-          }  
         }
-        // return null if no edges
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = iriArray.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < iriArray.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: iriArray.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -490,10 +560,14 @@ const poamItemResolvers = {
         return null;
       }
     },
-    occurrences:  async (parent, _, {dbName, dataSources, }) => {
+    occurrences: async (parent, _, {dbName, dataSources, }) => {
       if (parent.id === undefined) {
         return 0;
       }
+
+      // return occurrences value from parent if already exists
+      if (parent.hasOwnProperty('occurrences')) return parent.occurrences;
+
       const id = parent.id
       const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`
       const sparqlQuery = `

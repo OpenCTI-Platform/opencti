@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { withRouter, Link } from 'react-router-dom';
 import {
   compose, last, map, toPairs,
 } from 'ramda';
@@ -16,6 +17,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import {
   Edit,
+  Share,
   ArrowDownward,
   ArrowUpward,
   ArrowDropDown,
@@ -28,6 +30,12 @@ import Button from '@material-ui/core/Button';
 import Tooltip from '@material-ui/core/Tooltip';
 import Checkbox from '@material-ui/core/Checkbox';
 import Alert from '@material-ui/lab/Alert';
+import responsiblePartiesIcon from '../../resources/images/entities/responsible_parties.svg';
+import tasksIcon from '../../resources/images/entities/tasks.svg';
+import locations from '../../resources/images/entities/locations.svg';
+import roles from '../../resources/images/entities/roles.svg';
+import parties from '../../resources/images/entities/parties.svg';
+import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
@@ -70,6 +78,9 @@ const styles = (theme) => ({
     color: theme.palette.header.text,
     boxShadow: 'inset 0px 4px 4px rgba(0, 0, 0, 0.25)',
   },
+  dataEntities: {
+    width: '180px',
+  },
   parameters: {
     // float: 'left',
     display: 'flex',
@@ -84,8 +95,8 @@ const styles = (theme) => ({
   },
   views: {
     // float: 'right',
-    width: '254px',
-    minWidth: '254px',
+    width: '295px',
+    minWidth: '285px',
     marginTop: '5px',
     padding: '14px 18px 12px 18px',
   },
@@ -102,6 +113,9 @@ const styles = (theme) => ({
   linesContainerBottomNav: {
     margin: '10px 0 90px 0',
     padding: 0,
+  },
+  icon: {
+    marginRight: '10px',
   },
   item: {
     paddingLeft: 10,
@@ -239,6 +253,7 @@ class CyioListLines extends Component {
       noHeaders,
       iconExtension,
       searchVariant,
+      selectedDataEntity,
       OperationsComponent,
       message,
     } = this.props;
@@ -318,6 +333,73 @@ class CyioListLines extends Component {
               {(!availableFilterKeys || availableFilterKeys.length === 0)
                 && !noHeaders && <div style={{ height: 38 }}> &nbsp; </div>}
             </div>
+            {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+              <FormControl
+                size='small'
+                fullWidth={true}
+                variant='outlined'
+                className={classes.dataEntities}
+              >
+                <InputLabel>
+                  Data Types
+                </InputLabel>
+                <Select
+                  variant='outlined'
+                  value={selectedDataEntity}
+                  label='Data Types'
+                  className={classes.dataEntitiesSelect}
+                >
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/roles'
+                    value='roles'
+                  >
+                    <img src={roles} className={classes.icon} alt="" />
+                    {t('Roles')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/locations'
+                    value='locations'
+                  >
+                    <img src={locations} className={classes.icon} alt="" />
+                    {t('Locations')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/parties'
+                    value='parties'
+                  >
+                    <img src={parties} className={classes.icon} alt="" />
+                    {t('Parties')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/responsible_parties'
+                    value='responsible_parties'
+                  >
+                    <img src={responsiblePartiesIcon} style={{ marginRight: '12px' }} alt="" />
+                    {t('Responsible Parties')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/tasks'
+                    value='tasks'
+                  >
+                    <img src={tasksIcon} className={classes.icon} alt="" />
+                    {t('Tasks')}
+                  </MenuItem>
+                  <MenuItem
+                    component={Link}
+                    to='/data/entities/assessment_platform'
+                    value='assessment_platform'
+                  >
+                    <img src={assessmentPlatform} className={classes.icon} alt="" />
+                    {t('Assessment Platform')}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+            )}
             <div className={classes.filters}>
               {map((currentFilter) => {
                 const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
@@ -379,6 +461,22 @@ class CyioListLines extends Component {
                       <Edit fontSize="inherit" />
                     </Button>
                   </Tooltip>
+                  {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+                    <Tooltip title={t('Share')}>
+                      <Button
+                        variant="contained"
+                        // onClick={handleDisplayEdit &&
+                        // handleDisplayEdit.bind(this, selectedElements)}
+                        className={classes.iconButton}
+                        disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                          || disabled}
+                        color="primary"
+                        size="large"
+                      >
+                        <Share fontSize="inherit" />
+                      </Button>
+                    </Tooltip>
+                  )}
                   <div style={{ display: 'inline-block' }}>
                     {OperationsComponent && React.cloneElement(OperationsComponent, {
                       id: Object.entries(selectedElements || {}).length !== 0
@@ -536,6 +634,7 @@ CyioListLines.propTypes = {
   disabled: PropTypes.bool,
   sortBy: PropTypes.string,
   orderAsc: PropTypes.bool,
+  selectedDataEntity: PropTypes.string,
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
   secondaryAction: PropTypes.bool,
@@ -548,4 +647,4 @@ CyioListLines.propTypes = {
   message: PropTypes.string,
 };
 
-export default compose(inject18n, withStyles(styles))(CyioListLines);
+export default compose(inject18n, withRouter, withStyles(styles))(CyioListLines);

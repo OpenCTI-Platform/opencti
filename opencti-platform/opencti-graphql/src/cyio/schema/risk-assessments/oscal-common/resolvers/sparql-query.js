@@ -83,7 +83,7 @@ export function getReducer(type) {
       throw new Error(`Unsupported reducer type ' ${type}'`)
   }
 }
-const externalIdentifierReducer = (item) => {
+export const externalIdentifierReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'external-identifier';
@@ -96,7 +96,7 @@ const externalIdentifierReducer = (item) => {
     ...(item.identifier && {identifier: item.identifier}),
   }
 }
-const oscalLocationReducer = (item) => {
+export const oscalLocationReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'oscal-location';
@@ -124,7 +124,7 @@ const oscalLocationReducer = (item) => {
   }
 
 }
-const oscalPartyReducer = (item) => {
+export const oscalPartyReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'oscal-party';
@@ -155,7 +155,7 @@ const oscalPartyReducer = (item) => {
     ...(item.job_title && {job_title: item.job_title}),
   }
 }
-const oscalResponsiblePartyReducer = (item) => {
+export const oscalResponsiblePartyReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'oscal-responsible-party';
@@ -174,7 +174,7 @@ const oscalResponsiblePartyReducer = (item) => {
     ...(item.parties && {parties_iri: item.parties}),
   }
 }
-const oscalRoleReducer = (item) => {
+export const oscalRoleReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if ( item.object_type === undefined ) {
     item.object_type = 'oscal-role';
@@ -272,13 +272,20 @@ export const selectExternalIdentifierByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllExternalIdentifiers = (select, filters) => {
+export const selectAllExternalIdentifiers = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(externalIdentifierPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
@@ -365,10 +372,19 @@ export const insertLocationQuery = (propValues) => {
 
   // determine the appropriate ontology class type
   const iri = `<http://csrc.nist.gov/ns/oscal/common#Location-${id}>`;
-  const insertPredicates = Object.entries(propValues)
-      .filter((propPair) => locationPredicateMap.hasOwnProperty(propPair[0]))
-      .map((propPair) => locationPredicateMap[propPair[0]].binding(iri, propPair[1]))
-      .join('. \n      ');
+  const insertPredicates = [];
+  Object.entries(propValues).forEach((propPair) => {
+    if (locationPredicateMap.hasOwnProperty(propPair[0])) {
+      if (Array.isArray(propPair[1])) {
+        for (let value of propPair[1]) {
+          insertPredicates.push(locationPredicateMap[propPair[0]].binding(iri, value));
+        }  
+      } else {
+        insertPredicates.push(locationPredicateMap[propPair[0]].binding(iri, propPair[1]));
+      }
+    }
+  });
+
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
@@ -379,7 +395,7 @@ export const insertLocationQuery = (propValues) => {
       ${iri} <http://darklight.ai/ns/common#object_type> "oscal-location" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates}
+      ${insertPredicates.join(". \n")}
     }
   }
   `;
@@ -404,6 +420,7 @@ export const selectLocationByIriQuery = (iri, select) => {
 }
 export const selectAllLocations = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(locationPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -542,6 +559,7 @@ export const selectPartyByIriQuery = (iri, select) => {
 }
 export const selectAllParties = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(partyPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -668,6 +686,7 @@ export const selectResponsiblePartyByIriQuery = (iri, select) => {
 }
 export const selectAllResponsibleParties = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(responsiblePartyPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -759,7 +778,15 @@ export const insertRoleQuery = (propValues) => {
     ...(propValues.role_identifier && {"role_identifier": propValues.role_identifier}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/common#Role-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => rolePredicateMap.hasOwnProperty(propPair[0]))
@@ -788,7 +815,15 @@ export const insertRolesQuery = (roles) => {
       ...(role.role_identifier && {"role_identifier": role.role_identifier}),
     } ;
     const id = generateId( id_material, OSCAL_NS );
-    const timestamp = new Date().toISOString()
+    const timestamp = new Date().toISOString();
+
+    // escape any special characters (e.g., newline)
+    if (role.description !== undefined) {
+      if (role.description.includes('\n')) role.description = role.description.replace(/\n/g, '\\n');
+      if (role.description.includes('\"')) role.description = role.description.replace(/\"/g, '\\"');
+      if (role.description.includes("\'")) role.description = role.description.replace(/\'/g, "\\'");
+    }
+  
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/common#Role-${id}>`;
     roleIris.push(iri);
@@ -835,6 +870,7 @@ export const selectRoleByIriQuery = (iri, select) => {
 }
 export const selectAllRoles = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(rolePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {
@@ -1012,7 +1048,7 @@ export const locationPredicateMap = {
   },
   address: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#address>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "addresses");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "address");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   email_addresses: {

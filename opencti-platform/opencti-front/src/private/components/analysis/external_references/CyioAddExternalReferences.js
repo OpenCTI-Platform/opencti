@@ -95,6 +95,9 @@ const styles = (theme) => ({
     padding: '24px',
     background: theme.palette.background.paper,
   },
+  menuItemName: {
+    padding: '15px 10px',
+  },
 });
 
 const sharedUpdater = (store, cyioCoreObjectId, newEdge) => {
@@ -136,7 +139,9 @@ class CyioAddExternalReferences extends Component {
           onCompleted: (response) => {
             this.handleClose();
             this.setState({ totalExternalReference: [] });
-            this.props.refreshQuery();
+            if (this.props.refreshQuery) {
+              this.props.refreshQuery();
+            }
           },
           // updater: (store) => {
           //   const payload = store
@@ -173,8 +178,10 @@ class CyioAddExternalReferences extends Component {
         //   sharedUpdater(store, cyioCoreObjectOrCyioCoreRelationshipId, payload);
         // },
         onCompleted: (response) => {
-          this.setState({ totalExternalReference : [] });
-          this.props.refreshQuery();
+          this.setState({ totalExternalReference: [] });
+          if (this.props.refreshQuery) {
+            this.props.refreshQuery();
+          }
         },
       });
     }
@@ -210,6 +217,7 @@ class CyioAddExternalReferences extends Component {
       t,
       classes,
       disableAdd,
+      menuItemName,
       cyioCoreObjectOrCyioCoreRelationshipId,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
       typename,
@@ -219,15 +227,24 @@ class CyioAddExternalReferences extends Component {
     };
     return (
       <div>
-        <IconButton
-          color="secondary"
-          aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
-          disabled={disableAdd}
-        >
-          <Add fontSize="small" />
-        </IconButton>
+        {menuItemName ? (
+          <div
+            className={classes.menuItemName}
+            onClick={this.handleOpen.bind(this)}
+          >
+            {t(menuItemName)}
+          </div>
+        ) : (
+          <IconButton
+            color="default"
+            aria-label="Add"
+            onClick={this.handleOpen.bind(this)}
+            classes={{ root: classes.createButton }}
+            disabled={disableAdd}
+          >
+            <Add fontSize="small" />
+          </IconButton>
+        )}
         <div classes={{ root: classes.dialogRoot }}>
           <Dialog
             maxWidth='md'
@@ -357,6 +374,7 @@ CyioAddExternalReferences.propTypes = {
   cyioCoreObjectOrCyioCoreRelationshipId: PropTypes.string,
   cyioCoreObjectOrCyioCoreRelationshipReferences: PropTypes.array,
   refreshQuery: PropTypes.func,
+  menuItemName: PropTypes.string,
   fieldName: PropTypes.string,
   disableAdd: PropTypes.bool,
   typename: PropTypes.string,

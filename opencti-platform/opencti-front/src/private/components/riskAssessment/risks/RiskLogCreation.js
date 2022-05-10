@@ -17,6 +17,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -103,6 +104,10 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
+  },
 });
 
 const RiskLogCreationMutation = graphql`
@@ -115,12 +120,15 @@ const RiskLogCreationMutation = graphql`
   }
 `;
 
-// const RiskLogValidation = (t) => Yup.object().shape({
-//   entry_type: Yup.string().required(t('This field is required')),
-//   name: Yup.string().required(t('This field is required')),
-//   description: Yup.string().required(t('This field is required')),
-//   event_start: Yup.date().required(t('This field is required')),
-// });
+const RiskLogValidation = (t) => Yup.object().shape({
+  entry_type: Yup.string().required(t('This field is required')),
+  name: Yup.string().required(t('This field is required')),
+  description: Yup.string().required(t('This field is required')),
+  event_start: Yup.date().required(t('The value must be a date (YYYY-MM-DD)')),
+  event_end: Yup.date()
+  .nullable()
+  .typeError(t('The value must be a date (YYYY-MM-DDss)')),
+});
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -134,9 +142,7 @@ class RiskLogCreation extends Component {
       open: false,
       onSubmit: false,
       displayCancel: false,
-      logged_by:[{
-        party: '',
-      }],
+      logged_by: [],
     };
   }
 
@@ -145,7 +151,7 @@ class RiskLogCreation extends Component {
   }
 
   handleOpenCancelButton() {
-    this.setState({ displayCancel: true });
+    this.setState({ displayCancel: true, open: false });
   }
 
   handleCancelButton() {
@@ -157,11 +163,11 @@ class RiskLogCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-     this.setState({
-      logged_by:[{
-        party: values.logged_by,
-      }],
-    })
+    if(values.logged_by.length > 0){
+      this.setState({
+        logged_by: [{'party': values.logged_by}],
+      })
+    }
     const adaptedValues = evolve(
       {
         event_start: () => values.event_start === null ? null : parse(values.event_start).format(),
@@ -170,6 +176,7 @@ class RiskLogCreation extends Component {
       },
       values,
     );
+  
     const finalValues = R.pipe(
       R.assoc('logged_by', this.state.logged_by),
     )(adaptedValues)
@@ -183,11 +190,12 @@ class RiskLogCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/tracking`);
+        this.props.refreshQuery();
       },
       onError: (err) => {
         console.error('riskLogCreationValueError', err)
         toastGenericError("Failed to create Risk Log")
+        setSubmitting(false);
       },
     });
     // commitMutation({
@@ -223,6 +231,7 @@ class RiskLogCreation extends Component {
 
   renderClassic() {
     const { t, classes, data } = this.props;
+    
     return (
       <div>
         <Fab
@@ -261,7 +270,8 @@ class RiskLogCreation extends Component {
                 event_start: null,
                 event_end: null,
               }}
-              // validationSchema={RiskLogValidation(t)}
+               validationSchema={RiskLogValidation(t)}
+              
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -355,16 +365,16 @@ class RiskLogCreation extends Component {
             enableReinitialize={true}
             initialValues={{
               risk_id: riskId,
-              entry_type: [],
+              entry_type: '',
               name: '',
               description: '',
               event_start: '',
-              event_end: '',
-              logged_by: '',
+              event_end: null,
+              logged_by: [],
               status_change: null,
               related_responses: [],
             }}
-            // validationSchema={RiskLogValidation(t)}
+             validationSchema={RiskLogValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
@@ -525,6 +535,7 @@ class RiskLogCreation extends Component {
                         <Field
                           component={SelectField}
                           name="related_responses"
+                          multiple={true}
                           fullWidth={true}
                           size="small"
                           variant='outlined'
@@ -532,7 +543,7 @@ class RiskLogCreation extends Component {
                           containerstyle={{ width: '100%' }}
                         >
                           {riskStatusResponse.map((value, i) => (
-                            <MenuItem value={value.name} key={i}>
+                            <MenuItem value={value.id} key={i}>
                               {value.name}
                             </MenuItem>
                           ))}
@@ -550,7 +561,7 @@ class RiskLogCreation extends Component {
                           {t('End Date')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Description')} >
+                          <Tooltip title={t('End Date')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
@@ -628,9 +639,9 @@ class RiskLogCreation extends Component {
             <Typography className={classes.popoverDialog} >
               {t('Are you sure you’d like to delete this item?')}
             </Typography>
-            <DialogContent>
+            <DialogContentText>
               {t('This action can’t be undone')}
-            </DialogContent>
+            </DialogContentText>
           </DialogContent>
           <DialogActions className={classes.dialogActions}>
             <Button
@@ -643,7 +654,7 @@ class RiskLogCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.goBack()}
+              onClick={() => this.props.history.push(`/activities/risk assessment/risks/${riskId}/tracking`)}
               color="secondary"
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
@@ -671,6 +682,7 @@ RiskLogCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
+  refreshQuery: PropTypes.func,
   t: PropTypes.func,
   contextual: PropTypes.bool,
   display: PropTypes.bool,

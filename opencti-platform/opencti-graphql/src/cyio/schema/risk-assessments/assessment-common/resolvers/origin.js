@@ -37,8 +37,10 @@ const originResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("ORIGIN");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let originList ;
         if (args.orderedBy !== undefined ) {
           originList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -66,6 +68,7 @@ const originResolvers = {
             if (!filterValues(origin, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -78,14 +81,27 @@ const originResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = originList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < originList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: originList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -137,7 +153,10 @@ const originResolvers = {
     createOrigin: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
       // Setup to handle embedded objects to be created
       let tasks, actors;
-      if (input.origin_actors !== undefined) actors = input.origin_actors;
+      if (input.origin_actors !== undefined) {
+        if (input.origin_actors.length === 0) throw new UserInputError(`No origin of the Risk Response provided.`)
+        actors = input.origin_actors;
+      }
 
       if (input.related_tasks !== undefined && input.related_tasks !== null) {
 				// attempt to convert task's id to IRI
@@ -162,6 +181,45 @@ const originResolvers = {
 				if (taskIris.length > 0) input.related_tasks = taskIris;
 			}
 
+      // create any Actors supplied and attach them to the Origin
+      let sparqlQuery, result;
+      for (let actor of actors) {
+        // check to see if the referenced actor exists and get its IRI
+        sparqlQuery = selectObjectIriByIdQuery( actor.actor_ref, actor.actor_type);
+        try {
+          result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Select Object",
+            singularizeSchema
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
+        if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.actor_ref}`);
+        actor.actor_ref = result[0].iri;
+
+        // if a role reference was provided
+        if (actor.role_ref !== undefined) {
+          // check if the role reference exists and get its IRI
+          sparqlQuery = selectObjectIriByIdQuery( actor.role_ref, 'role');
+          try {
+            result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${actor.role_ref}`);
+          actor.role_ref = result[0].iri;
+        }
+      }
+
       // create the Origin
       const {iri, id, query} = insertOriginQuery(input);
       try {
@@ -174,10 +232,9 @@ const originResolvers = {
         console.log(e)
         throw e
       }
-
-      // create any Actors supplied and attach them to the Origin
-      if (actors !== undefined && actors !== null ) {
-        // create the Origin
+      
+      if (actors.length > 0) {
+      // create the Actors
         const { actorIris, query } = insertActorsQuery( actors );
         try {
           await dataSources.Stardog.create({
@@ -189,7 +246,6 @@ const originResolvers = {
           console.log(e)
           throw e
         }
-
         // attach Actor to the Origin
         const actorAttachQuery = attachToOriginQuery(id, 'origin_actors', actorIris );
         try {
@@ -288,22 +344,26 @@ const originResolvers = {
       return id;
     },
     editOrigin: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
-      // check that the Origin exists
-      const sparqlQuery = selectOriginQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select Origin",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectOriginQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Origin",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Origin-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Origin",

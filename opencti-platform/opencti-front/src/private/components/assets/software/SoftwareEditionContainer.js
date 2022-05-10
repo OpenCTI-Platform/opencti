@@ -23,9 +23,9 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close, CheckCircleOutline } from '@material-ui/icons';
+import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import { dateFormat, parse } from '../../../../utils/Time';
 import { commitMutation } from '../../../../relay/environment';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
 import environmentDarkLight from '../../../../relay/environmentDarkLight';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
@@ -122,6 +122,7 @@ class SoftwareEditionContainer extends Component {
       currentTab: 0,
       onSubmit: false,
       open: false,
+      totalInitial: {},
     };
   }
 
@@ -142,19 +143,32 @@ class SoftwareEditionContainer extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const filteredValue = {};
+    const { totalInitial } = this.state;
     const adaptedValues = R.evolve(
       {
-        release_date: () => parse(values.release_date).format(),
+        release_date: () => values.release_date === null ? null : parse(values.release_date).format(),
       },
       values,
     );
+    Object.keys(totalInitial).forEach((key, j) => {
+      if (Array.isArray(adaptedValues[key])) {
+        if (adaptedValues[key].some((value, i) => value !== totalInitial[key][i])) {
+          filteredValue[key] = adaptedValues[key];
+        }
+      }
+      if (!Array.isArray(adaptedValues[key]) && totalInitial[key] !== adaptedValues[key]) {
+        filteredValue[key] = adaptedValues[key];
+      }
+    });
     const finalValues = R.pipe(
+      R.dissoc('id'),
       R.toPairs,
       R.map((n) => ({
         'key': n[0],
-        'value': adaptFieldValue(n[1]),
-      }))
-    )(adaptedValues);
+        'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
+      })),
+    )(filteredValue);
     CM(environmentDarkLight, {
       mutation: softwareEditionMutation,
       variables: {
@@ -299,7 +313,7 @@ class SoftwareEditionContainer extends Component {
                       variant="contained"
                       color="primary"
                       startIcon={<CheckCircleOutline />}
-                      onClick={submitForm}
+                      onClick={() => this.setState({ totalInitial: initialValues }, submitForm)}
                       disabled={isSubmitting}
                       classes={{ root: classes.iconButton }}
                     >
@@ -459,14 +473,6 @@ const SoftwareEditionFragment = createFragmentContainer(
           # created
           # modified
           entity_type
-          labels {
-            __typename
-            id
-            name
-            color
-            entity_type
-            description
-          }
           abstract
           content
           authors

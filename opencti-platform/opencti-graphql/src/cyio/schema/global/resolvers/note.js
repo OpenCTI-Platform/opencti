@@ -32,8 +32,10 @@ const cyioNoteResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("NOTE");
-        let limit = (args.limit === undefined ? response.length : args.limit) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.limit === undefined ? response.length : args.limit) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let noteList ;
         if (args.orderedBy !== undefined ) {
           noteList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -61,6 +63,7 @@ const cyioNoteResolvers = {
             if (!filterValues(note, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -73,14 +76,27 @@ const cyioNoteResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = noteList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.limit < noteList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: noteList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -148,25 +164,64 @@ const cyioNoteResolvers = {
     },
     deleteCyioNote: async ( _, {id}, {dbName, dataSources} ) => {
       const query = deleteNoteQuery(id);
-      await dataSources.Stardog.delete({
+      let results = await dataSources.Stardog.delete({
         dbName,
         sparqlQuery: query,
         queryId: "Delete note"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
       return id;
     },
     editCyioNote: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectNoteQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Note",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://darklight.ai/ns/common#Note-${id}`,
         "http://darklight.ai/ns/common#Note",
         input,
         notePredicateMap
-      )
-      await dataSources.Stardog.edit({
+      );
+      let results = await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
         queryId: "Update Note"
       });
+      if (results !== undefined && 'status' in results) {
+        if (results.ok === false || results.status > 299) {
+          // Handle reporting Stardog Error
+          throw new UserInputError(results.statusText, {
+            error_details: (results.body.message ? results.body.message : results.body),
+            error_code: (results.body.code ? results.body.code : 'N/A')
+          });
+        }
+      }
+
       const select = selectNoteQuery(id, selectMap.getNode("editCyioNote"));
       const result = await dataSources.Stardog.queryById({
         dbName,

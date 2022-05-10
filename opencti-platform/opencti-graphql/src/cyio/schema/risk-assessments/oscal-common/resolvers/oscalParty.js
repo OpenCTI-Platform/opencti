@@ -8,6 +8,7 @@ import {
   selectAddressByIriQuery,
   selectPhoneNumberByIriQuery,
   deleteAddressByIriQuery,
+  deletePhoneNumberByIriQuery,
   insertAddressesQuery,
   insertPhoneNumbersQuery,
   getReducer as getGlobalReducer,
@@ -26,6 +27,9 @@ import {
   insertExternalIdentifiersQuery,  
   selectExternalIdentifierByIriQuery
 } from './sparql-query.js';
+import {
+  getReducer as getCommonReducer,
+} from '../../oscal-common/resolvers/sparql-query.js'
 
 
 const oscalPartyResolvers = {
@@ -49,8 +53,10 @@ const oscalPartyResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("PARTY");
-        let limit = (args.first === undefined ? response.length : args.first);
-        let offset = (args.offset === undefined ? 0 : args.offset);
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let partyList;
         if (args.orderedBy !== undefined) {
           partyList = response.sort(compareValues(args.orderedBy, args.orderMode));
@@ -78,6 +84,7 @@ const oscalPartyResolvers = {
             if (!filterValues(party, args.filters, args.filterMode)) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -88,16 +95,30 @@ const oscalPartyResolvers = {
             }
             edges.push(edge)
             limit--;
+            if (limit === 0) break;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = partyList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
-            endCursor: edges[edges.length - 1].cursor,
-            hasNextPage: (args.first < partyList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: partyList.length,
+            endCursor: edges[edges.length-1].cursor,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -249,7 +270,7 @@ const oscalPartyResolvers = {
       // create any locations supplied and attach them to the Party
       if (locations !== undefined && locations !== null) {
         const locationIris = []
-        for (let locationId of locations) locationIris.push(`<http://csrc.nist.gov/ns/oscal/common#Party-${locationId}>`);
+        for (let locationId of locations) locationIris.push(`<http://csrc.nist.gov/ns/oscal/common#Location-${locationId}>`);
 
         // attach the reference of a Party to this Party
         const partyAttachQuery = attachToPartyQuery(id, 'locations', locationIris);
@@ -370,22 +391,26 @@ const oscalPartyResolvers = {
       return id;
     },
     editOscalParty: async (_, { id, input }, { dbName, dataSources, selectMap }) => {
-      // check that the Party exists
-      const sparqlQuery = selectPartyQuery(id, null);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: "Select OSCAL Party",
-          singularizeSchema
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id','party_type'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
       }
-
+      const sparqlQuery = selectPartyQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select OSCAL Party",
+        singularizeSchema
+      })
       if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       let reducer = getReducer("PARTY");
       const party = (reducer(response[0]));
 
@@ -455,8 +480,8 @@ const oscalPartyResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -495,8 +520,8 @@ const oscalPartyResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -619,7 +644,7 @@ const oscalPartyResolvers = {
       let iriArray = parent.locations_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getGlobalReducer("LOCATION");
+        const reducer = getCommonReducer("LOCATION");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Location')) continue;
           const sparqlQuery = selectLocationByIriQuery(iri, selectMap.getNode("locations"));
@@ -738,9 +763,9 @@ const oscalPartyResolvers = {
       // this is necessary to work around an issue were an array a strings is returned as a single value.
       if (parent.email_addresses === undefined) return [];
       const results = [];
-      let phoneNumbers = parent.email_addresses[0].split(",")
-      for (let phoneNumber of phoneNumbers) {
-        results.push(phoneNumber)
+      let emailAddresses = parent.email_addresses[0].split(",")
+      for (let emailAddress of emailAddresses) {
+        results.push(emailAddress)
       }
       return results;
     }

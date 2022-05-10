@@ -31,6 +31,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../../utils/Time';
+import {toastGenericError} from "../../../../../utils/bakedToast";
 import {
   commitMutation,
   QueryRenderer,
@@ -106,34 +107,23 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-// const remediationCreationMutation = graphql`
-//   mutation RemediationCreationMutation($input: RemediationTaskAddInput) {
-//     createRemediationTask(input: $input) {
-//       id
-//     }
-//   }
-// `;
+const remediationCreationMutation = graphql`
+  mutation RemediationCreationMutation($input: RiskResponseAddInput) {
+    createRiskResponse(input: $input) {
+      id
+    }
+  }
+`;
 
 const remediationValidation = (t) =>
   Yup.object().shape({
-    // name: Yup.string().required(t('This field is required')),
-    // asset_type: Yup.array().required(t('This field is required')),
-    // implementation_point: Yup.string().required(t('This field is required')),
-    // operational_status: Yup.string().required(t('This field is required')),
-    // first_seen: Yup.date()
-    //   .nullable()
-    //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-    // last_seen: Yup.date()
-    //   .nullable()
-    //   .typeError(t('The value must be a date (YYYY-MM-DD)')),
-    // sophistication: Yup.string().nullable(),
-    // resource_level: Yup.string().nullable(),
-    // primary_motivation: Yup.string().nullable(),
-    // secondary_motivations: Yup.array().nullable(),
-    // personal_motivations: Yup.array().nullable(),
-    // goals: Yup.string().nullable(),
+     name: Yup.string().required(t('This field is required')),
+     actor_type: Yup.string().required(t('This field is required')),
+     actor_ref: Yup.string().required(t('This field is required')),
+     response_type: Yup.string().required(t('This field is required')),
+     lifecycle: Yup.string().required(t('This field is required')),
   });
-
+  
 class RemediationCreation extends Component {
   constructor(props) {
     super(props);
@@ -143,19 +133,28 @@ class RemediationCreation extends Component {
     };
   }
 
+
   handleOpen() {
     this.setState({ open: true });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('remediationCreationValues', values);
+      
+    const adaptedValues = R.pickAll(['actor_ref','actor_type'], values)
+   
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
+      R.dissoc('actor_ref'),
+      R.dissoc('actor_target'),
+      R.dissoc('actor_type'),
+      R.dissoc('oscal_type'),
+      R.dissoc('oscal_party'),
+      R.assoc('origins', [{'origin_actors':[adaptedValues]}])
     )(values);
-    console.log('RemdiationCreationFinal', finalValues);
+console.log('Final', finalValues)
     CM(environmentDarkLight, {
-      // mutation: remediationCreationMutation,
+      mutation: remediationCreationMutation,
       variables: {
         input: finalValues,
       },
@@ -163,31 +162,13 @@ class RemediationCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        console.log('remediationCreationComplete', data);
         this.handleClose();
-        this.props.history.push('/activities/risk assessment/risks');
+        this.props.history.push('/activities/risk assessment/risks/' + this.props.riskId.id);
       },
-      onError: (err) =>
-        console.log('RemediationCreationDarkLightMutationError', err),
+      onError: (err) => {
+        toastGenericError("Failed to create Remediation")
+      }
     });
-    // commitMutation({
-    //   mutation: remediationCreationMutation,
-    //   variables: {
-    //     input: values,
-    //   },
-    // //   // updater: (store) => insertNode(
-    // //   //   store,
-    // //   //   'Pagination_threatActors',
-    // //   //   this.props.paginationOptions,
-    // //   //   'threatActorAdd',
-    // //   // ),
-    //   setSubmitting,
-    //   onCompleted: () => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleClose();
-    //   },
-    // });
   }
 
   handleClose() {
@@ -202,23 +183,25 @@ class RemediationCreation extends Component {
     this.handleClose();
   }
 
+
   render() {
-    const { t, classes, remediationId, open, history } = this.props;
-    console.log('remediationCreationId', remediationId);
+    const { t, classes, remediationId, open, history, riskId } = this.props;
+    const risk_id = this.props.riskId;
     return (
       <div className={classes.container}>
         <Formik
           initialValues={{
+            risk_id: riskId.id,
+            response_type: '',
+            lifecycle: '',
             name: '',
+            description: '',
             created: null,
             modified: null,
-            description: '',
-            lifecycle: '',
-            response_type: '',
-            actor_target: '',
-            oscal_party: '',
+            actor_type: '',
+            actor_ref: '',
           }}
-          // validationSchema={remediationValidation(t)}
+          validationSchema={remediationValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onReset.bind(this)}
         >
@@ -313,6 +296,7 @@ class RemediationCreation extends Component {
                     <RemediationCreationGeneral
                       setFieldValue={setFieldValue}
                       values={values}
+                      remediationId={remediationId}
                     />
                   </Grid>
                   {/* <Grid item={true} xs={6}>
@@ -386,6 +370,7 @@ class RemediationCreation extends Component {
 
 RemediationCreation.propTypes = {
   remediationId: PropTypes.string,
+  riskId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

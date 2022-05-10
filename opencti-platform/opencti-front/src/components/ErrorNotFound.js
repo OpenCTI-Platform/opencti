@@ -10,7 +10,7 @@ class ErrorNotFound extends Component {
     return (
       <Alert severity="info">
         <AlertTitle>{t('Error')}</AlertTitle>
-        {t('This page is not found on this OpenCTI application.')}
+        {t('Page not found')}
       </Alert>
     );
   }

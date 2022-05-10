@@ -91,11 +91,11 @@ class RiskLineComponent extends Component {
     const riskRemediation = pipe(
       pathOr([], ['remediations']),
       mergeAll,
-    )(riskData.node);
+    )(node);
     const riskCharacterization = pipe(
       pathOr([], ['characterizations']),
       mergeAll,
-    )(riskData.node);
+    )(node);
     // const riskCharacterization = pathOr(null, ['node', 'characterizations', 0], riskData);
     // const riskRemediation = pathOr([], ['node', 'remediations', 0], riskData);
     // console.log('RiskLineData', riskCharacterization, riskRemediation);
@@ -108,7 +108,7 @@ class RiskLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/activities/risk assessment/risks/${riskData?.node?.id}`}
+        to={`/activities/risk assessment/risks/${node?.id}`}
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>
           <PublicOutlined />
@@ -144,7 +144,7 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: '6.8%' }}
               >
-                {riskData?.node?.risk_level && riskData?.node?.risk_level}
+                {node?.risk_level && node?.risk_level}
               </div>
               <div
                 className={classes.bodyItem}
@@ -156,7 +156,7 @@ class RiskLineComponent extends Component {
                   color="default"
                   className={classes.statusButton}
                 >
-                  {riskData?.node?.risk_status && t(riskData?.node?.risk_status)}
+                  {node?.risk_status && t(node?.risk_status)}
                 </Button>
               </div>
               <div
@@ -169,7 +169,7 @@ class RiskLineComponent extends Component {
                   color="default"
                   className={classes.statusButton}
                 >
-                  {riskRemediation.response_type && t(riskRemediation.response_type)}
+                  {node?.response_type && t(node.response_type)}
                 </Button>
               </div>
               <div
@@ -182,7 +182,7 @@ class RiskLineComponent extends Component {
                   color="default"
                   className={classes.statusButton}
                 >
-                  {riskRemediation.lifecycle && t(riskRemediation.lifecycle)}
+                  {node?.lifecycle && t(node.lifecycle)}
                 </Button>
               </div>
               <div
@@ -195,7 +195,7 @@ class RiskLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: '10%' }}
               >
-                {riskData?.node?.deadline && fd(riskData?.node?.deadline)}
+                {node?.deadline && fd(node?.deadline)}
               </div>
               {/* <div
                 className={classes.bodyItem}
@@ -213,7 +213,7 @@ class RiskLineComponent extends Component {
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
           <RiskAssessmentPopover
             history={history}
-            nodeId={riskData?.node?.id}
+            nodeId={node?.id}
             riskNode={riskData.node}
             node={node}
           />
@@ -236,28 +236,16 @@ const RiskLineFragment = createFragmentContainer(
   RiskLineComponent,
   {
     node: graphql`
-      fragment RiskLine_node on POAMItem {
+      fragment RiskLine_node on Risk {
         id
         poam_id
         name
+        risk_level
+        risk_status
+        response_type
+        lifecycle
         occurrences
-        related_risks {
-          edges {
-            node {
-              __typename
-              id
-              name
-              risk_status
-              risk_level
-              deadline
-              remediations {
-                id
-                response_type
-                lifecycle
-              }
-            }
-          }
-        }
+        deadline
       }
     `,
   },

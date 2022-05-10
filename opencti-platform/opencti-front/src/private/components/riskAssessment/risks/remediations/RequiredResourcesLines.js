@@ -198,7 +198,6 @@ class RequiredResourcesLinesContainer extends Component {
     const { expanded } = this.state;
     const requiredResourceData = data.riskResponse;
     const requiredResourcesEdges = R.pathOr([], ['required_assets'], requiredResourceData);
-    // const expandable = externalReferencesEdges.length > 7;
     return (
       <div style={{ height: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -228,7 +227,6 @@ class RequiredResourcesLinesContainer extends Component {
           {requiredResourcesEdges.map((requiredResource, i) => (
             <RequiredResourceLine
               remediationId={remediationId}
-              requiredResourceData={requiredResourceData}
               refreshQuery={refreshQuery}
               key={requiredResource.id}
               data={requiredResource}
@@ -326,35 +324,8 @@ const RequiredResourcesLines = createFragmentContainer(
           id
           name
           description
-          links {
-            __typename
-            id
-            # created
-            # modified
-            external_id
-            source_name
-            description
-            url
-            media_type
-            entity_type
-          }
-          remarks {
-            __typename
-            id
-            abstract
-            content
-            authors
-            entity_type
-            labels {
-              __typename
-              id
-              name
-              color
-              entity_type
-              description
-            }
-          }
           required_assets { # Required Resources
+            __typename
             id
             subjects {
               subject_ref {
@@ -379,6 +350,26 @@ const RequiredResourcesLines = createFragmentContainer(
                   name # Required Resource
                 }
               }
+            }
+            links {
+              __typename
+              id
+              # created
+              # modified
+              external_id
+              source_name
+              description
+              url
+              media_type
+              entity_type
+            }
+            remarks {
+              __typename
+              id
+              abstract
+              content
+              authors
+              entity_type
             }
           }
         }

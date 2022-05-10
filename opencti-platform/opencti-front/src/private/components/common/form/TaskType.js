@@ -12,7 +12,7 @@ import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
 const TaskTypeQuery = graphql`
   query TaskTypeQuery {
-    __type(name: "TaskType") {
+    __type(name: "OscalTaskType") {
       name
       description
       enumValues {
@@ -27,9 +27,10 @@ class TaskType extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      TaskTypeList: [],
+      TaskTypeList: []
     };
   }
+
   componentDidMount() {
     fetchDarklightQuery(TaskTypeQuery)
       .toPromise()

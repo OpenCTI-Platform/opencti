@@ -1,5 +1,6 @@
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import {compareValues, updateQuery, filterValues, generateId} from '../../../utils.js';
+import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 import {UserInputError} from "apollo-server-express";
 import {
   selectLabelByIriQuery,
@@ -26,7 +27,6 @@ import {
   oscalTaskPredicateMap,
   attachToOscalTaskQuery,
 } from './sparql-query.js';
-import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 
 
 const oscalTaskResolvers = {
@@ -50,8 +50,10 @@ const oscalTaskResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("TASK");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let taskList ;
         if (args.orderedBy !== undefined ) {
           taskList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -79,6 +81,7 @@ const oscalTaskResolvers = {
             if (!filterValues(task, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -91,14 +94,27 @@ const oscalTaskResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = taskList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < taskList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: taskList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -148,18 +164,36 @@ const oscalTaskResolvers = {
   },
   Mutation: {
     createOscalTask: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
-      let dependentTasks = [], relatedTasks = []; 
+      let dependentTasks = [], relatedTasks = [], links = [], remarks = []; 
       let activities, responsibleRoles, assessmentSubjects;
       if (input.timing !== undefined && input.timing !== null) {
+        if (('within_date_range' in input.timing && 'on_date' in input.timing) ||
+            ('within_date_range' in input.timing && 'at_frequency' in input.timing) ||
+            ('on_date in input.timing' && 'at_frequency' in input.timing)) {
+              throw new UserInputError(`Only one timing field can be specified.`);
+        }
         let timing = input.timing;
         delete input.timing;
-        if (timing.hasOwnProperty('on_date')) input.on_date = timing.on_date.on_date;
-        if (timing.hasOwnProperty('within_date_range')) {
+        if ('on_date' in timing) input.on_date = timing.on_date.on_date;
+        if ('within_date_range' in timing) {
           input.start_date = timing.within_date_range.start_date;
-          input.end_date = timing.with_date_range.end_date;
+          if (timing.within_date_range.end_date !== undefined)
+            input.end_date = timing.within_date_range.end_date;
         }
-        if (timing.hasOwnProperty('at_frequency')) {
+        if ('at_frequency' in timing) {
           input.frequency_period = timing.at_frequency.period;
           input.time_unit = timing.at_frequency.unit;
         }
@@ -205,6 +239,35 @@ const oscalTaskResolvers = {
         assessmentSubjects = input.subjects;
         delete input.subjects;
       }
+      if (input.links !== undefined && input.links !== null) {
+        for (let linkId of input.links) {
+          let sparqlQuery = selectObjectIriByIdQuery( linkId, 'link');
+          let result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Obtaining IRI for Link object with id",
+            singularizeSchema
+          });
+          if (result === undefined || result.length === 0) throw new UserInputError(`Link object does not exist with ID ${taskId}`);
+          links.push(`<${result[0].iri}>`);
+        }
+        delete input.links;
+      }
+      if (input.remarks !== undefined && input.remarks !== null) {
+        for (let remarkId of input.remarks) {
+          let sparqlQuery = selectObjectIriByIdQuery( remarkId, 'remark');
+          let result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Obtaining IRI for Remark object with id",
+            singularizeSchema
+          });
+          if (result === undefined || result.length === 0) throw new UserInputError(`Remark object does not exist with ID ${taskId}`);
+          remarks.push(`<${result[0].iri}>`);
+        }
+        delete input.remarks;
+      }
+
       // create the Task
       const {id, query} = insertOscalTaskQuery(input);
       await dataSources.Stardog.create({
@@ -214,7 +277,7 @@ const oscalTaskResolvers = {
       });
 
       // Attach any dependent Tasks supplied to the Task
-      if (dependentTasks !== undefined && dependentTasks !== null ) {
+      if (dependentTasks !== undefined && dependentTasks.length > 0) {
         // attach task(s) to the Task
         let attachQuery = attachToOscalTaskQuery( id, 'task_dependencies', dependentTasks);
         await dataSources.Stardog.create({
@@ -224,7 +287,7 @@ const oscalTaskResolvers = {
         });
       }
       // Attach any related Tasks supplied to the Task
-      if (relatedTasks !== undefined && relatedTasks !== null ) {
+      if (relatedTasks !== undefined && relatedTasks.length > 0) {
         // attach task(s) to the Task
         let attachQuery = attachToOscalTaskQuery( id, 'related_tasks', relatedTasks);
         await dataSources.Stardog.create({
@@ -247,6 +310,24 @@ const oscalTaskResolvers = {
       if (responsibleRoles !== undefined && responsibleRoles !== null ) {
         // create the Responsible Role
         // attach Responsible Role to the Task
+      }
+      // Attach any link(s) supplied to the Task
+      if (links !== undefined && links.length > 0 ) {
+        let attachQuery = attachToOscalTaskQuery( id, 'links', links);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the link(s) to the Task"
+        });
+      }
+      // Attach any remark(s) supplied to the Task
+      if (remarks !== undefined && remarks.length > 0 ) {
+        let attachQuery = attachToOscalTaskQuery( id, 'remarks', remarks);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the remark(s) to the Task"
+        });
       }
 
       // retrieve information about the newly created Observation to return to the user
@@ -350,6 +431,26 @@ const oscalTaskResolvers = {
       return id;
     },
     editOscalTask: async (_, {id, input}, {dbName, dataSources, selectMap}) => {
+      // check that the object to be edited exists with the predicates - only get the minimum of data
+      let editSelect = ['id'];
+      for (let editItem of input) {
+        editSelect.push(editItem.key);
+      }
+      const sparqlQuery = selectOscalTaskQuery(id, editSelect );
+      let response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select OSCAL Task",
+        singularizeSchema
+      })
+      if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+      // TODO: WORKAROUND to handle UI where it DOES NOT provide an explicit operation
+      for (let editItem of input) {
+        if (!response[0].hasOwnProperty(editItem.key)) editItem.operation = 'add';
+      }
+      // END WORKAROUND
+
       const query = updateQuery(
         `http://csrc.nist.gov/ns/oscal/assessment/common#Task-${id}`,
         "http://csrc.nist.gov/ns/oscal/assessment/common#Task",
@@ -417,8 +518,8 @@ const oscalTaskResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -459,8 +560,8 @@ const oscalTaskResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -500,7 +601,48 @@ const oscalTaskResolvers = {
         return [];
       }
     },
-    // tasks: async (parent, args, {dbName, dataSources, selectMap}) => {},
+    related_tasks: async (parent, _, {dbName, dataSources, selectMap}) => {
+      if (parent.related_tasks_iri === undefined) return [];
+      let iriArray = parent.related_tasks_iri;
+      const results = [];
+      if (Array.isArray(iriArray) && iriArray.length > 0) {
+        const reducer = getReducer("TASK");
+        for (let iri of iriArray) {
+          if (iri === undefined || !iri.includes('Task')) {
+            continue;
+          }
+          const sparqlQuery = selectOscalTaskByIriQuery(iri, selectMap.getNode("related_tasks"));
+          let response;
+          try {
+            response = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select OSCAL Task",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+          if (response === undefined) return [];
+          if (Array.isArray(response) && response.length > 0) {
+            results.push(reducer(response[0]))
+          }
+          else {
+            // Handle reporting Stardog Error
+            if (typeof (response) === 'object' && 'body' in response) {
+              throw new UserInputError(response.statusText, {
+                error_details: (response.body.message ? response.body.message : response.body),
+                error_code: (response.body.code ? response.body.code : 'N/A')
+              });
+            }
+          }  
+        }
+        return results;
+      } else {
+        return [];
+      }
+    },
     task_dependencies: async (parent, _, {dbName, dataSources, selectMap}) => {
       if (parent.task_dependencies_iri === undefined) return [];
       let iriArray = parent.task_dependencies_iri;
@@ -670,14 +812,21 @@ const oscalTaskResolvers = {
       }
     },
     timing: async (parent, _, ) => {
-      const id = generateId( );
-      return {
-        id: `${id}`,
-        entity_type: 'event-timing',
-        ...(parent.on_date && {on_date: {date: `${parent.on_date}`}}),
-        ...(parent.start_date && {with_date_range: {start_date: `${parent.start_date}`, end_date: `${parent.end_date}`}}),
-        ...(parent.frequency_period && {at_frequency: {period: `${parent.frequency_period}`, unit: `${parent.time_unit}`}}),
+      if (parent.on_date === undefined && parent.start_date === undefined && parent.frequency_period === undefined) {
+        return null;
       }
+      return {
+        ...(parent.on_date && {on_date: parent.on_date}),
+        ...(parent.start_date && {start_date: parent.start_date, end_date: parent.end_date}),
+        ...(parent.frequency_period && {period: parent.frequency_period, unit: parent.time_unit}),
+      }
+    },
+  },
+  EventTiming: {
+    __resolveType: ( item ) => {
+      if ('on_date' in item) return 'OnDateTiming';
+      if ('start_date' in item) return 'DateRangeTiming';
+      if ('period' in item) return 'FrequencyTiming';
     }
   }
 }

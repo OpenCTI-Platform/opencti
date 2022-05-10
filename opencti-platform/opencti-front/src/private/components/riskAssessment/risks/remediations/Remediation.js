@@ -12,7 +12,7 @@ import inject18n from '../../../../../components/i18n';
 import RiskDetails from '../RiskDetails';
 import RemediationEdition from './RemediationEdition';
 import RiskPopover from '../RiskPopover';
-import RiskDeletion from '../RiskDeletion';
+import RemediationDeletion from './RemediationDeletion';
 import RiskCreation from '../RiskCreation';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -77,7 +77,7 @@ class RemediationComponent extends Component {
             PopoverComponent={<RiskPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             // handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<RiskDeletion />}
+            OperationsComponent={<RemediationDeletion riskId={riskId}/>}
           />
           <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
           <Grid
@@ -142,7 +142,9 @@ class RemediationComponent extends Component {
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             remediation={remediation}
             history={history}
+            cyioCoreRelationshipId={remediation.id}
             risk={risk}
+            riskId={riskId}
           />
         </div>
         {/* <RemediationEdition
@@ -218,14 +220,6 @@ const Remediation = createFragmentContainer(RemediationComponent, {
         content
         authors
         entity_type
-        labels {
-          __typename
-          id
-          name
-          color
-          entity_type
-          description
-        }
       }
       ...RemediationGeneralOverview_remediation
       # ...RemediationGeneralDetails_remediation

@@ -49,6 +49,7 @@ class Risks extends Component {
   }
 
   saveView() {
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -83,6 +84,10 @@ class Risks extends Component {
 
   handleRiskCreation() {
     this.setState({ openRiskCreation: true });
+  }
+
+  handleRefresh() {
+    this.props.history.push('/activities/risk assessment/risks');
   }
 
   handleDisplayEdit(selectedElements) {
@@ -199,16 +204,19 @@ class Risks extends Component {
         CreateItemComponent={<RiskCreation />}
         OperationsComponent={<RiskDeletion />}
         openExports={openExports}
-        exportEntityType="Risk"
+        filterEntityType="Risk"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'markedBy',
+          'name_m',
+          'risk_level',
+          'risk_status',
+          'risk_response',
+          'deadline_start_date',
           'created_start_date',
           'created_end_date',
-          'createdBy',
           'label_name',
         ]}
       >
@@ -218,7 +226,7 @@ class Risks extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <RisksCards
@@ -284,7 +292,7 @@ class Risks extends Component {
       name: {
         label: 'Name',
         width: '16%',
-        isSortable: false,
+        isSortable: true,
       },
       risk_level: {
         label: 'Risk',
@@ -314,7 +322,7 @@ class Risks extends Component {
       deadline: {
         label: 'Deadline',
         width: '10%',
-        isSortable: false,
+        isSortable: true,
       },
     };
     return (
@@ -337,20 +345,19 @@ class Risks extends Component {
         openExports={openExports}
         selectAll={selectAll}
         disabled={true}
-        exportEntityType="Risk"
+        filterEntityType="Risk"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'assetTypeBy',
-          'release_date',
-          // 'markedBy',
-          // 'created_start_date',
-          'operation_status',
-          'operation_System',
-          // 'created_end_date',
-          // 'createdBy',
+          'name_m',
+          'risk_level',
+          'risk_status',
+          'risk_response',
+          'deadline_start_date',
+          'created_start_date',
+          'created_end_date',
           'label_name',
         ]}
       >
@@ -361,7 +368,7 @@ class Risks extends Component {
           render={({ error, props }) => {
             console.log(`props : ${props} Error : ${error}`);
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <RisksLines
@@ -418,6 +425,7 @@ class Risks extends Component {
       orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
+      filterMode: 'and',
     };
     const { location } = this.props;
     return (

@@ -99,6 +99,17 @@
       filterMode: FilterMode
       search: String
     ): FacetConnection
+    #Log Entry Author
+    logEntryAuthor(id: ID!): LogEntryAuthor
+    logEntryAuthors( 
+      first: Int
+      offset: Int
+      orderedBy: LogEntryAuthorOrdering
+      orderMode: OrderingMode
+      filters: [LogEntryAuthorFiltering]
+      filterMode: FilterMode
+      search: String
+    ): LogEntryAuthorConnection
     #Mitigating Factor
     mitigatingFactor(id: ID!): MitigatingFactor
     mitigatingFactors( 
@@ -243,8 +254,8 @@
     deleteMitigatingFactor(riskId: ID, id: ID!): String!
     editMitigatingFactor(id: ID!, input: [EditInput]!, commitMessage: String): MitigatingFactor
     # Observation
-    createObservation(input: ObservationAddInput): Observation
-    deleteObservation(id: ID!): String!
+    createObservation(poamId: ID, resultId: ID, input: ObservationAddInput): Observation
+    deleteObservation(poamId: ID, resultId: ID, id: ID!): String!
     editObservation(id: ID!, input: [EditInput]!, commitMessage: String): Observation
     # Origins
     createOrigin(input: OriginAddInput): Origin
@@ -263,8 +274,8 @@
     deleteRiskLogEntry(riskId: ID, id: ID!): String!
     editRiskLogEntry(id: ID!, input: [EditInput]!, commitMessage: String): RiskLogEntry
     # Risk 
-    createRisk(input: RiskAddInput): Risk
-    deleteRisk(id: ID!): String!
+    createRisk(poamId: ID, resultId: ID, input: RiskAddInput): Risk
+    deleteRisk(poamId: ID, resultId: ID, id: ID!): String!
     editRisk(id: ID!, input: [EditInput]!, commitMessage: String): Risk
     # Risk Response
     createRiskResponse(input: RiskResponseAddInput): RiskResponse
@@ -339,6 +350,12 @@
   }
   # Ordering Types
   enum ActivityOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Name"
     name
     "Method"
@@ -352,6 +369,12 @@
     filterMode: FilterMode
   }
   enum ActivityFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Name"
     name
     "Method"
@@ -475,6 +498,10 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
+    "Label"
+    label_name
+    "Name"
+    name
   }
   # Filtering Types
   input AssessmentPlatformFiltering {
@@ -488,6 +515,10 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
+    "Label"
+    label_name
+    "Name"
+    name
   }
   # Pagination Types
   type AssessmentPlatformConnection {
@@ -649,6 +680,8 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
+    "Source"
+    origin_name
   }
   # Filtering Types
   input CharacterizationFiltering {
@@ -662,6 +695,8 @@ input AssessmentPlatformAddInput {
     created
     "Modified"
     modified
+    "Source"
+    origin_name
   }
   # Pagination Types
   type CharacterizationConnection {
@@ -677,10 +712,10 @@ input AssessmentPlatformAddInput {
 #
   union EventTiming = DateRangeTiming | OnDateTiming | FrequencyTiming
   input EventTimingAddInput {
-      on_date: OnDateTimingAddInput
-      within_date_range: DateRangeTimingAddInput
-      at_frequency: FrequencyTimingAddInput
-    }
+    on_date: OnDateTimingAddInput
+    within_date_range: DateRangeTimingAddInput
+    at_frequency: FrequencyTimingAddInput
+  }
 ## DateRangeTiming
 #
   "Defines identifying information about an Event Timing that occurs within a date range."
@@ -688,13 +723,13 @@ input AssessmentPlatformAddInput {
     "Identifies the specified date that the task must occur on or after."
     start_date: Timestamp!
     "identifies the specific date that the task must occur on or before."
-    end_date: Timestamp!
+    end_date: Timestamp
   }
   input DateRangeTimingAddInput {
     "Identifies the specified date that the task must occur on or after."
     start_date: Timestamp!
     "identifies the specific date that the task must occur on or before."
-    end_date: Timestamp!
+    end_date: Timestamp
   }
 ## FrequencyTiming
 #
@@ -719,7 +754,7 @@ input AssessmentPlatformAddInput {
     on_date: Timestamp!
   }
   input OnDateTimingAddInput {
-    on_date: Timestamp!
+    date: Timestamp!
   }
 
 ## Evidence
@@ -753,8 +788,12 @@ input AssessmentPlatformAddInput {
   }
   # Ordering Types
   enum EvidenceOrdering {
-    "Entity Type"
-    entity_type
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
   }
   # Filtering Types
   input EvidenceFiltering {
@@ -764,8 +803,12 @@ input AssessmentPlatformAddInput {
     filterMode: FilterMode
   }
   enum EvidenceFilter {
-    "Entity Type"
-    entity_type
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
   }
   # Pagination Types
   type EvidenceConnection {
@@ -936,6 +979,37 @@ input LogEntryAuthorAddInput  {
   "Identifies a reference to the role in which the party is making the log entry"
   role: ID
 }
+# Ordering Type
+enum LogEntryAuthorOrdering {
+  "Party"
+  party_name
+  "Role"
+  role_identifier
+}
+# Filtering Types
+enum LogEntryAuthorFilter {
+  "Party"
+  party_name
+  "Role"
+  role_identifier
+}
+# Filtering Types
+input LogEntryAuthorFiltering {
+  key: LogEntryAuthorFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+# Pagination Types
+type LogEntryAuthorConnection {
+  pageInfo: PageInfo!
+  edges: [LogEntryAuthorEdge]
+}
+type LogEntryAuthorEdge {
+  cursor: String!
+  node: LogEntryAuthor!
+}
+
 
 ## Assessment Log Entry
 #
@@ -1004,21 +1078,18 @@ input LogEntryAuthorAddInput  {
   }
   # Ordering Type
   enum AssessmentLogEntriesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Event Start"
     event_start
     "Event End"
     event_end
-    "Label"
-    labels
-  }
-  # Pagination Types
-  type AssessmentLogEntryConnection {
-    pageInfo: PageInfo!
-    edges: [AssessmentLogEntryEdge]
-  }
-  type AssessmentLogEntryEdge {
-    cursor: String!
-    node: AssessmentLogEntry!
+    "Name"
+    name
   }
   # Filtering Types
   input AssessmentLogEntriesFiltering {
@@ -1034,6 +1105,21 @@ input LogEntryAuthorAddInput  {
     modified
     "Label"
     label_name
+    "Event Start"
+    event_start
+    "Event End"
+    event_end
+    "Name"
+    name
+  }
+  # Pagination Types
+  type AssessmentLogEntryConnection {
+    pageInfo: PageInfo!
+    edges: [AssessmentLogEntryEdge]
+  }
+  type AssessmentLogEntryEdge {
+    cursor: String!
+    node: AssessmentLogEntry!
   }
 
 ## Risk Log Entry
@@ -1113,14 +1199,22 @@ input LogEntryAuthorAddInput  {
   }
   # Ordering Type
   enum RiskLogEntriesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Event Start"
     event_start
     "Event End"
     event_end
-    "Label"
-    labels
     "Entry Type"
     entry_type
+    "Name"
+    name
+    "Status Change"
+    status_change
   }
   # Filtering Types
   input RiskLogEntriesFiltering {
@@ -1136,6 +1230,16 @@ input LogEntryAuthorAddInput  {
     modified
     "Label"
     label_name
+    "Event Start"
+    event_start
+    "Event End"
+    event_end
+    "Entry Type"
+    entry_type
+    "Name"
+    name
+    "Status Change"
+    status_change
   }
   # Pagination Types
   type RiskLogEntryConnection {
@@ -1207,7 +1311,7 @@ input LogEntryAuthorAddInput  {
     "Modified"
     modified
     "Label"
-    labels
+    label_name
   }
   # Filtering Types
   input MitigatingFactorFiltering {
@@ -1305,7 +1409,7 @@ input LogEntryAuthorAddInput  {
     "Identifies relevant evidence collected as part of this observation."
     relevant_evidence: [EvidenceAddInput]
     "Identifies a Date/time stamp identifying when the finding information was collected."
-    collected: Timestamp
+    collected: Timestamp!
     "Identifies Date/time identifying when the finding information is out-of-date and no longer valid. Typically used with continuous assessment scenarios."
     expires: Timestamp
   }
@@ -1316,7 +1420,7 @@ input LogEntryAuthorAddInput  {
     "Modified"
     modified
     "Label"
-    labels
+    label_name
     "Name"
     name
     "Observation Method"
@@ -1327,6 +1431,8 @@ input LogEntryAuthorAddInput  {
     collected
     "Expiration Date"
     expires
+    "Source"
+    origin_name
   }
   # Filtering Types
   input ObservationsFiltering {
@@ -1350,6 +1456,8 @@ input LogEntryAuthorAddInput  {
     collected
     "Expiration Date"
     expires
+    "Source"
+    origin_name
   }
   # Pagination Types
   type ObservationConnection {
@@ -1386,22 +1494,12 @@ input LogEntryAuthorAddInput  {
     filterMode: FilterMode
   }
   enum OriginOrdering {
-    "Created"
-    created
-    "Modified"
-    modified
-    "Label"
-    labels
     "Name"
-    name
+    actor_name
   }
   enum OriginFilter {
-    "Created"
-    created
-    "Moodified"
-    modified
-    "Label"
-    label_name
+    "Name"
+    actor_name
   }
   # Pagination Types
   type OriginConnection {
@@ -1449,7 +1547,7 @@ type OscalTask implements BasicObject & LifecycleObject & OscalObject {
   ): OscalRelationshipConnection
   # Task
   "Identifies the type of task."
-  task_type: TaskType!
+  task_type: OscalTaskType!
   "Identifies the name for the task."
   name: String!
   "Identifies a human-readable description of the task."
@@ -1469,7 +1567,7 @@ type OscalTask implements BasicObject & LifecycleObject & OscalObject {
 }
 input OscalTaskAddInput {
   "Identifies the type of task."
-  task_type: TaskType!
+  task_type: OscalTaskType!
   "Identifies the name for the task."
   name: String!
   "Identifies a human-readable description of the task."
@@ -1481,11 +1579,15 @@ input OscalTaskAddInput {
   "Identifies any related tasks"
   related_tasks: [ID]
   "Identifies an individual activity to be performed as part of a task."
-  associated_activities: [AssociatedActivityAddInput]
+  associated_activities: [ID]
   "Identifies a reference to one or more assessment subjects that the task is performed against: component, inventory item, party, users"
   subjects: [AssessmentSubjectAddInput]
   "Identifies the person or organization responsible for performing a specific role related to the task."
-  responsible_roles: [OscalResponsibleRoleAddInput]
+  responsible_roles: [ID]
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [ID]
+  "Identifies one or more references to additional commentary on the Model."
+  remarks: [ID]
 }
 # Ordering Types
 enum OscalTaskOrdering {
@@ -1493,6 +1595,8 @@ enum OscalTaskOrdering {
   created
   "Modified"
   modified
+  "Label"
+  label_name
   "Task Type"
   task_type
   "Name"
@@ -1510,6 +1614,8 @@ enum OscalTaskFilter {
   created
   "Modified"
   modified
+  "Label"
+  label_name
   "Task Type"
   task_type
   "Name"
@@ -1578,6 +1684,10 @@ type OscalTaskEdge {
     description: String!
     "Identifies a reference to one or more subjects, in the form of a party or tool required to achieve the remediation."
     subjects: [SubjectAddInput]
+    "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+    links: [ID]
+    "Identifies one or more references to additional commentary on the Model."
+    remarks: [ID]
   }
   # Ordering Type
   enum RequiredAssetOrdering {
@@ -1586,7 +1696,7 @@ type OscalTaskEdge {
     "Modified"
     modified
     "Label"
-    labels
+    label_name
     "Name"
     name
   }
@@ -1690,6 +1800,16 @@ type OscalTaskEdge {
     vendor_dependency: RiskAssertionState
     "Identifies a control impacted by this risk."
     impacted_control_id: String
+    # Risk Response
+    "Identifies the type of response to the risk"
+    response_type: ResponseType
+    "Identifies whether this is a recommendation, such as from an assessor or tool, or an actual plan accepted by the system owner."
+    lifecycle: RiskLifeCyclePhase
+    # POAM ID
+    "Identifies the POAM ID associated with the related POAM Item referencing this Risk"
+    poam_id: String
+    "Indicate the number of occurrences of the risk based on observations associated with the risk"
+    occurrences: Int
   }
   input RiskAddInput {
     "Identifies the name for the risk."
@@ -1722,11 +1842,17 @@ type OscalTaskEdge {
     "Modified"
     modified
     "Label"
-    labels
+    label_name
+    "POAM ID"
+    poam_id
     "Name"
     name
+    "Risk Level"
+    risk_level
     "Risk Status"
     risk_status
+    "Occurrences"
+    occurrences
     "Deadline"
     deadline
   }
@@ -1744,6 +1870,10 @@ type OscalTaskEdge {
     modified
     "Label"
     label_name
+    "Name"
+    name
+    "Risk Level"
+    risk_level
     "Risk Status"
     risk_status
     "Deadline"
@@ -1824,18 +1954,28 @@ type OscalTaskEdge {
     "Identifies a human-readable description of the response plan."
     description: String!
     "Identifies one or more sources of individuals and/or tools that generated this recommended or planned response."
-    origins: [OriginAddInput]
+    origins: [OriginAddInput!]!
+    "Identifies an asset required to achieve remediation."
+    required_assets: [ID]
+    "Identifies one or more scheduled events or milestones, which may be associated with a series of assessment actions."
+    tasks: [ID]
   }
   # Ordering Types
   enum RiskResponsesOrdering {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Response Type"
     response_type
     "Response Lifecycle"
     lifecycle
     "Name"
     name
-    "Source System"
-    source_system
+    "Source"
+    origin_name
   }
   # Filtering Types
   input RiskResponsesFiltering {
@@ -1845,14 +1985,20 @@ type OscalTaskEdge {
     filterMode: FilterMode
   }
   enum RiskResponseFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
     "Response Type"
     response_type
     "Response Lifecycle"
     lifecycle
     "Name"
     name
-    "Source System"
-    source_system
+    "Source"
+    origin_name
   }
   # Pagination Types
   type RiskResponseConnection {
@@ -1883,7 +2029,7 @@ type OscalTaskEdge {
     "Indicates the type of subject"
     subject_type: SubjectType!
     "Identifies a reference to a component, inventory-item, location, party, user, or resource."
-    subject_ref: SubjectTarget
+    subject_ref: SubjectTarget!
   }
   input SubjectAddInput {
     "Identifies the name for the referenced subject."
@@ -1897,6 +2043,8 @@ type OscalTaskEdge {
   }
   # Ordering Types
   enum SubjectOrdering {
+    "Subject Context"
+    subject_context
     "Subject Type"
     subject_type
     "Name"
@@ -1910,6 +2058,8 @@ type OscalTaskEdge {
     filterMode: FilterMode
   }
   enum SubjectFilter {
+    "Subject Context"
+    subject_context
     "Subject Type"
     subject_type
     "Name"
@@ -2167,7 +2317,7 @@ type OscalTaskEdge {
   }
 
   "Defines the type of tasks"
-  enum TaskType {
+  enum OscalTaskType {
     "The task represents a planned milestone."
     milestone
     "The task represents a specific assessment action to be performed."

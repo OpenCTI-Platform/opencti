@@ -38,6 +38,9 @@ import Button from '@material-ui/core/Button';
 import * as R from 'ramda';
 import { AutoFix, Information } from 'mdi-material-ui';
 import inject18n from '../../../../../components/i18n';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import ItemConfidence from '../../../../../components/ItemConfidence';
 import RemediationPopover from './RemediationPopover';
 import { resolveLink } from '../../../../../utils/Entity';
@@ -176,7 +179,6 @@ class RelatedTaskLine extends Component {
       classes,
       data,
       remediationId,
-      relatedTaskData,
       displayRelation,
       entityId,
     } = this.props;
@@ -190,7 +192,7 @@ class RelatedTaskLine extends Component {
       mergeAll,
       path(['role']),
     )(data);
-    console.log('RelatedTaskDataCurrent', data);
+
     return (
       <div style={{
         display: 'grid',
@@ -306,7 +308,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Dependency')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {taskDependency?.name || t(taskDependency?.name)}
+                      {taskDependency?.name && t(taskDependency?.name)}
                     </Typography>
                   </div>
                 </Grid>
@@ -323,19 +325,19 @@ class RelatedTaskLine extends Component {
                   </div>
                 </Grid>
                 <Grid item={true} xs={6} style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                <div style={{ marginLeft: '18px' }}>
-                  <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
-                  <div className={classes.cardContent}>
-                    <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
-                    <div style={{ marginLeft: '10px' }}>
-                      <Typography variant="subtitle1">
-                        {responsibleRoles.name && t(responsibleRoles.name)}
-                      </Typography>
-                      {responsibleRoles.role_identifier && t(responsibleRoles.role_identifier)}
+                  <div style={{ marginLeft: '18px' }}>
+                    <Typography align="left" color="textSecondary" variant="h3">{t('Responsible Role')}</Typography>
+                    <div className={classes.cardContent}>
+                      <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
+                      <div style={{ marginLeft: '10px' }}>
+                        <Typography variant="subtitle1">
+                          {responsibleRoles?.name && t(responsibleRoles?.name)}
+                        </Typography>
+                        {responsibleRoles?.role_identifier && t(responsibleRoles?.role_identifier)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Grid>
+                </Grid>
               </Grid>
             </Grid>
             <Grid container={true}>
@@ -358,7 +360,13 @@ class RelatedTaskLine extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {data.description && t(data.description)}
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
+                        className="markdown"
+                      >
+                        {data.description && t(data.description)}
+                      </Markdown>
                     </div>
                   </div>
                 </div>
@@ -367,21 +375,19 @@ class RelatedTaskLine extends Component {
                 <CyioCoreobjectExternalReferences
                   refreshQuery={refreshQuery}
                   fieldName='links'
-                  typename={relatedTaskData.__typename}
-                  externalReferences={relatedTaskData.links}
-                  cyioCoreObjectId={remediationId}
+                  typename={data.__typename}
+                  externalReferences={data.links}
+                  cyioCoreObjectId={data.id}
                 />
               </Grid>
               <Grid style={{ margin: '50px 0 20px 0' }} xs={12} item={true}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   refreshQuery={refreshQuery}
-                  typename={relatedTaskData.__typename}
+                  typename={data.__typename}
                   fieldName='remarks'
-                  notes={relatedTaskData.remarks}
-                  cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                  notes={data.remarks}
+                  cyioCoreObjectOrCyioCoreRelationshipId={data.id}
                   marginTop='0px'
-                // data={props}
-                // marginTop={marginTop}
                 />
               </Grid>
             </Grid>
@@ -389,7 +395,6 @@ class RelatedTaskLine extends Component {
         </Accordion>
         <div style={{ marginTop: '30px' }}>
           <RelatedTaskPopover
-            relatedTaskData={relatedTaskData}
             refreshQuery={refreshQuery}
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
@@ -402,7 +407,6 @@ class RelatedTaskLine extends Component {
 }
 
 RelatedTaskLine.propTypes = {
-  relatedTaskData: PropTypes.object,
   paginationOptions: PropTypes.object,
   remediationId: PropTypes.string,
   dataColumns: PropTypes.object,

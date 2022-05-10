@@ -136,7 +136,7 @@ class SoftwareLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.label_name.width }}
               >
                 <CyioCoreObjectLabels
                   variant="inList"
@@ -196,12 +196,6 @@ const SoftwareLineFragment = createFragmentContainer(SoftwareLineComponent, {
         # created
         # modified
         entity_type
-        labels {
-          id
-          name
-          color
-          description
-        }
         abstract
         content
         authors
@@ -320,7 +314,7 @@ class SoftwareDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.label_name.width }}
               >
                 <Skeleton
                   animation="wave"

@@ -45,8 +45,10 @@ const requiredAssetResolvers = {
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer("REQUIRED-ASSET");
-        let limit = (args.first === undefined ? response.length : args.first) ;
-        let offset = (args.offset === undefined ? 0 : args.offset) ;
+        let filterCount, resultCount, limit, offset, limitSize, offsetSize;
+        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        filterCount = 0;
         let reqAssetList ;
         if (args.orderedBy !== undefined ) {
           reqAssetList = response.sort(compareValues(args.orderedBy, args.orderMode ));
@@ -74,6 +76,7 @@ const requiredAssetResolvers = {
             if (!filterValues(reqAsset, args.filters, args.filterMode) ) {
               continue
             }
+            filterCount++;
           }
 
           // if haven't reached limit to be returned
@@ -86,14 +89,27 @@ const requiredAssetResolvers = {
             limit--;
           }
         }
+        // check if there is data to be returned
         if (edges.length === 0 ) return null;
+        let hasNextPage = false, hasPreviousPage = false;
+        resultCount = reqAssetList.length;
+        if (edges.length < resultCount) {
+          if (edges.length === limitSize && filterCount <= limitSize ) {
+            hasNextPage = true;
+            if (offsetSize > 0) hasPreviousPage = true;
+          }
+          if (edges.length <= limitSize) {
+            if (filterCount !== edges.length) hasNextPage = true;
+            if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+          }
+        }
         return {
           pageInfo: {
             startCursor: edges[0].cursor,
             endCursor: edges[edges.length-1].cursor,
-            hasNextPage: (args.first < reqAssetList.length ? true : false),
-            hasPreviousPage: (args.offset > 0 ? true : false),
-            globalCount: reqAssetList.length,
+            hasNextPage: (hasNextPage ),
+            hasPreviousPage: (hasPreviousPage),
+            globalCount: resultCount,
           },
           edges: edges,
         }
@@ -143,31 +159,76 @@ const requiredAssetResolvers = {
   },
   Mutation: {
     createRequiredAsset: async ( _, {input}, {dbName, selectMap, dataSources} ) => {
+      // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+      for (const [key, value] of Object.entries(input)) {
+        if (Array.isArray(input[key]) && input[key].length === 0) {
+          delete input[key];
+          continue;
+        }
+        if (value === null || value.length === 0) {
+          delete input[key];
+        }
+      }
+      // END WORKAROUND
+
       // Setup to handle embedded objects to be created
-      let subjects, remediationId;
+      let subjects, remediationId, links = [], remarks = [];
       if (input.remediation_id !== undefined) remediationId = input.remediation_id
       if (input.subjects !== undefined) subjects = input.subjects;
 
-      let sparqlQuery, result;
-      for (let subject of subjects) {
-        sparqlQuery = selectObjectIriByIdQuery(subject.subject_ref, subject.subject_type);
-        try {
-          result = await dataSources.Stardog.queryById({
+      // obtain the IRIs for the referenced objects so that if one doesn't exists we have created anything yet.
+      if (input.links !== undefined && input.links !== null) {
+        for (let linkId of input.links) {
+          let sparqlQuery = selectObjectIriByIdQuery( linkId, 'link');
+          let result = await dataSources.Stardog.queryById({
             dbName,
             sparqlQuery,
-            queryId: "Select Object",
+            queryId: "Obtaining IRI for Link object with id",
             singularizeSchema
           });
-        } catch (e) {
-          console.log(e)
-          throw e
+          if (result === undefined || result.length === 0) throw new UserInputError(`Link object does not exist with ID ${taskId}`);
+          links.push(`<${result[0].iri}>`);
         }
-
-        if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${subject.subject_ref}`);
-        subject.subject_ref = result[0].iri;
+        delete input.links;
+      }
+      if (input.remarks !== undefined && input.remarks !== null) {
+        for (let remarkId of input.remarks) {
+          let sparqlQuery = selectObjectIriByIdQuery( remarkId, 'remark');
+          let result = await dataSources.Stardog.queryById({
+            dbName,
+            sparqlQuery,
+            queryId: "Obtaining IRI for Remark object with id",
+            singularizeSchema
+          });
+          if (result === undefined || result.length === 0) throw new UserInputError(`Remark object does not exist with ID ${taskId}`);
+          remarks.push(`<${result[0].iri}>`);
+        }
+        delete input.remarks;
       }
 
-      // create the Risk Response
+      // check that the Subject exits
+      let sparqlQuery, result;
+      if (subjects !== undefined && subjects !==  null) {
+        for (let subject of subjects) {
+          sparqlQuery = selectObjectIriByIdQuery(subject.subject_ref, subject.subject_type);
+          try {
+            result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Select Object",
+              singularizeSchema
+            });
+          } catch (e) {
+            console.log(e)
+            throw e
+          }
+  
+          if (result == undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${subject.subject_ref}`);
+          subject.subject_ref = result[0].iri;
+        }
+      }
+
+      // create the Required Asset
       const {iri, id, query} = insertRequiredAssetQuery(input);
       try {
         await dataSources.Stardog.create({
@@ -224,6 +285,26 @@ const requiredAssetResolvers = {
         }
       }
 
+      // Attach any link(s) supplied to the Required Asset
+      if (links !== undefined && links.length > 0) {
+        let attachQuery = attachToRequiredAssetQuery( id, 'links', links);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the link(s) to the Required Asset"
+        });
+      }
+
+      // Attach any remark(s) supplied to the Required Asset
+      if (remarks !== undefined && links.length > 0 ) {
+        let attachQuery = attachToRequiredAssetQuery( id, 'remarks', remarks);
+        await dataSources.Stardog.create({
+          dbName,
+          sparqlQuery: attachQuery,
+          queryId: "Attach the remark(s) to the Required Asset"
+        });
+      }
+      
       // retrieve information about the newly created Characterization to return to the user
       const select = selectRequiredAssetQuery(id, selectMap.getNode("createRequiredAsset"));
       let response;
@@ -375,8 +456,8 @@ const requiredAssetResolvers = {
       }
     },
     links: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.ext_ref_iri === undefined) return [];
-      let iriArray = parent.ext_ref_iri;
+      if (parent.links_iri === undefined) return [];
+      let iriArray = parent.links_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("EXTERNAL-REFERENCE");
@@ -417,8 +498,8 @@ const requiredAssetResolvers = {
       }
     },
     remarks: async (parent, _, {dbName, dataSources, selectMap}) => {
-      if (parent.notes_iri === undefined) return [];
-      let iriArray = parent.notes_iri;
+      if (parent.remarks_iri === undefined) return [];
+      let iriArray = parent.remarks_iri;
       const results = [];
       if (Array.isArray(iriArray) && iriArray.length > 0) {
         const reducer = getGlobalReducer("NOTE");
@@ -483,7 +564,30 @@ const requiredAssetResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            results.push(reducer(response[0]))
+            if (response[0].subject_ref[0].includes('OperatingSystem')) {
+              console.error(`[CYIO] INVALID-IRI: ${response[0].iri} 'subject_ref' contains an IRI ${response[0].subject_ref[0]} which is invalid; skipping`);
+              continue;
+            }
+
+            // determine the actual IRI of the object referenced
+            let result;
+            let sparqlQuery = selectObjectByIriQuery(response[0].subject_ref[0], response[0].subject_type, ['id'] );
+            try {
+              result = await dataSources.Stardog.queryById({
+              dbName,
+              sparqlQuery,
+              queryId: "Obtaining Subject IRI",
+              singularizeSchema
+              });
+            } catch (e) {
+                console.log(e)
+                throw e
+            }
+            if (result === undefined || result.length === 0) {
+              console.error(`[CYIO] NON-EXISTENT: (${dbName}) '${response[0].subject_ref[0]}'; skipping Subject '${response[0].iri}`);              
+              continue;
+            }
+            results.push(reducer(response[0]));
           }
           else {
             // Handle reporting Stardog Error

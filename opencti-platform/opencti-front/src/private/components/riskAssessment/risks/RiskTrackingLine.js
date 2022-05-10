@@ -27,6 +27,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -236,11 +239,12 @@ class RiskTrackingLineContainer extends Component {
   render() {
     const {
       t,
-      fd,
+      fld,
       classes,
       history,
       riskId,
       node,
+      refreshQuery,
       riskStatusResponse,
     } = this.props;
     const { expanded, displayUpdate } = this.state;
@@ -248,7 +252,6 @@ class RiskTrackingLineContainer extends Component {
       R.pathOr([], ['logged_by']),
       R.mergeAll,
     )(node);
-    // console.log('riskTrackingRiskId', riskId);
     return (
       <>
         <ListItem classes={{ root: classes.listItem }} disablePadding={true} disableGutters={true} alignItems='flex-start' divider={true} style={{ display: 'grid', gridTemplateColumns: '95% 5%' }}>
@@ -266,10 +269,11 @@ class RiskTrackingLineContainer extends Component {
                     <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
                     <div style={{ marginLeft: '16px', paddingTop: '10px' }}>
                       <Typography>
-                        {t('Risk Log Entry Title')}
+                        {node.name && t(node.name)}
                       </Typography>
                       <Typography color="textSecondary" variant="h3">
-                        {t('Logged By')} <span className={classes.span}>{riskTrackingLoggedBy.name}</span>
+                        {t('Logged By')}
+                        <span className={classes.span}>{riskTrackingLoggedBy?.name}</span>
                       </Typography>
                     </div>
                   </div>
@@ -277,9 +281,6 @@ class RiskTrackingLineContainer extends Component {
               </div>
             </AccordionSummary>
             <AccordionDetails classes={{ root: classes.accordionDetails }}>
-              {/* {displayUpdate ? (
-                  <RiskTrackingLogEdition />
-                ) : ( */}
               <>
                 <Grid container={true}>
                   <Grid item={true} xs={4}>
@@ -290,7 +291,6 @@ class RiskTrackingLineContainer extends Component {
                       <div className={classes.cardContent}>
                         <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
                         <Typography style={{ marginLeft: '10px' }} align="left">
-                          {/* {t('Lorem Ipsum')} */}
                           {node.entry_type && t(node.entry_type)}
                         </Typography>
                       </div>
@@ -300,7 +300,7 @@ class RiskTrackingLineContainer extends Component {
                         {t('Start Date')}
                       </Typography>
                       <Typography align="left" variant="subtitle2">
-                        {node.event_start && fd(node.event_start)}
+                        {node.event_start && fld(node.event_start)}
                       </Typography>
                     </div>
                   </Grid>
@@ -318,7 +318,7 @@ class RiskTrackingLineContainer extends Component {
                         {t(' End Date')}
                       </Typography>
                       <Typography align="left" variant="subtitle2">
-                        {node.event_end && fd(node.event_end)}
+                        {node.event_end && fld(node.event_end)}
                       </Typography>
                     </div>
                   </Grid>
@@ -334,21 +334,20 @@ class RiskTrackingLineContainer extends Component {
                     <div className={classes.scrollBg}>
                       <div className={classes.scrollDiv}>
                         <div className={classes.scrollObj}>
-                          {/* {device.locations && device.locations.map((location, key) => (
-                          <div key={key}>
-                            {`${location.street_address && t(location.street_address)}, `}
-                            {`${location.city && t(location.city)}, `}
-  {`${location.country && t(location.country)}, ${location.postal_code && t(location.postal_code)}`}
-                          </div>
-                        ))} */}
-                          {node.description && t(node.description)}
+                          <Markdown
+                            remarkPlugins={[remarkGfm, remarkParse]}
+                            parserOptions={{ commonmark: true }}
+                            className="markdown"
+                          >
+                            {node.description && t(node.description)}
+                          </Markdown>
                         </div>
                       </div>
                     </div>
                   </Grid>
                 </Grid>
                 <Grid style={{ marginTop: '10px' }} container={true}>
-                  <Grid item={true} xs={3}>
+                  <Grid item={true} xs={4}>
                     <div>
                       <Typography align="left" variant="h3" color="textSecondary">
                         {t('Logged By')}
@@ -357,8 +356,7 @@ class RiskTrackingLineContainer extends Component {
                         <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
                         <div style={{ textAlign: 'left', marginLeft: '10px' }}>
                           <Typography variant="subtitle2">
-                            {/* {t('Lorem Ipsum')} */}
-                            {riskTrackingLoggedBy.name && t(riskTrackingLoggedBy.name)}
+                            {riskTrackingLoggedBy?.name && t(riskTrackingLoggedBy?.name)}
                           </Typography>
                           <Typography variant="h3" color="textSecondary">
                             {t('Lorem Ipsum Dolor Ist')}
@@ -367,8 +365,8 @@ class RiskTrackingLineContainer extends Component {
                       </div>
                     </div>
                   </Grid>
-                  <Grid item={true} xs={5}>
-                    <div style={{ textAlign: 'left', marginLeft: '117px' }}>
+                  <Grid item={true} xs={4}>
+                    <div>
                       <Typography align="left" variant="h3" color="textSecondary">
                         {t('Status Change')}
                       </Typography>
@@ -386,8 +384,12 @@ class RiskTrackingLineContainer extends Component {
                     </Typography>
                     <Typography align="left" variant="subtitle2">
                       <span className={classes.cardContent}>
-                        <LaunchIcon style={{ marginRight: '5px' }} fontSize="small" />
-                        {node.related_responses[0].name && t(node.related_responses[0].name)}
+                        {node.related_responses && node.related_responses.map((value) => (
+                          <>
+                            <LaunchIcon style={{ marginRight: '5px' }} fontSize="small" />
+                            {t(value.name)}
+                          </>
+                        ))}
                       </span>
                     </Typography>
                   </Grid>
@@ -401,6 +403,8 @@ class RiskTrackingLineContainer extends Component {
               handleRemove={this.handleOpenDialog.bind(this)}
               handleOpenUpdate={this.handleOpenUpdate.bind(this)}
               history={history}
+              riskId={riskId}
+              refreshQuery={refreshQuery}
               node={node}
               riskStatusResponse={riskStatusResponse}
             />
@@ -470,6 +474,7 @@ RiskTrackingLineContainer.propTypes = {
   riskId: PropTypes.string,
   node: PropTypes.object,
   limit: PropTypes.number,
+  refreshQuery: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,

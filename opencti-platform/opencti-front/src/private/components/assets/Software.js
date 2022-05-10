@@ -51,6 +51,7 @@ class Software extends Component {
   }
 
   saveView() {
+    this.handleRefresh();
     saveViewParameters(
       this.props.history,
       this.props.location,
@@ -81,6 +82,10 @@ class Software extends Component {
 
   handleSoftwareCreation() {
     this.setState({ openSoftwareCreation: true });
+  }
+
+  handleRefresh() {
+    this.props.history.push('/defender HQ/assets/software');
   }
 
   handleDisplayEdit(selectedElements) {
@@ -178,7 +183,7 @@ class Software extends Component {
       vendor_name: {
         label: 'Vendor',
       },
-      labels: {
+      label_name: {
         label: 'Labels',
       },
     };
@@ -221,7 +226,7 @@ class Software extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <SoftwareCards
@@ -288,7 +293,7 @@ class Software extends Component {
         width: '15%',
         isSortable: false,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
         width: '23%',
         isSortable: true,
@@ -333,7 +338,7 @@ class Software extends Component {
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
-              return toastGenericError('Request Failed');
+              toastGenericError('Request Failed');
             }
             return (
               <SoftwareLines
@@ -369,6 +374,7 @@ class Software extends Component {
       orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
+      filterMode: 'and',
     };
     const { location } = this.props;
     return (

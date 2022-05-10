@@ -138,10 +138,7 @@ class RemediationEntityLineComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {SourceOfDetection.actor_ref.name && t(SourceOfDetection.actor_ref.name)}
-                    </Typography>
-                    <Typography color="textSecondary" variant="disabled">
-                      {t('Lorem Ipsum Dolor Ist')}
+                      {SourceOfDetection.actor_ref?.name && t(SourceOfDetection.actor_ref?.name)}
                     </Typography>
                   </div>
                 </div>
@@ -189,6 +186,7 @@ class RemediationEntityLineComponent extends Component {
             cyioCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             history={history}
+            riskId={riskId}
           // disabled={restricted}
           />
         </ListItemSecondaryAction>

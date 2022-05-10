@@ -40,6 +40,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../analysis/notes/Cyio
 import CyioDomainObjectAssetCreationOverview from '../../common/stix_domain_objects/CyioDomainObjectAssetCreationOverview';
 import CyioCoreObjectAssetCreationExternalReferences from '../../analysis/external_references/CyioCoreObjectAssetCreationExternalReferences';
 import Loader from '../../../../components/Loader';
+import {toastGenericError} from "../../../../utils/bakedToast";
 import DeviceCreationDetails from './DeviceCreationDetails';
 
 const styles = (theme) => ({
@@ -159,7 +160,10 @@ class DeviceCreation extends Component {
         this.handleClose();
         this.props.history.push('/defender HQ/assets/devices');
       },
-      onError: (err => (console.error('DeviceCreation Error', err))),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError("Failed to create Device");
+      }
     });
     // commitMutation({
     //   mutation: deviceCreationMutation,
@@ -245,7 +249,7 @@ class DeviceCreation extends Component {
             labels: [],
             asset_type: 'physical_device',
             mac_address: [],
-            installed_operating_system: [],
+            installed_operating_system: '',
             installed_hardware: [],
             installed_software: [],
             fqdn: '',

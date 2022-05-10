@@ -72,6 +72,10 @@ const styles = (theme) => ({
     marginBottom: '5px',
     border: '1px solid #075AD3',
   },
+  componentScroll: {
+    height: '80px',
+    overflowY: 'scroll',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -155,9 +159,6 @@ class RiskObservationPopover extends Component {
             <DialogContentText style={{ color: 'white' }}>
               {data.name && t(data.name)}
             </DialogContentText>
-            <DialogContentText style={{ color: 'white' }}>
-              {data.description && t(data.description)}
-            </DialogContentText>
             <DialogContentText>
               <Grid style={{ margin: '25px 0' }} container={true} xs={12}>
                 <Grid item={true} xs={3}>
@@ -167,21 +168,18 @@ class RiskObservationPopover extends Component {
                 </Grid>
                 <Grid item={true} xs={9}>
                   <DialogContentText>
-                    {t('Source Of Observation')}
+                    {t('Observation Sources')}
                   </DialogContentText>
-                  <Typography style={{ alignItems: 'center', display: 'flex' }} color="primary">
-                    {data.origins.map((origin, i) => {
-                      const originActor = R.pipe(
-                        R.pathOr([], ['origin_actors']),
-                        R.mergeAll,
-                      )(origin);
-                      return (
-                        <>
-                          <LaunchIcon key={i} fontSize='small' /> {t(originActor.actor_ref.name)}
-                        </>
-                      );
-                    })}
-                  </Typography>
+                  <div className={classes.componentScroll}>
+                    {
+                      data.origins.map((value, j) => value.origin_actors.map((s, i) => (
+                        <Typography key={i} style={{ alignItems: 'center', display: 'flex' }} color="primary">
+                          <LaunchIcon fontSize='small' /> {t(s.actor_ref.name)}
+                          <br />
+                        </Typography>
+                      )))
+                    }
+                  </div>
                   <Grid style={{ marginTop: '20px' }} spacing={3} container={true}>
                     <Grid item={true} xs={6}>
                       <DialogContentText>
@@ -269,16 +267,18 @@ class RiskObservationPopover extends Component {
                   <DialogContentText>
                     {t('Observation Target(s)')}
                   </DialogContentText>
-                  {/* {data?.subjects?.map((subject, i) => {
-                    if (subject?.subject_context === 'target') {
-                      return (
-                        <Typography key={i} variant="h2" color="primary">
-                          {subject?.name}
-                        </Typography>
-                      );
-                    }
-                    return <></>;
-                  })} */}
+                  <div className={classes.componentScroll}>
+                    {data.subjects && data.subjects.map((subject, i) => {
+                      if (subject && subject.subject_context === 'target') {
+                        return (
+                          <Typography key={i} variant="h2" color="primary">
+                            {subject.subject_ref && t(subject.subject_ref.name)}
+                          </Typography>
+                        );
+                      }
+                      return <></>;
+                    })}
+                  </div>
                 </Grid>
               </Grid>
               <Divider />
@@ -295,16 +295,18 @@ class RiskObservationPopover extends Component {
                   <DialogContentText>
                     {t('Component(s)')}
                   </DialogContentText>
-                  {/* {data.subjects.map((subject, i) => {
-                    if (subject.subject_context === 'secondary_target') {
-                      return (
-                        <Typography key={i} variant="h2" color="primary">
-                          {t(subject?.name)}
-                        </Typography>
-                      );
-                    }
-                    return <></>;
-                  })} */}
+                  <div className={classes.componentScroll}>
+                    {data.subjects && data.subjects.map((subject, i) => {
+                      if (subject && subject.subject_context === 'secondary_target') {
+                        return (
+                          <Typography key={i} variant="h2" color="primary">
+                            {subject.subject_ref && t(subject.subject_ref.name)}
+                          </Typography>
+                        );
+                      }
+                      return <></>;
+                    })}
+                  </div>
                 </Grid>
               </Grid>
               <Divider />

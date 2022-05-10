@@ -114,6 +114,13 @@ export const insertHardwareQuery = (propValues) => {
   
   if (!deviceMap.hasOwnProperty(propValues.asset_type)) throw new UserInputError(`Unsupported hardware type ' ${propValues.asset_type}'`);
 
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const selectPredicates = Object.entries(propValues)
     .filter((propPair) => hardwarePredicateMap.hasOwnProperty(propPair[0]))
@@ -152,9 +159,9 @@ export const selectHardwareQuery = (id, select) => {
 export const selectHardwareByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select != null) {
+    if (select.includes('ipv4_address') || select.includes('ipv6_address')) select.push('ip_address');
     select = select.filter(i => i !== 'ipv4_address')
     select = select.filter(i => i !== 'ipv6_address')
-    select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(hardwarePredicateMap, select);
@@ -182,6 +189,7 @@ export const selectAllHardware = (select, args) => {
     select.push('ip_address')
   }
   if (select === undefined || select === null) select = Object.keys(hardwarePredicateMap);
+  if (!select.includes('id')) select.push('id');
 
   if (args !== undefined ) {
     if ( args.filters !== undefined ) {

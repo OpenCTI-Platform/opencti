@@ -45,7 +45,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -99,7 +99,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -153,7 +153,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -207,7 +207,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -261,7 +261,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -315,7 +315,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -369,7 +369,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -423,7 +423,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean
@@ -477,7 +477,7 @@
     ip_address: [IpAddress!]!
     mac_address: [MAC!]!
     vlan_id: String
-    uri: String
+    uri: URL
     is_publicly_accessible: Boolean
     is_scanned: Boolean
     is_virtual: Boolean

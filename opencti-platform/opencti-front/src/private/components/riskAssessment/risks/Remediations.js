@@ -82,7 +82,7 @@ const Remediations = (props) => {
               placeholder={<div style={{ height: 29 }} />}
             > */}
             <IconButton
-              color="secondary"
+              color="default"
               aria-label="Label"
               onClick={handleCreation}
               style={{ float: 'left', margin: '-15px 0 0 -2px' }}
@@ -97,7 +97,11 @@ const Remediations = (props) => {
             />
           </Grid>
         </>) : (
-        <RemediationCreation remediationId={remediation.id} history={history}/>
+        <RemediationCreation
+          remediationId={remediation.id}
+          riskId={riskId}
+          history={history}
+        />
       )}
       {/* </Grid> */}
     </div>

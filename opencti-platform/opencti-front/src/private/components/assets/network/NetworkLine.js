@@ -127,7 +127,7 @@ class NetworkLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.label_name.width }}
               >
                 <CyioCoreObjectLabels
                   variant="inList"
@@ -242,14 +242,6 @@ const NetworkLineFragment = createFragmentContainer(
           # created
           # modified
           entity_type
-          labels {
-            __typename
-            id
-            name
-            color
-            entity_type
-            description
-          }
           abstract
           content
           authors
@@ -351,7 +343,7 @@ class NetworkLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: dataColumns.label_name.width }}
               >
                 <Skeleton
                   animation="wave"

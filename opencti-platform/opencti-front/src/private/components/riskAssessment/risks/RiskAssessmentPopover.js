@@ -28,6 +28,7 @@ import SelectField from '../../../../components/SelectField';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import RiskStatus from '../../common/form/RiskStatus';
+import {toastGenericError} from "../../../../utils/bakedToast";
 
 const styles = (theme) => ({
   container: {
@@ -85,7 +86,7 @@ const riskAddPoamIdMutation = graphql`
     $id: ID!,
     $input: [EditInput]!
   ) {
-    editPOAMItem(id: $id, input: $input) {
+    editRisk(id: $id, input: $input) {
       id
     }
   }
@@ -147,7 +148,10 @@ class RiskAssessmentPopover extends Component {
         this.handleClosePoam();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('riskPoamMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError("Failed to fetch Risk");
+      }
     });
   }
 
@@ -163,7 +167,7 @@ class RiskAssessmentPopover extends Component {
     CM(environmentDarkLight, {
       mutation: riskStatusEditionMutation,
       variables: {
-        id: this.props.riskNode.id,
+        id: this.props.node.id,
         input: finalValues,
       },
       setSubmitting,
@@ -173,7 +177,10 @@ class RiskAssessmentPopover extends Component {
         this.handleCloseRiskLevel();
         this.props.history.push('/activities/risk assessment/risks');
       },
-      onError: (err) => console.log('riskStatusMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError("Failed to fetch Risk");
+      }
     });
   }
 
@@ -329,7 +336,7 @@ class RiskAssessmentPopover extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              risk_status: this.props.riskNode.risk_status,
+              risk_status: this.props.node.risk_status,
             }}
             // validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onRiskLevelSubmit.bind(this)}

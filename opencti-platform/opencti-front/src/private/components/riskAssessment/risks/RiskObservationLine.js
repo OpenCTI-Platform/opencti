@@ -35,6 +35,16 @@ const styles = (theme) => ({
     padding: 0,
     position: 'relative',
   },
+  observationList: {
+    marginBottom: 0,
+    padding: '0 12px 12px 12px',
+  },
+  observationMain: {
+    display: 'grid',
+    gridTemplateColumns: '90% 10%',
+    marginBottom: '10px',
+  },
+
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -100,30 +110,33 @@ class RiskObservationLineContainer extends Component {
 
   render() {
     const {
-      t, classes, cyioCoreObjectId, risk, fd, relay,
+      t, classes, cyioCoreObjectId, risk, fd, relay, fldt,
     } = this.props;
     const RelatedObservations = R.pathOr([], ['related_observations', 'edges'], risk);
     return (
       <div>
         {RelatedObservations.map((observation) => (
-          <List key={observation.node.id} style={{ marginBottom: 0, padding: '0 12px 12px 12px' }}>
+          <List key={observation.node.id} className={classes.observationList}>
             <div>
-              <div style={{ display: 'grid', gridTemplateColumns: '90% 10%', marginBottom: '10px' }}>
+              <div className={classes.observationMain}>
                 <div style={{ padding: '10px 0 0 18px' }}>
-                  <Typography
-                    variant="h3"
-                    color="textSecondary"
-                    style={{ float: 'left' }}
-                  >
-                    <strong style={{ color: '#00bcd4' }}>
-                      {observation.node.name && t(observation.node.name)}
-                    </strong>
-                    &nbsp; added an Observation on &nbsp;
-                    <strong style={{ color: 'white' }}>
-                      {observation.node.collected && fd(observation.node.collected)}
-                    </strong>
-                  </Typography>
-                  <br /> <br />
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Typography
+                      variant="h2"
+                      color="textSecondary"
+                      style={{ textTransform: 'capitalize', paddingRight: '7px' }}
+                    >
+                      {t('Observed on')}
+                    </Typography>
+                    <Typography
+                      variant="h3"
+                    >
+                      <strong style={{ color: 'white' }}>
+                        {observation.node.collected && fldt(observation.node.collected)}
+                      </strong>
+                    </Typography>
+                  </div>
+                  <div className="clearfix" />
                   <Typography
                     variant="h2"
                     style={{ color: 'white' }}
@@ -149,7 +162,7 @@ RiskObservationLineContainer.propTypes = {
   cyioCoreObjectId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
   fd: PropTypes.func,
   relay: PropTypes.object,
 };
@@ -184,7 +197,10 @@ export const RiskObservationLineContainerComponent = createPaginationContainer(
             node {
               id
               entity_type
+              collected
+              description
               name
+              description
               ...RiskObservationPopover_risk
             }
           }

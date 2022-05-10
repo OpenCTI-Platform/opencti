@@ -147,8 +147,8 @@ class RemediationGeneralOverviewComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {remediationOriginData.actor_ref.name
-                      && t(remediationOriginData.actor_ref.name)}
+                      {remediationOriginData.actor_ref?.name
+                      && t(remediationOriginData.actor_ref?.name)}
                     </Typography>
                     <Typography color="textSecondary" variant="disabled">
                       {/* {t('Lorem Ipsum Dolor Ist')} */}

@@ -89,7 +89,15 @@ export const insertInventoryItemQuery = (propValues) => {
     ...(propValues.methods && {"methods": propValues.methods}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/common#InventoryItem-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => inventoryItemPredicateMap.hasOwnProperty(propPair[0]))
@@ -128,13 +136,21 @@ export const selectInventoryItemByIriQuery = (iri, select) => {
   }
   `
 }
-export const selectAllInventoryItems = (select, filters) => {
+export const selectAllInventoryItems = (select, args) => {
   if (select === undefined || select === null) select = Object.keys(inventoryItemPredicateMap);
+  if (!select.includes('id')) select.push('id');
 
-  // add value of filter's key to cause special predicates to be included
-  if ( filters !== undefined ) {
-    for( const filter of filters) {
-      if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+  if (args !== undefined) {
+    // add value of filter's key to cause special predicates to be included
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.hasOwnProperty(filter.key)) select.push( filter.key );
+      }
+    }
+
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.hasOwnProperty(args.orderedBy)) select.push(args.orderedBy);
     }
   }
 
