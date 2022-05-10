@@ -211,6 +211,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
                           component={TextField}
                           name="id"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -239,6 +240,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
                           component={DatePickerField}
                           name="created"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -269,6 +271,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
                           component={DatePickerField}
                           name="modified"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           invalidDateMessage={t(
