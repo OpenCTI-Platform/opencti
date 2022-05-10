@@ -29,6 +29,7 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import NewAddressField from '../../../common/form/NewAddressField';
 import DataAddressField from '../../../common/form/DataAddressField';
+import { telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -388,7 +389,6 @@ class EntitiesLocationsCreation extends Component {
                         addressValues={values.address}
                         title='Address'
                         name='address'
-                        helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                       />
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -398,7 +398,7 @@ class EntitiesLocationsCreation extends Component {
                         addressValues={values.telephone_numbers}
                         title='Telephone numbers'
                         name='telephone_numbers'
-                        // validation={telephoneFormatRegex}
+                        validation={telephoneFormatRegex}
                         helperText='Please enter a valid Telephone Number. Example: +1 999 999-9999'
                       />
                       <div style={{ marginTop: '10px' }}>
@@ -433,7 +433,7 @@ class EntitiesLocationsCreation extends Component {
                         addressValues={values.email_address}
                         title='Email Address'
                         name='email_address'
-                        // validation={emailAddressRegex}
+                        validation={emailAddressRegex}
                         helperText='Please enter a valid Email Address. Example: support@darklight.ai'
                       />
                     </Grid>

@@ -89,9 +89,9 @@ class DataAddressField extends Component {
   }
 
   handleAddAddress() {
-    // if (!this.props.validation.test(this.state.value)) {
-    //   return this.setState({ error: true });
-    // }
+    if (!this.props.validation.test(this.state.value)) {
+      return this.setState({ error: true });
+    }
     if (this.state.value === '' || this.state.value === null) {
       return;
     }

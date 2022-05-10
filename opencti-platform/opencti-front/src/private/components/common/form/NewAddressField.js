@@ -7,6 +7,7 @@ import { compose, propOr, map } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import Delete from '@material-ui/icons/Delete';
+import * as Yup from 'yup';
 import Edit from '@material-ui/icons/Edit';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Grid from '@material-ui/core/Grid';
@@ -79,6 +80,10 @@ const styles = (theme) => ({
   },
 });
 
+const NewAddressFieldValidation = (t) => Yup.object().shape({
+  address_type: Yup.string().required(t('This field is required')),
+});
+
 class NewAddressField extends Component {
   constructor(props) {
     super(props);
@@ -91,32 +96,21 @@ class NewAddressField extends Component {
     };
   }
 
-  handleAddAddress() {
-    console.log(this);
-    // if (!this.props.validation.test(this.state.value)) {
-    //   return this.setState({ error: true });
-    // }
-    // if (this.state.value === '' || this.state.value === null) {
-    //   return;
-    // }
-    // if (this.state.ipAddress.every((value) => value !== this.state.value)) {
-    //   this.state.ipAddress.push({ 'name': this.state.value, 'type': this.state.selectedMode });
-    // }
-    // this.setState({ value: '', open: false, selectedMode: '' });
+  handleSubmit(values, { setSubmitting, resetForm }) {
+    this.state.ipAddress.push(values);
+    this.setState({ open: false }, () => (
+      this.props.setFieldValue(this.props.name, this.state.ipAddress)
+    ));
   }
-
-  // handleSubmit() {
-  //   this.setState({ open: false, value: '' }, () => (
-  //     this.props.setFieldValue(this.props.name, this.state.ipAddress)
-  //   ));
-  // }
 
   handleChangeMode(event) {
     this.setState({ selectedMode: event.target.value });
   }
 
   handleDeleteAddress(key) {
-    this.setState({ ipAddress: this.state.ipAddress.filter((value, i) => i !== key) });
+    this.setState({ ipAddress: this.state.ipAddress.filter((value, i) => i !== key) }, () => (
+      this.props.setFieldValue(this.props.name, this.state.ipAddress)
+    ));
   }
 
   render() {
@@ -152,22 +146,26 @@ class NewAddressField extends Component {
               {this.state.ipAddress.map((address, key) => (
                 <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    {address.type === 'office'
+                    {address.address_type === 'office'
                       ? <ApartmentOutlined />
-                      : address.type === 'mobile'
+                      : address.address_type === 'mobile'
                         ? <HomeOutlinedIcon />
                         : <CallIcon />}
                     <Typography>
-                      {address.name}
+                      {t(`${address.street_address}, ${address.city}, ${address.administrative_area}, ${address.postal_code} ${address.country_code}`)}
                     </Typography>
                   </div>
                   <div style={{ display: 'flex' }}>
                     <IconButton
+                      size='small'
                     // onClick={this.handleEditionAddress.bind(this, key)}
                     >
                       <Edit />
                     </IconButton>
-                    <IconButton onClick={this.handleDeleteAddress.bind(this, key)}>
+                    <IconButton
+                      size='small'
+                      onClick={this.handleDeleteAddress.bind(this, key)}
+                    >
                       <Delete />
                     </IconButton>
                   </div>
@@ -185,15 +183,15 @@ class NewAddressField extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              usage_type: '',
+              address_type: '',
               city: '',
               street_address: '',
               administrative_area: '',
-              country: '',
+              country_code: '',
               postal_code: '',
             }}
-            // validationSchema={RelatedTaskValidation(t)}
-            onSubmit={this.handleAddAddress.bind(this)}
+            validationSchema={NewAddressFieldValidation(t)}
+            onSubmit={this.handleSubmit.bind(this)}
           // onReset={this.onReset.bind(this)}
           >
             {({
@@ -212,7 +210,7 @@ class NewAddressField extends Component {
                     <Grid item={true} xs={12}>
                       <Field
                         component={SelectField}
-                        name="usage_type"
+                        name="address_type"
                         label='Usage Type'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
@@ -289,7 +287,7 @@ class NewAddressField extends Component {
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
-                          name="country"
+                          name="country_code"
                           variant='outlined'
                           fullWidth={true}
                           style={{ height: '38.09px' }}
@@ -352,7 +350,7 @@ class NewAddressField extends Component {
                 <DialogActions className={classes.dialogAction}>
                   <Button
                     variant='outlined'
-                    onClick={() => this.setState({ open: false, value: '' })}
+                    onClick={() => this.setState({ open: false })}
                   >
                     {t('Cancel')}
                   </Button>
