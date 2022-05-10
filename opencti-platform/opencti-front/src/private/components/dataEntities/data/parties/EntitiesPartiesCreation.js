@@ -36,6 +36,9 @@ import LocationField from '../../../common/form/LocationField';
 import { ipv6AddrRegex, telephoneFormatRegex, emailAddressRegex } from '../../../../../utils/Network';
 
 const styles = (theme) => ({
+  dialogMain: {
+    overflowY: 'hidden',
+  },
   dialogClosebutton: {
     float: 'left',
     marginLeft: '15px',
@@ -52,6 +55,7 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflowY: 'scroll',
+    height: '650px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -187,6 +191,7 @@ class EntitiesPartiesCreation extends Component {
         <Dialog
           open={openDataCreation}
           keepMounted={true}
+          className={classes.dialogMain}
           onClose={() => handlePartyCreation()}
         >
           <Formik

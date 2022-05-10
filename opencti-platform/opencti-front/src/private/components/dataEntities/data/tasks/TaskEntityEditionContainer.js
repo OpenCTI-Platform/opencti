@@ -42,6 +42,9 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/C
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
+  dialogMain: {
+    overflow: 'hidden',
+  },
   dialogTitle: {
     padding: '24px 0 16px 24px',
   },
@@ -49,6 +52,7 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflow: 'hidden',
+    height: '650px',
   },
   dialogClosebutton: {
     float: 'left',
@@ -180,6 +184,7 @@ class TaskEntityEditionContainer extends Component {
         <Dialog
           open={this.props.displayEdit}
           keepMounted={true}
+          className={classes.dialogMain}
           onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik

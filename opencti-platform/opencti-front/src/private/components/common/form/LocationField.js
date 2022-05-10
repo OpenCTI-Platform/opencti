@@ -200,7 +200,7 @@ class LocationField extends Component {
               disableClearable={true}
               clearOnEscape={true}
               textfieldprops={{
-                label: t('Labels'),
+                label: t('Locations'),
                 onFocus: this.searchData.bind(this),
               }}
               noOptionsText={t('No available options')}
