@@ -29,6 +29,9 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
+  dialogMain: {
+    overflow: 'hidden',
+  },
   dialogClosebutton: {
     float: 'left',
     marginLeft: '15px',
@@ -45,6 +48,7 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflowY: 'scroll',
+    height: '650px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -159,6 +163,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
         <Dialog
           open={openDataCreation}
           keepMounted={true}
+          className={classes.dialogMain}
           onClose={() => handleResponsiblePartyCreation()}
         >
           <Formik
