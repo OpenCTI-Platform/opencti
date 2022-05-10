@@ -555,15 +555,21 @@ class StixCyberObservable:
             type = "IPv4-Addr"
         elif type.lower() == "ipv6-addr":
             type = "IPv6-Addr"
-        elif type.lower() == "hostname":
+        elif type.lower() == "hostname" or type.lower() == "x-opencti-hostname":
             type = "Hostname"
-        elif type.lower() == "cryptocurrency-wallet":
+        elif (
+            type.lower() == "cryptocurrency-wallet"
+            or type.lower() == "x-opencti-cryptocurrency-wallet"
+        ):
             type = "Cryptocurrency-Wallet"
-        elif type.lower() == "user-agent":
+        elif type.lower() == "user-agent" or type.lower() == "x-opencti-user-agent":
             type = "User-Agent"
-        elif type.lower() == "cryptographic-key":
+        elif (
+            type.lower() == "cryptographic-key"
+            or type.lower() == "x-opencti-cryptographic-key"
+        ):
             type = "Cryptographic-Key"
-        elif type.lower() == "text":
+        elif type.lower() == "text" or type.lower() == "x-opencti-text":
             type = "Text"
 
         x_opencti_description = (
@@ -1111,7 +1117,7 @@ class StixCyberObservable:
                     if "policy_mappings" in observable_data
                     else None,
                 }
-            elif type == "Cryptographic-Key" or type == "X-OpenCTI-Cryptographic-Key":
+            elif type == "Cryptographic-Key":
                 input_variables["CryptographicKey"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
@@ -1126,19 +1132,19 @@ class StixCyberObservable:
                     if "value" in observable_data
                     else None,
                 }
-            elif type == "Hostname" or type == "X-OpenCTI-Hostname":
+            elif type == "Hostname":
                 input_variables["Hostname"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-            elif type == "Text" or type == "X-OpenCTI-Text":
+            elif type == "Text":
                 input_variables["Text"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-            elif type == "User-Agent" or type == "X-OpenCTI-User-Agent":
+            elif type == "User-Agent":
                 input_variables["UserAgent"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
