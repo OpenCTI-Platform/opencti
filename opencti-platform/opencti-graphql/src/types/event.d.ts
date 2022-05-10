@@ -13,6 +13,7 @@ interface CreateEventOpts {
 }
 
 interface UpdateEventOpts {
+  commit?: CommitContext | undefined,
   publishStreamEvent?: boolean;
 }
 
@@ -33,8 +34,8 @@ interface Event {
 interface UpdateEvent extends Event {
   commit: CommitContext | undefined;
   context: {
-    // patch: Array<Operation>;
-    previous_patch: Array<Operation>;
+    patch: Array<Operation>;
+    reverse_patch: Array<Operation>;
   };
 }
 
@@ -46,8 +47,8 @@ interface DeleteEvent extends Event {
 
 interface MergeEvent extends Event {
   context: {
-    // patch: Array<Operation>;
-    previous_patch: Array<Operation>;
+    patch: Array<Operation>;
+    reverse_patch: Array<Operation>;
     deletions: Array<StixCoreObject>;
     sources: Array<StixCoreObject>;
     shifts: Array<string>;

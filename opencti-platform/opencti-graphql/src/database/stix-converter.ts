@@ -157,6 +157,17 @@ const cleanObject = <T>(data: T): T => {
   for (const key in data) {
     if (isEmptyField(obj[key])) {
       delete obj[key];
+    } else if (key === 'extensions') {
+      // Extensions can be generated with only the extension_type
+      // If it's the case, no need to keep the extension
+      const extensionDefinitions = Object.entries(obj[key]);
+      for (let i = 0; i < extensionDefinitions.length; i += 1) {
+        const [extKey, extObject] = extensionDefinitions[i];
+        if (Object.entries(extObject).length === 1) {
+          const ext = obj[key] as any;
+          delete ext[extKey];
+        }
+      }
     }
   }
   return obj;
@@ -1256,8 +1267,8 @@ export const convertStoreToStix = (instance: StoreObject): S.StixObject => {
     throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
   }
   const converted = convertToStix(instance);
-  // converted.extensions = buildExtensions(converted);
   const stix = cleanObject(converted);
+  // TODO JRI Cleanup generated extensions that are empty
   if (!isValidStix(stix)) {
     throw FunctionalError('Invalid stix data conversion', { data: instance });
   }

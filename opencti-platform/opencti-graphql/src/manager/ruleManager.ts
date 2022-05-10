@@ -166,7 +166,7 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
   // endregion
   // region 03 - Generate event for merged entity
   const updateEvent = buildInternalEvent(EVENT_TYPE_UPDATE, data) as UpdateEvent;
-  updateEvent.context = { previous_patch: context.previous_patch };
+  updateEvent.context = { patch: context.patch, reverse_patch: context.reverse_patch };
   events.push(updateEvent);
   // endregion
   return events;
@@ -286,7 +286,7 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
       // In case of update apply the event on every rules
       if (type === EVENT_TYPE_UPDATE) {
         const updateEvent = event as UpdateEvent;
-        const previousPatch = updateEvent.context.previous_patch;
+        const previousPatch = updateEvent.context.reverse_patch;
         const previousStix = jsonpatch.applyPatch<StixCoreObject>(R.clone(data), previousPatch).newDocument;
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];

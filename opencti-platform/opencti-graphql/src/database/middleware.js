@@ -1403,7 +1403,6 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
     if (ins.length > 0) {
-      // Updated inputs must not be internals
       const filteredIns = ins.filter((n) => n.key === input.key).filter((o) => {
         if (input.key === IDS_STIX) {
           const previous = getPreviousInstanceValue(o.key, instance);
@@ -1417,7 +1416,8 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
           }
           return o.value.filter((p) => isTrustedStixId(p)).length > 0;
         }
-        return !input.key.startsWith('i_');
+        // Updated inputs must not be internals
+        return !input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data';
       });
       if (filteredIns.length > 0) {
         const updatedInputsFiltered = filteredIns.map((filteredInput) => {
@@ -1486,7 +1486,8 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
   }
   // Update updated_at
   const today = now();
-  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
+  // Impact the updated_at only if stix data is impacted
+  if (updatedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)) {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
@@ -1717,7 +1718,8 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     if (updatedInputs.length > 0) {
       const message = generateUpdateMessage(updatedInputs);
       const commit = opts.commitMessage ? { message: opts.commitMessage, references: opts.references } : undefined;
-      const event = await storeUpdateEvent(user, initial, updatedInstance, message, commit);
+      const updateOpts = { commit, publishStreamEvent: true };
+      const event = await storeUpdateEvent(user, initial, updatedInstance, message, updateOpts);
       return { element: updatedInstance, event };
     }
     // Return updated element after waiting for it.
@@ -2548,20 +2550,20 @@ export const createRelationRaw = async (user, input, opts = { publishStreamEvent
           const message = generateUpdateMessage(inputs);
           // Generate the new version of the from
           instance[key] = resolvedInput.to;
-          event = await storeUpdateEvent(user, previous, instance, message, undefined, opts);
+          event = await storeUpdateEvent(user, previous, instance, message, opts);
         } else {
           const inputs = [{ key, value: [resolvedInput.to], operation: UPDATE_OPERATION_ADD }];
           const message = generateUpdateMessage(inputs);
           // Generate the new version of the from
           instance[key] = [...(instance[key] ?? []), resolvedInput.to];
-          event = await storeUpdateEvent(user, previous, instance, message, undefined, opts);
+          event = await storeUpdateEvent(user, previous, instance, message, opts);
         }
       } else {
         const createdRelation = { ...resolvedInput, ...dataRel.element };
         event = await storeCreateRelationEvent(user, createdRelation, opts);
       }
     } else if (dataRel.type === TRX_UPDATE) {
-      event = await storeUpdateEvent(user, dataRel.previous, dataRel.element, dataRel.message, undefined, opts);
+      event = await storeUpdateEvent(user, dataRel.previous, dataRel.element, dataRel.message, opts);
     }
     // - TRANSACTION END
     return { element: dataRel.element, event };
@@ -2958,7 +2960,7 @@ export const internalDeleteElementById = async (user, id, opts = { publishStream
         instance[key] = withoutElementDeleted;
       }
       await elDeleteElements(user, [element], storeLoadByIdWithRefs);
-      event = await storeUpdateEvent(user, previous, instance, message, undefined, opts);
+      event = await storeUpdateEvent(user, previous, instance, message, opts);
     } else {
       // Start by deleting external files
       const importDeletePromise = deleteAllFiles(user, `import/${element.entity_type}/${element.internal_id}/`);

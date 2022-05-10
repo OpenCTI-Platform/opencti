@@ -217,34 +217,38 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
 
 const extractEntityMainValue = (entityData) => {
   let mainValue;
-  if (entityData.definition) {
-    mainValue = entityData.definition;
-  } else if (entityData.value) {
-    mainValue = entityData.value;
-  } else if (entityData.attribute_abstract) {
-    mainValue = entityData.attribute_abstract;
-  } else if (entityData.opinion) {
-    mainValue = entityData.opinion;
-  } else if (entityData.observable_value) {
-    mainValue = entityData.observable_value;
-  } else if (entityData.indicator_pattern) {
-    mainValue = entityData.indicator_pattern;
-  } else if (entityData.source_name) {
-    mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
-  } else if (entityData.kill_chain_name) {
-    mainValue = entityData.kill_chain_name;
-  } else if (entityData.phase_name) {
-    mainValue = entityData.phase_name;
-  } else if (entityData.first_observed && entityData.last_observed) {
-    mainValue = `${moment(entityData.first_observed).utc().toISOString()} - ${moment(entityData.last_observed)
-      .utc()
-      .toISOString()}`;
-  } else if (entityData.name) {
-    mainValue = entityData.name;
-  } else if (entityData.description) {
-    mainValue = entityData.description;
-  } else {
+  if (isStixCyberObservable(entityData.entity_type)) {
     mainValue = observableValue(entityData);
+  } else if (isNotEmptyField(entityData.definition)) { // TODO JRI Improve the entity domain main value extractor
+    mainValue = entityData.definition;
+  } else if (isNotEmptyField(entityData.value)) {
+    mainValue = entityData.value;
+  } else if (isNotEmptyField(entityData.attribute_abstract)) {
+    mainValue = entityData.attribute_abstract;
+  } else if (isNotEmptyField(entityData.opinion)) {
+    mainValue = entityData.opinion;
+  } else if (isNotEmptyField(entityData.observable_value)) {
+    mainValue = entityData.observable_value;
+  } else if (isNotEmptyField(entityData.indicator_pattern)) {
+    mainValue = entityData.indicator_pattern;
+  } else if (isNotEmptyField(entityData.source_name)) {
+    mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
+  } else if (isNotEmptyField(entityData.kill_chain_name)) {
+    mainValue = entityData.kill_chain_name;
+  } else if (isNotEmptyField(entityData.phase_name)) {
+    mainValue = entityData.phase_name;
+  } else if (isNotEmptyField(entityData.first_observed) && isNotEmptyField(entityData.last_observed)) {
+    const from = moment(entityData.first_observed).utc().toISOString();
+    const to = moment(entityData.last_observed).utc().toISOString();
+    mainValue = `${from} - ${to}`;
+  } else if (isNotEmptyField(entityData.name)) {
+    mainValue = entityData.name;
+  } else if (isNotEmptyField(entityData.description)) {
+    mainValue = entityData.description;
+  }
+  // If no representative value found, return the standard id
+  if (isEmptyField(mainValue) || mainValue === 'Unknown') {
+    return entityData.standard_id;
   }
   return mainValue;
 };
@@ -309,8 +313,8 @@ export const generateUpdateMessage = (inputs) => {
         }
       }
       return `\`${message}\` in \`${convertedKey}\``;
-    })}`;
-  }).join(', ');
+    }).join(' - ')}`;
+  }).join(' | ');
   if (isEmptyField(generatedMessage) || generatedMessage.includes('``')
       || generatedMessage.includes('undefined') || generatedMessage.includes('[object Object]')) {
     throw UnsupportedError('[OPENCTI] Error generating update message', { inputs, message: generatedMessage });

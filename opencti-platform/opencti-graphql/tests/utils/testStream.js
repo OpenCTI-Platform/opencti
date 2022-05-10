@@ -110,8 +110,10 @@ export const checkStreamData = (type, data, context) => {
   expect(isUuid(octiExt.id)).toBeTruthy();
   expect(data.type).toBeDefined();
   if (type === EVENT_TYPE_UPDATE) {
-    expect(context.previous_patch).toBeDefined();
-    expect(context.previous_patch.length).toBeGreaterThan(0);
+    expect(context.patch).toBeDefined();
+    expect(context.patch.length).toBeGreaterThan(0);
+    expect(context.reverse_patch).toBeDefined();
+    expect(context.reverse_patch.length).toBeGreaterThan(0);
   }
   if (data.type === 'relationship') {
     expect(data.relationship_type).toBeDefined();
@@ -134,6 +136,7 @@ export const checkStreamData = (type, data, context) => {
 
 export const checkStreamGenericContent = (type, dataEvent) => {
   const { data, message, context } = dataEvent;
+  expect(message.includes(', , ,')).toBeFalsy();
   expect(message.includes('undefined')).toBeFalsy();
   expect(message.includes('[object Object]')).toBeFalsy();
   expect(message).not.toBeNull();

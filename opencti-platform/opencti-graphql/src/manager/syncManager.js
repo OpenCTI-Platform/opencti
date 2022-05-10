@@ -301,7 +301,7 @@ const syncManagerInstance = (syncId) => {
               // we need to apply modification on the previous id
               // standard id will be regenerated according to the other changes
               let processingData = data;
-              const idOperations = context.previous_patch.filter((patch) => patch.path === '/id');
+              const idOperations = context.reverse_patch.filter((patch) => patch.path === '/id');
               if (idOperations.length > 0) {
                 const { newDocument: stixPreviousID } = jsonpatch.applyPatch(R.clone(data), idOperations);
                 processingData = stixPreviousID;

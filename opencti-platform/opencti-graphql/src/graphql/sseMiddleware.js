@@ -488,7 +488,7 @@ const createSeeMiddleware = () => {
             if (!isInferredData || (isInferredData && withInferences)) {
               const isCurrentlyVisible = await isInstanceMatchFilters(stix, streamFilters, filterCache);
               if (type === EVENT_TYPE_UPDATE) {
-                const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), context.previous_patch);
+                const { newDocument: previous } = jsonpatch.applyPatch(R.clone(stix), context.reverse_patch);
                 const isPreviouslyVisible = await isInstanceMatchFilters(previous, streamFilters, filterCache);
                 if (isPreviouslyVisible && !isCurrentlyVisible) { // No longer visible
                   client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);

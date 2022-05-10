@@ -303,7 +303,7 @@ export const stixCoreObjectImportPush = async (user, id, file) => {
     await elUpdateElement({ _index: previous._index, internal_id: internalId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(user, previous, instance, `adds \`${up.name}\` in \`files\``, undefined);
+    await storeUpdateEvent(user, previous, instance, `adds \`${up.name}\` in \`files\``);
     return up;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -338,7 +338,7 @@ export const stixCoreObjectImportDelete = async (user, fileId) => {
     await elUpdateElement({ _index: previous._index, internal_id: entityId, updated_at: now(), x_opencti_files: files });
     // Stream event generation
     const instance = { ...previous, x_opencti_files: files };
-    await storeUpdateEvent(user, previous, instance, `removes \`${up.name}\` in \`files\``, undefined);
+    await storeUpdateEvent(user, previous, instance, `removes \`${up.name}\` in \`files\``);
     return true;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {

@@ -376,7 +376,8 @@ const buildMergeEvent = (user: AuthUser, previous: StoreObject, instance: StoreO
     origin: user.origin,
     data: currentStix,
     context: {
-      previous_patch: jsonpatch.compare(currentStix, previousStix),
+      patch: jsonpatch.compare(previousStix, currentStix),
+      reverse_patch: jsonpatch.compare(currentStix, previousStix),
       sources: R.map((s) => convertStoreToStix(s) as StixCoreObject, sourceEntities),
       deletions: R.map((s) => convertStoreToStix(s) as StixCoreObject, dependencyDeletions),
       shifts: updatedRelations,
@@ -397,9 +398,13 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
   // Build and send the event
   const stix = convertStoreToStix(instance) as StixCoreObject;
   const previousStix = convertStoreToStix(previous) as StixCoreObject;
-  const patch = jsonpatch.compare(stix, previousStix);
-  if (patch.length === 0) {
+  const patch = jsonpatch.compare(previousStix, stix);
+  const previousPatch = jsonpatch.compare(stix, previousStix);
+  if (patch.length === 0 || previousPatch.length === 0) {
     throw UnsupportedError('Update event must contains a valid previous patch');
+  }
+  if (patch.length === 1 && patch[0].path === '/modified') {
+    throw UnsupportedError('Update event must contains more operation than just modified/updated_at value');
   }
   return {
     version: EVENT_VERSION_V4,
@@ -409,7 +414,8 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
     data: stix,
     commit,
     context: {
-      previous_patch: patch
+      patch,
+      reverse_patch: previousPatch
     }
   };
 };
@@ -418,12 +424,11 @@ export const storeUpdateEvent = async (
   previous: StoreObject,
   instance: StoreObject,
   message: string,
-  commit: CommitContext | undefined,
   opts: UpdateEventOpts = { publishStreamEvent: true }
 ) => {
   try {
     if (isStixData(instance)) {
-      const event = buildUpdateEvent(user, previous, instance, message, commit);
+      const event = buildUpdateEvent(user, previous, instance, message, opts.commit);
       if (opts.publishStreamEvent) {
         await pushToStream(clientBase, instance, event);
       }

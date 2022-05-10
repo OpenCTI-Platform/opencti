@@ -59,8 +59,9 @@ describe('Raw streams tests', () => {
         expect(origin).toBeDefined();
         checkStreamGenericContent(type, insideData);
         // Test patch content
-        const { previous_patch } = insideData.context;
-        expect(previous_patch).toBeDefined();
+        const { patch, reverse_patch } = insideData.context;
+        expect(patch).toBeDefined();
+        expect(reverse_patch).toBeDefined();
       }
       // 03 - CHECK DELETE EVENTS
       const deleteEvents = events.filter((e) => e.type === EVENT_TYPE_DELETE);
@@ -78,7 +79,8 @@ describe('Raw streams tests', () => {
         const { data: insideData, origin } = mergeEvents[mergeIndex];
         const { context } = insideData;
         expect(origin).toBeDefined();
-        expect(context.previous_patch).toBeDefined();
+        expect(context.patch).toBeDefined();
+        expect(context.reverse_patch).toBeDefined();
         expect(context.sources).toBeDefined();
         expect(context.sources.length > 0).toBeTruthy();
         for (let sourceIndex = 0; sourceIndex < context.sources.length; sourceIndex += 1) {
