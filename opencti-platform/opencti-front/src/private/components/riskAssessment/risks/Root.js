@@ -166,6 +166,7 @@ class RootRisk extends Component {
                         <RemediationRoot
                             {...routeProps}
                             risk={props.risk}
+                            riskId={props.risk.id}
                         />
                       )}
                     />

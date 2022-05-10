@@ -388,7 +388,7 @@ class RemediationEditionContainer extends Component {
                   <Button
                     // onClick={this.submitDelete.bind(this)}
                     // disabled={this.state.deleting}
-                    onClick={() => this.props.history.goBack()}
+                    onClick={() => this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
                     color="primary"
                     classes={{ root: classes.buttonPopover }}
                     variant="contained"
@@ -415,6 +415,7 @@ RemediationEditionContainer.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   remediation: PropTypes.object,
+  riskId: PropTypes.string,
 };
 
 const RemediationEditionFragment = createFragmentContainer(
