@@ -42,6 +42,9 @@ import NewAddressField from '../../../common/form/NewAddressField';
 import DataAddressField from '../../../common/form/DataAddressField';
 
 const styles = (theme) => ({
+  dialogMain: {
+    overflowY: 'hidden',
+  },
   dialogTitle: {
     padding: '24px 0 16px 24px',
   },
@@ -49,6 +52,7 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflowY: 'scroll',
+    height: '650px',
   },
   dialogClosebutton: {
     float: 'left',
@@ -178,6 +182,7 @@ class LocationEntityEditionContainer extends Component {
         <Dialog
           open={this.props.displayEdit}
           keepMounted={true}
+          className={classes.dialogMain}
           onClose={() => this.props.handleDisplayEdit()}
         >
           <Formik

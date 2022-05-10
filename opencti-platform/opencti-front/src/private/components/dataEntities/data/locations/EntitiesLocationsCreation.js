@@ -31,6 +31,9 @@ import NewAddressField from '../../../common/form/NewAddressField';
 import DataAddressField from '../../../common/form/DataAddressField';
 
 const styles = (theme) => ({
+  dialogMain: {
+    overflowY: 'hidden',
+  },
   dialogClosebutton: {
     float: 'left',
     marginLeft: '15px',
@@ -47,6 +50,7 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflowY: 'scroll',
+    height: '650px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -161,6 +165,7 @@ class EntitiesLocationsCreation extends Component {
         <Dialog
           open={openDataCreation}
           keepMounted={true}
+          className={classes.dialogMain}
           onClose={() => handleLocationCreation()}
         >
           <Formik
@@ -208,6 +213,7 @@ class EntitiesLocationsCreation extends Component {
                           component={TextField}
                           name="id"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -236,6 +242,7 @@ class EntitiesLocationsCreation extends Component {
                           component={DatePickerField}
                           name="created"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
@@ -266,6 +273,7 @@ class EntitiesLocationsCreation extends Component {
                           component={DatePickerField}
                           name="modified"
                           fullWidth={true}
+                          disabled={true}
                           size="small"
                           variant='outlined'
                           invalidDateMessage={t(
