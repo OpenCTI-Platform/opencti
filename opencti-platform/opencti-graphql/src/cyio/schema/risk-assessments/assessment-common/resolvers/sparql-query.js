@@ -2712,6 +2712,7 @@ export const selectRiskQuery = (id, select) => {
 export const selectRiskByIriQuery = (iri, select) => {
   const insertSelections = [], groupByClause = [];
   let occurrences = '', occurrenceQuery = '';
+
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
