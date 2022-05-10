@@ -3,21 +3,15 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import inject18n from '../../../../components/i18n';
-import StixCyberObservableRelationCreationFromEntity from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreationFromEntity';
+import StixCyberObservableRelationshipCreationFromEntity from '../stix_cyber_observable_relationships/StixCyberObservableRelationshipCreationFromEntity';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCyberObservableNestedEntitiesLines, {
-  stixCyberObservableNestedEntitiesLinesQuery,
-} from './StixCyberObservableNestedEntitiesLines';
+import StixDomainObjectNestedEntitiesLines, {
+  stixDomainObjectNestedEntitiesLinesQuery,
+} from './StixDomainObjectNestedEntitiesLines';
 
 const styles = (theme) => ({
   paper: {
@@ -69,7 +63,7 @@ const inlineStylesHeaders = {
   },
   relationship_type: {
     float: 'left',
-    width: '15%',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
     cursor: 'pointer',
@@ -82,27 +76,19 @@ const inlineStylesHeaders = {
   },
   name: {
     float: 'left',
-    width: '35%',
+    width: '40%',
     fontSize: 12,
     fontWeight: '700',
   },
   start_time: {
     float: 'left',
-    width: '15%',
-    fontSize: 12,
-    fontWeight: '700',
-    cursor: 'pointer',
-  },
-  stop_time: {
-    float: 'left',
-    width: '15%',
     fontSize: 12,
     fontWeight: '700',
     cursor: 'pointer',
   },
 };
 
-class StixCyberObservableNestedEntities extends Component {
+class StixDomainObjectNestedEntities extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -116,10 +102,6 @@ class StixCyberObservableNestedEntities extends Component {
 
   handleSort(field, orderAsc) {
     this.setState({ sortBy: field, orderAsc });
-  }
-
-  handleSearch(value) {
-    this.setState({ searchTerm: value });
   }
 
   SortHeader(field, label, isSortable) {
@@ -149,7 +131,7 @@ class StixCyberObservableNestedEntities extends Component {
 
   render() {
     const { searchTerm, sortBy, orderAsc } = this.state;
-    const { entityId, t, entityType, classes } = this.props;
+    const { entityId, t, entityType } = this.props;
     const paginationOptions = {
       elementId: entityId,
       search: searchTerm,
@@ -157,7 +139,7 @@ class StixCyberObservableNestedEntities extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ height: '100%' }}>
+      <div style={{ marginTop: 20 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Nested objects')}
         </Typography>
@@ -165,71 +147,33 @@ class StixCyberObservableNestedEntities extends Component {
           needs={[KNOWLEDGE_KNUPDATE]}
           placeholder={<div style={{ height: 29 }} />}
         >
-          <StixCyberObservableRelationCreationFromEntity
+          <StixCyberObservableRelationshipCreationFromEntity
             paginationOptions={paginationOptions}
             entityId={entityId}
             variant="inLine"
             entityType={entityType}
           />
         </Security>
-        <div style={{ float: 'right', marginTop: -10 }}>
-          <SearchInput
-            variant="thin"
-            onSubmit={this.handleSearch.bind(this)}
-            keyword={searchTerm}
-          />
-        </div>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <List style={{ marginTop: -10 }}>
-            <ListItem
-              classes={{ root: classes.itemHead }}
-              divider={false}
-              style={{ paddingTop: 0 }}
-            >
-              <ListItemIcon>
-                <span
-                  style={{
-                    padding: '0 8px 0 8px',
-                    fontWeight: 700,
-                    fontSize: 12,
-                  }}
-                >
-                  &nbsp;
-                </span>
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <div>
-                    {this.SortHeader('relationship_type', 'Relationship', true)}
-                    {this.SortHeader('entity_type', 'Entity type', false)}
-                    {this.SortHeader('name', 'Name', false)}
-                    {this.SortHeader('start_time', 'First obs.', true)}
-                    {this.SortHeader('stop_time', 'Last obs.', true)}
-                  </div>
-                }
+        <List style={{ marginTop: -10 }}>
+          <QueryRenderer
+            query={stixDomainObjectNestedEntitiesLinesQuery}
+            variables={{ count: 25, ...paginationOptions }}
+            render={({ props }) => (
+              <StixDomainObjectNestedEntitiesLines
+                stixDomainObjectId={entityId}
+                paginationOptions={paginationOptions}
+                data={props}
               />
-              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
-            </ListItem>
-            <QueryRenderer
-              query={stixCyberObservableNestedEntitiesLinesQuery}
-              variables={{ count: 25, ...paginationOptions }}
-              render={({ props }) => (
-                <StixCyberObservableNestedEntitiesLines
-                  stixCyberObservableId={entityId}
-                  paginationOptions={paginationOptions}
-                  data={props}
-                />
-              )}
-            />
-          </List>
-        </Paper>
+            )}
+          />
+        </List>
       </div>
     );
   }
 }
 
-StixCyberObservableNestedEntities.propTypes = {
+StixDomainObjectNestedEntities.propTypes = {
   entityId: PropTypes.string,
   entityType: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -241,4 +185,4 @@ StixCyberObservableNestedEntities.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCyberObservableNestedEntities);
+)(StixDomainObjectNestedEntities);

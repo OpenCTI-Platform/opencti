@@ -9,7 +9,6 @@ import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemStatus from '../../../../components/ItemStatus';
 
 const styles = () => ({
   paper: {
