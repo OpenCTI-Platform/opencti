@@ -121,7 +121,11 @@ class RiskAnalysisContainerComponent extends Component {
               classes={{ container: classes.gridContainer }}
               style={{ marginTop: 25 }}
             >
-              <Grid item={true} xs={6}>
+              <Grid
+                item={true}
+                xs={6}
+                style={{ pointerEvents: 'none', opacity: '0.4' }}
+              >
                 <CyioCoreObjectExternalReferences
                   typename={riskCharacterizations.__typename}
                   externalReferences={riskCharacterizations.links}
@@ -130,7 +134,11 @@ class RiskAnalysisContainerComponent extends Component {
                   refreshQuery={refreshQuery}
                 />
               </Grid>
-              <Grid item={true} xs={6}>
+              <Grid
+                item={true}
+                xs={6}
+                style={{ pointerEvents: 'none', opacity: '0.4' }}
+              >
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   typename={riskCharacterizations.__typename}

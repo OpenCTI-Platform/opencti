@@ -352,14 +352,22 @@ class RiskAnalysisEditionContainer extends Component {
                 classes={{ container: classes.gridContainer }}
                 style={{ marginTop: 25 }}
               >
-                <Grid item={true} xs={6}>
+                <Grid
+                  item={true}
+                  xs={6}
+                  style={{ pointerEvents: 'none', opacity: '0.4' }}  
+                >
                   <CyioCoreObjectExternalReferences
                   externalReferences={risk.links}
                   fieldName='links'
                   cyioCoreObjectId={riskId}
                   />
                 </Grid>
-                <Grid item={true} xs={6}>
+                <Grid
+                  item={true}
+                  xs={6}
+                  style={{ pointerEvents: 'none', opacity: '0.4' }}  
+                >
                   {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk?.id} /> */}
                   <CyioCoreObjectOrCyioCoreRelationshipNotes
                     notes={risk.remarks}
