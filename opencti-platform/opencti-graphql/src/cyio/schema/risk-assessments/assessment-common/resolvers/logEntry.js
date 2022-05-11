@@ -381,7 +381,6 @@ const logEntryResolvers = {
       }
       if (input.related_responses !== undefined) {
         responses = input.related_responses;
-        authors = input.related_responses;
         for ( let responseId of responses) {
           // check that the Risk exists
           const sparqlQuery = selectRiskResponseQuery(responseId, ["id"]);
