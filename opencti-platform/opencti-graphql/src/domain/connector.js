@@ -7,7 +7,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { READ_INDEX_HISTORY } from '../database/utils';
-import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
+import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS, logApp } from '../config/conf';
@@ -26,10 +26,6 @@ export const connectorForWork = async (user, id) => {
 
 export const connectorsForExport = async (user, scope, onlyAlive = false) => {
   return connectorsFor(user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
-};
-
-export const connectorsForImport = async (user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
-  return connectorsFor(user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto, onlyContextual);
 };
 // endregion
 

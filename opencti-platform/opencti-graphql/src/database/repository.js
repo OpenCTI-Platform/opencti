@@ -4,9 +4,9 @@ import { elPaginate } from './engine';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
+import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 
 // region global queries
-// @deprecated
 export const buildFilters = (args = {}) => {
   const builtFilters = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
@@ -72,7 +72,6 @@ export const buildFilters = (args = {}) => {
   return builtFilters;
 };
 
-// @deprecated
 export const listEntities = async (user, entityTypes, args = {}) => {
   const { indices = READ_ENTITIES_INDICES } = args;
   const paginateArgs = buildFilters({ entityTypes, ...args });
@@ -103,13 +102,13 @@ export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAu
     filter((c) => (onlyAlive ? c.active === true : true)),
     filter((c) => (onlyAuto ? c.auto === true : true)),
     filter((c) => (onlyContextual ? c.only_contextual === true : true)),
-
     filter((c) => (scope && c.connector_scope && c.connector_scope.length > 0
-      ? includes(
-        scope.toLowerCase(),
-        map((s) => s.toLowerCase(), c.connector_scope)
-      )
+      ? includes(scope.toLowerCase(), map((s) => s.toLowerCase(), c.connector_scope))
       : true))
   )(connects);
+};
+
+export const connectorsForImport = async (user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
+  return connectorsFor(user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive, onlyAuto, onlyContextual);
 };
 // endregion

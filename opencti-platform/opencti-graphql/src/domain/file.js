@@ -1,19 +1,12 @@
 import * as R from 'ramda';
 import { loadFile, upload } from '../database/minio';
 import { pushToConnector } from '../database/rabbitmq';
-import { connectorsForImport } from './connector';
 import { createWork } from './work';
 import { logApp } from '../config/conf';
+import { connectorsForImport } from '../database/repository';
 
-export const uploadJobImport = async (
-  user,
-  fileId,
-  fileMime,
-  entityId,
-  manual = false,
-  connectorId = null,
-  bypassValidation = false
-) => {
+export const uploadJobImport = async (user, fileId, fileMime, entityId, opts = {}) => {
+  const { manual = false, connectorId = null, bypassValidation = false } = opts;
   let connectors = await connectorsForImport(user, fileMime, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
@@ -59,7 +52,8 @@ export const askJobImport = async (user, args) => {
   logApp.debug(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
   const file = await loadFile(user, fileName);
   const entityId = bypassEntityId || file.metaData.entity_id;
-  await uploadJobImport(user, file.id, file.metaData.mimetype, entityId, true, connectorId, bypassValidation);
+  const opts = { manual: true, connectorId, bypassValidation };
+  await uploadJobImport(user, file.id, file.metaData.mimetype, entityId, opts);
   return file;
 };
 
