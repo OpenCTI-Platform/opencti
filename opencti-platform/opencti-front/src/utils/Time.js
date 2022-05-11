@@ -4,7 +4,6 @@ import { isNone } from '../components/i18n';
 const defaultDateFormat = 'YYYY-MM-DD';
 const yearDateFormat = 'YYYY';
 
-export const TWO_SECONDS = 2000;
 export const FIVE_SECONDS = 5000;
 export const TEN_SECONDS = FIVE_SECONDS * 2;
 
@@ -53,25 +52,9 @@ export const daysAfter = (number, date = null, noFuture = true) => {
   return newDate;
 };
 
-export const numberOfDays = (dateA, dateB) => {
-  const momentDateA = parse(dateA);
-  const momentDateB = parse(dateB);
-  return momentDateB.diff(momentDateA, 'days');
-};
-
 export const minutesBefore = (number, date = null) => moment(date || dayStartDate())
   .subtract(number, 'minutes')
   .format();
-
-export const minutesAfter = (number, date = null, noFuture = true) => {
-  const newDate = moment(date || dayStartDate())
-    .add(number, 'minutes')
-    .format();
-  if (noFuture && moment(newDate).unix() > moment().unix()) {
-    return moment(dayEndDate()).format();
-  }
-  return newDate;
-};
 
 export const monthsAgo = (number) => moment(dayStartDate()).subtract(number, 'months').format();
 
