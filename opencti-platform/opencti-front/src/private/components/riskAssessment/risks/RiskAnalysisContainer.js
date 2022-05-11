@@ -124,9 +124,9 @@ class RiskAnalysisContainerComponent extends Component {
               <Grid
                 item={true}
                 xs={6}
-                style={{ pointerEvents: 'none', opacity: '0.4' }}
-              >
+                >
                 <CyioCoreObjectExternalReferences
+                  disableAdd={true}
                   typename={riskCharacterizations.__typename}
                   externalReferences={riskCharacterizations.links}
                   fieldName='links'
@@ -137,11 +137,11 @@ class RiskAnalysisContainerComponent extends Component {
               <Grid
                 item={true}
                 xs={6}
-                style={{ pointerEvents: 'none', opacity: '0.4' }}
-              >
+                >
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   typename={riskCharacterizations.__typename}
+                  disableAdd={true}
                   notes={riskCharacterizations.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={riskCharacterizations.id}
                   marginTop='0px'
