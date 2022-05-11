@@ -30,7 +30,6 @@ const buildHeaders = () => {
     if (clientId) {
         headers['X-Cyio-Client'] = clientId;
     }
-    headers['X-Cyio-Client'] = '30f033d4-e90d-44f9-8ce0-36597ff08c93';
     return headers;
 };
 
