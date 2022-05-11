@@ -219,7 +219,7 @@ const extractEntityMainValue = (entityData) => {
   let mainValue;
   if (isStixCyberObservable(entityData.entity_type)) {
     mainValue = observableValue(entityData);
-  } else if (isNotEmptyField(entityData.definition)) { // TODO JRI Improve the entity domain main value extractor
+  } else if (isNotEmptyField(entityData.definition)) { // TODO Improve the entity domain main value extractor
     mainValue = entityData.definition;
   } else if (isNotEmptyField(entityData.value)) {
     mainValue = entityData.value;
