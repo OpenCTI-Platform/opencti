@@ -1,7 +1,7 @@
 /* eslint-disable */
 /* Refactor */
 import React from 'react';
-import TextField from '@material-ui/core/TextField';
+// import TextField from '@material-ui/core/TextField';
 import { SketchPicker } from 'react-color';
 import IconButton from '@material-ui/core/IconButton';
 import Popover from '@material-ui/core/Popover';
@@ -10,6 +10,7 @@ import { useField, Field } from 'formik';
 import { fieldToTextField } from 'formik-material-ui';
 import Box from '@material-ui/core/Box';
 import CardContent from '@material-ui/core/CardContent';
+import TextField from './TextField';
 import { ColorLens, Add } from '@material-ui/icons';
 
 const ColorPickerField = (props) => {

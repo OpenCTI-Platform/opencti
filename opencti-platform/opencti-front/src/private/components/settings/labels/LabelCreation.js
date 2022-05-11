@@ -8,7 +8,12 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { compose } from 'ramda';
+import {
+  compose,
+  pipe,
+  dissoc,
+  assoc,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 // import { commitMutation as CM } from 'react-relay';
@@ -22,6 +27,7 @@ import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -120,6 +126,11 @@ class LabelCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = pipe(
+      values.description.length === 0
+        ? dissoc('description')
+        : assoc('description', values.description),
+    )(values);
     // CM(environmentDarkLight, {
     //   mutation: labelContextualMutation,
     //   variables: {
@@ -141,7 +152,7 @@ class LabelCreation extends Component {
     commitMutation({
       mutation: this.props.contextual ? labelContextualMutation : labelMutation,
       variables: {
-        input: values,
+        input: finalValues,
       },
       updater: (store) => {
         if (!this.props.contextual) {
@@ -166,6 +177,10 @@ class LabelCreation extends Component {
         } else {
           this.handleClose();
         }
+      },
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to create New Label');
       },
     });
   }

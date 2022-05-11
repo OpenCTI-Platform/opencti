@@ -260,6 +260,7 @@ class RelatedTasksLinesContainer extends Component {
               key={relatedTask.id}
               data={relatedTask}
               refreshQuery={refreshQuery}
+              relatedTaskId={relatedTask.id}
             />
           ))}
         </Paper>
@@ -358,6 +359,45 @@ const RelatedTasksLines = createFragmentContainer(
             task_type
             name
             description
+            timing {
+              ... on DateRangeTiming {
+                start_date
+                end_date
+              }
+            }
+            task_dependencies {
+              __typename
+              id
+              name
+            }
+            related_tasks {
+              __typename
+              id
+              name
+            }
+            associated_activities {
+              __typename
+              id
+              activity_id {
+                __typename
+                id
+                name
+              }
+              responsible_roles {
+                __typename
+                role {
+                  __typename
+                  id
+                  role_identifier
+                  name
+                }
+                parties {
+                  id
+                  party_type
+                  name
+                }
+              }
+            }
             links {
               __typename
               id

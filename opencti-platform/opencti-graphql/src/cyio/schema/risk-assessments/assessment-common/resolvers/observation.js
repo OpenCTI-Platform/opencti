@@ -624,30 +624,37 @@ const observationResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            if (response[0].subject_ref[0].includes('OperatingSystem')) {
-              console.error(`[CYIO] INVALID-IRI: ${response[0].iri} 'subject_ref' contains an IRI ${response[0].subject_ref[0]} which is invalid; skipping`);
-              continue;
+            let subjectRef, subjectType;
+            if (response[0].subject_ref !== undefined) {
+              subjectRef = response[0].subject_ref[0];
+              subjectType = response[0].subject_type;
+              if (subjectRef !== undefined && subjectRef.includes('OperatingSystem')) {
+                console.error(`[CYIO] INVALID-IRI: ${response[0].iri} 'subject_ref' contains an IRI ${subjectRef} which is invalid; skipping`);
+                continue;
+              }
             }
 
-            // determine the actual IRI of the object referenced
-            let result;
-            let sparqlQuery = selectObjectByIriQuery(response[0].subject_ref[0], response[0].subject_type, ['id'] );
-            try {
-              result = await dataSources.Stardog.queryById({
-              dbName,
-              sparqlQuery,
-              queryId: "Obtaining Subject IRI",
-              singularizeSchema
-              });
-            } catch (e) {
-                console.log(e)
-                throw e
+            if (subjectRef !== undefined) {
+              // determine the actual IRI of the object referenced
+              let result;
+              let sparqlQuery = selectObjectByIriQuery(subjectRef, subjectType, ['id'] );
+              try {
+                result = await dataSources.Stardog.queryById({
+                dbName,
+                sparqlQuery,
+                queryId: "Obtaining Subject IRI",
+                singularizeSchema
+                });
+              } catch (e) {
+                  console.log(e)
+                  throw e
+              }
+              if (result === undefined || result.length === 0) {
+                console.error(`[CYIO] NON-EXISTENT: (${dbName}) '${response[0].subject_ref[0]}'; skipping Subject '${response[0].iri}`);              
+                continue;
+              }
             }
-            if (result === undefined || result.length === 0) {
-              console.error(`[CYIO] NON-EXISTENT: (${dbName}) '${response[0].subject_ref[0]}'; skipping Subject '${response[0].iri}`);              
-              continue;
-            }
-            results.push(reducer(response[0]));
+          results.push(reducer(response[0]));
           }
           else {
             // Handle reporting Stardog Error
