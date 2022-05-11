@@ -110,11 +110,10 @@ class DeviceEditionDetailsComponent extends Component {
                   >
                     {t('Installed Operating System')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '-7px 0 4px 5px' }}>
+                  <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                     <Tooltip title={t('Installed Operating System')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
-                    <AddIcon fontSize="small" color="primary" />
                   </div>
                   <InstalledAsset
                     component={SelectField}
@@ -136,11 +135,10 @@ class DeviceEditionDetailsComponent extends Component {
                   >
                     {t('Installed Software')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '13px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
                     <Tooltip title={t('Installed Software')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
-                    <AddIcon fontSize="small" color="primary" style={{ marginTop: 2 }} />
                   </div>
                   <InstalledAsset
                     component={SelectField}
@@ -345,11 +343,10 @@ class DeviceEditionDetailsComponent extends Component {
                   >
                     {t('Installed Hardware')}
                   </Typography>
-                  <div style={{ float: 'left', margin: '-3px 0 0 5px' }}>
+                  <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
                     <Tooltip title={t('Installed Hardware')} >
                       <Information fontSize="inherit" color="disabled" />
                     </Tooltip>
-                    <AddIcon fontSize="small" color="primary" />
                   </div>
                   <div className="clearfix" />
                   <InstalledAsset
