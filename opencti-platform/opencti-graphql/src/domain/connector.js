@@ -1,12 +1,12 @@
 import EventSource from 'eventsource';
-import { createEntity, deleteElementById, storeLoadById, patchAttribute, updateAttribute } from '../database/middleware';
-import { listEntities, completeConnector, connectorsFor } from '../database/repository';
+import { createEntity, deleteElementById, patchAttribute, storeLoadById, updateAttribute } from '../database/middleware';
+import { completeConnector, connectorsFor, listEntities } from '../database/repository';
 import { registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
-import { READ_INDEX_HISTORY } from '../database/utils';
+import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -65,15 +65,13 @@ export const findAllSync = async (user, opts = {}) => {
 };
 export const httpBase = (baseUri) => (baseUri.endsWith('/') ? baseUri : `${baseUri}/`);
 export const createSyncHttpUri = (sync, testMode) => {
-  // TODO JRI Add Interface option in synchronizer to pickup from & recover & with-inferences options
-  const { uri, stream_id: stream, current_state: state, listen_deletion: deletion } = sync;
+  const { uri, stream_id: stream, current_state: state, listen_deletion: del } = sync;
   if (testMode) {
     logApp.debug(`[OPENCTI] Testing sync url with ${httpBase(uri)}stream/${stream}`);
     return `${httpBase(uri)}stream/${stream}`;
   }
-  let streamUri = `${httpBase(uri)}stream/${stream}?listen-delete=${deletion}`;
-  if (state) streamUri += `&from=${state}`;
-  return streamUri;
+  const from = isEmptyField(state) ? '0-0' : state;
+  return `${httpBase(uri)}stream/${stream}?from=${from}&listen-delete=${del}`;
 };
 export const testSync = async (user, sync) => {
   const eventSourceUri = createSyncHttpUri(sync, true);

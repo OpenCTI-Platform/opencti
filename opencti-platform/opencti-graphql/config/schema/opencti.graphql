@@ -565,7 +565,7 @@ input SynchronizerAddInput {
   token: String! @constraint(minLength: 2)
   stream_id: String! @constraint(minLength: 2)
   user_id: String
-  current_state: String
+  current_state: DateTime
   listen_deletion: Boolean!
   ssl_verify: Boolean
 }

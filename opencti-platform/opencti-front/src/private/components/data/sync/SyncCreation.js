@@ -16,6 +16,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -82,6 +83,7 @@ const syncCreationValidation = (t) => Yup.object().shape({
   uri: Yup.string().required(t('This field is required')),
   token: Yup.string().required(t('This field is required')),
   stream_id: Yup.string().required(t('This field is required')),
+  current_state: Yup.date().nullable().typeError(t('The value must be a date (YYYY-MM-DD)')),
   listen_deletion: Yup.bool(),
   ssl_verify: Yup.bool(),
 });
@@ -192,6 +194,7 @@ const SyncCreation = (props) => {
               name: '',
               uri: '',
               token: '',
+              current_state: null,
               stream_id: 'live',
               listen_deletion: false,
               ssl_verify: false,
@@ -232,6 +235,19 @@ const SyncCreation = (props) => {
                   label={t('Remote OpenCTI stream ID')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
+                />
+                <Field
+                  component={DatePickerField}
+                  name="current_state"
+                  invalidDateMessage={t(
+                    'The value must be a date (mm/dd/yyyy)',
+                  )}
+                  TextFieldProps={{
+                    label: t('Starting synchronization (empty = from start)'),
+                    variant: 'standard',
+                    fullWidth: true,
+                    style: { marginTop: 20 },
+                  }}
                 />
                 <Field
                   component={SwitchField}

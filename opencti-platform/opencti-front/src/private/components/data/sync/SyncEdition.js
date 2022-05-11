@@ -14,6 +14,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import { syncCheckMutation } from './SyncCreation';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   header: {
@@ -66,6 +67,7 @@ const syncValidation = (t) => Yup.object().shape({
   uri: Yup.string().required(t('This field is required')),
   token: Yup.string().required(t('This field is required')),
   stream_id: Yup.string().required(t('This field is required')),
+  current_state: Yup.date().nullable().typeError(t('The value must be a date (YYYY-MM-DD)')),
   listen_deletion: Yup.bool(),
   ssl_verify: Yup.bool(),
 });
@@ -73,7 +75,7 @@ const syncValidation = (t) => Yup.object().shape({
 const SyncEditionContainer = (props) => {
   const { t, classes, handleClose, synchronizer } = props;
   const initialValues = R.pickAll(
-    ['name', 'uri', 'token', 'stream_id', 'listen_deletion', 'ssl_verify'],
+    ['name', 'uri', 'token', 'stream_id', 'listen_deletion', 'current_state', 'ssl_verify'],
     synchronizer,
   );
   const handleVerify = (values) => {
@@ -161,6 +163,20 @@ const SyncEditionContainer = (props) => {
                 onSubmit={handleSubmitField}
               />
               <Field
+                component={DatePickerField}
+                name="current_state"
+                invalidDateMessage={t(
+                  'The value must be a date (mm/dd/yyyy)',
+                )}
+                onSubmit={handleSubmitField}
+                TextFieldProps={{
+                  label: t('Starting synchronization (empty = from start)'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                }}
+              />
+              <Field
                 component={SwitchField}
                 type="checkbox"
                 name="ssl_verify"
@@ -210,6 +226,7 @@ const SyncEditionFragment = createFragmentContainer(SyncEditionContainer, {
       token
       stream_id
       listen_deletion
+      current_state
       ssl_verify
     }
   `,

@@ -88,6 +88,7 @@ import { EVENT_VERSION_V4, lockResource } from '../database/redis';
 import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { rawFilesListing } from '../database/minio';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { utcDate } from '../utils/format';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 
@@ -104,10 +105,10 @@ const syncManagerInstance = (syncId) => {
   let syncElement;
   let run = true;
   const handleEvent = (event) => {
-    const { type, data } = event;
+    const { type, data, lastEventId } = event;
     const { data: stixData, context, version } = JSON.parse(data);
     if (version === EVENT_VERSION_V4) {
-      eventsQueue.enqueue({ type, data: stixData, context });
+      eventsQueue.enqueue({ id: lastEventId, type, data: stixData, context });
     }
   };
   const startStreamListening = async () => {
@@ -314,7 +315,9 @@ const syncManagerInstance = (syncId) => {
             }
             // Update the current state
             if (eventCount > STATE_UPDATE_SIZE) {
-              await patchSync(SYSTEM_USER, syncId, { current_state: data.updated_at });
+              const [time] = event.id.split('-');
+              const eventDate = utcDate(parseInt(time, 10)).toISOString();
+              await patchSync(SYSTEM_USER, syncId, { current_state: eventDate });
               eventCount = 0;
             }
             eventCount += 1;

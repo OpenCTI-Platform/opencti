@@ -2878,8 +2878,7 @@ export const createEntityRaw = async (user, input, type, opts = { publishStreamE
       event = await storeUpdateEvent(user, dataEntity.previous, dataEntity.element, dataEntity.message, opts);
     }
     // Return created element after waiting for it.
-    const element = R.assoc('i_upserted', dataEntity.type !== TRX_CREATION, dataEntity.element);
-    return { element, event };
+    return { element: dataEntity.element, event, isCreation: dataEntity.type === TRX_CREATION };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
@@ -2907,7 +2906,8 @@ export const createEntity = async (user, input, type) => {
     return created.element;
   }
   const data = await createEntityRaw(user, input, type);
-  if (!data.element.i_upserted) {
+  // In case of creation, start an enrichment
+  if (data.isCreation) {
     await askEnrich(user, data.element.id, type);
   }
   return data.element;

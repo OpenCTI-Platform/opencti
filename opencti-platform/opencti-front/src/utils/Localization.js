@@ -262,8 +262,8 @@ const i18n = {
       'The value must be an email address':
         'La valeur doit être une adresse email',
       'The value must be an URL': 'La valeur doit être une URL',
-      'The value must be a date (mm/dd/yyyy)':
-        'La valeur doit être une date (dd/mm/aaaaa)',
+      'Starting synchronization (empty = from start)': 'Début de synchronisation (vide = début)',
+      'The value must be a date (mm/dd/yyyy)': 'La valeur doit être une date (dd/mm/aaaaa)',
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'No description of this usage': 'Aucune description de cet usage',
@@ -1591,6 +1591,7 @@ const i18n = {
       'The value must be a number': '该值必须是一个数字',
       'The value must be an email address': '该值必须是一个邮件地址',
       'The value must be an URL': '该值必须是一个URL',
+      'Starting synchronization (empty = from start)': '開始同步(空的 = 從一開始)',
       'The value must be a date (mm/dd/yyyy)': '该值必须是一个日期(mm/dd/yyyy)',
       'The values do not match': '该值不匹配',
       'No available options': '没有可用的选项',

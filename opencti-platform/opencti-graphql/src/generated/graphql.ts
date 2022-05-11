@@ -13000,7 +13000,7 @@ export type Synchronizer = {
 };
 
 export type SynchronizerAddInput = {
-  current_state?: InputMaybe<Scalars['String']>;
+  current_state?: InputMaybe<Scalars['DateTime']>;
   listen_deletion: Scalars['Boolean'];
   name: Scalars['String'];
   ssl_verify?: InputMaybe<Scalars['Boolean']>;
