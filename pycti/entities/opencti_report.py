@@ -1,10 +1,11 @@
 # coding: utf-8
 
+import datetime
 import json
 import uuid
-import datetime
-from stix2.canonicalization.Canonicalize import canonicalize
+
 from dateutil.parser import parse
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Report:

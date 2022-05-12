@@ -2,7 +2,9 @@
 
 import json
 import uuid
+
 from stix2.canonicalization.Canonicalize import canonicalize
+
 from pycti.utils.constants import IdentityTypes
 
 
