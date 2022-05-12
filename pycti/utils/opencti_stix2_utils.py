@@ -1,5 +1,3 @@
-import uuid
-
 from stix2 import (
     CustomObservable,
     EqualityComparisonExpression,
