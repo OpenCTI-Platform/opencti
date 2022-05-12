@@ -5,13 +5,12 @@ from typing import Dict
 
 import pika.exceptions
 import yaml
-from stix2 import Bundle, Identity, Report, Vulnerability
+from stix2 import Bundle, Identity, Report, Vulnerability, IPv4Address
 
 from pycti import (
     OpenCTIApiClient,
     OpenCTIConnectorHelper,
     OpenCTIStix2Utils,
-    SimpleObservable,
     get_config_variable,
 )
 from pycti.utils.constants import ContainerTypes, IdentityTypes
@@ -252,12 +251,14 @@ class InternalImportConnector:
         # Downloading and saving file to connector
         self.helper.log_info("Importing the file " + file_uri)
 
-        observable = SimpleObservable(
-            id=OpenCTIStix2Utils.generate_random_stix_id("x-opencti-simple-observable"),
-            key=self.data["simple_observable_key"],
+        #observable = SimpleObservable(
+        #    id=OpenCTIStix2Utils.generate_random_stix_id("x-opencti-simple-observable"),
+        #    key=self.data["simple_observable_key"],
+        #    value=self.data["simple_observable_value"],
+        #)
+        observable = IPv4Address(
             value=self.data["simple_observable_value"],
         )
-
         bundle_objects = [observable]
         entity_id = data.get("entity_id", None)
         report = self.helper.api.report.read(id=entity_id)
