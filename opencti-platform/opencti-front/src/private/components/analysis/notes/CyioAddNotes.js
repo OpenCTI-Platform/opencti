@@ -100,6 +100,7 @@ class CyioAddNotes extends Component {
       search: '',
       expanded: false,
       totalNotes: [],
+      removeIcon: false,
     };
   }
 
@@ -213,6 +214,7 @@ class CyioAddNotes extends Component {
       menuItemName,
       cyioCoreObjectOrStixCoreRelationshipId,
       cyioCoreObjectOrStixCoreRelationshipNotes,
+      removeIcon,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -235,7 +237,11 @@ class CyioAddNotes extends Component {
               onClick={this.handleOpen.bind(this)}
               classes={{ root: classes.createButton }}
             >
-              <Add fontSize="small" />
+              {removeIcon ? (
+                <></>
+              ) : (
+                <Add fontSize="small" />
+              )}
             </IconButton>
           )
         }
@@ -372,6 +378,7 @@ CyioAddNotes.propTypes = {
   disableAdd: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
+  removeIcon: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(CyioAddNotes);
