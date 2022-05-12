@@ -8,9 +8,10 @@ import yaml
 from stix2 import Bundle, Identity, IPv4Address, Report, Vulnerability
 
 from pycti import (
+    Identity,
     OpenCTIApiClient,
     OpenCTIConnectorHelper,
-    OpenCTIStix2Utils,
+    Vulnerability,
     get_config_variable,
 )
 from pycti.utils.constants import ContainerTypes, IdentityTypes
@@ -39,14 +40,14 @@ class ExternalImportConnectorTest:
                     "name": "Testing aaaaa",
                     "description": "OpenCTI Test Org",
                     "class": Identity,
-                    "id": OpenCTIStix2Utils.generate_random_stix_id("identity"),
+                    "id": Identity.generate_id("Testing aaaaa", "organization"),
                 },
                 {
                     "type": "Vulnerability",
                     "name": "CVE-1979-1234",
                     "description": "evil evil evil",
                     "class": Vulnerability,
-                    "id": OpenCTIStix2Utils.generate_random_stix_id("vulnerability"),
+                    "id": Vulnerability.generate_id("CVE-1979-1234"),
                 },
             ],
             "config": "tests/data/external_import_config.yml",
