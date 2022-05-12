@@ -234,7 +234,10 @@ export const openVocabularies = {
     },
   ],
   'processor-architecture-ov': [
-    { key: 'alpha', description: 'Specifies the Alpha architecture.' },
+    {
+      key: 'alpha',
+      description: 'Specifies the Alpha architecture.',
+    },
     {
       key: 'arm',
       description: 'Specifies the ARM architecture.',
@@ -661,6 +664,81 @@ export const openVocabularies = {
       key: 'unknown',
       description:
         'There is not enough information available to determine the type of indicator.',
+    },
+  ],
+  'infrastructure-type-ov': [
+    {
+      key: 'amplification',
+      description:
+        'Specifies infrastructure used for conducting amplification attacks.',
+    },
+    {
+      key: 'anonymization',
+      description:
+        'Specific infrastructure used for anonymization, such as a proxy.',
+    },
+    {
+      key: 'botnet',
+      description:
+        'Specifies the membership/makeup of a botnet, in terms of the network addresses of the hosts that comprise the botnet.',
+    },
+    {
+      key: 'command-and-control',
+      description:
+        'Specifies infrastructure used for command and control (C2). This is typically a domain name or IP address.',
+    },
+    {
+      key: 'control-system',
+      description:
+        'Specifies equipment such as IoT, HMI, RTU, PLC or other ICS devices.',
+    },
+    {
+      key: 'exfiltration',
+      description:
+        'Specifies infrastructure used as an endpoint for data exfiltration.',
+    },
+    {
+      key: 'firewall',
+      description:
+        'Specifies a device that inspects network traffic and restricts it based upon defined policies.',
+    },
+    {
+      key: 'hosting-malware',
+      description: 'Specifies infrastructure used for hosting malware.',
+    },
+    {
+      key: 'hosting-target-lists',
+      description:
+        'Specifies infrastructure used for hosting a list of targets for DDOS attacks, phishing, and other malicious activities. This is typically a domain name or IP address.',
+    },
+    {
+      key: 'phishing',
+      description:
+        'Specifies infrastructure used for conducting phishing attacks.',
+    },
+    {
+      key: 'reconnaissance',
+      description:
+        'Specifies infrastructure used for conducting reconnaissance activities.',
+    },
+    {
+      key: 'routers-switches',
+      description:
+        'Specifies IT infrastructure used to connect devices to the network.',
+    },
+    {
+      key: 'staging',
+      description:
+        'Specifies infrastructure used for hosting a list of targets for DDOS attacks, phishing, and other malicious activities. This is typically a domain name or IP address.',
+    },
+    {
+      key: 'workstation',
+      description:
+        'Specifies an endpoint machine used for work by an organization that needs protection.',
+    },
+    {
+      key: 'unknown',
+      description: 'Specifies an infrastructure of some unknown type.',
     },
   ],
 };

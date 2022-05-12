@@ -56,7 +56,7 @@ class InfrastructureEditionContainer extends Component {
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an intrusion set')}
+            {t('Update an infrastructure')}
           </Typography>
           <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />

@@ -239,7 +239,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
       R.map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(intrusionSet);
     const objectMarking = R.pipe(

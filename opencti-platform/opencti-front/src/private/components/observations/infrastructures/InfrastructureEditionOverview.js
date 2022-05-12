@@ -14,6 +14,7 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -21,6 +22,9 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -109,6 +113,13 @@ const infrastructureValidation = (t) => Yup.object().shape({
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
+  infrastructure_types: Yup.array().nullable(),
+  first_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
+  last_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
   references: Yup.array().required(t('This field is required')),
 });
 
@@ -189,6 +200,46 @@ class InfrastructureEditionOverviewComponent extends Component {
     }
   }
 
+  handleChangeKillChainPhases(name, values) {
+    if (!this.props.enableReferences) {
+      const { infrastructure } = this.props;
+      const currentKillChainPhases = R.pipe(
+        R.pathOr([], ['killChainPhases', 'edges']),
+        R.map((n) => ({
+          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+          value: n.node.id,
+        })),
+      )(infrastructure);
+
+      const added = R.difference(values, currentKillChainPhases);
+      const removed = R.difference(currentKillChainPhases, values);
+
+      if (added.length > 0) {
+        commitMutation({
+          mutation: infrastructureMutationRelationAdd,
+          variables: {
+            id: this.props.infrastructure.id,
+            input: {
+              toId: R.head(added).value,
+              relationship_type: 'kill-chain-phase',
+            },
+          },
+        });
+      }
+
+      if (removed.length > 0) {
+        commitMutation({
+          mutation: infrastructureMutationRelationDelete,
+          variables: {
+            id: this.props.infrastructure.id,
+            toId: R.head(removed).value,
+            relationship_type: 'kill-chain-phase',
+          },
+        });
+      }
+    }
+  }
+
   render() {
     const { t, infrastructure, context } = this.props;
     const createdBy = pathOr(null, ['createdBy', 'name'], infrastructure) === null
@@ -202,7 +253,6 @@ class InfrastructureEditionOverviewComponent extends Component {
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(infrastructure);
     const objectMarking = pipe(
@@ -216,9 +266,18 @@ class InfrastructureEditionOverviewComponent extends Component {
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
+      assoc(
+        'infrastructure_types',
+        infrastructure.infrastructure_types
+          ? infrastructure.infrastructure_types
+          : [],
+      ),
       pick([
         'name',
         'description',
+        'infrastructure_types',
+        'first_seen',
+        'last_seen',
         'createdBy',
         'killChainPhases',
         'objectMarking',
@@ -245,6 +304,17 @@ class InfrastructureEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
+            <OpenVocabField
+              label={t('Infrastructure types')}
+              type="infrastructure-type-ov"
+              name="infrastructure_types"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              variant="edit"
+              multiple={true}
+              editContext={context}
+            />
             <Field
               component={MarkDownField}
               name="description"
@@ -258,6 +328,54 @@ class InfrastructureEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
               }
+            />
+            <Field
+              component={DateTimePickerField}
+              name="first_seen"
+              invalidDateMessage={t(
+                'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m))',
+              )}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              TextFieldProps={{
+                label: t('First seen'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="first_seen" />
+                ),
+              }}
+            />
+            <Field
+              component={DateTimePickerField}
+              name="last_seen"
+              invalidDateMessage={t(
+                'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m)',
+              )}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              TextFieldProps={{
+                label: t('Last seen'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus context={context} fieldName="last_seen" />
+                ),
+              }}
+            />
+            <KillChainPhasesField
+              name="killChainPhases"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="killChainPhases"
+                />
+              }
+              onChange={this.handleChangeKillChainPhases.bind(this)}
             />
             <CreatedByField
               name="createdBy"
@@ -302,11 +420,24 @@ const InfrastructureEditionOverview = createFragmentContainer(
         id
         name
         description
+        first_seen
+        last_seen
+        infrastructure_types
         createdBy {
           ... on Identity {
             id
             name
             entity_type
+          }
+        }
+        killChainPhases {
+          edges {
+            node {
+              id
+              kill_chain_name
+              phase_name
+              x_opencti_order
+            }
           }
         }
         objectMarking {
