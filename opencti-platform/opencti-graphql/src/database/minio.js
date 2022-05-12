@@ -24,7 +24,7 @@ const minioClient = new Minio.Client({
   },
 });
 
-export const isStorageAlive = () => {
+export const initializeMinioBucket = async () => {
   return new Promise((resolve, reject) => {
     try {
       minioClient.bucketExists(bucketName, (existErr, exists) => {
@@ -44,6 +44,10 @@ export const isStorageAlive = () => {
       reject(e);
     }
   });
+};
+
+export const isStorageAlive = () => {
+  return initializeMinioBucket();
 };
 
 export const deleteFile = async (user, id) => {

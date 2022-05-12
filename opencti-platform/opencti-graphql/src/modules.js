@@ -80,9 +80,6 @@ export const startModules = async () => {
 };
 
 export const shutdownModules = async () => {
-  // region History manager
-  logApp.info('[OPENCTI-MODULE] Cache manager stopped');
-  // endregion
   // region API initialization
   await httpServer.shutdown();
   logApp.info('[OPENCTI] API stopped');
