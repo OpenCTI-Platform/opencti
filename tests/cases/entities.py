@@ -2,7 +2,6 @@ from typing import Dict, List, Union
 
 from stix2 import TLP_GREEN, TLP_WHITE, AttackPattern
 
-from pycti import OpenCTIStix2Utils
 from pycti.utils.constants import ContainerTypes, IdentityTypes, LocationTypes
 from tests.utils import get_incident_end_date, get_incident_start_date
 
@@ -526,16 +525,10 @@ class NoteTest(EntityTest):
 class ObservedDataTest(EntityTest):
     def setup(self):
         self.ipv4 = self.api_client.stix_cyber_observable.create(
-            simple_observable_id=OpenCTIStix2Utils.generate_random_stix_id(
-                "x-opencti-simple-observable"
-            ),
             simple_observable_key="IPv4-Addr.value",
             simple_observable_value="198.51.100.3",
         )
         self.domain = self.api_client.stix_cyber_observable.create(
-            simple_observable_id=OpenCTIStix2Utils.generate_random_stix_id(
-                "x-opencti-simple-observable"
-            ),
             simple_observable_key="Domain-Name.value",
             simple_observable_value="example.com",
         )
@@ -661,16 +654,10 @@ class StixCoreRelationshipTest(EntityTest):
 class StixCyberObservableRelationshipTest(EntityTest):
     def setup(self):
         self.ipv4 = self.api_client.stix_cyber_observable.create(
-            simple_observable_id=OpenCTIStix2Utils.generate_random_stix_id(
-                "x-opencti-simple-observable"
-            ),
             simple_observable_key="IPv4-Addr.value",
             simple_observable_value="198.51.100.3",
         )
         self.domain = self.api_client.stix_cyber_observable.create(
-            simple_observable_id=OpenCTIStix2Utils.generate_random_stix_id(
-                "x-opencti-simple-observable"
-            ),
             simple_observable_key="Domain-Name.value",
             simple_observable_value="example.com",
         )
