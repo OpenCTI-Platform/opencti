@@ -1,0 +1,76 @@
+import { logApp } from '../config/conf';
+import { pubsub } from '../database/redis';
+import { connectors, listEntities } from '../database/repository';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_STATUS } from '../schema/internalObject';
+import { SYSTEM_USER } from '../utils/access';
+import { UnsupportedError } from '../config/errors';
+import type { BasicStoreEntity } from '../types/store';
+
+let cache: any = {};
+
+export const getConfigCache = async<T extends BasicStoreEntity>(type: string): Promise<Array<T>> => {
+  const fromCache = cache[type];
+  if (!fromCache) {
+    throw UnsupportedError(`${type} is not supported in cache configuration`);
+  }
+  if (!fromCache.values) {
+    fromCache.values = await fromCache.fn();
+  }
+  return fromCache.values;
+};
+
+const workflowStatuses = async () => {
+  const reloadStatuses = async () => {
+    return listEntities(SYSTEM_USER, [ENTITY_TYPE_STATUS], {
+      orderBy: 'order',
+      orderMode: 'asc',
+      connectionFormat: false });
+  };
+  return { values: await reloadStatuses(), fn: reloadStatuses };
+};
+const platformConnectors = async () => {
+  const reloadConnectors = async () => {
+    return connectors(SYSTEM_USER);
+  };
+  return { values: await reloadConnectors(), fn: reloadConnectors };
+};
+const platformRules = async () => {
+  const reloadRules = async () => {
+    return listEntities(SYSTEM_USER, [ENTITY_TYPE_RULE], { connectionFormat: false });
+  };
+  return { values: await reloadRules(), fn: reloadRules };
+};
+
+const initCacheManager = () => {
+  let subscribeIdentifier: number;
+  return {
+    start: async () => {
+      // Load initial data used for cache
+      cache[ENTITY_TYPE_STATUS] = await workflowStatuses();
+      cache[ENTITY_TYPE_CONNECTOR] = await platformConnectors();
+      cache[ENTITY_TYPE_RULE] = await platformRules();
+      // Listen pub/sub configuration events
+      // noinspection ES6MissingAwait
+      subscribeIdentifier = await pubsub.subscribe('*', (event) => {
+        const { instance } = event;
+        // Invalid cache if any entity has changed.
+        if (cache[instance.entity_type]) {
+          cache[instance.entity_type].values = undefined;
+        } else {
+          // This entity type is not part of the caching system
+        }
+      }, { pattern: true });
+      logApp.info('[OPENCTI-MODULE] Cache manager initialized');
+    },
+    shutdown: async () => {
+      if (subscribeIdentifier) {
+        pubsub.unsubscribe(subscribeIdentifier);
+      }
+      cache = {};
+      return true;
+    }
+  };
+};
+const cacheManager = initCacheManager();
+
+export default cacheManager;

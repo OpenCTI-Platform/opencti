@@ -2,9 +2,9 @@ import { internalLoadById, listThings } from '../../src/database/middleware';
 import { listEntities } from '../../src/database/repository';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS } from '../../src/database/utils';
-import { setRuleActivation } from '../../src/manager/ruleManager';
 import { ENTITY_TYPE_TASK } from '../../src/schema/internalObject';
 import { sleep } from './testQuery';
+import { setRuleActivation } from '../../src/domain/rules';
 
 export const inferenceLookup = async (inferences, fromStandardId, toStandardId, type) => {
   for (let index = 0; index < inferences.length; index += 1) {

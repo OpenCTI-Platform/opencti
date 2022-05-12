@@ -213,6 +213,7 @@ import { askEnrich } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
 import { listAllRelations, listRelations } from './middleware-loader';
 import { uploadJobImport } from '../domain/file';
+import { getConfigCache } from '../manager/cacheManager';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -2317,16 +2318,11 @@ const buildRelationData = async (user, input, opts = {}) => {
       type = 'stix-sighting-relationship';
     }
     if (type) {
-      // TODO JRI Find a way to not get configuration every time
-      const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
-        first: 1,
-        orderBy: 'order',
-        orderMode: 'asc',
-        filters: [{ key: 'type', values: [type] }],
-        connectionFormat: false,
-      });
-      if (statuses.length > 0) {
-        data.x_opencti_workflow_id = R.head(statuses).id;
+      // Get statuses
+      const platformStatuses = await getConfigCache(ENTITY_TYPE_STATUS);
+      const statusesForType = platformStatuses.filter((p) => p.type === type);
+      if (statusesForType.length > 0) {
+        data.x_opencti_workflow_id = R.head(statusesForType).id;
       }
     }
   }
@@ -2673,16 +2669,10 @@ const buildEntityData = async (user, input, type, opts = {}) => {
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
     // Get statuses
-    // TODO JRI Find a way to prevent fetch every times (distributed configuration)
-    const statuses = await listEntities(user, [ENTITY_TYPE_STATUS], {
-      first: 1,
-      orderBy: 'order',
-      orderMode: 'asc',
-      filters: [{ key: 'type', values: [type] }],
-      connectionFormat: false,
-    });
-    if (statuses.length > 0) {
-      data = R.assoc('x_opencti_workflow_id', R.head(statuses).id, data);
+    const platformStatuses = await getConfigCache(ENTITY_TYPE_STATUS);
+    const statusesForType = platformStatuses.filter((p) => p.type === type);
+    if (statusesForType.length > 0) {
+      data = R.assoc('x_opencti_workflow_id', R.head(statusesForType).id, data);
     }
   }
   // -- Aliased entities

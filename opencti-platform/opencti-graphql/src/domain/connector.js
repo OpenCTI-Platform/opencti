@@ -1,5 +1,12 @@
 import EventSource from 'eventsource';
-import { createEntity, deleteElementById, patchAttribute, storeLoadById, updateAttribute } from '../database/middleware';
+import {
+  createEntity,
+  deleteElementById,
+  internalDeleteElementById,
+  patchAttribute,
+  storeLoadById,
+  updateAttribute
+} from '../database/middleware';
 import { completeConnector, connectorsFor, listEntities } from '../database/repository';
 import { registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
@@ -7,7 +14,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS, logApp } from '../config/conf';
@@ -140,7 +147,9 @@ export const registerConnector = async (user, connectorData) => {
       auto,
       only_contextual,
     };
-    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
+    const { element } = await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
+    // Notify configuration change for caching system
+    await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
     return storeLoadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
@@ -154,6 +163,8 @@ export const registerConnector = async (user, connectorData) => {
     connector_user_id: user.id,
   };
   const createdConnector = await createEntity(user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
   // Return the connector
   return completeConnector(createdConnector);
 };
@@ -161,6 +172,9 @@ export const registerConnector = async (user, connectorData) => {
 export const connectorDelete = async (user, connectorId) => {
   await deleteWorkForConnector(user, connectorId);
   await unregisterConnector(connectorId);
-  return deleteElementById(user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const { element } = await internalDeleteElementById(user, connectorId);
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
+  return element.internal_id;
 };
 // endregion

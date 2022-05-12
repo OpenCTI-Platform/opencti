@@ -113,8 +113,9 @@ export const CAPABILITIES = [
 ];
 // endregion
 
-// Check every dependencies
+// Check every dependency
 export const checkSystemDependencies = async () => {
+  logApp.info('[OPENCTI] Checking dependencies statuses');
   // Check if elasticsearch is available
   await searchEngineInit();
   logApp.info('[CHECK] Search engine is alive');
@@ -317,7 +318,6 @@ const isCompatiblePlatform = async () => {
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {
-    await checkSystemDependencies();
     await cachePurge();
     lock = await lockResource([PLATFORM_LOCK_ID]);
     logApp.info('[INIT] Starting platform initialization');

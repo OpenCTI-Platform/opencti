@@ -1,5 +1,6 @@
-import { cleanRuleManager, getManagerInfo, getRule, getRules, setRuleActivation } from '../manager/ruleManager';
+import { cleanRuleManager, getManagerInfo } from '../manager/ruleManager';
 import { internalLoadById } from '../database/middleware';
+import { getRules, setRuleActivation, getRule } from '../domain/rules';
 
 const ruleResolvers = {
   Query: {

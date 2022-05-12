@@ -2,14 +2,14 @@ import { Promise } from 'bluebird';
 import { map } from 'ramda';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
-import { connectorsFor } from '../database/repository';
-
-export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) => connectorsFor(user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
+import { connectorsEnrichment } from '../database/repository';
+import { getConfigCache } from '../manager/cacheManager';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
 export const askEnrich = async (user, stixCoreObjectId, scope) => {
   // Get the list of compatible connectors
-  const targetConnectors = await connectorsForEnrichment(user, scope, true, true);
+  const connectors = await getConfigCache(ENTITY_TYPE_CONNECTOR);
+  const targetConnectors = connectorsEnrichment(connectors, scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(
     map((connector) => {

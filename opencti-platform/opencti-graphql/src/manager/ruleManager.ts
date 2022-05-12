@@ -4,7 +4,7 @@ import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor, EVENT_VERSION_V4, lockResource } from '../database/redis';
-import conf, { DEV_MODE, ENABLED_RULE_ENGINE, logApp } from '../config/conf';
+import conf, { ENABLED_RULE_ENGINE, logApp } from '../config/conf';
 import {
   createEntity,
   internalLoadById,
@@ -15,42 +15,22 @@ import {
 import { isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../database/rabbitmq';
 import { RULE_PREFIX } from '../schema/general';
-import { ENTITY_TYPE_RULE, ENTITY_TYPE_RULE_MANAGER, ENTITY_TYPE_TASK } from '../schema/internalObject';
-import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { createRuleTask, deleteTask } from '../domain/task';
+import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
+import { TYPE_LOCK_ERROR } from '../config/errors';
 import { RULE_MANAGER_USER, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { elList, listEntities } from '../database/middleware-loader';
-import { SYSTEM_USER } from '../utils/access';
-// Import all rules
-import AttributedToAttributedRule from '../rules/attributed-to-attributed/AttributedToAttributedRule';
-import AttributionTargetsRule from '../rules/attribution-targets/AttributionTargetsRule';
-import AttributionUseRule from '../rules/attribution-use/AttributionUseRule';
-import RuleLocalizationOfTargets from '../rules/localization-of-targets/LocalizationOfTargetsRule';
-import LocatedAtLocatedRule from '../rules/located-at-located/LocatedAtLocatedRule';
-import LocationTargetsRule from '../rules/location-targets/LocationTargetsRule';
-import RuleObservableRelatedObservable from '../rules/observable-related/ObservableRelatedRule';
-import PartOfPartRule from '../rules/part-of-part/PartOfPartRule';
-import PartOfTargetsRule from '../rules/part-of-targets/PartOfTargetsRule';
-import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRule';
-import RuleSightingIncident from '../rules/sighting-incident/SightingIncidentRule';
-import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule';
+import { elList } from '../database/middleware-loader';
 import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
-import type {
-  BasicManagerEntity,
-  BasicRuleEntity,
-  BasicStoreCommon,
-  BasicStoreEntity,
-  BasicTaskEntity
-} from '../types/store';
+import type { BasicManagerEntity, BasicStoreCommon, BasicStoreEntity } from '../types/store';
 import type { AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import type { DeleteEvent, Event, MergeEvent, StreamEvent, UpdateEvent } from '../types/event';
+import { getActivatedRules, RULES_DECLARATION } from '../domain/rules';
 
 const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 
@@ -61,22 +41,6 @@ const STATUS_WRITE_RANGE = conf.get('rule_engine:status_writing_delay') || 500;
 const SCHEDULE_TIME = 10000;
 
 // region rules registration
-export const RULES_DECLARATION: Array<RuleRuntime> = [
-  AttributedToAttributedRule,
-  AttributionTargetsRule,
-  AttributionUseRule,
-  RuleLocalizationOfTargets,
-  LocatedAtLocatedRule,
-  LocationTargetsRule,
-  RuleObservableRelatedObservable,
-  RuleObserveSighting,
-  PartOfPartRule,
-  PartOfTargetsRule,
-  RuleSightingIncident,
-];
-if (DEV_MODE) {
-  RULES_DECLARATION.push(RelatedToRelatedRule);
-}
 const ruleBehaviors = RULES_DECLARATION.map((d) => d.behaviors ?? []).flat();
 for (let index = 0; index < ruleBehaviors.length; index += 1) {
   const ruleBehavior = ruleBehaviors[index];
@@ -84,50 +48,9 @@ for (let index = 0; index < ruleBehaviors.length; index += 1) {
 }
 // endregion
 
-// region loaders
-export const getRules = async (): Promise<Array<RuleRuntime>> => {
-  const args = { connectionFormat: false };
-  const rules = await listEntities<BasicRuleEntity>(SYSTEM_USER, [ENTITY_TYPE_RULE], args);
-  return RULES_DECLARATION.map((def: RuleRuntime) => {
-    const esRule = rules.find((e) => e.internal_id === def.id);
-    const isActivated = esRule?.active === true;
-    return { ...def, activated: isActivated };
-  });
-};
-
-export const getActivatedRules = async (): Promise<Array<RuleRuntime>> => {
-  const rules = await getRules();
-  return rules.filter((r) => r.activated);
-};
-
-export const getRule = async (id: string): Promise<RuleDefinition | undefined> => {
-  const rules = await getRules();
-  return rules.find((e) => e.id === id);
-};
-// endregion
-
 export const getManagerInfo = async (user: AuthUser): Promise<RuleManager> => {
   const ruleStatus = await internalLoadById(user, RULE_ENGINE_ID) as unknown as BasicManagerEntity;
   return { activated: ENABLED_RULE_ENGINE, ...ruleStatus };
-};
-
-export const setRuleActivation = async (user: AuthUser, ruleId: string, active: boolean): Promise<RuleDefinition | undefined> => {
-  const resolvedRule = await getRule(ruleId);
-  if (isEmptyField(resolvedRule)) {
-    throw UnsupportedError(`Cant ${active ? 'enable' : 'disable'} undefined rule ${ruleId}`);
-  }
-  // Update the rule
-  await createEntity(user, { internal_id: ruleId, active, update: true }, ENTITY_TYPE_RULE);
-  // Refresh the activated rules
-  // activatedRules = await getActivatedRules();
-  if (ENABLED_RULE_ENGINE) {
-    const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
-    const args = { filters: tasksFilters, connectionFormat: false };
-    const tasks = await listEntities<BasicTaskEntity>(user, [ENTITY_TYPE_TASK], args);
-    await Promise.all(tasks.map((t) => deleteTask(user, t.internal_id)));
-    await createRuleTask(user, resolvedRule, { rule: ruleId, enable: active });
-  }
-  return getRule(ruleId);
 };
 
 const buildInternalEvent = (type: string, stix: StixCoreObject): Event => {
@@ -258,7 +181,6 @@ export const rulesApplyHandler = async (events: Array<Event>, forRules: Array<Ru
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
-  // TODO JRI Find a way to prevent fetch every times (distributed configuration)
   const rules = forRules.length > 0 ? forRules : await getActivatedRules();
   // Keep only compatible events
   const compatibleEvents = events.filter((e) => e.version === EVENT_VERSION_V4);

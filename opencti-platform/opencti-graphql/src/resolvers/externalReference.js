@@ -18,9 +18,9 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { worksForSource } from '../domain/work';
-import { connectorsForEnrichment } from '../domain/enrichment';
 import { filesListing } from '../database/minio';
 import { stixCoreObjectImportPush } from '../domain/stixCoreObject';
+import { connectorsForEnrichment } from '../database/repository';
 
 const externalReferenceResolvers = {
   Query: {

@@ -1,10 +1,14 @@
 import { logApp } from './config/conf';
-import platformInit from './initialization';
+import platformInit, { checkSystemDependencies } from './initialization';
 import { startModules, shutdownModules } from './modules';
+import cacheManager from './manager/cacheManager';
 
 // eslint-disable-next-line import/prefer-default-export
 export const boot = async () => {
   logApp.info('[OPENCTI] Starting platform');
+  await checkSystemDependencies();
+  // Init the cache manager
+  await cacheManager.start();
   // Init the platform default
   await platformInit();
   // Init the modules
@@ -13,6 +17,9 @@ export const boot = async () => {
 
 process.on('SIGTERM', async () => {
   logApp.info('[OPENCTI] SIGTERM signal received, stopping OpenCTI');
+  // Shutdown the cache manager
+  await cacheManager.shutdown();
+  // Destroy the modules
   await shutdownModules();
   logApp.info('[OPENCTI] All modules have been stopped, exiting process');
   process.exit(0);

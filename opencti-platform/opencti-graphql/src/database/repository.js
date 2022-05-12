@@ -4,7 +4,7 @@ import { elPaginate } from './engine';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
-import { CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
+import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
 
 // region global queries
 export const buildFilters = (args = {}) => {
@@ -92,11 +92,11 @@ export const completeConnector = (connector) => {
 };
 
 export const connectors = (user) => {
-  return listEntities(user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false }).then((elements) => map((conn) => completeConnector(conn), elements));
+  return listEntities(user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false })
+    .then((elements) => map((conn) => completeConnector(conn), elements));
 };
 
-export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
-  const connects = await connectors(user);
+const filterConnectors = (instances, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
   return pipe(
     filter((c) => c.connector_type === type),
     filter((c) => (onlyAlive ? c.active === true : true)),
@@ -105,7 +105,20 @@ export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAu
     filter((c) => (scope && c.connector_scope && c.connector_scope.length > 0
       ? includes(scope.toLowerCase(), map((s) => s.toLowerCase(), c.connector_scope))
       : true))
-  )(connects);
+  )(instances);
+};
+
+export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {
+  const connects = await connectors(user);
+  return filterConnectors(connects, type, scope, onlyAlive, onlyAuto, onlyContextual);
+};
+
+export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) => {
+  return connectorsFor(user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
+};
+
+export const connectorsEnrichment = (instances, scope, onlyAlive = false, onlyAuto = false) => {
+  return filterConnectors(instances, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 };
 
 export const connectorsForImport = async (user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {

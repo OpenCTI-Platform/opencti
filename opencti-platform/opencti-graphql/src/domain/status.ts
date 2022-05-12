@@ -2,11 +2,11 @@ import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
-import { deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
+import { internalDeleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/repository';
 import { findById as findSubTypeById } from './subType';
 import { getParentTypes } from '../schema/schemaUtils';
-import { BASE_TYPE_ENTITY } from '../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, BASE_TYPE_ENTITY } from '../schema/general';
 import type {
   Status,
   StatusTemplate,
@@ -16,6 +16,8 @@ import type {
 } from '../generated/graphql';
 import { OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql';
 import type { AuthUser } from '../types/user';
+import { notify } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
 
 export const findTemplateById = (user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
@@ -64,16 +66,22 @@ export const createStatus = async (user: AuthUser, subTypeId: string, input: Sta
     ...input,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
   if (returnStatus) {
     return data;
   }
   return findSubTypeById(subTypeId);
 };
 export const statusEditField = async (user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
-  await updateAttribute(user, statusId, ENTITY_TYPE_STATUS, input);
+  const { element } = await updateAttribute(user, statusId, ENTITY_TYPE_STATUS, input);
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return findSubTypeById(subTypeId);
 };
 export const statusDelete = async (user: AuthUser, subTypeId: string, statusId: string) => {
-  await deleteElementById(user, statusId, ENTITY_TYPE_STATUS);
+  const { element: deleted } = await internalDeleteElementById(user, statusId);
+  // Notify configuration change for caching system
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, user);
   return findSubTypeById(subTypeId);
 };

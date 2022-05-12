@@ -40,10 +40,11 @@ import { elPaginate, elUpdate } from '../database/engine';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_BASIC_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
-import { rulesCleanHandler, rulesApplyHandler, getRule } from './ruleManager';
+import { rulesCleanHandler, rulesApplyHandler } from './ruleManager';
 import { RULE_MANAGER_USER } from '../rules/rules';
 import { buildFilters } from '../database/repository';
 import { listAllRelations } from '../database/middleware-loader';
+import { getRule } from '../domain/rules';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
