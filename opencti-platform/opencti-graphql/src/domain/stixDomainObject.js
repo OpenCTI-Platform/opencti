@@ -14,7 +14,7 @@ import {
   timeSeriesEntities,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities } from '../database/repository';
+import { listEntities } from '../database/middleware-loader';
 import { elCount } from '../database/engine';
 import { upload } from '../database/minio';
 import { workToExportFile } from './work';

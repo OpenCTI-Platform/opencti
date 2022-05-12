@@ -5,7 +5,7 @@ import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { FROM_START, UNTIL_END } from '../utils/format';
-import { listEntities } from '../database/repository';
+import { listEntities } from '../database/middleware-loader';
 
 export const findById = (user, campaignId) => {
   return storeLoadById(user, campaignId, ENTITY_TYPE_CAMPAIGN);

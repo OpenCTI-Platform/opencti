@@ -1,10 +1,11 @@
 import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { pubsub } from '../database/redis';
-import { connectors, listEntities } from '../database/repository';
+import { connectors } from '../database/repository';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_STATUS } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { UnsupportedError } from '../config/errors';
 import type { BasicStoreEntity } from '../types/store';
+import { listEntities } from '../database/middleware-loader';
 
 let cache: any = {};
 
@@ -22,7 +23,7 @@ export const getConfigCache = async<T extends BasicStoreEntity>(type: string): P
 const workflowStatuses = async () => {
   const reloadStatuses = async () => {
     return listEntities(SYSTEM_USER, [ENTITY_TYPE_STATUS], {
-      orderBy: 'order',
+      orderBy: ['order'],
       orderMode: 'asc',
       connectionFormat: false });
   };

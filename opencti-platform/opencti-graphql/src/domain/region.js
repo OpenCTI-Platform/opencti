@@ -6,7 +6,7 @@ import {
   storeLoadById,
   batchLoadThroughGetTo,
 } from '../database/middleware';
-import { listEntities } from '../database/repository';
+import { listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';

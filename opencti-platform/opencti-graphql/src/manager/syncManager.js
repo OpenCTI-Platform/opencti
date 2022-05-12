@@ -11,7 +11,6 @@ import {
   mergeEntities,
   storeLoadById
 } from '../database/middleware';
-import { listEntities } from '../database/repository';
 import { SYSTEM_USER } from '../utils/access';
 import { buildInputDataFromStix } from '../database/stix';
 import { sleep } from '../../tests/utils/testQuery';
@@ -89,6 +88,7 @@ import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from '../domain/
 import { rawFilesListing } from '../database/minio';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { utcDate } from '../utils/format';
+import { listEntities } from '../database/middleware-loader';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 

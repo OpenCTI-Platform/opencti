@@ -501,7 +501,7 @@ enum StatusFilter {
 }
 input StatusesFiltering {
   key: StatusFilter!
-  values: [String]
+  values: [String!]
   operator: String
   filterMode: FilterMode
 }
@@ -8703,7 +8703,7 @@ type Query {
     after: ID
     orderBy: StatusOrdering
     orderMode: OrderingMode
-    filters: [StatusesFiltering]
+    filters: [StatusesFiltering!]
     filterMode: FilterMode
     search: String
   ): StatusConnection @auth

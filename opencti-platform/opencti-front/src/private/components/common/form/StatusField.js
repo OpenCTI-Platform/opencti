@@ -18,7 +18,7 @@ export const statusFieldStatusesSearchQuery = graphql`
     $first: Int
     $orderBy: StatusOrdering
     $orderMode: OrderingMode
-    $filters: [StatusesFiltering]
+    $filters: [StatusesFiltering!]
     $filterMode: FilterMode
     $search: String
   ) {

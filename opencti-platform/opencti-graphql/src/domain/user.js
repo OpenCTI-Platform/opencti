@@ -16,7 +16,7 @@ import {
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities } from '../database/repository';
+import { listEntities } from '../database/middleware-loader';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,

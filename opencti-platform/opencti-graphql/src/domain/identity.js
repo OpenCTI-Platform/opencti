@@ -4,7 +4,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import { ENTITY_TYPE_IDENTITY_SECTOR, isStixDomainObjectIdentity } from '../schema/stixDomainObject';
-import { listEntities } from '../database/repository';
+import { listEntities } from '../database/middleware-loader';
 
 export const findById = async (user, identityId) => {
   return storeLoadById(user, identityId, ENTITY_TYPE_IDENTITY);

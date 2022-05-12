@@ -3,7 +3,7 @@ import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { internalDeleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
-import { listEntities } from '../database/repository';
+import { listEntitiesPaginated } from '../database/middleware-loader';
 import { findById as findSubTypeById } from './subType';
 import { getParentTypes } from '../schema/schemaUtils';
 import { ABSTRACT_INTERNAL_OBJECT, BASE_TYPE_ENTITY } from '../schema/general';
@@ -18,18 +18,19 @@ import { OrderingMode, StatusFilter, StatusOrdering } from '../generated/graphql
 import type { AuthUser } from '../types/user';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
+import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 
 export const findTemplateById = (user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
 };
 export const findAllTemplates = async (user: AuthUser, args: QueryStatusTemplatesArgs) => {
-  return listEntities(user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
+  return listEntitiesPaginated<BasicStoreEntity>(user, [ENTITY_TYPE_STATUS_TEMPLATE], args);
 };
 export const findById = (user: AuthUser, statusId: string): Status => {
   return storeLoadById(user, statusId, ENTITY_TYPE_STATUS) as unknown as Status;
 };
 export const findAll = (user: AuthUser, args: QueryStatusesArgs) => {
-  return listEntities(user, [ENTITY_TYPE_STATUS], args);
+  return listEntitiesPaginated<BasicWorkflowStatus>(user, [ENTITY_TYPE_STATUS], args);
 };
 export const getTypeStatuses = async (user: AuthUser, type: string) => {
   const args = {

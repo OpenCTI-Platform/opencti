@@ -382,31 +382,3 @@ export const getInputIds = (type, input) => {
   ids.push(...getHashIds(type, input.hashes));
   return R.uniq(ids);
 };
-export const getInstanceIdentifiers = (instance) => {
-  const base = {
-    _index: instance._index,
-    standard_id: instance.standard_id,
-    internal_id: instance.internal_id,
-    entity_type: instance.entity_type,
-    created_at: instance.created_at,
-  };
-  if (instance.identity_class) {
-    base.identity_class = instance.identity_class;
-  }
-  if (instance.x_opencti_location_type) {
-    base.x_opencti_location_type = instance.x_opencti_location_type;
-  }
-  // Need to put everything needed to identified a relationship
-  if (instance.relationship_type) {
-    base.relationship_type = instance.relationship_type;
-    if (!instance.from) {
-      throw FunctionalError('Inconsistent from to identify', { id: instance.id, from: instance.fromId });
-    }
-    base.from = instance.from;
-    if (!instance.to) {
-      throw FunctionalError('Inconsistent to to identify', { id: instance.id, to: instance.toId });
-    }
-    base.to = instance.to;
-  }
-  return base;
-};

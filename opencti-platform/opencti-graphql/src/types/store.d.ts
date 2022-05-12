@@ -37,29 +37,13 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import type { AuthUser } from './user';
-import type { StixObject, StixId, OrganizationReliability } from './stix-common';
+import type { StixId, OrganizationReliability } from './stix-common';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_OBJECT_MARKING
 } from '../schema/stixMetaRelationship';
-
-type StorePrimitives = string | number | boolean | Date;
-
-interface StorePatch {
-  key: string;
-  value: Array<StorePrimitives | StixObject>;
-}
-
-interface StoreInput {
-  key: string;
-  value: Array<StorePrimitives | BasicStoreObject> | null;
-}
-
-interface StoreInputOperation extends StoreInput {
-  operation: 'add' | 'replace' | 'remove' | 'change';
-  previous: Array<StorePrimitives | BasicStoreObject>;
-}
+import type { PageInfo } from '../generated/graphql';
 
 interface StoreFile {
   id: string;
@@ -201,10 +185,21 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_LABELS]: Array<StoreLabel>;
 }
 
+interface StoreProxyEdge<T extends StoreProxyEntity> {
+  cursor: string;
+  node: T;
+}
+
+interface StoreProxyConnection<T extends StoreProxyEntity> {
+  edges?: Array<StoreProxyEdge<T>>;
+  pageInfo: PageInfo;
+}
+
 interface StoreProxyEntity extends BasicStoreCommon {
   _index: string;
 }
 interface BasicStoreEntity extends StoreProxyEntity {
+  id: string;
   name: string;
   content_type: string;
   content_disposition: string;
@@ -450,13 +445,18 @@ interface BasicRuleEntity extends BasicStoreEntity {
 }
 
 interface BasicManagerEntity extends BasicStoreEntity {
-  id: string;
   errors: Array<{
     error: string;
     source: Sstring;
     timestamp: Date;
   }>;
   lastEventId: string;
+}
+
+interface BasicWorkflowStatus extends BasicStoreEntity {
+  order: number;
+  template_id: string;
+  type: string;
 }
 
 interface BasicTaskEntity extends BasicStoreEntity {

@@ -7,7 +7,7 @@ import {
   storeLoadById,
   updateAttribute
 } from '../database/middleware';
-import { completeConnector, connectorsFor, listEntities } from '../database/repository';
+import { completeConnector, connectorsFor } from '../database/repository';
 import { registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -19,6 +19,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
+import { listEntities } from '../database/middleware-loader';
 
 // region connectors
 export const loadConnectorById = (user, id) => {

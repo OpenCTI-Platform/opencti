@@ -1,15 +1,10 @@
 import * as R from 'ramda';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { paginateAllThings, listThings, storeLoadById, listAllThings } from '../database/middleware';
-import { listEntities } from '../database/repository';
+import { listEntities, listRelations } from '../database/middleware-loader';
 import { buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
-import { listRelations } from '../database/middleware-loader';
-
-export const STATUS_STATUS_PROGRESS = 1;
-export const STATUS_STATUS_ANALYZED = 2;
-export const STATUS_STATUS_CLOSED = 3;
 
 export const findById = async (user, containerId) => {
   return storeLoadById(user, containerId, ENTITY_TYPE_CONTAINER);

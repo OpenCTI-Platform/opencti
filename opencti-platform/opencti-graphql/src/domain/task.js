@@ -5,12 +5,13 @@ import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_STIX_INDICES } from '../database/utils';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { deleteElementById, storeLoadById, patchAttribute } from '../database/middleware';
-import { listEntities, buildFilters } from '../database/repository';
+import { buildFilters } from '../database/repository';
 import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { ForbiddenAccess } from '../config/errors';
 import { KNOWLEDGE_DELETE } from '../initialization';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { RULE_PREFIX } from '../schema/general';
+import { listEntities } from '../database/middleware-loader';
 
 export const MAX_TASK_ELEMENTS = 500;
 

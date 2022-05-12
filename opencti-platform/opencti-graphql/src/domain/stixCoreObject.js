@@ -14,7 +14,7 @@ import {
   batchLoadThroughGetTo,
   storeLoadByIdWithRefs,
 } from '../database/middleware';
-import { listEntities } from '../database/repository';
+import { listEntities } from '../database/middleware-loader';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { lockResource, notify, storeUpdateEvent } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';

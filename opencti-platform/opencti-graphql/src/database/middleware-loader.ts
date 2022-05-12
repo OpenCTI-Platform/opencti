@@ -3,29 +3,35 @@ import { offsetToCursor, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } fro
 import { elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthUser } from '../types/user';
-import type { BasicStoreCommon, StoreProxyEntity, StoreProxyRelation } from '../types/store';
+import type {
+  BasicStoreCommon,
+  StoreProxyConnection,
+  StoreProxyEntity,
+  StoreProxyRelation
+} from '../types/store';
+import { UnsupportedError } from '../config/errors';
 
 const MAX_SEARCH_SIZE = 5000;
 
 interface Filter {
   key: string;
-  operator?: string;
-  filterMode?: 'and' | 'or';
-  values?: Array<unknown>;
+  operator?: string | null;
+  filterMode?: 'and' | 'or' | null;
+  values?: Array<unknown> | null;
   nested?: Array<{
-    key: string,
-    values?: Array<unknown>
+    key: string;
+    values?: Array<unknown> | null;
     operator?: string;
   }>;
 }
 
 interface ListFilter<T extends BasicStoreCommon> {
-  first?: number;
+  first?: number | null;
   infinite?: boolean;
-  after?: string;
-  orderBy?: Array<string>,
-  orderMode?: 'asc' | 'desc' | undefined,
-  filters?: Array<Filter>;
+  after?: string | undefined | null;
+  orderBy?: string | Array<string> | null,
+  orderMode?: 'asc' | 'desc' | undefined | null,
+  filters?: Array<Filter> | null;
   callback?: (result: Array<T>) => Promise<boolean | void>
 }
 
@@ -48,7 +54,7 @@ export const elList = async <T extends BasicStoreCommon>(user: AuthUser, indices
     // Force options to prevent connection format and manage search after
     const opts = { ...options, first, after: searchAfter, connectionFormat: false };
     const elements = await elPaginate(user, indices, opts);
-    if (!infinite && (elements.length === 0 || elements.length < first)) {
+    if (!infinite && (elements.length === 0 || elements.length < (first ?? MAX_SEARCH_SIZE))) {
       if (elements.length > 0) {
         await publish(elements);
       }
@@ -122,7 +128,7 @@ const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: str
   } = args;
   // Handle relation type(s)
   // 0 - Check if we can support the query by Elastic
-  const finalFilters = filters;
+  const finalFilters = filters ?? [];
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
     finalFilters.push({ key: buildRefRelationKey(relation), values: [id] });
@@ -288,6 +294,20 @@ const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilters<T> =
 };
 export const listEntities = async <T extends StoreProxyEntity>(user: AuthUser, entityTypes: Array<string>, args:EntityOptions<T> = {}): Promise<Array<T>> => {
   const { indices = READ_ENTITIES_INDICES } = args;
+  // TODO Reactivate this test after global migration to typescript
+  // if (connectionFormat !== false) {
+  //   throw UnsupportedError('List connection require connectionFormat option to false');
+  // }
+  const paginateArgs = buildEntityFilters({ entityTypes, ...args });
+  return elPaginate(user, indices, paginateArgs);
+};
+
+export const listEntitiesPaginated = async <T extends StoreProxyEntity>(user: AuthUser, entityTypes: Array<string>, args:EntityOptions<T> = {}):
+Promise<StoreProxyConnection<T>> => {
+  const { indices = READ_ENTITIES_INDICES, connectionFormat } = args;
+  if (connectionFormat === false) {
+    throw UnsupportedError('List connection require connectionFormat option to true');
+  }
   const paginateArgs = buildEntityFilters({ entityTypes, ...args });
   return elPaginate(user, indices, paginateArgs);
 };

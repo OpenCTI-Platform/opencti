@@ -208,10 +208,10 @@ import {
   STIX_ATTRIBUTE_TO_META_FIELD,
   STIX_EMBEDDED_RELATION_TO_FIELD,
 } from '../schema/stixEmbeddedRelationship';
-import { buildFilters, listEntities } from './repository';
+import { buildFilters } from './repository';
 import { askEnrich } from '../domain/enrichment';
 import { convertStoreToStix, isTrustedStixId } from './stix-converter';
-import { listAllRelations, listRelations } from './middleware-loader';
+import { listAllRelations, listEntities, listRelations } from './middleware-loader';
 import { uploadJobImport } from '../domain/file';
 import { getConfigCache } from '../manager/cacheManager';
 

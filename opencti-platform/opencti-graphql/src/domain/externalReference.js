@@ -12,7 +12,7 @@ import {
   paginateAllThings,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities } from '../database/repository';
+import { listEntities } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';

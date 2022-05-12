@@ -9445,7 +9445,7 @@ export type QueryStatusTemplatesArgs = {
 export type QueryStatusesArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StatusesFiltering>>>;
+  filters?: InputMaybe<Array<StatusesFiltering>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<StatusOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
@@ -11262,7 +11262,7 @@ export type StatusesFiltering = {
   filterMode?: InputMaybe<FilterMode>;
   key: StatusFilter;
   operator?: InputMaybe<Scalars['String']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  values?: InputMaybe<Array<Scalars['String']>>;
 };
 
 export type StixCoreObject = {

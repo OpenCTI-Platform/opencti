@@ -1,12 +1,12 @@
 import { assoc, filter, includes, map, pipe } from 'ramda';
-import { READ_ENTITIES_INDICES } from './utils';
-import { elPaginate } from './engine';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE } from '../schema/general';
+import { listEntities } from './middleware-loader';
 
 // region global queries
+// TODO Will be removed during typescript migration
 export const buildFilters = (args = {}) => {
   const builtFilters = { ...args };
   const { types = [], entityTypes = [], relationshipTypes = [] } = args;
@@ -70,12 +70,6 @@ export const buildFilters = (args = {}) => {
   builtFilters.types = [...(types ?? []), ...entityTypes, ...relationshipTypes];
   builtFilters.filters = customFilters;
   return builtFilters;
-};
-
-export const listEntities = async (user, entityTypes, args = {}) => {
-  const { indices = READ_ENTITIES_INDICES } = args;
-  const paginateArgs = buildFilters({ entityTypes, ...args });
-  return elPaginate(user, indices, paginateArgs);
 };
 // endregion
 

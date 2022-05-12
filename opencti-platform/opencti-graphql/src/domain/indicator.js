@@ -9,7 +9,7 @@ import {
   timeSeriesEntities,
   distributionEntities,
 } from '../database/middleware';
-import { listEntities } from '../database/repository';
+import { listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
