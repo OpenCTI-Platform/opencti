@@ -212,7 +212,8 @@ class Opinion:
             }
         """
 
-    def generate_id(self):
+    @staticmethod
+    def generate_id():
         return "opinion--" + str(uuid.uuid4())
 
     """

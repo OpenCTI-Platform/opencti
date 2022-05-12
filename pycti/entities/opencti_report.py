@@ -221,7 +221,8 @@ class Report:
             }
         """
 
-    def generate_id(self, name, published):
+    @staticmethod
+    def generate_id(name, published):
         name = name.lower().strip()
         if isinstance(published, datetime.datetime):
             published = published.isoformat()

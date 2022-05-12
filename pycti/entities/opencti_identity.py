@@ -138,7 +138,8 @@ class Identity:
             }
         """
 
-    def generate_id(self, name, identity_class):
+    @staticmethod
+    def generate_id(name, identity_class):
         name = name.lower().strip()
         data = {"name": name, "identity_class": identity_class}
         data = canonicalize(data, utf8=False)

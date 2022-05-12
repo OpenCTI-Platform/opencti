@@ -24,7 +24,8 @@ class MarkingDefinition:
             updated_at
         """
 
-    def generate_id(self, definition, definition_type):
+    @staticmethod
+    def generate_id(definition, definition_type):
         data = {"definition": definition, "definition_type": definition_type}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
