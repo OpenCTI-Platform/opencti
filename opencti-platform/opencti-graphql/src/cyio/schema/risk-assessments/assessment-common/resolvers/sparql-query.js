@@ -489,6 +489,8 @@ const subjectReducer = (item) => {
     ...(item.subject_type && {subject_type: item.subject_type}),
     ...(item.subject_ref && {subject_ref_iri: item.subject_ref}),
     ...(item.subject_context && {subject_context: item.subject_context}),
+    ...(item.subject_name && {subject_name: item.subject_name}),
+    ...(item.subject_version && {subject_version: item.subject_version}),
   }
 }
 const taskReducer = (item) => {
@@ -3354,14 +3356,15 @@ export const selectSubjectQuery = (id, select) => {
 export const selectSubjectByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(subjectPredicateMap);
+  const cloneSelect = [...select];
   // defensive code to protect against query not supplying subject type
-  if (!select.includes('subject_type')) select.push('subject_type');
+  if (!select.includes('subject_type')) cloneSelect.push('subject_type');
   // get the references name and version, if name is asked for
   if (select.includes('name')) {
-    select.push('subject_name');
-    select.push('subject_version');
+    cloneSelect.push('subject_name');
+    cloneSelect.push('subject_version');
   }
-  const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, select);
+  const { selectionClause, predicates } = buildSelectVariables(subjectPredicateMap, cloneSelect);
   return `
   SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
