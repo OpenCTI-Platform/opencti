@@ -1,5 +1,9 @@
 # coding: utf-8
 
+import uuid
+
+from stix2.canonicalization.Canonicalize import canonicalize
+
 
 class StixSightingRelationship:
     def __init__(self, opencti):
@@ -262,6 +266,18 @@ class StixSightingRelationship:
                 }
             }
         """
+
+    @staticmethod
+    def generate_id(source_ref, target_ref, first_seen, last_seen):
+        data = {
+            "source_ref": source_ref,
+            "target_ref": target_ref,
+            "first_seen": first_seen,
+            "last_seen": last_seen,
+        }
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "sighting--" + id
 
     """
         List stix_sightings objects
