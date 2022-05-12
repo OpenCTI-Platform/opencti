@@ -5,7 +5,7 @@ from typing import Dict
 
 import pika.exceptions
 import yaml
-from stix2 import Bundle, Identity, IPv4Address, Report, Vulnerability
+import stix2
 
 from pycti import (
     Identity,
@@ -39,14 +39,14 @@ class ExternalImportConnectorTest:
                     "type": IdentityTypes.ORGANIZATION.value,
                     "name": "Testing aaaaa",
                     "description": "OpenCTI Test Org",
-                    "class": Identity,
+                    "class": stix2.Identity,
                     "id": Identity.generate_id("Testing aaaaa", "organization"),
                 },
                 {
                     "type": "Vulnerability",
                     "name": "CVE-1979-1234",
                     "description": "evil evil evil",
-                    "class": Vulnerability,
+                    "class": stix2.Vulnerability,
                     "id": Vulnerability.generate_id("CVE-1979-1234"),
                 },
             ],
@@ -96,7 +96,7 @@ class ExternalImportConnector:
             bundle_objects.append(sdo)
 
         # create stix bundle
-        bundle = Bundle(objects=bundle_objects).serialize()
+        bundle = stix2.Bundle(objects=bundle_objects).serialize()
         # send data
         self.helper.send_stix2_bundle(
             bundle=bundle,
@@ -257,14 +257,14 @@ class InternalImportConnector:
         #    key=self.data["simple_observable_key"],
         #    value=self.data["simple_observable_value"],
         # )
-        observable = IPv4Address(
+        observable = stix2.IPv4Address(
             value=self.data["simple_observable_value"],
         )
         bundle_objects = [observable]
         entity_id = data.get("entity_id", None)
         report = self.helper.api.report.read(id=entity_id)
 
-        report = Report(
+        report = stix2.Report(
             id=report["standard_id"],
             name=report["name"],
             description=report["description"],
@@ -275,7 +275,7 @@ class InternalImportConnector:
 
         bundle_objects.append(report)
         # create stix bundle
-        bundle = Bundle(objects=bundle_objects).serialize()
+        bundle = stix2.Bundle(objects=bundle_objects).serialize()
         # send data
         self.helper.send_stix2_bundle(bundle=bundle)
         return "foo"

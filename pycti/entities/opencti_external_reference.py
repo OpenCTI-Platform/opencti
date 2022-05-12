@@ -48,11 +48,7 @@ class ExternalReference:
         elif source_name is not None and external_id is not None:
             data = {"source_name": source_name, "external_id": external_id}
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_external_reference] Cannot generate ID, missing data",
-            )
-            return
+            return None
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "external-reference--" + id

@@ -3,8 +3,6 @@
 import json
 import uuid
 
-from stix2.canonicalization.Canonicalize import canonicalize
-
 
 class Opinion:
     def __init__(self, opencti):
