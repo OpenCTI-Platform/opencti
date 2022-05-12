@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import uuid
+import datetime
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
@@ -284,6 +285,10 @@ class StixCoreRelationship:
 
     @staticmethod
     def generate_id(relationship_type, source_ref, target_ref, start_time, stop_time):
+        if isinstance(start_time, datetime.datetime):
+            first_seen = start_time.isoformat()
+        if isinstance(stop_time, datetime.datetime):
+            last_seen = stop_time.isoformat()
         data = {
             "relationship_type": relationship_type,
             "source_ref": source_ref,
