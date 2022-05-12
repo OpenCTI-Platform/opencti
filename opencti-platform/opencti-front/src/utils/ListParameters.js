@@ -40,13 +40,6 @@ const buildParamsFromHistory = (params) => {
   if (params.filters) {
     urlParams = assoc('filters', JSON.stringify(params.filters), urlParams);
   }
-  if (params.currentFile) {
-    urlParams = assoc(
-      'currentFile',
-      JSON.stringify(params.currentFile),
-      urlParams,
-    );
-  }
   if (params.zoom) {
     urlParams = assoc('zoom', JSON.stringify(params.zoom), urlParams);
   }
@@ -154,11 +147,6 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.filters === 'string') {
     finalParams.filters = finalParams.filters
       ? JSON.parse(finalParams.filters)
-      : {};
-  }
-  if (typeof finalParams.currentFile === 'string') {
-    finalParams.currentFile = finalParams.currentFile
-      ? JSON.parse(finalParams.currentFile)
       : {};
   }
   if (typeof finalParams.zoom === 'string') {

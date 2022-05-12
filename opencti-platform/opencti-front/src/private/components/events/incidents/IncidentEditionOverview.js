@@ -342,7 +342,10 @@ class IncidentEditionOverviewComponent extends Component {
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
                 }
               />
             )}

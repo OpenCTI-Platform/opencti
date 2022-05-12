@@ -54,7 +54,7 @@
     "fast-json-patch": "3.1.1",
     "github-api": "3.4.0",
     "glob": "8.0.1",
-    "graphql": "16.4.0",
+    "graphql": "16.5.0",
     "graphql-constraint-directive": "3.1.0",
     "graphql-import": "1.0.2",
     "graphql-redis-subscriptions": "2.4.2",

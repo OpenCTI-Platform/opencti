@@ -142,22 +142,22 @@ StixCyberObservableNestedEntitiesLinesComponent.propTypes = {
 };
 
 export const stixCyberObservableNestedEntitiesLinesQuery = graphql`
-    query StixCyberObservableNestedEntitiesLinesQuery(
-        $elementId: String
-        $search: String
-        $count: Int!
-        $orderBy: StixCyberObservableRelationshipsOrdering
-        $orderMode: OrderingMode
-    ) {
-        ...StixCyberObservableNestedEntitiesLines_data
-        @arguments(
-            elementId: $elementId
-            search: $search
-            count: $count
-            orderBy: $orderBy
-            orderMode: $orderMode
-        )
-    }
+  query StixCyberObservableNestedEntitiesLinesQuery(
+    $elementId: String
+    $search: String
+    $count: Int!
+    $orderBy: StixCyberObservableRelationshipsOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...StixCyberObservableNestedEntitiesLines_data
+      @arguments(
+        elementId: $elementId
+        search: $search
+        count: $count
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 const StixCyberObservableNestedEntitiesLines = createFragmentContainer(

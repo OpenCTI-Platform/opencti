@@ -68,12 +68,14 @@ class StixDomainObjectTimelineComponent extends Component {
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     <Link to={link}>
-                      <Tooltip title={defaultValue(stixRelationship.targetEntity)}>
-                      <TimelineDot color="primary" variant="outlined">
+                      <Tooltip
+                        title={defaultValue(stixRelationship.targetEntity)}
+                      >
+                        <TimelineDot color="primary" variant="outlined">
                           <ItemIcon
                             type={stixRelationship.targetEntity.entity_type}
                           />
-                      </TimelineDot>
+                        </TimelineDot>
                       </Tooltip>
                     </Link>
                     <TimelineConnector />

@@ -70,12 +70,10 @@ class IndicatorsAreaChart extends Component {
         variables={indicatorsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.indicatorsTimeSeries) {
-            const chartData = props.indicatorsTimeSeries.map(
-              (entry) => ({
-                x: new Date(entry.date),
-                y: entry.value,
-              }),
-            );
+            const chartData = props.indicatorsTimeSeries.map((entry) => ({
+              x: new Date(entry.date),
+              y: entry.value,
+            }));
             return (
               <Chart
                 options={areaChartOptions(

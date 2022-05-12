@@ -7,8 +7,8 @@ export const isDateStringNone = (dateString) => {
   if (!dateString) return true;
   return (
     dateString.startsWith('Invalid')
-      || dateString.startsWith('1970')
-      || dateString.startsWith('5138')
+    || dateString.startsWith('1970')
+    || dateString.startsWith('5138')
   );
 };
 

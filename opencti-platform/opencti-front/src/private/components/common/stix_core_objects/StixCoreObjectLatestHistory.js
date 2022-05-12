@@ -50,9 +50,7 @@ class StixCoreObjectLatestHistory extends Component {
                 {Array.from(Array(5), (e, i) => (
                   <ListItem key={i} dense={true} divider={true} button={false}>
                     <ListItemIcon>
-                      <Avatar>
-                        {i}
-                      </Avatar>
+                      <Avatar>{i}</Avatar>
                     </ListItemIcon>
                     <ListItemText
                       primary={

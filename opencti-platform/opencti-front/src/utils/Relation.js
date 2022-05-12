@@ -120,7 +120,12 @@ const relationsTypesMapping = {
   'Infrastructure_Email-Mime-Part-Type': ['consists-of'],
   'Infrastructure_IPv4-Addr': ['communicates-with', 'consists-of'],
   'Infrastructure_IPv6-Addr': ['communicates-with', 'consists-of'],
-  Infrastructure_Infrastructure: ['communicates-with', 'consists-of', 'controls', 'uses'],
+  Infrastructure_Infrastructure: [
+    'communicates-with',
+    'consists-of',
+    'controls',
+    'uses',
+  ],
   'Infrastructure_Mac-Addr': ['consists-of'],
   Infrastructure_Malware: ['controls', 'delivers', 'hosts'],
   Infrastructure_Mutex: ['consists-of'],

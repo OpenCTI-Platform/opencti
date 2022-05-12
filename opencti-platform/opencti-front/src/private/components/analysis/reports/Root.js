@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Redirect, Route, withRouter } from 'react-router-dom';
+import { Route, Redirect, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import {
   QueryRenderer,
@@ -16,7 +16,7 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import ReportContent from './ReportContent';
+import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -44,7 +44,7 @@ const reportQuery = graphql`
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixCyberObservables_container
-      ...ReportContent_report
+      ...StixDomainObjectContent_stixDomainObject
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -152,9 +152,9 @@ class RootReport extends Component {
                             container={props.report}
                             PopoverComponent={<ReportPopover />}
                           />
-                          <ReportContent
+                          <StixDomainObjectContent
                             {...routeProps}
-                            report={props.report}
+                            stixDomainObject={props.report}
                           />
                         </React.Fragment>
                       )}

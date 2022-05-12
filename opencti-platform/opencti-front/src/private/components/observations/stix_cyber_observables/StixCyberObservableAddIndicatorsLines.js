@@ -159,7 +159,7 @@ class StixCyberObservableAddIndicatorsLinesContainer extends Component {
                   </ListItemIcon>
                   <ListItemText
                     primary={indicator.name}
-                    secondary={indicator.pattern}
+                    secondary={indicator.description || indicator.pattern}
                   />
                 </ListItem>
               );
@@ -229,6 +229,7 @@ const StixCyberObservableAddIndicatorsLines = createPaginationContainer(
               entity_type
               name
               pattern
+              description
             }
           }
         }

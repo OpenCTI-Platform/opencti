@@ -61,9 +61,8 @@ class StixCoreObjectLabels extends Component {
         {labelsNodes.length > 0 ? (
           map(
             (label) => (
-              <Tooltip title={label.value}>
+              <Tooltip key={label.id} title={label.value}>
                 <Chip
-                  key={label.id}
                   variant="outlined"
                   classes={{ root: style }}
                   label={truncate(label.value, 25)}

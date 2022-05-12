@@ -43,7 +43,7 @@ const styles = (theme) => ({
   },
 });
 
-const FileLineDeleteMutation = graphql`
+export const FileLineDeleteMutation = graphql`
   mutation FileLineDeleteMutation($fileName: String) {
     deleteImport(fileName: $fileName)
   }

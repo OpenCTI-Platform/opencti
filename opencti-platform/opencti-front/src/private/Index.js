@@ -76,7 +76,10 @@ const Index = ({ me, location }) => {
           />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/events" component={RootEvents} />
-          <Route path="/dashboard/observations" component={RootObservations} />
+          <Route
+            path="/dashboard/observations"
+            component={RootObservations}
+          />
           <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
           <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
           <BoundaryRoute path="/dashboard/entities" component={RootEntities} />

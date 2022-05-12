@@ -11,6 +11,7 @@ import inject18n from '../../../../components/i18n';
 const fileUploaderGlobalMutation = graphql`
   mutation FileUploaderGlobalMutation($file: Upload!) {
     uploadImport(file: $file) {
+      id
       ...FileLine_file
     }
   }
@@ -20,6 +21,7 @@ const fileUploaderEntityMutation = graphql`
   mutation FileUploaderEntityMutation($id: ID!, $file: Upload!) {
     stixCoreObjectEdit(id: $id) {
       importPush(file: $file) {
+        id
         ...FileLine_file
       }
     }
@@ -27,7 +29,7 @@ const fileUploaderEntityMutation = graphql`
 `;
 
 const FileUploader = (props) => {
-  const { entityId, onUploadSuccess, t, color } = props;
+  const { entityId, onUploadSuccess, t, color, accept, size, nameInCallback } = props;
   const uploadRef = useRef(null);
   const [upload, setUpload] = useState(null);
   const handleOpenUpload = () => uploadRef.current.click();
@@ -40,30 +42,56 @@ const FileUploader = (props) => {
       optimisticUpdater: () => {
         setUpload(file.name);
       },
-      onCompleted: () => {
+      onCompleted: (result) => {
         uploadRef.current.value = null; // Reset the upload input
         setUpload(null);
         MESSAGING$.notifySuccess('File successfully uploaded');
-        onUploadSuccess();
+        if (nameInCallback) {
+          onUploadSuccess(
+            entityId
+              ? result.stixCoreObjectEdit.importPush.id
+              : result.uploadImport.id,
+          );
+        } else {
+          onUploadSuccess();
+        }
       },
     });
   };
   return (
     <React.Fragment>
-      <input
-        ref={uploadRef}
-        type="file"
-        style={{ display: 'none' }}
-        onChange={({
-          target: {
-            validity,
-            files: [file],
-          },
-        }) =>
-          // eslint-disable-next-line implicit-arrow-linebreak
-          validity.valid && handleUpload(file)
-        }
-      />
+      {accept ? (
+        <input
+          ref={uploadRef}
+          type="file"
+          style={{ display: 'none' }}
+          onChange={({
+            target: {
+              validity,
+              files: [file],
+            },
+          }) =>
+            // eslint-disable-next-line implicit-arrow-linebreak
+            validity.valid && handleUpload(file)
+          }
+          accept={accept}
+        />
+      ) : (
+        <input
+          ref={uploadRef}
+          type="file"
+          style={{ display: 'none' }}
+          onChange={({
+            target: {
+              validity,
+              files: [file],
+            },
+          }) =>
+            // eslint-disable-next-line implicit-arrow-linebreak
+            validity.valid && handleUpload(file)
+          }
+        />
+      )}
       {upload ? (
         <Tooltip
           title={`Uploading ${upload}`}
@@ -83,7 +111,7 @@ const FileUploader = (props) => {
             onClick={handleOpenUpload}
             aria-haspopup="true"
             color={color || 'primary'}
-            size="large"
+            size={size || 'large'}
           >
             <CloudUploadOutlined />
           </IconButton>
@@ -96,7 +124,10 @@ const FileUploader = (props) => {
 FileUploader.propTypes = {
   entityId: PropTypes.string,
   onUploadSuccess: PropTypes.func.isRequired,
+  nameInCallback: PropTypes.bool,
   color: PropTypes.string,
+  accept: PropTypes.string,
+  size: PropTypes.string,
 };
 
 export default inject18n(FileUploader);

@@ -80,7 +80,8 @@ const styles = (theme) => ({
     float: 'right',
     textAlign: 'right',
     width: 180,
-    paddingTop: 2,
+    paddingTop: 4,
+    fontSize: 11,
   },
 });
 

@@ -325,7 +325,9 @@ class AttackPatternsMatrixColumnsComponent extends Component {
                               ? colorsReversed(theme.palette.background.accent)[
                                 level
                               ][0]
-                              : colors(theme.palette.background.accent)[level][0]
+                              : colors(theme.palette.background.accent)[
+                                level
+                              ][0]
                           }`,
                           backgroundColor: modeColorsReversed
                             ? colorsReversed(theme.palette.background.accent)[
