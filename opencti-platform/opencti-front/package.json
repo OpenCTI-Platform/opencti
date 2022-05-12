@@ -25,6 +25,7 @@
     "formik-mui-lab": "1.0.0-alpha.3",
     "graphql": "16.5.0",
     "html-to-image": "1.9.0",
+    "html-to-pdfmake": "2.3.11",
     "js-file-download": "0.4.12",
     "leaflet": "1.8.0",
     "lodash": "4.17.21",
@@ -112,5 +113,8 @@
     "node-sass": "7.0.1",
     "react-virtualized": "patch:react-virtualized@9.22.3#./patch/react-virtualized-9.22.3.patch"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "packageManager": "yarn@3.2.0"
 }

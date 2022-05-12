@@ -18,6 +18,7 @@ import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
 import { UserContext } from '../../../../utils/Security';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const styles = () => ({
   paper: {
@@ -42,8 +43,8 @@ const colors = [
 ];
 
 const pointerIcon = new L.Icon({
-  iconUrl: '/static/city_orange.png',
-  iconRetinaUrl: '/static/city_orange.png',
+  iconUrl: `${APP_BASE_PATH}/static/city_orange.png`,
+  iconRetinaUrl: `${APP_BASE_PATH}/static/city_orange.png`,
   iconAnchor: [5, 55],
   popupAnchor: [10, -44],
   iconSize: [25, 25],

@@ -12,6 +12,7 @@ import {
 import Drawer from '@mui/material/Drawer';
 import Slide from '@mui/material/Slide';
 import { Link } from 'react-router-dom';
+import { FilePdfBox } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
@@ -27,7 +28,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-class StixDomainObjectContentPdfBar extends Component {
+class StixDomainObjectContentBar extends Component {
   render() {
     const {
       classes,
@@ -36,6 +37,7 @@ class StixDomainObjectContentPdfBar extends Component {
       currentZoom,
       handleDownload,
       directDownload,
+      handleDownloadPdf,
     } = this.props;
     return (
       <Drawer
@@ -60,22 +62,26 @@ class StixDomainObjectContentPdfBar extends Component {
               display: 'flex',
             }}
           >
-            <IconButton
-              color="primary"
-              onClick={handleZoomOut.bind(this)}
-              disabled={currentZoom <= 0.6}
-              size="large"
-            >
-              <ZoomOutOutlined />
-            </IconButton>
-            <IconButton
-              color="primary"
-              onClick={handleZoomIn.bind(this)}
-              disabled={currentZoom >= 2}
-              size="large"
-            >
-              <ZoomInOutlined />
-            </IconButton>
+            {handleZoomIn && (
+              <IconButton
+                color="primary"
+                onClick={handleZoomOut.bind(this)}
+                disabled={currentZoom <= 0.6}
+                size="large"
+              >
+                <ZoomOutOutlined />
+              </IconButton>
+            )}
+            {handleZoomOut && (
+              <IconButton
+                color="primary"
+                onClick={handleZoomIn.bind(this)}
+                disabled={currentZoom >= 2}
+                size="large"
+              >
+                <ZoomInOutlined />
+              </IconButton>
+            )}
           </div>
           <div
             style={{
@@ -85,6 +91,15 @@ class StixDomainObjectContentPdfBar extends Component {
               marginRight: 380,
             }}
           >
+            {handleDownloadPdf && (
+              <IconButton
+                color="primary"
+                onClick={handleDownloadPdf.bind(this)}
+                size="large"
+              >
+                <FilePdfBox />
+              </IconButton>
+            )}
             {directDownload ? (
               <IconButton
                 color="primary"
@@ -108,13 +123,14 @@ class StixDomainObjectContentPdfBar extends Component {
   }
 }
 
-StixDomainObjectContentPdfBar.propTypes = {
+StixDomainObjectContentBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   handleZoomIn: PropTypes.func,
   handleZoomOut: PropTypes.func,
   handleDownload: PropTypes.func,
   directDownload: PropTypes.string,
+  handleDownloadPdf: PropTypes.func,
   currentZoom: PropTypes.number,
   theme: PropTypes.object,
 };
@@ -123,4 +139,4 @@ export default R.compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(StixDomainObjectContentPdfBar);
+)(StixDomainObjectContentBar);
