@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import json
+import uuid
 
 
 class Note:
@@ -208,6 +209,9 @@ class Note:
                 }
             }
         """
+
+    def generate_id(self):
+        return "note--" + str(uuid.uuid4())
 
     """
         List Note objects

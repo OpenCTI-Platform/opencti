@@ -1,7 +1,8 @@
 # coding: utf-8
 
 import json
-
+import uuid
+from stix2.canonicalization.Canonicalize import canonicalize
 from pycti.utils.constants import IdentityTypes
 
 
@@ -134,6 +135,13 @@ class Identity:
                 }
             }
         """
+
+    def generate_id(self, name, identity_class):
+        name = name.lower().strip()
+        data = {"name": name, "identity_class": identity_class}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "identity--" + id
 
     """
         List Identity objects

@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+import uuid
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Indicator:
@@ -159,6 +161,12 @@ class Indicator:
                 }
             }
         """
+
+    def generate_id(self, pattern):
+        data = {"pattern": pattern}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "indicator--" + id
 
     def list(self, **kwargs):
         """List Indicator objects
