@@ -230,6 +230,7 @@ class RequiredResourcesLinesContainer extends Component {
               refreshQuery={refreshQuery}
               key={requiredResource.id}
               data={requiredResource}
+              requiredResourceId={requiredResource.id}
             />
           ))}
         </Paper>
@@ -327,6 +328,8 @@ const RequiredResourcesLines = createFragmentContainer(
           required_assets { # Required Resources
             __typename
             id
+            name
+            description
             subjects {
               subject_ref {
                 ... on Component {
