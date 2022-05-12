@@ -1,5 +1,9 @@
 # coding: utf-8
 
+import uuid
+
+from stix2.canonicalization.Canonicalize import canonicalize
+
 
 class StixCoreRelationship:
     def __init__(self, opencti):
@@ -277,6 +281,19 @@ class StixCoreRelationship:
                 }
             }
         """
+
+    @staticmethod
+    def generate_id(relationship_type, source_ref, target_ref, start_time, stop_time):
+        data = {
+            "relationship_type": relationship_type,
+            "source_ref": source_ref,
+            "target_ref": target_ref,
+            "start_time": start_time,
+            "stop_time": stop_time,
+        }
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "relationship--" + id
 
     """
         List stix_core_relationship objects
