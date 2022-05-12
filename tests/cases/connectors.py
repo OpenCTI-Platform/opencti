@@ -5,7 +5,7 @@ from typing import Dict
 
 import pika.exceptions
 import yaml
-from stix2 import Bundle, Identity, Report, Vulnerability, IPv4Address
+from stix2 import Bundle, Identity, IPv4Address, Report, Vulnerability
 
 from pycti import (
     OpenCTIApiClient,
