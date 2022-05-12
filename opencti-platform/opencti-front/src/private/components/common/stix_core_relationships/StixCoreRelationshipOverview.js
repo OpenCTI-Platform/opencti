@@ -215,7 +215,7 @@ class StixCoreRelationshipContainer extends Component {
       && stixCoreRelationship.x_opencti_inferences.length > 1;
     return (
       <div className={classes.container}>
-        <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : ''}>
+        <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
           <div
             className={classes.item}
             style={{
@@ -283,7 +283,7 @@ class StixCoreRelationshipContainer extends Component {
             </strong>
           </div>
         </div>
-        <Link to={!toRestricted ? `${linkTo}/${to.id}` : ''}>
+        <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
           <div
             className={classes.item}
             style={{

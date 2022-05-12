@@ -40,10 +40,10 @@ const styles = (theme) => ({
 
 class StixDomainObjectTimelineComponent extends Component {
   render() {
-    const { md, classes, data, stixDomainObjectId, entityLink, timeField } = this.props;
+    const { md, classes, data, stixDomainObjectId, entityLink, timeField, t } = this.props;
     const stixRelationships = pipe(
       map((n) => n.node),
-      map((n) => (n.from.id === stixDomainObjectId
+      map((n) => (n.from && n.from.id === stixDomainObjectId
         ? assoc('targetEntity', n.to, n)
         : assoc('targetEntity', n.from, n))),
     )(data.stixRelationships.edges);
@@ -53,6 +53,7 @@ class StixDomainObjectTimelineComponent extends Component {
           <Timeline position="alternate">
             {stixRelationships.map((stixRelationship) => {
               const link = `${entityLink}/relations/${stixRelationship.id}`;
+              const restricted = stixRelationship.targetEntity === null;
               return (
                 <TimelineItem key={stixRelationship.id}>
                   <TimelineOppositeContent>
@@ -69,11 +70,19 @@ class StixDomainObjectTimelineComponent extends Component {
                   <TimelineSeparator>
                     <Link to={link}>
                       <Tooltip
-                        title={defaultValue(stixRelationship.targetEntity)}
+                        title={
+                          !restricted
+                            ? defaultValue(stixRelationship.targetEntity)
+                            : t('Restricted')
+                        }
                       >
                         <TimelineDot color="primary" variant="outlined">
                           <ItemIcon
-                            type={stixRelationship.targetEntity.entity_type}
+                            type={
+                              !restricted
+                                ? stixRelationship.targetEntity.entity_type
+                                : t('Restricted')
+                            }
                           />
                         </TimelineDot>
                       </Tooltip>
@@ -83,19 +92,24 @@ class StixDomainObjectTimelineComponent extends Component {
                   <TimelineContent>
                     <Paper variant="outlined" className={classes.paper}>
                       <Typography variant="h2">
-                        {truncate(
-                          defaultValue(stixRelationship.targetEntity),
-                          50,
-                        )}
+                        {!restricted
+                          ? truncate(
+                            defaultValue(stixRelationship.targetEntity),
+                            50,
+                          )
+                          : t('Restricted')}
                       </Typography>
                       <span style={{ color: '#a8a8a8' }}>
                         {truncate(
+                          // eslint-disable-next-line no-nested-ternary
                           stixRelationship.description
                             && stixRelationship.description.length > 0
                             ? stixRelationship.description
-                            : defaultSecondaryValue(
-                              stixRelationship.targetEntity,
-                            ),
+                            : !restricted
+                              ? defaultSecondaryValue(
+                                stixRelationship.targetEntity,
+                              )
+                              : t('Restricted'),
                           100,
                         )}
                       </span>

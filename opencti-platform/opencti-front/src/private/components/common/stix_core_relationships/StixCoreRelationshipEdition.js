@@ -53,6 +53,7 @@ class StixCoreRelationshipEdition extends Component {
       handleDelete,
       noStoreUpdate,
     } = this.props;
+    console.log(stixCoreRelationshipId);
     return (
       <Drawer
         open={open}
