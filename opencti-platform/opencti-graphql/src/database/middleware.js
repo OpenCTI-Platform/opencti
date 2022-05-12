@@ -70,7 +70,8 @@ import {
   START_TIME,
   STOP_TIME,
   VALID_FROM,
-  VALID_UNTIL, X_DETECTION,
+  VALID_UNTIL,
+  X_DETECTION,
 } from '../schema/identifier';
 import {
   lockResource,
@@ -174,6 +175,8 @@ import {
 import { ENTITY_TYPE_LABEL, isStixMetaObject, stixMetaObjectsFieldsToBeUpdated } from '../schema/stixMetaObject';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import {
+  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
   stixCyberObservableFieldsToBeUpdated,
@@ -1398,13 +1401,32 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
       impactedInputs.push(...aliasIns);
     }
   }
+  // In case of artifact and file, we need to keep name in additional names in case of upsert
+  const isNamedObservable = instanceType === ENTITY_HASHED_OBSERVABLE_ARTIFACT
+      || instanceType === ENTITY_HASHED_OBSERVABLE_STIX_FILE;
+  if (upsert && isNamedObservable) {
+    const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
+    // In Upsert mode, x_opencti_additional_names update must not be destructive, previous names must be kept
+    const additionalNamesInput = R.find((e) => e.key === ATTRIBUTE_ADDITIONAL_NAMES, preparedElements);
+    if (additionalNamesInput) {
+      const names = [...additionalNamesInput.value, ...(instance[ATTRIBUTE_ADDITIONAL_NAMES] ?? [])];
+      if (nameInput) { // If name will be replaced, add it in additional names
+        names.push(instance[NAME_FIELD]);
+      }
+      additionalNamesInput.value = R.uniq(names);
+    } else if (nameInput) { // If name will be replaced, add it in additional names
+      const newAdditional = [instance[NAME_FIELD], ...(instance[ATTRIBUTE_ADDITIONAL_NAMES] ?? [])];
+      const addNamesInput = { key: ATTRIBUTE_ADDITIONAL_NAMES, value: R.uniq(newAdditional) };
+      preparedElements.push(addNamesInput);
+    }
+  }
   // endregion
   // Update all needed attributes with inner elements if needed
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
     if (ins.length > 0) {
-      const filteredIns = ins.filter((n) => n.key === input.key).filter((o) => {
+      const filteredIns = ins.filter((o) => {
         if (input.key === IDS_STIX) {
           const previous = getPreviousInstanceValue(o.key, instance);
           if (o.operation === UPDATE_OPERATION_ADD) {
