@@ -284,18 +284,27 @@ class StixCoreRelationship:
         """
 
     @staticmethod
-    def generate_id(relationship_type, source_ref, target_ref, start_time, stop_time):
+    def generate_id(
+        relationship_type, source_ref, target_ref, start_time=None, stop_time=None
+    ):
         if isinstance(start_time, datetime.datetime):
             start_time = start_time.isoformat()
         if isinstance(stop_time, datetime.datetime):
             stop_time = stop_time.isoformat()
-        data = {
-            "relationship_type": relationship_type,
-            "source_ref": source_ref,
-            "target_ref": target_ref,
-            "start_time": start_time,
-            "stop_time": stop_time,
-        }
+        if start_time is not None and stop_time is not None:
+            data = {
+                "relationship_type": relationship_type,
+                "source_ref": source_ref,
+                "target_ref": target_ref,
+                "start_time": start_time,
+                "stop_time": stop_time,
+            }
+        else:
+            data = {
+                "relationship_type": relationship_type,
+                "source_ref": source_ref,
+                "target_ref": target_ref,
+            }
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "relationship--" + id
