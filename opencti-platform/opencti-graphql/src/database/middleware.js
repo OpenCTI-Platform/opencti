@@ -1741,8 +1741,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     if (updatedInputs.length > 0) {
       const message = generateUpdateMessage(updatedInputs);
       const commit = opts.commitMessage ? { message: opts.commitMessage, references: opts.references } : undefined;
-      const updateOpts = { commit, publishStreamEvent: true };
-      const event = await storeUpdateEvent(user, initial, updatedInstance, message, updateOpts);
+      const event = await storeUpdateEvent(user, initial, updatedInstance, message, { commit });
       return { element: updatedInstance, event };
     }
     // Return updated element after waiting for it.
@@ -2441,7 +2440,7 @@ const buildRelationData = async (user, input, opts = {}) => {
     relations: relToCreate.map((r) => r.relation)
   };
 };
-export const createRelationRaw = async (user, input, opts = { publishStreamEvent: true }) => {
+export const createRelationRaw = async (user, input, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = input;
@@ -2772,7 +2771,7 @@ const buildEntityData = async (user, input, type, opts = {}) => {
     relations: relToCreate.map((r) => r.relation), // Added meta relationships
   };
 };
-export const createEntityRaw = async (user, input, type, opts = { publishStreamEvent: true }) => {
+export const createEntityRaw = async (user, input, type, opts = {}) => {
   const enforceReferences = conf.get('app:enforce_references');
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   const isAllowedToByPass = userCapabilities.includes(BYPASS) || userCapabilities.includes(BYPASS_REFERENCE);
@@ -2937,7 +2936,7 @@ export const createInferredEntity = async (input, ruleContent, type) => {
 // endregion
 
 // region mutation deletion
-export const internalDeleteElementById = async (user, id, opts = { publishStreamEvent: true }) => {
+export const internalDeleteElementById = async (user, id, opts = {}) => {
   let lock;
   let event;
   const element = await storeLoadByIdWithRefs(user, id);
@@ -3003,7 +3002,7 @@ const deleteElements = async (user, elements, opts = {}) => {
   }
   return deletedIds;
 };
-export const deleteElementById = async (user, elementId, type, opts = { publishStreamEvent: true }) => {
+export const deleteElementById = async (user, elementId, type, opts = {}) => {
   if (R.isNil(type)) {
     /* istanbul ignore next */
     throw FunctionalError('You need to specify a type when deleting an entity');
@@ -3042,12 +3041,13 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     if (rebuildRuleContent.length === 0) {
       // If current inference is only base on one rule, we can safely delete it.
       if (monoRule) {
-        const { event } = await internalDeleteElementById(RULE_MANAGER_USER, instance.id, { publishStreamEvent: false });
+        const { event } = await internalDeleteElementById(RULE_MANAGER_USER, instance.id);
         derivedEvents.push(event);
       } else {
         // If not we need to clean the rule and keep the element for other rules.
         const input = { [completeRuleName]: null };
-        const { event } = await upsertRelationRule(instance, input, { fromRule, ruleOverride: true });
+        const upsertOpts = { fromRule, ruleOverride: true };
+        const { event } = await upsertRelationRule(instance, input, upsertOpts);
         if (event) {
           derivedEvents.push(event);
         }
@@ -3055,7 +3055,8 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
     } else {
       // Rule still have other explanation, update the rule
       const input = { [completeRuleName]: rebuildRuleContent };
-      const { event } = await upsertRelationRule(instance, input, { fromRule, ruleOverride: true });
+      const ruleOpts = { fromRule, ruleOverride: true };
+      const { event } = await upsertRelationRule(instance, input, ruleOpts);
       if (event) {
         derivedEvents.push(event);
       }

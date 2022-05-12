@@ -12,8 +12,9 @@ import RuleObserveSighting from '../rules/observed-sighting/ObserveSightingRule'
 import PartOfPartRule from '../rules/part-of-part/PartOfPartRule';
 import PartOfTargetsRule from '../rules/part-of-targets/PartOfTargetsRule';
 import RuleSightingIncident from '../rules/sighting-incident/SightingIncidentRule';
-import { BUS_TOPICS, DEV_MODE, ENABLED_RULE_ENGINE } from '../config/conf';
 import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRule';
+import IndicateSightedRule from '../rules/indicate-sighted/IndicateSightedRule';
+import { BUS_TOPICS, DEV_MODE, ENABLED_RULE_ENGINE } from '../config/conf';
 import { getConfigCache } from '../manager/cacheManager';
 import type { AuthUser } from '../types/user';
 import { isEmptyField } from '../database/utils';
@@ -27,6 +28,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 export const RULES_DECLARATION: Array<RuleRuntime> = [
   AttributedToAttributedRule,
   AttributionTargetsRule,
+  IndicateSightedRule,
   AttributionUseRule,
   RuleLocalizationOfTargets,
   LocatedAtLocatedRule,

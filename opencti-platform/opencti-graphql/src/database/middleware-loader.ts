@@ -96,7 +96,7 @@ interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   endDate?: Date,
   confidences?: Array<number>,
 }
-interface RelationOptions<T extends BasicStoreCommon> extends RelationFilters<T> {
+export interface RelationOptions<T extends BasicStoreCommon> extends RelationFilters<T> {
   indices?: Array<string>;
 }
 const buildRelationsFilter = <T extends BasicStoreCommon>(relationshipTypes: string | Array<string>, args: RelationFilters<T>) => {

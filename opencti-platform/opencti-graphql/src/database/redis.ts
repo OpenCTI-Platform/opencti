@@ -422,17 +422,11 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
     }
   };
 };
-export const storeUpdateEvent = async (
-  user: AuthUser,
-  previous: StoreObject,
-  instance: StoreObject,
-  message: string,
-  opts: UpdateEventOpts = { publishStreamEvent: true }
-) => {
+export const storeUpdateEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts) => {
   try {
     if (isStixData(instance)) {
       const event = buildUpdateEvent(user, previous, instance, message, opts.commit);
-      if (opts.publishStreamEvent) {
+      if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
         await pushToStream(clientBase, instance, event);
       }
       return event;
@@ -453,17 +447,13 @@ const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string
     data: stix,
   };
 };
-export const storeCreateRelationEvent = async (
-  user: AuthUser,
-  instance: StoreRelation,
-  opts: CreateEventOpts = { publishStreamEvent: true }
-) => {
+export const storeCreateRelationEvent = async (user: AuthUser, instance: StoreRelation, opts: CreateEventOpts) => {
   try {
     if (isStixData(instance)) {
       const { withoutMessage = false } = opts;
       const message = withoutMessage ? '-' : generateCreateMessage(instance);
       const event = buildCreateEvent(user, instance, message);
-      if (opts.publishStreamEvent) {
+      if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
         await pushToStream(clientBase, instance, event);
       }
       return event;
@@ -473,16 +463,11 @@ export const storeCreateRelationEvent = async (
     throw DatabaseError('Error in store create relation event', { error: e });
   }
 };
-export const storeCreateEntityEvent = async (
-  user: AuthUser,
-  instance: StoreObject,
-  message: string,
-  opts: CreateEventOpts = { publishStreamEvent: true }
-) => {
+export const storeCreateEntityEvent = async (user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts) => {
   try {
     if (isStixData(instance)) {
       const event = buildCreateEvent(user, instance, message);
-      if (opts.publishStreamEvent) {
+      if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
         await pushToStream(clientBase, instance, event);
       }
       return event;
@@ -507,17 +492,12 @@ const buildDeleteEvent = async (user: AuthUser, instance: StoreObject, message: 
     }
   };
 };
-export const storeDeleteEvent = async (
-  user: AuthUser,
-  instance: StoreObject,
-  deletions: Array<StoreObject>,
-  opts: DeleteEventOpts = { publishStreamEvent: true }
-) => {
+export const storeDeleteEvent = async (user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: DeleteEventOpts) => {
   try {
     if (isStixData(instance)) {
       const message = generateDeleteMessage(instance);
       const event = await buildDeleteEvent(user, instance, message, deletions);
-      if (opts.publishStreamEvent) {
+      if (opts.publishStreamEvent === undefined || opts.publishStreamEvent) {
         await pushToStream(clientBase, instance, event);
       }
       return event;
