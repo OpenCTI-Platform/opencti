@@ -1,7 +1,7 @@
 # coding: utf-8
 
-import uuid
 import datetime
+import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 

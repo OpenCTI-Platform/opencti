@@ -4,8 +4,8 @@ from datetime import datetime
 from typing import Dict
 
 import pika.exceptions
-import yaml
 import stix2
+import yaml
 
 from pycti import (
     Identity,
