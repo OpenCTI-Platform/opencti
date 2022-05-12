@@ -2,7 +2,7 @@
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
 import jsonCanonicalize from 'canonicalize';
-import { DatabaseError, FunctionalError, UnsupportedError } from '../config/errors';
+import { DatabaseError, UnsupportedError } from '../config/errors';
 import { convertEntityTypeToStixType } from './schemaUtils';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
@@ -51,6 +51,7 @@ export const VALID_UNTIL = 'valid_until';
 export const REVOKED = 'revoked';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
 export const X_DETECTION = 'x_opencti_detection';
+export const X_ADDITIONAL_NAMES = 'x_opencti_additional_names';
 // endregion
 
 export const normalizeName = (name) => {
