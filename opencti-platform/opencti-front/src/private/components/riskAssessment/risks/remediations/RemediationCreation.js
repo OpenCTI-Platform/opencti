@@ -152,7 +152,7 @@ class RemediationCreation extends Component {
       R.dissoc('oscal_party'),
       R.assoc('origins', [{'origin_actors':[adaptedValues]}])
     )(values);
-console.log('Final', finalValues)
+
     CM(environmentDarkLight, {
       mutation: remediationCreationMutation,
       variables: {
