@@ -251,11 +251,11 @@ class InternalImportConnector:
         # Downloading and saving file to connector
         self.helper.log_info("Importing the file " + file_uri)
 
-        #observable = SimpleObservable(
+        # observable = SimpleObservable(
         #    id=OpenCTIStix2Utils.generate_random_stix_id("x-opencti-simple-observable"),
         #    key=self.data["simple_observable_key"],
         #    value=self.data["simple_observable_value"],
-        #)
+        # )
         observable = IPv4Address(
             value=self.data["simple_observable_value"],
         )
