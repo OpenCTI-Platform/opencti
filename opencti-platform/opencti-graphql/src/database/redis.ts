@@ -128,7 +128,10 @@ export const getRedisVersion = async () => {
 
 /* istanbul ignore next */
 export const notify = (topic: string, instance: any, user: AuthUser) => {
-  pubsub.publish(topic, { instance, user });
+  // Instance can be empty if user is currently looking for a deleted instance
+  if (instance) {
+    pubsub.publish(topic, { instance, user });
+  }
   return instance;
 };
 
