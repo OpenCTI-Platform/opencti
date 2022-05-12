@@ -129,7 +129,8 @@ class Campaign:
             }
         """
 
-    def generate_id(self, name):
+    @staticmethod
+    def generate_id(name):
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)

@@ -18,7 +18,8 @@ class Label:
             standard_id
         """
 
-    def generate_id(self, value):
+    @staticmethod
+    def generate_id(value):
         data = {"value": value}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))

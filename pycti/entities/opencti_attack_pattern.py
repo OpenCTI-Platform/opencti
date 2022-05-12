@@ -144,7 +144,8 @@ class AttackPattern:
             }
         """
 
-    def generate_id(self, name, x_mitre_id=None):
+    @staticmethod
+    def generate_id(name, x_mitre_id=None):
         name = name.lower().strip()
         if x_mitre_id is not None:
             data = {"x_mitre_id": x_mitre_id}

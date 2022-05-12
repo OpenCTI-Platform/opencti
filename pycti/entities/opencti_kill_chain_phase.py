@@ -23,7 +23,8 @@ class KillChainPhase:
             updated_at
         """
 
-    def generate_id(self, phase_name, kill_chain_name):
+    @staticmethod
+    def generate_id(phase_name, kill_chain_name):
         data = {"phase_name": phase_name, "kill_chain_name": kill_chain_name}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))

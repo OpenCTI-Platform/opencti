@@ -129,7 +129,8 @@ class Location:
             }
         """
 
-    def generate_id(self, name, x_opencti_location_type, latitude=None, longitude=None):
+    @staticmethod
+    def generate_id(name, x_opencti_location_type, latitude=None, longitude=None):
         name = name.lower().strip()
         if x_opencti_location_type == "position":
             data = {"name": name, "latitude": latitude, "longitude": longitude}

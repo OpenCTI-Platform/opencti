@@ -210,6 +210,7 @@ class Note:
             }
         """
 
+    @staticmethod
     def generate_id(self):
         return "note--" + str(uuid.uuid4())
 

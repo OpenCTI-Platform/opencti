@@ -41,7 +41,8 @@ class ExternalReference:
             }
         """
 
-    def generate_id(self, url=None, source_name=None, external_id=None):
+    @staticmethod
+    def generate_id(url=None, source_name=None, external_id=None):
         if url is not None:
             data = {"url": url}
         elif source_name is not None and external_id is not None:
