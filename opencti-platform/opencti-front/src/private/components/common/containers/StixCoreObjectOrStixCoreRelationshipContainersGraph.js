@@ -9,6 +9,11 @@ import { withRouter } from 'react-router-dom';
 import ForceGraph3D from 'react-force-graph-3d';
 import SpriteText from 'three-spritetext';
 import ForceGraph2D from 'react-force-graph-2d';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import { FileDownloadOutlined, ViewListOutlined } from '@mui/icons-material';
+import { GraphOutline } from 'mdi-material-ui';
+import withStyles from '@mui/styles/withStyles';
 import {
   applyFilters,
   buildGraphData,
@@ -30,6 +35,13 @@ const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 
 const ignoredStixCoreObjectsTypes = ['Note', 'Opinion'];
+
+const styles = () => ({
+  views: {
+    marginTop: -35,
+    float: 'right',
+  },
+});
 
 class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Component {
   constructor(props) {
@@ -449,7 +461,14 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   }
 
   render() {
-    const { handleChangeView, theme } = this.props;
+    const {
+      handleChangeView,
+      theme,
+      numberOfElements,
+      classes,
+      handleToggleExports,
+      t,
+    } = this.props;
     const {
       mode3D,
       modeFixed,
@@ -475,6 +494,48 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     );
     return (
       <div>
+        <div className={classes.views}>
+          <div style={{ float: 'right', marginTop: -20 }}>
+            {numberOfElements && (
+              <div style={{ float: 'left', padding: '16px 5px 0 0' }}>
+                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                {t('entitie(s)')}
+              </div>
+            )}
+            {(typeof handleChangeView === 'function'
+              || typeof handleToggleExports === 'function') && (
+              <ToggleButtonGroup
+                size="small"
+                color="secondary"
+                value="graph"
+                exclusive={true}
+                onChange={(_, value) => {
+                  if (value && value === 'export') {
+                    handleToggleExports();
+                  } else if (value) {
+                    handleChangeView(value);
+                  }
+                }}
+                style={{ margin: '7px 0 0 5px' }}
+              >
+                <ToggleButton value="lines" aria-label="lines">
+                  <ViewListOutlined color="primary" />
+                </ToggleButton>
+                <ToggleButton value="graph" aria-label="graph">
+                  <GraphOutline />
+                </ToggleButton>
+                <ToggleButton
+                  value="export"
+                  aria-label="export"
+                  disabled={true}
+                >
+                  <FileDownloadOutlined />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            )}
+          </div>
+        </div>
+        <div className="clearfix" />
         <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
@@ -700,7 +761,6 @@ StixCoreObjectOrStixCoreRelationshipContainersGraphComponent.propTypes = {
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
   onLabelClick: PropTypes.func,
-  setNumberOfElements: PropTypes.func,
   saveViewParameters: PropTypes.func,
   handleChangeView: PropTypes.func,
 };
@@ -899,6 +959,11 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                 }
               }
             }
+            pageInfo {
+              endCursor
+              hasNextPage
+              globalCount
+            }
           }
         }
       `,
@@ -910,4 +975,5 @@ export default R.compose(
   inject18n,
   withRouter,
   withTheme,
+  withStyles(styles),
 )(StixCoreObjectOrStixCoreRelationshipContainersGraph);

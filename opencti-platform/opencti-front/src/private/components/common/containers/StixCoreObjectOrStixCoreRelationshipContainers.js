@@ -1,12 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
-import Drawer from '@mui/material/Drawer';
 import withStyles from '@mui/styles/withStyles';
-import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
-import { GraphOutline } from 'mdi-material-ui';
-import { TableChartOutlined } from '@mui/icons-material';
 import * as R from 'ramda';
 import { last, map, toPairs } from 'ramda';
 import Chip from '@mui/material/Chip';
@@ -250,6 +245,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             handleAddFilter={this.handleAddFilter.bind(this)}
             handleRemoveFilter={this.handleRemoveFilter.bind(this)}
             handleToggleExports={this.handleToggleExports.bind(this)}
+            handleChangeView={this.handleChangeView.bind(this)}
             openExports={openExports}
             noPadding={typeof this.props.onChangeOpenExports === 'function'}
             exportEntityType="Report"
@@ -258,6 +254,8 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             filters={filters}
             paginationOptions={paginationOptions}
             numberOfElements={numberOfElements}
+            disableCards={true}
+            enableGraph={true}
             availableFilterKeys={[
               'report_types',
               'container_types',
@@ -413,7 +411,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               <div>
                 <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
                   disabled={true}
-                  handleChangeView={this.handleChangeView.bind(this)}
                 />
                 <Loader />
               </div>
@@ -427,7 +424,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
   render() {
     const {
       classes,
-      t,
       match: {
         params: { reportType },
       },
@@ -467,59 +463,6 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
           view === 'lines' ? classes.container : classes.containerGraph
         }
       >
-        {!authorId && view === 'lines' && (
-          <Drawer
-            anchor="bottom"
-            variant="permanent"
-            classes={{ paper: classes.bottomNav }}
-            PaperProps={{ variant: 'elevation', elevation: 1 }}
-          >
-            <div
-              style={{
-                height: 54,
-                verticalAlign: 'top',
-                transition: 'height 0.2s linear',
-              }}
-            >
-              <div
-                style={{
-                  verticalAlign: 'top',
-                  width: '100%',
-                  height: 54,
-                  paddingTop: 3,
-                }}
-              >
-                <div
-                  style={{
-                    float: 'left',
-                    marginLeft: 190,
-                    height: '100%',
-                    display: 'flex',
-                  }}
-                >
-                  <Tooltip title={t('Lines view')}>
-                    <IconButton
-                      color="secondary"
-                      onClick={this.handleChangeView.bind(this, 'lines')}
-                      size="large"
-                    >
-                      <TableChartOutlined />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title={t('Graph view')}>
-                    <IconButton
-                      color="primary"
-                      onClick={this.handleChangeView.bind(this, 'graph')}
-                      size="large"
-                    >
-                      <GraphOutline />
-                    </IconButton>
-                  </Tooltip>
-                </div>
-              </div>
-            </div>
-          </Drawer>
-        )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         {view === 'graph' ? this.renderGraph(paginationOptions) : ''}
       </div>

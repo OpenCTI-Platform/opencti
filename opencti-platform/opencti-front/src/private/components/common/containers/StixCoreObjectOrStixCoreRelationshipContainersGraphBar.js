@@ -13,13 +13,11 @@ import {
   InfoOutlined,
   ScatterPlotOutlined,
   DateRangeOutlined,
-  TableChartOutlined,
 } from '@mui/icons-material';
 import {
   Video3d,
   SelectAll,
   SelectGroup,
-  GraphOutline,
   AutoFix,
   FamilyTree,
 } from 'mdi-material-ui';
@@ -174,7 +172,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       handleToggleDisplayTimeRange,
       handleTimeRangeChange,
       timeRangeValues,
-      handleChangeView,
       disabled,
       theme,
     } = this.props;
@@ -209,24 +206,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                   display: 'flex',
                 }}
               >
-                <Tooltip title={t('Lines view')}>
-                  <IconButton
-                    color="primary"
-                    onClick={handleChangeView.bind(this, 'lines')}
-                    size="large"
-                  >
-                    <TableChartOutlined />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t('Graph view')}>
-                  <IconButton
-                    color="secondary"
-                    onClick={handleChangeView.bind(this, 'graph')}
-                    size="large"
-                  >
-                    <GraphOutline />
-                  </IconButton>
-                </Tooltip>
                 <Tooltip
                   title={
                     currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
@@ -319,18 +298,18 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     </IconButton>
                   </span>
                 </Tooltip>
+                <Tooltip title={t('Display time range selector')}>
+                  <span>
+                    <IconButton
+                      color={displayTimeRange ? 'secondary' : 'primary'}
+                      disabled={true}
+                      size="large"
+                    >
+                      <DateRangeOutlined />
+                    </IconButton>
+                  </span>
+                </Tooltip>
                 <Tooltip title={t('Filter marking definitions')}>
-                  <Tooltip title={t('Display time range selector')}>
-                    <span>
-                      <IconButton
-                        color={displayTimeRange ? 'secondary' : 'primary'}
-                        disabled={true}
-                        size="large"
-                      >
-                        <DateRangeOutlined />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
                   <span>
                     <IconButton color="primary" disabled={true} size="large">
                       <CenterFocusStrongOutlined />
@@ -451,24 +430,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                 display: 'flex',
               }}
             >
-              <Tooltip title={t('Lines view')}>
-                <IconButton
-                  color="primary"
-                  onClick={handleChangeView.bind(this, 'lines')}
-                  size="large"
-                >
-                  <TableChartOutlined />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={t('Graph view')}>
-                <IconButton
-                  color="secondary"
-                  onClick={handleChangeView.bind(this, 'graph')}
-                  size="large"
-                >
-                  <GraphOutline />
-                </IconButton>
-              </Tooltip>
               <Tooltip
                 title={
                   currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')

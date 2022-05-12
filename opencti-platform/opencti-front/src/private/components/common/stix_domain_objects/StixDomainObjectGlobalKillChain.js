@@ -171,7 +171,6 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                       (stixDomainObject) => {
                         const restricted = stixDomainObject.to === null;
                         const link = `${entityLink}/relations/${stixDomainObject.id}`;
-                        console.log(stixDomainObject.id);
                         return (
                           <ListItem
                             key={stixDomainObject.id}

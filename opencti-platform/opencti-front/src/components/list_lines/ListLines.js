@@ -19,6 +19,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
+import { GraphOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -172,6 +173,7 @@ class ListLines extends Component {
       message,
       noTopMargin,
       noFilters,
+      enableGraph,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -275,6 +277,11 @@ class ListLines extends Component {
                 <ToggleButton value="lines" aria-label="lines">
                   <ViewListOutlined />
                 </ToggleButton>
+                {typeof handleChangeView === 'function' && enableGraph && (
+                  <ToggleButton value="graph" aria-label="graph">
+                    <GraphOutline color="primary" />
+                  </ToggleButton>
+                )}
                 {typeof handleToggleExports === 'function' && (
                   <ToggleButton value="export" aria-label="export">
                     <FileDownloadOutlined
@@ -434,6 +441,7 @@ ListLines.propTypes = {
   searchVariant: PropTypes.string,
   message: PropTypes.string,
   noTopMargin: PropTypes.bool,
+  enableGraph: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);
