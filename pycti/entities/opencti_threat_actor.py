@@ -2,8 +2,9 @@
 
 import json
 import uuid
-from stix2.canonicalization.Canonicalize import canonicalize
 from typing import Union
+
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class ThreatActor:

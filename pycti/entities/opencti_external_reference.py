@@ -1,8 +1,9 @@
 # coding: utf-8
 
 import json
-import uuid
 import os
+import uuid
+
 import magic
 from stix2.canonicalization.Canonicalize import canonicalize
 
