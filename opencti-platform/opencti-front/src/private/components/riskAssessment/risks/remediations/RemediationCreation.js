@@ -24,7 +24,11 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import AddIcon from '@material-ui/icons/Add';
 import { MoreVertOutlined } from '@material-ui/icons';
-import { QueryRenderer as QR, commitMutation as CM, createFragmentContainer } from 'react-relay';
+import {
+  QueryRenderer as QR,
+  commitMutation as CM,
+  createFragmentContainer,
+} from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../../components/i18n';
 import { commitMutation } from '../../../../../relay/environment';
@@ -38,8 +42,7 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
-import { toastGenericError } from "../../../../../utils/bakedToast";
-
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -89,7 +92,6 @@ const styles = (theme) => ({
   },
 });
 
-
 const remediationCreationMutation = graphql`
   mutation RemediationCreationMutation($input: RiskResponseAddInput) {
     createRiskResponse(input: $input) {
@@ -100,11 +102,11 @@ const remediationCreationMutation = graphql`
 
 const remediationValidation = (t) =>
   Yup.object().shape({
-     name: Yup.string().required(t('This field is required')),
-     actor_type: Yup.string().required(t('This field is required')),
-     actor_ref: Yup.string().required(t('This field is required')),
-     response_type: Yup.string().required(t('This field is required')),
-     lifecycle: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t('This field is required')),
+    actor_type: Yup.string().required(t('This field is required')),
+    actor_ref: Yup.string().required(t('This field is required')),
+    response_type: Yup.string().required(t('This field is required')),
+    lifecycle: Yup.string().required(t('This field is required')),
   });
 
 class RemediationCreation extends Component {
@@ -115,7 +117,7 @@ class RemediationCreation extends Component {
       details: false,
       close: false,
       onSubmit: false,
-      open: false
+      open: false,
     };
   }
 
@@ -142,7 +144,7 @@ class RemediationCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = R.pickAll(['actor_ref','actor_type'], values)
+    const adaptedValues = R.pickAll(['actor_ref', 'actor_type'], values);
 
     const finalValues = R.pipe(
       R.dissoc('created'),
@@ -152,7 +154,7 @@ class RemediationCreation extends Component {
       R.dissoc('actor_type'),
       R.dissoc('oscal_type'),
       R.dissoc('oscal_party'),
-      R.assoc('origins', [{'origin_actors':[adaptedValues]}])
+      R.assoc('origins', [{ origin_actors: [adaptedValues] }])
     )(values);
     CM(environmentDarkLight, {
       mutation: remediationCreationMutation,
@@ -164,7 +166,9 @@ class RemediationCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`);
+        this.props.history.push(
+          `/activities/risk assessment/risks/${this.props.riskId}/remediation`
+        );
       },
       onError: (err) => toastGenericError('Failed to create Remediation'),
     });
@@ -214,30 +218,32 @@ class RemediationCreation extends Component {
               values,
             }) => (
               <Form>
-                <DialogTitle classes={{ root: classes.dialogTitle }}>{t('New Remediation')}</DialogTitle>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>
+                  {t('New Remediation')}
+                </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
                       <div style={{ marginBottom: '10px' }}>
                         <Typography
-                          variant="h3"
-                          color="textSecondary"
+                          variant='h3'
+                          color='textSecondary'
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
                           {t('Name')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Name')} >
-                            <Information fontSize="inherit" color="disabled" />
+                          <Tooltip title={t('Name')}>
+                            <Information fontSize='inherit' color='disabled' />
                           </Tooltip>
                         </div>
-                        <div className="clearfix" />
+                        <div className='clearfix' />
                         <Field
                           component={TextField}
-                          name="name"
+                          name='name'
                           fullWidth={true}
-                          size="small"
+                          size='small'
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
                         />
@@ -248,28 +254,28 @@ class RemediationCreation extends Component {
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '12px' }}>
                         <Typography
-                          variant="h3"
-                          color="textSecondary"
+                          variant='h3'
+                          color='textSecondary'
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
                           {t('Created')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Created')} >
-                            <Information fontSize="inherit" color="disabled" />
+                          <Tooltip title={t('Created')}>
+                            <Information fontSize='inherit' color='disabled' />
                           </Tooltip>
                         </div>
-                        <div className="clearfix" />
+                        <div className='clearfix' />
                         <Field
                           component={DatePickerField}
-                          name="created"
+                          name='created'
                           fullWidth={true}
-                          size="small"
+                          size='small'
                           containerstyle={{ width: '100%' }}
                           variant='outlined'
                           invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
+                            'The value must be a date (YYYY-MM-DD)'
                           )}
                           style={{ height: '38.09px' }}
                         />
@@ -278,27 +284,27 @@ class RemediationCreation extends Component {
                     <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
                         <Typography
-                          variant="h3"
-                          color="textSecondary"
+                          variant='h3'
+                          color='textSecondary'
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
                           {t('Last Modified')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Last Modified')} >
-                            <Information fontSize="inherit" color="disabled" />
+                          <Tooltip title={t('Last Modified')}>
+                            <Information fontSize='inherit' color='disabled' />
                           </Tooltip>
                         </div>
-                        <div className="clearfix" />
+                        <div className='clearfix' />
                         <Field
                           component={DatePickerField}
-                          name="modified"
+                          name='modified'
                           fullWidth={true}
-                          size="small"
+                          size='small'
                           variant='outlined'
                           invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
+                            'The value must be a date (YYYY-MM-DD)'
                           )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -309,8 +315,8 @@ class RemediationCreation extends Component {
                   <Grid container={true} spacing={3}>
                     <Grid xs={12} item={true}>
                       <Typography
-                        variant="h3"
-                        color="textSecondary"
+                        variant='h3'
+                        color='textSecondary'
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
@@ -318,112 +324,112 @@ class RemediationCreation extends Component {
                       </Typography>
                       <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
                         <Tooltip title={t('Description')}>
-                          <Information fontSize="inherit" color="disabled" />
+                          <Information fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
-                      <div className="clearfix" />
+                      <div className='clearfix' />
                       <Field
                         component={TextField}
-                        name="description"
+                        name='description'
                         fullWidth={true}
                         multiline={true}
-                        rows="4"
+                        rows='4'
                         variant='outlined'
                       />
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={6}>
-                      <Grid style={{ marginTop: '10px', marginBottom: '20px' }} item={true}>
-                        <Typography variant="h3"
-                          color="textSecondary" gutterBottom={true} style={{ float: 'left' }}>
-                          {t('Source')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
-                          <Tooltip title={t('Source')}>
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <Source
-                          variant='outlined'
-                          values={values}
-                          setFieldValue={setFieldValue}
-                          size='small'
-                          fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '50%', padding: '0 0 12px 0' }}
-                        />
-                      </Grid>
-                      <Grid style={{ marginBottom: '15px' }} item={true}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Response Type')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                          <Tooltip
-                            title={t(
-                              'Response type',
-                            )}
-                          >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <ResponseType
-                          variant='outlined'
-                          name='response_type'
-                          size='small'
-                          fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                        />
-                      </Grid>
+                    <Grid
+                      style={{ marginTop: '10px', marginBottom: '20px' }}
+                      item={true}
+                      xs={6}
+                    >
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Source')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                        <Tooltip title={t('Source')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                      <div className='clearfix' />
+                      <Source
+                        variant='outlined'
+                        values={values}
+                        setFieldValue={setFieldValue}
+                        size='small'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '50%', padding: '0 0 12px 0' }}
+                      />
+                    </Grid>
+                  </Grid>
+                  <Grid container={true} spacing={3}>
+                    <Grid style={{ marginBottom: '15px' }} item={true} xs={6}>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Response Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                        <Tooltip title={t('Response type')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                      <div className='clearfix' />
+                      <ResponseType
+                        variant='outlined'
+                        name='response_type'
+                        size='small'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                      />
                     </Grid>
                     <Grid item={true} xs={6}>
-                      <Grid style={{ marginTop: '97px' }} item={true}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: 'left' }}
-                        >
-                          {t('Lifecycle')}
-                        </Typography>
-                        <div style={{ float: 'left', margin: '0 0 0 4px' }}>
-                          <Tooltip
-                            title={t(
-                              'Lifecycle',
-                            )}
-                          >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <RiskLifeCyclePhase
-                          variant='outlined'
-                          name='lifecycle'
-                          size='small'
-                          fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
-                        />
-                      </Grid>
+                      <Typography
+                        variant='h3'
+                        color='textSecondary'
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Lifecycle')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '0 0 0 4px' }}>
+                        <Tooltip title={t('Lifecycle')}>
+                          <Information fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                      <div className='clearfix' />
+                      <RiskLifeCyclePhase
+                        variant='outlined'
+                        name='lifecycle'
+                        size='small'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                      />
                     </Grid>
                   </Grid>
                 </DialogContent>
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
-                    variant="outlined"
+                    variant='outlined'
                     // onClick={handleReset}
                     onClick={() => {
                       this.props.handleOpenCreation();
                       this.setState({ close: true });
-                      {handleReset}
+                      {
+                        handleReset;
+                      }
                     }}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
@@ -431,8 +437,8 @@ class RemediationCreation extends Component {
                     {t('Cancel')}
                   </Button>
                   <Button
-                    variant="contained"
-                    color="primary"
+                    variant='contained'
+                    color='primary'
                     onClick={submitForm}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
@@ -471,7 +477,11 @@ class RemediationCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => history.push(`/activities/risk assessment/risks/${this.props.riskId}/remediation`)}
+              onClick={() =>
+                history.push(
+                  `/activities/risk assessment/risks/${this.props.riskId}/remediation`
+                )
+              }
               color='secondary'
               // disabled={this.state.deleting}
               classes={{ root: classes.buttonPopover }}
@@ -507,7 +517,4 @@ RemediationCreation.propTypes = {
   handleOpenCreation: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(RemediationCreation);
+export default compose(inject18n, withStyles(styles))(RemediationCreation);
