@@ -8,9 +8,7 @@ WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
 COPY opencti-graphql/.yarn ./.yarn
 COPY opencti-graphql/patch ./patch
-RUN set -ex \
-    ; yarn install --immutable --immutable-cache \
-    && yarn cache clean --all
+RUN yarn install --frozen-lockfile && yarn cache clean --all
 
 
 FROM base AS graphql-builder
