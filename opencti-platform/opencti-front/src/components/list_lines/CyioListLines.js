@@ -462,14 +462,15 @@ class CyioListLines extends Component {
                     </Button>
                   </Tooltip>
                   {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
-                    <Tooltip title={t('Share')}>
+                    <Tooltip title={t('Merge')}>
                       <Button
                         variant="contained"
                         // onClick={handleDisplayEdit &&
                         // handleDisplayEdit.bind(this, selectedElements)}
                         className={classes.iconButton}
-                        disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
-                          || disabled}
+                        // disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                        //   || disabled}
+                        disabled={true}
                         color="primary"
                         size="large"
                       >
