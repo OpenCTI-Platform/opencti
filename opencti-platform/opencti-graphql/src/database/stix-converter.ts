@@ -1268,7 +1268,6 @@ export const convertStoreToStix = (instance: StoreObject): S.StixObject => {
   }
   const converted = convertToStix(instance);
   const stix = cleanObject(converted);
-  // TODO JRI Cleanup generated extensions that are empty
   if (!isValidStix(stix)) {
     throw FunctionalError('Invalid stix data conversion', { data: instance });
   }

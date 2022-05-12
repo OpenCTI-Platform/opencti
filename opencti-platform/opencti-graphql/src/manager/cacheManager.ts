@@ -1,4 +1,4 @@
-import { logApp } from '../config/conf';
+import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { pubsub } from '../database/redis';
 import { connectors, listEntities } from '../database/repository';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_STATUS } from '../schema/internalObject';
@@ -51,7 +51,7 @@ const initCacheManager = () => {
       cache[ENTITY_TYPE_RULE] = await platformRules();
       // Listen pub/sub configuration events
       // noinspection ES6MissingAwait
-      subscribeIdentifier = await pubsub.subscribe('*', (event) => {
+      subscribeIdentifier = await pubsub.subscribe(`${TOPIC_PREFIX}*`, (event) => {
         const { instance } = event;
         // Invalid cache if any entity has changed.
         if (cache[instance.entity_type]) {
