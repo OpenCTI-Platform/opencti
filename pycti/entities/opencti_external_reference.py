@@ -1,9 +1,10 @@
 # coding: utf-8
 
 import json
+import uuid
 import os
-
 import magic
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class ExternalReference:
@@ -38,6 +39,21 @@ class ExternalReference:
                 }
             }
         """
+
+    def generate_id(self, url=None, source_name=None, external_id=None):
+        if url is not None:
+            data = {"url": url}
+        elif source_name is not None and external_id is not None:
+            data = {"source_name": source_name, "external_id": external_id}
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_external_reference] Cannot generate ID, missing data",
+            )
+            return
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "external-reference--" + id
 
     """
         List External-Reference objects

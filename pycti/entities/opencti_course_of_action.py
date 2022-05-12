@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+import uuid
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class CourseOfAction:
@@ -123,6 +125,16 @@ class CourseOfAction:
                 }
             }
         """
+
+    def generate_id(self, name, x_mitre_id=None):
+        name = name.lower().strip()
+        if x_mitre_id is not None:
+            data = {"x_mitre_id": x_mitre_id}
+        else:
+            data = {"name": name}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "course-of-action--" + id
 
     """
         List Course-Of-Action objects

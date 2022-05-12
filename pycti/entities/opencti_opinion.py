@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+import uuid
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Opinion:
@@ -208,6 +210,9 @@ class Opinion:
                 }
             }
         """
+
+    def generate_id(self):
+        return "opinion--" + str(uuid.uuid4())
 
     """
         List Opinion objects

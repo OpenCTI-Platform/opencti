@@ -95,33 +95,6 @@ class OpenCTIStix2Utils:
 
     @staticmethod
     def generate_random_stix_id(stix_type):
-        new_uuid = str(uuid.uuid1())
-        return stix_type + "--" + new_uuid
-
-
-@CustomObservable(
-    "simple-observable",
-    [
-        ("key", properties.StringProperty(required=True)),
-        ("value", properties.StringProperty(required=True)),
-        ("description", properties.StringProperty()),
-        (
-            "created_by_ref",
-            properties.ReferenceProperty(valid_types="identity", spec_version="2.1"),
-        ),
-        ("x_opencti_score", properties.IntegerProperty()),
-        ("x_opencti_create_indicator", properties.BooleanProperty()),
-        ("labels", properties.ListProperty(properties.StringProperty)),
-        ("external_references", properties.ListProperty(ExternalReference)),
-        (
-            "object_marking_refs",
-            properties.ListProperty(
-                properties.ReferenceProperty(
-                    valid_types="marking-definition", spec_version="2.1"
-                )
-            ),
-        ),
-    ],
-)
-class SimpleObservable:
-    pass
+        raise ValueError(
+            "This function should not be used anymore, please use the generate_id function for SDO or the proper STIX lib SCO constructor"
+        )

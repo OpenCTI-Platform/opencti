@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+import uuid
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class IntrusionSet:
@@ -128,6 +130,13 @@ class IntrusionSet:
                 }
             }
         """
+
+    def generate_id(self, name):
+        name = name.lower().strip()
+        data = {"name": name}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "intrusion-set--" + id
 
     """
         List Intrusion-Set objects

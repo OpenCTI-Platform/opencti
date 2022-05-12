@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import json
+import uuid
+from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class KillChainPhase:
@@ -19,6 +21,12 @@ class KillChainPhase:
             created_at
             updated_at
         """
+
+    def generate_id(self, phase_name, kill_chain_name):
+        data = {"phase_name": phase_name, "kill_chain_name": kill_chain_name}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "kill-chain-phase--" + id
 
     """
         List Kill-Chain-Phase objects

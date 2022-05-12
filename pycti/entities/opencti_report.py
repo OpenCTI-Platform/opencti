@@ -1,7 +1,9 @@
 # coding: utf-8
 
 import json
-
+import uuid
+import datetime
+from stix2.canonicalization.Canonicalize import canonicalize
 from dateutil.parser import parse
 
 
@@ -217,6 +219,15 @@ class Report:
                 }
             }
         """
+
+    def generate_id(self, name, published):
+        name = name.lower().strip()
+        if isinstance(published, datetime.datetime):
+            published = published.isoformat()
+        data = {"name": name, "published": published}
+        data = canonicalize(data, utf8=False)
+        id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
+        return "report--" + id
 
     """
         List Report objects
