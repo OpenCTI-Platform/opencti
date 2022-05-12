@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import uuid
+import datetime
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
@@ -269,6 +270,10 @@ class StixSightingRelationship:
 
     @staticmethod
     def generate_id(source_ref, target_ref, first_seen, last_seen):
+        if isinstance(first_seen, datetime.datetime):
+            first_seen = first_seen.isoformat()
+        if isinstance(last_seen, datetime.datetime):
+            last_seen = last_seen.isoformat()
         data = {
             "source_ref": source_ref,
             "target_ref": target_ref,
