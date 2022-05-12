@@ -39,6 +39,7 @@ interface StixOpenctiExtension {
   type: string;
   created_at: Date;
   is_inferred: boolean;
+  workflow_id: string | undefined;
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {

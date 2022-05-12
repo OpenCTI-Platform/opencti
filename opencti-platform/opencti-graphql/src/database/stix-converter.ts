@@ -188,7 +188,8 @@ const buildOCTIExtensions = (instance: StoreBase): S.StixOpenctiExtension => {
       mime_type: file.mime_type,
     })),
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
-    is_inferred: instance._index ? isInferredIndex(instance._index) : undefined
+    is_inferred: instance._index ? isInferredIndex(instance._index) : undefined,
+    workflow_id: instance.x_opencti_workflow_id,
   };
   return cleanObject(octiExtensions);
 };

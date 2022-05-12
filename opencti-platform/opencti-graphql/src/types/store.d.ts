@@ -63,6 +63,7 @@ interface StoreBase {
   x_opencti_files?: Array<StoreFile>;
   x_opencti_aliases?: Array<string>;
   x_opencti_stix_ids?: Array<StixId>;
+  x_opencti_workflow_id?: string;
 }
 
 interface StoreMarkingDefinition extends StoreBase {

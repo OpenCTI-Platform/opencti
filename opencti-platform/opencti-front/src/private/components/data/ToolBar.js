@@ -49,6 +49,7 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
 import { map, pathOr, pipe, union } from 'ramda';
+import Avatar from '@mui/material/Avatar';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
 import {
@@ -66,6 +67,8 @@ import Security, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
 } from '../../../utils/Security';
+import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
+import { hexToRGB } from '../../../utils/Colors';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -220,6 +223,7 @@ class ToolBar extends Component {
       markingDefinitions: [],
       labels: [],
       identities: [],
+      statuses: [],
     };
   }
 
@@ -495,6 +499,12 @@ class ToolBar extends Component {
           value: 'confidence',
         },
       ];
+      if (this.props.type) {
+        options.push({
+          label: t('Status'),
+          value: 'x_opencti_workflow_id',
+        });
+      }
     } else if (actionsInputs[i]?.type === 'REMOVE') {
       options = [
         { label: t('Marking definitions'), value: 'object-marking' },
@@ -604,6 +614,37 @@ class ToolBar extends Component {
           })),
         )(data);
         this.setState({ identities: union(this.state.identities, identities) });
+      });
+  }
+
+  searchStatuses(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(statusFieldStatusesSearchQuery, {
+      first: 10,
+      filters: [{ key: 'type', values: [this.props.type] }],
+      orderBy: 'order',
+      orderMode: 'asc',
+      search: newValue && newValue.length > 0 ? newValue : '',
+    })
+      .toPromise()
+      .then((data) => {
+        const statuses = pipe(
+          pathOr([], ['statuses', 'edges']),
+          map((n) => ({
+            label: this.props.t(`status_${n.node.template.name}`),
+            value: n.node.id,
+            order: n.node.order,
+            color: n.node.template.color,
+          })),
+        )(data);
+        this.setState({ statuses: union(this.state.statuses, statuses) });
       });
   }
 
@@ -736,6 +777,51 @@ class ToolBar extends Component {
               <MenuItem value="85">{t('Strong')}</MenuItem>
             </Select>
           </FormControl>
+        );
+      case 'x_opencti_workflow_id':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchStatuses.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.statuses}
+            onInputChange={this.searchStatuses.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon}>
+                  <Avatar
+                    variant="square"
+                    style={{
+                      color: option.color,
+                      borderColor: option.color,
+                      backgroundColor: hexToRGB(option.color),
+                    }}
+                  >
+                    {option.order}
+                  </Avatar>
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
         );
       default:
         return (
@@ -1402,6 +1488,7 @@ ToolBar.propTypes = {
   handleClearSelectedElements: PropTypes.func,
   withPaddingRight: PropTypes.bool,
   container: PropTypes.object,
+  type: PropTypes.string,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);

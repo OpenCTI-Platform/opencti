@@ -282,6 +282,7 @@ class Reports extends Component {
           handleClearSelectedElements={this.handleClearSelectedElements.bind(
             this,
           )}
+          type="Report"
         />
       </div>
     );

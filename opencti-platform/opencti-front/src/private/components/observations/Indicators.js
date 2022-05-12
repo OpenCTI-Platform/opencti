@@ -356,6 +356,7 @@ class Indicators extends Component {
                 this,
               )}
               withPaddingRight={true}
+              type="Indicator"
             />
           </div>
         )}
