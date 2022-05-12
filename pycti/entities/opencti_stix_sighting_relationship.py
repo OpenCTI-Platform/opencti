@@ -269,17 +269,24 @@ class StixSightingRelationship:
         """
 
     @staticmethod
-    def generate_id(source_ref, target_ref, first_seen, last_seen):
+    def generate_id(source_ref, target_ref, first_seen=None, last_seen=None):
         if isinstance(first_seen, datetime.datetime):
             first_seen = first_seen.isoformat()
         if isinstance(last_seen, datetime.datetime):
             last_seen = last_seen.isoformat()
-        data = {
-            "source_ref": source_ref,
-            "target_ref": target_ref,
-            "first_seen": first_seen,
-            "last_seen": last_seen,
-        }
+
+        if first_seen is not None and last_seen is not None:
+            data = {
+                "source_ref": source_ref,
+                "target_ref": target_ref,
+                "first_seen": first_seen,
+                "last_seen": last_seen,
+            }
+        else:
+            data = {
+                "source_ref": source_ref,
+                "target_ref": target_ref,
+            }
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
         return "sighting--" + id
