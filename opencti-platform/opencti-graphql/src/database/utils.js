@@ -18,6 +18,7 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
 import { isStixRelationship } from '../schema/stixRelationship';
+import { isDictionaryAttribute } from '../schema/fieldDataAdapter';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 
@@ -307,6 +308,8 @@ export const generateUpdateMessage = (inputs) => {
         // If update is based on internal ref, we need to extract the value
         if (META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
           message = next.map((val) => extractEntityMainValue(val)).join(', ');
+        } else if (isDictionaryAttribute(key)) {
+          message = Object.entries(R.head(next)).map(([k, v]) => `${k}:${v}`).join(', ');
         } else {
           // If standard primitive data, just join the values
           message = next.join(', ');
