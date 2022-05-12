@@ -937,15 +937,17 @@ class ReportKnowledgeCorrelationComponent extends Component {
             onZoom={this.onZoom.bind(this)}
             onZoomEnd={this.handleZoomEnd.bind(this)}
             nodeRelSize={4}
-            nodeCanvasObject={(node, ctx) => nodePaint(node, node.color, ctx, this.selectedNodes.has(node))
-            }
+            nodeCanvasObject={(node, ctx) => //
+            // eslint-disable-next-line implicit-arrow-linebreak
+              nodePaint(node, node.color, ctx, this.selectedNodes.has(node))}
             nodePointerAreaPaint={nodeAreaPaint}
             // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
             // linkDirectionalParticleWidth={1}
             // linkDirectionalParticleSpeed={() => 0.004}
             linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
-            }
+            linkCanvasObject={(link, ctx) => //
+            // eslint-disable-next-line implicit-arrow-linebreak
+              linkPaint(link, ctx, theme.palette.text.primary)}
             linkColor={(link) => (this.selectedLinks.has(link)
               ? theme.palette.secondary.main
               : theme.palette.primary.main)
