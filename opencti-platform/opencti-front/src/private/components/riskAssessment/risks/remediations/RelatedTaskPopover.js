@@ -191,12 +191,12 @@ class RelatedTaskPopover extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     if (values.start_date && values.end_date) {
       this.setState({
-        timing: {
+        timing: [{
           within_date_range: {
-            start_date: values.start_date === null ? null : parse(values.start_date),
-            end_date: values.end_date === null ? null : parse(values.end_date),
+            start_date: values.start_date === null ? null : parse(values.start_date).format(),
+            end_date: values.end_date === null ? null : parse(values.end_date).format(),
           }
-        },
+        }],
       })
     }
       this.setState({
@@ -213,7 +213,7 @@ class RelatedTaskPopover extends Component {
       toPairs,
       map((n) => ({
         'key': n[0],
-        'value': adaptFieldValue(n[1]),
+        'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(values);
     CM(environmentDarkLight, {
