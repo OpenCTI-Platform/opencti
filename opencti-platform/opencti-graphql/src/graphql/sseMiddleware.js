@@ -34,7 +34,7 @@ import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
 import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 
 let heartbeat;
 const broadcastClients = {};
@@ -348,7 +348,8 @@ const createSeeMiddleware = () => {
       }
       // Labels filtering
       if (type === LABEL_FILTER) {
-        const found = values.map((v) => v.id).some((r) => (instance.labels || []).includes(r));
+        const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
+        const found = values.map((v) => v.value).some((r) => (labels || []).includes(r));
         if (!found) {
           return false;
         }
