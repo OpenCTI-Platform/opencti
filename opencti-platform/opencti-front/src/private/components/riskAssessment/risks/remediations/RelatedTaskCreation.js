@@ -596,7 +596,6 @@ class RelatedTaskCreation extends Component {
                           )}
                           style={{ height: '38.09px' }}
                           // onChange={(_, date) => {
-                          //   console.log('startDate', date._d);
                           //   return this.setState({ startDate: date._d })
                           //   }
                           // }

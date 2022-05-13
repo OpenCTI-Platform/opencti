@@ -199,7 +199,6 @@ class RelatedTaskPopover extends Component {
         },
       })
     }
-    console.log('timing', this.state.timing, parse(values.start_date), parse(values.end_date));
       this.setState({
         responsible_roles: values.responsible_roles,
         associated_activities: values.associated_activities,
