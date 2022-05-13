@@ -37,7 +37,7 @@ class ResponsiblePartiesEntities extends Component {
       'view-data',
     );
     this.state = {
-      sortBy: R.propOr('name', 'sortBy', params),
+      sortBy: R.propOr('', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -182,13 +182,13 @@ class ResponsiblePartiesEntities extends Component {
       type: {
         label: 'Type',
       },
-      name: {
-        label: 'Name',
+      role: {
+        label: 'Role',
       },
-      author: {
-        label: 'Author',
+      parties: {
+        label: 'Parties',
       },
-      labels: {
+      label_name: {
         label: 'Labels',
       },
       creation_date: {
@@ -280,17 +280,17 @@ class ResponsiblePartiesEntities extends Component {
         width: '17%',
         isSortable: true,
       },
-      name: {
-        label: 'Name',
+      role: {
+        label: 'Role',
         width: '16%',
         isSortable: false,
       },
-      author: {
-        label: 'Author',
+      parties: {
+        label: 'Parties',
         width: '16%',
         isSortable: true,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
         width: '16%',
         isSortable: true,
@@ -377,8 +377,7 @@ class ResponsiblePartiesEntities extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      // orderedBy: sortBy,
-      orderedBy: 'label_name',
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',

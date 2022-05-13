@@ -69,7 +69,7 @@ class RemediationComponent extends Component {
     } = this.props;
     return (
       <>
-      <div className={classes.container}>
+        <div className={classes.container}>
           <CyioDomainObjectHeader
             cyioDomainObject={remediation}
             history={history}
@@ -77,7 +77,7 @@ class RemediationComponent extends Component {
             PopoverComponent={<RiskPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             // handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<RemediationDeletion riskId={riskId}/>}
+            OperationsComponent={<RemediationDeletion riskId={riskId} />}
           />
           <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
           <Grid
@@ -105,7 +105,12 @@ class RemediationComponent extends Component {
               <RequiredResources history={history} remediationId={remediation.id} />
             </Grid>
             <Grid item={true} xs={6}>
-              <RelatedTasks history={history} remediationId={remediation.id} />
+              <RelatedTasks
+                toType='OscalTask'
+                fromType= 'RiskResponse'
+                history={history}
+                remediationId={remediation.id}
+              />
             </Grid>
           </Grid>
           <Grid

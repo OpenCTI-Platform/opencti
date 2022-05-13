@@ -114,18 +114,7 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                   color="textSecondary"
                   gutterBottom={true}
                 >
-                  {t('Short Name')}
-                </Typography>
-                <div className="clearfix" />
-                {responsibleParty?.short_name && t(responsibleParty?.short_name)}
-              </div>
-              <div style={{ marginTop: '20px' }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t('Role Identifier')}
+                  {t('Role')}
                 </Typography>
                 <div className="clearfix" />
                 {responsibleParty?.role && t(responsibleParty.role.role_identifier)}
@@ -153,6 +142,24 @@ class EntityResponsiblePartyDetailsComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 {responsibleParty?.modified && fldt(responsibleParty?.modified)}
+              </div>
+              <div style={{ marginTop: '20px' }}>
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  gutterBottom={true}
+                >
+                  {t('Parties')}
+                </Typography>
+                <div className="clearfix" />
+                <div style={{ height: '100px', overflowY: 'scroll' }}>
+                  {responsibleParty?.parties.length > 0
+                    && responsibleParty.parties.map((value) => (
+                      <Typography>
+                        {t(value.name)}
+                      </Typography>
+                    ))}
+                </div>
               </div>
             </Grid>
             <Grid item={true} xs={4}>

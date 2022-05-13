@@ -51,7 +51,7 @@ const styles = (theme) => ({
     padding: '0 24px',
     marginBottom: '24px',
     overflowY: 'scroll',
-    height: '650px',
+    height: '610px',
   },
   dialogClosebutton: {
     float: 'left',
@@ -108,7 +108,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
   }
 
   onReset() {
-    this.handleClose();
+    this.props.handleDisplayEdit();
   }
 
   handleCancelCloseClick() {
@@ -180,7 +180,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
           open={this.props.displayEdit}
           keepMounted={true}
           className={classes.dialogMain}
-          onClose={() => this.props.handleDisplayEdit()}
+          onClose={this.onReset.bind(this)}
         >
           <Formik
             enableReinitialize={true}
@@ -293,32 +293,6 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                     </Grid>
                   </Grid>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Name')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Name')} >
-                          <Information fontSize="inherit" color="disabled" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field
-                        component={TextField}
-                        name="name"
-                        fullWidth={true}
-                        size="small"
-                        containerstyle={{ width: '100%' }}
-                        variant='outlined'
-                      />
-                    </Grid>
-                  </Grid>
-                  <Grid container={true} spacing={3}>
                     <Grid xs={12} item={true}>
                       <Typography
                         variant="h3"
@@ -354,18 +328,19 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                           gutterBottom={true}
                           style={{ float: 'left' }}
                         >
-                          {t('Party')}
+                          {t('Role')}
                         </Typography>
                         <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                          <Tooltip title={t('Party')} >
+                          <Tooltip title={t('Role')} >
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
+                        <AddIcon fontSize="small" style={{ margin: '-3px 0 0 0' }} />
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
                           variant='outlined'
-                          name="party"
+                          name="role"
                           fullWidth={true}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -385,6 +360,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
+                        <AddIcon fontSize="small" style={{ margin: '-3px 0 0 0' }} />
                         <div className="clearfix" />
                         <Field
                           component={SelectField}
@@ -403,18 +379,19 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                         gutterBottom={true}
                         style={{ float: 'left' }}
                       >
-                        {t('Role')}
+                        {t('Party')}
                       </Typography>
                       <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Role')} >
+                        <Tooltip title={t('Party')} >
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
+                      <AddIcon fontSize="small" style={{ margin: '-3px 0 0 0' }} />
                       <div className="clearfix" />
                       <Field
                         component={SelectField}
                         variant='outlined'
-                        name="role"
+                        name="party"
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
@@ -425,8 +402,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    // onClick={handleReset}
-                    onClick={() => this.props.handleDisplayEdit()}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}

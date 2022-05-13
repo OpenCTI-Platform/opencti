@@ -19,6 +19,7 @@ import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/C
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import ResponsiblePartyEntityEditionContainer from './ResponsiblePartyEntityEditionContainer';
 import EntitiesResponsiblePartiesCreation from './EntitiesResponsiblePartiesCreation';
+import RelatedTasks from '../../../riskAssessment/risks/remediations/RelatedTasks';
 
 const styles = () => ({
   container: {
@@ -91,12 +92,20 @@ class EmtityResponsiblePartyComponent extends Component {
               />
             </Grid>
             <Grid item={true} xs={6}>
+              <RelatedTasks
+                toType='OscalTask'
+                fromType= 'OscalResponsibleParty'
+                history={history}
+                remediationId={responsibleParty.id}
+              />
+            </Grid>
+            <Grid item={true} xs={12}>
               <CyioCoreObjectOrCyioCoreRelationshipNotes
                 typename={responsibleParty.__typename}
                 notes={responsibleParty.remarks}
                 refreshQuery={refreshQuery}
                 fieldName='remarks'
-                marginTop='0px'
+                marginTop={30}
                 cyioCoreObjectOrCyioCoreRelationshipId={responsibleParty?.id}
               />
             </Grid>

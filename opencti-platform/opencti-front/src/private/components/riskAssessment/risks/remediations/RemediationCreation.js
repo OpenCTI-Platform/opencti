@@ -31,7 +31,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer as QR, commitMutation as CM } from 'react-relay';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import { dayStartDate, parse } from '../../../../../utils/Time';
-import {toastGenericError} from "../../../../../utils/bakedToast";
+import { toastGenericError } from "../../../../../utils/bakedToast";
 import {
   commitMutation,
   QueryRenderer,
@@ -117,13 +117,13 @@ const remediationCreationMutation = graphql`
 
 const remediationValidation = (t) =>
   Yup.object().shape({
-     name: Yup.string().required(t('This field is required')),
-     actor_type: Yup.string().required(t('This field is required')),
-     actor_ref: Yup.string().required(t('This field is required')),
-     response_type: Yup.string().required(t('This field is required')),
-     lifecycle: Yup.string().required(t('This field is required')),
+    name: Yup.string().required(t('This field is required')),
+    actor_type: Yup.string().required(t('This field is required')),
+    actor_ref: Yup.string().required(t('This field is required')),
+    response_type: Yup.string().required(t('This field is required')),
+    lifecycle: Yup.string().required(t('This field is required')),
   });
-  
+
 class RemediationCreation extends Component {
   constructor(props) {
     super(props);
@@ -139,9 +139,9 @@ class RemediationCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-      
-    const adaptedValues = R.pickAll(['actor_ref','actor_type'], values)
-   
+
+    const adaptedValues = R.pickAll(['actor_ref', 'actor_type'], values)
+
     const finalValues = R.pipe(
       R.dissoc('created'),
       R.dissoc('modified'),
@@ -150,9 +150,8 @@ class RemediationCreation extends Component {
       R.dissoc('actor_type'),
       R.dissoc('oscal_type'),
       R.dissoc('oscal_party'),
-      R.assoc('origins', [{'origin_actors':[adaptedValues]}])
+      R.assoc('origins', [{ 'origin_actors': [adaptedValues] }])
     )(values);
-console.log('Final', finalValues)
     CM(environmentDarkLight, {
       mutation: remediationCreationMutation,
       variables: {
@@ -330,7 +329,11 @@ console.log('Final', finalValues)
                   xs={6}
                 >
                   {/* <CyioCoreObjectLatestHistory /> */}
-                  <RelatedTasks remediationId={remediationId} />
+                  <RelatedTasks
+                    toType='OscalTask'
+                    fromType='RiskResponse'
+                    remediationId={remediationId}
+                  />
                 </Grid>
               </Grid>
               <Grid
