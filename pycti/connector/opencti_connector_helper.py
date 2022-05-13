@@ -1065,4 +1065,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             return object["extensions"][
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
             ][key]
+        elif (
+            "extensions" in object
+            and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            in object["extensions"]
+            and key
+            in object["extensions"][
+                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            ]
+        ):
+            return object["extensions"][
+                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            ][key]
         return None
