@@ -10,22 +10,13 @@ const description = 'If **indicator A** has `revoked` **false** and **indicator 
   + '`targets` **identity B**.';
 
 // For rescan
-const scan = {
-  types: [STIX_SIGHTING_RELATIONSHIP],
-  fromTypes: [ENTITY_TYPE_INDICATOR],
-  toTypes: [ENTITY_TYPE_IDENTITY],
-};
+const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY] };
 
 // For live
 const behaviors: Array<RuleBehavior> = [];
 const scopes = [
   {
-
-    filters: {
-      types: [STIX_SIGHTING_RELATIONSHIP],
-      fromTypes: [ENTITY_TYPE_INDICATOR],
-      toTypes: [ENTITY_TYPE_IDENTITY],
-    },
+    filters: { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY] },
     attributes: [{ name: 'first_seen' }, { name: 'last_seen' }],
   },
   {

@@ -14,8 +14,14 @@ import { createInferredRelation, deleteInferredRuleElement } from '../../databas
 import { listAllRelations, RelationOptions } from '../../database/middleware-loader';
 import type { StixObject } from '../../types/stix-common';
 import { RELATION_INDICATES, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR
+} from '../../schema/stixDomainObject';
 import type { RuleRuntime } from '../../types/rules';
+import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 
 const indicateSightedRuleBuilder = (): RuleRuntime => {
   // Execution
@@ -27,7 +33,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     const toMalware = data.extensions[STIX_EXT_OCTI].target_ref;
     const { object_marking_refs: markings, confidence: createdConfidence } = data;
     const creationRange = buildPeriodFromDates(data.start_time, data.stop_time);
-    // Need to find **indicator A** `sighted` **organization B**
+    // Need to find **indicator A** `sighted` **identity/location B**
     const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
       const rels = relationships.filter((r) => r.internal_id !== createdId);
       for (let relIndex = 0; relIndex < rels.length; relIndex += 1) {
@@ -42,8 +48,8 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
         // Rule content
         const dependencies = [fromIndicator, createdId, toMalware, foundRelationId, organizationId];
         const explanation = [foundRelationId, createdId];
-        // Create the inferred sighting
-        const input = { fromId: fromIndicator, toId: organizationId, relationship_type: STIX_SIGHTING_RELATIONSHIP };
+        // Create the inferred targets relation
+        const input = { fromId: toMalware, toId: organizationId, relationship_type: RELATION_TARGETS };
         const ruleContent = createRuleContent(def.id, dependencies, explanation, {
           confidence: computedConfidence,
           first_seen: range.start,
@@ -59,14 +65,14 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     };
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: fromIndicator,
-      toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION],
+      toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION],
       callback: listFromCallback
     };
     await listAllRelations(RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, listFromArgs);
     return events;
   };
   const applyFromStixSighting = async (data: StixSighting): Promise<Array<Event>> => {
-    // **indicator A** `sighted` **organization B**
+    // **indicator A** `sighted` **identity/location B**
     const events: Array<Event> = [];
     const createdId = data.extensions[STIX_EXT_OCTI].id;
     const fromSightingIndicator = data.extensions[STIX_EXT_OCTI].sighting_of_ref;
@@ -74,7 +80,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     const { object_marking_refs: markings } = data;
     const { confidence: createdConfidence } = data;
     const creationRange = buildPeriodFromDates(data.first_seen, data.last_seen);
-    // Need to find **indicator A** `indicates` **Malware C**
+    // Need to find **indicator A** `indicates` **malware/threat actor/intrusion set/campaign/incident C**
     const listFromCallback = async (relationships: Array<BasicStoreRelation>) => {
       const rels = relationships.filter((r) => r.internal_id !== createdId);
       for (let relIndex = 0; relIndex < rels.length; relIndex += 1) {
@@ -91,7 +97,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
         // Rule content
         const dependencies = [fromSightingIndicator, createdId, toSightingOrganization, foundRelationId, malwareId];
         const explanation = [foundRelationId, createdId];
-        // Create the inferred relation
+        // Create the inferred targets relation
         const input = { fromId: malwareId, toId: toSightingOrganization, relationship_type: RELATION_TARGETS };
         const ruleContent = createRuleContent(def.id, dependencies, explanation, {
           confidence: computedConfidence,
@@ -108,7 +114,7 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
     };
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
       fromId: fromSightingIndicator,
-      toTypes: [ENTITY_TYPE_MALWARE],
+      toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT],
       callback: listFromCallback
     };
     await listAllRelations(RULE_MANAGER_USER, RELATION_INDICATES, listFromArgs);

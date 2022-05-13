@@ -2,33 +2,35 @@ import { RELATION_INDICATES } from '../../schema/stixCoreRelationship';
 import type { RuleBehavior, RuleDefinition } from '../../types/rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import {
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_INDICATOR,
-  ENTITY_TYPE_MALWARE
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR
 } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 
 const id = 'indicate_sighted';
 const name = 'Targets via sighting';
-const description = 'If **indicator A** `sighted` **organization B** and **indicator A** '
-  + '`indicates` **Malware C**, then **Malware C** `targets` **organization B**.';
+const description = 'If **indicator A** `sighted` **identity/location B** and **indicator A** '
+  + '`indicates` **malware/threat actor/intrusion set/campaign/incident C**, then **malware/threat... C** `targets` **identity/location B**.';
 
 // For rescan
-const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION] };
+const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };
 
 // For live
-const filters = {
-  types: [STIX_SIGHTING_RELATIONSHIP, RELATION_INDICATES],
+const filtersSighting = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };
+const filtersIndicates = {
+  types: [RELATION_INDICATES],
   fromTypes: [ENTITY_TYPE_INDICATOR],
-  toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_MALWARE]
+  toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT]
 };
-const attributes = [
-  { name: 'start_time' },
-  { name: 'stop_time' },
-  { name: 'confidence' },
-  { name: 'object_marking_refs' },
-];
 const behaviors: Array<RuleBehavior> = [];
-const scopes = [{ filters, attributes }];
+const scopes = [
+  { filters: filtersSighting, attributes: [] },
+  { filters: filtersIndicates, attributes: [] }
+];
 
 const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors };
 export default definition;
