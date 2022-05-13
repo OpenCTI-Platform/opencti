@@ -140,7 +140,7 @@ class PortsField extends Component {
         >
           {t('Ports')}
         </Typography>
-        <div style={{ float: 'left', margin: '12px 0 0 5px' }}>
+        <div style={{ float: 'left', margin: '8px 0 0 5px' }}>
           <Tooltip title={t('Ports')} >
             <Information fontSize="inherit" color="disabled" />
           </Tooltip>
