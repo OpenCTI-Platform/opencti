@@ -160,6 +160,11 @@ const RelatedTaskValidation = (t) => Yup.object().shape({
   // url: Yup.string().url(t('The value must be an URL')),
   task_type: Yup.string().required(t('This field is required')),
   description: Yup.string().required(t('This field is required')),
+  start_date: Yup.date().required(t('This field is required')),
+  end_date: Yup.date().min(
+    Yup.ref('start_date'),
+    "End date can't be before start date"
+  )
 });
 
 class RelatedTaskCreation extends Component {
@@ -590,8 +595,13 @@ class RelatedTaskCreation extends Component {
                             'The value must be a date (YYYY-MM-DD)',
                           )}
                           style={{ height: '38.09px' }}
-                          onChange={(_, date) => this.setState({ startDate: date })}
-                          value={this.state.startDate}
+                          // onChange={(_, date) => {
+                          //   console.log('startDate', date._d);
+                          //   return this.setState({ startDate: date._d })
+                          //   }
+                          // }
+                          // value={this.state.startDate}
+                          // minDate={this.state.startDate}
                         />
                       </div>
                     </Grid>
@@ -622,9 +632,8 @@ class RelatedTaskCreation extends Component {
                           )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                          minDate={this.state.startDate}
-                          value={this.state.endDate}
-                          onChange={(_, date) => this.setState({ endDate: date })}
+                          // onChange={(_, date) => this.setState({ endDate: date })}
+                          // value={this.state.endDate}
                         />
                       </div>
                     </Grid>
