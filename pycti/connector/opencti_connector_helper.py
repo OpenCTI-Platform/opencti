@@ -272,6 +272,7 @@ class ListenStream(threading.Thread):
         live_stream_id,
         listen_delete,
         no_dependencies,
+        recover_iso_date,
     ) -> None:
         threading.Thread.__init__(self)
         self.helper = helper
@@ -283,6 +284,7 @@ class ListenStream(threading.Thread):
         self.live_stream_id = live_stream_id
         self.listen_delete = listen_delete if listen_delete is not None else True
         self.no_dependencies = no_dependencies if no_dependencies is not None else False
+        self.recover_iso_date = recover_iso_date
         self.exit = False
 
     def run(self) -> None:  # pylint: disable=too-many-branches
@@ -290,10 +292,11 @@ class ListenStream(threading.Thread):
             current_state = self.helper.get_state()
             if current_state is None:
                 current_state = {
+                    "connectorStartTime": self.helper.date_now_z(),
                     "connectorLastEventId": f"{self.start_timestamp}-0"
                     if self.start_timestamp is not None
                     and len(self.start_timestamp) > 0
-                    else "-"
+                    else "-",
                 }
                 self.helper.set_state(current_state)
 
@@ -311,17 +314,25 @@ class ListenStream(threading.Thread):
                     self.live_stream_id is not None
                     or self.helper.connect_live_stream_id is not None
                 ):
+
                     live_stream_from = (
                         f"?from={current_state['connectorLastEventId']}"
-                        if current_state["connectorLastEventId"] != "-"
-                        else ""
+                        if "connectorLastEventId" in current_state
+                        and current_state["connectorLastEventId"] != "-"
+                        else "?from=-&recover="
+                        + (
+                            current_state["connectorStartTime"]
+                            if self.recover_iso_date is None
+                            else self.recover_iso_date
+                        )
                     )
                 # Global stream "from" should be 0 if starting from the beginning
                 else:
                     live_stream_from = "?from=" + (
                         current_state["connectorLastEventId"]
-                        if current_state["connectorLastEventId"] != "-"
-                        else "0"
+                        if "connectorLastEventId" in current_state
+                        and current_state["connectorLastEventId"] != "-"
+                        else "?from=0-0"
                     )
                 live_stream_url = (
                     f"{self.url}/stream{live_stream_uri}{live_stream_from}"
@@ -358,15 +369,22 @@ class ListenStream(threading.Thread):
                 if self.helper.connect_live_stream_id is not None:
                     live_stream_from = (
                         f"?from={current_state['connectorLastEventId']}"
-                        if current_state["connectorLastEventId"] != "-"
-                        else ""
+                        if "connectorLastEventId" in current_state
+                        and current_state["connectorLastEventId"] != "-"
+                        else "?from=-&recover="
+                        + (
+                            self.helper.date_now_z()
+                            if self.recover_iso_date is None
+                            else self.recover_iso_date
+                        )
                     )
                 # Global stream "from" should be 0 if starting from the beginning
                 else:
                     live_stream_from = "?from=" + (
                         current_state["connectorLastEventId"]
-                        if current_state["connectorLastEventId"] != "-"
-                        else "0"
+                        if "connectorLastEventId" in current_state
+                        and current_state["connectorLastEventId"] != "-"
+                        else "?from=0-0"
                     )
                 live_stream_url = f"{self.helper.opencti_url}/stream{live_stream_uri}{live_stream_from}"
                 logging.info(
@@ -624,6 +642,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         live_stream_id=None,
         listen_delete=True,
         no_dependencies=False,
+        recover_iso_date=None,
     ) -> ListenStream:
         """listen for messages and register callback function
 
@@ -640,6 +659,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             live_stream_id,
             listen_delete,
             no_dependencies,
+            recover_iso_date,
         )
         self.listen_stream.start()
         return self.listen_stream
@@ -674,6 +694,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             datetime.datetime.utcnow()
             .replace(microsecond=0, tzinfo=datetime.timezone.utc)
             .isoformat()
+        )
+
+    def date_now_z(self) -> str:
+        """get the current date (UTC)
+        :return: current datetime for utc
+        :rtype: str
+        """
+        return (
+            datetime.datetime.utcnow()
+            .replace(microsecond=0, tzinfo=datetime.timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z")
         )
 
     # Push Stix2 helper
@@ -1018,3 +1050,19 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         }
 
         return tlp in allowed_tlps[max_tlp]
+
+    @staticmethod
+    def get_attribute_in_extension(key, object) -> any:
+        if (
+            "extensions" in object
+            and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            in object["extensions"]
+            and key
+            in object["extensions"][
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            ]
+        ):
+            return object["extensions"][
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            ][key]
+        return None
