@@ -40,7 +40,11 @@ from .entities.opencti_stix_sighting_relationship import StixSightingRelationshi
 from .entities.opencti_threat_actor import ThreatActor
 from .entities.opencti_tool import Tool
 from .entities.opencti_vulnerability import Vulnerability
-from .utils.constants import StixCyberObservableTypes, StixMetaTypes
+from .utils.constants import (
+    StixCyberObservableTypes,
+    StixMetaTypes,
+    MultipleStixCyberObservableRelationship,
+)
 from .utils.opencti_stix2 import OpenCTIStix2
 from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from .utils.opencti_stix2_update import OpenCTIStix2Update
@@ -81,6 +85,7 @@ __all__ = [
     "StixCyberObservableTypes",
     "StixDomainObject",
     "StixMetaTypes",
+    "MultipleStixCyberObservableRelationship",
     "StixObjectOrStixRelationship",
     "StixSightingRelationship",
     "ThreatActor",
