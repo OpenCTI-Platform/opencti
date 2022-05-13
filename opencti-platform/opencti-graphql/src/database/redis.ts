@@ -422,7 +422,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: Store
     }
   };
 };
-export const storeUpdateEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts) => {
+export const storeUpdateEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts = {}) => {
   try {
     if (isStixData(instance)) {
       const event = buildUpdateEvent(user, previous, instance, message, opts.commit);
@@ -447,7 +447,7 @@ const buildCreateEvent = (user: AuthUser, instance: StoreObject, message: string
     data: stix,
   };
 };
-export const storeCreateRelationEvent = async (user: AuthUser, instance: StoreRelation, opts: CreateEventOpts) => {
+export const storeCreateRelationEvent = async (user: AuthUser, instance: StoreRelation, opts: CreateEventOpts = {}) => {
   try {
     if (isStixData(instance)) {
       const { withoutMessage = false } = opts;
@@ -463,7 +463,7 @@ export const storeCreateRelationEvent = async (user: AuthUser, instance: StoreRe
     throw DatabaseError('Error in store create relation event', { error: e });
   }
 };
-export const storeCreateEntityEvent = async (user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts) => {
+export const storeCreateEntityEvent = async (user: AuthUser, instance: StoreObject, message: string, opts: CreateEventOpts = {}) => {
   try {
     if (isStixData(instance)) {
       const event = buildCreateEvent(user, instance, message);
@@ -492,7 +492,7 @@ const buildDeleteEvent = async (user: AuthUser, instance: StoreObject, message: 
     }
   };
 };
-export const storeDeleteEvent = async (user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: DeleteEventOpts) => {
+export const storeDeleteEvent = async (user: AuthUser, instance: StoreObject, deletions: Array<StoreObject>, opts: DeleteEventOpts = {}) => {
   try {
     if (isStixData(instance)) {
       const message = generateDeleteMessage(instance);
