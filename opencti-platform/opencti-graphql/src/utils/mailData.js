@@ -295,23 +295,28 @@ export const relationshipToHtml = (url, entry) => {
 };
 
 export const entityToHtml = (url, entry) => {
-  const fullUrl = `${url + resolveLink(entry.to.entity_type)}/${entry.to.id}/knowledge/relations/${entry.id}`;
+  const fullUrl = `${url + resolveLink(entry.entity_type)}/${entry.id}`;
   const author = entry.createdBy && entry.createdBy[0] ? entry.createdBy[0].name : 'Unknown';
   return `
+        <p style="padding:0; margin:0; line-height:140%; font-size:18px;">
+            <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">New <i>${
+  entry.entity_type
+}</i> entity</a>
+        </p>
+        <p style="color: #999999; margin: 0;">By ${author}, ${prepareDate(entry.created_at)}</p>
+        <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse:collapse; margin-top: 10pt; font-size: 10pt;">
             <tr>
-                <td bgcolor="#ffffff" style="padding:0; width: 40%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
-                    <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">${truncate(
-    defaultValue(entry.from),
-    80
-  )}.</a>
+                <td bgcolor="#ffffff" style="padding:0; width: 100%; text-align:center; background:#ffffff; background-color:#ffffff;" valign="top">
+                    <strong>{defaultValue(entry)}</strong>
                 </td>
-                <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
-                    ${truncate(entry.from.description, 60)}
-                </td>
-                <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:left; background: #ffffff;background-color: #ffffff;" valign="top">
-                    <span style="color: #999999; margin: 0;">By ${author}, ${prepareDate(entry.created_at)}</span>
-                 </td>
             </tr>
+            <tr>
+                <td bgcolor="#ffffff" style="padding:0; width: 100%; text-align:center; background:#ffffff; background-color:#ffffff;" valign="top">
+                    ${truncate(entry.description, 60)}
+                </td>
+            </tr>
+        </table>
+        <hr style="margin:15pt 0 10pt 0; color: #f6f6f6; border-top: #f6f6f6 1px solid; background: #f6f6f6">
   `;
 };
 
