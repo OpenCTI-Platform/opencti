@@ -3006,7 +3006,6 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             }
           }
         }
-
         createdBy {
           ... on Identity {
             id

@@ -14,6 +14,7 @@ import PartOfTargetsRule from '../rules/part-of-targets/PartOfTargetsRule';
 import RuleSightingIncident from '../rules/sighting-incident/SightingIncidentRule';
 import RelatedToRelatedRule from '../rules/related-to-related/RelatedToRelatedRule';
 import IndicateSightedRule from '../rules/indicate-sighted/IndicateSightedRule';
+import SightingObservableRule from '../rules/sighting-observable/SightingObservableRule';
 import { BUS_TOPICS, DEV_MODE, ENABLED_RULE_ENGINE } from '../config/conf';
 import { getConfigCache } from '../manager/cacheManager';
 import type { AuthUser } from '../types/user';
@@ -38,6 +39,7 @@ export const RULES_DECLARATION: Array<RuleRuntime> = [
   PartOfPartRule,
   PartOfTargetsRule,
   RuleSightingIncident,
+  SightingObservableRule,
 ];
 if (DEV_MODE) {
   RULES_DECLARATION.push(RelatedToRelatedRule);
