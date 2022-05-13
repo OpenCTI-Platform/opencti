@@ -84,7 +84,7 @@ const stixCyberObservableContribution = {
       { src: 'dst_port' },
       { src: 'protocols' },
     ],
-    [C.ENTITY_PROCESS]: () => uuidv4(), // No standard_id
+    [C.ENTITY_PROCESS]: () => [[{ src: 'pid' }, { src: 'created_time' }], [{ src: 'command_line' }], [{ src: 'cwd' }]],
     [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'vendor' }, { src: 'version' }],
     [C.ENTITY_URL]: [{ src: 'value' }],
     [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }],
