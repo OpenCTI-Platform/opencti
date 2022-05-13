@@ -24,7 +24,7 @@ import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
-import { isNotEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField } from '../database/utils';
 
 // region hashes
 const MD5 = 'MD5';
@@ -84,7 +84,7 @@ const stixCyberObservableContribution = {
       { src: 'dst_port' },
       { src: 'protocols' },
     ],
-    [C.ENTITY_PROCESS]: () => [[{ src: 'pid' }, { src: 'created_time' }], [{ src: 'command_line' }], [{ src: 'cwd' }]],
+    [C.ENTITY_PROCESS]: [[{ src: 'pid', dependencies: ['command_line'] }, { src: 'command_line' }], [{ src: 'command_line' }]],
     [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'vendor' }, { src: 'version' }],
     [C.ENTITY_URL]: [{ src: 'value' }],
     [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }],
@@ -249,7 +249,12 @@ const filteredIdContributions = (contrib, way, data) => {
     const entry = entries[index];
     const [key, value] = entry;
     const prop = R.find((e) => R.includes(key, e.src), way);
-    const { src, dest } = prop;
+    const { src, dest, dependencies = [] } = prop;
+    const dataDependencies = Object.values(R.pick(dependencies, data));
+    const isEmptyValueInDependencies = dataDependencies.filter((n) => isEmptyField(n)).length !== 0;
+    if (isEmptyValueInDependencies) {
+      return {};
+    }
     const destKey = dest || src;
     const resolver = contrib.resolvers[src];
     if (resolver) {
