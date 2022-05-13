@@ -14,7 +14,7 @@ node {
   echo "branch: ${branch}, commit message: ${commitMessage}"
 
   // Configure which endpoint to use based on the branch
-  if (branch != 'master') { // already defaulted to production
+  if (branch != 'master' && branch != 'prod') { // already defaulted to production
     tag = branch.replace('#', '')
     if (branch == 'staging') {
       graphql = 'https://cyio-staging.darklight.ai/graphql'
@@ -104,7 +104,7 @@ node {
     // if main branches (master, staging, or develop) build, except if:
     //   - commit says: 'ci:skip' then skip build
     //   - commit says: 'ci:build' then build regardless of branch
-    if (((branch.equals('master') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
+    if (((branch.equals('master') || branch.equals('prod') || branch.equals('staging') || branch.equals('develop')) && !commitMessage.contains('ci:skip')) || commitMessage.contains('ci:build')) {
       office365ConnectorSend(
         // status: 'Build Started',
         // color: '00FF00',
@@ -134,13 +134,13 @@ node {
     }
   }
 
-  // TODO: Actually call the Jenkins job
   if (commitMessage.contains('ci:deploy')) {
     stage('Deploy') {
       switch(branch) {
         case 'master':
+        case 'prod':
           echo 'Deploying to production...'
-          // build '/deploy/OpenCTI Frontend/main'
+          build '/deploy/OpenCTI Frontend/main'
           break
         case 'staging':
           echo 'Deploying to staging...'
@@ -148,7 +148,7 @@ node {
           break
         case 'develop':
           echo 'Deploying to develop...'
-          // build '/deploy/OpenCTI Frontend/dev'
+          build '/deploy/OpenCTI Frontend/dev'
           break
         default:
           echo "Deploy flag is only supported on production, staging, or develop branches; ignoring deploy flag..."
