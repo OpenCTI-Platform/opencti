@@ -85,3 +85,24 @@ class StixMetaTypes(Enum):
     def has_value(cls, value):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
         return value.lower() in lower_attr
+
+
+class MultipleStixCyberObservableRelationship(Enum):
+    OPERATING_SYSTEM = "operating-system"
+    CONTAINS = "contains"
+    RESOLVES_TO = "obs_resolves-to"
+    BELONGS_TO = "obs_belongs-to"
+    TO = "to"
+    CC = "cc"
+    BCC = "bcc"
+    ENCAPSULATES = "encapsulates"
+    OPENED_CONNECTION = "opened-connection"
+    CHILD = "child"
+    BODY_MULTIPART = "body-multipart"
+    VALUES = "values"
+    LINKED = "x_opencti_linked-to"
+
+    @classmethod
+    def has_value(cls, value):
+        lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
+        return value.lower() in lower_attr

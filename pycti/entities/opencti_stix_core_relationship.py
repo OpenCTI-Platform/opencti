@@ -532,7 +532,13 @@ class StixCoreRelationship:
 
         self.opencti.log(
             "info",
-            "Creating stix_core_relationship {" + from_id + ", " + to_id + "}.",
+            "Creating stix_core_relationship '"
+            + relationship_type
+            + "' {"
+            + from_id
+            + ", "
+            + to_id
+            + "}.",
         )
         query = """
                 mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {

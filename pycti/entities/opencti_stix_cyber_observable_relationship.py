@@ -214,9 +214,23 @@ class StixCyberObservableRelationship:
         object_marking = kwargs.get("objectMarking", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         update = kwargs.get("update", False)
+
+        if relationship_type == "resolves-to":
+            relationship_type = "obs_resolves-to"
+        elif relationship_type == "belongs-to":
+            relationship_type = "obs_belongs-to"
+        elif relationship_type == "content":
+            relationship_type = "obs_content"
+
         self.opencti.log(
             "info",
-            "Creating stix_observable_relationship {" + from_id + ", " + to_id + "}.",
+            "Creating stix_observable_relationship '"
+            + relationship_type
+            + "' {"
+            + from_id
+            + ", "
+            + to_id
+            + "}.",
         )
         query = """
                 mutation StixCyberObservableRelationshipAdd($input: StixCyberObservableRelationshipAddInput!) {

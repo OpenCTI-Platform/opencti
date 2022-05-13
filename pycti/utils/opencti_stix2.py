@@ -12,10 +12,18 @@ import dateutil.parser
 import pytz
 
 from pycti.entities.opencti_identity import Identity
-from pycti.utils.constants import IdentityTypes, LocationTypes, StixCyberObservableTypes
+from pycti.utils.constants import (
+    IdentityTypes,
+    LocationTypes,
+    StixCyberObservableTypes,
+    MultipleStixCyberObservableRelationship,
+)
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
-from pycti.utils.opencti_stix2_utils import OBSERVABLES_VALUE_INT
+from pycti.utils.opencti_stix2_utils import (
+    OBSERVABLES_VALUE_INT,
+    STIX_CYBER_OBSERVABLE_MAPPING,
+)
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
@@ -684,6 +692,23 @@ class OpenCTIStix2:
                 "id": stix_observable_result["id"],
                 "type": stix_observable_result["entity_type"],
             }
+            # Iterate over refs to create appropriate relationships
+            for key in stix_object.keys():
+                if key.endswith("_ref"):
+                    relationship_type = key.replace("_ref", "").replace("_", "-")
+                    self.opencti.stix_cyber_observable_relationship.create(
+                        fromId=stix_observable_result["id"],
+                        toId=stix_object[key],
+                        relationship_type=relationship_type,
+                    )
+                elif key.endswith("_refs"):
+                    relationship_type = key.replace("_refs", "").replace("_", "-")
+                    for value in stix_object[key]:
+                        self.opencti.stix_cyber_observable_relationship.create(
+                            fromId=stix_observable_result["id"],
+                            toId=value,
+                            relationship_type=relationship_type,
+                        )
         else:
             return None
 
@@ -1048,7 +1073,6 @@ class OpenCTIStix2:
             for key in entity_copy.keys():
                 if key.startswith("x_opencti_"):
                     del entity[key]
-
         # ObjectMarkingRefs
         if (
             not no_custom_attributes
@@ -1172,6 +1196,41 @@ class OpenCTIStix2:
             del entity["importFiles"]
             del entity["importFilesIds"]
 
+        # StixCyberObservable
+        if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
+            stix_observable_relationships = (
+                self.opencti.stix_cyber_observable_relationship.list(
+                    fromId=entity["x_opencti_id"]
+                )
+            )
+            for stix_observable_relationship in stix_observable_relationships:
+                if "standard_id" in stix_observable_relationship["to"]:
+                    if MultipleStixCyberObservableRelationship.has_value(
+                        stix_observable_relationship["relationship_type"]
+                    ):
+                        key = (
+                            stix_observable_relationship["relationship_type"]
+                            .replace("obs_", "")
+                            .replace("-", "_")
+                            + "_refs"
+                        )
+                        if key in entity:
+                            entity[key].append(
+                                stix_observable_relationship["to"]["standard_id"]
+                            )
+                        else:
+                            entity[key] = [
+                                stix_observable_relationship["to"]["standard_id"]
+                            ]
+                    else:
+                        key = (
+                            stix_observable_relationship["relationship_type"]
+                            .replace("obs_", "")
+                            .replace("-", "_")
+                            + "_ref"
+                        )
+                        entity[key] = stix_observable_relationship["to"]["standard_id"]
+
         result.append(entity)
 
         if mode == "simple":
@@ -1180,6 +1239,30 @@ class OpenCTIStix2:
             uuids = [entity["id"]]
             for x in result:
                 uuids.append(x["id"])
+            # Get extra refs
+            for key in entity.keys():
+                if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
+                    if key.endswith("_ref"):
+                        type = entity[key].split("--")[0]
+                        if type in STIX_CYBER_OBSERVABLE_MAPPING:
+                            objects_to_get.append(
+                                {
+                                    "id": entity[key],
+                                    "entity_type": "Stix-Cyber-Observable",
+                                    "parent_types": ["Styx-Cyber-Observable"],
+                                }
+                            )
+                    elif key.endswith("_refs"):
+                        for value in entity[key]:
+                            type = value.split("--")[0]
+                            if type in STIX_CYBER_OBSERVABLE_MAPPING:
+                                objects_to_get.append(
+                                    {
+                                        "id": value,
+                                        "entity_type": "Stix-Cyber-Observable",
+                                        "parent_types": ["Styx-Cyber-Observable"],
+                                    }
+                                )
             # Get extra relations (from)
             stix_core_relationships = self.opencti.stix_core_relationship.list(
                 elementId=entity["x_opencti_id"]
@@ -1251,6 +1334,7 @@ class OpenCTIStix2:
                         + stix_sighting_relationship["id"]
                         + '" are less than max definition, not exporting the relation AND the target entity.',
                     )
+
             # Export
             reader = {
                 "Attack-Pattern": self.opencti.attack_pattern.read,
