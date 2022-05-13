@@ -1,11 +1,4 @@
-from stix2 import (
-    CustomObservable,
-    EqualityComparisonExpression,
-    ExternalReference,
-    ObjectPath,
-    ObservationExpression,
-    properties,
-)
+from stix2 import EqualityComparisonExpression, ObjectPath, ObservationExpression
 
 STIX_CYBER_OBSERVABLE_MAPPING = {
     "autonomous-system": "Autonomous-System",
@@ -96,31 +89,3 @@ class OpenCTIStix2Utils:
         raise ValueError(
             "This function should not be used anymore, please use the generate_id function for SDO or proper SCO constructor"
         )
-
-
-@CustomObservable(
-    "simple-observable",
-    [
-        ("key", properties.StringProperty(required=True)),
-        ("value", properties.StringProperty(required=True)),
-        ("description", properties.StringProperty()),
-        (
-            "created_by_ref",
-            properties.ReferenceProperty(valid_types="identity", spec_version="2.1"),
-        ),
-        ("x_opencti_score", properties.IntegerProperty()),
-        ("x_opencti_create_indicator", properties.BooleanProperty()),
-        ("labels", properties.ListProperty(properties.StringProperty)),
-        ("external_references", properties.ListProperty(ExternalReference)),
-        (
-            "object_marking_refs",
-            properties.ListProperty(
-                properties.ReferenceProperty(
-                    valid_types="marking-definition", spec_version="2.1"
-                )
-            ),
-        ),
-    ],
-)
-class SimpleObservable:
-    pass
