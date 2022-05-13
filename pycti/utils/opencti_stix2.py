@@ -15,8 +15,8 @@ from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import (
     IdentityTypes,
     LocationTypes,
-    StixCyberObservableTypes,
     MultipleStixCyberObservableRelationship,
+    StixCyberObservableTypes,
 )
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
