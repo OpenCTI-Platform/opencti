@@ -185,6 +185,7 @@ class RelatedTaskLine extends Component {
       remediationId,
       displayRelation,
       entityId,
+      relatedTaskId,
     } = this.props;
     const { expanded } = this.state;
     const taskDependency = pipe(
@@ -225,7 +226,7 @@ class RelatedTaskLine extends Component {
                       {t('Start Date: ')}
                     </Typography>
                     <Typography align="left" color="textSecondary" variant="h3">
-                      {data.timing?.start_date || data.timing?.on_date}
+                      {data.timing?.start_date && fldt(data.timing?.start_date)}
                     </Typography>
                   </Grid>
                   <Grid style={{ display: 'flex' }} item={true} xs={6}>
@@ -233,7 +234,7 @@ class RelatedTaskLine extends Component {
                       {t('End Date: ')}
                     </Typography>
                     <Typography align="left" color="textSecondary" variant="h3">
-                      {data.timing?.end_date && t(data.timing?.end_date)}
+                      {data.timing?.end_date && fldt(data.timing?.end_date)}
                     </Typography>
                   </Grid>
                 </Grid>
@@ -294,7 +295,7 @@ class RelatedTaskLine extends Component {
                     <Typography align="left" color="textSecondary" variant="h3">{t('Start Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
                       {/* {t('21 June 2021')} */}
-                      {data.timing?.start_date || data.timing?.on_date}
+                      {data.timing?.start_date && fldt(data.timing?.start_date)}
                     </Typography>
                   </div>
                 </Grid>
@@ -324,7 +325,7 @@ class RelatedTaskLine extends Component {
                   <div style={{ marginLeft: '18px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('End Date')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {data.timing?.end_date && t(data.timing?.end_date)}
+                      {data.timing?.end_date && fldt(data.timing?.end_date)}
                     </Typography>
                   </div>
                 </Grid>
@@ -403,6 +404,7 @@ class RelatedTaskLine extends Component {
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
             data={data}
+            relatedTaskId={relatedTaskId}
           />
         </div>
       </div>
@@ -423,6 +425,7 @@ RelatedTaskLine.propTypes = {
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
+  relatedTaskId: PropTypes.string,
 };
 
 export default compose(

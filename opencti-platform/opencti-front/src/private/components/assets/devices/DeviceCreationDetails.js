@@ -145,7 +145,6 @@ class DeviceCreationDetailsComponent extends Component {
                   <Tooltip title={t('Installed Operating System')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
-                  <AddIcon fontSize="small" color="disabled" />
                 </div>
                 <InstalledAsset
                   component={SelectField}
@@ -171,7 +170,6 @@ class DeviceCreationDetailsComponent extends Component {
                   <Tooltip title={t('Installed Software')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
-                  <AddIcon fontSize="small" color="disabled" style={{ marginTop: 2 }} />
                 </div>
                 <InstalledAsset
                   component={SelectField}
@@ -395,7 +393,6 @@ class DeviceCreationDetailsComponent extends Component {
                   <Tooltip title={t('Installed Hardware')} >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
-                  <AddIcon fontSize="small" color="disabled" />
                 </div>
                 <div className="clearfix" />
                 <InstalledAsset
