@@ -117,6 +117,7 @@ class CyioAddExternalReferences extends Component {
       search: '',
       expanded: false,
       totalExternalReference: [],
+      removeIcon: false,
     };
   }
 
@@ -221,6 +222,7 @@ class CyioAddExternalReferences extends Component {
       cyioCoreObjectOrCyioCoreRelationshipId,
       cyioCoreObjectOrCyioCoreRelationshipReferences,
       typename,
+      removeIcon,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -242,7 +244,11 @@ class CyioAddExternalReferences extends Component {
             classes={{ root: classes.createButton }}
             disabled={disableAdd}
           >
-            <Add fontSize="small" />
+            {removeIcon ? (
+              <></>
+            ) : (
+              <Add fontSize="small" />
+            )}
           </IconButton>
         )}
         <div classes={{ root: classes.dialogRoot }}>
@@ -380,6 +386,7 @@ CyioAddExternalReferences.propTypes = {
   typename: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  removeIcon: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(CyioAddExternalReferences);

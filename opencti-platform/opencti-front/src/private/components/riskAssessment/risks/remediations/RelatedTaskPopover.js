@@ -15,6 +15,7 @@ import {
   toPairs,
 } from 'ramda';
 import * as R from 'ramda';
+import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -125,6 +126,19 @@ const relatedTaskEditionQuery = graphql`
   }
 `;
 
+const RelatedTaskValidation = (t) => Yup.object().shape({
+  name: Yup.string().required(t('This field is required')),
+  // external_id: Yup.string(),
+  // url: Yup.string().url(t('The value must be an URL')),
+  task_type: Yup.string().required(t('This field is required')),
+  description: Yup.string().required(t('This field is required')),
+  start_date: Yup.date().required(t('This field is required')),
+  end_date: Yup.date().min(
+    Yup.ref('start_date'),
+    "End date can't be before start date"
+  )
+});
+
 class RelatedTaskPopover extends Component {
   constructor(props) {
     super(props);
@@ -149,7 +163,7 @@ class RelatedTaskPopover extends Component {
   }
 
   handleClose() {
-    this.setState({ anchorEl: null });
+    this.setState({ anchorEl: null, resourceName: '', fieldName: '' });
   }
 
   handleOpenUpdate() {
@@ -170,16 +184,24 @@ class RelatedTaskPopover extends Component {
     this.setState({ displayDelete: false });
   }
 
+  onResetContextual() {
+    this.handleClose();
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
+    if (values.start_date && values.end_date) {
+      this.setState({
+        timing: [{
+          within_date_range: {
+            start_date: values.start_date === null ? null : parse(values.start_date).format(),
+            end_date: values.end_date === null ? null : parse(values.end_date).format(),
+          }
+        }],
+      })
+    }
       this.setState({
         responsible_roles: values.responsible_roles,
         associated_activities: values.associated_activities,
-        timing: {
-          within_date_range: {
-            start_date: values.start_date === null ? null : parse(values.start_date),
-            end_date: values.end_date === null ? null : parse(values.end_date),
-          }
-        },
       });
     const finalValues = pipe(
       dissoc('start_date'),
@@ -187,11 +209,11 @@ class RelatedTaskPopover extends Component {
       dissoc('resource_type'),
       dissoc('resource'),
       assoc('responsible_role', this.state.responsible_roles),
-      assoc('timings', this.state.timings),
+      assoc('timing', this.state.timing),
       toPairs,
       map((n) => ({
         'key': n[0],
-        'value': adaptFieldValue(n[1]),
+        'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
       })),
     )(values);
     CM(environmentDarkLight, {
@@ -279,7 +301,7 @@ class RelatedTaskPopover extends Component {
       R.assoc('name', data?.name || ''),
       R.assoc('description', data?.description || ''),
       R.assoc('task_type', data?.task_type || ''),
-      R.assoc('start_date', dateFormat(data.timing?.start_date) || dateFormat(data.timing?.on_date)),
+      R.assoc('start_date', dateFormat(data.timing?.start_date)),
       R.assoc('end_date', dateFormat(data?.timing?.end_date)),
       R.assoc('related_tasks', ''),
       R.assoc('associated_activities', ''),
@@ -377,9 +399,9 @@ class RelatedTaskPopover extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={RelatedTaskValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
-          // onReset={this.onResetContextual.bind(this)}
+            onReset={this.onResetContextual.bind(this)}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
