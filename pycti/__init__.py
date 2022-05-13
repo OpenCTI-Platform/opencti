@@ -41,9 +41,9 @@ from .entities.opencti_threat_actor import ThreatActor
 from .entities.opencti_tool import Tool
 from .entities.opencti_vulnerability import Vulnerability
 from .utils.constants import (
+    MultipleStixCyberObservableRelationship,
     StixCyberObservableTypes,
     StixMetaTypes,
-    MultipleStixCyberObservableRelationship,
 )
 from .utils.opencti_stix2 import OpenCTIStix2
 from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
