@@ -18,7 +18,7 @@ import { patchAttribute } from '../database/middleware';
 const SCHEDULE_TIME = conf.get('subscription_scheduler:interval');
 const SUBSCRIPTION_MANAGER_KEY = conf.get('subscription_scheduler:lock_key');
 
-const defaultCrons = ['5-minutes', '1-hours', '24-hours', '1-weeks'];
+const defaultCrons = ['5-minutes', '1-hours', '24-hours', '1-weeks', '1-months'];
 
 const subscriptionHandler = async () => {
   let lock;

@@ -18,6 +18,8 @@ import Chip from '@mui/material/Chip';
 import Fab from '@mui/material/Fab';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import { commitMutation } from '../../../relay/environment';
 import Filters, { isUniqFilter } from '../common/lists/Filters';
@@ -213,7 +215,7 @@ class UserSubscriptionCreation extends Component {
     super(props);
     this.state = {
       open: false,
-      options: ['KNOWLEDGE', 'CONTAINERS', 'TECHNICAL'],
+      options: ['ENTITIES', 'KNOWLEDGE', 'CONTAINERS', 'TECHNICAL'],
       filters: {},
     };
   }
@@ -225,7 +227,7 @@ class UserSubscriptionCreation extends Component {
   handleClose() {
     this.setState({
       open: false,
-      options: ['KNOWLEDGE', 'CONTAINERS', 'TECHNICAL'],
+      options: ['ENTITIES', 'KNOWLEDGE', 'CONTAINERS', 'TECHNICAL'],
       filters: {},
     });
   }
@@ -380,9 +382,43 @@ class UserSubscriptionCreation extends Component {
                     <MenuItem value="1-hours">{t('Every 1 hour')}</MenuItem>
                     <MenuItem value="24-hours">{t('Every 24 hours')}</MenuItem>
                     <MenuItem value="1-weeks">{t('Every week')}</MenuItem>
+                    <MenuItem value="1-months">{t('Every month')}</MenuItem>
                   </Field>
                   <FormControl component="fieldset" style={{ marginTop: 20 }}>
                     <FormGroup>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={options.includes('ENTITIES')}
+                            onChange={this.handleChangeOption.bind(
+                              this,
+                              'ENTITIES',
+                            )}
+                            name="ENTITIES"
+                          />
+                        }
+                        label={
+                          <div>
+                            <div style={{ float: 'left' }}>
+                              {t('Knowledge creations (entities)')}
+                            </div>
+                            <div
+                              style={{ float: 'left', margin: '1px 0 0 8px' }}
+                            >
+                              <Tooltip
+                                title={t(
+                                  'Receive a digest of all created entities (you may filter with one or more entity types to avoid having too many results).',
+                                )}
+                              >
+                                <InformationOutline
+                                  fontSize="small"
+                                  color="primary"
+                                />
+                              </Tooltip>
+                            </div>
+                          </div>
+                        }
+                      />
                       <FormControlLabel
                         control={
                           <Checkbox
@@ -394,9 +430,27 @@ class UserSubscriptionCreation extends Component {
                             name="KNOWLEDGE"
                           />
                         }
-                        label={t(
-                          'Knowledge update (except indicators & observables)',
-                        )}
+                        label={
+                          <div>
+                            <div style={{ float: 'left' }}>
+                              {t('Knowledge updates (relations)')}
+                            </div>
+                            <div
+                              style={{ float: 'left', margin: '1px 0 0 8px' }}
+                            >
+                              <Tooltip
+                                title={t(
+                                  'Receive a digest of all created relationships (except when related to indicators or observables).',
+                                )}
+                              >
+                                <InformationOutline
+                                  fontSize="small"
+                                  color="primary"
+                                />
+                              </Tooltip>
+                            </div>
+                          </div>
+                        }
                       />
                       <FormControlLabel
                         control={
@@ -409,7 +463,30 @@ class UserSubscriptionCreation extends Component {
                             name="CONTAINERS"
                           />
                         }
-                        label={t('Containers (reports, notes & opinions)')}
+                        label={
+                          <div>
+                            <div style={{ float: 'left' }}>
+                              {t('Containers (reports, notes & opinions)')}
+                            </div>
+                            <div
+                              style={{
+                                float: 'left',
+                                margin: '1px 0 0 8px',
+                              }}
+                            >
+                              <Tooltip
+                                title={t(
+                                  'Receive a digest of all created containers (reports, notes and opinions).',
+                                )}
+                              >
+                                <InformationOutline
+                                  fontSize="small"
+                                  color="primary"
+                                />
+                              </Tooltip>
+                            </div>
+                          </div>
+                        }
                       />
                       <FormControlLabel
                         control={
@@ -422,9 +499,29 @@ class UserSubscriptionCreation extends Component {
                             name="TECHNICAL"
                           />
                         }
-                        label={t(
-                          'Technical elements (indicators & observables)',
-                        )}
+                        label={
+                          <div>
+                            <div style={{ float: 'left' }}>
+                              {t(
+                                'Technical elements (indicators & observables)',
+                              )}
+                            </div>
+                            <div
+                              style={{ float: 'left', margin: '1px 0 0 8px' }}
+                            >
+                              <Tooltip
+                                title={t(
+                                  'Receive a digest of all created relationships to indicators and observables.',
+                                )}
+                              >
+                                <InformationOutline
+                                  fontSize="small"
+                                  color="primary"
+                                />
+                              </Tooltip>
+                            </div>
+                          </div>
+                        }
                       />
                     </FormGroup>
                   </FormControl>
@@ -438,6 +535,10 @@ class UserSubscriptionCreation extends Component {
                       'Malware',
                       'Vulnerability',
                       'Tool',
+                      'Sector',
+                      'Region',
+                      'Country',
+                      'City',
                     ]}
                     multiple={true}
                     fullWidth={true}
@@ -450,6 +551,7 @@ class UserSubscriptionCreation extends Component {
                     <Filters
                       variant="text"
                       availableFilterKeys={[
+                        'entity_type',
                         'markedBy',
                         'labelledBy',
                         'createdBy',

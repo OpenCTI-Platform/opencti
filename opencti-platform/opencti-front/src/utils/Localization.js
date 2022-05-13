@@ -269,8 +269,10 @@ const i18n = {
       'The value must be an email address':
         'La valeur doit être une adresse email',
       'The value must be an URL': 'La valeur doit être une URL',
-      'Starting synchronization (empty = from start)': 'Début de synchronisation (vide = début)',
-      'The value must be a date (mm/dd/yyyy)': 'La valeur doit être une date (dd/mm/aaaaa)',
+      'Starting synchronization (empty = from start)':
+        'Début de synchronisation (vide = début)',
+      'The value must be a date (mm/dd/yyyy)':
+        'La valeur doit être une date (dd/mm/aaaaa)',
       'The values do not match': 'Les valeurs ne correspondent pas',
       'No available options': 'Aucune option disponible',
       'No description of this usage': 'Aucune description de cet usage',
@@ -331,6 +333,7 @@ const i18n = {
       'Every 1 hour': 'Toutes les heures',
       'Every 24 hours': 'Toutes les 24 heures',
       'Every week': 'Toutes les semaines',
+      'Every month': 'Tous les mois',
       'New alias': 'Nouvel alias',
       'Aliases separated by commas': 'Alias séparés par des virgules',
       Alias: 'Alias',
@@ -1377,6 +1380,7 @@ const i18n = {
       SYNC_MANAGER: 'Manager de synchronisation',
       SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
       RETENTION_MANAGER: 'Manager de rétention',
+      HISTORY_MANAGER: "Manager d'historique",
       'Workflow of': 'Flux de travail de',
       'Create a status': 'Créer un statut',
       'Clear all works': 'Nettoyer toutes les exécutions',
@@ -1605,7 +1609,8 @@ const i18n = {
       'The value must be a number': '该值必须是一个数字',
       'The value must be an email address': '该值必须是一个邮件地址',
       'The value must be an URL': '该值必须是一个URL',
-      'Starting synchronization (empty = from start)': '開始同步(空的 = 從一開始)',
+      'Starting synchronization (empty = from start)':
+        '開始同步(空的 = 從一開始)',
       'The value must be a date (mm/dd/yyyy)': '该值必须是一个日期(mm/dd/yyyy)',
       'The values do not match': '该值不匹配',
       'No available options': '没有可用的选项',
@@ -1665,6 +1670,7 @@ const i18n = {
       'Every 1 hour': '每1小时',
       'Every 24 hours': '每24小时',
       'Every week': '每周',
+      'Every month': '每个月',
       'New alias': '新别名',
       'Aliases separated by commas': '用逗号分隔的别名',
       Alias: '别名',
@@ -2686,6 +2692,7 @@ const i18n = {
       SYNC_MANAGER: '同步管理器',
       SUBSCRIPTION_MANAGER: '订阅管理器',
       RETENTION_MANAGER: '保留管理器',
+      HISTORY_MANAGER: '历史经理',
       'Workflow of': '的工作流程',
       'Create a status': '创建状态',
       'Clear all works': '清除所有作品',
@@ -2947,6 +2954,7 @@ const i18n = {
       SYNC_MANAGER: 'Synchronization manager',
       SUBSCRIPTION_MANAGER: 'Subscriptions manager',
       RETENTION_MANAGER: 'Retention manager',
+      HISTORY_MANAGER: 'HIstory manager',
     },
   },
 };

@@ -12,6 +12,7 @@ import { FROM_START_STR, hoursAgo, minutesAgo, prepareDate } from '../utils/form
 import { SYSTEM_USER } from '../utils/access';
 import { findAll as findAllStixCoreRelationships } from './stixCoreRelationship';
 import { findAll as findAllStixMetaRelationships } from './stixMetaRelationship';
+import { findAll as findAllStixCoreObjects } from './stixCoreObject';
 import { findAll as findAllContainers } from './container';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -28,20 +29,21 @@ import {
 import { convertFiltersToQueryOptions } from './taxii';
 import { resolveUserById } from './user';
 import {
+  ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   BASE_TYPE_ENTITY,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LOCATION,
+  ENTITY_TYPE_LOCATION
 } from '../schema/general';
 import {
-  containerToHtml,
+  containerToHtml, entityToHtml,
   footer,
   header,
   relationshipToHtml,
   sectionFooter,
   sectionHeader,
-  technicalElementToHtml,
+  technicalElementToHtml
 } from '../utils/mailData';
 import { getParentTypes } from '../schema/schemaUtils';
 
@@ -113,7 +115,7 @@ export const generateDigestForSubscription = async (subscription) => {
       date = hoursAgo(number);
     }
   }
-  const data = { knowledgeData: [], containersData: [], technicalData: [] };
+  const data = { knowledgeData: [], containersData: [], technicalData: [], entitiesData: [] };
   if (subscription.options.includes('KNOWLEDGE')) {
     const knowledgeParamsFrom = {
       first: 1000,
@@ -136,7 +138,7 @@ export const generateDigestForSubscription = async (subscription) => {
         const resultFrom = await findAllStixCoreRelationships(user, {
           ...knowledgeParamsFrom,
           fromId: entityId,
-          toTypes: [
+          toTypes: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : [
             ENTITY_TYPE_THREAT_ACTOR,
             ENTITY_TYPE_INTRUSION_SET,
             ENTITY_TYPE_CAMPAIGN,
@@ -154,7 +156,7 @@ export const generateDigestForSubscription = async (subscription) => {
         const resultTo = await findAllStixCoreRelationships(user, {
           ...knowledgeParamsTo,
           toId: entityId,
-          fromTypes: [
+          fromTypes: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : [
             ENTITY_TYPE_THREAT_ACTOR,
             ENTITY_TYPE_INTRUSION_SET,
             ENTITY_TYPE_CAMPAIGN,
@@ -173,7 +175,7 @@ export const generateDigestForSubscription = async (subscription) => {
     } else {
       const result = await findAllStixCoreRelationships(user, {
         ...knowledgeParamsFrom,
-        fromTypes: [
+        fromTypes: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : [
           ENTITY_TYPE_THREAT_ACTOR,
           ENTITY_TYPE_INTRUSION_SET,
           ENTITY_TYPE_CAMPAIGN,
@@ -186,7 +188,7 @@ export const generateDigestForSubscription = async (subscription) => {
           ENTITY_TYPE_IDENTITY,
           ENTITY_TYPE_LOCATION,
         ],
-        toTypes: [
+        toTypes: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : [
           ENTITY_TYPE_THREAT_ACTOR,
           ENTITY_TYPE_INTRUSION_SET,
           ENTITY_TYPE_CAMPAIGN,
@@ -203,6 +205,17 @@ export const generateDigestForSubscription = async (subscription) => {
       knowledgeData = [...knowledgeData, ...result];
     }
     data.knowledgeData = knowledgeData;
+  }
+  if (subscription.options.includes('ENTITIES')) {
+    const params = {
+      first: 1000,
+      orderBy: 'created_at',
+      orderMode: 'desc',
+      filters: [...queryOptions.filters, { key: 'created_at', values: [prepareDate(date)], operator: 'gt' }],
+      types: queryOptions.types && queryOptions.types.length > 0 ? queryOptions.types : ['Stix-Core-Object'],
+      connectionFormat: false,
+    };
+    data.entitiesData = await findAllStixCoreObjects(user, params);
   }
   if (subscription.options.includes('CONTAINERS')) {
     const containersParams = {
@@ -257,7 +270,7 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     data.technicalData = technicalData;
   }
-  if (data.containersData.length === 0 && data.knowledgeData.length === 0 && data.technicalData.length === 0) {
+  if (data.containersData.length === 0 && data.knowledgeData.length === 0 && data.technicalData.length === 0 && data.entitiesData.length === 0) {
     return null;
   }
   // Prepare HTML data
@@ -285,9 +298,23 @@ export const generateDigestForSubscription = async (subscription) => {
     }
     htmlData += sectionFooter(footerNumber, 'containers');
   }
+  if (data.entitiesData.length > 0) {
+    const number = data.entitiesData.length;
+    htmlData += sectionHeader('Entities', number);
+    let footerNumber = 0;
+    if (number > 10) {
+      footerNumber = number - 10;
+    }
+    // eslint-disable-next-line no-restricted-syntax
+    for (const entity of R.take(10, data.entitiesData)) {
+      const fullEntity = await storeFullLoadById(user, entity.id, ABSTRACT_STIX_CORE_OBJECT);
+      htmlData += entityToHtml(baseUrl, fullEntity);
+    }
+    htmlData += sectionFooter(footerNumber, 'entities');
+  }
   if (data.knowledgeData.length > 0) {
     const number = data.knowledgeData.length;
-    htmlData += sectionHeader('Knowledge', number);
+    htmlData += sectionHeader('Relationships', number);
     let footerNumber = 0;
     if (number > 10) {
       footerNumber = number - 10;
@@ -325,5 +352,5 @@ export const generateDigestForSubscription = async (subscription) => {
     htmlData += sectionFooter(footerNumber, 'technical elements');
   }
   htmlData += footer;
-  return { to: user.user_email, subject: `[OpenCTI digest] ${subscription.name}`, html: htmlData };
+  return { to: user.user_email, subject: subscription.name, html: htmlData };
 };

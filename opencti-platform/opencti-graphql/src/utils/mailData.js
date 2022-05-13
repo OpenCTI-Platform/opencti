@@ -294,6 +294,27 @@ export const relationshipToHtml = (url, entry) => {
   `;
 };
 
+export const entityToHtml = (url, entry) => {
+  const fullUrl = `${url + resolveLink(entry.to.entity_type)}/${entry.to.id}/knowledge/relations/${entry.id}`;
+  const author = entry.createdBy && entry.createdBy[0] ? entry.createdBy[0].name : 'Unknown';
+  return `
+            <tr>
+                <td bgcolor="#ffffff" style="padding:0; width: 40%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
+                    <a style="color:#f507bc8; text-decoration:none;" href="${fullUrl}">${truncate(
+    defaultValue(entry.from),
+    80
+  )}.</a>
+                </td>
+                <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:left; background: #ffffff;background-color:#ffffff;" valign="top">
+                    ${truncate(entry.from.description, 60)}
+                </td>
+                <td bgcolor="#ffffff" style="padding:0; width: 30%; text-align:left; background: #ffffff;background-color: #ffffff;" valign="top">
+                    <span style="color: #999999; margin: 0;">By ${author}, ${prepareDate(entry.created_at)}</span>
+                 </td>
+            </tr>
+  `;
+};
+
 export const technicalElementToHtml = (url, entry) => {
   const fullUrl = `${url + resolveLink(entry.to.entity_type)}/${entry.to.id}/knowledge/relations/${entry.id}`;
   const author = entry.createdBy && entry.createdBy[0] ? entry.createdBy[0].name : 'Unknown';
