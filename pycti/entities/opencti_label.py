@@ -134,8 +134,10 @@ class Label:
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        update = kwargs.get("update", False)
 
         if value is not None:
+            self.opencti.log("info", "Creating Label {" + value + "}.")
             query = (
                 """
                 mutation LabelAdd($input: LabelAddInput) {
@@ -155,6 +157,7 @@ class Label:
                         "value": value,
                         "color": color,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
+                        "update": update,
                     }
                 },
             )
