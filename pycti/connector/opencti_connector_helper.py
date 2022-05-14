@@ -285,6 +285,7 @@ class ListenStream(threading.Thread):
         self.listen_delete = listen_delete if listen_delete is not None else True
         self.no_dependencies = no_dependencies if no_dependencies is not None else False
         self.recover_iso_date = recover_iso_date
+        self.exit_event = threading.Event()
         self.exit = False
 
     def run(self) -> None:  # pylint: disable=too-many-branches
@@ -429,6 +430,7 @@ class ListenStream(threading.Thread):
 
     def stop(self):
         self.exit = True
+        self.exit_event.set()
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
