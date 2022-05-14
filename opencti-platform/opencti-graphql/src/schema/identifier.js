@@ -1,6 +1,7 @@
 /* eslint-disable camelcase,no-case-declarations */
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
+import * as jsonpatch from 'fast-json-patch';
 import jsonCanonicalize from 'canonicalize';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { convertEntityTypeToStixType } from './schemaUtils';
@@ -24,7 +25,7 @@ import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
-import { isEmptyField, isNotEmptyField } from '../database/utils';
+import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 
 // region hashes
 const MD5 = 'MD5';
@@ -51,7 +52,6 @@ export const VALID_UNTIL = 'valid_until';
 export const REVOKED = 'revoked';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
 export const X_DETECTION = 'x_opencti_detection';
-export const X_ADDITIONAL_NAMES = 'x_opencti_additional_names';
 // endregion
 
 export const normalizeName = (name) => {
@@ -165,7 +165,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
     [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
     [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
-    [D.ENTITY_TYPE_LOCATION_POSITION]: [{ src: NAME_FIELD }, { src: 'latitude' }, { src: 'longitude' }],
+    [D.ENTITY_TYPE_LOCATION_POSITION]: [[{ src: 'latitude' }, { src: 'longitude' }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_THREAT_ACTOR]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
@@ -175,7 +175,7 @@ const stixEntityContribution = {
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition' }, { src: 'definition_type' }],
     [M.ENTITY_TYPE_LABEL]: [{ src: 'value' }],
     [M.ENTITY_TYPE_KILL_CHAIN_PHASE]: [{ src: 'phase_name' }, { src: 'kill_chain_name' }],
-    [M.ENTITY_TYPE_EXTERNAL_REFERENCE]: [[{ src: 'url' }], [{ src: 'source_name' }, { src: 'external_id' }]],
+    [M.ENTITY_TYPE_EXTERNAL_REFERENCE]: [[{ src: 'url' }], [{ src: 'source_name', dependencies: ['external_id'] }, { src: 'external_id' }]],
   },
   resolvers: {
     name(data) {
@@ -212,6 +212,7 @@ export const idGenFromData = (type, data) => {
   const uuid = uuidv5(dataCanonicalize, OPENCTI_NAMESPACE);
   return `${convertEntityTypeToStixType(type)}--${uuid}`;
 };
+
 export const fieldsContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
@@ -223,11 +224,11 @@ export const fieldsContributingToStandardId = (instance, keys) => {
   }
   // Handle specific case of dedicated generation function
   if (!Array.isArray(properties)) {
-    return false;
+    return [];
   }
   // Handle specific case of all
   if (properties.length === 0) {
-    return true;
+    return keys;
   }
   const targetKeys = R.map((k) => (k.includes('.') ? R.head(k.split('.')) : k), keys);
   const propertiesToKeep = R.map((t) => t.src, R.flatten(properties));
@@ -274,31 +275,67 @@ const generateDataUUID = (type, data) => {
   }
   // Handle specific case of dedicated generation function
   if (!Array.isArray(properties)) {
-    return properties();
+    return { data: properties(), way: properties };
   }
   if (properties.length === 0) {
-    return data;
+    return { data, way: properties };
   }
   // In same case ID have multiple possibility for his generation.
-  let uuidData;
+  const dataWay = {};
   const haveDiffWays = Array.isArray(R.head(properties));
   if (haveDiffWays) {
     for (let index = 0; index < properties.length; index += 1) {
       const way = properties[index];
-      uuidData = filteredIdContributions(contrib, way, data);
-      if (!R.isEmpty(uuidData)) break; // Stop as soon as a correct id is find
+      const uuid = filteredIdContributions(contrib, way, data);
+      if (!R.isEmpty(uuid)) {
+        dataWay.way = way;
+        dataWay.data = uuid;
+        break; // Stop as soon as a correct id is found
+      }
     }
   } else {
-    uuidData = filteredIdContributions(contrib, properties, data);
+    dataWay.way = properties;
+    dataWay.data = filteredIdContributions(contrib, properties, data);
   }
-  return uuidData;
+  return dataWay;
 };
+
+export const isStandardIdSameWay = (previousInstance, updatedInstance) => {
+  const { way: previousWay } = generateDataUUID(previousInstance.entity_type, previousInstance);
+  const { way: currentWay } = generateDataUUID(updatedInstance.entity_type, updatedInstance);
+  return R.equals(previousWay, currentWay);
+};
+
+const isStandardIdChanged = (previous, updated, operation) => {
+  // If the way change, is not an upgrade
+  if (!isStandardIdSameWay(previous, updated)) {
+    return false;
+  }
+  // If same way, test if only adding is part of operation
+  const { way: previousWay } = generateDataUUID(previous.entity_type, previous);
+  const dataPrevious = R.fromPairs(Object.entries(previous).filter(([k]) => previousWay.map((w) => w.src).includes(k)));
+  const { way: currentWay } = generateDataUUID(updated.entity_type, updated);
+  const dataUpdated = R.fromPairs(Object.entries(updated).filter(([k]) => currentWay.map((w) => w.src).includes(k)));
+  const patch = jsonpatch.compare(dataPrevious, dataUpdated);
+  const numberOfOperations = patch.length;
+  const numberOfUpgrade = patch.filter((p) => p.op === operation).length;
+  return numberOfOperations === numberOfUpgrade;
+};
+
+export const isStandardIdUpgraded = (previous, updated) => {
+  return isStandardIdChanged(previous, updated, UPDATE_OPERATION_ADD);
+};
+
+export const isStandardIdDowngraded = (previous, updated) => {
+  return isStandardIdChanged(previous, updated, UPDATE_OPERATION_REMOVE);
+};
+
 const generateStixUUID = (type, data) => {
-  const dataUUID = generateDataUUID(type, data);
+  const { data: dataUUID } = generateDataUUID(type, data);
   return idGen(type, data, dataUUID, OASIS_NAMESPACE);
 };
 const generateObjectUUID = (type, data) => {
-  const dataUUID = generateDataUUID(type, data);
+  const { data: dataUUID } = generateDataUUID(type, data);
   return idGen(type, data, dataUUID, OPENCTI_NAMESPACE);
 };
 

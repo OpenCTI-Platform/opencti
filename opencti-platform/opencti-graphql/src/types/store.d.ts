@@ -160,6 +160,7 @@ interface StoreRawRelation extends StoreProxyRelation {
   start_time: Date;
   stop_time: Date;
   created: Date;
+  modified: Date;
   // boolean
   revoked: boolean;
   x_opencti_negative: boolean;
@@ -275,6 +276,7 @@ interface BasicStoreEntity extends StoreProxyEntity {
   capabilities: Array<string>;
   // dates
   created: Date;
+  modified: Date;
   published: Date;
   first_seen: Date;
   last_seen: Date;

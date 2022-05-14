@@ -265,7 +265,7 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
   return {
     ...buildStixObject(instance),
     created: instance.created,
-    modified: instance.updated_at, // TODO JRI Do we need to assign updated_at in modified?
+    modified: instance.modified,
     revoked: instance.revoked,
     confidence: instance.confidence,
     lang: instance.lang,
@@ -643,7 +643,7 @@ const convertCryptographicKeyToStix = (instance: StoreCyberObservable, type: str
   };
 };
 const convertDirectoryToStix = (instance: StoreCyberObservable, type: string): SCO.StixDirectory => {
-  assertType(ENTITY_CRYPTOGRAPHIC_KEY, type);
+  assertType(ENTITY_DIRECTORY, type);
   return {
     ...buildStixCyberObservable(instance),
     path: instance.path,

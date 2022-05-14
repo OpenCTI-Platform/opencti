@@ -61,7 +61,8 @@ import {
   idGenFromData,
   INTERNAL_FROM_FIELD,
   INTERNAL_TO_FIELD,
-  isFieldContributingToStandardId,
+  isFieldContributingToStandardId, isStandardIdDowngraded,
+  isStandardIdUpgraded,
   LAST_OBSERVED,
   LAST_SEEN,
   NAME_FIELD,
@@ -74,6 +75,7 @@ import {
   X_DETECTION,
 } from '../schema/identifier';
 import {
+  isStixData,
   lockResource,
   notify,
   redisAddDeletions,
@@ -151,7 +153,7 @@ import {
   dateForStartAttributes,
   dictAttributes,
   isDateAttribute,
-  isDictionaryAttribute,
+  isDictionaryAttribute, isModifiedObject,
   isMultipleAttribute,
   isNumericAttribute,
   isUpdatedAtObject,
@@ -1342,8 +1344,6 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
   // Upsert option is only useful to force aliases to be kept when upserting the entity
   const { impactStandardId = true, upsert = false } = opts;
   const elements = Array.isArray(inputs) ? inputs : [inputs];
-  const updatedInputs = [];
-  const impactedInputs = [];
   const instanceType = instance.entity_type;
   // Prepare attributes
   const preparedElements = prepareAttributes(instanceType, elements);
@@ -1369,41 +1369,45 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
     if (nameInput || aliasesInput) {
-      const aliasesForIds = [];
-      if (nameInput) {
-        const name = R.head(nameInput.value);
-        aliasesForIds.push(name);
-        // In case of name change, old name must be pushed in aliases
-        // If aliases are also ask for modification, we need to change the input
-        if (normalizeName(instance.name) !== normalizeName(name)) {
-          if (aliasesInput) {
-            aliasesInput.value.push(instance.name);
+      const name = nameInput ? R.head(nameInput.value) : undefined;
+      // In case of upsert name change, old name must be pushed in aliases
+      // If aliases are also ask for modification, we need to change the input
+      if (name && normalizeName(instance.name) !== normalizeName(name)) {
+        // If name change, we need to do some specific actions
+        const aliases = [...(instance[aliasField] ?? [])];
+        if (upsert) {
+          // For upsert, we concatenate everything to be none destructive
+          aliases.push(instance.name);
+          // If name changing is part of an upsert, the previous name must be copied into aliases
+          if (aliasesInput) { // If aliases input also exists
+            aliases.push(...aliasesInput.value);
+            aliasesInput.value = R.uniq(aliases);
           } else { // We need to create an extra input getting existing aliases
-            const aliasChangeInput = { key: aliasField, value: [instance.name, ...(instance[aliasField] || [])] };
-            preparedElements.push(aliasChangeInput);
+            const generatedAliasesInput = { key: aliasField, value: R.uniq(aliases) };
+            preparedElements.push(generatedAliasesInput);
           }
         }
-      } else {
-        aliasesForIds.push(instance.name);
-      }
-      if (aliasesInput) {
-        // In Upsert mode, aliases update must not be destructive, previous aliases must be kept
+        // Regenerated the internal ids with the instance target aliases
+        const aliasesId = generateAliasesId(R.uniq([name, ...aliases]), instance);
+        const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+        preparedElements.push(aliasInput);
+      } else if (aliasesInput) {
+        // No name change asked but aliases addition
         if (upsert) {
+          // In upsert we cumulate with current aliases
           aliasesInput.value = R.uniq([...aliasesInput.value, ...(instance[aliasField] || [])]);
         }
-        aliasesForIds.push(...aliasesInput.value);
-      } else { // If alias are not updated, regenerated with the current instance aliases
-        aliasesForIds.push(...(instance[aliasField] || []));
+        // Internal ids alias must be generated again
+        const aliasesId = generateAliasesId(R.uniq([instance.name, ...aliasesInput.value]), instance);
+        const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+        preparedElements.push(aliasInput);
       }
-      const aliasesId = generateAliasesId(aliasesForIds, instance);
-      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-      const aliasIns = innerUpdateAttribute(instance, aliasInput);
-      impactedInputs.push(...aliasIns);
     }
   }
+  // endregion
+  // region Artifact and file additional names
   // In case of artifact and file, we need to keep name in additional names in case of upsert
-  const isNamedObservable = instanceType === ENTITY_HASHED_OBSERVABLE_ARTIFACT
-      || instanceType === ENTITY_HASHED_OBSERVABLE_STIX_FILE;
+  const isNamedObservable = instanceType === ENTITY_HASHED_OBSERVABLE_ARTIFACT || instanceType === ENTITY_HASHED_OBSERVABLE_STIX_FILE;
   if (upsert && isNamedObservable) {
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     // In Upsert mode, x_opencti_additional_names update must not be destructive, previous names must be kept
@@ -1421,13 +1425,71 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
     }
   }
   // endregion
+  // region Standard id impact
+  // If update is part of the key, update the standard_id
+  const keys = R.map((t) => t.key, preparedElements);
+  if (impactStandardId && isFieldContributingToStandardId(instance, keys)) {
+    const updatedInstance = mergeInstanceWithUpdateInputs(instance, preparedElements);
+    // const updatedInstance = mergeInstanceWithInputs(instance, preparedElements);
+    const standardId = generateStandardId(instanceType, updatedInstance);
+    if (instance.standard_id !== standardId) {
+      // In some condition the impacted element will not generate a new standard.
+      // It's the case of HASH for example. If SHA1 is added after MD5, it's an impact without actual change
+      preparedElements.push({ key: ID_STANDARD, value: [standardId] });
+      // For stix element, looking for keeping old stix ids
+      if (isStixData(instance)) {
+        // Standard id is generated from data depending on multiple ways and multiple attributes
+        if (isStandardIdUpgraded(instance, updatedInstance)) {
+          // If update already contains a change of the other stix ids
+          // we need to impact directly the impacted and updated related input
+          const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
+          if (stixInput) {
+            stixInput.value = R.uniq([...stixInput.value, instance.standard_id]);
+          } else {
+            // If no stix ids modification, add the standard id in the list and patch the element
+            const ids = R.uniq([...(instance[IDS_STIX] ?? []), instance.standard_id]);
+            preparedElements.push({ key: IDS_STIX, value: ids });
+          }
+        } else if (isStandardIdDowngraded(instance, updatedInstance)) {
+          // If standard_id is downgraded, we need to remove the old one from the other stix ids
+          const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
+          if (stixInput) {
+            stixInput.value = stixInput.value.filter((i) => i !== standardId);
+          } else {
+            // If no stix ids modification, add the standard id in the list and patch the element
+            const ids = (instance[IDS_STIX] ?? []).filter((i) => i !== standardId);
+            preparedElements.push({ key: IDS_STIX, value: ids });
+          }
+        }
+      }
+    }
+  }
+  // endregion
+  // If is valid_until modification, update also revoked if needed
+  const validUntilInput = R.find((e) => e.key === VALID_UNTIL, preparedElements);
+  if (validUntilInput) {
+    const untilDate = R.head(validUntilInput.value);
+    const untilDateTime = utcDate(untilDate).toDate();
+    const nowDate = utcDate().toDate();
+    const isMustBeRevoked = untilDateTime < nowDate;
+    const revokedInput = R.find((e) => e.key === REVOKED, preparedElements);
+    if (!revokedInput) {
+      preparedElements.push({ key: REVOKED, value: [isMustBeRevoked] });
+    }
+    const detectionInput = R.find((e) => e.key === X_DETECTION, preparedElements);
+    if (!detectionInput && instance.entity_type === ENTITY_TYPE_INDICATOR && untilDateTime <= nowDate) {
+      preparedElements.push({ key: X_DETECTION, value: [false] });
+    }
+  }
   // Update all needed attributes with inner elements if needed
+  const updatedInputs = [];
+  const impactedInputs = [];
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
     if (ins.length > 0) {
       const filteredIns = ins.filter((o) => {
-        if (input.key === IDS_STIX) {
+        if (o.key === IDS_STIX) {
           const previous = getPreviousInstanceValue(o.key, instance);
           if (o.operation === UPDATE_OPERATION_ADD) {
             const newValues = o.value.filter((p) => !(previous || []).includes(p));
@@ -1440,7 +1502,7 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
           return o.value.filter((p) => isTrustedStixId(p)).length > 0;
         }
         // Updated inputs must not be internals
-        return !input.key.startsWith('i_') && input.key !== 'x_opencti_graph_data';
+        return !o.key.startsWith('i_') && o.key !== 'x_opencti_graph_data';
       });
       if (filteredIns.length > 0) {
         const updatedInputsFiltered = filteredIns.map((filteredInput) => {
@@ -1468,45 +1530,6 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
       impactedInputs.push(...ins);
     }
   }
-  // Specific cases
-  // If is valid_until modification, update also revoked if needed
-  const validUntilInput = R.find((e) => e.key === VALID_UNTIL, preparedElements);
-  if (validUntilInput) {
-    const untilDate = R.head(validUntilInput.value);
-    const untilDateTime = utcDate(untilDate).toDate();
-    const nowDate = utcDate().toDate();
-    const isMustBeRevoked = untilDateTime < nowDate;
-    const revokedInput = R.find((e) => e.key === REVOKED, preparedElements);
-    if (!revokedInput) {
-      const inputRevoked = { key: REVOKED, value: [isMustBeRevoked] };
-      const revokedIn = innerUpdateAttribute(instance, inputRevoked);
-      if (revokedIn.length > 0) {
-        updatedInputs.push({ ...inputRevoked, previous: getPreviousInstanceValue(inputRevoked.key, instance) });
-        impactedInputs.push(...revokedIn);
-      }
-    }
-    const detectionInput = R.find((e) => e.key === X_DETECTION, preparedElements);
-    if (!detectionInput && instance.entity_type === ENTITY_TYPE_INDICATOR && untilDateTime <= nowDate) {
-      const inputDetection = { key: X_DETECTION, value: [false] };
-      const detectionIn = innerUpdateAttribute(instance, inputDetection);
-      if (detectionIn.length > 0) {
-        updatedInputs.push(inputDetection);
-        impactedInputs.push(...detectionIn);
-      }
-    }
-  }
-  // If update is part of the key, update the standard_id
-  const keys = R.map((t) => t.key, impactedInputs);
-  if (impactStandardId && isFieldContributingToStandardId(instance, keys)) {
-    const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
-    const standardId = generateStandardId(instanceType, updatedInstance);
-    const standardInput = { key: ID_STANDARD, value: [standardId] };
-    const ins = innerUpdateAttribute(instance, standardInput);
-    if (ins.length > 0) {
-      updatedInputs.push({ key: 'id', value: [standardId], previous: [instance.standard_id] });
-      impactedInputs.push(...ins);
-    }
-  }
   // Update updated_at
   const today = now();
   // Impact the updated_at only if stix data is impacted
@@ -1514,11 +1537,10 @@ export const updateAttributeRaw = (instance, inputs, opts = {}) => {
     const updatedAtInput = { key: 'updated_at', value: [today] };
     impactedInputs.push(updatedAtInput);
   }
-  // TODO JRI Need to be reactivated?
-  // if (impactedInputs.length > 0 && !inputKeys.includes('modified') && isModifiedObject(instance.entity_type)) {
-  //   const modifiedAtInput = { key: 'modified', value: [today] };
-  //   impactedInputs.push(modifiedAtInput);
-  // }
+  if (updatedInputs.length > 0 && isModifiedObject(instance.entity_type)) {
+    const modifiedAtInput = { key: 'modified', value: [today] };
+    impactedInputs.push(modifiedAtInput);
+  }
   return {
     updatedInputs, // Sourced inputs for event stream
     impactedInputs, // All inputs that need to be re-indexed. (so without meta relationships)
@@ -1577,7 +1599,7 @@ export const updateAttribute = async (user, id, type, inputs, opts = {}) => {
     // Based on that we will be able to generate the correct standard id
     locksIds = getInstanceIds(updated); // Take lock ids on the new merged initial.
     const targetStandardId = generateStandardId(initial.entity_type, updated);
-    if (targetStandardId !== initial.standard_id) {
+    if (targetStandardId !== initial.standard_id && !(initial[IDS_STIX] ?? []).includes(targetStandardId)) {
       locksIds.push(targetStandardId);
       eventualNewStandardId = targetStandardId;
     }
