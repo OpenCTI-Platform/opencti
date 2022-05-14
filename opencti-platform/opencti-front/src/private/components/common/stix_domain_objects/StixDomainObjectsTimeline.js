@@ -142,7 +142,7 @@ const stixDomainObjectsTimelineQuery = graphql`
 
 class StixDomainObjectsTimeline extends Component {
   renderContent() {
-    const { t, types, md, classes } = this.props;
+    const { t, types, fldt, classes } = this.props;
     const stixDomainObjectsVariables = {
       types,
       first: 10,
@@ -170,10 +170,11 @@ class StixDomainObjectsTimeline extends Component {
                     )}/${stixDomainObject.id}`;
                     return (
                       <TimelineItem key={stixDomainObject.id}>
-                        <TimelineOppositeContent>
-                          <Typography variant="body2" color="textSecondary">
-                            {md(stixDomainObject.created)}
-                          </Typography>
+                        <TimelineOppositeContent
+                          sx={{ paddingTop: '18px' }}
+                          color="text.secondary"
+                        >
+                          {fldt(stixDomainObject.created)}
                         </TimelineOppositeContent>
                         <TimelineSeparator>
                           <Link to={link}>

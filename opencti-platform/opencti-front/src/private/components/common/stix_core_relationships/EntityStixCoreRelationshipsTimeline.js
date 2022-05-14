@@ -1186,7 +1186,7 @@ class EntityStixCoreRelationshipsTimeline extends Component {
       entityId,
       toTypes,
       relationshipType,
-      md,
+      fldt,
       startDate,
       endDate,
       classes,
@@ -1233,10 +1233,11 @@ class EntityStixCoreRelationshipsTimeline extends Component {
                         }/knowledge/relations/${stixCoreRelationship.id}`;
                       return (
                         <TimelineItem key={stixCoreRelationship.id}>
-                          <TimelineOppositeContent>
-                            <Typography variant="body2" color="textSecondary">
-                              {md(stixCoreRelationship.created)}
-                            </Typography>
+                          <TimelineOppositeContent
+                            sx={{ paddingTop: '18px' }}
+                            color="text.secondary"
+                          >
+                            {fldt(stixCoreRelationship.created)}
                           </TimelineOppositeContent>
                           <TimelineSeparator>
                             <Link to={link}>

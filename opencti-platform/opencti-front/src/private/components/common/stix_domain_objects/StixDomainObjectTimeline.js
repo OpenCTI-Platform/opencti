@@ -40,7 +40,15 @@ const styles = (theme) => ({
 
 class StixDomainObjectTimelineComponent extends Component {
   render() {
-    const { md, classes, data, stixDomainObjectId, entityLink, timeField, t } = this.props;
+    const {
+      fldt,
+      classes,
+      data,
+      stixDomainObjectId,
+      entityLink,
+      timeField,
+      t,
+    } = this.props;
     const stixRelationships = pipe(
       map((n) => n.node),
       map((n) => (n.from && n.from.id === stixDomainObjectId
@@ -56,16 +64,17 @@ class StixDomainObjectTimelineComponent extends Component {
               const restricted = stixRelationship.targetEntity === null;
               return (
                 <TimelineItem key={stixRelationship.id}>
-                  <TimelineOppositeContent>
-                    <Typography variant="body2" color="textSecondary">
-                      {md(
-                        timeField === 'technical'
-                          ? stixRelationship.created
-                              || stixRelationship.created_at
-                          : stixRelationship.start_time
-                              || stixRelationship.created_at,
-                      )}
-                    </Typography>
+                  <TimelineOppositeContent
+                    sx={{ paddingTop: '18px' }}
+                    color="text.secondary"
+                  >
+                    {fldt(
+                      timeField === 'technical'
+                        ? stixRelationship.created
+                            || stixRelationship.created_at
+                        : stixRelationship.start_time
+                            || stixRelationship.created_at,
+                    )}
                   </TimelineOppositeContent>
                   <TimelineSeparator>
                     <Link to={link}>
