@@ -5,8 +5,6 @@ import os
 
 import magic
 
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
-
 
 class StixCyberObservable:
     def __init__(self, opencti, file):
@@ -577,7 +575,7 @@ class StixCyberObservable:
         if "x_opencti_description" in observable_data:
             x_opencti_description = observable_data["x_opencti_description"]
         else:
-            x_opencti_description = OpenCTIConnectorHelper.get_attribute_in_extension(
+            x_opencti_description = self.opencti.get_attribute_in_extension(
                 "description"
             )
 
@@ -586,8 +584,8 @@ class StixCyberObservable:
 
         if "x_opencti_score" in observable_data:
             x_opencti_score = observable_data["x_opencti_score"]
-        elif OpenCTIConnectorHelper.get_attribute_in_extension("score") is not None:
-            x_opencti_score = OpenCTIConnectorHelper.get_attribute_in_extension("score")
+        elif self.opencti.get_attribute_in_extension("score") is not None:
+            x_opencti_score = self.opencti.get_attribute_in_extension("score")
 
         stix_id = observable_data["id"] if "id" in observable_data else None
         if simple_observable_id is not None:

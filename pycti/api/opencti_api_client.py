@@ -642,3 +642,47 @@ class OpenCTIApiClient:
         """
         result = self.query(query, {"id": id})
         return json.loads(result["data"]["stix"])
+
+    @staticmethod
+    def get_attribute_in_extension(key, object) -> any:
+        if (
+            "extensions" in object
+            and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            in object["extensions"]
+            and key
+            in object["extensions"][
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            ]
+        ):
+            return object["extensions"][
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            ][key]
+        elif (
+            "extensions" in object
+            and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            in object["extensions"]
+            and key
+            in object["extensions"][
+                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            ]
+        ):
+            return object["extensions"][
+                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            ][key]
+        return None
+
+    @staticmethod
+    def get_attribute_in_mitre_extension(key, object) -> any:
+        if (
+            "extensions" in object
+            and "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+            in object["extensions"]
+            and key
+            in object["extensions"][
+                "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+            ]
+        ):
+            return object["extensions"][
+                "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+            ][key]
+        return None

@@ -5,7 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 from pycti.utils.constants import IdentityTypes
 
 
@@ -388,45 +387,35 @@ class Identity:
             if "x_opencti_aliases" not in stix_object:
                 stix_object[
                     "x_opencti_aliases"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "aliases", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("aliases", stix_object)
             if "x_opencti_organization_type" not in stix_object:
                 stix_object[
                     "x_opencti_organization_type"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                ] = self.opencti.get_attribute_in_extension(
                     "organization_type", stix_object
                 )
             if "x_opencti_reliability" not in stix_object:
                 stix_object[
                     "x_opencti_reliability"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "reliability", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("reliability", stix_object)
             if "x_opencti_organization_type" not in stix_object:
                 stix_object[
                     "x_opencti_organization_type"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                ] = self.opencti.get_attribute_in_extension(
                     "organization_type", stix_object
                 )
             if "x_opencti_firstname" not in stix_object:
                 stix_object[
                     "x_opencti_firstname"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "firstname", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("firstname", stix_object)
             if "x_opencti_lastname" not in stix_object:
                 stix_object[
                     "x_opencti_lastname"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "lastname", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("lastname", stix_object)
             if "x_opencti_stix_ids" not in stix_object:
                 stix_object[
                     "x_opencti_stix_ids"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "stix_ids", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
 
             return self.create(
                 type=type,

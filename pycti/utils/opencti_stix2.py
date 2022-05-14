@@ -11,7 +11,6 @@ import datefinder
 import dateutil.parser
 import pytz
 
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import (
     IdentityTypes,
@@ -284,12 +283,10 @@ class OpenCTIStix2:
         elif "x_opencti_created_by_ref" in stix_object:
             created_by_id = stix_object["x_opencti_created_by_ref"]
         elif (
-            OpenCTIConnectorHelper.get_attribute_in_extension(
-                "created_by_ref", stix_object
-            )
+            self.opencti.get_attribute_in_extension("created_by_ref", stix_object)
             is not None
         ):
-            created_by_id = OpenCTIConnectorHelper.get_attribute_in_extension(
+            created_by_id = self.opencti.get_attribute_in_extension(
                 "created_by_ref", stix_object
             )
         # Object Marking Refs
@@ -316,13 +313,8 @@ class OpenCTIStix2:
                     label_id = self.opencti.label.create(value=label)["id"]
                 if label_id is not None:
                     object_label_ids.append(label_id)
-        elif (
-            OpenCTIConnectorHelper.get_attribute_in_extension("labels", stix_object)
-            is not None
-        ):
-            for label in OpenCTIConnectorHelper.get_attribute_in_extension(
-                "labels", stix_object
-            ):
+        elif self.opencti.get_attribute_in_extension("labels", stix_object) is not None:
+            for label in self.opencti.get_attribute_in_extension("labels", stix_object):
                 if "label_" + label in self.mapping_cache:
                     label_id = self.mapping_cache["label_" + label]
                 else:
@@ -354,14 +346,14 @@ class OpenCTIStix2:
                 else:
                     if (
                         "x_opencti_order" not in kill_chain_phase
-                        and OpenCTIConnectorHelper.get_attribute_in_extension(
+                        and self.opencti.get_attribute_in_extension(
                             "order", kill_chain_phase
                         )
                         is not None
                     ):
                         kill_chain_phase[
                             "x_opencti_order"
-                        ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                        ] = self.opencti.get_attribute_in_extension(
                             "order", kill_chain_phase
                         )
                     kill_chain_phase = self.opencti.kill_chain_phase.create(
@@ -418,12 +410,10 @@ class OpenCTIStix2:
                             mime_type=file["mime_type"],
                         )
                 if (
-                    OpenCTIConnectorHelper.get_attribute_in_extension(
-                        "files", external_reference
-                    )
+                    self.opencti.get_attribute_in_extension("files", external_reference)
                     is not None
                 ):
-                    for file in OpenCTIConnectorHelper.get_attribute_in_extension(
+                    for file in self.opencti.get_attribute_in_extension(
                         "files", external_reference
                     ):
                         self.opencti.external_reference.add_file(
@@ -643,10 +633,10 @@ class OpenCTIStix2:
                         mime_type=file["mime_type"],
                     )
             if (
-                OpenCTIConnectorHelper.get_attribute_in_extension("files", stix_object)
+                self.opencti.get_attribute_in_extension("files", stix_object)
                 is not None
             ):
-                for file in OpenCTIConnectorHelper.get_attribute_in_extension(
+                for file in self.opencti.get_attribute_in_extension(
                     "files", stix_object
                 ):
                     self.opencti.stix_domain_object.add_file(
@@ -738,10 +728,10 @@ class OpenCTIStix2:
                         mime_type=file["mime_type"],
                     )
             if (
-                OpenCTIConnectorHelper.get_attribute_in_extension("files", stix_object)
+                self.opencti.get_attribute_in_extension("files", stix_object)
                 is not None
             ):
-                for file in OpenCTIConnectorHelper.get_attribute_in_extension(
+                for file in self.opencti.get_attribute_in_extension(
                     "files", stix_object
                 ):
                     self.opencti.stix_cyber_observable.add_file(
@@ -935,16 +925,12 @@ class OpenCTIStix2:
         date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
         if (
             "x_opencti_negative" not in stix_sighting
-            and OpenCTIConnectorHelper.get_attribute_in_extension(
-                "negative", stix_sighting
-            )
+            and self.opencti.get_attribute_in_extension("negative", stix_sighting)
             is not None
         ):
             stix_sighting[
                 "x_opencti_negative"
-            ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                "negative", stix_sighting
-            )
+            ] = self.opencti.get_attribute_in_extension("negative", stix_sighting)
         stix_sighting_result = self.opencti.stix_sighting_relationship.create(
             fromId=final_from_id,
             toId=final_to_id,
