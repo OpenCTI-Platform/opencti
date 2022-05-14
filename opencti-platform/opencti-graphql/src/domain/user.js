@@ -410,6 +410,9 @@ export const meEditField = (user, userId, inputs, password = null) => {
   if (user.external && (key === 'user_email' || key === 'user_name')) {
     throw ForbiddenAccess();
   }
+  if (key === 'api_token') {
+    throw ForbiddenAccess();
+  }
   return userEditField(user, userId, inputs);
 };
 
