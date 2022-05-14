@@ -508,7 +508,13 @@ class Indicator:
                 stix_object[
                     "x_opencti_detection"
                 ] = self.opencti.get_attribute_in_extension("detection", stix_object)
-            if "x_opencti_main_observable_type" not in stix_object:
+            if (
+                "x_opencti_main_observable_type" not in stix_object
+                and self.opencti.get_attribute_in_extension(
+                    "main_observable_type", stix_object
+                )
+                is not None
+            ):
                 stix_object[
                     "x_opencti_main_observable_type"
                 ] = self.opencti.get_attribute_in_extension(
