@@ -236,8 +236,6 @@ class StixDomainObjectsList extends Component {
             && props.stixDomainObjects.edges.length > 0
           ) {
             const data = props.stixDomainObjects.edges;
-            console.log(data);
-            console.log(dateAttribute);
             return (
               <div id="container" className={classes.container}>
                 <List>

@@ -137,7 +137,7 @@ const userResolvers = {
       relationAdd: ({ input }) => userAddRelation(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => userIdDeleteRelation(user, id, toId, relationshipType),
     }),
-    meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
+    meEdit: (_, { input, password }, { user }) => meEditField(user, user.id, input, password),
     meTokenRenew: (_, __, { user }) => userRenewToken(user, user.id),
     userAdd: (_, { input }, { user }) => addUser(user, input),
     bookmarkAdd: (_, { id, type }, { user }) => addBookmark(user, id, type),

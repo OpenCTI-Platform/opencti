@@ -6364,6 +6364,7 @@ export type MutationMarkingDefinitionEditArgs = {
 
 export type MutationMeEditArgs = {
   input: Array<InputMaybe<EditInput>>;
+  password?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -11440,12 +11441,14 @@ export enum StixCoreObjectsFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   HasExternalReference = 'hasExternalReference',
+  Id = 'id',
   Indicates = 'indicates',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  ObjectContains = 'objectContains'
+  ObjectContains = 'objectContains',
+  StandardId = 'standard_id'
 }
 
 export type StixCoreObjectsFiltering = {

@@ -40,8 +40,8 @@ const styles = () => ({
 });
 
 const profileOverviewFieldPatch = graphql`
-  mutation ProfileOverviewFieldPatchMutation($input: [EditInput]!) {
-    meEdit(input: $input) {
+  mutation ProfileOverviewFieldPatchMutation($input: [EditInput]!, $password: String) {
+    meEdit(input: $input, password: $password) {
       ...UserEditionOverview_user
     }
   }
@@ -68,6 +68,7 @@ const userValidation = (t) => Yup.object().shape({
 });
 
 const passwordValidation = (t) => Yup.object().shape({
+  current_password: Yup.string().required(t('This field is required')),
   password: Yup.string().required(t('This field is required')),
   confirmation: Yup.string()
     .oneOf([Yup.ref('password'), null], t('The values do not match'))
@@ -114,6 +115,7 @@ const ProfileOverviewComponent = (props) => {
       mutation: profileOverviewFieldPatch,
       variables: {
         input: field,
+        password: values.current_password,
       },
       setSubmitting,
       onCompleted: () => {
@@ -305,7 +307,11 @@ const ProfileOverviewComponent = (props) => {
               </Typography>
               <Formik
                 enableReinitialize={true}
-                initialValues={{ password: '', confirmation: '' }}
+                initialValues={{
+                  current_password: '',
+                  password: '',
+                  confirmation: '',
+                }}
                 validationSchema={passwordValidation(t)}
                 onSubmit={handleSubmitPasswords}
               >
@@ -314,10 +320,19 @@ const ProfileOverviewComponent = (props) => {
                     <Field
                       component={TextField}
                       variant="standard"
-                      name="password"
-                      label={t('Password')}
+                      name="current_password"
+                      label={t('Current password')}
                       type="password"
                       fullWidth={true}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="password"
+                      label={t('New password')}
+                      type="password"
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
                     />
                     <Field
                       component={TextField}

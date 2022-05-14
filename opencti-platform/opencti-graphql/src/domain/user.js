@@ -348,10 +348,18 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
 };
 
 // User related
-export const userEditField = async (user, userId, inputs) => {
+export const userEditField = async (user, userId, inputs, password = null) => {
   const input = R.head(inputs);
   const { key } = input;
-  const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString())] : input.value;
+  let value;
+  if (key === 'password') {
+    const dbPassword = user.session_password;
+    const match = bcrypt.compareSync(password, dbPassword);
+    if (!match) throw FunctionalError('The current password you have provided is not valid');
+    value = [bcrypt.hashSync(R.head(input.value).toString())];
+  } else {
+    value = input.value;
+  }
   const patch = { [key]: value };
   const { element } = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -399,8 +407,8 @@ export const addBookmark = async (user, id, type) => {
   return storeLoadById(user, id, type);
 };
 
-export const meEditField = (user, userId, inputs) => {
-  return userEditField(user, userId, inputs);
+export const meEditField = (user, userId, inputs, password = null) => {
+  return userEditField(user, userId, inputs, password);
 };
 
 export const userDelete = async (user, userId) => {
