@@ -109,7 +109,7 @@ class Filters extends Component {
   }
 
   searchEntities(filterKey, event) {
-    const { t, theme } = this.props;
+    const { t, theme, availableEntityTypes, availableRelationshipTypes } = this.props;
     if (!event) {
       return;
     }
@@ -579,38 +579,40 @@ class Filters extends Component {
             type: n,
           })),
           R.sortWith([R.ascend(R.prop('label'))]),
-        )([
-          'Attack-Pattern',
-          'Campaign',
-          'Note',
-          'Observed-Data',
-          'Opinion',
-          'Report',
-          'Course-Of-Action',
-          'Individual',
-          'Organization',
-          'Sector',
-          'Indicator',
-          'Infrastructure',
-          'Intrusion-Set',
-          'City',
-          'Country',
-          'Region',
-          'Position',
-          'Malware',
-          'Threat-Actor',
-          'Tool',
-          'Vulnerability',
-          'Incident',
-          'Stix-Cyber-Observable',
-          'Stix-Core-Relationship',
-          'StixFile',
-          'IPv4-Addr',
-          'indicates',
-          'targets',
-          'uses',
-          'located-at',
-        ]);
+        )(
+          availableEntityTypes || [
+            'Attack-Pattern',
+            'Campaign',
+            'Note',
+            'Observed-Data',
+            'Opinion',
+            'Report',
+            'Course-Of-Action',
+            'Individual',
+            'Organization',
+            'Sector',
+            'Indicator',
+            'Infrastructure',
+            'Intrusion-Set',
+            'City',
+            'Country',
+            'Region',
+            'Position',
+            'Malware',
+            'Threat-Actor',
+            'Tool',
+            'Vulnerability',
+            'Incident',
+            'Stix-Cyber-Observable',
+            'Stix-Core-Relationship',
+            'StixFile',
+            'IPv4-Addr',
+            'indicates',
+            'targets',
+            'uses',
+            'located-at',
+          ],
+        );
         if (this.props.allEntityTypes) {
           entitiesTypes = R.prepend(
             { label: t('entity_All'), value: 'all', type: 'entity' },
@@ -623,6 +625,51 @@ class Filters extends Component {
             entity_type: R.union(
               entitiesTypes,
               this.state.entities.entity_type,
+            ),
+          },
+        });
+        break;
+      case 'relationship_type':
+        // eslint-disable-next-line no-case-declarations
+        // eslint-disable-next-line no-case-declarations
+        let relationshipsTypes = R.pipe(
+          R.map((n) => ({
+            label: t(
+              n.toString()[0] === n.toString()[0].toUpperCase()
+                ? `entity_${n.toString()}`
+                : `relationship_${n.toString()}`,
+            ),
+            value: n,
+            type: n,
+          })),
+          R.sortWith([R.ascend(R.prop('label'))]),
+        )(
+          availableRelationshipTypes || [
+            'uses',
+            'indicates',
+            'targets',
+            'located-at',
+            'related-to',
+            'communicates-with',
+            'attributed-to',
+          ],
+        );
+        if (this.props.allRelationshipTypes) {
+          relationshipsTypes = R.prepend(
+            {
+              label: t('relationship_All'),
+              value: 'all',
+              type: 'relationship',
+            },
+            relationshipsTypes,
+          );
+        }
+        this.setState({
+          entities: {
+            ...this.state.entities,
+            relationship_type: R.union(
+              relationshipsTypes,
+              this.state.entities.relationship_type,
             ),
           },
         });
@@ -1022,6 +1069,8 @@ Filters.propTypes = {
   disabled: PropTypes.bool,
   noDirectFilters: PropTypes.bool,
   allEntityTypes: PropTypes.bool,
+  availableEntityTypes: PropTypes.array,
+  availableRelationshipTypes: PropTypes.array,
 };
 
 export default R.compose(

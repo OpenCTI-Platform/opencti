@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { CSVLink } from 'react-csv';
-import IconButton from '@mui/material/IconButton';
 import { ImageOutlined } from '@mui/icons-material';
 import { FilePdfBox, FileDelimitedOutline } from 'mdi-material-ui';
 import withTheme from '@mui/styles/withTheme';
@@ -32,6 +31,7 @@ class ExportButtons extends Component {
   constructor(props) {
     super(props);
     this.adjust = props.adjust;
+    this.csvLink = React.createRef();
     commitLocalUpdate((store) => {
       const me = store.getRoot().getLinkedRecord('me');
       const exporting = me.getValue('exporting') || false;
@@ -149,7 +149,7 @@ class ExportButtons extends Component {
 
   render() {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
-    const { classes, t, domElementId, name, csvData } = this.props;
+    const { classes, t, domElementId, name, csvData, csvFileName } = this.props;
     return (
       <div className={classes.exportButtons}>
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
@@ -163,6 +163,13 @@ class ExportButtons extends Component {
               <FilePdfBox fontSize="small" color="primary" />
             </ToggleButton>
           </Tooltip>
+          {csvData && (
+            <Tooltip title={t('Export to CSV')}>
+              <ToggleButton onClick={() => this.csvLink.current.link.click()}>
+                <FileDelimitedOutline fontSize="small" color="primary" />
+              </ToggleButton>
+            </Tooltip>
+          )}
         </ToggleButtonGroup>
         <Menu
           anchorEl={anchorElImage}
@@ -242,15 +249,6 @@ class ExportButtons extends Component {
             {t('Light')}
           </MenuItem>
         </Menu>
-        {csvData && (
-          <Tooltip title={t('Export to CSV')}>
-            <IconButton aria-haspopup="true" color="primary" size="medium">
-              <CSVLink data={csvData}>
-                <FileDelimitedOutline />
-              </CSVLink>
-            </IconButton>
-          </Tooltip>
-        )}
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={exporting}
@@ -260,6 +258,13 @@ class ExportButtons extends Component {
         >
           <Loader />
         </Dialog>
+        {csvData && (
+          <CSVLink
+            filename={csvFileName || `${t('CSV data.')}.csv`}
+            ref={this.csvLink}
+            data={csvData}
+          />
+        )}
       </div>
     );
   }

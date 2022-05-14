@@ -174,6 +174,8 @@ class ListLines extends Component {
       noTopMargin,
       noFilters,
       enableGraph,
+      availableEntityTypes,
+      availableRelationshipTypes,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -197,6 +199,8 @@ class ListLines extends Component {
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
+              availableEntityTypes={availableEntityTypes}
+              availableRelationshipTypes={availableRelationshipTypes}
             />
           )}
           {(!availableFilterKeys || availableFilterKeys.length === 0)
@@ -442,6 +446,8 @@ ListLines.propTypes = {
   message: PropTypes.string,
   noTopMargin: PropTypes.bool,
   enableGraph: PropTypes.bool,
+  availableEntityTypes: PropTypes.array,
+  availableRelationshipTypes: PropTypes.array,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

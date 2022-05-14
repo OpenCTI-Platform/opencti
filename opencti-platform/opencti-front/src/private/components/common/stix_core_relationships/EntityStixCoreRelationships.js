@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, includes, pipe, assoc, propOr } from 'ramda';
+import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Drawer from '@mui/material/Drawer';
-import Grid from '@mui/material/Grid';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
@@ -19,11 +16,13 @@ import EntityStixCoreRelationshipsLinesTo, {
 } from './EntityStixCoreRelationshipsLinesTo';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import EntityStixCoreRelationshipsLinesAll, {
   entityStixCoreRelationshipsLinesAllQuery,
 } from './EntityStixCoreRelationshipsLinesAll';
+import { isUniqFilter } from '../lists/Filters';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -52,22 +51,19 @@ class EntityStixCoreRelationships extends Component {
       params = buildViewParamsFromUrlAndStorage(
         props.history,
         props.location,
-        `view-relationships-${props.entityId}`,
+        `view-relationships-${
+          props.entityId
+        }-${props.targetStixDomainObjectTypes?.join(
+          '-',
+        )}-${props.relationshipTypes?.join('-')}`,
       );
     }
     this.state = {
-      sortBy: propOr(null, 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
-      searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      selectedEntityType: propOr('All', 'selectedEntityType', params),
-      selectedRelationshipType:
-        props.relationshipTypes
-        && ['All', ...props.relationshipTypes].includes(
-          propOr('All', 'selectedRelationshipType', params),
-        )
-          ? propOr('All', 'selectedRelationshipType', params)
-          : 'All',
+      sortBy: R.propOr(null, 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      filters: R.propOr({}, 'filters', params),
       numberOfElements: { number: 0, symbol: '' },
       openEntityType: false,
       openRelationshipType: false,
@@ -79,7 +75,11 @@ class EntityStixCoreRelationships extends Component {
       saveViewParameters(
         this.props.history,
         this.props.location,
-        `view-relationships-${this.props.entityId}`,
+        `view-relationships-${
+          this.props.entityId
+        }-${this.props.targetStixDomainObjectTypes?.join(
+          '-',
+        )}-${this.props.relationshipTypes?.join('-')}`,
         this.state,
       );
     }
@@ -93,179 +93,59 @@ class EntityStixCoreRelationships extends Component {
     this.setState({ searchTerm: value }, () => this.saveView());
   }
 
-  handleOpenEntityType() {
-    this.setState({ openEntityType: true });
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: R.assoc(
+            key,
+            isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
   }
 
-  handleCloseEntityType() {
-    this.setState({ openEntityType: false });
-  }
-
-  handleOpenRelationshipType() {
-    this.setState({ openRelationshipType: true });
-  }
-
-  handleCloseRelationshipType() {
-    this.setState({ openRelationshipType: false });
-  }
-
-  handleChangeEntities(event) {
-    const { value } = event.target;
-    return this.setState(
-      { openEntityType: false, selectedEntityType: value },
-      () => this.saveView(),
-    );
-  }
-
-  handleChangeRelationshipType(event) {
-    const { value } = event.target;
-    return this.setState(
-      {
-        openRelationshipType: false,
-        selectedRelationshipType: value,
-      },
-      () => this.saveView(),
-    );
+  handleRemoveFilter(key) {
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
   }
 
-  renderBottomMenu() {
-    const { t, classes, targetStixDomainObjectTypes, relationshipTypes } = this.props;
-    const {
-      openEntityType,
-      openRelationshipType,
-      selectedEntityType,
-      selectedRelationshipType,
-    } = this.state;
-    const displayTypes = targetStixDomainObjectTypes.length > 1
-      || targetStixDomainObjectTypes.includes('Identity')
-      || targetStixDomainObjectTypes.includes('Location');
-    const displayRelationshipTypes = relationshipTypes.length > 1;
-    return (
-      <Drawer
-        anchor="bottom"
-        variant="permanent"
-        classes={{ paper: classes.bottomNav }}
-        PaperProps={{ variant: 'elevation', elevation: 1 }}
-      >
-        <Grid container={true} spacing={1}>
-          {displayTypes && (
-            <Grid item={true} xs="auto">
-              <Select
-                size="small"
-                value={selectedEntityType}
-                open={openEntityType}
-                onClose={this.handleCloseEntityType.bind(this)}
-                onOpen={this.handleOpenEntityType.bind(this)}
-                onChange={this.handleChangeEntities.bind(this)}
-              >
-                <MenuItem value="All">{t('All entities')}</MenuItem>
-                {includes('Attack-Pattern', targetStixDomainObjectTypes) && (
-                  <MenuItem value="Attack-Pattern">
-                    {t('Attack pattern')}
-                  </MenuItem>
-                )}
-                {includes('Campaign', targetStixDomainObjectTypes) && (
-                  <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                )}
-                {includes('Note', targetStixDomainObjectTypes) && (
-                  <MenuItem value="Note">{t('Note')}</MenuItem>
-                )}
-                {includes('Observed-Data', targetStixDomainObjectTypes) && (
-                  <MenuItem value="Observed-Data">
-                    {t('Observed data')}
-                  </MenuItem>
-                )}
-                {includes('Opinion', targetStixDomainObjectTypes) && (
-                  <MenuItem value="Opinion">{t('Opinion')}</MenuItem>
-                )}
-                {includes('Report', targetStixDomainObjectTypes) && (
-                  <MenuItem value="Report">{t('Report')}</MenuItem>
-                )}
-                {includes('Course-Of-Action', targetStixDomainObjectTypes) && (
-                  <MenuItem value="Course-Of-Action">
-                    {t('Course of action')}
-                  </MenuItem>
-                )}
-                {targetStixDomainObjectTypes.some((r) => ['System', 'Identity'].includes(r)) && <MenuItem value="System">{t('System')}</MenuItem>}
-                {targetStixDomainObjectTypes.some((r) => ['Individual', 'Identity'].includes(r)) && <MenuItem value="Individual">{t('Individual')}</MenuItem>}
-                {targetStixDomainObjectTypes.some((r) => ['Organization', 'Identity'].includes(r)) && (
-                  <MenuItem value="Organization">{t('Organization')}</MenuItem>
-                )}
-                {targetStixDomainObjectTypes.some((r) => ['Sector', 'Identity'].includes(r)) && <MenuItem value="Sector">{t('Sector')}</MenuItem>}
-                {targetStixDomainObjectTypes.includes('Indicator') && (
-                  <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
-                )}
-                {targetStixDomainObjectTypes.includes('Infrastructure') && (
-                  <MenuItem value="Infrastructure">
-                    {t('Infrastructure')}
-                  </MenuItem>
-                )}
-                {targetStixDomainObjectTypes.includes('Intrusion-Set') && (
-                  <MenuItem value="Intrusion-Set">
-                    {t('Intrusion set')}
-                  </MenuItem>
-                )}
-                {targetStixDomainObjectTypes.some((r) => ['City', 'Location'].includes(r)) && <MenuItem value="City">{t('City')}</MenuItem>}
-                {targetStixDomainObjectTypes.some((r) => ['Country', 'Location'].includes(r)) && <MenuItem value="Country">{t('Country')}</MenuItem>}
-                {targetStixDomainObjectTypes.some((r) => ['Region', 'Location'].includes(r)) && <MenuItem value="Region">{t('Region')}</MenuItem>}
-                {targetStixDomainObjectTypes.some((r) => ['Region', 'Position'].includes(r)) && <MenuItem value="Position">{t('Position')}</MenuItem>}
-                {targetStixDomainObjectTypes.includes('Malware') && (
-                  <MenuItem value="Malware">{t('Malware')}</MenuItem>
-                )}
-                {targetStixDomainObjectTypes.includes('Threat-Actor') && (
-                  <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>
-                )}
-                {targetStixDomainObjectTypes.includes('Tool') && (
-                  <MenuItem value="Tool">{t('Tool')}</MenuItem>
-                )}
-                {targetStixDomainObjectTypes.includes('Vulnerability') && (
-                  <MenuItem value="Vulnerability">
-                    {t('Vulnerability')}
-                  </MenuItem>
-                )}
-                {targetStixDomainObjectTypes.includes('Incident') && (
-                  <MenuItem value="Incident">{t('Incident')}</MenuItem>
-                )}
-              </Select>
-            </Grid>
-          )}
-          {displayRelationshipTypes && (
-            <Grid item={true} xs="auto">
-              <Select
-                size="small"
-                value={selectedRelationshipType}
-                open={openRelationshipType}
-                onClose={this.handleCloseRelationshipType.bind(this)}
-                onOpen={this.handleOpenRelationshipType.bind(this)}
-                onChange={this.handleChangeRelationshipType.bind(this)}
-              >
-                <MenuItem value="All">
-                  {t('All types of relationship')}
-                </MenuItem>
-                {relationshipTypes.map((relationshipType) => (
-                  <MenuItem key={relationshipType} value={relationshipType}>
-                    {t(`relationship_${relationshipType}`)}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Grid>
-          )}
-        </Grid>
-      </Drawer>
-    );
-  }
-
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, numberOfElements } = this.state;
-    const { entityLink, entityId, isRelationReversed, allDirections } = this.props;
+    const { sortBy, orderAsc, numberOfElements, filters } = this.state;
+    const {
+      entityLink,
+      entityId,
+      isRelationReversed,
+      allDirections,
+      targetStixDomainObjectTypes,
+      relationshipTypes,
+    } = this.props;
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       name: {
@@ -275,7 +155,7 @@ class EntityStixCoreRelationships extends Component {
       },
       entity_type: {
         label: 'Entity type',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       start_time: {
@@ -285,6 +165,11 @@ class EntityStixCoreRelationships extends Component {
       },
       stop_time: {
         label: 'Stop time',
+        width: '13%',
+        isSortable: true,
+      },
+      created: {
+        label: 'Creation date',
         width: '13%',
         isSortable: true,
       },
@@ -300,9 +185,22 @@ class EntityStixCoreRelationships extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         displayImport={true}
         secondaryAction={true}
         numberOfElements={numberOfElements}
+        filters={filters}
+        availableFilterKeys={[
+          'relationship_type',
+          'entity_type',
+          'markedBy',
+          'createdBy',
+          'created_start_date',
+          'created_end_date',
+        ]}
+        availableEntityTypes={targetStixDomainObjectTypes}
+        availableRelationshipTypes={relationshipTypes}
       >
         <QueryRenderer
           query={
@@ -361,66 +259,59 @@ class EntityStixCoreRelationships extends Component {
       isRelationReversed,
       allDirections,
     } = this.props;
-    const {
-      view,
-      searchTerm,
-      selectedEntityType,
-      selectedRelationshipType,
-      sortBy,
-      orderAsc,
-    } = this.state;
-    // Display types selection when target types are multiple
-    const displayTypes = targetStixDomainObjectTypes.length > 1
-      || targetStixDomainObjectTypes.includes('Identity')
-      || targetStixDomainObjectTypes.includes('Location');
-    const displayRelationshipTypes = relationshipTypes && relationshipTypes.length > 1;
-    const displayBottomBar = displayTypes || displayRelationshipTypes;
-    const selectedTypes = selectedEntityType === 'All'
-      ? targetStixDomainObjectTypes
-      : selectedEntityType;
-    let relationshipType = 'stix-core-relationship';
-    if (relationshipTypes && relationshipTypes.length === 1) {
-      // eslint-disable-next-line prefer-destructuring
-      relationshipType = relationshipTypes[0];
-    } else if (selectedRelationshipType !== 'All') {
-      relationshipType = selectedRelationshipType;
+    const { view, searchTerm, sortBy, orderAsc, filters } = this.state;
+    let selectedTypes = [];
+    if (filters.entity_type && filters.entity_type.length > 0) {
+      if (R.filter((o) => o.id === 'all', filters.entity_type).length > 0) {
+        selectedTypes = [];
+      } else {
+        selectedTypes = filters.entity_type.map((o) => o.id);
+      }
+    } else {
+      selectedTypes = targetStixDomainObjectTypes;
     }
+    let selectedRelationshipTypes = [];
+    if (filters.relationship_type && filters.relationship_type.length > 0) {
+      if (
+        R.filter((o) => o.id === 'all', filters.relationship_type).length > 0
+      ) {
+        selectedRelationshipTypes = [];
+      } else {
+        selectedRelationshipTypes = filters.relationship_type.map((o) => o.id);
+      }
+    } else {
+      selectedRelationshipTypes = Array.isArray(relationshipTypes) && relationshipTypes.length > 0
+        ? relationshipTypes
+        : [];
+    }
+    const finalFilters = convertFilters(R.dissoc('entity_type', filters));
     let paginationOptions = {
-      relationship_type: relationshipType,
+      relationship_type: selectedRelationshipTypes,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters: finalFilters,
     };
-    if (
-      relationshipTypes
-      && relationshipTypes.length > 0
-      && selectedRelationshipType === 'All'
-    ) {
-      paginationOptions = pipe(assoc('relationship_type', relationshipTypes))(
-        paginationOptions,
-      );
-    }
     if (allDirections) {
-      paginationOptions = pipe(
-        assoc('elementId', entityId),
-        assoc('elementWithTargetTypes', selectedTypes),
+      paginationOptions = R.pipe(
+        R.assoc('elementId', entityId),
+        R.assoc('elementWithTargetTypes', selectedTypes),
       )(paginationOptions);
     } else if (isRelationReversed) {
-      paginationOptions = pipe(
-        assoc('fromTypes', selectedTypes),
-        assoc('toId', entityId),
-        assoc('toRole', role || null),
+      paginationOptions = R.pipe(
+        R.assoc('fromTypes', selectedTypes),
+        R.assoc('toId', entityId),
+        R.assoc('toRole', role || null),
       )(paginationOptions);
     } else {
-      paginationOptions = pipe(
-        assoc('fromId', entityId),
-        assoc('fromRole', role || null),
-        assoc('toTypes', selectedTypes),
+      paginationOptions = R.pipe(
+        R.assoc('fromId', entityId),
+        R.assoc('fromRole', role || null),
+        R.assoc('toTypes', selectedTypes),
       )(paginationOptions);
     }
     return (
       <div className={classes.container}>
-        {displayBottomBar && this.renderBottomMenu()}
         {view === 'lines' && this.renderLines(paginationOptions)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
@@ -446,13 +337,15 @@ EntityStixCoreRelationships.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  location: PropTypes.object,
   exploreLink: PropTypes.string,
   isRelationReversed: PropTypes.bool,
   allDirections: PropTypes.bool,
   noState: PropTypes.bool,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(EntityStixCoreRelationships);

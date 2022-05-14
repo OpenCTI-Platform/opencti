@@ -105,6 +105,12 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
+              >
+                {fsd(node.created)}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence confidence={node.confidence} variant="inList" />
@@ -158,6 +164,7 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
         stop_time
         description
         is_inferred
+        created
         x_opencti_inferences {
           rule {
             id
@@ -419,6 +426,17 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.created.width }}
               >
                 <Skeleton
                   animation="wave"

@@ -1,17 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
+import * as R from 'ramda';
 import Loader from '../../../../components/Loader';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import StixDomainObjectAttackPatternsKillChain, {
   stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery,
 } from './StixDomainObjectAttackPatternsKillChain';
+import { isUniqFilter } from '../lists/Filters';
 
 const styles = () => ({
   container: {
@@ -31,8 +33,9 @@ class StixDomainObjectVictimology extends Component {
       `view-attack-patterns-${props.stixDomainObjectId}`,
     );
     this.state = {
-      searchTerm: propOr('', 'searchTerm', params),
-      viewMode: propOr('matrix', 'viewMode', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      viewMode: R.propOr('matrix', 'viewMode', params),
+      filters: R.propOr({}, 'filters', params),
     };
   }
 
@@ -53,12 +56,50 @@ class StixDomainObjectVictimology extends Component {
     this.setState({ searchTerm: value }, () => this.saveView());
   }
 
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: R.assoc(
+            key,
+            isUniqFilter(key)
+              ? [{ id, value }]
+              : R.uniqBy(R.prop('id'), [
+                { id, value },
+                ...this.state.filters[key],
+              ]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: R.assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: R.dissoc(key, this.state.filters) }, () => this.saveView());
+  }
+
   render() {
-    const { viewMode, searchTerm } = this.state;
+    const { viewMode, searchTerm, filters } = this.state;
     const { classes, stixDomainObjectId, entityLink } = this.props;
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       elementId: stixDomainObjectId,
       elementWithTargetTypes: ['Attack-Pattern'],
+      search: searchTerm,
+      filters: finalFilters,
     };
     return (
       <div className={classes.container}>
@@ -77,6 +118,9 @@ class StixDomainObjectVictimology extends Component {
                   stixDomainObjectId={stixDomainObjectId}
                   handleChangeView={this.handleChangeView.bind(this)}
                   handleSearch={this.handleSearch.bind(this)}
+                  handleAddFilter={this.handleAddFilter.bind(this)}
+                  handleRemoveFilter={this.handleRemoveFilter.bind(this)}
+                  filters={filters}
                   searchTerm={searchTerm}
                   currentView={viewMode}
                 />
@@ -98,7 +142,7 @@ StixDomainObjectVictimology.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixDomainObjectVictimology);
