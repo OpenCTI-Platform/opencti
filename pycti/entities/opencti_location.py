@@ -343,11 +343,8 @@ class Location:
             return
         if "x_opencti_location_type" in stix_object:
             type = stix_object["x_opencti_location_type"]
-        elif (
-            self.opencti.get_attribute_in_extension("location_type", stix_object)
-            is not None
-        ):
-            type = self.opencti.get_attribute_in_extension("location_type", stix_object)
+        elif self.opencti.get_attribute_in_extension("type", stix_object) is not None:
+            type = self.opencti.get_attribute_in_extension("type", stix_object)
         else:
             if "city" in stix_object:
                 type = "City"
