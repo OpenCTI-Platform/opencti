@@ -1726,11 +1726,11 @@ class OpenCTIStix2:
                                         item, observed_data_ref, to_id, update
                                     )
                 elif item["type"] == "label":
-                    self.opencti.label.create(**item)
+                    self.opencti.label.create(update=update, **item)
                 elif item["type"] == "external-reference":
-                    self.opencti.external_reference.create(**item)
+                    self.opencti.external_reference.create(update=update, **item)
                 elif item["type"] == "kill-chain-phase":
-                    self.opencti.kill_chain_phase.create(**item)
+                    self.opencti.kill_chain_phase.create(update=update, **item)
                 elif StixCyberObservableTypes.has_value(item["type"]):
                     if types is None or len(types) == 0:
                         self.import_observable(item, update, types)
