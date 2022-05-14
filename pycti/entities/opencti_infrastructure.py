@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
-
 
 class Infrastructure:
     """Main Infrastructure class for OpenCTI
@@ -388,9 +386,7 @@ class Infrastructure:
 
         # Search in extensions
         if "x_opencti_stix_ids" not in stix_object:
-            stix_object[
-                "x_opencti_stix_ids"
-            ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+            stix_object["x_opencti_stix_ids"] = self.opencti.get_attribute_in_extension(
                 "stix_ids", stix_object
             )
 

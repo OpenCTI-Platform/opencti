@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
-
 
 class CourseOfAction:
     def __init__(self, opencti):
@@ -335,12 +333,10 @@ class CourseOfAction:
             if "x_mitre_id" in stix_object:
                 x_mitre_id = stix_object["x_mitre_id"]
             elif (
-                OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
-                    "id", stix_object
-                )
+                self.opencti.get_attribute_in_mitre_extension("id", stix_object)
                 is not None
             ):
-                x_mitre_id = OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
+                x_mitre_id = self.opencti.get_attribute_in_mitre_extension(
                     "id", stix_object
                 )
             elif "external_references" in stix_object:
@@ -357,15 +353,11 @@ class CourseOfAction:
             if "x_opencti_aliases" not in stix_object:
                 stix_object[
                     "x_opencti_aliases"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "aliases", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("aliases", stix_object)
             if "x_opencti_stix_ids" not in stix_object:
                 stix_object[
                     "x_opencti_stix_ids"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "stix_ids", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
 
             return self.create(
                 stix_id=stix_object["id"],

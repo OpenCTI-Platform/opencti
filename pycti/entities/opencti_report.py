@@ -7,8 +7,6 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
-
 
 class Report:
     def __init__(self, opencti):
@@ -607,9 +605,7 @@ class Report:
             if "x_opencti_stix_ids" not in stix_object:
                 stix_object[
                     "x_opencti_stix_ids"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "stix_ids", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
 
             return self.create(
                 stix_id=stix_object["id"],

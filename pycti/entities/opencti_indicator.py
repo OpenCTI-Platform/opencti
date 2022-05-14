@@ -5,8 +5,6 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
-
 
 class Indicator:
     """Main Indicator class for OpenCTI
@@ -505,33 +503,27 @@ class Indicator:
             if "x_opencti_score" not in stix_object:
                 stix_object[
                     "x_opencti_score"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "score", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("score", stix_object)
             if "x_opencti_detection" not in stix_object:
                 stix_object[
                     "x_opencti_detection"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "detection", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("detection", stix_object)
             if "x_opencti_main_observable_type" not in stix_object:
                 stix_object[
                     "x_opencti_main_observable_type"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                ] = self.opencti.get_attribute_in_extension(
                     "main_observable_type", stix_object
                 )
             if "x_opencti_create_observables" not in stix_object:
                 stix_object[
                     "x_opencti_create_observables"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                ] = self.opencti.get_attribute_in_extension(
                     "create_observables", stix_object
                 )
             if "x_opencti_stix_ids" not in stix_object:
                 stix_object[
                     "x_opencti_stix_ids"
-                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
-                    "stix_ids", stix_object
-                )
+                ] = self.opencti.get_attribute_in_extension("stix_ids", stix_object)
 
             return self.create(
                 stix_id=stix_object["id"],
