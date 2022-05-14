@@ -8,6 +8,7 @@ import ReportsAreaChart from '../../analysis/reports/ReportsAreaChart';
 import ReportsVerticalBars from '../../analysis/reports/ReportsVerticalBars';
 import ReportsDonut from '../../analysis/reports/ReportsDonut';
 import StixDomainObjectsTimeline from '../../common/stix_domain_objects/StixDomainObjectsTimeline';
+import StixDomainObjectsList from '../../common/stix_domain_objects/StixDomainObjectsList';
 
 const styles = () => ({
   container: {
@@ -71,6 +72,15 @@ class GlobalActivityReports extends Component {
             title={`${t('Activity')} - ${t('Reports')}`}
             types={['Report']}
             field={dateAttribute}
+            variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <StixDomainObjectsList
+            title={`${t('Activity')} - ${t('Reports')}`}
+            types={['Report']}
+            dateAttribute={dateAttribute}
             variant="inLine"
           />
         );

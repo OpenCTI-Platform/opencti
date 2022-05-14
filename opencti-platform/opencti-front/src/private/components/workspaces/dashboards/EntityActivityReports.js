@@ -7,6 +7,7 @@ import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCore
 import StixCoreObjectReportsDonut from '../../analysis/reports/StixCoreObjectReportsDonut';
 import StixCoreObjectReportsAreaChart from '../../analysis/reports/StixCoreObjectReportsAreaChart';
 import StixCoreObjectReportsVerticalBars from '../../analysis/reports/StixCoreObjectReportsVerticalBars';
+import StixDomainObjectsList from '../../common/stix_domain_objects/StixDomainObjectsList';
 
 const styles = () => ({
   container: {
@@ -16,7 +17,11 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const { t, widget, startDate, endDate } = this.props;
+    const { t, widget, startDate, endDate, timeField } = this.props;
+    let dateAttribute = 'created_at';
+    if (timeField === 'functional') {
+      dateAttribute = 'created';
+    }
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (
@@ -59,6 +64,16 @@ class ThreatVictimologyAll extends Component {
             startDate={startDate}
             endDate={endDate}
             variant="inLine"
+          />
+        );
+      case 'list':
+        return (
+          <StixDomainObjectsList
+            title={`${t('Reports')} - ${widget.entity.name}`}
+            types={['Report']}
+            dateAttribute={dateAttribute}
+            variant="inLine"
+            containerId={widget.entity.id}
           />
         );
       default:

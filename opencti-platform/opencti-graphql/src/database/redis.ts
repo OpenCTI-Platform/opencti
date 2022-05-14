@@ -361,8 +361,9 @@ const pushToStream = async (client: Redis, instance: StoreObject, event: Event) 
   if (isStreamPublishable(instance)) {
     if (streamTrimming) {
       await client.call('XADD', REDIS_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
+    } else {
+      await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
     }
-    await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(event));
   }
 };
 
