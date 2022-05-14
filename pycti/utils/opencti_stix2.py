@@ -1761,6 +1761,19 @@ class OpenCTIStix2:
                             if "x_opencti_location_type" in item:
                                 if item["x_opencti_location_type"].lower() in types:
                                     self.import_object(item, update, types)
+                            elif (
+                                self.opencti.get_attribute_in_extension(
+                                    "location_type", item
+                                )
+                                is not None
+                            ):
+                                if (
+                                    self.opencti.get_attribute_in_extension(
+                                        "location_type", item
+                                    ).lower()
+                                    in types
+                                ):
+                                    self.import_object(item, update, types)
                 imported_elements.append({"id": item["id"], "type": item["type"]})
 
         return imported_elements
