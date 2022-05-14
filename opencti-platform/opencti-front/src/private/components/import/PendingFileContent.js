@@ -47,6 +47,7 @@ import { fileManagerAskJobImportMutation } from '../common/files/FileManager';
 import SelectField from '../../../components/SelectField';
 import { convertStixType } from '../../../utils/String';
 import { itemColor } from '../../../utils/Colors';
+import ItemBoolean from '../../../components/ItemBoolean';
 
 const styles = (theme) => ({
   container: {
@@ -131,7 +132,13 @@ const inlineStylesHeaders = {
   },
   default_value: {
     float: 'left',
-    width: '50%',
+    width: '40%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  in_platform: {
+    float: 'left',
+    width: '8%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -165,7 +172,15 @@ const inlineStyles = {
   },
   default_value: {
     float: 'left',
-    width: '50%',
+    width: '40%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  in_platform: {
+    float: 'left',
+    width: '8%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -369,6 +384,7 @@ class PendingFileContentComponent extends Component {
       containersChecked: {},
       containersUnchecked: {},
       uncheckedObjects: [],
+      resolvedObjects: {},
       objects: [],
       indexedObjects: {},
       objectsWithDependencies: [],
@@ -562,25 +578,23 @@ class PendingFileContentComponent extends Component {
       R.prop('id'),
       objectsWithDependencies,
     );
-    const unResolvedRefs = [];
+    const refsToResolve = [];
     for (const object of objectsWithDependencies) {
       if (object.object_refs) {
-        const unResolvedCheck = object.object_refs.filter(
-          (n) => !indexedObjectsWithDependencies[n],
-        );
-        unResolvedRefs.push(...unResolvedCheck);
+        refsToResolve.push(...object.object_refs);
       }
     }
-    if (unResolvedRefs.length > 0) {
+    const resolvedObjects = {};
+    if (refsToResolve.length > 0) {
       await fetchQuery(pendingFileContentResolveEntitiesQuery, {
         first: 1000,
-        filters: [{ key: 'standard_id', values: unResolvedRefs }],
+        filters: [{ key: 'standard_id', values: refsToResolve }],
       })
         .toPromise()
         .then(async (data) => {
           if (data.stixCoreObjects && data.stixCoreObjects.edges) {
             for (const edge of data.stixCoreObjects.edges) {
-              indexedObjectsWithDependencies[edge.node.standard_id] = R.pipe(
+              resolvedObjects[edge.node.standard_id] = R.pipe(
                 R.assoc('type', edge.node.entity_type),
                 R.assoc('id', edge.node.standard_id),
                 R.assoc(
@@ -620,6 +634,7 @@ class PendingFileContentComponent extends Component {
       indexedObjectsWithDependencies,
       containersChecked,
       allContainers: containersChecked,
+      resolvedObjects,
     };
   }
 
@@ -908,6 +923,7 @@ class PendingFileContentComponent extends Component {
       currentJson,
       containersChecked,
       containersUnchecked,
+      resolvedObjects,
     } = this.state;
     const sdoTypes = [
       ...stixDomainObjectTypes.edges.map((n) => n.node.id),
@@ -1109,6 +1125,7 @@ class PendingFileContentComponent extends Component {
                   <div>
                     {this.SortHeader('type', 'Type', true)}
                     {this.SortHeader('default_value', 'Name', true)}
+                    {this.SortHeader('in_platform', 'Already in plat.', true)}
                     {this.SortHeader('nb_dependencies', 'Dependencies', true)}
                     {this.SortHeader(
                       'nb_inbound_dependencies',
@@ -1137,6 +1154,7 @@ class PendingFileContentComponent extends Component {
               const isDisabled = entityId === object.id
                 || (!checkedObjects.includes(object.id)
                   && !uncheckedObjects.includes(object.id));
+              const isInPlatform = resolvedObjects[object.id] !== undefined;
               return (
                 <div key={object.id}>
                   <ListItem classes={{ root: classes.item }} divider={true}>
@@ -1195,6 +1213,16 @@ class PendingFileContentComponent extends Component {
                           </div>
                           <div
                             className={classes.bodyItem}
+                            style={inlineStyles.in_platform}
+                          >
+                            <ItemBoolean
+                              variant="inList"
+                              status={isInPlatform}
+                              label={isInPlatform ? t('Yes') : t('No')}
+                            />
+                          </div>
+                          <div
+                            className={classes.bodyItem}
                             style={inlineStyles.nb_dependencies}
                           >
                             {object.nb_dependencies}
@@ -1235,7 +1263,8 @@ class PendingFileContentComponent extends Component {
                   {object.object_refs && (
                     <List component="div" disablePadding>
                       {object.object_refs.map((objectRef) => {
-                        const subObject = indexedObjectsWithDependencies[objectRef];
+                        const subObject = indexedObjectsWithDependencies[objectRef]
+                          || resolvedObjects[objectRef];
                         if (!subObject) {
                           const subObjectTypeRaw = objectRef.split('--')[0];
                           const subObjectType = subObjectTypeRaw === 'x-opencti-simple-observable'
@@ -1248,6 +1277,7 @@ class PendingFileContentComponent extends Component {
                               && !(containersUnchecked[object.id] || []).includes(
                                 objectRef,
                               ));
+                          const isRefInPlatform = resolvedObjects[objectRef] !== undefined;
                           return (
                             <ListItem
                               key={objectRef}
@@ -1271,6 +1301,18 @@ class PendingFileContentComponent extends Component {
                                       style={inlineStyles.default_value}
                                     >
                                       {objectRef}
+                                    </div>
+                                    <div
+                                      className={classes.bodyItem}
+                                      style={inlineStyles.in_platform}
+                                    >
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={isRefInPlatform}
+                                        label={
+                                          isRefInPlatform ? t('Yes') : t('No')
+                                        }
+                                      />
                                     </div>
                                     <div
                                       className={classes.bodyItem}
@@ -1322,6 +1364,7 @@ class PendingFileContentComponent extends Component {
                             && !(containersUnchecked[object.id] || []).includes(
                               subObject.id,
                             ));
+                        const isRefInPlatform = resolvedObjects[objectRef] !== undefined;
                         return (
                           <ListItem
                             key={subObject.id}
@@ -1354,6 +1397,18 @@ class PendingFileContentComponent extends Component {
                                     style={inlineStyles.default_value}
                                   >
                                     {subObject.default_value}
+                                  </div>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={inlineStyles.in_platform}
+                                  >
+                                    <ItemBoolean
+                                      variant="inList"
+                                      status={isRefInPlatform}
+                                      label={
+                                        isRefInPlatform ? t('Yes') : t('No')
+                                      }
+                                    />
                                   </div>
                                   <div
                                     className={classes.bodyItem}

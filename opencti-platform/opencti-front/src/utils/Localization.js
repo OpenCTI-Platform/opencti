@@ -1092,6 +1092,7 @@ const i18n = {
         'Aucun historique à propos cette entité.',
       'No relations history about this entity.':
         'Aucun historique de relations à propos cette entité.',
+      'Already in plat.': 'Déjà dans la plat.',
       // Explore
       'Kill chains': 'Kill chains',
       'Explore the victims and the targets of the dataset through space and time.':
@@ -2409,6 +2410,7 @@ const i18n = {
       'Notes about this relationship': '关于此关系的注释',
       'No history about this entity.': '关于此实体的历史。',
       'No relations history about this entity.': '尚无关于此实体的关系历史',
+      'Already in plat.': '经在平台',
       // Explore
       'Kill chains': '杀伤链',
       'Explore the victims and the targets of the dataset through space and time.':
