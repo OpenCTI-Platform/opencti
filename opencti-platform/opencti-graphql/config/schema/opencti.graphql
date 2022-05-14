@@ -4864,6 +4864,7 @@ input ThreatActorAddInput {
   threat_actor_types: [String]
   first_seen: DateTime
   last_seen: DateTime
+  roles: [String]
   goals: [String]
   sophistication: String
   resource_level: String

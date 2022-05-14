@@ -14,6 +14,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetLocations from './IntrusionSetLocations';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const styles = (theme) => ({
   paper: {
@@ -59,7 +60,10 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('Resource level')}
               </Typography>
-              {intrusionSet.resource_level && t(intrusionSet.resource_level)}
+              <ItemOpenVocab
+                type="attack-resource-level-ov"
+                value={intrusionSet.resource_level}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -105,18 +109,10 @@ class IntrusionSetDetailsComponent extends Component {
               >
                 {t('Primary motivation')}
               </Typography>
-              {intrusionSet.primary_motivation && (
-                <List>
-                  <ListItem dense={true} divider={true}>
-                    <ListItemIcon>
-                      <ArmFlexOutline />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={t(intrusionSet.primary_motivation)}
-                    />
-                  </ListItem>
-                </List>
-              )}
+              <ItemOpenVocab
+                type="attack-motivation-ov"
+                value={intrusionSet.primary_motivation}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -136,7 +132,14 @@ class IntrusionSetDetailsComponent extends Component {
                         <ListItemIcon>
                           <ArmFlexOutline />
                         </ListItemIcon>
-                        <ListItemText primary={t(secondaryMotivation)} />
+                        <ListItemText
+                          primary={
+                            <ItemOpenVocab
+                              type="attack-motivation-ov"
+                              value={secondaryMotivation}
+                            />
+                          }
+                        />
                       </ListItem>
                     ),
                   )}

@@ -5,10 +5,8 @@ import * as Yup from 'yup';
 import * as R from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
-import MenuItem from '@mui/material/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -83,6 +81,7 @@ const threatActorValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)')),
   sophistication: Yup.string().nullable(),
   resource_level: Yup.string().nullable(),
+  roles: Yup.array().nullable(),
   primary_motivation: Yup.string().nullable(),
   secondary_motivations: Yup.array().nullable(),
   personal_motivations: Yup.array().nullable(),
@@ -184,6 +183,7 @@ class ThreatActorEditionDetailsComponent extends Component {
         'goals',
         R.join('\n', threatActor.goals ? threatActor.goals : []),
       ),
+      R.assoc('roles', threatActor.roles ? threatActor.roles : []),
       R.pick([
         'first_seen',
         'last_seen',
@@ -193,6 +193,7 @@ class ThreatActorEditionDetailsComponent extends Component {
         'secondary_motivations',
         'personal_motivations',
         'goals',
+        'roles',
       ]),
     )(threatActor);
     return (
@@ -253,44 +254,17 @@ class ThreatActorEditionDetailsComponent extends Component {
                     ),
                   }}
                 />
-                <Field
-                  component={SelectField}
-                  variant="standard"
+                <OpenVocabField
+                  label={t('Sophistication')}
+                  type="threat-actor-sophistication-ov"
                   name="sophistication"
                   onFocus={this.handleChangeFocus.bind(this)}
                   onChange={this.handleSubmitField.bind(this)}
-                  label={t('Sophistication')}
-                  fullWidth={true}
-                  containerstyle={{ width: '100%', marginTop: 20 }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldName="sophistication"
-                    />
-                  }
-                >
-                  <MenuItem key="none" value="none">
-                    {t('sophistication_none')}
-                  </MenuItem>
-                  <MenuItem key="minimal" value="minimal">
-                    {t('sophistication_minimal')}
-                  </MenuItem>
-                  <MenuItem key="intermediate" value="intermediate">
-                    {t('sophistication_intermediate')}
-                  </MenuItem>
-                  <MenuItem key="advanced" value="advanced">
-                    {t('sophistication_advanced')}
-                  </MenuItem>
-                  <MenuItem key="expert" value="expert">
-                    {t('sophistication_expert')}
-                  </MenuItem>
-                  <MenuItem key="innovator" value="innovator">
-                    {t('sophistication_innovator')}
-                  </MenuItem>
-                  <MenuItem key="strategic" value="strategic">
-                    {t('sophistication_strategic')}
-                  </MenuItem>
-                </Field>
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  variant="edit"
+                  multiple={false}
+                  editContext={context}
+                />
                 <OpenVocabField
                   label={t('Resource level')}
                   type="attack-resource-level-ov"
@@ -300,6 +274,17 @@ class ThreatActorEditionDetailsComponent extends Component {
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   variant="edit"
                   multiple={false}
+                  editContext={context}
+                />
+                <OpenVocabField
+                  label={t('Roles')}
+                  type="threat-actor-role-ov"
+                  name="roles"
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={this.handleSubmitField.bind(this)}
+                  containerstyle={{ marginTop: 20, width: '100%' }}
+                  variant="edit"
+                  multiple={true}
                   editContext={context}
                 />
                 <OpenVocabField
@@ -393,6 +378,7 @@ const ThreatActorEditionDetails = createFragmentContainer(
         secondary_motivations
         personal_motivations
         goals
+        roles
       }
     `,
   },

@@ -13683,6 +13683,7 @@ export type ThreatActorAddInput = {
   primary_motivation?: InputMaybe<Scalars['String']>;
   resource_level?: InputMaybe<Scalars['String']>;
   revoked?: InputMaybe<Scalars['Boolean']>;
+  roles?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   secondary_motivations?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   sophistication?: InputMaybe<Scalars['String']>;
   stix_id?: InputMaybe<Scalars['String']>;

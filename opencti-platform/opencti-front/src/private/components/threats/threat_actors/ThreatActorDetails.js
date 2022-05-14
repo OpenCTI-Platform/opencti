@@ -10,10 +10,11 @@ import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline } from 'mdi-material-ui';
+import { BullseyeArrow, ArmFlexOutline, DramaMasks } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
+import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
 const styles = (theme) => ({
   paper: {
@@ -59,7 +60,10 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Sophistication')}
               </Typography>
-              {threatActor.sophistication && t(threatActor.sophistication)}
+              <ItemOpenVocab
+                type="threat-actor-sophistication-ov"
+                value={threatActor.sophistication}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -67,7 +71,36 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Resource level')}
               </Typography>
-              {threatActor.resource_level && t(threatActor.resource_level)}
+              <ItemOpenVocab
+                type="attack-resource-level-ov"
+                value={threatActor.resource_level}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Roles')}
+              </Typography>
+              {threatActor.roles && (
+                <List>
+                  {threatActor.roles.map((role) => (
+                    <ListItem key={role} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <DramaMasks />
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <ItemOpenVocab
+                            type="threat-actor-role-ov"
+                            value={role}
+                          />
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -123,8 +156,10 @@ class ThreatActorDetailsComponent extends Component {
               >
                 {t('Primary motivation')}
               </Typography>
-              {threatActor.primary_motivation
-                && t(threatActor.primary_motivation)}
+              <ItemOpenVocab
+                type="attack-motivation-ov"
+                value={threatActor.primary_motivation}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -144,7 +179,14 @@ class ThreatActorDetailsComponent extends Component {
                         <ListItemIcon>
                           <ArmFlexOutline />
                         </ListItemIcon>
-                        <ListItemText primary={secondaryMotivation} />
+                        <ListItemText
+                          primary={
+                            <ItemOpenVocab
+                              type="attack-motivation-ov"
+                              value={secondaryMotivation}
+                            />
+                          }
+                        />
                       </ListItem>
                     ),
                   )}
@@ -180,6 +222,7 @@ const ThreatActorDetails = createFragmentContainer(
         primary_motivation
         secondary_motivations
         goals
+        roles
       }
     `,
   },
