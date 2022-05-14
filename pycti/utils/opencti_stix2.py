@@ -11,6 +11,7 @@ import datefinder
 import dateutil.parser
 import pytz
 
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import (
     IdentityTypes,
@@ -18,7 +19,6 @@ from pycti.utils.constants import (
     MultipleStixCyberObservableRelationship,
     StixCyberObservableTypes,
 )
-from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.opencti_stix2_utils import (

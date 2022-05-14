@@ -2,6 +2,7 @@
 
 import json
 import os
+
 import magic
 
 from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
