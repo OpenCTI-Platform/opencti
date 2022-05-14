@@ -45,6 +45,7 @@ export const RELATION_BELONGS_TO = 'belongs-to';
 export const RELATION_RESOLVES_TO = 'resolves-to';
 export const RELATION_PART_OF = 'part-of'; // Extension (OpenCTI)
 export const RELATION_COOPERATES_WITH = 'cooperates-with'; // Extension (OpenCTI)
+export const RELATION_PARTICIPATES_IN = 'participates-in'; // Extension (OpenCTI)
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension (MITRE)
 export const RELATION_REVOKED_BY = 'revoked-by'; // Extension (MITRE)
 export const RELATION_DETECTS = 'detects'; // Extension (MITRE)
@@ -84,6 +85,7 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_DROPS,
   RELATION_PART_OF,
   RELATION_COOPERATES_WITH,
+  RELATION_PARTICIPATES_IN,
   RELATION_SUBTECHNIQUE_OF,
   RELATION_REVOKED_BY,
   RELATION_BELONGS_TO,

@@ -204,6 +204,7 @@ const relationsTypesMapping = {
   'Threat-Actor_Individual': ['attributed-to', 'impersonates', 'targets'],
   'Threat-Actor_Infrastructure': ['compromises', 'hosts', 'owns', 'uses'],
   'Threat-Actor_Malware': ['uses'],
+  'Threat-Actor_Campaign': ['participates-in'],
   'Threat-Actor_Organization': ['attributed-to', 'impersonates', 'targets'],
   'Threat-Actor_Position': ['located-at', 'targets'],
   'Threat-Actor_Region': ['located-at', 'targets'],
