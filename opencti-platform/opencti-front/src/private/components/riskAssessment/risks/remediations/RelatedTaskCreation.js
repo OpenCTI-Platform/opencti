@@ -160,11 +160,6 @@ const RelatedTaskValidation = (t) => Yup.object().shape({
   // url: Yup.string().url(t('The value must be an URL')),
   task_type: Yup.string().required(t('This field is required')),
   description: Yup.string().required(t('This field is required')),
-  start_date: Yup.date().required(t('This field is required')),
-  end_date: Yup.date().min(
-    Yup.ref('start_date'),
-    "End date can't be before start date"
-  )
 });
 
 class RelatedTaskCreation extends Component {
@@ -177,8 +172,6 @@ class RelatedTaskCreation extends Component {
       responsible_roles: [],
       associated_activities: [],
       timing: {},
-      startDate: null,
-      endDate: null,
     };
   }
 
