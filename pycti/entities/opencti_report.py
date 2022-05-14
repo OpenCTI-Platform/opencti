@@ -6,6 +6,7 @@ import uuid
 
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
 
 class Report:
@@ -601,18 +602,12 @@ class Report:
         update = kwargs.get("update", False)
         if stix_object is not None:
 
-            # TODO: Compatibility with OpenCTI 3.X to be REMOVED
-            if "report_types" not in stix_object:
-                stix_object["report_types"] = (
-                    [stix_object["x_opencti_report_class"]]
-                    if "x_opencti_report_class" in stix_object
-                    else None
-                )
-            if "confidence" not in stix_object:
-                stix_object["confidence"] = (
-                    stix_object["x_opencti_source_confidence_level"]
-                    if "x_opencti_source_confidence_level" in stix_object
-                    else 0
+            # Search in extensions
+            if "x_opencti_stix_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                    "stix_ids", stix_object
                 )
 
             return self.create(

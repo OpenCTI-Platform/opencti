@@ -4,6 +4,7 @@ import json
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
 
 class ObservedData:
@@ -565,6 +566,15 @@ class ObservedData:
                     object_refs.append(item["standard_id"])
 
         if stix_object is not None:
+
+            # Search in extensions
+            if "x_opencti_stix_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                    "stix_ids", stix_object
+                )
+
             observed_data_result = self.create(
                 stix_id=stix_object["id"],
                 createdBy=extras["created_by_id"]

@@ -4,6 +4,7 @@ import datetime
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
 
 class StixSightingRelationship:
