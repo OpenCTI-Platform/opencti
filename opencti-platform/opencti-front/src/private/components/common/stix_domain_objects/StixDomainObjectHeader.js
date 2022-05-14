@@ -132,6 +132,9 @@ export const stixDomainObjectMutation = graphql`
         ... on Incident {
           aliases
         }
+        ... on Vulnerability {
+          x_opencti_aliases
+        }
       }
     }
   }

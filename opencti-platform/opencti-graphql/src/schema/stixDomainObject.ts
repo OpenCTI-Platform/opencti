@@ -123,10 +123,11 @@ const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
   ENTITY_TYPE_THREAT_ACTOR,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_VULNERABILITY,
 ];
 export const isStixObjectAliased = (type: string): boolean => R.includes(type, STIX_DOMAIN_OBJECT_ALIASED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
 export const resolveAliasesField = (type: string): string => {
-  if (type === ENTITY_TYPE_COURSE_OF_ACTION || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
+  if (type === ENTITY_TYPE_COURSE_OF_ACTION || type === ENTITY_TYPE_VULNERABILITY || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
     return ATTRIBUTE_ALIASES_OPENCTI;
   }
   return ATTRIBUTE_ALIASES;
@@ -228,6 +229,7 @@ export const stixDomainObjectFieldsToBeUpdated: { [k: string]: Array<string> } =
     'x_opencti_availability_impact',
     'x_opencti_confidentiality_impact',
     'confidence',
+    'x_opencti_aliases',
   ],
   [ENTITY_TYPE_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective', 'confidence', 'aliases'],
 };
@@ -850,6 +852,8 @@ export const stixDomainObjectsAttributes: { [k: string]: Array<string> } = {
     'modified',
     'name',
     'description',
+    'x_opencti_aliases',
+    'i_aliases_ids',
     'x_opencti_base_score',
     'x_opencti_base_severity',
     'x_opencti_attack_vector',

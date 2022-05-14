@@ -5023,6 +5023,7 @@ enum VulnerabilitiesOrdering {
 }
 enum VulnerabilitiesFilter {
   name
+  x_opencti_aliases
   x_opencti_base_score
   x_opencti_base_severity
   x_opencti_attack_vector
@@ -5102,6 +5103,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   # Vulnerability
   name: String!
   description: String
+  x_opencti_aliases: [String]
   x_opencti_base_score: Float
   x_opencti_base_severity: String
   x_opencti_attack_vector: String
@@ -5125,6 +5127,7 @@ input VulnerabilityAddInput {
   x_opencti_stix_ids: [String]
   name: String! @constraint(minLength: 2)
   description: String!
+  x_opencti_aliases: [String]
   x_opencti_base_score: Float
   x_opencti_base_severity: String
   x_opencti_attack_vector: String

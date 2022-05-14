@@ -14608,6 +14608,7 @@ export enum VulnerabilitiesFilter {
   Modified = 'modified',
   Name = 'name',
   StatusId = 'status_id',
+  XOpenctiAliases = 'x_opencti_aliases',
   XOpenctiAttackVector = 'x_opencti_attack_vector',
   XOpenctiBaseScore = 'x_opencti_base_score',
   XOpenctiBaseSeverity = 'x_opencti_base_severity'
@@ -14667,6 +14668,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
+  x_opencti_aliases?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_attack_vector?: Maybe<Scalars['String']>;
   x_opencti_availability_impact?: Maybe<Scalars['String']>;
   x_opencti_base_score?: Maybe<Scalars['Float']>;
@@ -14763,6 +14765,7 @@ export type VulnerabilityAddInput = {
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['String']>;
   update?: InputMaybe<Scalars['Boolean']>;
+  x_opencti_aliases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_attack_vector?: InputMaybe<Scalars['String']>;
   x_opencti_availability_impact?: InputMaybe<Scalars['String']>;
   x_opencti_base_score?: InputMaybe<Scalars['Float']>;
@@ -21274,6 +21277,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_attack_vector?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_availability_impact?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_base_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
