@@ -243,14 +243,14 @@ const ProfileOverviewComponent = (props) => {
               disabled={!subscriptionStatus}
             />
             {!subscriptionStatus && (
-              <Alert severity="info">
+              <Alert severity="info" style={{ marginTop: 20 }}>
                 {t(
                   'To use this feature, your platform administrator must enable the subscription manager in the config.',
                 )}
               </Alert>
             )}
             {me.userSubscriptions.edges.length > 0 ? (
-              <div style={{ marginTop: 20 }}>
+              <div style={{ marginTop: 10 }}>
                 <List>
                   {me.userSubscriptions.edges.map((userSubscriptionEdge) => {
                     const userSubscription = userSubscriptionEdge.node;

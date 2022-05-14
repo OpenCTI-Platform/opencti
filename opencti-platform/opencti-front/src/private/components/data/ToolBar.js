@@ -34,6 +34,7 @@ import {
   CenterFocusStrong,
   CancelOutlined,
   LinkOffOutlined,
+  LanguageOutlined,
 } from '@mui/icons-material';
 import { Label, Merge } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -48,7 +49,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import Grid from '@mui/material/Grid';
-import { map, pathOr, pipe, union } from 'ramda';
+import { ascend, map, path, pathOr, pipe, sortWith, union } from 'ramda';
 import Avatar from '@mui/material/Avatar';
 import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
@@ -69,6 +70,7 @@ import Security, {
 } from '../../../utils/Security';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
 import { hexToRGB } from '../../../utils/Colors';
+import { externalReferencesSearchQuery } from '../analysis/ExternalReferences';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -224,6 +226,7 @@ class ToolBar extends Component {
       labels: [],
       identities: [],
       statuses: [],
+      externalReferences: [],
     };
   }
 
@@ -295,6 +298,7 @@ class ToolBar extends Component {
         value === 'object-marking'
         || value === 'object-label'
         || value === 'created-by'
+        || value === 'external-reference'
       ) {
         actionsInputs[i] = R.assoc(
           'fieldType',
@@ -478,6 +482,10 @@ class ToolBar extends Component {
           label: t('Labels'),
           value: 'object-label',
         },
+        {
+          label: t('External references'),
+          value: 'external-reference',
+        },
       ];
     } else if (actionsInputs[i]?.type === 'REPLACE') {
       options = [
@@ -511,6 +519,10 @@ class ToolBar extends Component {
         {
           label: t('Labels'),
           value: 'object-label',
+        },
+        {
+          label: t('External references'),
+          value: 'external-reference',
         },
       ];
     }
@@ -585,6 +597,40 @@ class ToolBar extends Component {
         )(data);
         this.setState({
           labels: union(this.state.labels, labels),
+        });
+      });
+  }
+
+  searchExternalReferences(i, event, newValue) {
+    if (!event) return;
+    const { actionsInputs } = this.state;
+    actionsInputs[i] = R.assoc(
+      'inputValue',
+      newValue && newValue.length > 0 ? newValue : '',
+      actionsInputs[i],
+    );
+    this.setState({ actionsInputs });
+    fetchQuery(externalReferencesSearchQuery, {
+      search: event && event.target.value,
+    })
+      .toPromise()
+      .then((data) => {
+        const externalReferences = pipe(
+          pathOr([], ['externalReferences', 'edges']),
+          sortWith([ascend(path(['node', 'source_name']))]),
+          map((n) => ({
+            label: `[${n.node.source_name}] ${truncate(
+              n.node.description || n.node.external_id,
+              150,
+            )} ${n.node.url && `(${n.node.url})`}`,
+            value: n.node.id,
+          })),
+        )(data);
+        this.setState({
+          externalReferences: union(
+            this.state.externalReferences,
+            externalReferences,
+          ),
         });
       });
   }
@@ -787,8 +833,7 @@ class ToolBar extends Component {
             selectOnFocus={true}
             autoHighlight={true}
             getOptionLabel={(option) => (option.label ? option.label : '')}
-            value={actionsInputs[i]?.values || []}
-            multiple={true}
+            value={actionsInputs[i]?.values ? actionsInputs[i]?.values[0] : ''}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -817,6 +862,42 @@ class ToolBar extends Component {
                   >
                     {option.order}
                   </Avatar>
+                </div>
+                <div className={classes.text}>{option.label}</div>
+              </li>
+            )}
+          />
+        );
+      case 'external-reference':
+        return (
+          <Autocomplete
+            disabled={disabled}
+            size="small"
+            fullWidth={true}
+            selectOnFocus={true}
+            autoHighlight={true}
+            getOptionLabel={(option) => (option.label ? option.label : '')}
+            value={actionsInputs[i]?.values || []}
+            multiple={true}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                variant="standard"
+                label={t('Values')}
+                fullWidth={true}
+                onFocus={this.searchExternalReferences.bind(this, i)}
+                style={{ marginTop: 3 }}
+              />
+            )}
+            noOptionsText={t('No available options')}
+            options={this.state.externalReferences}
+            onInputChange={this.searchExternalReferences.bind(this, i)}
+            inputValue={actionsInputs[i]?.inputValue || ''}
+            onChange={this.handleChangeActionInputValues.bind(this, i)}
+            renderOption={(props, option) => (
+              <li {...props}>
+                <div className={classes.icon} style={{ color: option.color }}>
+                  <LanguageOutlined />
                 </div>
                 <div className={classes.text}>{option.label}</div>
               </li>
