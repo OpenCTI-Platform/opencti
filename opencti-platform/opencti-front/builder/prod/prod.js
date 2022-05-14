@@ -60,7 +60,7 @@ esbuild
         <link id="favicon" rel="shortcut icon" href="%BASE_PATH%/static/favicon.png">
         <script>window.BASE_PATH = "%BASE_PATH%"</script>
         <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>OpenCTI - Cyber Threat Intelligence Platform</title>
+        <title>OpenCTI - Cyber threat intelligence platform</title>
         ${jsImport}
         ${cssImport}
         </head>

@@ -6908,7 +6908,7 @@ input ProcessAddInput {
   pid: Int
   created_time: DateTime
   cwd: String
-  command_line: String
+  command_line: String!
   environment_variables: [String]
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {

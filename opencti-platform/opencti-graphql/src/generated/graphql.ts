@@ -8470,7 +8470,7 @@ export type ProcessStixCyberObservableRelationshipsArgs = {
 };
 
 export type ProcessAddInput = {
-  command_line?: InputMaybe<Scalars['String']>;
+  command_line: Scalars['String'];
   created_time?: InputMaybe<Scalars['DateTime']>;
   cwd?: InputMaybe<Scalars['String']>;
   environment_variables?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
