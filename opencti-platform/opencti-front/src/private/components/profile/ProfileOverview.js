@@ -40,7 +40,10 @@ const styles = () => ({
 });
 
 const profileOverviewFieldPatch = graphql`
-  mutation ProfileOverviewFieldPatchMutation($input: [EditInput]!, $password: String) {
+  mutation ProfileOverviewFieldPatchMutation(
+    $input: [EditInput]!
+    $password: String
+  ) {
     meEdit(input: $input, password: $password) {
       ...UserEditionOverview_user
     }
@@ -77,7 +80,7 @@ const passwordValidation = (t) => Yup.object().shape({
 
 const ProfileOverviewComponent = (props) => {
   const { t, me, classes, fldt, subscriptionStatus, about } = props;
-  const external = false;
+  const { external } = me;
   const initialValues = pick(
     [
       'name',
@@ -153,7 +156,7 @@ const ProfileOverviewComponent = (props) => {
                     component={TextField}
                     variant="standard"
                     name="user_email"
-                    disabled={true}
+                    disabled={external}
                     label={t('Email address')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
@@ -300,66 +303,67 @@ const ProfileOverviewComponent = (props) => {
           </Paper>
         </Grid>
         <Grid item={true} xs={6}>
-          {!external && (
-            <Paper classes={{ root: classes.panel }} variant="outlined">
-              <Typography variant="h1" gutterBottom={true}>
-                {t('Password')}
-              </Typography>
-              <Formik
-                enableReinitialize={true}
-                initialValues={{
-                  current_password: '',
-                  password: '',
-                  confirmation: '',
-                }}
-                validationSchema={passwordValidation(t)}
-                onSubmit={handleSubmitPasswords}
-              >
-                {({ submitForm, isSubmitting }) => (
-                  <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="current_password"
-                      label={t('Current password')}
-                      type="password"
-                      fullWidth={true}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="password"
-                      label={t('New password')}
-                      type="password"
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="confirmation"
-                      label={t('Confirmation')}
-                      type="password"
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
-                    />
-                    <div style={{ marginTop: 20 }}>
-                      <Button
-                        variant="contained"
-                        type="button"
-                        color="primary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                      >
-                        {t('Update')}
-                      </Button>
-                    </div>
-                  </Form>
-                )}
-              </Formik>
-            </Paper>
-          )}
+          <Paper classes={{ root: classes.panel }} variant="outlined">
+            <Typography variant="h1" gutterBottom={true}>
+              {t('Password')}
+            </Typography>
+            <Formik
+              enableReinitialize={true}
+              initialValues={{
+                current_password: '',
+                password: '',
+                confirmation: '',
+              }}
+              validationSchema={passwordValidation(t)}
+              onSubmit={handleSubmitPasswords}
+            >
+              {({ submitForm, isSubmitting }) => (
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="current_password"
+                    label={t('Current password')}
+                    type="password"
+                    fullWidth={true}
+                    disabled={external}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="password"
+                    label={t('New password')}
+                    type="password"
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                    disabled={external}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="confirmation"
+                    label={t('Confirmation')}
+                    type="password"
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                    disabled={external}
+                  />
+                  <div style={{ marginTop: 20 }}>
+                    <Button
+                      variant="contained"
+                      type="button"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={external || isSubmitting}
+                      classes={{ root: classes.button }}
+                    >
+                      {t('Update')}
+                    </Button>
+                  </div>
+                </Form>
+              )}
+            </Formik>
+          </Paper>
         </Grid>
         <Grid item={true} xs={6}>
           <Paper classes={{ root: classes.panel }} variant="outlined">
