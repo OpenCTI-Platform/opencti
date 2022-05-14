@@ -10,6 +10,7 @@ import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
 import { UserContext } from '../../../../utils/Security';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 
 const styles = () => ({
   paper: {
@@ -21,9 +22,21 @@ const styles = () => ({
   },
 });
 
-const pointerIcon = (dark = true) => new L.Icon({
-  iconUrl: `/static/city_${dark ? 'dark' : 'light'}.png`,
-  iconRetinaUrl: `/static/city_${dark ? 'dark' : 'light'}.png`,
+const cityIcon = (dark = true) => new L.Icon({
+  iconUrl: `${APP_BASE_PATH}/static/city_${dark ? 'dark' : 'light'}.png`,
+  iconRetinaUrl: `${APP_BASE_PATH}/static/city_${
+    dark ? 'dark' : 'light'
+  }.png`,
+  iconAnchor: [5, 55],
+  popupAnchor: [10, -44],
+  iconSize: [25, 25],
+});
+
+const positionIcon = (dark = true) => new L.Icon({
+  iconUrl: `${APP_BASE_PATH}/static/marker_${dark ? 'dark' : 'light'}.png`,
+  iconRetinaUrl: `${APP_BASE_PATH}/static/marker_${
+    dark ? 'dark' : 'light'
+  }.png`,
   iconAnchor: [5, 55],
   popupAnchor: [10, -44],
   iconSize: [25, 25],
@@ -46,8 +59,13 @@ const LocationMiniMap = (props) => {
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const { t, center, zoom, classes, theme, city } = props;
-  const position = city && city.latitude ? [city.latitude, city.longitude] : null;
+  const { t, center, zoom, classes, theme, city, position } = props;
+  let mapPosition = null;
+  if (city && city.latitude && city.longitude) {
+    mapPosition = [city.latitude, city.longitude];
+  } else if (position && position.latitude && position.longitude) {
+    mapPosition = [position.latitude, position.longitude];
+  }
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 10 }}>
@@ -70,8 +88,12 @@ const LocationMiniMap = (props) => {
           <GeoJSON data={countries} style={getStyle} />
           {position ? (
             <Marker
-              position={position}
-              icon={pointerIcon(theme.palette.mode === 'dark')}
+              position={mapPosition}
+              icon={
+                city
+                  ? cityIcon(theme.palette.mode === 'dark')
+                  : positionIcon(theme.palette.mode === 'dark')
+              }
             />
           ) : (
             ''
