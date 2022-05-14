@@ -25,6 +25,7 @@ const setCookieError = (res, message) => {
     maxAge: 5000,
     httpOnly: false,
     secure: booleanConf('app:https_cert:cookie_secure', false),
+    sameSite: 'strict',
   });
 };
 

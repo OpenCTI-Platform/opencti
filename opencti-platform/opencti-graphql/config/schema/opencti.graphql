@@ -848,16 +848,16 @@ type Provider {
   provider: String
 }
 type Settings implements InternalObject & BasicObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
+  id: ID!
+  standard_id: String! @auth(for: [SETTINGS])
+  entity_type: String! @auth(for: [SETTINGS])
+  parent_types: [String]! @auth(for: [SETTINGS])
   # Settings
   platform_title: String
   platform_favicon: String
   platform_url: String
   platform_email: String @auth(for: [SETTINGS])
-  platform_modules: [Module]
+  platform_modules: [Module] @auth(for: [SETTINGS])
   platform_providers: [Provider]
   platform_language: String
   platform_theme: String
@@ -880,13 +880,13 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
-  platform_enable_reference: [String]
-  platform_reference_attachment: Boolean
-  platform_feature_flags: [Module]
-  created_at: DateTime!
-  updated_at: DateTime!
+  platform_enable_reference: [String] @auth(for: [SETTINGS])
+  platform_reference_attachment: Boolean @auth(for: [SETTINGS])
+  platform_feature_flags: [Module] @auth(for: [SETTINGS])
+  created_at: DateTime! @auth(for: [SETTINGS])
+  updated_at: DateTime! @auth(for: [SETTINGS])
   # Technical
-  editContext: [EditUserContext]
+  editContext: [EditUserContext] @auth(for: [SETTINGS])
 }
 
 ############## Groups
