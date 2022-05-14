@@ -4,6 +4,7 @@ import json
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
 
 class Location:
@@ -343,6 +344,15 @@ class Location:
             return
         if "x_opencti_location_type" in stix_object:
             type = stix_object["x_opencti_location_type"]
+        elif (
+            OpenCTIConnectorHelper.get_attribute_in_extension(
+                "location_type", stix_object
+            )
+            is not None
+        ):
+            type = OpenCTIConnectorHelper.get_attribute_in_extension(
+                "location_type", stix_object
+            )
         else:
             if "city" in stix_object:
                 type = "City"
@@ -353,6 +363,21 @@ class Location:
             else:
                 type = "Position"
         if stix_object is not None:
+
+            # Search in extensions
+            if "x_opencti_aliases" not in stix_object:
+                stix_object[
+                    "x_opencti_aliases"
+                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                    "aliases", stix_object
+                )
+            if "x_opencti_stix_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                    "stix_ids", stix_object
+                )
+
             return self.create(
                 type=type,
                 stix_id=stix_object["id"],

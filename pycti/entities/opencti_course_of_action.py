@@ -4,6 +4,7 @@ import json
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
 
 class CourseOfAction:
@@ -332,7 +333,16 @@ class CourseOfAction:
             x_mitre_id = None
             if "x_mitre_id" in stix_object:
                 x_mitre_id = stix_object["x_mitre_id"]
-            if "external_references" in stix_object:
+            elif (
+                OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
+                    "id", stix_object
+                )
+                is not None
+            ):
+                x_mitre_id = OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
+                    "id", stix_object
+                )
+            elif "external_references" in stix_object:
                 for external_reference in stix_object["external_references"]:
                     if (
                         external_reference["source_name"] == "mitre-attack"
@@ -341,6 +351,20 @@ class CourseOfAction:
                         or external_reference["source_name"] == "amitt-attack"
                     ):
                         x_mitre_id = external_reference["external_id"]
+
+            # Search in extensions
+            if "x_opencti_aliases" not in stix_object:
+                stix_object[
+                    "x_opencti_aliases"
+                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                    "aliases", stix_object
+                )
+            if "x_opencti_stix_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                    "stix_ids", stix_object
+                )
 
             return self.create(
                 stix_id=stix_object["id"],

@@ -4,6 +4,7 @@ import json
 import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
 
 class AttackPattern:
@@ -376,6 +377,15 @@ class AttackPattern:
             x_mitre_id = None
             if "x_mitre_id" in stix_object:
                 x_mitre_id = stix_object["x_mitre_id"]
+            elif (
+                OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
+                    "id", stix_object
+                )
+                is not None
+            ):
+                x_mitre_id = OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
+                    "id", stix_object
+                )
             elif "external_references" in stix_object:
                 for external_reference in stix_object["external_references"]:
                     if (
@@ -391,19 +401,43 @@ class AttackPattern:
                             else None
                         )
 
-            # TODO: Compatibility with OpenCTI 3.X to be REMOVED
+            # Search in extensions
             if "x_opencti_order" not in stix_object:
                 stix_object["x_opencti_order"] = (
-                    stix_object["x_opencti_level"]
-                    if "x_opencti_level" in stix_object
+                    OpenCTIConnectorHelper.get_attribute_in_extension(
+                        "order", stix_object
+                    )
+                    if OpenCTIConnectorHelper.get_attribute_in_extension(
+                        "order", stix_object
+                    )
+                    is not None
                     else 0
                 )
-            if "x_mitre_id" not in stix_object:
-                stix_object["x_mitre_id"] = (
-                    stix_object["x_opencti_external_id"]
-                    if "x_opencti_external_id" in stix_object
-                    else None
+            if "x_mitre_platforms" not in stix_object:
+                stix_object[
+                    "x_mitre_platforms"
+                ] = OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
+                    "platforms", stix_object
                 )
+            if "x_mitre_permissions_required" not in stix_object:
+                stix_object[
+                    "x_mitre_permissions_required"
+                ] = OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
+                    "permissions_required", stix_object
+                )
+            if "x_mitre_detection" not in stix_object:
+                stix_object[
+                    "x_mitre_detection"
+                ] = OpenCTIConnectorHelper.get_attribute_in_mitre_extension(
+                    "detection", stix_object
+                )
+            if "x_opencti_stix_ids" not in stix_object:
+                stix_object[
+                    "x_opencti_stix_ids"
+                ] = OpenCTIConnectorHelper.get_attribute_in_extension(
+                    "stix_ids", stix_object
+                )
+
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=extras["created_by_id"]

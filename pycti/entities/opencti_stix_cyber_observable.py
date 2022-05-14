@@ -2,8 +2,9 @@
 
 import json
 import os
-
 import magic
+
+from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
 
 
 class StixCyberObservable:
@@ -572,20 +573,20 @@ class StixCyberObservable:
         elif type.lower() == "text" or type.lower() == "x-opencti-text":
             type = "Text"
 
-        x_opencti_description = (
-            observable_data["x_opencti_description"]
-            if "x_opencti_description" in observable_data
-            else None
-        )
+        if "x_opencti_description" in observable_data:
+            x_opencti_description = observable_data["x_opencti_description"]
+        else:
+            x_opencti_description = OpenCTIConnectorHelper.get_attribute_in_extension(
+                "description"
+            )
+
         if simple_observable_description is not None:
             x_opencti_description = simple_observable_description
-        x_opencti_score = (
-            observable_data["x_opencti_score"]
-            if "x_opencti_score" in observable_data
-            else x_opencti_score
-        )
-        if simple_observable_description is not None:
-            x_opencti_description = simple_observable_description
+
+        if "x_opencti_score" in observable_data:
+            x_opencti_score = observable_data["x_opencti_score"]
+        elif OpenCTIConnectorHelper.get_attribute_in_extension("score") is not None:
+            x_opencti_score = OpenCTIConnectorHelper.get_attribute_in_extension("score")
 
         stix_id = observable_data["id"] if "id" in observable_data else None
         if simple_observable_id is not None:

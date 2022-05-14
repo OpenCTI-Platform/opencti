@@ -79,7 +79,7 @@ class StixMetaTypes(Enum):
     MARKING_DEFINITION = "Marking-Definition"
     LABEL = "Label"
     EXTERNAL_REFERENCE = "External-Reference"
-    KILL_CHAIN_PHASE = "kill-chain-phase"
+    KILL_CHAIN_PHASE = "Kill-Chain-Phase"
 
     @classmethod
     def has_value(cls, value):
