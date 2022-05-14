@@ -5,8 +5,8 @@ import uuid
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
-from pycti.utils.constants import IdentityTypes
 from pycti.connector.opencti_connector_helper import OpenCTIConnectorHelper
+from pycti.utils.constants import IdentityTypes
 
 
 class Identity:
