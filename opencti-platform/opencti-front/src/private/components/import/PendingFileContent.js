@@ -38,7 +38,11 @@ import {
   resolveLink,
 } from '../../../utils/Entity';
 import PendingFileToolBar from './PendingFileToolBar';
-import { commitMutation, MESSAGING$ } from '../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../relay/environment';
 import { fileManagerAskJobImportMutation } from '../common/files/FileManager';
 import SelectField from '../../../components/SelectField';
 import { convertStixType } from '../../../utils/String';
@@ -210,6 +214,151 @@ const importValidation = (t) => Yup.object().shape({
   connector_id: Yup.string().required(t('This field is required')),
 });
 
+const pendingFileContentResolveEntitiesQuery = graphql`
+  query PendingFileContentResolveEntitiesQuery(
+    $first: Int
+    $filters: [StixCoreObjectsFiltering]
+  ) {
+    stixCoreObjects(first: $first, filters: $filters) {
+      edges {
+        node {
+          id
+          standard_id
+          entity_type
+          parent_types
+          created_at
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition
+              }
+            }
+          }
+          ... on StixDomainObject {
+            created
+          }
+          ... on AttackPattern {
+            name
+            description
+            x_mitre_id
+          }
+          ... on Campaign {
+            name
+            description
+            first_seen
+            last_seen
+          }
+          ... on Note {
+            attribute_abstract
+          }
+          ... on ObservedData {
+            name
+            first_observed
+            last_observed
+          }
+          ... on Opinion {
+            opinion
+          }
+          ... on Report {
+            name
+            description
+            published
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on System {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+            description
+            valid_from
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            description
+            first_seen
+            last_seen
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+            first_seen
+            last_seen
+          }
+          ... on ThreatActor {
+            name
+            description
+            first_seen
+            last_seen
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on Incident {
+            name
+            description
+            first_seen
+            last_seen
+          }
+          ... on StixCyberObservable {
+            observable_value
+            x_opencti_description
+          }
+        }
+      }
+    }
+  }
+`;
+
 class PendingFileContentComponent extends Component {
   constructor(props) {
     super(props);
@@ -324,8 +473,8 @@ class PendingFileContentComponent extends Component {
   loadFileContent() {
     const { file } = this.props;
     const url = `/storage/view/${file.id}`;
-    Axios.get(url).then((res) => {
-      const state = this.computeState(res.data.objects);
+    Axios.get(url).then(async (res) => {
+      const state = await this.computeState(res.data.objects);
       this.setState(state);
       return true;
     });
@@ -336,7 +485,7 @@ class PendingFileContentComponent extends Component {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  computeState(objects) {
+  async computeState(objects) {
     const indexedObjects = R.indexBy(R.prop('id'), objects);
     const allObjectsIds = R.map((n) => n.id, objects);
     const dependencies = {};
@@ -413,6 +562,55 @@ class PendingFileContentComponent extends Component {
       R.prop('id'),
       objectsWithDependencies,
     );
+    const unResolvedRefs = [];
+    for (const object of objectsWithDependencies) {
+      if (object.object_refs) {
+        const unResolvedCheck = object.object_refs.filter(
+          (n) => !indexedObjectsWithDependencies[n],
+        );
+        unResolvedRefs.push(...unResolvedCheck);
+      }
+    }
+    if (unResolvedRefs.length > 0) {
+      await fetchQuery(pendingFileContentResolveEntitiesQuery, {
+        first: 1000,
+        filters: [{ key: 'standard_id', values: unResolvedRefs }],
+      })
+        .toPromise()
+        .then(async (data) => {
+          if (data.stixCoreObjects && data.stixCoreObjects.edges) {
+            for (const edge of data.stixCoreObjects.edges) {
+              indexedObjectsWithDependencies[edge.node.standard_id] = R.pipe(
+                R.assoc('type', edge.node.entity_type),
+                R.assoc('id', edge.node.standard_id),
+                R.assoc(
+                  'default_value',
+                  defaultValue(
+                    R.pipe(
+                      R.assoc(
+                        'source_ref_name',
+                        edge.node.source_ref
+                          ? defaultValue(
+                            indexedObjects[edge.node.source_ref] || {},
+                          )
+                          : null,
+                      ),
+                      R.assoc(
+                        'target_ref_name',
+                        edge.node.target_ref
+                          ? defaultValue(
+                            indexedObjects[edge.node.target_ref] || {},
+                          )
+                          : null,
+                      ),
+                    )(edge.node),
+                  ),
+                ),
+              )(edge.node);
+            }
+          }
+        });
+    }
     return {
       allObjectsIds,
       checkedObjects: allObjectsIds,

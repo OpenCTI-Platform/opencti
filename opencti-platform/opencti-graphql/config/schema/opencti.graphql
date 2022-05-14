@@ -1469,6 +1469,8 @@ enum StixCoreObjectsOrdering {
   indicator_pattern
 }
 enum StixCoreObjectsFilter {
+  id
+  standard_id
   name
   created
   modified
