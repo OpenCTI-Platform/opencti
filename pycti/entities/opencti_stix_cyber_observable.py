@@ -576,7 +576,7 @@ class StixCyberObservable:
             x_opencti_description = observable_data["x_opencti_description"]
         else:
             x_opencti_description = self.opencti.get_attribute_in_extension(
-                "description"
+                "description", observable_data
             )
 
         if simple_observable_description is not None:
@@ -584,8 +584,13 @@ class StixCyberObservable:
 
         if "x_opencti_score" in observable_data:
             x_opencti_score = observable_data["x_opencti_score"]
-        elif self.opencti.get_attribute_in_extension("score") is not None:
-            x_opencti_score = self.opencti.get_attribute_in_extension("score")
+        elif (
+            self.opencti.get_attribute_in_extension("score", observable_data)
+            is not None
+        ):
+            x_opencti_score = self.opencti.get_attribute_in_extension(
+                "score", observable_data
+            )
 
         stix_id = observable_data["id"] if "id" in observable_data else None
         if simple_observable_id is not None:
