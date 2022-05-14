@@ -239,6 +239,8 @@ class MarkingDefinition:
 
     def import_from_stix2(self, **kwargs):
         stix_object = kwargs.get("stixObject", None)
+        update = kwargs.get("update", False)
+
         if stix_object is not None:
             definition = None
             definition_type = stix_object["definition_type"]
@@ -291,6 +293,7 @@ class MarkingDefinition:
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,
+                update=update,
             )
         else:
             self.opencti.log(
