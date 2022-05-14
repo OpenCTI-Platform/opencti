@@ -269,6 +269,7 @@ export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery =
     $elementId: String
     $elementWithTargetTypes: [String]
     $first: Int
+    $filters: [StixCoreRelationshipsFiltering]
   ) {
     ...StixDomainObjectAttackPatternsKillChain_data
   }
@@ -282,6 +283,7 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
         stixCoreRelationships(
           elementId: $elementId
           elementWithTargetTypes: $elementWithTargetTypes
+          filters: $filters
           first: $first
         ) {
           edges {

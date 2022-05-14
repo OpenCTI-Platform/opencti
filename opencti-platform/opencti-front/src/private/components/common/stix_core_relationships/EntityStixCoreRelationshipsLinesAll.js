@@ -80,6 +80,7 @@ export const entityStixCoreRelationshipsLinesAllQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
+    $filters: [StixCoreRelationshipsFiltering]
   ) {
     ...EntityStixCoreRelationshipsLinesAll_data
       @arguments(
@@ -91,6 +92,7 @@ export const entityStixCoreRelationshipsLinesAllQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -112,6 +114,7 @@ export default createPaginationContainer(
           defaultValue: start_time
         }
         orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixCoreRelationshipsFiltering]" }
       ) {
         stixCoreRelationships(
           elementId: $elementId
@@ -122,6 +125,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
@@ -158,6 +162,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: entityStixCoreRelationshipsLinesAllQuery,

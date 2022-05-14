@@ -208,7 +208,7 @@ const relationsTypesMapping = {
   'Threat-Actor_Position': ['located-at', 'targets'],
   'Threat-Actor_Region': ['located-at', 'targets'],
   'Threat-Actor_Sector': ['targets'],
-  'Threat-Actor_Threat-Actor': ['part-of'],
+  'Threat-Actor_Threat-Actor': ['part-of', 'cooperates-with'],
   'Threat-Actor_Tool': ['uses'],
   'Threat-Actor_Vulnerability': ['targets'],
   'Tool_Attack-Pattern': ['uses', 'drops', 'delivers'],

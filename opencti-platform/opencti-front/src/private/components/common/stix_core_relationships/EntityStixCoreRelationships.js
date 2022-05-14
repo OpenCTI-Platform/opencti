@@ -59,7 +59,7 @@ class EntityStixCoreRelationships extends Component {
       );
     }
     this.state = {
-      sortBy: R.propOr(null, 'sortBy', params),
+      sortBy: R.propOr('stop_time', 'sortBy', params),
       orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
