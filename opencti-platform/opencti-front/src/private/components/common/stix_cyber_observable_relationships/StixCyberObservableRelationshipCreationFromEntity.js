@@ -20,6 +20,10 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -38,6 +42,7 @@ import StixCyberObservableCreation from '../../observations/stix_cyber_observabl
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import { defaultValue } from '../../../../utils/Graph';
+import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -166,6 +171,22 @@ const styles = (theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  speedDial: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
+  },
+  info: {
+    paddingTop: 10,
+  },
+  speedDialButton: {
+    backgroundColor: theme.palette.secondary.main,
+    color: '#ffffff',
+    '&:hover': {
+      backgroundColor: theme.palette.secondary.main,
+    },
   },
 });
 
@@ -322,7 +343,32 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
       step: 0,
       targetEntity: null,
       search: '',
+      openSpeedDial: false,
     };
+  }
+
+  handleOpenSpeedDial() {
+    this.setState({ openSpeedDial: true });
+  }
+
+  handleCloseSpeedDial() {
+    this.setState({ openSpeedDial: false });
+  }
+
+  handleOpenCreateEntity() {
+    this.setState({ openCreateEntity: true, openSpeedDial: false });
+  }
+
+  handleCloseCreateEntity() {
+    this.setState({ openCreateEntity: false, openSpeedDial: false });
+  }
+
+  handleOpenCreateObservable() {
+    this.setState({ openCreateObservable: true, openSpeedDial: false });
+  }
+
+  handleCloseCreateObservable() {
+    this.setState({ openCreateObservable: false, openSpeedDial: false });
   }
 
   handleOpen() {
@@ -391,7 +437,13 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   renderSelectEntity() {
-    const { search } = this.state;
+    const {
+      search,
+      open,
+      openSpeedDial,
+      openCreateEntity,
+      openCreateObservable,
+    } = this.state;
     const { classes, t, entityType } = this.props;
     const paginationOptions = {
       search,
@@ -484,12 +536,55 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
               );
             }}
           />
-          <StixCyberObservableCreation
-            display={this.state.open}
+          <SpeedDial
+            className={classes.createButton}
+            ariaLabel="Create"
+            icon={<SpeedDialIcon />}
+            onClose={this.handleCloseSpeedDial.bind(this)}
+            onOpen={this.handleOpenSpeedDial.bind(this)}
+            open={openSpeedDial}
+            FabProps={{
+              color: 'secondary',
+            }}
+          >
+            <SpeedDialAction
+              title={t('Create an observable')}
+              icon={<HexagonOutline />}
+              tooltipTitle={t('Create an observable')}
+              onClick={this.handleOpenCreateObservable.bind(this)}
+              FabProps={{
+                classes: { root: classes.speedDialButton },
+              }}
+            />
+            <SpeedDialAction
+              title={t('Create an entity')}
+              icon={<GlobeModel />}
+              tooltipTitle={t('Create an entity')}
+              onClick={this.handleOpenCreateEntity.bind(this)}
+              FabProps={{
+                classes: { root: classes.speedDialButton },
+              }}
+            />
+          </SpeedDial>
+          <StixDomainObjectCreation
+            display={open}
             contextual={true}
-            inputValue={this.state.search}
-            paginationKey="Pagination_stixCyberObservables"
+            inputValue={search}
+            paginationKey="Pagination_stixCoreObjects"
             paginationOptions={paginationOptions}
+            speeddial={true}
+            open={openCreateEntity}
+            handleClose={this.handleCloseCreateEntity.bind(this)}
+          />
+          <StixCyberObservableCreation
+            display={open}
+            contextual={true}
+            inputValue={search}
+            paginationKey="Pagination_stixCoreObjects"
+            paginationOptions={paginationOptions}
+            speeddial={true}
+            open={openCreateObservable}
+            handleClose={this.handleCloseCreateObservable.bind(this)}
           />
         </div>
       </div>

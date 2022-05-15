@@ -1,28 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Markdown from 'react-markdown';
-import {
-  compose,
-  pipe,
-  map,
-  assoc,
-  uniq,
-  indexBy,
-  prop,
-  values,
-  take,
-  filter,
-  pathOr,
-  head,
-  pluck,
-  reduce,
-  concat,
-  sortWith,
-  ascend,
-  descend,
-  propOr,
-} from 'ramda';
+import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -31,13 +11,20 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
-import { Domain, ExpandLess, ExpandMore } from '@mui/icons-material';
+import {
+  Domain,
+  ExpandLess,
+  ExpandMore,
+  FileDownloadOutlined,
+  ViewListOutlined,
+} from '@mui/icons-material';
 import { graphql, createRefetchContainer } from 'react-relay';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Tooltip from '@mui/material/Tooltip';
-import * as R from 'ramda';
-import { AutoFix } from 'mdi-material-ui';
+import { AutoFix, FormatListGroup } from 'mdi-material-ui';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -47,7 +34,10 @@ import SearchInput from '../../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
-import ExportButtons from '../../../../components/ExportButtons';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
 const styles = (theme) => ({
   container: {
@@ -66,21 +56,60 @@ const styles = (theme) => ({
     float: 'right',
     marginTop: -10,
   },
+  parameters: {
+    marginBottom: 10,
+  },
 });
 
 class StixDomainObjectVictimologySectorsComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { expandedLines: {}, searchTerm: '' };
+    let params = {};
+    if (!props.noState) {
+      params = buildViewParamsFromUrlAndStorage(
+        props.history,
+        props.location,
+        `view-victimology-sectors-${props.entityId}`,
+      );
+    }
+    this.state = {
+      sortBy: R.propOr('created_at', 'sortBy', params),
+      orderAsc: R.propOr(false, 'orderAsc', params),
+      searchTerm: R.propOr('', 'searchTerm', params),
+      view: R.propOr('lines', 'view', params),
+      openEntityType: false,
+      openRelationshipType: false,
+      openExports: false,
+      expandedLines: {},
+    };
+  }
+
+  saveView() {
+    if (!this.props.noState) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        `view-victimology-sectors-${this.props.entityId}`,
+        this.state,
+      );
+    }
+  }
+
+  handleSort(field, orderAsc) {
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
+  }
+
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
   }
 
   handleToggleLine(lineKey) {
     this.setState({
-      expandedLines: assoc(
+      expandedLines: R.assoc(
         lineKey,
         this.state.expandedLines[lineKey] !== undefined
           ? !this.state.expandedLines[lineKey]
@@ -91,7 +120,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
   }
 
   render() {
-    const { searchTerm } = this.state;
+    const { searchTerm, openExports } = this.state;
     const {
       t,
       classes,
@@ -99,21 +128,22 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       entityLink,
       paginationOptions,
       stixDomainObjectId,
+      handleChangeView,
     } = this.props;
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
       || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || propOr('', 'subsectors_text', n)
+      || R.propOr('', 'subsectors_text', n)
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1;
     const unknownSectorId = 'a8c03ed6-cc9e-444d-9146-66c64220fff9';
-    const concatAll = reduce(concat, []);
+    const concatAll = R.reduce(R.concat, []);
     // Extract all sectors
-    const sectors = pipe(
-      filter(
+    const sectors = R.pipe(
+      R.filter(
         (n) => n.node.to.entity_type === 'Sector' && !n.node.to.isSubSector,
       ),
-      map((n) => ({
+      R.map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
         description: n.node.to.description,
@@ -122,14 +152,14 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
         relations: [],
       })),
     )(data.stixCoreRelationships.edges);
-    const subSectors = pipe(
-      filter(
+    const subSectors = R.pipe(
+      R.filter(
         (n) => n.node.to.entity_type === 'Sector' && n.node.to.isSubSector,
       ),
-      map((n) => ({
+      R.map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
-        parentSectors: map(
+        parentSectors: R.map(
           (o) => ({
             id: o.node.id,
             name: o.node.name,
@@ -142,20 +172,20 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       })),
     )(data.stixCoreRelationships.edges);
     const subSectorsParentSectors = concatAll(
-      pluck('parentSectors', subSectors),
+      R.pluck('parentSectors', subSectors),
     );
-    const organizations = pipe(
-      filter((n) => n.node.to.entity_type === 'Organization'),
-      map((n) => ({
+    const organizations = R.pipe(
+      R.filter((n) => n.node.to.entity_type === 'Organization'),
+      R.map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
-        sectors: map(
+        sectors: R.map(
           (o) => ({
             id: o.node.id,
             name: o.node.name,
             isSubSector: o.node.isSubSector,
             subSectors: {},
-            parentSectors: map(
+            parentSectors: R.map(
               (p) => ({
                 id: p.node.id,
                 name: p.node.name,
@@ -171,20 +201,20 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
         relations: [],
       })),
     )(data.stixCoreRelationships.edges);
-    const organizationsSectors = concatAll(pluck('sectors', organizations));
-    const organizationsTopLevelSectors = filter(
+    const organizationsSectors = concatAll(R.pluck('sectors', organizations));
+    const organizationsTopLevelSectors = R.filter(
       (n) => !n.isSubSector,
       organizationsSectors,
     );
     const organizationsParentSectors = concatAll(
-      pluck('parentSectors', organizationsSectors),
+      R.pluck('parentSectors', organizationsSectors),
     );
-    const finalSectors = pipe(
-      concat(subSectorsParentSectors),
-      concat(organizationsTopLevelSectors),
-      concat(organizationsParentSectors),
-      uniq,
-      indexBy(prop('id')),
+    const finalSectors = R.pipe(
+      R.concat(subSectorsParentSectors),
+      R.concat(organizationsTopLevelSectors),
+      R.concat(organizationsParentSectors),
+      R.uniq,
+      R.indexBy(R.prop('id')),
     )(sectors);
     for (const subSector of subSectors) {
       for (const parentSector of subSector.parentSectors) {
@@ -204,17 +234,17 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     }
     for (const stixCoreRelationshipEdge of data.stixCoreRelationships.edges) {
       let stixCoreRelationship = stixCoreRelationshipEdge.node;
-      stixCoreRelationship = assoc(
+      stixCoreRelationship = R.assoc(
         'startTimeYear',
         yearFormat(stixCoreRelationship.start_time),
         stixCoreRelationship,
       );
-      stixCoreRelationship = assoc(
+      stixCoreRelationship = R.assoc(
         'stopTimeYear',
         yearFormat(stixCoreRelationship.stop_time),
         stixCoreRelationship,
       );
-      stixCoreRelationship = assoc(
+      stixCoreRelationship = R.assoc(
         'years',
         stixCoreRelationship.startTimeYear === stixCoreRelationship.stopTimeYear
           ? stixCoreRelationship.startTimeYear
@@ -223,7 +253,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       );
       if (stixCoreRelationship.to.entity_type === 'Sector') {
         if (stixCoreRelationship.to.isSubSector) {
-          const parentSectorId = head(
+          const parentSectorId = R.head(
             stixCoreRelationship.to.parentSectors.edges,
           ).node.id;
           finalSectors[parentSectorId].subSectors[
@@ -237,9 +267,9 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       }
       if (stixCoreRelationship.to.entity_type === 'Organization') {
         if (stixCoreRelationship.to.sectors.edges.length > 0) {
-          const sector = head(stixCoreRelationship.to.sectors.edges).node;
+          const sector = R.head(stixCoreRelationship.to.sectors.edges).node;
           if (sector.isSubSector) {
-            const parentSectorId = head(sector.parentSectors.edges).node.id;
+            const parentSectorId = R.head(sector.parentSectors.edges).node.id;
             finalSectors[parentSectorId].subSectors[sector.id].relations.push(
               stixCoreRelationship,
             );
@@ -266,327 +296,351 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
         }
       }
     }
-    const orderedFinalSectors = pipe(
-      values,
-      sortWith([ascend(prop('name'))]),
-      filter(filterByKeyword),
+    const orderedFinalSectors = R.pipe(
+      R.values,
+      R.sortWith([R.ascend(R.prop('name'))]),
+      R.filter(filterByKeyword),
     )(finalSectors);
     return (
       <div>
-        <SearchInput variant="small" onSubmit={this.handleSearch.bind(this)} />
-        <div className={classes.export}>
-          <ExportButtons domElementId="container" name={t('Victimology')} />
+        <div className={classes.parameters}>
+          <div style={{ float: 'left', marginRight: 20, marginTop: -10 }}>
+            <SearchInput
+              variant="small"
+              onSubmit={this.handleSearch.bind(this)}
+              keyword={searchTerm}
+            />
+          </div>
+          <div className={classes.views}>
+            <div style={{ float: 'right', marginTop: -20 }}>
+              <ToggleButtonGroup
+                size="small"
+                color="secondary"
+                value="nested"
+                exclusive={true}
+                onChange={(_, value) => {
+                  if (value && value === 'export') {
+                    this.handleToggleExports();
+                  } else if (value) {
+                    handleChangeView(value);
+                  }
+                }}
+                style={{ margin: '7px 0 0 5px' }}
+              >
+                <ToggleButton value="lines" aria-label="lines">
+                  <ViewListOutlined color="primary" />
+                </ToggleButton>
+                <ToggleButton value="nested" aria-label="nested">
+                  <FormatListGroup />
+                </ToggleButton>
+                <ToggleButton value="export" aria-label="export">
+                  <FileDownloadOutlined
+                    color={openExports ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </div>
+          </div>
+          <div className="clearfix" />
         </div>
-        <div className="clearfix" />
-        <div className={classes.container} id="container">
-          <List>
-            {orderedFinalSectors.map((sector) => {
-              const orderedRelations = pipe(
-                values,
-                sortWith([descend(prop('years'))]),
-              )(sector.relations);
-              const orderedSubSectors = pipe(
-                values,
-                sortWith([ascend(prop('name'))]),
-              )(sector.subSectors);
-              return (
-                <div key={sector.id}>
-                  <ListItem
-                    button={true}
-                    divider={true}
-                    onClick={this.handleToggleLine.bind(this, sector.id)}
-                  >
-                    <ListItemIcon>
-                      <Domain role="img" />
-                    </ListItemIcon>
-                    <ListItemText primary={sector.name} />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        onClick={this.handleToggleLine.bind(this, sector.id)}
-                        aria-haspopup="true"
-                        size="large"
-                      >
-                        {this.state.expandedLines[sector.id] === true ? (
-                          <ExpandLess />
-                        ) : (
-                          <ExpandMore />
-                        )}
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                  <Collapse in={this.state.expandedLines[sector.id] === true}>
-                    <List>
-                      {orderedRelations.map((stixCoreRelationship) => {
-                        const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
-                        return (
-                          <ListItem
-                            key={stixCoreRelationship.id}
-                            classes={{ root: classes.nested }}
-                            divider={true}
-                            button={true}
-                            dense={true}
-                            component={Link}
-                            to={link}
-                          >
-                            <ListItemIcon className={classes.itemIcon}>
-                              <ItemIcon
-                                type={stixCoreRelationship.to.entity_type}
-                              />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={
-                                stixCoreRelationship.to.id === sector.id ? (
-                                  <em>
-                                    {t('Direct targeting of this sector')}
-                                  </em>
-                                ) : (
-                                  stixCoreRelationship.to.name
-                                )
-                              }
-                              secondary={
-                                // eslint-disable-next-line no-nested-ternary
-                                stixCoreRelationship.description
-                                && stixCoreRelationship.description.length > 0 ? (
-                                  <Markdown
-                                    remarkPlugins={[remarkGfm, remarkParse]}
-                                    parserOptions={{ commonmark: true }}
-                                    className="markdown"
-                                  >
-                                    {stixCoreRelationship.description}
-                                  </Markdown>
-                                  ) : (
-                                    t('No description of this targeting')
-                                  )
-                              }
+        <List>
+          {orderedFinalSectors.map((sector) => {
+            const orderedRelations = R.pipe(
+              R.values,
+              R.sortWith([R.descend(R.prop('years'))]),
+            )(sector.relations);
+            const orderedSubSectors = R.pipe(
+              R.values,
+              R.sortWith([R.ascend(R.prop('name'))]),
+            )(sector.subSectors);
+            return (
+              <div key={sector.id}>
+                <ListItem
+                  button={true}
+                  divider={true}
+                  onClick={this.handleToggleLine.bind(this, sector.id)}
+                >
+                  <ListItemIcon>
+                    <Domain role="img" />
+                  </ListItemIcon>
+                  <ListItemText primary={sector.name} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      onClick={this.handleToggleLine.bind(this, sector.id)}
+                      aria-haspopup="true"
+                      size="large"
+                    >
+                      {this.state.expandedLines[sector.id] === true ? (
+                        <ExpandLess />
+                      ) : (
+                        <ExpandMore />
+                      )}
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+                <Collapse in={this.state.expandedLines[sector.id] === true}>
+                  <List>
+                    {orderedRelations.map((stixCoreRelationship) => {
+                      const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
+                      return (
+                        <ListItem
+                          key={stixCoreRelationship.id}
+                          classes={{ root: classes.nested }}
+                          divider={true}
+                          button={true}
+                          dense={true}
+                          component={Link}
+                          to={link}
+                        >
+                          <ListItemIcon className={classes.itemIcon}>
+                            <ItemIcon
+                              type={stixCoreRelationship.to.entity_type}
                             />
-                            {take(
-                              1,
-                              pathOr(
-                                [],
-                                ['markingDefinitions', 'edges'],
-                                stixCoreRelationship,
-                              ),
-                            ).map((markingDefinition) => (
-                              <ItemMarking
-                                key={markingDefinition.node.id}
-                                variant="inList"
-                                label={markingDefinition.node.definition}
-                                color={markingDefinition.node.x_opencti_color}
-                              />
-                            ))}
-                            <ItemYears
-                              variant="inList"
-                              years={stixCoreRelationship.years}
-                            />
-                            <ListItemSecondaryAction>
-                              {stixCoreRelationship.is_inferred ? (
-                                <Tooltip
-                                  title={
-                                    t('Inferred knowledge based on the rule ')
-                                    + R.head(
-                                      stixCoreRelationship.x_opencti_inferences,
-                                    ).rule.name
-                                  }
-                                >
-                                  <AutoFix
-                                    fontSize="small"
-                                    style={{ marginLeft: -30 }}
-                                  />
-                                </Tooltip>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              stixCoreRelationship.to.id === sector.id ? (
+                                <em>{t('Direct targeting of this sector')}</em>
                               ) : (
-                                <StixCoreRelationshipPopover
-                                  stixCoreRelationshipId={
-                                    stixCoreRelationship.id
-                                  }
-                                  paginationOptions={paginationOptions}
-                                  onDelete={this.props.relay.refetch.bind(this)}
+                                stixCoreRelationship.to.name
+                              )
+                            }
+                            secondary={
+                              // eslint-disable-next-line no-nested-ternary
+                              stixCoreRelationship.description
+                              && stixCoreRelationship.description.length > 0 ? (
+                                <Markdown
+                                  remarkPlugins={[remarkGfm, remarkParse]}
+                                  parserOptions={{ commonmark: true }}
+                                  className="markdown"
+                                >
+                                  {stixCoreRelationship.description}
+                                </Markdown>
+                                ) : (
+                                  t('No description of this targeting')
+                                )
+                            }
+                          />
+                          {R.take(
+                            1,
+                            R.pathOr(
+                              [],
+                              ['markingDefinitions', 'edges'],
+                              stixCoreRelationship,
+                            ),
+                          ).map((markingDefinition) => (
+                            <ItemMarking
+                              key={markingDefinition.node.id}
+                              variant="inList"
+                              label={markingDefinition.node.definition}
+                              color={markingDefinition.node.x_opencti_color}
+                            />
+                          ))}
+                          <ItemYears
+                            variant="inList"
+                            years={stixCoreRelationship.years}
+                          />
+                          <ListItemSecondaryAction>
+                            {stixCoreRelationship.is_inferred ? (
+                              <Tooltip
+                                title={
+                                  t('Inferred knowledge based on the rule ')
+                                  + R.head(
+                                    stixCoreRelationship.x_opencti_inferences,
+                                  ).rule.name
+                                }
+                              >
+                                <AutoFix
+                                  fontSize="small"
+                                  style={{ marginLeft: -30 }}
                                 />
-                              )}
+                              </Tooltip>
+                            ) : (
+                              <StixCoreRelationshipPopover
+                                stixCoreRelationshipId={stixCoreRelationship.id}
+                                paginationOptions={paginationOptions}
+                                onDelete={this.props.relay.refetch.bind(this)}
+                              />
+                            )}
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      );
+                    })}
+                    {orderedSubSectors.map((subsector) => {
+                      const orderedSubRelations = R.pipe(
+                        R.values,
+                        R.sortWith([R.descend(R.prop('years'))]),
+                      )(subsector.relations);
+                      return (
+                        <div key={subsector.id}>
+                          <ListItem
+                            button={true}
+                            divider={true}
+                            classes={{ root: classes.nested }}
+                            onClick={this.handleToggleLine.bind(
+                              this,
+                              subsector.id,
+                            )}
+                          >
+                            <ListItemIcon>
+                              <Domain role="img" />
+                            </ListItemIcon>
+                            <ListItemText primary={subsector.name} />
+                            <ListItemSecondaryAction>
+                              <IconButton
+                                onClick={this.handleToggleLine.bind(
+                                  this,
+                                  subsector.id,
+                                )}
+                                aria-haspopup="true"
+                                size="large"
+                              >
+                                {this.state.expandedLines[subsector.id]
+                                === true ? (
+                                  <ExpandLess />
+                                  ) : (
+                                  <ExpandMore />
+                                  )}
+                              </IconButton>
                             </ListItemSecondaryAction>
                           </ListItem>
-                        );
-                      })}
-                      {orderedSubSectors.map((subsector) => {
-                        const orderedSubRelations = pipe(
-                          values,
-                          sortWith([descend(prop('years'))]),
-                        )(subsector.relations);
-                        return (
-                          <div key={subsector.id}>
-                            <ListItem
-                              button={true}
-                              divider={true}
-                              classes={{ root: classes.nested }}
-                              onClick={this.handleToggleLine.bind(
-                                this,
-                                subsector.id,
-                              )}
-                            >
-                              <ListItemIcon>
-                                <Domain role="img" />
-                              </ListItemIcon>
-                              <ListItemText primary={subsector.name} />
-                              <ListItemSecondaryAction>
-                                <IconButton
-                                  onClick={this.handleToggleLine.bind(
-                                    this,
-                                    subsector.id,
-                                  )}
-                                  aria-haspopup="true"
-                                  size="large"
-                                >
-                                  {this.state.expandedLines[subsector.id]
-                                  === true ? (
-                                    <ExpandLess />
-                                    ) : (
-                                    <ExpandMore />
-                                    )}
-                                </IconButton>
-                              </ListItemSecondaryAction>
-                            </ListItem>
-                            <Collapse
-                              in={
-                                this.state.expandedLines[subsector.id] === true
-                              }
-                            >
-                              <List>
-                                {orderedSubRelations.map(
-                                  (stixCoreRelationship) => {
-                                    const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
-                                    return (
-                                      <ListItem
-                                        key={stixCoreRelationship.id}
-                                        classes={{ root: classes.subnested }}
-                                        divider={true}
-                                        button={true}
-                                        dense={true}
-                                        component={Link}
-                                        to={link}
+                          <Collapse
+                            in={this.state.expandedLines[subsector.id] === true}
+                          >
+                            <List>
+                              {orderedSubRelations.map(
+                                (stixCoreRelationship) => {
+                                  const link = `${entityLink}/relations/${stixCoreRelationship.id}`;
+                                  return (
+                                    <ListItem
+                                      key={stixCoreRelationship.id}
+                                      classes={{ root: classes.subnested }}
+                                      divider={true}
+                                      button={true}
+                                      dense={true}
+                                      component={Link}
+                                      to={link}
+                                    >
+                                      <ListItemIcon
+                                        className={classes.itemIcon}
                                       >
-                                        <ListItemIcon
-                                          className={classes.itemIcon}
-                                        >
-                                          <ItemIcon
-                                            type={
-                                              stixCoreRelationship.to
-                                                .entity_type
-                                            }
-                                          />
-                                        </ListItemIcon>
-                                        <ListItemText
-                                          primary={
-                                            stixCoreRelationship.to.id
-                                            === subsector.id ? (
-                                              <em>
-                                                {t(
-                                                  'Direct targeting of this sector',
-                                                )}
-                                              </em>
-                                              ) : (
-                                                stixCoreRelationship.to.name
-                                              )
-                                          }
-                                          secondary={
-                                            // eslint-disable-next-line no-nested-ternary
-                                            stixCoreRelationship.description
-                                            && stixCoreRelationship.description
-                                              .length > 0 ? (
-                                              <Markdown
-                                                remarkPlugins={[
-                                                  remarkGfm,
-                                                  remarkParse,
-                                                ]}
-                                                parserOptions={{
-                                                  commonmark: true,
-                                                }}
-                                                className="markdown"
-                                              >
-                                                {
-                                                  stixCoreRelationship.description
-                                                }
-                                              </Markdown>
-                                              ) : stixCoreRelationship.inferred ? (
-                                              <i>
-                                                {t('This relation is inferred')}
-                                              </i>
-                                              ) : (
-                                                t(
-                                                  'No description of this targeting',
-                                                )
-                                              )
+                                        <ItemIcon
+                                          type={
+                                            stixCoreRelationship.to.entity_type
                                           }
                                         />
-                                        {take(
-                                          1,
-                                          pathOr(
-                                            [],
-                                            ['markingDefinitions', 'edges'],
-                                            stixCoreRelationship,
-                                          ),
-                                        ).map((markingDefinition) => (
-                                          <ItemMarking
-                                            key={markingDefinition.node.id}
-                                            variant="inList"
-                                            label={
-                                              markingDefinition.node.definition
-                                            }
-                                            color={
-                                              markingDefinition.node
-                                                .x_opencti_color
-                                            }
-                                          />
-                                        ))}
-                                        <ItemYears
-                                          variant="inList"
-                                          years={stixCoreRelationship.years}
-                                        />
-                                        <ListItemSecondaryAction>
-                                          {stixCoreRelationship.is_inferred ? (
-                                            <Tooltip
-                                              title={
-                                                t(
-                                                  'Inferred knowledge based on the rule ',
-                                                )
-                                                + R.head(
-                                                  stixCoreRelationship.x_opencti_inferences,
-                                                ).rule.name
-                                              }
-                                            >
-                                              <AutoFix
-                                                fontSize="small"
-                                                style={{ marginLeft: -30 }}
-                                              />
-                                            </Tooltip>
-                                          ) : (
-                                            <StixCoreRelationshipPopover
-                                              stixCoreRelationshipId={
-                                                stixCoreRelationship.id
-                                              }
-                                              paginationOptions={
-                                                paginationOptions
-                                              }
-                                              onDelete={this.props.relay.refetch.bind(
-                                                this,
+                                      </ListItemIcon>
+                                      <ListItemText
+                                        primary={
+                                          stixCoreRelationship.to.id
+                                          === subsector.id ? (
+                                            <em>
+                                              {t(
+                                                'Direct targeting of this sector',
                                               )}
+                                            </em>
+                                            ) : (
+                                              stixCoreRelationship.to.name
+                                            )
+                                        }
+                                        secondary={
+                                          // eslint-disable-next-line no-nested-ternary
+                                          stixCoreRelationship.description
+                                          && stixCoreRelationship.description
+                                            .length > 0 ? (
+                                            <Markdown
+                                              remarkPlugins={[
+                                                remarkGfm,
+                                                remarkParse,
+                                              ]}
+                                              parserOptions={{
+                                                commonmark: true,
+                                              }}
+                                              className="markdown"
+                                            >
+                                              {stixCoreRelationship.description}
+                                            </Markdown>
+                                            ) : stixCoreRelationship.inferred ? (
+                                            <i>
+                                              {t('This relation is inferred')}
+                                            </i>
+                                            ) : (
+                                              t(
+                                                'No description of this targeting',
+                                              )
+                                            )
+                                        }
+                                      />
+                                      {R.take(
+                                        1,
+                                        R.pathOr(
+                                          [],
+                                          ['markingDefinitions', 'edges'],
+                                          stixCoreRelationship,
+                                        ),
+                                      ).map((markingDefinition) => (
+                                        <ItemMarking
+                                          key={markingDefinition.node.id}
+                                          variant="inList"
+                                          label={
+                                            markingDefinition.node.definition
+                                          }
+                                          color={
+                                            markingDefinition.node
+                                              .x_opencti_color
+                                          }
+                                        />
+                                      ))}
+                                      <ItemYears
+                                        variant="inList"
+                                        years={stixCoreRelationship.years}
+                                      />
+                                      <ListItemSecondaryAction>
+                                        {stixCoreRelationship.is_inferred ? (
+                                          <Tooltip
+                                            title={
+                                              t(
+                                                'Inferred knowledge based on the rule ',
+                                              )
+                                              + R.head(
+                                                stixCoreRelationship.x_opencti_inferences,
+                                              ).rule.name
+                                            }
+                                          >
+                                            <AutoFix
+                                              fontSize="small"
+                                              style={{ marginLeft: -30 }}
                                             />
-                                          )}
-                                        </ListItemSecondaryAction>
-                                      </ListItem>
-                                    );
-                                  },
-                                )}
-                              </List>
-                            </Collapse>
-                          </div>
-                        );
-                      })}
-                    </List>
-                  </Collapse>
-                </div>
-              );
-            })}
-          </List>
-        </div>
+                                          </Tooltip>
+                                        ) : (
+                                          <StixCoreRelationshipPopover
+                                            stixCoreRelationshipId={
+                                              stixCoreRelationship.id
+                                            }
+                                            paginationOptions={
+                                              paginationOptions
+                                            }
+                                            onDelete={this.props.relay.refetch.bind(
+                                              this,
+                                            )}
+                                          />
+                                        )}
+                                      </ListItemSecondaryAction>
+                                    </ListItem>
+                                  );
+                                },
+                              )}
+                            </List>
+                          </Collapse>
+                        </div>
+                      );
+                    })}
+                  </List>
+                </Collapse>
+              </div>
+            );
+          })}
+        </List>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
@@ -608,6 +662,7 @@ StixDomainObjectVictimologySectorsComponent.propTypes = {
   data: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
+  handleChangeView: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
@@ -712,7 +767,8 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
   stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery,
 );
 
-export default compose(
+export default R.compose(
   inject18n,
+  withRouter,
   withStyles(styles),
 )(StixDomainObjectVictimologySectorsSectorLines);

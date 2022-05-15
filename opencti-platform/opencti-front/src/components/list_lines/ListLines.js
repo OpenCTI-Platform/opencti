@@ -19,7 +19,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import { GraphOutline } from 'mdi-material-ui';
+import { GraphOutline, FormatListGroup } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
@@ -176,6 +176,7 @@ class ListLines extends Component {
       enableGraph,
       availableEntityTypes,
       availableRelationshipTypes,
+      enableNestedView,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -230,7 +231,7 @@ class ListLines extends Component {
                 <span>
                   <Chip
                     key={currentFilter[0]}
-                    classes={{ root: classes.fnoTopMarginilter }}
+                    classes={{ root: classes.filter }}
                     label={
                       <div>
                         <strong>{label}</strong>: {values}
@@ -284,6 +285,11 @@ class ListLines extends Component {
                 {typeof handleChangeView === 'function' && enableGraph && (
                   <ToggleButton value="graph" aria-label="graph">
                     <GraphOutline color="primary" />
+                  </ToggleButton>
+                )}
+                {typeof handleChangeView === 'function' && enableNestedView && (
+                  <ToggleButton value="nested" aria-label="nested">
+                    <FormatListGroup color="primary" />
                   </ToggleButton>
                 )}
                 {typeof handleToggleExports === 'function' && (
@@ -448,6 +454,7 @@ ListLines.propTypes = {
   enableGraph: PropTypes.bool,
   availableEntityTypes: PropTypes.array,
   availableRelationshipTypes: PropTypes.array,
+  enableNestedView: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

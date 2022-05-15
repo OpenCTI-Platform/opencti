@@ -531,7 +531,13 @@ class StixCyberObservableCreation extends Component {
                   setFieldValue,
                   values,
                 }) => (
-                  <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Form
+                    style={{
+                      margin: this.props.contextual
+                        ? '10px 0 0 0'
+                        : '20px 0 20px 0',
+                    }}
+                  >
                     <div>
                       <Field
                         component={TextField}

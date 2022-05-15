@@ -1,95 +1,76 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, prop, uniqBy } from 'ramda';
+import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 import { graphql } from 'react-relay';
+import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
 import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
 import { QueryRenderer } from '../../../../relay/environment';
+import { computeLevel } from '../../../../utils/Number';
 
 const styles = () => ({
   paper: {
-    margin: '10px 0 0 0',
-    padding: 0,
+    height: '100%',
+    margin: '4px 0 0 0',
     borderRadius: 6,
+  },
+  paperExplore: {
+    height: '100%',
+    margin: 0,
+    padding: '0 0 10px 0',
+    borderRadius: 6,
+  },
+  chip: {
+    fontSize: 10,
+    height: 20,
+    marginLeft: 10,
+  },
+  updateButton: {
+    float: 'right',
+    margin: '7px 10px 0 0',
   },
 });
 
 const stixDomainObjectVictimologyMapQuery = graphql`
   query StixDomainObjectVictimologyMapQuery(
     $fromId: String
+    $field: String!
+    $operation: StatsOperation!
+    $relationship_type: String
     $toTypes: [String]
-    $relationship_type: [String]
-    $first: Int
     $startDate: DateTime
     $endDate: DateTime
+    $dateAttribute: String
+    $limit: Int
   ) {
-    stixCoreRelationships(
+    stixCoreRelationshipsDistribution(
       fromId: $fromId
-      toTypes: $toTypes
+      field: $field
+      operation: $operation
       relationship_type: $relationship_type
-      first: $first
+      toTypes: $toTypes
       startDate: $startDate
       endDate: $endDate
+      dateAttribute: $dateAttribute
+      limit: $limit
     ) {
-      edges {
-        node {
-          id
-          description
-          start_time
-          stop_time
-          to {
-            ... on BasicObject {
-              id
-              entity_type
-            }
-            ... on City {
-              name
-              latitude
-              longitude
-              country {
-                id
-                name
-                x_opencti_aliases
-                region {
-                  id
-                  name
-                }
-              }
-            }
-            ... on Country {
-              id
-              name
-              x_opencti_aliases
-              region {
-                id
-                name
-              }
-            }
-            ... on Region {
-              name
-              x_opencti_aliases
-              countries {
-                edges {
-                  node {
-                    name
-                    x_opencti_aliases
-                  }
-                }
-              }
-            }
-          }
-          objectMarking {
-            edges {
-              node {
-                id
-                definition
-                x_opencti_color
-              }
-            }
-          }
+      label
+      value
+      entity {
+        ... on BasicObject {
+          entity_type
+        }
+        ... on BasicRelationship {
+          entity_type
+        }
+        ... on Country {
+          name
+          x_opencti_aliases
+          latitude
+          longitude
         }
       }
     }
@@ -97,74 +78,85 @@ const stixDomainObjectVictimologyMapQuery = graphql`
 `;
 
 class StixDomainObjectVictimologyMap extends Component {
-  render() {
-    const { t, title, stixDomainObjectId, startDate, endDate } = this.props;
+  renderContent() {
+    const { stixDomainObjectId, startDate, endDate, timeField } = this.props;
     return (
-      <div style={{ height: '100%', paddingBottom: 10 }}>
+      <QueryRenderer
+        query={stixDomainObjectVictimologyMapQuery}
+        variables={{
+          fromId: stixDomainObjectId,
+          field: 'internal_id',
+          operation: 'count',
+          relationship_type: 'targets',
+          toTypes: ['Country'],
+          startDate,
+          endDate,
+          dateAttribute:
+            timeField === 'functional' ? 'start_time' : 'created_at',
+          limit: 20,
+        }}
+        render={({ props }) => {
+          if (props && props.stixCoreRelationshipsDistribution) {
+            const values = R.pluck(
+              'value',
+              props.stixCoreRelationshipsDistribution,
+            );
+            const countries = R.map(
+              (x) => R.assoc(
+                'level',
+                computeLevel(x.value, R.last(values), R.head(values) + 1),
+                x.entity,
+              ),
+              props.stixCoreRelationshipsDistribution,
+            );
+            return (
+              <LocationMiniMapTargets
+                center={[48.8566969, 2.3514616]}
+                countries={countries}
+                zoom={2}
+              />
+            );
+          }
+          return (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                <CircularProgress size={40} thickness={2} />
+              </span>
+            </div>
+          );
+        }}
+      />
+    );
+  }
+
+  render() {
+    const { t, title, variant, classes } = this.props;
+    return (
+      <div
+        style={{ height: '100%', paddingBottom: variant !== 'inLine' ? 0 : 10 }}
+      >
         <Typography
-          variant="h4"
+          variant={variant === 'inEntity' ? 'h3' : 'h4'}
           gutterBottom={true}
-          style={{ marginBottom: 10 }}
+          style={{
+            margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
+          }}
         >
           {title || t('Victimology map')}
         </Typography>
-        <QueryRenderer
-          query={stixDomainObjectVictimologyMapQuery}
-          variables={{
-            first: 500,
-            fromId: stixDomainObjectId,
-            toTypes: ['Region', 'Country', 'City'],
-            relationship_type: 'targets',
-            startDate,
-            endDate,
-          }}
-          render={({ props }) => {
-            if (props && props.stixCoreRelationships) {
-              // Extract all regions
-              const regions = props.stixCoreRelationships.edges
-                .map((e) => e.node)
-                .filter((n) => n.to.entity_type === 'Region')
-                .map((e) => e.to);
-              const regionCountries = regions
-                .map((region) => region.countries.edges)
-                .flat()
-                .map((e) => e.node);
-              const directCountries = props.stixCoreRelationships.edges
-                .map((e) => e.node)
-                .filter((n) => n.to.entity_type === 'Country')
-                .map((e) => e.to);
-              const countries = uniqBy(prop('name'), [
-                ...directCountries,
-                ...regionCountries,
-              ]);
-              const cities = props.stixCoreRelationships.edges
-                .map((e) => e.node)
-                .filter((n) => n.to.entity_type === 'City')
-                .map((e) => e.to);
-              return (
-                <LocationMiniMapTargets
-                  center={[48.8566969, 2.3514616]}
-                  zoom={2.5}
-                  countries={countries}
-                  cities={cities}
-                />
-              );
-            }
-            return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
-                <span
-                  style={{
-                    display: 'table-cell',
-                    verticalAlign: 'middle',
-                    textAlign: 'center',
-                  }}
-                >
-                  <CircularProgress size={40} thickness={2} />
-                </span>
-              </div>
-            );
-          }}
-        />
+        {variant === 'inLine' || variant === 'inEntity' ? (
+          this.renderContent()
+        ) : (
+          <Paper classes={{ root: classes.paper }} variant="outlined">
+            {this.renderContent()}
+          </Paper>
+        )}
       </div>
     );
   }
@@ -179,7 +171,7 @@ StixDomainObjectVictimologyMap.propTypes = {
   endDate: PropTypes.string,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixDomainObjectVictimologyMap);

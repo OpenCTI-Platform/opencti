@@ -59,7 +59,7 @@ class EntityStixCoreRelationships extends Component {
       );
     }
     this.state = {
-      sortBy: R.propOr('stop_time', 'sortBy', params),
+      sortBy: R.propOr('created', 'sortBy', params),
       orderAsc: R.propOr(false, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('lines', 'view', params),
@@ -67,6 +67,7 @@ class EntityStixCoreRelationships extends Component {
       numberOfElements: { number: 0, symbol: '' },
       openEntityType: false,
       openRelationshipType: false,
+      openExports: false,
     };
   }
 
@@ -132,8 +133,12 @@ class EntityStixCoreRelationships extends Component {
     this.setState({ numberOfElements });
   }
 
+  handleToggleExports() {
+    this.setState({ openExports: !this.state.openExports });
+  }
+
   renderLines(paginationOptions) {
-    const { sortBy, orderAsc, numberOfElements, filters } = this.state;
+    const { sortBy, orderAsc, numberOfElements, filters, openExports } = this.state;
     const {
       entityLink,
       entityId,
@@ -141,7 +146,11 @@ class EntityStixCoreRelationships extends Component {
       allDirections,
       targetStixDomainObjectTypes,
       relationshipTypes,
+      disableExport,
+      handleChangeView,
+      enableNestedView,
     } = this.props;
+    const exportContext = `of-entity-${entityId}`;
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',
@@ -201,6 +210,16 @@ class EntityStixCoreRelationships extends Component {
         ]}
         availableEntityTypes={targetStixDomainObjectTypes}
         availableRelationshipTypes={relationshipTypes}
+        handleToggleExports={
+          disableExport ? null : this.handleToggleExports.bind(this)
+        }
+        openExports={openExports}
+        exportEntityType="Stix-Core-Relationship"
+        exportContext={exportContext}
+        noPadding={true}
+        handleChangeView={handleChangeView}
+        enableNestedView={enableNestedView}
+        disableCards={true}
       >
         <QueryRenderer
           query={
@@ -284,7 +303,9 @@ class EntityStixCoreRelationships extends Component {
         ? relationshipTypes
         : [];
     }
-    const finalFilters = convertFilters(R.dissoc('entity_type', filters));
+    const finalFilters = convertFilters(
+      R.pipe(R.dissoc('relationship_type'), R.dissoc('entity_type'))(filters),
+    );
     let paginationOptions = {
       relationship_type: selectedRelationshipTypes,
       search: searchTerm,
@@ -342,6 +363,9 @@ EntityStixCoreRelationships.propTypes = {
   isRelationReversed: PropTypes.bool,
   allDirections: PropTypes.bool,
   noState: PropTypes.bool,
+  disableExport: PropTypes.bool,
+  handleChangeView: PropTypes.func,
+  enableNestedView: PropTypes.func,
 };
 
 export default R.compose(

@@ -211,7 +211,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               data={data}
               entityLink={entityLink}
               paginationOptions={paginationOptions}
-              handleDelete={this.props.relay.refetch.bind(this)}
+              onDelete={this.props.relay.refetch.bind(this)}
               searchTerm={searchTerm}
             />
           )}
@@ -285,7 +285,7 @@ const stixDomainObjectAttackPatternsKillChainLines = createRefetchContainer(
           elementWithTargetTypes: $elementWithTargetTypes
           filters: $filters
           first: $first
-        ) {
+        ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
               id

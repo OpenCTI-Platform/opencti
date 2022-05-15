@@ -369,10 +369,14 @@ const IngestedEntitiesGraph = () => {
     startDate: yearsAgo(1),
     interval: 'month',
   });
-  const chartData = data.stixDomainObjectsTimeSeries.map((entry) => ({
-    x: new Date(entry.date),
-    y: entry.value,
-  }));
+  const chartData = data.stixDomainObjectsTimeSeries.map((entry) => {
+    const date = new Date(entry.date);
+    date.setDate(date.getDate() + 15);
+    return {
+      x: date,
+      y: entry.value,
+    };
+  });
   return (
     <div className={classes.graphContainer}>
       <Chart
