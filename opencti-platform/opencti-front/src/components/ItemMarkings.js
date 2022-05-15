@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as R from 'ramda';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
@@ -70,110 +70,108 @@ const inlineStylesLight = {
   },
 };
 
-class ItemMarkings extends Component {
-  render() {
-    const { classes, variant, markingDefinitions, limit, theme } = this.props;
-    const className = variant === 'inList' ? classes.chipInList : classes.chip;
-    const number = limit || 1;
-    const sortBy = R.sortWith([R.descend(R.prop('definition'))]);
-    const markings = R.pipe(
-      R.map((n) => n.node),
-      sortBy,
-      R.take(number),
-    )(markingDefinitions);
-    return (
-      <div>
-        {markings.map((markingDefinition) => {
-          const label = truncate(markingDefinition.definition, 20);
-          if (markingDefinition.x_opencti_color) {
-            let backgroundColor = markingDefinition.x_opencti_color;
-            let textColor = theme.palette.text.primary;
-            let border = '0';
-            if (theme.palette.mode === 'light') {
-              if (backgroundColor === '#ffffff') {
-                backgroundColor = '#ffffff';
-                textColor = '#2b2b2b';
-                border = '1px solid #2b2b2b';
-              } else {
-                textColor = '#ffffff';
-              }
-            } else if (backgroundColor === '#ffffff') {
+const ItemMarkings = (props) => {
+  const { classes, variant, markingDefinitions, limit, theme } = props;
+  const className = variant === 'inList' ? classes.chipInList : classes.chip;
+  const number = limit || 1;
+  const sortBy = R.sortWith([R.descend(R.prop('definition'))]);
+  const markings = R.pipe(
+    R.map((n) => n.node),
+    sortBy,
+    R.take(number),
+  )(markingDefinitions);
+  return (
+    <div>
+      {markings.map((markingDefinition) => {
+        const label = truncate(markingDefinition.definition, 20);
+        if (markingDefinition.x_opencti_color) {
+          let backgroundColor = markingDefinition.x_opencti_color;
+          let textColor = theme.palette.text.primary;
+          let border = '0';
+          if (theme.palette.mode === 'light') {
+            if (backgroundColor === '#ffffff') {
+              backgroundColor = '#ffffff';
               textColor = '#2b2b2b';
+              border = '1px solid #2b2b2b';
+            } else {
+              textColor = '#ffffff';
             }
+          } else if (backgroundColor === '#ffffff') {
+            textColor = '#2b2b2b';
+          }
+          return (
+            <Chip
+              key={markingDefinition.definition}
+              className={className}
+              style={{
+                backgroundColor,
+                color: textColor,
+                border,
+              }}
+              label={label}
+            />
+          );
+        }
+        let inlineStyles = inlineStylesDark;
+        if (theme.palette.mode === 'light') {
+          inlineStyles = inlineStylesLight;
+        }
+        switch (markingDefinition.definition) {
+          case 'CD':
+          case 'CD-SF':
+          case 'DR':
+          case 'DR-SF':
+          case 'TLP:RED':
             return (
               <Chip
                 key={markingDefinition.definition}
                 className={className}
-                style={{
-                  backgroundColor,
-                  color: textColor,
-                  border,
-                }}
+                style={inlineStyles.red}
                 label={label}
               />
             );
-          }
-          let inlineStyles = inlineStylesDark;
-          if (theme.palette.mode === 'light') {
-            inlineStyles = inlineStylesLight;
-          }
-          switch (markingDefinition.definition) {
-            case 'CD':
-            case 'CD-SF':
-            case 'DR':
-            case 'DR-SF':
-            case 'TLP:RED':
-              return (
-                <Chip
-                  key={markingDefinition.definition}
-                  className={className}
-                  style={inlineStyles.red}
-                  label={label}
-                />
-              );
-            case 'TLP:AMBER':
-              return (
-                <Chip
-                  key={markingDefinition.definition}
-                  className={className}
-                  style={inlineStyles.orange}
-                  label={label}
-                />
-              );
-            case 'NP':
-            case 'TLP:GREEN':
-              return (
-                <Chip
-                  key={markingDefinition.definition}
-                  className={className}
-                  style={inlineStyles.green}
-                  label={label}
-                />
-              );
-            case 'SF':
-              return (
-                <Chip
-                  key={markingDefinition.definition}
-                  className={className}
-                  style={inlineStyles.blue}
-                  label={label}
-                />
-              );
-            default:
-              return (
-                <Chip
-                  key={markingDefinition.definition}
-                  className={className}
-                  style={inlineStyles.white}
-                  label={label}
-                />
-              );
-          }
-        })}
-      </div>
-    );
-  }
-}
+          case 'TLP:AMBER':
+            return (
+              <Chip
+                key={markingDefinition.definition}
+                className={className}
+                style={inlineStyles.orange}
+                label={label}
+              />
+            );
+          case 'NP':
+          case 'TLP:GREEN':
+            return (
+              <Chip
+                key={markingDefinition.definition}
+                className={className}
+                style={inlineStyles.green}
+                label={label}
+              />
+            );
+          case 'SF':
+            return (
+              <Chip
+                key={markingDefinition.definition}
+                className={className}
+                style={inlineStyles.blue}
+                label={label}
+              />
+            );
+          default:
+            return (
+              <Chip
+                key={markingDefinition.definition}
+                className={className}
+                style={inlineStyles.white}
+                label={label}
+              />
+            );
+        }
+      })}
+    </div>
+  );
+};
 
 ItemMarkings.propTypes = {
   theme: PropTypes.object,

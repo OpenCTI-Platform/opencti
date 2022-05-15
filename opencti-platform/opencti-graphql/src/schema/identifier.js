@@ -16,7 +16,7 @@ import {
   isStixObjectAliased,
 } from './stixDomainObject';
 import * as M from './stixMetaObject';
-import { isStixMetaObject } from './stixMetaObject';
+import { FIXED_MARKING_DEFINITIONS, isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { isStixCyberObservable, isStixCyberObservableHashedObservable } from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
@@ -351,6 +351,10 @@ const generateStixId = (type, data) => {
 export const generateInternalId = () => uuidv4();
 export const generateWorkId = () => `opencti-work--${generateInternalId()}`;
 export const generateStandardId = (type, data) => {
+  // If forced
+  if (R.values(FIXED_MARKING_DEFINITIONS).includes(data.standard_id)) {
+    return data.standard_id;
+  }
   // Entities
   if (isStixMetaObject(type)) return generateStixId(type, data);
   if (isStixDomainObject(type)) return generateStixId(type, data);

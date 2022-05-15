@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
@@ -52,68 +52,66 @@ const inlineStyles = {
   },
 };
 
-class ItemScore extends Component {
-  render() {
-    const { score, classes, variant, t, theme } = this.props;
-    const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    if (!score) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={
-            theme.palette.mode === 'dark'
-              ? inlineStyles.white
-              : inlineStyles.whiteLight
-          }
-          label={t('Unknown')}
-        />
-      );
-    }
-    if (score <= 20) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.green}
-          label={`${score} / 100`}
-        />
-      );
-    }
-    if (score <= 50) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.blue}
-          label={`${score} / 100`}
-        />
-      );
-    }
-    if (score <= 75) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.orange}
-          label={`${score} / 100`}
-        />
-      );
-    }
-    if (score <= 100) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.red}
-          label={`${score} / 100`}
-        />
-      );
-    }
+const ItemScore = (props) => {
+  const { score, classes, variant, t, theme } = props;
+  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  if (!score) {
     return (
       <Chip
         classes={{ root: style }}
-        style={inlineStyles.white}
+        style={
+          theme.palette.mode === 'dark'
+            ? inlineStyles.white
+            : inlineStyles.whiteLight
+        }
+        label={t('Unknown')}
+      />
+    );
+  }
+  if (score <= 20) {
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={inlineStyles.green}
         label={`${score} / 100`}
       />
     );
   }
-}
+  if (score <= 50) {
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={inlineStyles.blue}
+        label={`${score} / 100`}
+      />
+    );
+  }
+  if (score <= 75) {
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={inlineStyles.orange}
+        label={`${score} / 100`}
+      />
+    );
+  }
+  if (score <= 100) {
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={inlineStyles.red}
+        label={`${score} / 100`}
+      />
+    );
+  }
+  return (
+    <Chip
+      classes={{ root: style }}
+      style={inlineStyles.white}
+      label={`${score} / 100`}
+    />
+  );
+};
 
 ItemScore.propTypes = {
   classes: PropTypes.object.isRequired,

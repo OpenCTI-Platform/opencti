@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
@@ -27,33 +27,31 @@ const styles = () => ({
   },
 });
 
-class ItemStatus extends Component {
-  render() {
-    const { classes, t, status, variant, disabled } = this.props;
-    const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    if (status) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          variant="outlined"
-          label={t(`status_${status.template.name}`)}
-          style={{
-            color: status.template.color,
-            borderColor: status.template.color,
-            backgroundColor: hexToRGB(status.template.color),
-          }}
-        />
-      );
-    }
+const ItemStatus = (props) => {
+  const { classes, t, status, variant, disabled } = props;
+  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  if (status) {
     return (
       <Chip
         classes={{ root: style }}
         variant="outlined"
-        label={disabled ? t('Disabled') : t('Unknown')}
+        label={t(`status_${status.template.name}`)}
+        style={{
+          color: status.template.color,
+          borderColor: status.template.color,
+          backgroundColor: hexToRGB(status.template.color),
+        }}
       />
     );
   }
-}
+  return (
+    <Chip
+      classes={{ root: style }}
+      variant="outlined"
+      label={disabled ? t('Disabled') : t('Unknown')}
+    />
+  );
+};
 
 ItemStatus.propTypes = {
   classes: PropTypes.object.isRequired,

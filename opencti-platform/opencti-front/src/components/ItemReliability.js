@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
@@ -48,70 +48,68 @@ const inlineStyles = {
   },
 };
 
-class ItemReliability extends Component {
-  render() {
-    const { classes, label, reliability, variant } = this.props;
-    const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    switch (reliability) {
-      case 'A':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.darkGreen}
-            label={label}
-          />
-        );
-      case 'B':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.green}
-            label={label}
-          />
-        );
-      case 'C':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.blue}
-            label={label}
-          />
-        );
-      case 'D':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.orange}
-            label={label}
-          />
-        );
-      case 'E':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.red}
-            label={label}
-          />
-        );
-      case 'F':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.blueGrey}
-            label={label}
-          />
-        );
-      default:
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.blueGrey}
-            label={label}
-          />
-        );
-    }
+const ItemReliability = (props) => {
+  const { classes, label, reliability, variant } = props;
+  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  switch (reliability) {
+    case 'A':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.darkGreen}
+          label={label}
+        />
+      );
+    case 'B':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.green}
+          label={label}
+        />
+      );
+    case 'C':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.blue}
+          label={label}
+        />
+      );
+    case 'D':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.orange}
+          label={label}
+        />
+      );
+    case 'E':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.red}
+          label={label}
+        />
+      );
+    case 'F':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.blueGrey}
+          label={label}
+        />
+      );
+    default:
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.blueGrey}
+          label={label}
+        />
+      );
   }
-}
+};
 
 ItemReliability.propTypes = {
   classes: PropTypes.object.isRequired,

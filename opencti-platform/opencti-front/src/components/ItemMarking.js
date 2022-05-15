@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
 import withTheme from '@mui/styles/withTheme';
@@ -69,91 +69,89 @@ const inlineStylesLight = {
   },
 };
 
-class ItemMarking extends Component {
-  render() {
-    const { classes, variant, label, color, theme } = this.props;
-    const tuncatedLabel = truncate(label, 20);
-    const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    if (color) {
-      let backgroundColor = this.props.color;
-      let textColor = theme.palette.text.primary;
-      let border = '0';
-      if (theme.palette.mode === 'light') {
-        if (backgroundColor === '#ffffff') {
-          backgroundColor = '#ffffff';
-          textColor = '#2b2b2b';
-          border = '1px solid #2b2b2b';
-        } else {
-          textColor = '#ffffff';
-        }
-      } else if (backgroundColor === '#ffffff') {
+const ItemMarking = (props) => {
+  const { classes, variant, label, color, theme } = props;
+  const tuncatedLabel = truncate(label, 20);
+  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  if (color) {
+    let backgroundColor = color;
+    let textColor = theme.palette.text.primary;
+    let border = '0';
+    if (theme.palette.mode === 'light') {
+      if (backgroundColor === '#ffffff') {
+        backgroundColor = '#ffffff';
         textColor = '#2b2b2b';
+        border = '1px solid #2b2b2b';
+      } else {
+        textColor = '#ffffff';
       }
+    } else if (backgroundColor === '#ffffff') {
+      textColor = '#2b2b2b';
+    }
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={{
+          backgroundColor,
+          color: textColor,
+          border,
+        }}
+        label={tuncatedLabel}
+      />
+    );
+  }
+  let inlineStyles = inlineStylesDark;
+  if (theme.palette.mode === 'light') {
+    inlineStyles = inlineStylesLight;
+  }
+  switch (label) {
+    case 'CD':
+    case 'CD-SF':
+    case 'DR':
+    case 'DR-SF':
+    case 'TLP:RED':
       return (
         <Chip
           classes={{ root: style }}
-          style={{
-            backgroundColor,
-            color: textColor,
-            border,
-          }}
+          style={inlineStyles.red}
           label={tuncatedLabel}
         />
       );
-    }
-    let inlineStyles = inlineStylesDark;
-    if (theme.palette.mode === 'light') {
-      inlineStyles = inlineStylesLight;
-    }
-    switch (this.props.label) {
-      case 'CD':
-      case 'CD-SF':
-      case 'DR':
-      case 'DR-SF':
-      case 'TLP:RED':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.red}
-            label={tuncatedLabel}
-          />
-        );
-      case 'TLP:AMBER':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.orange}
-            label={tuncatedLabel}
-          />
-        );
-      case 'NP':
-      case 'TLP:GREEN':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.green}
-            label={tuncatedLabel}
-          />
-        );
-      case 'SF':
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.blue}
-            label={tuncatedLabel}
-          />
-        );
-      default:
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.white}
-            label={tuncatedLabel}
-          />
-        );
-    }
+    case 'TLP:AMBER':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.orange}
+          label={tuncatedLabel}
+        />
+      );
+    case 'NP':
+    case 'TLP:GREEN':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.green}
+          label={tuncatedLabel}
+        />
+      );
+    case 'SF':
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.blue}
+          label={tuncatedLabel}
+        />
+      );
+    default:
+      return (
+        <Chip
+          classes={{ root: style }}
+          style={inlineStyles.white}
+          label={tuncatedLabel}
+        />
+      );
   }
-}
+};
 
 ItemMarking.propTypes = {
   theme: PropTypes.object,

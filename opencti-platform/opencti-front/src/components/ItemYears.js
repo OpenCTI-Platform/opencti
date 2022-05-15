@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
@@ -18,19 +18,17 @@ const styles = () => ({
   },
 });
 
-class ItemYears extends Component {
-  render() {
-    const { years, classes, variant, disabled } = this.props;
-    const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    return (
-      <Chip
-        classes={{ root: style }}
-        color={disabled ? 'default' : 'secondary'}
-        label={years === '1970 - 5138' ? '-' : years}
-      />
-    );
-  }
-}
+const ItemYears = (props) => {
+  const { years, classes, variant, disabled } = props;
+  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  return (
+    <Chip
+      classes={{ root: style }}
+      color={disabled ? 'default' : 'secondary'}
+      label={years === '1970 - 5138' ? '-' : years}
+    />
+  );
+};
 
 ItemYears.propTypes = {
   classes: PropTypes.object.isRequired,

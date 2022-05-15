@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -37,42 +37,38 @@ const styles = () => ({
   },
 });
 
-class Loader extends Component {
-  render() {
-    const { classes, variant, withRightPadding } = this.props;
-    return (
+const Loader = (props) => {
+  const { classes, variant, withRightPadding } = props;
+  return (
+    <div
+      className={
+        variant === 'inElement' ? classes.containerInElement : classes.container
+      }
+      style={
+        variant === 'inElement'
+          ? { paddingRight: withRightPadding ? 200 : 0 }
+          : {}
+      }
+    >
       <div
         className={
-          variant === 'inElement'
-            ? classes.containerInElement
-            : classes.container
+          variant === 'inElement' ? classes.loaderInElement : classes.loader
         }
         style={
-          variant === 'inElement'
-            ? { paddingRight: withRightPadding ? 200 : 0 }
+          variant !== 'inElement'
+            ? { paddingRight: withRightPadding ? 100 : 0 }
             : {}
         }
       >
-        <div
-          className={
-            variant === 'inElement' ? classes.loaderInElement : classes.loader
-          }
-          style={
-            variant !== 'inElement'
-              ? { paddingRight: withRightPadding ? 100 : 0 }
-              : {}
-          }
-        >
-          <CircularProgress
-            size={variant === 'inElement' ? 40 : 80}
-            thickness={1}
-            className={this.props.classes.loaderCircle}
-          />
-        </div>
+        <CircularProgress
+          size={variant === 'inElement' ? 40 : 80}
+          thickness={1}
+          className={classes.loaderCircle}
+        />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 Loader.propTypes = {
   classes: PropTypes.object.isRequired,

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Tooltip from '@mui/material/Tooltip';
@@ -19,37 +19,15 @@ const styles = () => ({
   },
 });
 
-class ItemOpenVocab extends Component {
-  render() {
-    const { type, value, classes, t } = this.props;
-    if (!value) {
-      return (
-        <span className={classes.container}>
-          <pre style={{ margin: 0, paddingTop: 7, paddingBottom: 4 }}>
-            {t('Unknown')}
-          </pre>
-          <Tooltip title={t('No value')}>
-            <InformationOutline
-              className={classes.icon}
-              fontSize="small"
-              color="secondary"
-            />
-          </Tooltip>
-        </span>
-      );
-    }
-    const openVocabList = openVocabularies[type];
-    const openVocab = R.head(openVocabList.filter((n) => n.key === value));
-    let description = t('No value');
-    if (openVocab && openVocab.description) {
-      description = openVocab.description;
-    }
+const ItemOpenVocab = (props) => {
+  const { type, value, classes, t } = props;
+  if (!value) {
     return (
       <span className={classes.container}>
         <pre style={{ margin: 0, paddingTop: 7, paddingBottom: 4 }}>
-          {value}
+          {t('Unknown')}
         </pre>
-        <Tooltip title={t(description)}>
+        <Tooltip title={t('No value')}>
           <InformationOutline
             className={classes.icon}
             fontSize="small"
@@ -59,7 +37,25 @@ class ItemOpenVocab extends Component {
       </span>
     );
   }
-}
+  const openVocabList = openVocabularies[type];
+  const openVocab = R.head(openVocabList.filter((n) => n.key === value));
+  let description = t('No value');
+  if (openVocab && openVocab.description) {
+    description = openVocab.description;
+  }
+  return (
+    <span className={classes.container}>
+      <pre style={{ margin: 0, paddingTop: 7, paddingBottom: 4 }}>{value}</pre>
+      <Tooltip title={t(description)}>
+        <InformationOutline
+          className={classes.icon}
+          fontSize="small"
+          color="secondary"
+        />
+      </Tooltip>
+    </span>
+  );
+};
 
 ItemOpenVocab.propTypes = {
   type: PropTypes.string,

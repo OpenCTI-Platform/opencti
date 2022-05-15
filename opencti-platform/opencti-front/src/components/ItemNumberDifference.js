@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { compose } from 'ramda';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
@@ -44,38 +44,12 @@ const inlineStyles = {
   },
 };
 
-class ItemNumberDifference extends Component {
-  render() {
-    const { t, difference, classes, description } = this.props;
-    if (difference < 0) {
-      return (
-        <div className={classes.diff} style={inlineStyles.red}>
-          <ArrowDownward color="inherit" classes={{ root: classes.diffIcon }} />
-          <div className={classes.diffNumber}>{difference}</div>
-          {description ? (
-            <div className={classes.diffDescription}>({t(description)})</div>
-          ) : (
-            ''
-          )}
-        </div>
-      );
-    }
-    if (difference === 0) {
-      return (
-        <div className={classes.diff} style={inlineStyles.blueGrey}>
-          <ArrowForward color="inherit" classes={{ root: classes.diffIcon }} />
-          <div className={classes.diffNumber}>{difference}</div>
-          {description ? (
-            <div className={classes.diffDescription}>({t(description)})</div>
-          ) : (
-            ''
-          )}
-        </div>
-      );
-    }
+const ItemNumberDifference = (props) => {
+  const { t, difference, classes, description } = props;
+  if (difference < 0) {
     return (
-      <div className={classes.diff} style={inlineStyles.green}>
-        <ArrowUpward color="inherit" classes={{ root: classes.diffIcon }} />
+      <div className={classes.diff} style={inlineStyles.red}>
+        <ArrowDownward color="inherit" classes={{ root: classes.diffIcon }} />
         <div className={classes.diffNumber}>{difference}</div>
         {description ? (
           <div className={classes.diffDescription}>({t(description)})</div>
@@ -85,7 +59,31 @@ class ItemNumberDifference extends Component {
       </div>
     );
   }
-}
+  if (difference === 0) {
+    return (
+      <div className={classes.diff} style={inlineStyles.blueGrey}>
+        <ArrowForward color="inherit" classes={{ root: classes.diffIcon }} />
+        <div className={classes.diffNumber}>{difference}</div>
+        {description ? (
+          <div className={classes.diffDescription}>({t(description)})</div>
+        ) : (
+          ''
+        )}
+      </div>
+    );
+  }
+  return (
+    <div className={classes.diff} style={inlineStyles.green}>
+      <ArrowUpward color="inherit" classes={{ root: classes.diffIcon }} />
+      <div className={classes.diffNumber}>{difference}</div>
+      {description ? (
+        <div className={classes.diffDescription}>({t(description)})</div>
+      ) : (
+        ''
+      )}
+    </div>
+  );
+};
 
 ItemNumberDifference.propTypes = {
   classes: PropTypes.object.isRequired,

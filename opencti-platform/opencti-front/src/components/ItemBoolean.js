@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import withStyles from '@mui/styles/withStyles';
 import Chip from '@mui/material/Chip';
@@ -41,37 +41,35 @@ const inlineStyles = {
   },
 };
 
-class ItemBoolean extends Component {
-  render() {
-    const { classes, label, status, variant, t, reverse } = this.props;
-    const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    if (status === true) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={reverse ? inlineStyles.red : inlineStyles.green}
-          label={label}
-        />
-      );
-    }
-    if (status === null) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.blue}
-          label={t('Not applicable')}
-        />
-      );
-    }
+const ItemBoolean = (props) => {
+  const { classes, label, status, variant, t, reverse } = props;
+  const style = variant === 'inList' ? classes.chipInList : classes.chip;
+  if (status === true) {
     return (
       <Chip
         classes={{ root: style }}
-        style={reverse ? inlineStyles.green : inlineStyles.red}
+        style={reverse ? inlineStyles.red : inlineStyles.green}
         label={label}
       />
     );
   }
-}
+  if (status === null) {
+    return (
+      <Chip
+        classes={{ root: style }}
+        style={inlineStyles.blue}
+        label={t('Not applicable')}
+      />
+    );
+  }
+  return (
+    <Chip
+      classes={{ root: style }}
+      style={reverse ? inlineStyles.green : inlineStyles.red}
+      label={label}
+    />
+  );
+};
 
 ItemBoolean.propTypes = {
   classes: PropTypes.object.isRequired,

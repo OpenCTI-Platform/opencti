@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import {
   FlagOutlined,
@@ -178,13 +178,11 @@ const iconSelector = (type, variant, fontSize, color) => {
   }
 };
 
-class ItemIcon extends Component {
-  render() {
-    const { type, size, variant, color } = this.props;
-    const fontSize = size || 'medium';
-    return iconSelector(type, variant, fontSize, color);
-  }
-}
+const ItemIcon = (props) => {
+  const { type, size, variant, color } = props;
+  const fontSize = size || 'medium';
+  return iconSelector(type, variant, fontSize, color);
+};
 
 ItemIcon.propTypes = {
   type: PropTypes.string,
