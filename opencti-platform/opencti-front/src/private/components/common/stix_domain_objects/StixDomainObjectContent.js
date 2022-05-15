@@ -178,7 +178,7 @@ class StixDomainObjectContentComponent extends Component {
       if (!currentFileId) {
         return this.setState({ isLoading: false });
       }
-      const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
+      const currentFile = R.head(R.filter((n) => n.id === currentFileId, files));
       const currentFileType = currentFile && currentFile.metaData.mimetype;
       if (currentFileType === 'application/pdf') {
         return this.setState({ isLoading: false });
@@ -301,17 +301,11 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   handleDownloadPdf() {
-    const { stixDomainObject } = this.props;
     const { currentFileId, currentContent } = this.state;
-    const files = getFiles(stixDomainObject);
-    const currentFile = currentFileId && R.head(R.filter((n) => n.id === currentFileId, files));
-    const currentFileType = currentFile && currentFile.metaData.mimetype;
     const regex = /<img[^>]+src=(\\?["'])[^'"]+\.gif\1[^>]*\/?>/gi;
-    const htmlData = currentFileType === 'text/markdown'
-      ? currentContent.replaceAll('id="undefined" ', '').replaceAll(regex, '')
-      : currentContent
-        .replaceAll('id="undefined" ', '')
-        .replaceAll(regex, '');
+    const htmlData = currentContent
+      .replaceAll('id="undefined" ', '')
+      .replaceAll(regex, '');
     const ret = htmlToPdfmake(htmlData, { imagesByReference: true });
     Promise.all(
       R.pipe(

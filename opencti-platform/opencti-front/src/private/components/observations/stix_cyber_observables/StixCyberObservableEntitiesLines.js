@@ -112,6 +112,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                 component={Link}
                 to={link}
                 disabled={restricted}
+                key={node.id}
               >
                 <ListItemIcon classes={{ root: classes.itemIcon }}>
                   <ItemIcon

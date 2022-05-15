@@ -611,7 +611,7 @@ class ToolBar extends Component {
     );
     this.setState({ actionsInputs });
     fetchQuery(externalReferencesSearchQuery, {
-      search: event && event.target.value,
+      search: newValue && newValue.length > 0 ? newValue : '',
     })
       .toPromise()
       .then((data) => {

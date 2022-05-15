@@ -170,7 +170,6 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                   <List>
                     {stixCoreRelationship.attackPatterns.map(
                       (attackPattern) => {
-                        console.log(this.props.onDelete);
                         const link = `${entityLink}/relations/${attackPattern.id}`;
                         return (
                           <div key={attackPattern.id}>
