@@ -1730,11 +1730,39 @@ class OpenCTIStix2:
                                         item, observed_data_ref, to_id, update
                                     )
                 elif item["type"] == "label":
-                    self.opencti.label.create(**item, update=update)
+                    stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+                    self.opencti.label.create(
+                        stix_id=item["id"],
+                        value=item["value"],
+                        color=item["color"],
+                        x_opencti_stix_ids=stix_ids,
+                        update=update,
+                    )
                 elif item["type"] == "external-reference":
-                    self.opencti.external_reference.create(**item, update=update)
+                    stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+                    self.opencti.external_reference.create(
+                        stix_id=item["id"],
+                        source_name=item["source_name"],
+                        url=item["url"],
+                        external_id=item["external_id"]
+                        if "external_id" in item
+                        else None,
+                        description=item["description"]
+                        if "description" in item
+                        else None,
+                        x_opencti_stix_ids=stix_ids,
+                        update=update,
+                    )
                 elif item["type"] == "kill-chain-phase":
-                    self.opencti.kill_chain_phase.create(**item, update=update)
+                    stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+                    self.opencti.kill_chain_phase.create(
+                        stix_id=item["id"],
+                        kill_chain_name=item["kill_chain_name"],
+                        phase_name=item["phase_name"],
+                        x_opencti_order=item["order"] if "order" in item else 0,
+                        x_opencti_stix_ids=stix_ids,
+                        update=update,
+                    )
                 elif StixCyberObservableTypes.has_value(item["type"]):
                     if types is None or len(types) == 0:
                         self.import_observable(item, update, types)
