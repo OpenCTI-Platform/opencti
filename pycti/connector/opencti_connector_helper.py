@@ -320,7 +320,7 @@ class ListenStream(threading.Thread):
                         f"?from={current_state['connectorLastEventId']}"
                         if "connectorLastEventId" in current_state
                         and current_state["connectorLastEventId"] != "-"
-                        else "?from=-&recover="
+                        else "?from=0-0&recover="
                         + (
                             current_state["connectorStartTime"]
                             if self.recover_iso_date is None
@@ -372,7 +372,7 @@ class ListenStream(threading.Thread):
                         f"?from={current_state['connectorLastEventId']}"
                         if "connectorLastEventId" in current_state
                         and current_state["connectorLastEventId"] != "-"
-                        else "?from=-&recover="
+                        else "?from=0-0&recover="
                         + (
                             self.helper.date_now_z()
                             if self.recover_iso_date is None
