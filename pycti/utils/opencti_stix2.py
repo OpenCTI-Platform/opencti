@@ -300,37 +300,41 @@ class OpenCTIStix2:
         if "labels" in stix_object:
             for label in stix_object["labels"]:
                 if "label_" + label in self.mapping_cache:
-                    label_id = self.mapping_cache["label_" + label]
+                    label_data = self.mapping_cache["label_" + label]
                 else:
-                    label_id = self.opencti.label.create(value=label)["id"]
-                if label_id is not None:
-                    object_label_ids.append(label_id)
+                    label_data = self.opencti.label.create(value=label)
+                if label_data is not None and "id" in label_data:
+                    self.mapping_cache["label_" + label] = label_data
+                    object_label_ids.append(label_data["id"])
         elif "x_opencti_labels" in stix_object:
             for label in stix_object["x_opencti_labels"]:
                 if "label_" + label in self.mapping_cache:
-                    label_id = self.mapping_cache["label_" + label]
+                    label_data = self.mapping_cache["label_" + label]
                 else:
-                    label_id = self.opencti.label.create(value=label)["id"]
-                if label_id is not None:
-                    object_label_ids.append(label_id)
+                    label_data = self.opencti.label.create(value=label)
+                if label_data is not None and "id" in label_data:
+                    self.mapping_cache["label_" + label] = label_data
+                    object_label_ids.append(label_data["id"])
         elif self.opencti.get_attribute_in_extension("labels", stix_object) is not None:
             for label in self.opencti.get_attribute_in_extension("labels", stix_object):
                 if "label_" + label in self.mapping_cache:
-                    label_id = self.mapping_cache["label_" + label]
+                    label_data = self.mapping_cache["label_" + label]
                 else:
-                    label_id = self.opencti.label.create(value=label)["id"]
-                if label_id is not None:
-                    object_label_ids.append(label_id)
+                    label_data = self.opencti.label.create(value=label)
+                if label_data is not None and "id" in label_data:
+                    self.mapping_cache["label_" + label] = label_data
+                    object_label_ids.append(label_data["id"])
         elif "x_opencti_tags" in stix_object:
             for tag in stix_object["x_opencti_tags"]:
                 label = tag["value"]
                 color = tag["color"] if "color" in tag else None
                 if "label_" + label in self.mapping_cache:
-                    label_id = self.mapping_cache["label_" + label]
+                    label_data = self.mapping_cache["label_" + label]
                 else:
-                    label_id = self.opencti.label.create(value=label, color=color)["id"]
-                if label_id is not None:
-                    object_label_ids.append(label_id)
+                    label_data = self.opencti.label.create(value=label, color=color)
+                if label_data is not None and "id" in label_data:
+                    self.mapping_cache["label_" + label] = label_data
+                    object_label_ids.append(label_data["id"])
         # Kill Chain Phases
         kill_chain_phases_ids = []
         if "kill_chain_phases" in stix_object:
