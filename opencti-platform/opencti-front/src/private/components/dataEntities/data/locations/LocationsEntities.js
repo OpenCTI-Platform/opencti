@@ -34,7 +34,7 @@ class LocationsEntities extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-data',
+      'view-locations',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -57,7 +57,7 @@ class LocationsEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-data',
+      'view-locations',
       this.state,
     );
   }
@@ -377,8 +377,7 @@ class LocationsEntities extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      // orderedBy: sortBy,
-      orderedBy: 'created',
+      orderedBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
