@@ -349,7 +349,7 @@ const createSeeMiddleware = () => {
       // Labels filtering
       if (type === LABEL_FILTER) {
         const labels = [...(instance.labels ?? []), ...(instance.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
-        const found = values.map((v) => v.value).some((r) => (labels || []).includes(r));
+        const found = values.map((v) => v.value).some((r) => labels.includes(r));
         if (!found) {
           return false;
         }
@@ -499,8 +499,10 @@ const createSeeMiddleware = () => {
                   client.sendEvent(eventId, event, eventData);
                 }
               } else if (isCurrentlyVisible) {
-                if (type === EVENT_TYPE_DELETE && noDelete === false) {
-                  client.sendEvent(eventId, event, eventData);
+                if (type === EVENT_TYPE_DELETE) {
+                  if (noDelete === false) {
+                    client.sendEvent(eventId, event, eventData);
+                  }
                 } else { // Create Merge
                   client.sendEvent(eventId, event, eventData);
                 }

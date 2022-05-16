@@ -325,7 +325,7 @@ export const cachePurge = async () => {
     }
   }
 };
-export const cacheGet = async (id: string): Promise<StoreObject | undefined> => {
+export const cacheGet = async (id: string | Array<string>): Promise<StoreObject | undefined> => {
   const ids = Array.isArray(id) ? id : [id];
   if (ENABLED_CACHING) {
     const result: any = {};

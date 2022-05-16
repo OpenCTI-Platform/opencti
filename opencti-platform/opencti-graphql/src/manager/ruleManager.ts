@@ -68,15 +68,15 @@ const ruleMergeHandler = async (event: MergeEvent): Promise<Array<Event>> => {
   const events: Array<Event> = [];
   // region 01 - Generate events for deletion
   // -- sources
-  const sourceDeleteEvents = (context?.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
+  const sourceDeleteEvents = (context.sources || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...sourceDeleteEvents);
   // -- derived deletions
-  const derivedDeleteEvents = (context?.deletions || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
+  const derivedDeleteEvents = (context.deletions || []).map((s) => buildInternalEvent(EVENT_TYPE_DELETE, s));
   events.push(...derivedDeleteEvents);
   // endregion
   // region 02 - Generate events for shifted relations
-  if ((context?.shifts ?? []).length > 0) {
-    const shifts = context?.shifts ?? [];
+  if ((context.shifts ?? []).length > 0) {
+    const shifts = context.shifts ?? [];
     for (let index = 0; index < shifts.length; index += 1) {
       const shift = shifts[index];
       const shiftedElement = await stixLoadById(RULE_MANAGER_USER, shift) as StixCoreObject;

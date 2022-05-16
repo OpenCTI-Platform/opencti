@@ -6,7 +6,6 @@ import { internalLoadById } from '../../src/database/middleware';
 import { isStixId } from '../../src/schema/schemaUtils';
 import { EVENT_TYPE_UPDATE } from '../../src/database/rabbitmq';
 import { isStixRelationship } from '../../src/schema/stixRelationship';
-import { isEmptyField } from '../../src/database/utils';
 import { STIX_EXT_OCTI } from '../../src/types/stix-extensions';
 
 export const fetchStreamEvents = (uri, { from } = {}) => {
@@ -79,25 +78,6 @@ export const checkInstanceDiff = async (loaded, rebuilt, idLoader = internalLoad
     }
   }
   return diffElements;
-};
-
-const checkPatchElements = (object) => {
-  Object.entries(object).forEach(([k, v]) => {
-    expect(k.includes('undefined')).toBeFalsy();
-    expect(k.includes('[object Object]')).toBeFalsy();
-    if (Array.isArray(v)) {
-      expect(v.length).toBeGreaterThan(0);
-      v.forEach((value) => {
-        expect(value).toBeDefined();
-        expect(JSON.stringify(value).includes('undefined')).toBeFalsy();
-        expect(JSON.stringify(value).includes('[object Object]')).toBeFalsy();
-      });
-    } else {
-      expect(v).toBeDefined();
-      expect(JSON.stringify(v).includes('undefined')).toBeFalsy();
-      expect(JSON.stringify(v).includes('[object Object]')).toBeFalsy();
-    }
-  });
 };
 
 export const checkStreamData = (type, data, context) => {

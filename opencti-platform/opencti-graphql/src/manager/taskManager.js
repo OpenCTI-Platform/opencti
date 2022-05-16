@@ -221,7 +221,7 @@ const executeMerge = async (user, context, element) => {
   await mergeEntities(user, element.internal_id, values);
 };
 
-const executeRuleApply = async (user, taskId, context, element) => {
+const executeRuleApply = async (user, context, element) => {
   const { rule } = context;
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(user, element.internal_id);
@@ -229,12 +229,12 @@ const executeRuleApply = async (user, taskId, context, element) => {
   await rulesApplyHandler([event], [rule]);
 };
 
-const executeRuleClean = async (context, taskId, element) => {
+const executeRuleClean = async (context, element) => {
   const { rule } = context;
   await rulesCleanHandler([element], [rule]);
 };
 
-const executeProcessing = async (user, taskId, processingElements) => {
+const executeProcessing = async (user, processingElements) => {
   const errors = [];
   for (let index = 0; index < processingElements.length; index += 1) {
     const { element, actions } = processingElements[index];
@@ -258,10 +258,10 @@ const executeProcessing = async (user, taskId, processingElements) => {
           await executeMerge(user, context, element);
         }
         if (type === ACTION_TYPE_RULE_APPLY) {
-          await executeRuleApply(user, taskId, context, element);
+          await executeRuleApply(user, context, element);
         }
         if (type === ACTION_TYPE_RULE_CLEAR) {
-          await executeRuleClean(context, taskId, element);
+          await executeRuleClean(context, element);
         }
       }
     } catch (err) {
@@ -308,7 +308,7 @@ const taskHandler = async () => {
     }
     // Process the elements (empty = end of execution)
     if (processingElements.length > 0) {
-      const errors = await executeProcessing(user, task.id, processingElements);
+      const errors = await executeProcessing(user, processingElements);
       await appendTaskErrors(task.id, errors);
     }
     // Update the task

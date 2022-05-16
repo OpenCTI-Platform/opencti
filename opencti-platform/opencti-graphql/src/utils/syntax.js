@@ -9,7 +9,7 @@ const observableExtractors = [
   { type: C.ENTITY_HASHED_OBSERVABLE_STIX_FILE, hashType: 'SHA-1', regex: /'[a-fA-F0-9]{40}'/g },
   { type: C.ENTITY_HASHED_OBSERVABLE_STIX_FILE, hashType: 'SHA-256', regex: /'[a-fA-F0-9]{64}'/g },
   { type: C.ENTITY_HASHED_OBSERVABLE_STIX_FILE, hashType: 'SHA-512', regex: /'[a-fA-F0-9]{128}'/g },
-  { type: C.ENTITY_HOSTNAME, regex: /'(?:(?:(?:[a-zA-z-]+):\/{1,3})?(?:[a-zA-Z0-9])(?:[a-zA-Z0-9-_.]){1,61}(?:\.[a-zA-Z]{2,})+|\[(?:(?:(?:[a-fA-F0-9]){1,4})(?::(?:[a-fA-F0-9]){1,4}){7}|::1|::)\]|(?:(?:[0-9]{1,3})(?:\.[0-9]{1,3}){3}))(?::[0-9]{1,5})?'/g },
+  { type: C.ENTITY_HOSTNAME, regex: /'(?:(?:(?:[a-zA-Z-]+):\/{1,3})?(?:[a-zA-Z0-9])(?:[a-zA-Z0-9-_.]){1,61}(?:\.[a-zA-Z]{2,})+|\[(?:(?:(?:[a-fA-F0-9]){1,4})(?::(?:[a-fA-F0-9]){1,4}){7}|::1|::)\]|(?:(?:[0-9]{1,3})(?:\.[0-9]{1,3}){3}))(?::[0-9]{1,5})?'/g },
   { type: C.ENTITY_EMAIL_ADDR, regex: /'[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*'/g }
 ];
 
