@@ -259,26 +259,29 @@ class RemediationPopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <QR
-          environment={QueryRendererDarkLight}
-          query={remediationPopoverQuery}
-          variables={{ id: cyioCoreRelationshipId }}
-          render={({ error, props, retry }) => {
-            if (props) {
-              return (
-                <RemediationDetailsPopover
-                  cyioCoreRelationshipId={cyioCoreRelationshipId}
-                  displayEdit={this.state.displayEdit}
-                  history={history}
-                  handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-                  remediation={props.riskResponse}
-                  riskId={riskId}
-                />
-              );
-            }
-            return <></>;
-          }}
-        />
+        {this.state.displayEdit && (
+          <QR
+            environment={QueryRendererDarkLight}
+            query={remediationPopoverQuery}
+            variables={{ id: cyioCoreRelationshipId }}
+            render={({ error, props, retry }) => {
+              if (props) {
+                return (
+                  <RemediationDetailsPopover
+                    cyioCoreRelationshipId={cyioCoreRelationshipId}
+                    displayEdit={this.state.displayEdit}
+                    history={history}
+                    handleDisplayEdit={this.handleDisplayEdit.bind(this)}
+                    remediation={props.riskResponse}
+                    riskId={riskId}
+                  />
+                );
+              }
+              return <></>;
+            }}
+          />
+        )
+      }
       </div>
     );
   }
