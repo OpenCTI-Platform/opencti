@@ -18,6 +18,7 @@ class TestLocalSynchronizer:
         target_token,
         consuming_count,
         start_timestamp,
+        recover_timestamp,
         live_stream_id=None,
     ):
         self.source_url = source_url
@@ -28,6 +29,7 @@ class TestLocalSynchronizer:
         self.count_number = 0
         self.consuming_count = consuming_count
         self.start_timestamp = start_timestamp
+        self.recover_timestamp = recover_timestamp
         self.stream = None
         # Source
         config = {
@@ -92,7 +94,7 @@ class TestLocalSynchronizer:
     def sync(self):
         # Reset the connector state if exists
         self.opencti_source_helper.set_state(
-            {"connectorLastEventId": self.start_timestamp}
+            {"connectorLastEventId": '-'}
         )
         # Start to listen the stream from start specified parameter
         self.stream = self.opencti_source_helper.listen_stream(
@@ -101,6 +103,10 @@ class TestLocalSynchronizer:
             self.source_token,
             False,
             self.start_timestamp,
+            self.live_stream_id,
+            True,
+            False,
+            self.recover_timestamp,
         )
         self.stream.join()
 
@@ -114,7 +120,8 @@ if __name__ == "__main__":
             target_token=sys.argv[4],
             consuming_count=int(sys.argv[5]),
             start_timestamp=sys.argv[6],
-            live_stream_id=sys.argv[7] if len(sys.argv) > 7 else None,
+            recover_timestamp=sys.argv[7] if len(sys.argv) > 7 else None,
+            live_stream_id=sys.argv[8] if len(sys.argv) > 8 else None,
         ).sync()
         os._exit(0)  # pylint: disable=protected-access
     except Exception as e:  # pylint: disable=broad-except
