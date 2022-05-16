@@ -261,7 +261,7 @@ const stixCyberObservableRelationshipTypesMapping = {
   'Domain-Name_Domain-Name': ['obs_resolves-to'],
   'Domain-Name_IPv4-Addr': ['obs_resolves-to'],
   'Domain-Name_IPv6-Addr': ['obs_resolves-to'],
-  'Email-Addr_Email-Message': ['from', 'sender', 'to', 'cc', 'bcc'],
+  'Email-Message_Email-Addr': ['from', 'sender', 'to', 'cc', 'bcc'],
   'Email-Addr_User-Account': ['obs_belongs-to'],
   'Email-Mime-Part-Type_Email-Message': ['body-multipart'],
   'IPv4-Addr_Autonomous-System': ['obs_belongs-to'],
