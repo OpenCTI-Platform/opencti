@@ -9,6 +9,8 @@ import Paper from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import PersonIcon from '@material-ui/icons/Person';
+import LayersIcon from '@material-ui/icons/Layers';
+import BuildIcon from '@material-ui/icons/Build';
 import Chip from '@material-ui/core/Chip';
 import { InformationOutline, Information } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -140,7 +142,12 @@ class RemediationGeneralOverviewComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 <div style={{ display: 'flex' }}>
-                  <PersonIcon className={classes.avatarIcon} />
+                {remediationOriginData.actor_type === 'assessment_platform'
+                    && <LayersIcon className={classes.avatarIcon} />}
+                  {remediationOriginData.actor_type === 'tool'
+                    && <BuildIcon className={classes.avatarIcon} />}
+                  {remediationOriginData.actor_type === 'person'
+                    && <PersonIcon className={classes.avatarIcon} />}
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
                       {remediationOriginData.actor_ref?.name

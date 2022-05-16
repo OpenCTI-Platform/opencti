@@ -8,6 +8,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Typography from '@material-ui/core/Typography';
 import PersonIcon from '@material-ui/icons/Person';
+import LayersIcon from '@material-ui/icons/Layers';
+import BuildIcon from '@material-ui/icons/Build';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
@@ -131,7 +133,12 @@ class RemediationEntityLineComponent extends Component {
             <div className={classes.ListItem}>
               <div className={classes.bodyItem}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <PersonIcon className={classes.avatarIcon} />
+                  {SourceOfDetection.actor_type === 'assessment_platform'
+                    && <LayersIcon className={classes.avatarIcon} />}
+                  {SourceOfDetection.actor_type === 'tool'
+                    && <BuildIcon className={classes.avatarIcon} />}
+                  {SourceOfDetection.actor_type === 'person'
+                    && <PersonIcon className={classes.avatarIcon} />}
                   <div style={{ marginLeft: '10px' }}>
                     <Typography variant="subtitle1">
                       {SourceOfDetection.actor_ref?.name && t(SourceOfDetection.actor_ref?.name)}
