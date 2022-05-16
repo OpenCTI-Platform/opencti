@@ -225,7 +225,7 @@ class EntityPartyCardComponent extends Component {
                   {t('Author')}
                 </Typography>
                 <Typography>
-                  {t('Lorem Ipsum')}
+                  {t('')}
                 </Typography>
               </Grid>
             </Grid>
