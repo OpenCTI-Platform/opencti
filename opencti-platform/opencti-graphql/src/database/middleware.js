@@ -2315,7 +2315,7 @@ const isRelationConsistent = (relationshipType, from, to) => {
     return false;
   }
 };
-const buildRelationData = async (user, input, opts = {}) => {
+const buildRelationData = async (input, opts = {}) => {
   const { fromRule } = opts;
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
@@ -2569,7 +2569,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
         }
       }
       // Just build a standard relationship
-      dataRel = await buildRelationData(user, resolvedInput, opts);
+      dataRel = await buildRelationData(resolvedInput, opts);
     }
     // Index the created element
     await indexCreatedElement(dataRel);
