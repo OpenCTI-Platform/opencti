@@ -61,7 +61,7 @@ describe('Stix opencti converter', () => {
         for (let i = 0; i < refetchDataAsArray.length; i += 1) {
           const refetchElement = refetchDataAsArray[i];
           const stixRef = await stixLoadById(ADMIN_USER, refetchElement);
-          resolvedIds.push(stixRef.id, ...stixRef.extensions[STIX_EXT_OCTI].stix_ids);
+          resolvedIds.push(stixRef.id, ...(stixRef.extensions[STIX_EXT_OCTI].stix_ids ?? []));
         }
         const initialDataAsArray = Array.isArray(initialData) ? initialData : [initialData];
         for (let j = 0; j < initialDataAsArray.length; j += 1) {
@@ -164,7 +164,7 @@ describe('Stix opencti converter', () => {
 
     // Vulnerability
 
-    await rawDataCompare('marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168', 'marking-definition--ab216ddd-5f1e-5e6a-88d7-3797fbe5a03f');
+    await rawDataCompare('marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168', 'marking-definition--e8afcdc4-be08-5e57-a3b6-c24d2396d3de');
 
     // Language Content- Not implemented
 

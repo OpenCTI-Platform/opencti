@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import sys
+import jsonpatch
 
 from pycti import OpenCTIApiClient, OpenCTIConnectorHelper
 
@@ -67,14 +68,18 @@ class TestLocalSynchronizer:
                 }
                 self.opencti_target_client.stix2.import_bundle(bundle)
             elif msg.event == "update":
+                previous = jsonpatch.apply_patch(data["data"], data["context"]["reverse_patch"])
+                current = data["data"]
+                # In case of update always apply operation to the previous id
+                current["id"] = previous["id"]
                 bundle = {
                     "type": "bundle",
                     "x_opencti_event_version": data["version"],
-                    "objects": [data["data"]],
+                    "objects": [current],
                 }
                 self.opencti_target_client.stix2.import_bundle(bundle, True)
             elif msg.event == "merge":
-                sources = data["data"]["x_opencti_context"]["sources"]
+                sources = data["context"]["sources"]
                 object_ids = list(map(lambda element: element["id"], sources))
                 self.opencti_target_helper.api.stix_core_object.merge(
                     id=data["data"]["id"], object_ids=object_ids
