@@ -34,10 +34,10 @@ class ResponsiblePartiesEntities extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-data',
+      'view-responsibleParties',
     );
     this.state = {
-      sortBy: R.propOr('', 'sortBy', params),
+      sortBy: R.propOr('label_name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -57,7 +57,7 @@ class ResponsiblePartiesEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-data',
+      'view-responsibleParties',
       this.state,
     );
   }
@@ -71,11 +71,7 @@ class ResponsiblePartiesEntities extends Component {
   }
 
   handleSort(field, orderAsc) {
-    if (field) {
-      this.setState({ sortBy: field, orderAsc }, () => this.saveView());
-    } else {
-      this.setState({ sortBy: 'label_name', orderAsc }, () => this.saveView());
-    }
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   handleToggleExports() {
