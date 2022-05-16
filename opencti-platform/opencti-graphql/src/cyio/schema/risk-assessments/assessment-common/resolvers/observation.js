@@ -603,13 +603,13 @@ const observationResolvers = {
       if (parent.subjects_iri === undefined) return [];
       let iriArray = parent.subjects_iri;
       const results = [];
+      const reducer = getReducer("SUBJECT");
       if (Array.isArray(iriArray) && iriArray.length > 0) {
-        const reducer = getReducer("SUBJECT");
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Subject')) {
             continue;
           }
-          const sparqlQuery = selectSubjectByIriQuery(iri, selectMap.getNode("subjects"));
+          let sparqlQuery = selectSubjectByIriQuery(iri, selectMap.getNode("subjects"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({
@@ -624,37 +624,7 @@ const observationResolvers = {
           }
           if (response === undefined) return [];
           if (Array.isArray(response) && response.length > 0) {
-            let subjectRef, subjectType;
-            if (response[0].subject_ref !== undefined) {
-              subjectRef = response[0].subject_ref[0];
-              subjectType = response[0].subject_type;
-              if (subjectRef !== undefined && subjectRef.includes('OperatingSystem')) {
-                console.error(`[CYIO] INVALID-IRI: ${response[0].iri} 'subject_ref' contains an IRI ${subjectRef} which is invalid; skipping`);
-                continue;
-              }
-            }
-
-            if (subjectRef !== undefined) {
-              // determine the actual IRI of the object referenced
-              let result;
-              let sparqlQuery = selectObjectByIriQuery(subjectRef, subjectType, ['id'] );
-              try {
-                result = await dataSources.Stardog.queryById({
-                dbName,
-                sparqlQuery,
-                queryId: "Obtaining Subject IRI",
-                singularizeSchema
-                });
-              } catch (e) {
-                  console.log(e)
-                  throw e
-              }
-              if (result === undefined || result.length === 0) {
-                console.error(`[CYIO] NON-EXISTENT: (${dbName}) '${response[0].subject_ref[0]}'; skipping Subject '${response[0].iri}`);              
-                continue;
-              }
-            }
-          results.push(reducer(response[0]));
+            results.push(reducer(response[0]));
           }
           else {
             // Handle reporting Stardog Error

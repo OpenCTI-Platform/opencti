@@ -23,6 +23,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
       typename,
       refreshQuery,
       notes,
+      removeIcon,
     } = this.props;
     if (isRelationship) {
       return (
@@ -67,6 +68,7 @@ class CyioCoreObjectOrCyioCoreRelationshipNotes extends Component {
           height={height}
           typename={typename}
           marginTop={marginTop}
+          removeIcon={removeIcon}
         />
       </>
     );
@@ -85,6 +87,7 @@ CyioCoreObjectOrCyioCoreRelationshipNotes.propTypes = {
   isRelationship: PropTypes.bool,
   marginTop: PropTypes.number,
   height: PropTypes.number,
+  removeIcon: PropTypes.bool,
 };
 
 export default inject18n(CyioCoreObjectOrCyioCoreRelationshipNotes);
