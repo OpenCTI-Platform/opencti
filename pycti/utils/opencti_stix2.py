@@ -755,7 +755,7 @@ class OpenCTIStix2:
             }
             # Iterate over refs to create appropriate relationships
             for key in stix_object.keys():
-                if key not in ["created_by_ref", "object_marking_refs"]:
+                if key not in ["created_by_ref", "object_marking_refs", "x_opencti_created_by_ref"]:
                     if key.endswith("_ref"):
                         relationship_type = key.replace("_ref", "").replace("_", "-")
                         self.opencti.stix_cyber_observable_relationship.create(
