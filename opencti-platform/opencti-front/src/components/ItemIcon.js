@@ -19,13 +19,13 @@ import {
   Visibility,
   PlaceOutlined,
   StorageOutlined,
+  TerminalOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
   DiamondOutline,
   ChessKnight,
   LockPattern,
-  Application,
   Fire,
   CityVariantOutline,
   LabelOutline,
@@ -120,7 +120,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Threat-Actor':
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Tool':
-      return <Application style={style} fontSize={fontSize} role="img" />;
+      return <TerminalOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Vulnerability':
       return <BugReportOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Incident':

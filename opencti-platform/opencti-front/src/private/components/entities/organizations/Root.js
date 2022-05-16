@@ -125,6 +125,7 @@ class RootOrganization extends Component {
                 'organizations',
                 'individuals',
                 'locations',
+                'used_tools',
                 'threat_actors',
                 'intrusion_sets',
                 'campaigns',
