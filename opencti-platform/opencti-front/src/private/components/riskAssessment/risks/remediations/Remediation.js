@@ -12,7 +12,7 @@ import inject18n from '../../../../../components/i18n';
 import RiskDetails from '../RiskDetails';
 import RemediationEdition from './RemediationEdition';
 import RiskPopover from '../RiskPopover';
-import RiskDeletion from '../RiskDeletion';
+import RemediationDeletion from './RemediationDeletion';
 import RiskCreation from '../RiskCreation';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -28,6 +28,7 @@ import RelatedTasks from './RelatedTasks';
 import TopMenuRisk from '../../../nav/TopMenuRisk';
 import RemediationGeneralDetails from './RemediationGeneralDetails';
 import RemediationDetailsPopover from './RemediationDetailsPopover';
+import RemediationCreation from './RemediationCreation';
 
 const styles = () => ({
   container: {
@@ -43,6 +44,7 @@ class RemediationComponent extends Component {
     super(props);
     this.state = {
       displayEdit: false,
+      openCreation: false,
     };
   }
 
@@ -50,11 +52,16 @@ class RemediationComponent extends Component {
     this.setState({ displayEdit: !this.state.displayEdit });
   }
 
-  handleOpenNewCreation() {
-    this.props.history.push({
-      pathname: '/activities/risk assessment/risks',
-      openNewCreation: true,
-    });
+  handleOpen() {
+    this.setState({ openCreation: true });
+  }
+
+  handleClose() {
+    this.setState({ openCreation: false })
+  }
+
+  handleOpenCreation() {
+    this.setState({ openCreation: false });
   }
 
   render() {
@@ -76,8 +83,8 @@ class RemediationComponent extends Component {
             disablePopover={false}
             PopoverComponent={<RiskPopover />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-            // handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}
-            OperationsComponent={<RiskDeletion />}
+            handleOpenNewCreation={this.handleOpen.bind(this)}
+            OperationsComponent={<RemediationDeletion riskId={riskId}/>}
           />
           <TopMenuRisk risk={risk.name} remediation={remediation} breadcrumbs={true} />
           <Grid
@@ -146,6 +153,13 @@ class RemediationComponent extends Component {
             risk={risk}
             riskId={riskId}
           />
+          <RemediationCreation
+            remediationId={remediation.id}
+            riskId={riskId}
+            history={history}
+            openCreation={this.state.openCreation}
+            handleOpenCreation={this.handleOpenCreation.bind(this)}
+        />
         </div>
         {/* <RemediationEdition
             open={this.state.openEdit}

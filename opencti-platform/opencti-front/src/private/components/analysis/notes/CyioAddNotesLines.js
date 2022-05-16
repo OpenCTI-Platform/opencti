@@ -17,6 +17,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { commitMutation } from '../../../../relay/environment';
 import ItemMarking from '../../../../components/ItemMarking';
 import Typography from '@material-ui/core/Typography';
@@ -130,7 +133,12 @@ class CyioAddNotesLinesContainer extends Component {
               </ListItemIcon>
               <ListItemText
                 primary={`${note.abstract} ${noteId}`}
-                secondary={truncate(note.content, 120)}
+                secondary={<Markdown
+                  remarkPlugins={[remarkGfm, remarkParse]}
+                  parserOptions={{ commonmark: true }}
+                  className="markdown">
+                  {truncate(note.content, 120)}
+                </Markdown>}
               />
               {/* <div style={{ marginRight: 50 }}>
                 {pathOr([], ['objectMarking', 'edges'], note).length > 0
@@ -171,9 +179,8 @@ CyioAddNotesLinesContainer.propTypes = {
 };
 
 export const cyioAddNotesLinesQuery = graphql`
-  query CyioAddNotesLinesQuery($count: Int!) {
+  query CyioAddNotesLinesQuery {
     ...CyioAddNotesLines_data
-      @arguments(count: $count)
   }
 `;
 
@@ -181,11 +188,8 @@ const CyioAddNotesLines = createFragmentContainer(
   CyioAddNotesLinesContainer,
   {
     data: graphql`
-      fragment CyioAddNotesLines_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-      ) {
-        cyioNotes(limit: $count) {
+      fragment CyioAddNotesLines_data on Query {
+        cyioNotes{
           edges {
             node {
               __typename

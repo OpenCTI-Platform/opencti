@@ -27,6 +27,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import { ExpandMoreOutlined, ExpandLessOutlined } from '@material-ui/icons';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
@@ -266,7 +269,7 @@ class RiskTrackingLineContainer extends Component {
                     <Avatar alt="Travis Howard" src="/static/images/avatar/2.jpg" />
                     <div style={{ marginLeft: '16px', paddingTop: '10px' }}>
                       <Typography>
-                        {t('Risk Log Entry Title')}
+                        {node.name && t(node.name)}
                       </Typography>
                       <Typography color="textSecondary" variant="h3">
                         {t('Logged By')}
@@ -331,7 +334,13 @@ class RiskTrackingLineContainer extends Component {
                     <div className={classes.scrollBg}>
                       <div className={classes.scrollDiv}>
                         <div className={classes.scrollObj}>
-                          {node.description && t(node.description)}
+                          <Markdown
+                            remarkPlugins={[remarkGfm, remarkParse]}
+                            parserOptions={{ commonmark: true }}
+                            className="markdown"
+                          >
+                            {node.description && t(node.description)}
+                          </Markdown>
                         </div>
                       </div>
                     </div>

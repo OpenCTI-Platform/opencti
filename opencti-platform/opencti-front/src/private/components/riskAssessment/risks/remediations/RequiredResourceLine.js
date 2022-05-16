@@ -32,6 +32,9 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import Accordion from '@material-ui/core/Accordion';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import AccordionDetails from '@material-ui/core/AccordionDetails';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import Button from '@material-ui/core/Button';
 import * as R from 'ramda';
 import { AutoFix, Information } from 'mdi-material-ui';
@@ -173,9 +176,9 @@ class RequiredResourceLineComponent extends Component {
       refreshQuery,
       data,
       remediationId,
-      requiredResourceData,
       displayRelation,
       entityId,
+      requiredResourceId,
     } = this.props;
     const { expanded } = this.state;
     const requiredResourceNode = pipe(
@@ -208,10 +211,16 @@ class RequiredResourceLineComponent extends Component {
                 <GroupIcon fontSize='large' color="disabled" />
                 <div style={{ marginLeft: '10px' }}>
                   <Typography align="left" variant="h2" style={{ textTransform: 'capitalize' }}>
-                    {requiredResourceNode.name && t(requiredResourceNode.name)}
+                    {data.name && t(data.name)}
                   </Typography>
                   <Typography align="left" variant="subtitle1">
-                    {requiredResourceNode.description && t(requiredResourceNode.description)}
+                    <Markdown
+                      remarkPlugins={[remarkGfm, remarkParse]}
+                      parserOptions={{ commonmark: true }}
+                      className="markdown"
+                    >
+                      {data.description && t(data.description)}
+                    </Markdown>
                   </Typography>
                 </div>
               </CardContent>
@@ -225,7 +234,7 @@ class RequiredResourceLineComponent extends Component {
                   <div style={{ marginLeft: '10px' }}>
                     <Typography align="left" color="textSecondary" variant="h3">{t('Name')}</Typography>
                     <Typography align="left" variant="subtitle1">
-                      {requiredResourceNode.name && t(requiredResourceNode.name)}
+                      {data.name && t(data.name)}
                     </Typography>
                   </div>
                 </Grid>
@@ -236,7 +245,7 @@ class RequiredResourceLineComponent extends Component {
                       <GroupIcon fontSize='large' color="textSecondary" />
                       <Typography style={{ marginLeft: '10px' }} align="center" variant="subtitle1">
                         {requiredResourceNode.resource_type
-                        && t(requiredResourceNode.resource_type)}
+                          && t(requiredResourceNode.resource_type)}
                       </Typography>
                     </div>
                   </div>
@@ -283,26 +292,32 @@ class RequiredResourceLineComponent extends Component {
                 <div className={classes.scrollBg}>
                   <div className={classes.scrollDiv}>
                     <div className={classes.scrollObj}>
-                      {requiredResourceNode.description && t(requiredResourceNode.description)}
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
+                        className="markdown"
+                      >
+                        {data.description && t(data.description)}
+                      </Markdown>
                     </div>
                   </div>
                 </div>
               </Grid>
               <Grid style={{ marginTop: '10px' }} xs={12} item={true}>
                 <CyioCoreobjectExternalReferences
-                  typename={requiredResourceData.__typename}
+                  typename={data.__typename}
                   fieldName='links'
-                  externalReferences={requiredResourceData.links}
-                  cyioCoreObjectId={remediationId}
+                  externalReferences={data.links}
+                  cyioCoreObjectId={data.id}
                   refreshQuery={refreshQuery}
                 />
               </Grid>
               <Grid style={{ margin: '30px 0 20px 0' }} xs={12} item={true}>
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
-                  typename={requiredResourceData.__typename}
-                  notes={requiredResourceData.remarks}
+                  typename={data.__typename}
+                  notes={data.remarks}
                   fieldName='remarks'
-                  cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
+                  cyioCoreObjectOrCyioCoreRelationshipId={data.id}
                   marginTop='0px'
                   refreshQuery={refreshQuery}
                 // data={props}
@@ -316,9 +331,9 @@ class RequiredResourceLineComponent extends Component {
           <RequiredResourcePopover
             handleRemove={this.handleOpenDialog.bind(this)}
             remediationId={remediationId}
-            requiredResourceData={requiredResourceData}
             data={data}
             refreshQuery={refreshQuery}
+            requiredResourceId={requiredResourceId}
           />
         </div>
       </div>
@@ -327,7 +342,6 @@ class RequiredResourceLineComponent extends Component {
 }
 
 RequiredResourceLineComponent.propTypes = {
-  requiredResourceData: PropTypes.object,
   paginationOptions: PropTypes.object,
   remediationId: PropTypes.string,
   dataColumns: PropTypes.object,
@@ -340,6 +354,7 @@ RequiredResourceLineComponent.propTypes = {
   fsd: PropTypes.func,
   displayRelation: PropTypes.bool,
   entityId: PropTypes.string,
+  requiredResourceId: PropTypes.string,
 };
 
 export default compose(

@@ -12,6 +12,7 @@ import {
   pipe,
   dissoc,
   assoc,
+  toPairs,
 } from 'ramda';
 import * as R from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
@@ -39,7 +40,8 @@ import DatePickerField from '../../../../../components/DatePickerField';
 import environmentDarkLight from '../../../../../relay/environmentDarkLight';
 import inject18n from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import { dateFormat } from '../../../../../utils/Time';
+import { dateFormat, parse } from '../../../../../utils/Time';
+import { adaptFieldValue } from '../../../../../utils/String';
 import SelectField from '../../../../../components/SelectField';
 import { commitMutation, QueryRenderer } from '../../../../../relay/environment';
 import CyioExternalReferenceEdition from '../../../analysis/external_references/CyioExternalReferenceEdition';
@@ -47,6 +49,11 @@ import Loader from '../../../../../components/Loader';
 import CyioCoreObjectExternalReferences from '../../../analysis/external_references/CyioCoreObjectExternalReferences';
 import CyioCoreObjectOrCyioCoreRelationshipNotes from '../../../analysis/notes/CyioCoreObjectOrCyioCoreRelationshipNotes';
 import MarkDownField from '../../../../../components/MarkDownField';
+import TaskType from '../../../common/form/TaskType';
+import RelatedTaskFields from '../../../common/form/RelatedTaskFields';
+import ResourceNameField from '../../../common/form/ResourceNameField';
+import ResourceTypeField from '../../../common/form/ResourceTypeField';
+import { toastGenericError } from '../../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -126,15 +133,19 @@ class RelatedTaskPopover extends Component {
       displayUpdate: false,
       displayDelete: false,
       deleting: false,
-      timings: {
-        start_date: '',
-        end_date: '',
-      },
+      resourceName: '',
+      responsible_roles: [],
+      associated_activities: [],
+      timing: {},
     };
   }
 
   handleOpen(event) {
     this.setState({ anchorEl: event.currentTarget });
+  }
+
+  handleResourceTypeFieldChange(resourceType) {
+    this.setState({ resourceName: resourceType });
   }
 
   handleClose() {
@@ -160,45 +171,47 @@ class RelatedTaskPopover extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    console.log('relatedTask', values);
-    this.setState({
-      timings: {
-        start_date: values.start_date,
-        end_date: values.end_date,
-      },
-    });
+      this.setState({
+        responsible_roles: values.responsible_roles,
+        associated_activities: values.associated_activities,
+        timing: {
+          within_date_range: {
+            start_date: values.start_date === null ? null : parse(values.start_date),
+            end_date: values.end_date === null ? null : parse(values.end_date),
+          }
+        },
+      });
     const finalValues = pipe(
       dissoc('start_date'),
       dissoc('end_date'),
-      dissoc('responsible_role'),
+      dissoc('resource_type'),
+      dissoc('resource'),
+      assoc('responsible_role', this.state.responsible_roles),
       assoc('timings', this.state.timings),
-      dissoc('timings'),
-      // map((n) => ({
-      //   'key': n[0],
-      //   'value': n[1],
-      // }))
+      toPairs,
+      map((n) => ({
+        'key': n[0],
+        'value': adaptFieldValue(n[1]),
+      })),
     )(values);
-    console.log('relatedTasksPopoverFinal', finalValues);
-    // CM(environmentDarkLight, {
-    //   mutation: relatedTaskEditionQuery,
-    //   variables: {
-    //     id: this.props.data.id,
-    //     input: [
-    //       { key: 'id', value: values.id },
-    //       { key: 'name', value: values.name },
-    //       { key: 'description', value: values.description },
-    //       { key: 'subject_type', value: values.resource_type },
-    //       { key: 'subject_ref', value: values.resource },
-    //     ],
-    //   },
-    //   setSubmitting,
-    //   onCompleted: () => {
-    //     setSubmitting(false);
-    //     resetForm();
-    //     this.handleCloseUpdate();
-    //   },
-    //   // onError: (err) => console.log('CyioNoteEditionDarkLightMutationError', err),
-    // });
+    CM(environmentDarkLight, {
+      mutation: relatedTaskEditionQuery,
+      variables: {
+        id: this.props.data.id,
+        input: finalValues,
+      },
+      setSubmitting,
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        this.handleCloseUpdate();
+        this.props.refreshQuery();
+      },
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to update Related Task');
+      },
+    });
   }
 
   submitDelete() {
@@ -206,13 +219,17 @@ class RelatedTaskPopover extends Component {
     CM(environmentDarkLight, {
       mutation: relatedTaskPopoverDeletionMutation,
       variables: {
-        id: this.props.externalReferenceId,
+        id: this.props.relatedTaskId,
       },
       onCompleted: (data) => {
         this.setState({ deleting: false });
         this.handleCloseDelete();
+        this.props.refreshQuery();
       },
-      onError: (err) => console.log('ExtRefDeletionDarkLightMutationError', err),
+      onError: (err) => {
+        console.error(err);
+        toastGenericError('Failed to delete Related Task');
+      },
     });
     // commitMutation({
     //   mutation: relatedTaskPopoverDeletionMutation,
@@ -419,6 +436,7 @@ class RelatedTaskPopover extends Component {
                           size="small"
                           variant='outlined'
                           containerstyle={{ width: '100%' }}
+                          disabled={true}
                         />
                       </div>
                     </Grid>
@@ -440,30 +458,13 @@ class RelatedTaskPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <TaskType
                           name="task_type"
                           fullWidth={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='milestone'>
-                            Milestone
-                          </MenuItem>
-                          <MenuItem value='action'>
-                            Action
-                          </MenuItem>
-                          <MenuItem value='query'>
-                            Query
-                          </MenuItem>
-                          <MenuItem value='list'>
-                            List
-                          </MenuItem>
-                          <MenuItem value='ruke'>
-                            Rule
-                          </MenuItem>
-                        </Field>
+                        />
                       </div>
                     </Grid>
                   </Grid>
@@ -573,24 +574,15 @@ class RelatedTaskPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="resource_type"
+                        <ResourceTypeField
+                          name='resource_type'
                           fullWidth={true}
                           variant='outlined'
+                          handleResourceType={this.handleResourceTypeFieldChange.bind(this)}
+                          type='hardware'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -609,12 +601,13 @@ class RelatedTaskPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={TextField}
-                          name="resource_name"
+                        <ResourceNameField
+                          name='resource'
+                          resourceTypename={this.state.resourceName}
                           fullWidth={true}
-                          size="small"
                           variant='outlined'
+                          type='hardware'
+                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
                         />
                       </div>
@@ -637,10 +630,10 @@ class RelatedTaskPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
-                          name="related_task"
+                        <RelatedTaskFields
+                          name="related_tasks"
                           fullWidth={true}
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -663,10 +656,10 @@ class RelatedTaskPopover extends Component {
                           </Tooltip>
                         </div>
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <RelatedTaskFields
                           name="associated_activities"
                           fullWidth={true}
+                          multiple={true}
                           variant='outlined'
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
@@ -690,25 +683,14 @@ class RelatedTaskPopover extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <Field
-                          component={SelectField}
-                          style={{ height: '38.09px' }}
-                          variant='outlined'
-                          name="responsible_parties"
-                          size='small'
+                        <RelatedTaskFields
+                          name="responsible_roles"
                           fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        />
                       </div>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -726,25 +708,14 @@ class RelatedTaskPopover extends Component {
                             <Information fontSize="inherit" color="disabled" />
                           </Tooltip>
                         </div>
-                        <Field
-                          component={SelectField}
-                          style={{ height: '38.09px' }}
-                          variant='outlined'
-                          name="dependencies"
-                          size='small'
+                        <RelatedTaskFields
+                          name="task_dependencies"
                           fullWidth={true}
+                          multiple={true}
+                          variant='outlined'
+                          style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                        >
-                          <MenuItem value='Helloworld'>
-                            helloWorld
-                          </MenuItem>
-                          <MenuItem value='test'>
-                            test
-                          </MenuItem>
-                          <MenuItem value='data'>
-                            data
-                          </MenuItem>
-                        </Field>
+                        />
                       </div>
                     </Grid>
                   </Grid>
@@ -753,8 +724,8 @@ class RelatedTaskPopover extends Component {
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
                         fieldName='links'
-                        typename={relatedTaskData.__typename}
-                        externalReferences={relatedTaskData.links}
+                        typename='CyioExternalReference'
+                        externalReferences={[]}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
@@ -762,8 +733,8 @@ class RelatedTaskPopover extends Component {
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
                         fieldName='remarks'
-                        typename={relatedTaskData.__typename}
-                        notes={relatedTaskData.remarks}
+                        typename='CyioNotes'
+                        notes={[]}
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"
                       // data={props}
@@ -838,7 +809,6 @@ class RelatedTaskPopover extends Component {
 }
 
 RelatedTaskPopover.propTypes = {
-  relatedTaskData: PropTypes.object,
   remediationId: PropTypes.string,
   externalReferenceId: PropTypes.string,
   refreshQuery: PropTypes.func,
@@ -847,6 +817,7 @@ RelatedTaskPopover.propTypes = {
   t: PropTypes.func,
   handleRemove: PropTypes.func,
   data: PropTypes.object,
+  relatedTaskId: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(RelatedTaskPopover);

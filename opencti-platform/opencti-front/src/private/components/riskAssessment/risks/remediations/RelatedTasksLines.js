@@ -225,12 +225,7 @@ class RelatedTasksLinesContainer extends Component {
     } = this.props;
     const { expanded } = this.state;
     const relatedTaskData = data.riskResponse;
-    
-    // const externalReferencesEdges = data.riskResponse.external_references.edges;
-    // const expandable = externalReferencesEdges.length > 7;
-    console.log('RelatedTasksData', data);
     const relatedTasksEdges = R.pathOr([], ['tasks'], data.riskResponse);
-    console.log('relatedTasksEdges', relatedTasksEdges);
     return (
       <div style={{ height: '100%' }}>
         <div className={classes.cardContent}>
@@ -265,7 +260,7 @@ class RelatedTasksLinesContainer extends Component {
               key={relatedTask.id}
               data={relatedTask}
               refreshQuery={refreshQuery}
-              relatedTaskData={relatedTaskData}
+              relatedTaskId={relatedTask.id}
             />
           ))}
         </Paper>
@@ -358,31 +353,71 @@ const RelatedTasksLines = createFragmentContainer(
         riskResponse(id: $id) {
           __typename
           id
-          links {
-            __typename
-            id
-            # created
-            # modified
-            external_id
-            source_name
-            description
-            entity_type
-            url
-            media_type
-          }
-          remarks {
-            __typename
-            id
-            abstract
-            content
-            authors
-            entity_type
-          }
           tasks {   # Related Tasks
+            __typename
             id
             task_type
             name
             description
+            timing {
+              ... on DateRangeTiming {
+                start_date
+                end_date
+              }
+            }
+            task_dependencies {
+              __typename
+              id
+              name
+            }
+            related_tasks {
+              __typename
+              id
+              name
+            }
+            associated_activities {
+              __typename
+              id
+              activity_id {
+                __typename
+                id
+                name
+              }
+              responsible_roles {
+                __typename
+                role {
+                  __typename
+                  id
+                  role_identifier
+                  name
+                }
+                parties {
+                  id
+                  party_type
+                  name
+                }
+              }
+            }
+            links {
+              __typename
+              id
+              # created
+              # modified
+              external_id
+              source_name
+              description
+              entity_type
+              url
+              media_type
+            }
+            remarks {
+              __typename
+              id
+              abstract
+              content
+              authors
+              entity_type
+            }
           }
         }
       }

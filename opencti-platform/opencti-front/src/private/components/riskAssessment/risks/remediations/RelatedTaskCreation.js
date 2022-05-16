@@ -588,6 +588,8 @@ class RelatedTaskCreation extends Component {
                             'The value must be a date (YYYY-MM-DD)',
                           )}
                           style={{ height: '38.09px' }}
+                          onChange={(_, date) => this.setState({ startDate: date })}
+                          value={this.state.startDate}
                         />
                       </div>
                     </Grid>
@@ -618,6 +620,9 @@ class RelatedTaskCreation extends Component {
                           )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
+                          minDate={this.state.startDate}
+                          value={this.state.endDate}
+                          onChange={(_, date) => this.setState({ endDate: date })}
                         />
                       </div>
                     </Grid>
@@ -789,17 +794,19 @@ class RelatedTaskCreation extends Component {
                     <Grid style={{ marginTop: '6px' }} xs={12} item={true}>
                       <CyioCoreObjectExternalReferences
                         refreshQuery={refreshQuery}
+                        disableAdd={true}
                         fieldName='links'
-                        typename={relatedTaskData.__typename}
-                        externalReferences={relatedTaskData.links}
+                        typename='CyioExternalReference'
+                        externalReferences={[]}
                         cyioCoreObjectId={remediationId}
                       />
                     </Grid>
                     <Grid style={{ marginTop: '15px' }} xs={12} item={true}>
                       <CyioCoreObjectOrCyioCoreRelationshipNotes
                         refreshQuery={refreshQuery}
-                        typename={relatedTaskData.__typename}
-                        notes={relatedTaskData.remarks}
+                        disableAdd={true}
+                        typename='CyioNotes'
+                        notes={[]}
                         fieldName='remarks'
                         cyioCoreObjectOrCyioCoreRelationshipId={remediationId}
                         marginTop="0px"

@@ -372,10 +372,19 @@ export const insertLocationQuery = (propValues) => {
 
   // determine the appropriate ontology class type
   const iri = `<http://csrc.nist.gov/ns/oscal/common#Location-${id}>`;
-  const insertPredicates = Object.entries(propValues)
-      .filter((propPair) => locationPredicateMap.hasOwnProperty(propPair[0]))
-      .map((propPair) => locationPredicateMap[propPair[0]].binding(iri, propPair[1]))
-      .join('. \n      ');
+  const insertPredicates = [];
+  Object.entries(propValues).forEach((propPair) => {
+    if (locationPredicateMap.hasOwnProperty(propPair[0])) {
+      if (Array.isArray(propPair[1])) {
+        for (let value of propPair[1]) {
+          insertPredicates.push(locationPredicateMap[propPair[0]].binding(iri, value));
+        }  
+      } else {
+        insertPredicates.push(locationPredicateMap[propPair[0]].binding(iri, propPair[1]));
+      }
+    }
+  });
+
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
@@ -386,7 +395,7 @@ export const insertLocationQuery = (propValues) => {
       ${iri} <http://darklight.ai/ns/common#object_type> "oscal-location" . 
       ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
       ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
-      ${insertPredicates}
+      ${insertPredicates.join(". \n")}
     }
   }
   `;
@@ -769,7 +778,15 @@ export const insertRoleQuery = (propValues) => {
     ...(propValues.role_identifier && {"role_identifier": propValues.role_identifier}),
   } ;
   const id = generateId( id_material, OSCAL_NS );
-  const timestamp = new Date().toISOString()
+  const timestamp = new Date().toISOString();
+
+  // escape any special characters (e.g., newline)
+  if (propValues.description !== undefined) {
+    if (propValues.description.includes('\n')) propValues.description = propValues.description.replace(/\n/g, '\\n');
+    if (propValues.description.includes('\"')) propValues.description = propValues.description.replace(/\"/g, '\\"');
+    if (propValues.description.includes("\'")) propValues.description = propValues.description.replace(/\'/g, "\\'");
+  }
+
   const iri = `<http://csrc.nist.gov/ns/oscal/common#Role-${id}>`;
   const insertPredicates = Object.entries(propValues)
       .filter((propPair) => rolePredicateMap.hasOwnProperty(propPair[0]))
@@ -798,7 +815,15 @@ export const insertRolesQuery = (roles) => {
       ...(role.role_identifier && {"role_identifier": role.role_identifier}),
     } ;
     const id = generateId( id_material, OSCAL_NS );
-    const timestamp = new Date().toISOString()
+    const timestamp = new Date().toISOString();
+
+    // escape any special characters (e.g., newline)
+    if (role.description !== undefined) {
+      if (role.description.includes('\n')) role.description = role.description.replace(/\n/g, '\\n');
+      if (role.description.includes('\"')) role.description = role.description.replace(/\"/g, '\\"');
+      if (role.description.includes("\'")) role.description = role.description.replace(/\'/g, "\\'");
+    }
+  
     const insertPredicates = [];
     const iri = `<http://csrc.nist.gov/ns/oscal/common#Role-${id}>`;
     roleIris.push(iri);
@@ -1023,7 +1048,7 @@ export const locationPredicateMap = {
   },
   address: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#address>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "addresses");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "address");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   email_addresses: {

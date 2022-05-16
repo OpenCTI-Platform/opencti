@@ -262,8 +262,8 @@ class RiskTrackingLinesContainer extends Component {
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           {(riskLogEdges.length > 0 ? (riskLogEdges.map((riskTrackingEdge, key) => {
-            const riskLogItem = riskTrackingEdge.node;
-            return <RiskTrackingLine
+            const riskLogItem = riskTrackingEdge?.node;
+            return riskTrackingEdge && <RiskTrackingLine
               history={history}
               node={riskLogItem}
               key={riskLogItem.id}

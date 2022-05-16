@@ -44,6 +44,7 @@ import {
 } from '../../../services/account.service';
 import Dialog from "@material-ui/core/Dialog";
 import FeatureFlag from "../../../components/feature/FeatureFlag";
+import {toastGenericError} from "../../../utils/bakedToast";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -84,41 +85,33 @@ const styles = (theme) => ({
 });
 
 const LeftBar = ({
-  t, location, history, classes,
+  t, location, classes, clientId
 }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const [user, setUser] = useState();
-  const [currentClient_id, setCurrentClient_id] = useState(localStorage.getItem('client_id'));
   const [currentOrg, setCurrentOrg] = useState();
   const [userPrefOpen ,setUserPrefOpen] = useState(false);
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
-  let toData;
-  if (granted(me, [KNOWLEDGE])) {
-    toData = '/dashboard/data/entities';
-  } else if (granted(me, [MODULES])) {
-    toData = '/dashboard/data/connectors';
-  } else {
-    toData = '/dashboard/data/taxii';
-  }
 
   useEffect(() => {
-    getAccount()
-      .then((res) => {
-        setUser({
-          email: res.data.email,
-          clients: res.data.clients,
-          first_name: me.name,
-          last_name: me.lastname,
-        });
-        localStorage.setItem("currentOrg", res.data.clients.find(obj => { return obj.client_id === currentClient_id}).name)
-        setCurrentOrg(res.data.clients.find(obj => { return obj.client_id === currentClient_id}).name);
-
-      }).catch((error) => {
-
-        console.log(error);
-      })
-  },[])
+    if(clientId) {
+      getAccount()
+        .then((res) => {
+          setUser({
+            email: res.data.email,
+            clients: res.data.clients,
+            first_name: me.name,
+            last_name: me.lastname,
+          });
+          localStorage.setItem("currentOrg", res.data.clients.find(obj => obj.client_id === clientId).name)
+          setCurrentOrg(res.data.clients.find(obj => obj.client_id === clientId).name);
+        }).catch((error) => {
+          console.log(error);
+          toastGenericError("Failed to get user information")
+        })
+    }
+  },[clientId])
 
   const handleUserPrefOpen = () => {
     setUserPrefOpen(true);
@@ -314,6 +307,7 @@ LeftBar.propTypes = {
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  clientId: PropTypes.string
 };
 
 export default compose(inject18n, withRouter, withStyles(styles))(LeftBar);

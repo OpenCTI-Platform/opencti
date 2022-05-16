@@ -188,7 +188,8 @@ class RiskDetailsComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {riskDetectionSource.map((value) => value.origin_actors.map((actor, i) => (
+              {riskDetectionSource
+              && riskDetectionSource.map((value) => value.origin_actors.map((actor, i) => (
                 <Typography key={i}>
                   {actor.actor_ref.name && t(actor.actor_ref.name)}
                 </Typography>

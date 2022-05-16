@@ -52,49 +52,44 @@ const riskResolvers = {
         const edges = [];
         const reducer = getReducer("RISK");
         let filterCount, resultCount, limit, offset, limitSize, offsetSize;
-        limitSize = limit = (args.first === undefined ? response.length : args.first) ;
-        offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+        limitSize = limit = ((args.first === undefined || args.first === null) ? response.length : args.first) ;
+        offsetSize = offset = ((args.offset === undefined || args.offset === null) ? 0 : args.offset) ;
         filterCount = 0;
 
         // update the risk level and score before sorting
         for (let risk of response) {
           risk.risk_level = 'unknown';
-          if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
+          if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
             // calculate the risk level
             const {riskLevel, riskScore} = calculateRiskLevel(risk);
             risk.risk_score = riskScore;
             risk.risk_level = riskLevel;
 
             // clean up
-            delete risk.cvss2_base_score;
-            delete risk.cvss2_temporal_score;
-            delete risk.cvss3_base_score
-            delete risk.cvss3_temporal_score;
-            delete risk.available_exploit;
-            delete risk.exploitability_ease;
+            delete risk.cvssV2Base_score;
+            delete risk.cvssV2Temporal_score;
+            delete risk.cvssV3Base_score
+            delete risk.cvssV3Temporal_score;
+            delete risk.available_exploit_values;
+            delete risk.exploitability_ease_values;
           }
 
           // retrieve most recent remediation state
-          if (risk.remediation_type !== undefined) {
+          if (risk.remediation_type_values !== undefined) {
             const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
             if (responseType !== undefined) risk.response_type = responseType;
             if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
             // clean up
-            delete risk.remediation_response_date;
-            delete risk.remediation_type;
-            delete risk.remediation_lifecycle;
+            delete risk.remediation_type_values;
+            delete risk.remediation_lifecycle_values;
           }
 
-          // calculate the occurrence count
-          if (risk.related_observations !== undefined ) {
-            risk.occurrences = risk.related_observations.length;
-          } else { risk.occurrences = 0; }
-  
-          // fix up deviation values
+          // TODO: WORKAROUND fix up invalidate deviation values
           if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
             console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
             risk.risk_status = risk.risk_status.replace('_', '-');
           }
+          // END WORKAROUND
         }
 
         // sort the values
@@ -112,19 +107,19 @@ const riskResolvers = {
 
         // for each Risk in the result set
         for (let risk of riskList) {
+          if (risk.id === undefined || risk.id == null ) {
+            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
+            continue;
+          }
+
           // skip down past the offset
           if (offset) {
             offset--
             continue
           }
 
-          if (risk.id === undefined || risk.id == null ) {
-            console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} missing field 'id'; skipping`);
-            continue;
-          }
-
           // filter out non-matching entries if a filter is to be applied
-          if ('filters' in args && args.filters != null && args.filters.length > 0) {
+          if ('filters' in args && (args.filters != null && args.filters.length > 0) && args.filters[0] !== null) {
             if (!filterValues(risk, args.filters, args.filterMode) ) {
               continue
             }
@@ -200,42 +195,37 @@ const riskResolvers = {
 
         // calculate the risk level
         risk.risk_level = 'unknown';
-        if (risk.cvss2_base_score !== undefined || risk.cvss3_base_score !== undefined) {
+        if (risk.cvssV2Base_score !== undefined || risk.cvssV3Base_score !== undefined) {
           // calculate the risk level
           const {riskLevel, riskScore} = calculateRiskLevel(risk);
           risk.risk_score = riskScore;
           risk.risk_level = riskLevel;
 
           // clean up
-          delete risk.cvss2_base_score;
-          delete risk.cvss2_temporal_score;
-          delete risk.cvss3_base_score
-          delete risk.cvss3_temporal_score;
-          delete risk.available_exploit;
-          delete risk.exploitability_ease;
+          delete risk.cvssV2Base_score;
+          delete risk.cvssV2Temporal_score;
+          delete risk.cvssV3Base_score
+          delete risk.cvssV3Temporal_score;
+          delete risk.available_exploit_values;
+          delete risk.exploitability_ease_values;
         }
 
         // retrieve most recent remediation state
-        if (risk.remediation_type !== undefined) {
+        if (risk.remediation_type_values !== undefined) {
           const {responseType, lifeCycle} = getLatestRemediationInfo(risk);
           if (responseType !== undefined) risk.response_type = responseType;
           if (lifeCycle !== undefined) risk.lifecycle = lifeCycle;
           // clean up
-          delete risk.remediation_response_date;
-          delete risk.remediation_type;
-          delete risk.remediation_lifecycle;
+          delete risk.remediation_type_values;
+          delete risk.remediation_lifecycle_values;
         }
 
-        // calculate the occurrence count
-        if (risk.related_observations !== undefined ) {
-          risk.occurrences = risk.related_observations.length;
-        } else { risk.occurrences = 0; }
-
-        if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
+          // TODO: WORKAROUND fix up invalidate deviation values
+          if (risk.risk_status == 'deviation_requested' || risk.risk_status == 'deviation_approved') {
           console.log(`[CYIO] CONSTRAINT-VIOLATION: (${dbName}) ${risk.iri} invalid field value 'risk_status'; fixing`);
           risk.risk_status = risk.risk_status.replace('_', '-');
         }
-
+          // END WORKAROUND
         return reducer(risk);  
       } else {
         // Handle reporting Stardog Error
@@ -805,6 +795,14 @@ const riskResolvers = {
           }
           if (response === undefined) return null;
           if (Array.isArray(response) && response.length > 0) {
+            //TODO: WORKAROUND data issues
+            if (response[0].hasOwnProperty('entry_type')) {
+              for (let entry in response[0].entry_type) {
+                response[0].entry_type[entry] = response[0].entry_type[entry].replace(/_/g,'-');
+              }
+            }
+            //END WORKAROUND
+
             if ( limit ) {
               let edge = {
                 cursor: iri,
@@ -853,7 +851,7 @@ const riskResolvers = {
         return null;
       }
     },
-    related_observations: async (parent, args, {dbName, dataSources, }) => {
+    related_observations: async (parent, args, {dbName, dataSources,selectMap}) => {
       if (parent.related_observations_iri === undefined) return null;
       let iriArray = parent.related_observations_iri;
       if (Array.isArray(iriArray) && iriArray.length > 0) {
@@ -865,7 +863,7 @@ const riskResolvers = {
         filterCount = 0;
         for (let iri of iriArray) {
           if (iri === undefined || !iri.includes('Observation')) continue ;
-          const sparqlQuery = selectObservationByIriQuery(iri, null);
+          const sparqlQuery = selectObservationByIriQuery(iri, selectMap.getNode("node"));
           let response;
           try {
             response = await dataSources.Stardog.queryById({

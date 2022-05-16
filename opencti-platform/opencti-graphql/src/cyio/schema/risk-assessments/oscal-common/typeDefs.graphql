@@ -319,7 +319,7 @@
     # OscalLocation
     location_type: OscalLocationType
     location_class: OscalLocationClass
-    address: [CivicAddressAddInput]
+    address: CivicAddressAddInput
     email_addresses: [EmailAddress]
     telephone_numbers: [TelephoneNumberAddInput]
     urls: [URL]
@@ -331,7 +331,9 @@
     "Modified"
     modified
     "Label"
-    labels
+    label_name
+    "Name"
+    name
   }
   # Filtering Types
   enum OscalLocationFilter {
@@ -341,6 +343,8 @@
     modified
     "Label"
     label_name
+    "Name"
+    name
   }
   input OscalLocationFiltering {
     key: OscalLocationFilter!
@@ -465,25 +469,29 @@
   }
   # Ordering Type
   enum OscalPartyOrdering {
-    "Party Type"
-    party_type
-    "Created"
-    created
-    "Modified"
-    modified
-    "Label"
-    labels
-  }
-  # Filtering Types
-  enum OscalPartyFilter {
-    "Party Type"
-    party_type
     "Created"
     created
     "Modified"
     modified
     "Label"
     label_name
+    "Name"
+    name
+    "Party Type"
+    party_type
+  }
+  # Filtering Types
+  enum OscalPartyFilter {
+    "Created"
+    created
+    "Modified"
+    modified
+    "Label"
+    label_name
+    "Name"
+    name
+    "Party Type"
+    party_type
   }
   input OscalPartyFiltering {
     key: OscalPartyFilter!
@@ -688,16 +696,16 @@
     created
     "Modified"
     modified
+    "Label"
+    label_name
+    "Name"
+    name
+    "Published"
+    published
     "Resource Type"
     resource_type
     "Version"
     version
-    "Published"
-    published
-    "Name"
-    name
-    "Label"
-    labels
   }
   # Filtering
   input OscalResourcesFiltering {
@@ -711,16 +719,14 @@
     created
     "Modified"
     modified
-    "Resource Type"
-    resource_type
-    "Version"
-    version
-    "Published"
-    published
-    "Name"
-    name
     "Label"
     label_name
+    "Resource Type"
+    resource_type
+    "Name"
+    name
+    "Published"
+    published
   }
   # Pagination
   type OscalResourceConnection {
@@ -827,7 +833,7 @@
   # Ordering
   enum OscalResponsiblePartyOrdering {
     "Label"
-    labels
+    label_name
   }
   # Filtering
   input OscalResponsiblePartyFiltering {
@@ -913,7 +919,11 @@
     "Modified"
     modified
     "Label"
-    labels
+    label_name
+    "Name"
+    name
+    "Role"
+    role_identifier
   }
   # Filtering
   input OscalRolesFiltering {
@@ -929,6 +939,10 @@
     modified
     "Label"
     label_name
+    "Name"
+    name
+    "Role"
+    role_identifier
   }
   # Pagination
   type OscalRoleConnection {
@@ -1068,11 +1082,13 @@
     "Modified"
     modified
     "Label"
-    labels
-    "User Type"
-    user_type
+    label_name
+    "Name"
+    name
     "Prvilege Level"
     privilege_level
+    "User Type"
+    user_type
   }
   # Filtering
   input OscalUsersFiltering {
@@ -1088,10 +1104,12 @@
     modified
     "Label"
     label_name
-    "User Type"
-    user_type
+    "Name"
+    name
     "Privilege Level"
     privilege_level
+    "User Type"
+    user_type
   }
   # Pagination
   type OscalUserConnection {
