@@ -46,7 +46,17 @@ import { isDateStringNone, isNone } from '../components/i18n';
 
 const genImage = (src) => {
   const img = new Image();
-  img.src = `/${window.BASE_PATH ? `${window.BASE_PATH}/` : ''}${src}`;
+  if (
+    window.BASE_PATH
+    && window.BASE_PATH.length > 0
+    && window.BASE_PATH.startsWith('/')
+  ) {
+    img.src = `${window.BASE_PATH}/${src.replaceAll('../', '')}`;
+  } else if (window.BASE_PATH && window.BASE_PATH.length > 0) {
+    img.src = `/${window.BASE_PATH}/${src.replaceAll('../', '')}`;
+  } else {
+    img.src = `/${src.replaceAll('../', '')}`;
+  }
   return img;
 };
 

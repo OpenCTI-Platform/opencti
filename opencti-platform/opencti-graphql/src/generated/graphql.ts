@@ -6553,12 +6553,10 @@ export type MutationStixCoreRelationshipsExportAskArgs = {
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreRelationshipsFiltering>>>;
   format: Scalars['String'];
-  fromId?: InputMaybe<Scalars['String']>;
   maxMarkingDefinition?: InputMaybe<Scalars['String']>;
   orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
-  toId?: InputMaybe<Scalars['String']>;
   type: Scalars['String'];
 };
 
