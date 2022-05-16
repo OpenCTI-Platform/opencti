@@ -12,7 +12,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { buildDate, parse } from '../../../../utils/Time';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -169,7 +169,7 @@ class CampaignEditionDetailsComponent extends Component {
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
-              component={DateTimePickerField}
+              component={DatePickerField}
               name="first_seen"
               invalidDateMessage={t(
                 'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m))',
@@ -186,7 +186,7 @@ class CampaignEditionDetailsComponent extends Component {
               }}
             />
             <Field
-              component={DateTimePickerField}
+              component={DatePickerField}
               name="last_seen"
               invalidDateMessage={t(
                 'The value must be a datetime (mm/dd/yyyy hh:mm (a|p)m)',
