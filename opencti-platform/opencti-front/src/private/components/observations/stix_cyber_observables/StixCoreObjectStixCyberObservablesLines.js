@@ -82,10 +82,12 @@ export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
     $stopTimeStart: DateTime
     $stopTimeStop: DateTime
     $confidences: [Int]
+    $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
+    $filters: [StixCoreRelationshipsFiltering]
   ) {
     ...StixCoreObjectStixCyberObservablesLines_data
       @arguments(
@@ -99,10 +101,12 @@ export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
         stopTimeStart: $stopTimeStart
         stopTimeStop: $stopTimeStop
         confidences: $confidences
+        search: $search
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -123,6 +127,7 @@ export default createPaginationContainer(
         stopTimeStart: { type: "DateTime" }
         stopTimeStop: { type: "DateTime" }
         confidences: { type: "[Int]" }
+        search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
         orderBy: {
@@ -130,6 +135,7 @@ export default createPaginationContainer(
           defaultValue: start_time
         }
         orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixCoreRelationshipsFiltering]" }
       ) {
         stixCoreRelationships(
           fromId: $fromId
@@ -142,10 +148,12 @@ export default createPaginationContainer(
           stopTimeStart: $stopTimeStart
           stopTimeStop: $stopTimeStop
           confidences: $confidences
+          search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
@@ -178,6 +186,7 @@ export default createPaginationContainer(
         toId: fragmentVariables.toId,
         fromTypes: fragmentVariables.fromTypes,
         toTypes: fragmentVariables.toTypes,
+        search: fragmentVariables.search,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,
         startTimeStop: fragmentVariables.startTimeStop,
@@ -188,6 +197,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: stixCoreObjectStixCyberObservablesLinesQuery,

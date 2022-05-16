@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
+import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import {
   ArrowDownward,
@@ -234,17 +235,24 @@ class ListCards extends Component {
               >
                 {typeof handleChangeView === 'function' && (
                   <ToggleButton value="cards" aria-label="cards">
-                    <ViewModuleOutlined />
+                    <Tooltip title={t('Cards view')}>
+                      <ViewModuleOutlined fontSize="small" />
+                    </Tooltip>
                   </ToggleButton>
                 )}
                 <ToggleButton value="lines" aria-label="lines">
-                  <ViewListOutlined color="primary" />
+                  <Tooltip title={t('Lines view')}>
+                    <ViewListOutlined color="primary" fontSize="small" />
+                  </Tooltip>
                 </ToggleButton>
                 {typeof handleToggleExports === 'function' && (
                   <ToggleButton value="export" aria-label="export">
-                    <FileDownloadOutlined
-                      color={openExports ? 'secondary' : 'primary'}
-                    />
+                    <Tooltip title={t('Open export panel')}>
+                      <FileDownloadOutlined
+                        color={openExports ? 'secondary' : 'primary'}
+                        fontSize="small"
+                      />
+                    </Tooltip>
                   </ToggleButton>
                 )}
               </ToggleButtonGroup>
@@ -253,7 +261,7 @@ class ListCards extends Component {
         </div>
         <div className="clearfix" />
         <div className={classes.cardsContainer}>{children}</div>
-        {typeof handleToggleExports === 'function' ? (
+        {typeof handleToggleExports === 'function' && (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixDomainObjectsExports
               open={openExports}
@@ -263,8 +271,6 @@ class ListCards extends Component {
               context={exportContext}
             />
           </Security>
-        ) : (
-          ''
         )}
       </div>
     );

@@ -328,15 +328,22 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                 style={{ margin: '7px 0 0 5px' }}
               >
                 <ToggleButton value="lines" aria-label="lines">
-                  <ViewListOutlined color="primary" />
+                  <Tooltip title={t('Lines view')}>
+                    <ViewListOutlined fontSize="small" color="primary" />
+                  </Tooltip>
                 </ToggleButton>
                 <ToggleButton value="nested" aria-label="nested">
-                  <FormatListGroup />
+                  <Tooltip title={t('Nested view')}>
+                    <FormatListGroup fontSize="small" />
+                  </Tooltip>
                 </ToggleButton>
                 <ToggleButton value="export" aria-label="export">
-                  <FileDownloadOutlined
-                    color={openExports ? 'secondary' : 'primary'}
-                  />
+                  <Tooltip title={t('Open export panel')}>
+                    <FileDownloadOutlined
+                      fontSize="small"
+                      color={openExports ? 'secondary' : 'primary'}
+                    />
+                  </Tooltip>
                 </ToggleButton>
               </ToggleButtonGroup>
             </div>

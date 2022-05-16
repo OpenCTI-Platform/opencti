@@ -1,6 +1,5 @@
 import * as R from 'ramda';
-import mime from 'mime-types';
-import { assoc, invertObj, map, pipe, propOr } from 'ramda';
+import { map } from 'ramda';
 import {
   batchListThroughGetTo,
   createRelation,
@@ -42,15 +41,14 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { connectorsForExport } from './connector';
-import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { now, observableValue } from '../utils/format';
+import { now } from '../utils/format';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { deleteFile, loadFile, storeFileConverter, upload } from '../database/minio';
 import { elUpdateElement } from '../database/engine';
 import { getInstanceIds } from '../schema/identifier';
+import { askEntityExport } from './stix';
 
 export const findAll = async (user, args) => {
   let types = [];
@@ -166,107 +164,6 @@ export const stixCoreObjectAskEnrichment = async (user, stixCoreObjectId, connec
   };
   await pushToConnector(connector, message);
   return work;
-};
-
-export const askEntityExport = async (user, format, entity, type = 'simple', maxMarkingId = null) => {
-  const connectors = await connectorsForExport(user, format, true);
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
-  const toFileName = (connector) => {
-    const fileNamePart = `${entity.entity_type}-${entity.name || observableValue(entity)}_${type}.${mime.extension(
-      format
-    )}`;
-    return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
-  };
-  const buildExportMessage = (work, fileName) => {
-    return {
-      internal: {
-        work_id: work.id, // Related action for history
-        applicant_id: user.id, // User asking for the import
-      },
-      event: {
-        export_scope: 'single', // Single or List
-        export_type: type, // Simple or full
-        file_name: fileName, // Export expected file name
-        max_marking: maxMarkingId, // Max marking id
-        entity_type: entity.entity_type, // Exported entity type
-        // For single entity export
-        entity_id: entity.id, // Exported element
-      },
-    };
-  };
-  // noinspection UnnecessaryLocalVariableJS
-  const worksForExport = await Promise.all(
-    map(async (connector) => {
-      const fileIdentifier = toFileName(connector);
-      const path = `export/${entity.entity_type}/${entity.id}/`;
-      const work = await createWork(user, connector, fileIdentifier, path);
-      const message = buildExportMessage(work, fileIdentifier);
-      await pushToConnector(connector, message);
-      return work;
-    }, connectors)
-  );
-  return worksForExport;
-};
-
-export const exportTransformFilters = (listFilters, filterOptions, orderOptions) => {
-  const stixDomainObjectsFiltersInversed = invertObj(filterOptions);
-  const stixDomainObjectsOrderingInversed = invertObj(orderOptions);
-  return pipe(
-    assoc(
-      'filters',
-      map(
-        (n) => ({
-          key: n.key in stixDomainObjectsFiltersInversed ? stixDomainObjectsFiltersInversed[n.key] : n.key,
-          values: n.values,
-          operator: n.operator ? n.operator : 'eq',
-        }),
-        propOr([], 'filters', listFilters)
-      )
-    ),
-    assoc(
-      'orderBy',
-      listFilters.orderBy in stixDomainObjectsOrderingInversed
-        ? stixDomainObjectsOrderingInversed[listFilters.orderBy]
-        : listFilters.orderBy
-    )
-  )(listFilters);
-};
-export const askListExport = async (user, format, entityType, listParams, type = 'simple', maxMarkingId = null) => {
-  const connectors = await connectorsForExport(user, format, true);
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
-  const toFileName = (connector) => {
-    const fileNamePart = `${entityType}_${type}.${mime.extension(format)}`;
-    return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
-  };
-  const buildExportMessage = (work, fileName) => {
-    return {
-      internal: {
-        work_id: work.id, // Related action for history
-        applicant_id: user.id, // User asking for the import
-      },
-      event: {
-        export_scope: 'list', // Single or List
-        export_type: type, // Simple or full
-        file_name: fileName, // Export expected file name
-        max_marking: maxMarkingId, // Max marking id
-        entity_type: entityType, // Exported entity type
-        // For list entity export
-        list_params: listParams,
-      },
-    };
-  };
-  // noinspection UnnecessaryLocalVariableJS
-  const worksForExport = await Promise.all(
-    map(async (connector) => {
-      const fileIdentifier = toFileName(connector);
-      const path = `export/${entityType}/`;
-      const work = await createWork(user, connector, fileIdentifier, path);
-      const message = buildExportMessage(work, fileIdentifier);
-      await pushToConnector(connector, message);
-      return work;
-    }, connectors)
-  );
-  return worksForExport;
 };
 
 export const stixCoreObjectExportAsk = async (user, args) => {

@@ -20,6 +20,8 @@ import {
   batchNotes,
   batchOpinions,
   batchReports,
+  stixCoreRelationshipsExportAsk,
+  stixCoreRelationshipsExportPush
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -29,6 +31,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
+import { filesListing } from '../database/minio';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -47,6 +50,7 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsTimeSeries: (_, args, { user }) => timeSeriesRelations(user, args),
     stixCoreRelationshipsDistribution: (_, args, { user }) => distributionRelations(user, args),
     stixCoreRelationshipsNumber: (_, args, { user }) => stixCoreRelationshipsNumber(user, args),
+    stixCoreRelationshipsExportFiles: (_, { type, first }, { user }) => filesListing(user, first, `export/${type}/`),
   },
   StixCoreRelationshipsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
@@ -83,6 +87,8 @@ const stixCoreRelationshipResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
     stixCoreRelationshipAdd: (_, { input }, { user }) => addStixCoreRelationship(user, input),
+    stixCoreRelationshipsExportAsk: (_, args, { user }) => stixCoreRelationshipsExportAsk(user, args),
+    stixCoreRelationshipsExportPush: (_, { type, file, listFilters }, { user }) => stixCoreRelationshipsExportPush(user, type, file, listFilters),
     stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, { user }) => stixCoreRelationshipDeleteByFromAndTo(user, fromId, toId, relationshipType),
   },
   Subscription: {

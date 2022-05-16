@@ -87,6 +87,13 @@ const styles = (theme) => ({
     height: 50,
     overflow: 'hidden',
   },
+  withSmallPaddingRight: {
+    zIndex: 1100,
+    padding: '0 200px 0 180px',
+    display: 'flex',
+    height: 50,
+    overflow: 'hidden',
+  },
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -939,6 +946,7 @@ class ToolBar extends Component {
       filters,
       search,
       withPaddingRight,
+      withSmallPaddingRight,
       theme,
       container,
     } = this.props;
@@ -982,9 +990,12 @@ class ToolBar extends Component {
         anchor="bottom"
         variant="persistent"
         classes={{
+          // eslint-disable-next-line no-nested-ternary
           paper: withPaddingRight
             ? classes.bottomNavWithPadding
-            : classes.bottomNav,
+            : withSmallPaddingRight
+              ? classes.bottomNavWithSmallPadding
+              : classes.bottomNav,
         }}
         open={isOpen}
         PaperProps={{ variant: 'elevation', elevation: 1 }}
@@ -1568,6 +1579,7 @@ ToolBar.propTypes = {
   search: PropTypes.string,
   handleClearSelectedElements: PropTypes.func,
   withPaddingRight: PropTypes.bool,
+  withSmallPaddingRight: PropTypes.bool,
   container: PropTypes.object,
   type: PropTypes.string,
 };

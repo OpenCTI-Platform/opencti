@@ -35,7 +35,7 @@ import {
   ABSTRACT_STIX_META_RELATIONSHIP,
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
+import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { escape } from '../utils/format';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 

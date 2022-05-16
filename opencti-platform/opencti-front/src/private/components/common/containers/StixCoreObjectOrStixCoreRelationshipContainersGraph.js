@@ -11,6 +11,7 @@ import SpriteText from 'three-spritetext';
 import ForceGraph2D from 'react-force-graph-2d';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
+import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, ViewListOutlined } from '@mui/icons-material';
 import { GraphOutline } from 'mdi-material-ui';
 import withStyles from '@mui/styles/withStyles';
@@ -519,17 +520,23 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
                 style={{ margin: '7px 0 0 5px' }}
               >
                 <ToggleButton value="lines" aria-label="lines">
-                  <ViewListOutlined color="primary" />
+                  <Tooltip title={t('Lines view')}>
+                    <ViewListOutlined fontSize="small" color="primary" />
+                  </Tooltip>
                 </ToggleButton>
                 <ToggleButton value="graph" aria-label="graph">
-                  <GraphOutline />
+                  <Tooltip title={t('Graph view')}>
+                    <GraphOutline fontSize="small" />
+                  </Tooltip>
                 </ToggleButton>
                 <ToggleButton
                   value="export"
                   aria-label="export"
                   disabled={true}
                 >
-                  <FileDownloadOutlined />
+                  <Tooltip title={t('Open export panel')}>
+                    <FileDownloadOutlined fontSize="small" />
+                  </Tooltip>
                 </ToggleButton>
               </ToggleButtonGroup>
             )}

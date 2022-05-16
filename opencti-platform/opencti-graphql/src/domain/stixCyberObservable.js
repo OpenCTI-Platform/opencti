@@ -37,7 +37,7 @@ import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelat
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
-import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
+import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { escape, observableValue } from '../utils/format';
 
 export const findById = (user, stixCyberObservableId) => {

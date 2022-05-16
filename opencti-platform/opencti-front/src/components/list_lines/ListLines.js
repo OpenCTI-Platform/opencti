@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types';
 import { compose, last, map, toPairs } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
+import Tooltip from '@mui/material/Tooltip';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -13,6 +14,7 @@ import {
   ViewListOutlined,
   ViewModuleOutlined,
   FileDownloadOutlined,
+  LibraryBooksOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -27,6 +29,7 @@ import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 import { truncate } from '../../utils/String';
+import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 
 const styles = (theme) => ({
   container: {
@@ -177,6 +180,8 @@ class ListLines extends Component {
       availableEntityTypes,
       availableRelationshipTypes,
       enableNestedView,
+      enableEntitiesView,
+      currentView,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -263,7 +268,7 @@ class ListLines extends Component {
               <ToggleButtonGroup
                 size="small"
                 color="secondary"
-                value="lines"
+                value={currentView || 'lines'}
                 exclusive={true}
                 onChange={(_, value) => {
                   if (value && value === 'export') {
@@ -276,27 +281,57 @@ class ListLines extends Component {
               >
                 {typeof handleChangeView === 'function' && !disableCards && (
                   <ToggleButton value="cards" aria-label="cards">
-                    <ViewModuleOutlined color="primary" />
+                    <Tooltip title={t('Cards view')}>
+                      <ViewModuleOutlined fontSize="small" color="primary" />
+                    </Tooltip>
                   </ToggleButton>
                 )}
                 <ToggleButton value="lines" aria-label="lines">
-                  <ViewListOutlined />
+                  <Tooltip title={t('Lines view')}>
+                    <ViewListOutlined
+                      fontSize="small"
+                      color={
+                        currentView === 'lines' || !currentView
+                          ? 'secondary'
+                          : 'primary'
+                      }
+                    />
+                  </Tooltip>
                 </ToggleButton>
                 {typeof handleChangeView === 'function' && enableGraph && (
                   <ToggleButton value="graph" aria-label="graph">
-                    <GraphOutline color="primary" />
+                    <Tooltip title={t('Graph view')}>
+                      <GraphOutline fontSize="small" color="primary" />
+                    </Tooltip>
                   </ToggleButton>
                 )}
                 {typeof handleChangeView === 'function' && enableNestedView && (
                   <ToggleButton value="nested" aria-label="nested">
-                    <FormatListGroup color="primary" />
+                    <Tooltip title={t('Nested view')}>
+                      <FormatListGroup fontSize="small" color="primary" />
+                    </Tooltip>
+                  </ToggleButton>
+                )}
+                {typeof handleChangeView === 'function' && enableEntitiesView && (
+                  <ToggleButton value="entities" aria-label="entities">
+                    <Tooltip title={t('Entities view')}>
+                      <LibraryBooksOutlined
+                        fontSize="small"
+                        color={
+                          currentView === 'entities' ? 'secondary' : 'primary'
+                        }
+                      />
+                    </Tooltip>
                   </ToggleButton>
                 )}
                 {typeof handleToggleExports === 'function' && (
                   <ToggleButton value="export" aria-label="export">
-                    <FileDownloadOutlined
-                      color={openExports ? 'secondary' : 'primary'}
-                    />
+                    <Tooltip title={t('Open export panel')}>
+                      <FileDownloadOutlined
+                        fontSize="small"
+                        color={openExports ? 'secondary' : 'primary'}
+                      />
+                    </Tooltip>
                   </ToggleButton>
                 )}
               </ToggleButtonGroup>
@@ -390,13 +425,25 @@ class ListLines extends Component {
           {children}
         </List>
         {typeof handleToggleExports === 'function'
-          && exportEntityType !== 'Stix-Cyber-Observable' && (
+          && exportEntityType !== 'Stix-Cyber-Observable'
+          && exportEntityType !== 'stix-core-relationship' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixDomainObjectsExports
                 open={openExports}
                 handleToggle={handleToggleExports.bind(this)}
                 paginationOptions={paginationOptions}
                 exportEntityType={exportEntityType}
+                context={exportContext}
+              />
+            </Security>
+        )}
+        {typeof handleToggleExports === 'function'
+          && exportEntityType === 'stix-core-relationship' && (
+            <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+              <StixCoreRelationshipsExports
+                open={openExports}
+                handleToggle={handleToggleExports.bind(this)}
+                paginationOptions={paginationOptions}
                 context={exportContext}
               />
             </Security>
@@ -455,6 +502,8 @@ ListLines.propTypes = {
   availableEntityTypes: PropTypes.array,
   availableRelationshipTypes: PropTypes.array,
   enableNestedView: PropTypes.bool,
+  enableEntitiesView: PropTypes.bool,
+  currentView: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

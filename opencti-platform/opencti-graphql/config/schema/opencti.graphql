@@ -9419,6 +9419,7 @@ type Query {
     noDirection: Boolean
     endDate: DateTime
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
 
   ######## STIX SIGHTING RELATIONSHIPS
 
@@ -10200,8 +10201,21 @@ type Mutation {
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
     @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCoreRelationshipsExportAsk(
+    type: String!
+    format: String!
+    exportType: String!
+    maxMarkingDefinition: String
+    context: String
+    search: String
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixCoreRelationshipDelete(fromId: String!, toId: String!, relationship_type: String!): Boolean!
     @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
   stixCyberObservableRelationshipAdd(input: StixCyberObservableRelationshipAddInput): StixCyberObservableRelationship

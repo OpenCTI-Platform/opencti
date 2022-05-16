@@ -1,5 +1,11 @@
 import * as R from 'ramda';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, schemaTypes } from './general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, schemaTypes } from './general';
+import {
+  RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from './stixMetaRelationship';
 
 const SOURCE_REF = 'source_ref';
 const TARGET_REF = 'target_ref';
@@ -95,6 +101,17 @@ export const STIX_CORE_RELATIONSHIPS = [
 schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
 export const isStixCoreRelationship = (type: string): boolean => R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 // endregion
+
+export const stixCoreRelationshipOptions = {
+  StixCoreRelationshipsFilter: {
+    createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
+    labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    objectContains: buildRefRelationKey(RELATION_OBJECT),
+    containedBy: buildRefRelationKey(RELATION_OBJECT),
+    hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
+  },
+};
 
 export const stixCoreRelationshipsAttributes = [
   'internal_id',

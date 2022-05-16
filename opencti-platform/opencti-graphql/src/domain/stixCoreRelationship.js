@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { map } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -7,17 +8,17 @@ import {
   batchListThroughGetFrom,
   batchListThroughGetTo,
   storeLoadById,
-  updateAttribute,
+  updateAttribute, internalLoadById
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_IDENTITY
 } from '../schema/general';
 import {
   isStixMetaRelationship,
@@ -40,6 +41,9 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 import { listRelations } from '../database/middleware-loader';
+import { askEntityExport, askListExport, exportTransformFilters } from './stix';
+import { workToExportFile } from './work';
+import { upload } from '../database/minio';
 
 export const findAll = async (user, args) => {
   return listRelations(user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -117,6 +121,34 @@ export const stixRelations = (user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('fromId', stixCoreObjectId, args);
   return findAll(user, finalArgs);
 };
+
+// region export
+export const stixCoreRelationshipsExportAsk = async (user, args) => {
+  const { format, type, exportType, maxMarkingDefinition } = args;
+  const { search, orderBy, orderMode, filters, filterMode } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const filtersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsFilter;
+  const ordersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsOrdering;
+  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  const works = await askListExport(user, format, type, listParams, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w), works);
+};
+export const stixCoreRelationshipExportAsk = async (user, args) => {
+  const { format, stixCoreRelationshipId = null, exportType = null, maxMarkingDefinition = null } = args;
+  const entity = stixCoreRelationshipId ? await storeLoadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP) : null;
+  const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w), works);
+};
+export const stixCoreRelationshipsExportPush = async (user, type, file, listFilters) => {
+  await upload(user, `export/${type}`, file, { list_filters: listFilters });
+  return true;
+};
+export const stixCoreRelationshipExportPush = async (user, entityId, file) => {
+  const entity = await internalLoadById(user, entityId);
+  await upload(user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  return true;
+};
+// endregion
 
 // region mutations
 export const addStixCoreRelationship = async (user, stixCoreRelationship) => {
