@@ -303,16 +303,17 @@ export const generateUpdateMessage = (inputs) => {
       if (STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
         convertedKey = STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key];
       }
-      if (isNotEmptyField(value)) {
-        const next = Array.isArray(value) ? value : [value];
+      const fromArray = Array.isArray(value) ? value : [value];
+      const values = fromArray.filter((v) => isNotEmptyField(v));
+      if (isNotEmptyField(values)) {
         // If update is based on internal ref, we need to extract the value
         if (META_FIELD_TO_STIX_ATTRIBUTE[key] || STIX_CYBER_OBSERVABLE_FIELD_TO_STIX_ATTRIBUTE[key]) {
-          message = next.map((val) => extractEntityMainValue(val)).join(', ');
+          message = values.map((val) => extractEntityMainValue(val)).join(', ');
         } else if (isDictionaryAttribute(key)) {
-          message = Object.entries(R.head(next)).map(([k, v]) => `${k}:${v}`).join(', ');
+          message = Object.entries(R.head(values)).map(([k, v]) => `${k}:${v}`).join(', ');
         } else {
           // If standard primitive data, just join the values
-          message = next.join(', ');
+          message = values.join(', ');
         }
       }
       return `\`${message}\` in \`${convertedKey}\``;
