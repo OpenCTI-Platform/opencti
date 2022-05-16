@@ -98,7 +98,7 @@ class RiskOverviewComponent extends Component {
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'ID',
+                    'Uniquely identifies this object',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -121,7 +121,7 @@ class RiskOverviewComponent extends Component {
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'Created',
+                    'Indicates the date and time at which the object was originally created.',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -142,7 +142,7 @@ class RiskOverviewComponent extends Component {
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'Modified',
+                    'Indicates the date and time that this particular version of the object was last modified.',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -165,7 +165,7 @@ class RiskOverviewComponent extends Component {
               <div style={{ float: 'left', marginLeft: '5px' }}>
                 <Tooltip
                   title={t(
-                    'Description',
+                    'Identifies a human-readable summary of the identified risk, to include a statement of how the risk impacts the system.',
                   )}
                 >
                   <Information fontSize="inherit" color="disabled" />
@@ -239,7 +239,7 @@ class RiskOverviewComponent extends Component {
                 <div style={{ float: 'left', margin: '11px 0 0 5px' }}>
                   <Tooltip
                     title={t(
-                      'Priority',
+                     "Identifies Assessor's recommended risk priority. Lower numbers are higher priority. One (1) is highest priority.",
                     )}
                   >
                     <Information fontSize="inherit" color="disabled" />
