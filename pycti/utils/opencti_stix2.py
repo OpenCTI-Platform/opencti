@@ -1568,6 +1568,7 @@ class OpenCTIStix2:
             "Vulnerability": self.opencti.vulnerability.read,
             "Incident": self.opencti.incident.read,
             "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
+            "stix-core-relationship": self.opencti.stix_core_relationship.read,
         }
         if StixCyberObservableTypes.has_value(entity_type):
             entity_type = "Stix-Cyber-Observable"
@@ -1654,6 +1655,7 @@ class OpenCTIStix2:
             "Incident": self.opencti.incident.list,
             "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.list,
             "stix-sighting-relationship": self.opencti.stix_sighting_relationship.list,
+            "stix-core-relationship": self.opencti.stix_core_relationship.list,
         }
         do_list = lister.get(
             entity_type, lambda **kwargs: self.unknown_type({"type": entity_type})
