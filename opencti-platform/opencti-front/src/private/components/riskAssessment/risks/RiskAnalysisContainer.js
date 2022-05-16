@@ -123,22 +123,26 @@ class RiskAnalysisContainerComponent extends Component {
             >
               <Grid item={true} xs={6}>
                 <CyioCoreObjectExternalReferences
+                  disableAdd={true}
                   typename={riskCharacterizations.__typename}
                   externalReferences={riskCharacterizations.links}
                   fieldName='links'
                   cyioCoreObjectId={riskCharacterizations.id}
                   refreshQuery={refreshQuery}
+                  removeIcon={true}
                 />
               </Grid>
               <Grid item={true} xs={6}>
                 {/* <StixCoreObjectLatestHistory cyioCoreObjectId={risk.id} /> */}
                 <CyioCoreObjectOrCyioCoreRelationshipNotes
                   typename={riskCharacterizations.__typename}
+                  disableAdd={true}
                   notes={riskCharacterizations.remarks}
                   cyioCoreObjectOrCyioCoreRelationshipId={riskCharacterizations.id}
                   marginTop='0px'
                   fieldName='remarks'
                   refreshQuery={refreshQuery}
+                  removeIcon={true}
                 />
               </Grid>
             </Grid>
