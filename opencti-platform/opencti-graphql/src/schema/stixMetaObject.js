@@ -10,13 +10,6 @@ export const STIX_EMBEDDED_OBJECT = [ENTITY_TYPE_LABEL, ENTITY_TYPE_EXTERNAL_REF
 const STIX_META_OBJECT = [...STIX_EMBEDDED_OBJECT, ENTITY_TYPE_MARKING_DEFINITION];
 schemaTypes.register(ABSTRACT_STIX_META_OBJECT, STIX_META_OBJECT);
 
-export const FIXED_MARKING_DEFINITIONS = {
-  'TLP:WHITE': 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
-  'TLP:GREEN': 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
-  'TLP:AMBER': 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
-  'TLP:RED': 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
-};
-
 export const isStixMetaObject = (type) => R.includes(type, STIX_META_OBJECT) || type === ABSTRACT_STIX_META_OBJECT;
 
 export const stixMetaObjectsAttributes = {

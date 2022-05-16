@@ -16,10 +16,16 @@ import {
   isStixObjectAliased,
 } from './stixDomainObject';
 import * as M from './stixMetaObject';
-import { FIXED_MARKING_DEFINITIONS, isStixMetaObject } from './stixMetaObject';
+import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { isStixCyberObservable, isStixCyberObservableHashedObservable } from './stixCyberObservable';
-import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
+import {
+  BASE_TYPE_RELATION,
+  getStaticIdFromData,
+  OASIS_NAMESPACE,
+  OPENCTI_NAMESPACE,
+  OPENCTI_PLATFORM_UUID
+} from './general';
 import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixMetaRelationship } from './stixMetaRelationship';
@@ -172,7 +178,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INCIDENT]: [{ src: NAME_FIELD }],
     // Stix Meta
-    [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition' }, { src: 'definition_type' }],
+    [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition', dependencies: ['definition_type'] }, { src: 'definition_type' }],
     [M.ENTITY_TYPE_LABEL]: [{ src: 'value' }],
     [M.ENTITY_TYPE_KILL_CHAIN_PHASE]: [{ src: 'phase_name' }, { src: 'kill_chain_name' }],
     [M.ENTITY_TYPE_EXTERNAL_REFERENCE]: [[{ src: 'url' }], [{ src: 'source_name', dependencies: ['external_id'] }, { src: 'external_id' }]],
@@ -180,6 +186,12 @@ const stixEntityContribution = {
   resolvers: {
     name(data) {
       return normalizeName(data);
+    },
+    definition(data) {
+      return data.toUpperCase();
+    },
+    definition_type(data) {
+      return data.toUpperCase();
     },
     published(data) {
       return data instanceof Date ? data.toISOString() : data;
@@ -199,11 +211,18 @@ const resolveContribution = (type) => {
   return isStixCyberObservable(type) ? stixCyberObservableContribution : stixEntityContribution;
 };
 export const idGen = (type, raw, data, namespace) => {
+  // If empty data, generate an error message
   if (R.isEmpty(data)) {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type];
     throw UnsupportedError(`Cant create key for ${type} from empty data`, { data: raw, properties });
   }
+  // In some cases like TLP, standard id are fixed by the community
+  const findStaticId = getStaticIdFromData(data);
+  if (findStaticId) {
+    return findStaticId;
+  }
+  // If everything standard, generate the id from the data
   const dataCanonicalize = jsonCanonicalize(data);
   return uuidv5(dataCanonicalize, namespace);
 };
@@ -351,10 +370,6 @@ const generateStixId = (type, data) => {
 export const generateInternalId = () => uuidv4();
 export const generateWorkId = () => `opencti-work--${generateInternalId()}`;
 export const generateStandardId = (type, data) => {
-  // If forced
-  if (R.values(FIXED_MARKING_DEFINITIONS).includes(data.standard_id)) {
-    return data.standard_id;
-  }
   // Entities
   if (isStixMetaObject(type)) return generateStixId(type, data);
   if (isStixDomainObject(type)) return generateStixId(type, data);
@@ -424,6 +439,9 @@ export const getInputIds = (type, input) => {
   }
   if (isNotEmptyField(input.stix_id)) {
     ids.push(input.stix_id);
+  }
+  if (isNotEmptyField(input.x_opencti_stix_ids)) {
+    ids.push(...input.x_opencti_stix_ids);
   }
   ids.push(...generateAliasesIdsForInstance(input));
   ids.push(...getHashIds(type, input.hashes));

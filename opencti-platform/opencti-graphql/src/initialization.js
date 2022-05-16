@@ -20,8 +20,6 @@ import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError, TYPE_LOCK_ERROR, UnsupportedError } from './config/errors';
 import { BYPASS, BYPASS_REFERENCE, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
 import { smtpIsAlive } from './database/smtp';
-import { generateStandardId } from './schema/identifier';
-import { ENTITY_TYPE_MARKING_DEFINITION, FIXED_MARKING_DEFINITIONS } from './schema/stixMetaObject';
 import { createStatus, createStatusTemplate } from './domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
 
@@ -177,35 +175,27 @@ const alignMigrationLastRun = async () => {
 
 const createMarkingDefinitions = async () => {
   // Create marking defs
-  const WHITE = { definition_type: 'TLP', definition: 'TLP:WHITE' };
   await addMarkingDefinition(SYSTEM_USER, {
-    standard_id: FIXED_MARKING_DEFINITIONS['TLP:WHITE'],
-    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, WHITE),
-    ...WHITE,
+    definition_type: 'TLP',
+    definition: 'TLP:WHITE',
     x_opencti_color: '#ffffff',
     x_opencti_order: 1,
   });
-  const GREEN = { definition_type: 'TLP', definition: 'TLP:GREEN' };
   await addMarkingDefinition(SYSTEM_USER, {
-    standard_id: FIXED_MARKING_DEFINITIONS['TLP:GREEN'],
-    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, GREEN),
-    ...GREEN,
+    definition_type: 'TLP',
+    definition: 'TLP:GREEN',
     x_opencti_color: '#2e7d32',
     x_opencti_order: 2,
   });
-  const AMBER = { definition_type: 'TLP', definition: 'TLP:AMBER' };
   await addMarkingDefinition(SYSTEM_USER, {
-    standard_id: FIXED_MARKING_DEFINITIONS['TLP:AMBER'],
-    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, AMBER),
-    ...AMBER,
+    definition_type: 'TLP',
+    definition: 'TLP:AMBER',
     x_opencti_color: '#d84315',
     x_opencti_order: 3,
   });
-  const RED = { definition_type: 'TLP', definition: 'TLP:RED' };
   await addMarkingDefinition(SYSTEM_USER, {
-    standard_id: FIXED_MARKING_DEFINITIONS['TLP:RED'],
-    stix_id: generateStandardId(ENTITY_TYPE_MARKING_DEFINITION, RED),
-    ...RED,
+    definition_type: 'TLP',
+    definition: 'TLP:RED',
     x_opencti_color: '#c62828',
     x_opencti_order: 4,
   });

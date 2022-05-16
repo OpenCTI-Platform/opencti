@@ -3,7 +3,7 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteElementById, storeLoadById, updateAttribute } from '../database/middleware';
 import { listEntities } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
-import { ENTITY_TYPE_MARKING_DEFINITION, FIXED_MARKING_DEFINITIONS } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { groupAddRelation } from './group';
@@ -19,13 +19,7 @@ export const findAll = (user, args) => {
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
-  let markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
-
-  // Force standard ID
-  if (R.values(FIXED_MARKING_DEFINITIONS).includes(markingDefinition.stix_id)) {
-    markingToCreate = R.assoc('standard_id', markingDefinition.stix_id, markingToCreate);
-  }
-
+  const markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
   const created = await createEntity(user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION);
   const filters = [{ key: 'auto_new_marking', values: [true] }];
   // Bypass current right to read group

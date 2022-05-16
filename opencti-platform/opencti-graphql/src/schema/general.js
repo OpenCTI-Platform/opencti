@@ -8,6 +8,21 @@ export const IDS_STIX = 'x_opencti_stix_ids';
 export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
 
+const MARKING_TLP_WHITE = '613f2e26-407d-48c7-9eca-b8e91df99dc9';
+const MARKING_TLP_GREEN = '34098fce-860f-48ae-8e50-ebd3cc5e41da';
+const MARKING_TLP_AMBER = 'f88d31f6-486f-44da-b317-01333bde0b82';
+const MARKING_TLP_RED = '5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
+const STATIC_STANDARD_IDS = [
+  { id: MARKING_TLP_WHITE, data: { definition_type: 'TLP', definition: 'TLP:WHITE' } },
+  { id: MARKING_TLP_GREEN, data: { definition_type: 'TLP', definition: 'TLP:GREEN' } },
+  { id: MARKING_TLP_AMBER, data: { definition_type: 'TLP', definition: 'TLP:AMBER' } },
+  { id: MARKING_TLP_RED, data: { definition_type: 'TLP', definition: 'TLP:RED' } }
+];
+export const getStaticIdFromData = (data) => {
+  const findStatic = R.find((s) => R.equals(s.data, data), STATIC_STANDARD_IDS);
+  return findStatic?.id;
+};
+
 // Inputs
 export const INPUT_EXTERNAL_REFS = 'externalReferences'; // external_references
 export const INPUT_KILLCHAIN = 'killChainPhases'; // kill_chain_phases
