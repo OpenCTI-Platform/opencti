@@ -71,7 +71,11 @@ class ResponsiblePartiesEntities extends Component {
   }
 
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
+    if (field) {
+      this.setState({ sortBy: field, orderAsc }, () => this.saveView());
+    } else {
+      this.setState({ sortBy: 'label_name', orderAsc }, () => this.saveView());
+    }
   }
 
   handleToggleExports() {
