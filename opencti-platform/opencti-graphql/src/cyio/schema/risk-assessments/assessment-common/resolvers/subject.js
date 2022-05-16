@@ -730,7 +730,29 @@ const subjectResolvers = {
         console.log(`[CYIO] CONSTRAINT-VIOLATION: ${parent.iri} 'subject_ref' violates maxCount constraint; dropping extras`);
       }
       let iri = parent.subject_ref_iri[0];
-      const sparqlQuery = selectObjectByIriQuery(iri, parent.subject_type, selectMap.getNode("subject_ref"));
+      let select = selectMap.getNode("subject_ref");
+      if (select === undefined) {
+        select = ['iri','id','name','object_type'];
+        switch(parent.subject_type) {
+          case 'component':
+            select.push('component_type');
+            select.push('asset_type');
+            break;
+          case 'inventory-item':
+            select.push('asset_type');
+            break;
+          case 'oscal-location':
+            select.push('location_type');
+            break;
+          case 'oscal-party':
+            select.push('party_type');
+            break;
+          case 'oscal-user':
+            select.push('user_type');
+            break;
+        }
+      }
+      const sparqlQuery = selectObjectByIriQuery(iri, parent.subject_type, select);
       let response;
       try {
         response = await dataSources.Stardog.queryById({
