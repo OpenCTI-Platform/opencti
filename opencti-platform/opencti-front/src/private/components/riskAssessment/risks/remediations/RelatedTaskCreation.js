@@ -156,15 +156,16 @@ export const RelatedTaskCreationAddReferenceMutation = graphql`
 
 const RelatedTaskValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  // external_id: Yup.string(),
-  // url: Yup.string().url(t('The value must be an URL')),
   task_type: Yup.string().required(t('This field is required')),
   description: Yup.string().required(t('This field is required')),
-  start_date: Yup.date().required(t('This field is required')),
-  end_date: Yup.date().min(
-    Yup.ref('start_date'),
-    "End date can't be before start date"
-  )
+  start_date: Yup.date().required('This field is required'),
+  end_date: Yup.date()
+  .when("start_date", {
+    is: Yup.date,
+    then: Yup.date().nullable().min(
+      Yup.ref('start_date'),
+      "End date can't be before start date")
+  })
 });
 
 class RelatedTaskCreation extends Component {
@@ -177,8 +178,8 @@ class RelatedTaskCreation extends Component {
       responsible_roles: [],
       associated_activities: [],
       timing: {},
-      startDate: null,
-      endDate: null,
+      start_date: '',
+      end_date: null,
     };
   }
 
@@ -209,11 +210,12 @@ class RelatedTaskCreation extends Component {
         )),
       });
     }
-    if (values.start_date && values.end_date) {
+    if (values.start_date) {
+      console.log("Valuesxx", values)
       this.setState({
         timing: {
           within_date_range: {
-            start_date: values.start_date === null ? null : parse(values.start_date),
+            start_date: values.start_date === null ? '' : parse(values.start_date),
             end_date: values.end_date === null ? null : parse(values.end_date),
           }
         },
@@ -435,7 +437,7 @@ class RelatedTaskCreation extends Component {
               name: '',
               description: '',
               task_type: '',
-              start_date: null,
+              start_date: '',
               end_date: null,
               task_dependencies: [],
               related_tasks: [],
