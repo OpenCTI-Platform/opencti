@@ -8,6 +8,9 @@ import {
   stixCyberObservableRelationshipDelete,
   stixCyberObservableRelationshipEditContext,
   stixCyberObservableRelationshipEditField,
+  batchNotes,
+  batchOpinions,
+  batchReports
 } from '../domain/stixCyberObservableRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -16,6 +19,9 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 import { elBatchIds } from '../database/engine';
 
 const loadByIdLoader = batchLoader(elBatchIds);
+const notesLoader = batchLoader(batchNotes);
+const opinionsLoader = batchLoader(batchOpinions);
+const reportsLoader = batchLoader(batchReports);
 
 const stixCyberObservableRelationshipResolvers = {
   Query: {
@@ -25,6 +31,9 @@ const stixCyberObservableRelationshipResolvers = {
   StixCyberObservableRelationship: {
     from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
     to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
+    reports: (rel, _, { user }) => reportsLoader.load(rel.id, user),
+    notes: (rel, _, { user }) => notesLoader.load(rel.id, user),
+    opinions: (rel, _, { user }) => opinionsLoader.load(rel.id, user),
     editContext: (rel) => fetchEditContext(rel.id),
   },
   Mutation: {

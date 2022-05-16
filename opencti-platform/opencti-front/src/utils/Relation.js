@@ -239,6 +239,9 @@ const relationsTypesMapping = {
   StixFile_Vulnerability: ['targets'],
   'StixFile_Attack-Pattern': ['uses'],
   Software_Vulnerability: ['has'],
+  'Artifact_IPv4-Addr': ['communicates-with'],
+  'Artifact_IPv6-Addr': ['communicates-with'],
+  'Artifact_Domain-Name': ['communicates-with'],
   // CUSTOM OPENCTI SRO RELATIONSHIPS
   // DISCUSS IMPLEMENTATION!!
   Indicator_uses: ['indicates'],

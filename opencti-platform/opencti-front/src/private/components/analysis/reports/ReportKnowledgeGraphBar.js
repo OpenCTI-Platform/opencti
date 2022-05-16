@@ -17,6 +17,7 @@ import {
   ScatterPlotOutlined,
   DateRangeOutlined,
   VisibilityOutlined,
+  ReadMoreOutlined,
 } from '@mui/icons-material';
 import {
   Video3d,
@@ -60,6 +61,8 @@ import { parseDomain } from '../../../../utils/Graph';
 import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
+import StixCyberObservableRelationshipCreation from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
+import StixCyberObservableRelationshipEdition from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
 
 const styles = () => ({
   bottomNav: {
@@ -94,10 +97,13 @@ class ReportKnowledgeGraphBar extends Component {
       anchorElSelectByType: null,
       openCreatedRelation: false,
       openCreatedSighting: false,
+      openCreatedNested: false,
       relationReversed: false,
       sightingReversed: false,
+      nestedReversed: false,
       openEditRelation: false,
       openEditSighting: false,
+      openEditNested: false,
       openEditEntity: false,
       displayRemove: false,
     };
@@ -185,6 +191,18 @@ class ReportKnowledgeGraphBar extends Component {
     this.setState({ sightingReversed: !this.state.sightingReversed });
   }
 
+  handleOpenCreateNested() {
+    this.setState({ openCreatedNested: true });
+  }
+
+  handleCloseCreateNested() {
+    this.setState({ openCreatedNested: false });
+  }
+
+  handleReverseNested() {
+    this.setState({ nestedReversed: !this.state.nestedReversed });
+  }
+
   handleOpenEditItem() {
     if (
       this.props.numberOfSelectedNodes === 1
@@ -211,6 +229,17 @@ class ReportKnowledgeGraphBar extends Component {
           === 'stix-sighting-relationship')
     ) {
       this.setState({ openEditSighting: true });
+    } else if (
+      (this.props.numberOfSelectedLinks === 1
+        && this.props.selectedLinks[0].parent_types.includes(
+          'stix-cyber-observable-relationship',
+        ))
+      || (this.props.numberOfSelectedNodes === 1
+        && this.props.selectedNodes[0].parent_types.includes(
+          'stix-cyber-observable-relationship',
+        ))
+    ) {
+      this.setState({ openEditNested: true });
     }
   }
 
@@ -230,6 +259,13 @@ class ReportKnowledgeGraphBar extends Component {
 
   handleCloseSightingEdition() {
     this.setState({ openEditSighting: false });
+    this.props.handleCloseRelationEdition(
+      R.propOr(null, 'id', this.props.selectedLinks[0]),
+    );
+  }
+
+  handleCloseNestedEdition() {
+    this.setState({ openEditNested: false });
     this.props.handleCloseRelationEdition(
       R.propOr(null, 'id', this.props.selectedLinks[0]),
     );
@@ -292,11 +328,14 @@ class ReportKnowledgeGraphBar extends Component {
       anchorElSelectByType,
       openCreatedRelation,
       openCreatedSighting,
+      openCreatedNested,
       relationReversed,
       sightingReversed,
+      nestedReversed,
       openEditRelation,
       openEditSighting,
       openEditEntity,
+      openEditNested,
     } = this.state;
     const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
@@ -305,7 +344,12 @@ class ReportKnowledgeGraphBar extends Component {
       || R.filter((n) => n.inferred, selectedLinks).length > 0;
     if (viewEnabled) {
       if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
-        if (selectedNodes[0].relationship_type) {
+        if (
+          !selectedNodes[0].parent_types.includes(
+            'stix-cyber-observable-relationship',
+          )
+          && selectedNodes[0].relationship_type
+        ) {
           viewLink = `${resolveLink(selectedNodes[0].fromType)}/${
             selectedNodes[0].fromId
           }/knowledge/relations/${selectedNodes[0].id}`;
@@ -353,27 +397,30 @@ class ReportKnowledgeGraphBar extends Component {
     const sightingEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
+    const nestedEnabled = (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0)
+      || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
     let relationFromObjects = null;
     let relationToObjects = null;
     if (fromSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
-      relationFromObjects = relationReversed || sightingReversed
+      relationFromObjects = relationReversed || sightingReversed || nestedReversed
         ? [R.last(selectedNodes)]
         : R.init(selectedNodes);
-      relationToObjects = relationReversed || sightingReversed
+      relationToObjects = relationReversed || sightingReversed || nestedReversed
         ? R.init(selectedNodes)
         : [R.last(selectedNodes)];
     } else if (toSelectedTypes.length === 1 && numberOfSelectedLinks === 0) {
-      relationFromObjects = relationReversed || sightingReversed
+      relationFromObjects = relationReversed || sightingReversed || nestedReversed
         ? R.tail(selectedNodes)
         : [R.head(selectedNodes)];
-      relationToObjects = relationReversed || sightingReversed
+      relationToObjects = relationReversed || sightingReversed || nestedReversed
         ? [R.head(selectedNodes)]
         : R.tail(selectedNodes);
     } else if (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1) {
-      relationFromObjects = relationReversed || sightingReversed
+      relationFromObjects = relationReversed || sightingReversed || nestedReversed
         ? [selectedNodes[0]]
         : [selectedLinks[0]];
-      relationToObjects = relationReversed || sightingReversed
+      relationToObjects = relationReversed || sightingReversed || nestedReversed
         ? [selectedLinks[0]]
         : [selectedNodes[0]];
     }
@@ -808,6 +855,15 @@ class ReportKnowledgeGraphBar extends Component {
                   handleClose={this.handleCloseSightingEdition.bind(this)}
                   noStoreUpdate={true}
                 />
+                <StixCyberObservableRelationshipEdition
+                  open={openEditNested}
+                  stixCyberObservableRelationshipId={
+                    R.propOr(null, 'id', selectedNodes[0])
+                    || R.propOr(null, 'id', selectedLinks[0])
+                  }
+                  handleClose={this.handleCloseNestedEdition.bind(this)}
+                  noStoreUpdate={true}
+                />
                 {onAddRelation && (
                   <Tooltip title={t('Create a relationship')}>
                     <span>
@@ -838,6 +894,39 @@ class ReportKnowledgeGraphBar extends Component {
                       this,
                     )}
                     defaultCreatedBy={R.propOr(null, 'createdBy', report)}
+                    defaultMarkingDefinitions={R.map(
+                      (n) => n.node,
+                      R.pathOr([], ['objectMarking', 'edges'], report),
+                    )}
+                  />
+                )}
+                {onAddRelation && (
+                  <Tooltip title={t('Create a nested relationship')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleOpenCreateNested.bind(this)}
+                        disabled={!nestedEnabled}
+                        size="large"
+                      >
+                        <ReadMoreOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {onAddRelation && (
+                  <StixCyberObservableRelationshipCreation
+                    open={openCreatedNested}
+                    fromObjects={relationFromObjects}
+                    toObjects={relationToObjects}
+                    startTime={
+                      lastLinkFirstSeen || dateFormat(report.published)
+                    }
+                    stopTime={lastLinkLastSeen || dateFormat(report.published)}
+                    confidence={report.confidence}
+                    handleClose={this.handleCloseCreateNested.bind(this)}
+                    handleResult={onAddRelation}
+                    handleReverseRelation={this.handleReverseNested.bind(this)}
                     defaultMarkingDefinitions={R.map(
                       (n) => n.node,
                       R.pathOr([], ['objectMarking', 'edges'], report),

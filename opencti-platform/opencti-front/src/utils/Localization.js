@@ -379,6 +379,7 @@ const i18n = {
       'Create an indicator from this observable':
         'Créer un indicateur à partir de cet observable',
       'Create a relationship': 'Créer une relation',
+      'Create a nested relationship': 'Créer une relation imbriquée',
       'Update a relationship': 'Modifier une relation',
       'Select a relationship': 'Sélectionner une relation',
       'Create a sighting': 'Créer une détection',
@@ -1727,6 +1728,7 @@ const i18n = {
       'Update an indicator': '更新攻击指标',
       'Create an indicator from this observable': '从该可观测数据创建攻击指标',
       'Create a relationship': '创建关系',
+      'Create a nested relationship': '创建嵌套关系',
       'Update a relationship': '更新关系',
       'Select a relationship': '更新关系',
       'Create a sighting': '创建目击',

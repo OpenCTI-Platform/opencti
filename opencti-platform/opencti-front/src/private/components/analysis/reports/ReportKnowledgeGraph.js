@@ -64,6 +64,15 @@ const reportKnowledgeGraphCheckRelationQuery = graphql`
           }
         }
       }
+      ... on StixCyberObservableRelationship {
+        reports {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
       ... on StixSightingRelationship {
         reports {
           edges {
@@ -229,6 +238,52 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
             entity_type
           }
         }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+            }
+          }
+        }
+      }
+      ... on StixCyberObservableRelationship {
+        relationship_type
+        start_time
+        stop_time
+        confidence
+        is_inferred
+        from {
+          ... on BasicObject {
+            id
+            entity_type
+            parent_types
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixCoreRelationship {
+            relationship_type
+          }
+        }
+        to {
+          ... on BasicObject {
+            id
+            entity_type
+            parent_types
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixCoreRelationship {
+            relationship_type
+          }
+        }
+        created_at
         objectMarking {
           edges {
             node {
@@ -1499,6 +1554,52 @@ const ReportKnowledgeGraph = createFragmentContainer(
                     entity_type
                   }
                 }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                    }
+                  }
+                }
+              }
+              ... on StixCyberObservableRelationship {
+                relationship_type
+                start_time
+                stop_time
+                confidence
+                is_inferred
+                from {
+                  ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on StixCoreRelationship {
+                    relationship_type
+                  }
+                }
+                to {
+                  ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on StixCoreRelationship {
+                    relationship_type
+                  }
+                }
+                created_at
                 objectMarking {
                   edges {
                     node {

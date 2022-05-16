@@ -8494,10 +8494,15 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   # StixCyberObservableRelationship
   relationship_type: String!
   start_time: DateTime
   stop_time: DateTime
+  confidence: Int
+  objectMarking: MarkingDefinitionConnection
   # Technical
   editContext: [EditUserContext]
 }
