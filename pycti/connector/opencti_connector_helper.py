@@ -333,7 +333,7 @@ class ListenStream(threading.Thread):
                         current_state["connectorLastEventId"]
                         if "connectorLastEventId" in current_state
                         and current_state["connectorLastEventId"] != "-"
-                        else "?from=0-0"
+                        else "0-0"
                     )
                 live_stream_url = (
                     f"{self.url}/stream{live_stream_uri}{live_stream_from}"
@@ -385,7 +385,7 @@ class ListenStream(threading.Thread):
                         current_state["connectorLastEventId"]
                         if "connectorLastEventId" in current_state
                         and current_state["connectorLastEventId"] != "-"
-                        else "?from=0-0"
+                        else "0-0"
                     )
                 live_stream_url = f"{self.helper.opencti_url}/stream{live_stream_uri}{live_stream_from}"
                 logging.info(
