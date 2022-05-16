@@ -123,6 +123,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
       disableAdd,
       typename,
       refreshQuery,
+      removeIcon,
     } = this.props;
     // const notes = R.pathOr([], ['cyioNotes', 'edges'], data);
     // const paginationOptions = {
@@ -143,6 +144,7 @@ class CyioCoreObjectNotesCardsContainer extends Component {
           cyioCoreObjectOrStixCoreRelationshipNotes={
             data
           }
+          removeIcon={removeIcon}
         />
         {/* </Security> */}
         <div className="clearfix" />
@@ -182,6 +184,7 @@ CyioCoreObjectNotesCardsContainer.propTypes = {
   data: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  removeIcon: PropTypes.bool,
 };
 
 export default R.compose(
