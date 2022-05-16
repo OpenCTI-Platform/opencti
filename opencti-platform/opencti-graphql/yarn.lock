@@ -64,15 +64,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ardatan/aggregate-error@npm:0.0.6":
-  version: 0.0.6
-  resolution: "@ardatan/aggregate-error@npm:0.0.6"
-  dependencies:
-    tslib: ~2.0.1
-  checksum: 72334225df487342ca1d9c9dc6b6b7080e9ccba6e85ffbfd04839997067c709c4b058f747ee20bcac0477db6f12c9b098fd030bd7559dbc552a283df87ef4478
-  languageName: node
-  linkType: hard
-
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.16.7, @babel/code-frame@npm:^7.8.3":
   version: 7.16.7
   resolution: "@babel/code-frame@npm:7.16.7"
@@ -1597,7 +1588,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/schema@npm:8.3.11, @graphql-tools/schema@npm:^8.0.0, @graphql-tools/schema@npm:^8.1.2":
+"@graphql-tools/schema@npm:8.3.11, @graphql-tools/schema@npm:^8.0.0, @graphql-tools/schema@npm:^8.1.2, @graphql-tools/schema@npm:^8.3.2":
   version: 8.3.11
   resolution: "@graphql-tools/schema@npm:8.3.11"
   dependencies:
@@ -1608,18 +1599,6 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
   checksum: b57e673bacdc25d93bae2bc4378709daeeae9738f51d96194ebe88eabb993dd1c14d85ca3828fcddf8a3937fdddfdcb8f41ff6eced504ebb306350aba2668bed
-  languageName: node
-  linkType: hard
-
-"@graphql-tools/schema@npm:^6.0.9":
-  version: 6.2.4
-  resolution: "@graphql-tools/schema@npm:6.2.4"
-  dependencies:
-    "@graphql-tools/utils": ^6.2.4
-    tslib: ~2.0.1
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0
-  checksum: ccedfaf21a07dd8649334808fdbd053f8476624d2886acaed6ac2574426792a2ea5c4a62290bf48f0f11e60f3aada36c7b56fb4fe65665d3fcc474ba552c8923
   languageName: node
   linkType: hard
 
@@ -1648,7 +1627,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:8.6.10, @graphql-tools/utils@npm:^8.1.1, @graphql-tools/utils@npm:^8.3.0, @graphql-tools/utils@npm:^8.5.2, @graphql-tools/utils@npm:^8.6.5":
+"@graphql-tools/utils@npm:8.6.10, @graphql-tools/utils@npm:^8.1.1, @graphql-tools/utils@npm:^8.3.0, @graphql-tools/utils@npm:^8.5.2, @graphql-tools/utils@npm:^8.6.2, @graphql-tools/utils@npm:^8.6.5":
   version: 8.6.10
   resolution: "@graphql-tools/utils@npm:8.6.10"
   dependencies:
@@ -1667,19 +1646,6 @@ __metadata:
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0
   checksum: 73b9569a9c2409f86a6a9005f19026cfab6d136bf884dfbff436996a47fb0561ae24d3f6bb2abcfd600197aab85d6dfc177b9a0cbaba23905ba0c7591ef12110
-  languageName: node
-  linkType: hard
-
-"@graphql-tools/utils@npm:^6.0.9, @graphql-tools/utils@npm:^6.2.4":
-  version: 6.2.4
-  resolution: "@graphql-tools/utils@npm:6.2.4"
-  dependencies:
-    "@ardatan/aggregate-error": 0.0.6
-    camel-case: 4.1.1
-    tslib: ~2.0.1
-  peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0
-  checksum: 20f50cee3ffe9b4e8e201d47a6072e4be380391a3f6d04af6636966bf9d6c462edda1b4f76336fac585ebbe4d946cf66c181b97c3705aa154e1c98679c320c42
   languageName: node
   linkType: hard
 
@@ -3432,14 +3398,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async@npm:^1.4.0":
-  version: 1.5.2
-  resolution: "async@npm:1.5.2"
-  checksum: fe5d6214d8f15bd51eee5ae8ec5079b228b86d2d595f47b16369dec2e11b3ff75a567bb5f70d12d79006665fbbb7ee0a7ec0e388524eefd454ecbe651c124ebd
-  languageName: node
-  linkType: hard
-
-"async@npm:^3.1.0, async@npm:^3.2.3":
+"async@npm:^3.0.0, async@npm:^3.1.0, async@npm:^3.2.3":
   version: 3.2.3
   resolution: "async@npm:3.2.3"
   checksum: c4bee57ab2249af3dc83ca3ef9acfa8e822c0d5e5aa41bae3eaf7f673648343cd64ecd7d26091ffd357f3f044428b17b5f00098494b6cf8b6b3e9681f0636ca1
@@ -7118,29 +7077,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-constraint-directive@npm:2.3.0":
-  version: 2.3.0
-  resolution: "graphql-constraint-directive@npm:2.3.0"
+"graphql-constraint-directive@npm:3.1.0":
+  version: 3.1.0
+  resolution: "graphql-constraint-directive@npm:3.1.0"
   dependencies:
-    "@graphql-tools/schema": ^6.0.9
-    "@graphql-tools/utils": ^6.0.9
+    "@graphql-tools/schema": ^8.3.2
+    "@graphql-tools/utils": ^8.6.2
     validator: ^13.6.0
   peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0
-  checksum: baae2ed8d49e794bd27f0dd73448202bed225bb36befb4dcb0c642d107a69a1b21596d2339f9f8e5145a6e53f554ef296fe19a7a9e53123b752b1a89e7e15cd8
+    graphql: ">=14.0.0"
+  checksum: e0a196b36046626dcf2c7630f9a6696ce428ae0de266f8da7df5e932b5fccbeb3cf3798becb320548b6713df9f923cb1fe5c45bdd916cc8af425291caadf1022
   languageName: node
   linkType: hard
 
-"graphql-constraint-directive@patch:graphql-constraint-directive@2.3.0#./patch/graphql-constraint-directive-2.3.0.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 2.3.0
-  resolution: "graphql-constraint-directive@patch:graphql-constraint-directive@npm%3A2.3.0#./patch/graphql-constraint-directive-2.3.0.patch::version=2.3.0&hash=ec11d6&locator=opencti-graphql%40workspace%3A."
+"graphql-constraint-directive@patch:graphql-constraint-directive@3.1.0#./patch/graphql-constraint-directive-3.1.0.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 3.1.0
+  resolution: "graphql-constraint-directive@patch:graphql-constraint-directive@npm%3A3.1.0#./patch/graphql-constraint-directive-3.1.0.patch::version=3.1.0&hash=ec11d6&locator=opencti-graphql%40workspace%3A."
   dependencies:
-    "@graphql-tools/schema": ^6.0.9
-    "@graphql-tools/utils": ^6.0.9
+    "@graphql-tools/schema": ^8.3.2
+    "@graphql-tools/utils": ^8.6.2
     validator: ^13.6.0
   peerDependencies:
-    graphql: ^14.0.0 || ^15.0.0
-  checksum: a6495d8d6464cf18f3a58849801bb0bcd0a9fc94aa5e0708c51abe1f9ed85145e4dc14e06932932c92c76674a949bb497e10c66b43ac75f8f6fc0dd7e5b02fcd
+    graphql: ">=14.0.0"
+  checksum: 110a86167e247cab31f0f7dbea159272de0d7fb9f7c4e492e479aac83659eaec91dcbd9f66315e3691c840713cff7122545934ebc450bcdf689a6cfe19700c2d
   languageName: node
   linkType: hard
 
@@ -10203,27 +10162,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nconf@npm:0.11.3":
-  version: 0.11.3
-  resolution: "nconf@npm:0.11.3"
+"nconf@npm:0.12.0":
+  version: 0.12.0
+  resolution: "nconf@npm:0.12.0"
   dependencies:
-    async: ^1.4.0
+    async: ^3.0.0
     ini: ^2.0.0
     secure-keys: ^1.0.0
     yargs: ^16.1.1
-  checksum: 708369c9526618936872fc7db4d257dda59cb55fb9e07949afcfac7cf60cdc840027a6bdf5bf3c5703129bea23090de1aa6f6f41aec004086963706c04bf81f5
+  checksum: 70c1ce82d91149940dbe57555372c99282a9625a961915b302093b34e04ab308d978d1885224b9738a0873c064a0aa48914a7260e67ba312441fc4917221dbd8
   languageName: node
   linkType: hard
 
-"nconf@patch:nconf@0.11.3#./patch/nconf-0.11.3.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 0.11.3
-  resolution: "nconf@patch:nconf@npm%3A0.11.3#./patch/nconf-0.11.3.patch::version=0.11.3&hash=f3135d&locator=opencti-graphql%40workspace%3A."
+"nconf@patch:nconf@0.12.0#./patch/nconf-0.12.0.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 0.12.0
+  resolution: "nconf@patch:nconf@npm%3A0.12.0#./patch/nconf-0.12.0.patch::version=0.12.0&hash=f3135d&locator=opencti-graphql%40workspace%3A."
   dependencies:
-    async: ^1.4.0
+    async: ^3.0.0
     ini: ^2.0.0
     secure-keys: ^1.0.0
     yargs: ^16.1.1
-  checksum: daf0a1b1b889e92fcb63fa349dd4b8a9f2c5f2fb52202ad40f6cca96f648bc6df7da1bf905971561e2aba86c8c7dab7ed854fd5c0c33c5d457b8c08741411a5b
+  checksum: cfce943c728358ab81f8419445f54efa8bee4d190f5be17ec2668732b6b9a860f540872bcaaf3a5fc939ef79a6deab3252e1491f3c175badbc8d91f44221c423
   languageName: node
   linkType: hard
 
@@ -13289,13 +13248,6 @@ __metadata:
   version: 2.4.0
   resolution: "tslib@npm:2.4.0"
   checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
-  languageName: node
-  linkType: hard
-
-"tslib@npm:~2.0.1":
-  version: 2.0.3
-  resolution: "tslib@npm:2.0.3"
-  checksum: 00fcdd1f9995c9f8eb6a4a1ad03f55bc95946321b7f55434182dddac259d4e095fedf78a84f73b6e32dd3f881d9281f09cb583123d3159ed4bdac9ad7393ef8b
   languageName: node
   linkType: hard
 
