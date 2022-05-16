@@ -69,6 +69,7 @@ class CyioCoreObjectExternalReferences extends Component {
       refreshQuery,
       typename,
       externalReferences,
+      removeIcon,
     } = this.props;
     // const { expanded } = this.state;
     // const expandable = externalReferences.length > 7;
@@ -87,6 +88,7 @@ class CyioCoreObjectExternalReferences extends Component {
           fieldName={fieldName}
           refreshQuery={refreshQuery}
           typename={typename}
+          removeIcon={removeIcon}
         />
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -145,6 +147,7 @@ CyioCoreObjectExternalReferences.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  removeIcon: PropTypes.bool,
 };
 
 export default compose(

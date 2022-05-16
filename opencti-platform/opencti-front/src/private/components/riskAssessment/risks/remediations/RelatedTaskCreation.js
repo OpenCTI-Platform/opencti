@@ -180,6 +180,7 @@ class RelatedTaskCreation extends Component {
       timing: {},
       start_date: '',
       end_date: null,
+
     };
   }
 
@@ -597,12 +598,8 @@ class RelatedTaskCreation extends Component {
                             'The value must be a date (YYYY-MM-DD)',
                           )}
                           style={{ height: '38.09px' }}
-                          // onChange={(_, date) => {
-                          //   return this.setState({ startDate: date._d })
-                          //   }
-                          // }
-                          // value={this.state.startDate}
-                          // minDate={this.state.startDate}
+                          onChange={(_, date) => this.setState({ startDate: date })}
+                          value={this.state.startDate}
                         />
                       </div>
                     </Grid>
@@ -633,8 +630,9 @@ class RelatedTaskCreation extends Component {
                           )}
                           style={{ height: '38.09px' }}
                           containerstyle={{ width: '100%' }}
-                          // onChange={(_, date) => this.setState({ endDate: date })}
-                          // value={this.state.endDate}
+                          minDate={this.state.startDate}
+                          value={this.state.endDate}
+                          onChange={(_, date) => this.setState({ endDate: date })}
                         />
                       </div>
                     </Grid>
