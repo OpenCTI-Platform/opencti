@@ -4798,17 +4798,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-fetch@npm:3.0.4":
-  version: 3.0.4
-  resolution: "cross-fetch@npm:3.0.4"
-  dependencies:
-    node-fetch: 2.6.0
-    whatwg-fetch: 3.0.0
-  checksum: beea2f418be32544f8e7acd66ecea67f1d88efd0188a26bccfe0d2fe3b5a9d044aa329c23eadea5f1e25c15d56b7a956c3edc5ec1c2bfa5cb293e01932e9b2c0
-  languageName: node
-  linkType: hard
-
-"cross-fetch@npm:^3.1.5":
+"cross-fetch@npm:3.1.5":
   version: 3.1.5
   resolution: "cross-fetch@npm:3.1.5"
   dependencies:
@@ -6728,7 +6718,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-capacitor@npm:6.2.0":
+"fs-capacitor@npm:^6.2.0":
   version: 6.2.0
   resolution: "fs-capacitor@npm:6.2.0"
   checksum: acdbeb92eedb1d7094f623e7be518c4d73075cb45ea97cc80ae23fc31adb066853723be824caf3e3c8f40944548c8cdc9bf0f0735eabb9413e734fe045b303b1
@@ -13793,13 +13783,6 @@ __metadata:
   dependencies:
     iconv-lite: 0.4.24
   checksum: 5be4efe111dce29ddee3448d3915477fcc3b28f991d9cf1300b4e50d6d189010d47bca2f51140a844cf9b726e8f066f4aee72a04d687bfe4f2ee2767b2f5b1e6
-  languageName: node
-  linkType: hard
-
-"whatwg-fetch@npm:3.0.0":
-  version: 3.0.0
-  resolution: "whatwg-fetch@npm:3.0.0"
-  checksum: dcb90ab919e742d275c32d397d7480f6981da4c1b49961f0d0a2fa6825325b553fee2d793bc38ed85b9bcc8c50de39802440e2480fe40243067b3dab228c52c3
   languageName: node
   linkType: hard
 
