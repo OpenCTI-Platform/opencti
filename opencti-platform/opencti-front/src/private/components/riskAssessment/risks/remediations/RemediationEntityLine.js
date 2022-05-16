@@ -137,7 +137,7 @@ class RemediationEntityLineComponent extends Component {
                     && <LayersIcon className={classes.avatarIcon} />}
                   {SourceOfDetection.actor_type === 'tool'
                     && <BuildIcon className={classes.avatarIcon} />}
-                  {SourceOfDetection.actor_type === 'person'
+                  {SourceOfDetection.actor_type === 'party'
                     && <PersonIcon className={classes.avatarIcon} />}
                   <div style={{ marginLeft: '10px' }}>
                     <Typography variant="subtitle1">

@@ -146,7 +146,7 @@ class RemediationGeneralOverviewComponent extends Component {
                     && <LayersIcon className={classes.avatarIcon} />}
                   {remediationOriginData.actor_type === 'tool'
                     && <BuildIcon className={classes.avatarIcon} />}
-                  {remediationOriginData.actor_type === 'person'
+                  {remediationOriginData.actor_type === 'party'
                     && <PersonIcon className={classes.avatarIcon} />}
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
