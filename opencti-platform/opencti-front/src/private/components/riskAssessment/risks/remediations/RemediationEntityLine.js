@@ -24,6 +24,7 @@ import { resolveLink } from '../../../../../utils/Entity';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { defaultValue } from '../../../../../utils/Graph';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
+import { truncate } from '../../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -138,7 +139,8 @@ class RemediationEntityLineComponent extends Component {
                   </Badge>
                   <div style={{ marginLeft: '20px' }}>
                     <Typography variant="subtitle1">
-                      {SourceOfDetection.actor_ref?.name && t(SourceOfDetection.actor_ref?.name)}
+                      {SourceOfDetection.actor_ref?.name
+                        && truncate(t(SourceOfDetection.actor_ref?.name), 25)}
                     </Typography>
                   </div>
                 </div>
