@@ -430,6 +430,7 @@ input FeedAttributeMappingInput {
 
 input FeedAddInput {
   name: String!
+  separator: String!
   rolling_time: Int!
   include_header: Boolean!
   feed_types: [String!]!

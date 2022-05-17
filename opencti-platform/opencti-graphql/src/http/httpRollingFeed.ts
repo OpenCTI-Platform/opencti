@@ -59,7 +59,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
             dataElements.push(isEmptyField(data) ? '' : data);
           }
         }
-        res.write(dataElements.join(','));
+        res.write(dataElements.join(feed.separator ?? ','));
         res.write('\r\n');
       }
       res.send();

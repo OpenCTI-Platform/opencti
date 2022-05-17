@@ -3002,6 +3002,7 @@ export type FeedAddInput = {
   include_header: Scalars['Boolean'];
   name: Scalars['String'];
   rolling_time: Scalars['Int'];
+  separator: Scalars['String'];
 };
 
 export type FeedAttribute = {
