@@ -30,7 +30,7 @@ import {
 } from '../../../common/stix_domain_objects/StixDomainObjectBookmark';
 import { truncate } from '../../../../../utils/String';
 import CyioCoreObjectLabels from '../../../common/stix_core_objects/CyioCoreObjectLabels';
-import EntitiesPartiesPopover from './EntitiesPartiesPopover';
+import EntitiesLocationsPopover from './EntitiesLocationsPopover';
 
 const styles = (theme) => ({
   card: {
@@ -107,7 +107,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityPartyCardComponent extends Component {
+class EntityLocationCardComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -132,7 +132,6 @@ class EntityPartyCardComponent extends Component {
       onLabelClick,
       selectedElements,
     } = this.props;
-
     return (
       <Card classes={{ root: classes.card }} raised={true} elevation={3}>
         <CardActionArea
@@ -140,7 +139,7 @@ class EntityPartyCardComponent extends Component {
           component={Link}
           style={{ background: (selectAll || node.id in (selectedElements || {})) && '#075AD3' }}
           TouchRippleProps={this.state.openMenu && { classes: { root: classes.buttonRipple } }}
-          to={`/data/entities/parties/${node?.id}`}
+          to={`/data/entities/locations/${node?.id}`}
         >
           <CardContent className={classes.content}>
             <Grid
@@ -155,14 +154,14 @@ class EntityPartyCardComponent extends Component {
                 >
                   {t('Type')}
                 </Typography>
-                {node.party_type && t(node.party_type)}
+                {node.entity_type && t(node.entity_type)}
               </div>
               <Grid
                 item={true}
                 onClick={(event) => event.preventDefault()}
                 style={{ display: 'flex' }}
               >
-                <EntitiesPartiesPopover
+                <EntitiesLocationsPopover
                   handleOpenMenu={this.handleOpenMenu.bind(this)}
                   history={history}
                   node={node}
@@ -184,7 +183,7 @@ class EntityPartyCardComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <Typography>
-                  {node?.name && node?.name}
+                  {node?.name && t(node?.name)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -212,8 +211,8 @@ class EntityPartyCardComponent extends Component {
                   {t('Marking')}
                 </Typography>
                 <Typography>
-                  {/* {node?.parent_types
-                    && (node?.parent_types)} */}
+                  {node?.parent_types
+                    && (node?.parent_types)}
                 </Typography>
               </Grid>
               <Grid item={true} xs={6} className={classes.body}>
@@ -225,9 +224,9 @@ class EntityPartyCardComponent extends Component {
                 >
                   {t('Author')}
                 </Typography>
-                <Typography>
-                  {t(node?.name)}
-                </Typography>
+                {/* <Typography>
+                  {t('')}
+                </Typography> */}
               </Grid>
             </Grid>
             <Grid container={true} >
@@ -253,7 +252,7 @@ class EntityPartyCardComponent extends Component {
   }
 }
 
-EntityPartyCardComponent.propTypes = {
+EntityLocationCardComponent.propTypes = {
   node: PropTypes.object,
   bookmarksIds: PropTypes.array,
   classes: PropTypes.object,
@@ -263,16 +262,18 @@ EntityPartyCardComponent.propTypes = {
   onBookmarkClick: PropTypes.func,
 };
 
-const EntityPartyCardFragment = createFragmentContainer(
-  EntityPartyCardComponent,
+const EntityLocationCardFragment = createFragmentContainer(
+  EntityLocationCardComponent,
   {
     node: graphql`
-      fragment EntityPartyCard_node on OscalParty {
+      fragment EntityLocationCard_node on OscalLocation {
         __typename
         id
+        entity_type
+        description
         name
-        party_type
         created
+        modified
         labels {
           __typename
           id
@@ -306,12 +307,12 @@ const EntityPartyCardFragment = createFragmentContainer(
   },
 );
 
-export const EntityPartyCard = compose(
+export const EntityLocationCard = compose(
   inject18n,
   withStyles(styles),
-)(EntityPartyCardFragment);
+)(EntityLocationCardFragment);
 
-class EntityPartyCardDummyComponent extends Component {
+class EntityLocationCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
@@ -376,11 +377,11 @@ class EntityPartyCardDummyComponent extends Component {
   }
 }
 
-EntityPartyCardDummyComponent.propTypes = {
+EntityLocationCardDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const EntityPartyCardDummy = compose(
+export const EntityLocationCardDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityPartyCardDummyComponent);
+)(EntityLocationCardDummyComponent);

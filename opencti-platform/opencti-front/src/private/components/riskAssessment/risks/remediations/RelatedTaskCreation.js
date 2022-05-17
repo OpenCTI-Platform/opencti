@@ -266,8 +266,8 @@ class RelatedTaskCreation extends Component {
         toId: taskResponse.id,
         fromId: this.props.remediationId,
         fieldName: 'tasks',
-        to_type: 'OscalTask',
-        from_type: 'RiskResponse',
+        to_type: this.props.toType,
+        from_type: this.props.fromType,
       },
       onCompleted: () => {
         this.props.refreshQuery();
@@ -411,6 +411,7 @@ class RelatedTaskCreation extends Component {
           color="inherit"
           aria-label="Add"
           edge="end"
+          style={{ marginTop: '-15px' }}
           onClick={this.handleOpen.bind(this)}
         >
           <Add fontSize="small" />
@@ -892,6 +893,8 @@ class RelatedTaskCreation extends Component {
 }
 
 RelatedTaskCreation.propTypes = {
+  toType: PropTypes.string,
+  fromType: PropTypes.string,
   relatedTaskData: PropTypes.object,
   remediationId: PropTypes.string,
   paginationOptions: PropTypes.object,

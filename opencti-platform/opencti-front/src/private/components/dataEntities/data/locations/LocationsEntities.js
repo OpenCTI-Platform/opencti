@@ -14,27 +14,27 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesTasksCards, {
-  entitiesTasksCardsQuery,
-} from './EntitiesTasksCards';
-import EntitiesTasksLines, {
-  entitiesTasksLinesQuery,
-} from './EntitiesTasksLines';
-import EntitiesTasksCreation from './EntitiesTasksCreation';
+import EntitiesLocationsCards, {
+  entitiesLocationsCardsQuery,
+} from './EntitiesLocationsCards';
+import EntitiesLocationsLines, {
+  entitiesLocationsLinesQuery,
+} from './EntitiesLocationsLines';
+import EntitiesLocationsCreation from './EntitiesLocationsCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
-import EntitiesTasksDeletion from './EntitiesTasksDeletion';
+import EntitiesLocationsDeletion from './EntitiesLocationsDeletion';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
-import TaskEntityEdition from './TaskEntityEdition';
+import LocationEntityEdition from './LocationEntityEdition';
 
-class TasksEntities extends Component {
+class LocationsEntities extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-tasks',
+      'view-locations',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -48,7 +48,7 @@ class TasksEntities extends Component {
       selectAll: false,
       openDataCreation: false,
       displayEdit: false,
-      selectedTaskId: '',
+      selectedLocationId: '',
     };
   }
 
@@ -57,7 +57,7 @@ class TasksEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-tasks',
+      'view-locations',
       this.state,
     );
   }
@@ -86,20 +86,20 @@ class TasksEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleTaskCreation() {
+  handleLocationCreation() {
     this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/tasks');
+    this.props.history.push('/data/entities/locations');
   }
 
   handleDisplayEdit(selectedElements) {
-    let taskId = '';
+    let locationId = '';
     if (selectedElements) {
-      taskId = (Object.entries(selectedElements)[0][1])?.id;
+      locationId = (Object.entries(selectedElements)[0][1])?.id;
     }
-    this.setState({ displayEdit: !this.state.displayEdit, selectedTaskId: taskId });
+    this.setState({ displayEdit: !this.state.displayEdit, selectedLocationId: locationId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -209,15 +209,15 @@ class TasksEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleTaskCreation.bind(this)}
+        handleNewCreation={this.handleLocationCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<EntitiesTasksCreation />}
-        OperationsComponent={<EntitiesTasksDeletion />}
+        CreateItemComponent={<EntitiesLocationsCreation />}
+        OperationsComponent={<EntitiesLocationsDeletion />}
         openExports={openExports}
         filterEntityType="Entities"
-        selectedDataEntity='tasks'
+        selectedDataEntity='locations'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -230,7 +230,7 @@ class TasksEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesTasksCardsQuery}
+          query={entitiesLocationsCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -238,7 +238,7 @@ class TasksEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesTasksCards
+              <EntitiesLocationsCards
                 data={props}
                 extra={props}
                 selectAll={selectAll}
@@ -318,15 +318,15 @@ class TasksEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleTaskCreation.bind(this)}
+        handleNewCreation={this.handleLocationCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<EntitiesTasksCreation />}
-        OperationsComponent={<EntitiesTasksDeletion />}
+        CreateItemComponent={<EntitiesLocationsCreation />}
+        OperationsComponent={<EntitiesLocationsDeletion />}
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='Entities'
-        selectedDataEntity='tasks'
+        selectedDataEntity='locations'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -339,7 +339,7 @@ class TasksEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesTasksLinesQuery}
+          query={entitiesLocationsLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -347,7 +347,7 @@ class TasksEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesTasksLines
+              <EntitiesLocationsLines
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
@@ -387,15 +387,15 @@ class TasksEntities extends Component {
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
         {view === 'lines' && this.renderLines(paginationOptions)}
-        <EntitiesTasksCreation
+        <EntitiesLocationsCreation
           openDataCreation={openDataCreation}
-          handleTaskCreation={this.handleTaskCreation.bind(this)}
+          handleLocationCreation={this.handleLocationCreation.bind(this)}
           history={this.props.history}
         />
-        <TaskEntityEdition
+        <LocationEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}
-          taskId={this.state.selectedTaskId}
+          locationId={this.state.selectedLocationId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </div>
@@ -403,10 +403,10 @@ class TasksEntities extends Component {
   }
 }
 
-TasksEntities.propTypes = {
+LocationsEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(TasksEntities);
+export default R.compose(inject18n, withRouter)(LocationsEntities);

@@ -57,7 +57,6 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '4px 0 0 0',
     padding: 0,
     borderRadius: 6,
     position: 'relative',
@@ -200,7 +199,7 @@ class RequiredResourcesLinesContainer extends Component {
     const requiredResourcesEdges = R.pathOr([], ['required_assets'], requiredResourceData);
     return (
       <div style={{ height: '100%' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex' }}>
           <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
             {t('Required Resource')}
           </Typography>

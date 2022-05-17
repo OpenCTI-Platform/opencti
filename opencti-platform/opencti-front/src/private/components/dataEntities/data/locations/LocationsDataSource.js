@@ -14,27 +14,20 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesTasksCards, {
-  entitiesTasksCardsQuery,
-} from './EntitiesTasksCards';
-import EntitiesTasksLines, {
-  entitiesTasksLinesQuery,
-} from './EntitiesTasksLines';
-import EntitiesTasksCreation from './EntitiesTasksCreation';
+import EntitiesCreation from '../EntitiesCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
-import EntitiesTasksDeletion from './EntitiesTasksDeletion';
+import EntitiesDeletion from '../EntitiesDeletion';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
-import TaskEntityEdition from './TaskEntityEdition';
 
-class TasksEntities extends Component {
+class RolesDataSource extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-tasks',
+      'view-data',
     );
     this.state = {
       sortBy: R.propOr('name', 'sortBy', params),
@@ -47,8 +40,6 @@ class TasksEntities extends Component {
       selectedElements: null,
       selectAll: false,
       openDataCreation: false,
-      displayEdit: false,
-      selectedTaskId: '',
     };
   }
 
@@ -57,7 +48,7 @@ class TasksEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-tasks',
+      'view-data',
       this.state,
     );
   }
@@ -86,20 +77,20 @@ class TasksEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleTaskCreation() {
-    this.setState({ openDataCreation: !this.state.openDataCreation });
+  handleLocationsCreation() {
+    this.setState({ openDataCreation: true });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/tasks');
+    this.props.history.push('/data/data source/locations');
   }
 
   handleDisplayEdit(selectedElements) {
-    let taskId = '';
-    if (selectedElements) {
-      taskId = (Object.entries(selectedElements)[0][1])?.id;
-    }
-    this.setState({ displayEdit: !this.state.displayEdit, selectedTaskId: taskId });
+    const riskId = Object.entries(selectedElements)[0][1].id;
+    this.props.history.push({
+      pathname: `/activities/risk assessment/risks/${riskId}`,
+      openEdit: true,
+    });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -209,15 +200,15 @@ class TasksEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleTaskCreation.bind(this)}
+        handleNewCreation={this.handleLocationsCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<EntitiesTasksCreation />}
-        OperationsComponent={<EntitiesTasksDeletion />}
+        CreateItemComponent={<EntitiesCreation />}
+        OperationsComponent={<EntitiesDeletion />}
         openExports={openExports}
-        filterEntityType="Entities"
-        selectedDataEntity='tasks'
+        filterEntityType='DataSources'
+        selectedDataEntity='locations'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -228,30 +219,12 @@ class TasksEntities extends Component {
           'label_name',
         ]}
       >
-        <QR
-          environment={QueryRendererDarkLight}
-          query={entitiesTasksCardsQuery}
-          variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ error, props }) => {
-            if (error) {
-              console.error(error);
-              toastGenericError('Request Failed');
-            }
-            return (
-              <EntitiesTasksCards
-                data={props}
-                extra={props}
-                selectAll={selectAll}
-                paginationOptions={paginationOptions}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-              />
-            );
-          }}
-        />
+        <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
+            {t('Please choose from the Data Type dropdown above.')}
+          </Typography>
+        </div>
       </CyioListCards>
     );
   }
@@ -318,15 +291,15 @@ class TasksEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleTaskCreation.bind(this)}
+        handleNewCreation={this.handleLocationsCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<EntitiesTasksCreation />}
-        OperationsComponent={<EntitiesTasksDeletion />}
+        CreateItemComponent={<EntitiesCreation />}
+        OperationsComponent={<EntitiesDeletion />}
         openExports={openExports}
         selectAll={selectAll}
-        filterEntityType='Entities'
-        selectedDataEntity='tasks'
+        filterEntityType='DataSources'
+        selectedDataEntity='locations'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -337,30 +310,12 @@ class TasksEntities extends Component {
           'label_name',
         ]}
       >
-        <QR
-          environment={QueryRendererDarkLight}
-          query={entitiesTasksLinesQuery}
-          variables={{ first: 50, offset: 0, ...paginationOptions }}
-          render={({ error, props }) => {
-            if (error) {
-              console.error(error);
-              toastGenericError('Request Failed');
-            }
-            return (
-              <EntitiesTasksLines
-                data={props}
-                selectAll={selectAll}
-                dataColumns={dataColumns}
-                initialLoading={props === null}
-                selectedElements={selectedElements}
-                paginationOptions={paginationOptions}
-                onLabelClick={this.handleAddFilter.bind(this)}
-                onToggleEntity={this.handleToggleSelectEntity.bind(this)}
-                setNumberOfElements={this.setNumberOfElements.bind(this)}
-              />
-            );
-          }}
-        />
+        <div style={{ textAlign: 'left', margin: '100px auto', width: '500px' }}>
+          <Typography style={{ fontSize: '40px' }} color='textSecondary'>{t('No Data Types')}</Typography>
+          <Typography style={{ fontSize: '20px' }} color='textSecondary'>
+            {t('Please choose from the Data Type dropdown above.')}
+          </Typography>
+        </div>
       </CyioListLines>
     );
   }
@@ -377,7 +332,8 @@ class TasksEntities extends Component {
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
-      orderedBy: sortBy,
+      // orderedBy: sortBy,
+      orderedBy: 'name',
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
       filterMode: 'and',
@@ -385,28 +341,22 @@ class TasksEntities extends Component {
     const { location } = this.props;
     return (
       <div>
-        {view === 'cards' && this.renderCards(paginationOptions)}
-        {view === 'lines' && this.renderLines(paginationOptions)}
-        <EntitiesTasksCreation
-          openDataCreation={openDataCreation}
-          handleTaskCreation={this.handleTaskCreation.bind(this)}
-          history={this.props.history}
-        />
-        <TaskEntityEdition
-          displayEdit={this.state.displayEdit}
-          history={this.props.history}
-          taskId={this.state.selectedTaskId}
-          handleDisplayEdit={this.handleDisplayEdit.bind(this)}
-        />
+        {view === 'cards' && (!openDataCreation && !location.openNewCreation) ? this.renderCards(paginationOptions) : ''}
+        {view === 'lines' && (!openDataCreation && !location.openNewCreation) ? this.renderLines(paginationOptions) : ''}
+        {((openDataCreation || location.openNewCreation) && (
+          // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <EntitiesCreation paginationOptions={paginationOptions} history={this.props.history} />
+          // </Security>
+        ))}
       </div>
     );
   }
 }
 
-TasksEntities.propTypes = {
+RolesDataSource.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(TasksEntities);
+export default R.compose(inject18n, withRouter)(RolesDataSource);
