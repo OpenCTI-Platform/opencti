@@ -248,12 +248,12 @@ const createApp = async (app) => {
       if (err || !user) {
         logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
         setCookieError(res, err?.message);
-        return res.redirect(referer);
+        return res.redirect(referer ?? '/');
       }
       // noinspection UnnecessaryLocalVariableJS
       await authenticateUser(req, user, provider);
       req.session.referer = null;
-      return res.redirect(referer);
+      return res.redirect(referer ?? '/');
     })(req, res, next);
   });
 
