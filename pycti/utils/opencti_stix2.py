@@ -755,7 +755,11 @@ class OpenCTIStix2:
             }
             # Iterate over refs to create appropriate relationships
             for key in stix_object.keys():
-                if key not in ["created_by_ref", "object_marking_refs", "x_opencti_created_by_ref"]:
+                if key not in [
+                    "created_by_ref",
+                    "object_marking_refs",
+                    "x_opencti_created_by_ref",
+                ]:
                     if key.endswith("_ref"):
                         relationship_type = key.replace("_ref", "").replace("_", "-")
                         self.opencti.stix_cyber_observable_relationship.create(
@@ -1696,9 +1700,12 @@ class OpenCTIStix2:
             if "x_opencti_event_version" in stix_bundle
             else None
         )
-
         stix2_splitter = OpenCTIStix2Splitter()
-        bundles = stix2_splitter.split_bundle(stix_bundle, False, event_version)
+        try:
+            bundles = stix2_splitter.split_bundle(stix_bundle, False, event_version)
+        except RecursionError:
+            bundles = [stix_bundle]
+
         # Import every elements in a specific order
         imported_elements = []
 
