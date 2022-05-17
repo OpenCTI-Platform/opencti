@@ -38,16 +38,27 @@ const SourceActorTypeQuery = graphql`
   }
 `;
 
+const componentFilter = [];
+
+componentFilter.push({ key: 'asset_type', values: 'software' });
+
 const ComponentListQuery = graphql`
-  query SourceComponentListQuery {
-    componentList {
+  query SourceComponentListQuery{
+    componentList(filters: [
+    {
+      key: asset_type,
+      values: "software"
+    }
+    ]){
       edges {
         node {
           id
           name
           description
         }
+        
       }
+      
     }
   }
 `;
@@ -125,43 +136,54 @@ class Source extends Component {
     const handleThisChange = (name, value) => {
       let queryType;
       let queryInfo;
-      switch (value) {
-        case 'tool':
-          queryType = ComponentListQuery;
-          queryInfo = 'componentList';
-          break;
-        case 'assessment_platform':
-          queryType = AssessmentPlatformQuery;
-          queryInfo = 'assessmentPlatforms';
-          break;
-        case 'party':
-          queryType = OscalPartiesQuery;
-          queryInfo = 'oscalParties';
-          break;
-        default:
+      let filterBy = '';
+
+      if (value) {
+        switch (value) {
+          case 'tool':
+            queryType = ComponentListQuery;
+            queryInfo = 'componentList';
+            filterBy = {
+              filters: [
+                {
+                  key: 'asset_type',
+                  values: 'software',
+                },
+              ],
+            };
+            break;
+          case 'assessment_platform':
+            queryType = AssessmentPlatformQuery;
+            queryInfo = 'assessmentPlatforms';
+            break;
+          case 'party':
+            queryType = OscalPartiesQuery;
+            queryInfo = 'oscalParties';
+            break;
+          default:
           //
-      }
-      fetchDarklightQuery(queryType)
-        .toPromise()
-        .then((data) => {
-          const oscalEntities = R.pipe(
-            R.pathOr({}, [queryInfo, 'edges']),
-            R.map((n) => ({
-              key: n.node.id,
-              label: n.node.name,
-              value: n.node.id,
-            })),
-          )(data);
+        }
+        fetchDarklightQuery(queryType)
+          .toPromise()
+          .then((data) => {
+            const oscalEntities = R.pipe(
+              R.pathOr({}, [queryInfo, 'edges']),
+              R.map((n) => ({
+                key: n.node.id,
+                label: n.node.name,
+                value: n.node.id,
+              })),
+            )(data);
 
-          this.setState({
-            actorReferences: {
-              ...this.state.entities,
-              oscalEntities,
-            },
+            this.setState({
+              actorReferences: {
+                ...this.state.entities,
+                oscalEntities,
+              },
+            });
           });
-        });
+      }
     };
-
     const actorTypeList = R.pathOr(
       [],
       ['actorTypeEntities'],
@@ -190,6 +212,7 @@ class Source extends Component {
           style={style}
           helperText={helperText}
         >
+          <MenuItem></MenuItem>
           {actorTypeList.map(
             (et) => et.label && (
               <Tooltip title={et.label} value={et.value} key={et.label}>
@@ -211,6 +234,7 @@ class Source extends Component {
           style={style}
           helperText={helperText}
         >
+           <MenuItem></MenuItem>
           {actorReferences?.map(
             (et) => (
              <MenuItem key={et.key} value={et.key}>{et.label}</MenuItem>
