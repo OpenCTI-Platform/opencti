@@ -177,6 +177,7 @@ class RootReport extends Component {
                           <ContainerHeader
                             container={props.report}
                             PopoverComponent={<ReportPopover />}
+                            enableSuggestions={true}
                           />
                           <StixCoreObjectFilesAndHistory
                             {...routeProps}

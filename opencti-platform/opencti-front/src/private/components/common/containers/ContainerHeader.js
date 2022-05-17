@@ -1,20 +1,52 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import * as R from 'ramda';
 import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { GraphOutline, VectorLink } from 'mdi-material-ui';
-import { ViewColumnOutlined } from '@mui/icons-material';
+import {
+  AddTaskOutlined,
+  ViewColumnOutlined,
+  AssistantOutlined,
+} from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import { truncate } from '../../../../utils/String';
-import inject18n from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { DialogTitle } from '@mui/material';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import Badge from '@mui/material/Badge';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import IconButton from '@mui/material/IconButton';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide from '@mui/material/Slide';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import Markdown from 'react-markdown';
 import ExportButtons from '../../../../components/ExportButtons';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ItemMarking from '../../../../components/ItemMarking';
+import inject18n from '../../../../components/i18n';
+import { truncate } from '../../../../utils/String';
+import {
+  commitMutation,
+  MESSAGING$,
+  QueryRenderer,
+} from '../../../../relay/environment';
+import { defaultValue } from '../../../../utils/Graph';
+import { parse } from '../../../../utils/Time';
+import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
+import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
+import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 
 const styles = () => ({
   title: {
@@ -41,6 +73,10 @@ const styles = () => ({
     margin: '-6px 20px 0 0',
     float: 'right',
   },
+  suggestions: {
+    margin: '-6px 0 0 0',
+    float: 'right',
+  },
   button: {
     marginRight: 20,
   },
@@ -50,7 +86,420 @@ const styles = () => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
+export const containerHeaderObjectsQuery = graphql`
+  query ContainerHeaderObjectsQuery($id: String!) {
+    container(id: $id) {
+      id
+      x_opencti_graph_data
+      confidence
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
+      objects(all: true) {
+        edges {
+          node {
+            ... on BasicObject {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreObject {
+              created_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+            }
+            ... on StixDomainObject {
+              is_inferred
+              created
+            }
+            ... on AttackPattern {
+              name
+              x_mitre_id
+            }
+            ... on Campaign {
+              name
+              first_seen
+              last_seen
+            }
+            ... on ObservedData {
+              name
+            }
+            ... on CourseOfAction {
+              name
+            }
+            ... on Individual {
+              name
+            }
+            ... on Organization {
+              name
+            }
+            ... on Sector {
+              name
+            }
+            ... on System {
+              name
+            }
+            ... on Indicator {
+              name
+              valid_from
+            }
+            ... on Infrastructure {
+              name
+            }
+            ... on IntrusionSet {
+              name
+              first_seen
+              last_seen
+            }
+            ... on Position {
+              name
+            }
+            ... on City {
+              name
+            }
+            ... on Country {
+              name
+            }
+            ... on Region {
+              name
+            }
+            ... on Malware {
+              name
+              first_seen
+              last_seen
+            }
+            ... on ThreatActor {
+              name
+              first_seen
+              last_seen
+            }
+            ... on Tool {
+              name
+            }
+            ... on Vulnerability {
+              name
+            }
+            ... on Incident {
+              name
+              first_seen
+              last_seen
+            }
+            ... on StixCyberObservable {
+              observable_value
+            }
+            ... on StixFile {
+              observableName: name
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+              start_time
+              stop_time
+              confidence
+              created
+              is_inferred
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              created_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+            }
+            ... on StixCyberObservableRelationship {
+              relationship_type
+              start_time
+              stop_time
+              confidence
+              is_inferred
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              created_at
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+            }
+            ... on StixSightingRelationship {
+              relationship_type
+              first_seen
+              last_seen
+              confidence
+              created
+              is_inferred
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              created_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 class ContainerHeaderComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      displaySuggestions: false,
+      selectedEntity: {},
+      applying: [],
+      applied: [],
+    };
+  }
+
+  handleOpenSuggestions() {
+    this.setState({ displaySuggestions: true });
+  }
+
+  handleCloseSuggestions() {
+    this.setState({ displaySuggestions: false });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  resolveThreats(objects) {
+    return objects.filter((o) => [
+      'Threat-Actor',
+      'Intrusion-Set',
+      'Campaign',
+      'Incident',
+      'Malware',
+      'Tool',
+    ].includes(o.entity_type));
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  resolveIndicators(objects) {
+    return objects.filter((o) => ['Indicator'].includes(o.entity_type));
+  }
+
+  generateSuggestions(objects) {
+    const suggestions = [];
+    const resolvedThreats = this.resolveThreats(objects);
+    // First rule, threats and indicators
+    if (
+      resolvedThreats.length > 0
+      && objects.filter((o) => o.entity_type === 'Indicator').length > 0
+    ) {
+      suggestions.push({ type: 'threats-indicators', data: resolvedThreats });
+    }
+    return suggestions;
+  }
+
+  handleSelectEntity(type, event) {
+    if (event && event.target && event.target.value) {
+      const { selectedEntity } = this.state;
+      this.setState({
+        selectedEntity: { ...selectedEntity, [type]: event.target.value },
+      });
+    }
+  }
+
+  async applySuggestion(type, objects) {
+    const { selectedEntity } = this.state;
+    const { container } = this.props;
+    if (type === 'threats-indicators' && selectedEntity) {
+      // create all indicates relationships
+      this.setState({ applying: [...this.state.applying, type] });
+      const indicators = this.resolveIndicators(objects);
+      const createdRelationships = await Promise.all(
+        indicators.map((indicator) => {
+          const values = {
+            relationship_type: 'indicates',
+            confidence: container.confidence,
+            fromId: indicator.id,
+            toId: selectedEntity[type],
+            start_time: parse(container.created).format(),
+            stop_time: parse(container.created).format(),
+            createdBy: container.createdBy?.id,
+            objectMarking: container.objectMarking.edges.map((m) => m.node.id),
+          };
+          return new Promise((resolve) => {
+            commitMutation({
+              mutation: stixCoreRelationshipCreationMutation,
+              variables: {
+                input: values,
+              },
+              onCompleted: (response) => resolve(response.stixCoreRelationshipAdd),
+            });
+          });
+        }),
+      );
+      await Promise.all(
+        createdRelationships.map((createdRelationship) => {
+          const input = {
+            toId: createdRelationship.id,
+            relationship_type: 'object',
+          };
+          return new Promise((resolve) => {
+            commitMutation({
+              mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
+              variables: {
+                id: container.id,
+                input,
+              },
+              onCompleted: (response) => resolve(response.containerEdit.relationAdd),
+            });
+          });
+        }),
+      );
+      MESSAGING$.notifySuccess('Suggestion successfully applied.');
+      this.setState({
+        applied: [...this.state.applied, type],
+        applying: this.state.applying.filter((n) => n !== type),
+      });
+    }
+  }
+
   render() {
     const {
       classes,
@@ -64,7 +513,10 @@ class ContainerHeaderComponent extends Component {
       knowledge,
       adjust,
       t,
+      theme,
+      enableSuggestions,
     } = this.props;
+    const { displaySuggestions, selectedEntity, applying, applied } = this.state;
     return (
       <div>
         <Tooltip
@@ -95,7 +547,7 @@ class ContainerHeaderComponent extends Component {
         </Tooltip>
         {variant !== 'noMarking' && (
           <div className={classes.marking}>
-            {pathOr([], ['objectMarking', 'edges'], container).map(
+            {R.pathOr([], ['objectMarking', 'edges'], container).map(
               (markingDefinition) => (
                 <ItemMarking
                   key={markingDefinition.node.id}
@@ -171,6 +623,128 @@ class ContainerHeaderComponent extends Component {
             </ToggleButtonGroup>
           </div>
         )}
+        {enableSuggestions && (
+          <QueryRenderer
+            query={containerHeaderObjectsQuery}
+            variables={{ id: container.id }}
+            render={({ props }) => {
+              if (props && props.container) {
+                const suggestions = this.generateSuggestions(
+                  props.container.objects.edges.map((o) => o.node),
+                );
+                return (
+                  <div className={classes.suggestions}>
+                    <ToggleButtonGroup
+                      size="small"
+                      color="secondary"
+                      exclusive={true}
+                    >
+                      <Tooltip title={t('Open suggestions')}>
+                        <ToggleButton
+                          onClick={this.handleOpenSuggestions.bind(this)}
+                        >
+                          <Badge
+                            badgeContent={suggestions.length}
+                            color="secondary"
+                          >
+                            <AssistantOutlined
+                              fontSize="small"
+                              color={
+                                displaySuggestions ? 'secondary' : 'primary'
+                              }
+                            />
+                          </Badge>
+                        </ToggleButton>
+                      </Tooltip>
+                    </ToggleButtonGroup>
+                    <Dialog
+                      PaperProps={{ elevation: 1 }}
+                      open={displaySuggestions}
+                      TransitionComponent={Transition}
+                      onClose={this.handleCloseSuggestions.bind(this)}
+                      maxWidth="md"
+                      fullWidth={true}
+                    >
+                      <DialogTitle>{t('Suggestions')}</DialogTitle>
+                      <DialogContent dividers={true}>
+                        <List>
+                          {suggestions.map((suggestion) => (
+                            <ListItem
+                              key={suggestion.type}
+                              disableGutters={true}
+                              divider={true}
+                            >
+                              <ListItemText
+                                primary={
+                                  <Markdown
+                                    remarkPlugins={[remarkGfm, remarkParse]}
+                                    parserOptions={{ commonmark: true }}
+                                    components={MarkDownComponents(theme)}
+                                    className="markdown"
+                                  >
+                                    {t(`suggestion_${suggestion.type}`)}
+                                  </Markdown>
+                                }
+                              />
+                              <Select
+                                style={{ width: 200, margin: '0 0 0 15px' }}
+                                variant="standard"
+                                onChange={this.handleSelectEntity.bind(
+                                  this,
+                                  suggestion.type,
+                                )}
+                              >
+                                {suggestion.data.map((object) => (
+                                  <MenuItem key={object.id} value={object.id}>
+                                    {defaultValue(object)}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                              <ListItemSecondaryAction>
+                                <IconButton
+                                  edge="end"
+                                  aria-label="apply"
+                                  onClick={this.applySuggestion.bind(
+                                    this,
+                                    suggestion.type,
+                                    props.container.objects.edges.map(
+                                      (o) => o.node,
+                                    ),
+                                  )}
+                                  size="large"
+                                  color={
+                                    applied.includes(suggestion.type)
+                                      ? 'success'
+                                      : 'secondary'
+                                  }
+                                  disabled={
+                                    applying.includes(suggestion.type)
+                                    || !selectedEntity[suggestion.type]
+                                  }
+                                >
+                                  <AddTaskOutlined />
+                                </IconButton>
+                              </ListItemSecondaryAction>
+                            </ListItem>
+                          ))}
+                        </List>
+                      </DialogContent>
+                      <DialogActions>
+                        <Button
+                          onClick={this.handleCloseSuggestions.bind(this)}
+                          color="primary"
+                        >
+                          {t('Close')}
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
+                  </div>
+                );
+              }
+              return <div />;
+            }}
+          />
+        )}
         <div className="clearfix" />
       </div>
     );
@@ -195,6 +769,8 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
   container: graphql`
     fragment ContainerHeader_container on Container {
       id
+      confidence
+      created
       ... on Report {
         name
       }
@@ -210,6 +786,9 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
         first_observed
         last_observed
       }
+      createdBy {
+        id
+      }
       objectMarking {
         edges {
           node {
@@ -223,4 +802,8 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ContainerHeader);
+export default R.compose(
+  inject18n,
+  withTheme,
+  withStyles(styles),
+)(ContainerHeader);

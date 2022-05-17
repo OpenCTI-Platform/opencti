@@ -413,6 +413,8 @@ const i18n = {
       'Export the entity': "Exporter l'entité",
       'Cards view': 'Vue cartes',
       'Lines view': 'Vue lignes',
+      'Graph view': 'Vue graphe',
+      'Tactics matrix view': 'Vue matrice de tactiques',
       'Entities view': 'Vue entités',
       'Kill chain view': 'Vue kill chain',
       'Courses of action view': 'Vue conduites à suivre',
@@ -1406,6 +1408,8 @@ const i18n = {
       disagree: 'désapprouve',
       neutral: 'neutre',
       agree: 'approuve',
+      'suggestion_threats-indicators':
+        'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
     },
     'zh-cn': {
       // Titles
@@ -1764,6 +1768,7 @@ const i18n = {
       'Cards view': '卡片视图',
       'Lines view': '线条视图',
       'Graph view': '图形视图',
+      'Tactics matrix view': '战术矩阵视图',
       'Entities view': '实体视图',
       'Kill chain view': '杀伤链视图',
       'Courses of action view': '应对措施视图',
@@ -2735,6 +2740,8 @@ const i18n = {
       disagree: '不同意',
       neutral: '中性的',
       agree: '同意',
+      'suggestion_threats-indicators':
+        'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
     },
     'en-us': {
       progress: 'In progress',
@@ -2987,6 +2994,8 @@ const i18n = {
       SUBSCRIPTION_MANAGER: 'Subscriptions manager',
       RETENTION_MANAGER: 'Retention manager',
       HISTORY_MANAGER: 'History manager',
+      'suggestion_threats-indicators':
+        'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
     },
   },
 };

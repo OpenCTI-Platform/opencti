@@ -206,7 +206,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
   }
 `;
 
-const stixCoreRelationshipCreationMutation = graphql`
+export const stixCoreRelationshipCreationMutation = graphql`
   mutation StixCoreRelationshipCreationMutation(
     $input: StixCoreRelationshipAddInput!
   ) {

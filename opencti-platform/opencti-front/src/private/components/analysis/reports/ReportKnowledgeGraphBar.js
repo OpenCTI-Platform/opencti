@@ -43,6 +43,7 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
+import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -622,7 +623,15 @@ class ReportKnowledgeGraphBar extends Component {
                     onClick={this.handleOpenStixCoreObjectsTypes.bind(this)}
                     size="large"
                   >
-                    <FilterListOutlined />
+                    <Badge
+                      badgeContent={Math.abs(
+                        currentStixCoreObjectsTypes.length
+                          - stixCoreObjectsTypes.length,
+                      )}
+                      color="secondary"
+                    >
+                      <FilterListOutlined />
+                    </Badge>
                   </IconButton>
                 </span>
               </Tooltip>
@@ -675,7 +684,14 @@ class ReportKnowledgeGraphBar extends Component {
                     onClick={this.handleOpenMarkedBy.bind(this)}
                     size="large"
                   >
-                    <CenterFocusStrongOutlined />
+                    <Badge
+                      badgeContent={Math.abs(
+                        currentMarkedBy.length - markedBy.length,
+                      )}
+                      color="secondary"
+                    >
+                      <CenterFocusStrongOutlined />
+                    </Badge>
                   </IconButton>
                 </span>
               </Tooltip>
@@ -728,7 +744,14 @@ class ReportKnowledgeGraphBar extends Component {
                     onClick={this.handleOpenCreatedBy.bind(this)}
                     size="large"
                   >
-                    <AccountBalanceOutlined />
+                    <Badge
+                      badgeContent={Math.abs(
+                        currentCreatedBy.length - createdBy.length,
+                      )}
+                      color="secondary"
+                    >
+                      <AccountBalanceOutlined />
+                    </Badge>
                   </IconButton>
                 </span>
               </Tooltip>
