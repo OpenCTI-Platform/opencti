@@ -4,16 +4,19 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Entities from './Entities';
 import RolesEntities from './data/Roles/RolesEntities';
+import LocationsEntities from './data/locations/LocationsEntities';
+import TasksEntities from './data/tasks/TasksEntities';
 import PartiesEntities from './data/parties/PartiesEntities';
 import RootParty from './data/parties/Root';
-import RolesTasks from './data/tasks/TasksEntities';
 import RolesDataSource from './data/Roles/RolesDataSource';
 import TasksDataSource from './data/tasks/TasksDataSource';
+import LocationsDataSource from './data/locations/LocationsDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
 import RootTask from './data/tasks/Root';
-import RootResponsibleParty from './data/responsibleParties/Root';
+import RootLocation from './data/locations/Root';
 import PartiesDataSource from './data/parties/PartiesDataSource';
+import RootResponsibleParty from './data/responsibleParties/Root';
 import ResponsiblePartiesEntities from './data/responsibleParties/ResponsiblePartiesEntities';
 import ResponsiblePartiesDataSource from './data/responsibleParties/ResponsiblePartyDataSource';
 
@@ -41,7 +44,12 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/data/entities/tasks"
-          component={RolesTasks}
+          component={TasksEntities}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/locations"
+          component={LocationsEntities}
         />
         <BoundaryRoute
           exact
@@ -53,6 +61,10 @@ class Root extends Component {
           exact
           path="/data/entities/parties"
           component={PartiesEntities}
+        />
+        <BoundaryRoute
+          path="/data/entities/locations/:locationId"
+          render={(routeProps) => <RootLocation {...routeProps} me={me} />}
         />
 
         {/* Data Source Section */}
@@ -86,6 +98,13 @@ class Root extends Component {
 
         <BoundaryRoute
           exact
+          path="/data/data source/locations"
+          component={LocationsDataSource}
+        />
+        <BoundaryRoute
+          exact
+          // path="/data/data source"
+          component={DataSources}
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
         />
