@@ -176,8 +176,11 @@ const FeedCreation = (props) => {
       attribute: n.attribute,
       mappings: R.values(n.mappings),
     }));
-    const finalValues = R.assoc('feed_attributes', finalFeedAttributes, values);
-    // const jsonFilters = JSON.stringify(filters);
+    const finalValues = R.pipe(
+      R.assoc('rolling_time', parseInt(values.rolling_time, 10)),
+      R.assoc('feed_attributes', finalFeedAttributes),
+      R.assoc('filters', JSON.stringify(filters)),
+    )(values);
     commitMutation({
       mutation: feedCreationMutation,
       variables: {
@@ -388,7 +391,7 @@ const FeedCreation = (props) => {
                   variant="standard"
                   type="number"
                   name="rolling_time"
-                  label={t('Rolling time (in seconds)')}
+                  label={t('Rolling time (in minutes)')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
@@ -419,7 +422,6 @@ const FeedCreation = (props) => {
                   <Filters
                     variant="text"
                     availableFilterKeys={[
-                      'entity_type',
                       'markedBy',
                       'labelledBy',
                       'createdBy',

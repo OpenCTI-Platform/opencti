@@ -2989,6 +2989,7 @@ export type Feed = {
   __typename?: 'Feed';
   feed_attributes: Array<FeedAttribute>;
   feed_types: Array<Scalars['String']>;
+  filters?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   include_header: Scalars['Boolean'];
   name: Scalars['String'];
@@ -3000,6 +3001,7 @@ export type Feed = {
 export type FeedAddInput = {
   feed_attributes: Array<FeedAttributeMappingInput>;
   feed_types: Array<Scalars['String']>;
+  filters?: InputMaybe<Scalars['String']>;
   include_header: Scalars['Boolean'];
   name: Scalars['String'];
   rolling_time: Scalars['Int'];
@@ -17904,6 +17906,7 @@ export type ExternalReferenceEditMutationsResolvers<ContextType = any, ParentTyp
 export type FeedResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feed'] = ResolversParentTypes['Feed']> = {
   feed_attributes?: Resolver<Array<ResolversTypes['FeedAttribute']>, ParentType, ContextType>;
   feed_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   include_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

@@ -9,7 +9,9 @@ import { findById as findFeed } from '../domain/feed';
 import type { AuthUser } from '../types/user';
 import { listThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
-import { isEmptyField } from '../database/utils';
+import { isNotEmptyField } from '../database/utils';
+import { convertFiltersToQueryOptions } from '../utils/filtering';
+import { isDictionaryAttribute, isMultipleAttribute } from '../schema/fieldDataAdapter';
 
 const errorConverter = (e: any) => {
   const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'))(e.data);
@@ -35,15 +37,19 @@ const extractUserFromRequest = async (req: Express.Request, res: Express.Respons
   return user;
 };
 
+const escape = (str: string) => R.replace(/"/g, '"""', str);
+
 const initHttpRollingFeeds = (app: Express.Application) => {
   app.get(`${basePath}/feeds/:id`, async (req: Express.Request, res: Express.Response) => {
     const { id } = req.params;
     try {
       const user = await extractUserFromRequest(req, res);
       const feed = await findFeed(user, id);
+      const filters = feed.filters ? JSON.parse(feed.filters) : undefined;
       const fromDate = minutesAgo(feed.rolling_time);
-      const filters = [{ key: 'created_at', values: [fromDate], operator: 'gte' }];
-      const args = { connectionFormat: false, orderBy: ['created_at'], orderMode: 'asc', filters };
+      const extraOptions = { defaultTypes: feed.feed_types, field: 'created_at', after: fromDate };
+      const options = convertFiltersToQueryOptions(filters, extraOptions);
+      const args = { connectionFormat: false, ...options };
       const elements = await listThings(user, feed.feed_types, args);
       if (feed.include_header) {
         res.write(`${feed.feed_attributes.map((a) => a.attribute).join(',')}\r\n`);
@@ -56,7 +62,17 @@ const initHttpRollingFeeds = (app: Express.Application) => {
           const mapping = attribute.mappings.find((f) => f.type === element.entity_type);
           if (mapping) {
             const data = element[mapping.attribute];
-            dataElements.push(isEmptyField(data) ? '' : data);
+            if (isNotEmptyField(data)) {
+              if (isMultipleAttribute(mapping.attribute)) {
+                dataElements.push(`"${escape(data.join(','))}"`);
+              } else if (isDictionaryAttribute(mapping.attribute)) {
+                dataElements.push(`"${escape(JSON.stringify(data))}"`);
+              } else {
+                dataElements.push(`"${escape(data)}"`);
+              }
+            } else {
+              dataElements.push('""');
+            }
           }
         }
         res.write(dataElements.join(feed.separator ?? ','));

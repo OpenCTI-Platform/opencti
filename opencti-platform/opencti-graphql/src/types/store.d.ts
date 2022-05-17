@@ -301,6 +301,7 @@ interface StoreEntity extends BasicStoreEntity, StoreCommon {
 interface StoreEntityFeed extends StoreProxyEntity {
   id: string;
   name: string;
+  filters: string;
   separator: string;
   entity_type: 'Feed';
   rolling_time: number;

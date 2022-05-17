@@ -10,7 +10,7 @@ import { listEntities } from '../database/middleware-loader';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { adaptFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
+import { convertFiltersToQueryOptions } from '../utils/filtering';
 
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
@@ -71,32 +71,6 @@ export const collectionCount = async (taxiiCollection, user) => {
     filters,
   });
   return data.pageInfo.globalCount;
-};
-
-export const convertFiltersToQueryOptions = (filters, opts = {}) => {
-  const { after, before, field = 'updated_at' } = opts;
-  const queryFilters = [];
-  const types = [];
-  if (filters) {
-    const adaptedFilters = adaptFiltersFrontendFormat(filters);
-    const filterEntries = Object.entries(adaptedFilters);
-    for (let index = 0; index < filterEntries.length; index += 1) {
-      // eslint-disable-next-line prefer-const
-      let [key, { operator, values }] = filterEntries[index];
-      if (key === TYPE_FILTER) {
-        types.push(...values.map((v) => v.id));
-      } else {
-        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator });
-      }
-    }
-  }
-  if (after) {
-    queryFilters.push({ key: field, values: [after], operator: 'gte' });
-  }
-  if (before) {
-    queryFilters.push({ key: field, values: [before], operator: 'lte' });
-  }
-  return { types, orderMode: 'asc', orderBy: [field, 'internal_id'], filters: queryFilters };
 };
 
 const collectionQuery = async (user, collectionId, args) => {

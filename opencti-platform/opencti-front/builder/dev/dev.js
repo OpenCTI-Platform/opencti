@@ -109,6 +109,13 @@ esbuild
       })
     );
     app.use(
+      createProxyMiddleware("/feeds", {
+          target: "http://localhost:4000",
+          changeOrigin: true,
+          ws: false,
+      })
+    );
+    app.use(
       createProxyMiddleware("/graphql", {
         target: "http://localhost:4000",
         changeOrigin: true,

@@ -173,6 +173,7 @@ const FeedLineFragment = createFragmentContainer(FeedLineLineComponent, {
       id
       name
       rolling_time
+      filters
       include_header
       feed_types
       feed_attributes {

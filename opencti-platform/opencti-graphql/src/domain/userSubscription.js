@@ -26,7 +26,6 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
 } from '../schema/stixDomainObject';
-import { convertFiltersToQueryOptions } from './taxii';
 import { resolveUserById } from './user';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -46,6 +45,7 @@ import {
   technicalElementToHtml
 } from '../utils/mailData';
 import { getParentTypes } from '../schema/schemaUtils';
+import { convertFiltersToQueryOptions } from '../utils/filtering';
 
 // Stream graphQL handlers
 export const createUserSubscription = async (user, input) => {

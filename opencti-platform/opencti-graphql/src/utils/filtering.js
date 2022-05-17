@@ -37,3 +37,29 @@ export const adaptFiltersFrontendFormat = (filters) => {
   }
   return adaptedFilters;
 };
+
+export const convertFiltersToQueryOptions = (filters, opts = {}) => {
+  const { after, before, defaultTypes = [], field = 'updated_at' } = opts;
+  const queryFilters = [];
+  const types = [...defaultTypes];
+  if (filters) {
+    const adaptedFilters = adaptFiltersFrontendFormat(filters);
+    const filterEntries = Object.entries(adaptedFilters);
+    for (let index = 0; index < filterEntries.length; index += 1) {
+      // eslint-disable-next-line prefer-const
+      let [key, { operator, values }] = filterEntries[index];
+      if (key === TYPE_FILTER) {
+        types.push(...values.map((v) => v.id));
+      } else {
+        queryFilters.push({ key: GlobalFilters[key] || key, values: values.map((v) => v.id), operator });
+      }
+    }
+  }
+  if (after) {
+    queryFilters.push({ key: field, values: [after], operator: 'gte' });
+  }
+  if (before) {
+    queryFilters.push({ key: field, values: [before], operator: 'lte' });
+  }
+  return { types, orderMode: 'asc', orderBy: [field, 'internal_id'], filters: queryFilters };
+};

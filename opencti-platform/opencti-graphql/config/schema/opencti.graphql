@@ -412,6 +412,7 @@ type Feed {
   id: ID!
   standard_id: ID!
   name: String!
+  filters: String
   separator: String!
   rolling_time: Int!
   include_header: Boolean!
@@ -431,6 +432,7 @@ input FeedAttributeMappingInput {
 
 input FeedAddInput {
   name: String!
+  filters: String
   separator: String!
   rolling_time: Int!
   include_header: Boolean!

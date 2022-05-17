@@ -15,7 +15,6 @@ import {
   EVENT_TYPE_UPDATE
 } from '../database/rabbitmq';
 import { internalLoadById, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
-import { convertFiltersToQueryOptions } from '../domain/taxii';
 import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import {
   generateCreateMessage, isEmptyField,
@@ -32,7 +31,7 @@ import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { BASE_TYPE_RELATION } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
-import { adaptFiltersFrontendFormat, TYPE_FILTER } from '../utils/filtering';
+import { adaptFiltersFrontendFormat, convertFiltersToQueryOptions, TYPE_FILTER } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 
