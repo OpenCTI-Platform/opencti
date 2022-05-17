@@ -133,12 +133,12 @@ class ResponsiblePartyEntityEditionContainer extends Component {
       setSubmitting,
       onCompleted: (data) => {
         setSubmitting(false);
+        this.props.refreshQuery();
         resetForm();
       },
       onError: (err) => {
         console.error(err);
         toastGenericError('Request Failed');
-        this.props.refreshQuery();
       }
     });
     this.setState({ onSubmit: true });
