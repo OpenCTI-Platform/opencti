@@ -7,6 +7,7 @@ import Taxii from './Taxii';
 import { BoundaryRoute } from '../Error';
 import RootConnector from './connectors/Root';
 import Stream from './Stream';
+import Feed from './Feed';
 import Sync from './Sync';
 
 const Root = () => (
@@ -28,7 +29,21 @@ const Root = () => (
       render={(routeProps) => <RootConnector {...routeProps} />}
     />
     <BoundaryRoute exact path="/dashboard/data/taxii" component={Taxii} />
-    <BoundaryRoute exact path="/dashboard/data/stream" component={Stream} />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/sharing"
+      render={() => <Redirect to="/dashboard/data/sharing/streams" />}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/sharing/streams"
+      component={Stream}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/sharing/feeds"
+      component={Feed}
+    />
     <BoundaryRoute exact path="/dashboard/data/sync" component={Sync} />
   </Switch>
 );

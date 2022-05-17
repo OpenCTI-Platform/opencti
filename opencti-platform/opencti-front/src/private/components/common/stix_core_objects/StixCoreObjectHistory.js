@@ -92,7 +92,7 @@ class StixCoreObjectHistory extends Component {
             }}
           />
         </Grid>
-        {!withoutRelations ? (
+        {!withoutRelations && (
           <Grid item={true} xs={6} style={{ paddingTop: 0 }}>
             <Typography
               variant="h4"
@@ -142,8 +142,6 @@ class StixCoreObjectHistory extends Component {
               }}
             />
           </Grid>
-        ) : (
-          ''
         )}
       </Grid>
     );

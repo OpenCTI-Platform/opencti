@@ -5,17 +5,29 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Avatar from '@mui/material/Avatar';
+import Paper from '@mui/material/Paper';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
+import { compose } from 'ramda';
+import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectHistoryLines, {
   stixCoreObjectHistoryLinesQuery,
 } from './StixCoreObjectHistoryLines';
 import inject18n from '../../../../components/i18n';
 
+const styles = () => ({
+  paperHistory: {
+    height: '100%',
+    margin: '10px 0 0 0',
+    padding: 15,
+    borderRadius: 6,
+  },
+});
+
 class StixCoreObjectLatestHistory extends Component {
   render() {
-    const { t, stixCoreObjectId } = this.props;
+    const { t, stixCoreObjectId, classes } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -46,34 +58,44 @@ class StixCoreObjectLatestHistory extends Component {
               );
             }
             return (
-              <List>
-                {Array.from(Array(5), (e, i) => (
-                  <ListItem key={i} dense={true} divider={true} button={false}>
-                    <ListItemIcon>
-                      <Avatar>{i}</Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Skeleton
-                          animation="wave"
-                          variant="rectangular"
-                          width="90%"
-                          height={15}
-                          style={{ marginBottom: 10 }}
-                        />
-                      }
-                      secondary={
-                        <Skeleton
-                          animation="wave"
-                          variant="rectangular"
-                          width="90%"
-                          height={15}
-                        />
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
+              <Paper
+                classes={{ root: classes.paperHistory }}
+                variant="outlined"
+              >
+                <List>
+                  {Array.from(Array(5), (e, i) => (
+                    <ListItem
+                      key={i}
+                      dense={true}
+                      divider={true}
+                      button={false}
+                    >
+                      <ListItemIcon>
+                        <Avatar>{i}</Avatar>
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={
+                          <Skeleton
+                            animation="wave"
+                            variant="rectangular"
+                            width="90%"
+                            height={15}
+                            style={{ marginBottom: 10 }}
+                          />
+                        }
+                        secondary={
+                          <Skeleton
+                            animation="wave"
+                            variant="rectangular"
+                            width="90%"
+                            height={15}
+                          />
+                        }
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
             );
           }}
         />
@@ -87,4 +109,7 @@ StixCoreObjectLatestHistory.propTypes = {
   stixCoreObjectId: PropTypes.string,
 };
 
-export default inject18n(StixCoreObjectLatestHistory);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectLatestHistory);

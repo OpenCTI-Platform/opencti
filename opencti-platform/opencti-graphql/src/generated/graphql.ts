@@ -2993,6 +2993,7 @@ export type Feed = {
   include_header: Scalars['Boolean'];
   name: Scalars['String'];
   rolling_time: Scalars['Int'];
+  separator: Scalars['String'];
   standard_id: Scalars['ID'];
 };
 
@@ -17907,6 +17908,7 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
   include_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   rolling_time?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

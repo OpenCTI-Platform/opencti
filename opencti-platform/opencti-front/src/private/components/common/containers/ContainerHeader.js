@@ -642,6 +642,7 @@ class ContainerHeaderComponent extends Component {
                       <Tooltip title={t('Open suggestions')}>
                         <ToggleButton
                           onClick={this.handleOpenSuggestions.bind(this)}
+                          disabled={suggestions.length === 0}
                         >
                           <Badge
                             badgeContent={suggestions.length}
@@ -649,6 +650,7 @@ class ContainerHeaderComponent extends Component {
                           >
                             <AssistantOutlined
                               fontSize="small"
+                              disabled={suggestions.length === 0}
                               color={
                                 displaySuggestions ? 'secondary' : 'primary'
                               }

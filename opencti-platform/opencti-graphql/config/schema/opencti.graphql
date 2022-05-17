@@ -412,6 +412,7 @@ type Feed {
   id: ID!
   standard_id: ID!
   name: String!
+  separator: String!
   rolling_time: Int!
   include_header: Boolean!
   feed_types: [String!]!

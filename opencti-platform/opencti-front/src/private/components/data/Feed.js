@@ -11,8 +11,8 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import StreamLines, { StreamLinesQuery } from './stream/StreamLines';
-import StreamCollectionCreation from './stream/StreamCollectionCreation';
+import FeedLines, { FeedLinesQuery } from './feeds/FeedLines';
+import FeedCreation from './feeds/FeedCreation';
 import SharingMenu from './SharingMenu';
 
 const styles = () => ({
@@ -22,13 +22,13 @@ const styles = () => ({
   },
 });
 
-class Stream extends Component {
+class Feed extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'stream-view',
+      'feed-view',
     );
     this.state = {
       orderAsc: propOr(true, 'orderAsc', params),
@@ -41,7 +41,7 @@ class Stream extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'stream-view',
+      'feed-view',
       this.state,
     );
   }
@@ -55,7 +55,6 @@ class Stream extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { t, theme } = this.props;
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       name: {
@@ -63,19 +62,23 @@ class Stream extends Component {
         width: '15%',
         isSortable: true,
       },
-      description: {
-        label: 'Description',
+      feed_types: {
+        label: 'Entity types',
         width: '20%',
         isSortable: true,
       },
-      id: {
-        label: 'Stream ID',
-        width: '20%',
+      rolling_time: {
+        label: 'Rolling time',
+        width: '10%',
         isSortable: true,
+      },
+      columns: {
+        label: 'Columns',
+        width: '20%',
       },
       filters: {
         label: 'Filters',
-        width: '40%',
+        width: '30%',
       },
     };
     return (
@@ -88,32 +91,12 @@ class Stream extends Component {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-        message={
-          <span>
-            {t('Global streams are available for granted users. Live at')}{' '}
-            <a
-              href="/stream/live"
-              target="_blank"
-              style={{ color: theme.palette.secondary.main }}
-            >
-              <i>/stream/live</i>
-            </a>{' '}
-            {t('and raw at')}{' '}
-            <a
-              href="/stream"
-              target="_blank"
-              style={{ color: theme.palette.secondary.main }}
-            >
-              <i>/stream</i>
-            </a>
-          </span>
-        }
       >
         <QueryRenderer
-          query={StreamLinesQuery}
+          query={FeedLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <StreamLines
+            <FeedLines
               data={props}
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
@@ -137,13 +120,13 @@ class Stream extends Component {
       <div className={classes.container}>
         <SharingMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StreamCollectionCreation paginationOptions={paginationOptions} />
+        <FeedCreation paginationOptions={paginationOptions} />
       </div>
     );
   }
 }
 
-Stream.propTypes = {
+Feed.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
@@ -154,4 +137,4 @@ export default compose(
   withTheme,
   withRouter,
   withStyles(styles),
-)(Stream);
+)(Feed);
