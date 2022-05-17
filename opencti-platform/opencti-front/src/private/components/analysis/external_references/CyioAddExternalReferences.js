@@ -210,7 +210,15 @@ class CyioAddExternalReferences extends Component {
 
   handleSearch(event) {
     const keyword = event.target.value;
-    this.setState({ search: keyword, expanded: keyword ? true : false });
+    if (keyword.length === 0) {
+      this.setState({ expanded: false });
+      return;
+    } else {
+      setTimeout(
+        () => this.setState({ search: keyword, expanded: true }),
+        2500
+      );
+    }
   }
 
   render() {
@@ -273,7 +281,7 @@ class CyioAddExternalReferences extends Component {
               <CardActions sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <TextField
                   style={{ width: 495 }}
-                  onChange={this.handleSearch.bind(this)}
+                  onChange={(event) => setTimeout(() => this.handleSearch(event), 2000)}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end" >
