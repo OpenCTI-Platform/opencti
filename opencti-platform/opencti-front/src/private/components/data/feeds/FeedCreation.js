@@ -167,8 +167,22 @@ const FeedCreation = (props) => {
     setOpen(false);
   };
 
-  const handleSelectTypes = (value) => {
-    setSelectedTypes(value);
+  const handleSelectTypes = (types) => {
+    setSelectedTypes(types);
+    // feed attributes must be eventually cleanup in case of types removal
+    const attrValues = R.values(feedAttributes);
+    // noinspection JSMismatchedCollectionQueryUpdate
+    const updatedFeedAttributes = [];
+    for (let index = 0; index < attrValues.length; index += 1) {
+      const feedAttr = attrValues[index];
+      const mappingEntries = Object.entries(feedAttr.mappings);
+      const keepMappings = mappingEntries.filter(([k]) => types.includes(k));
+      updatedFeedAttributes.push({
+        attribute: feedAttr.attribute,
+        mappings: R.fromPairs(keepMappings),
+      });
+    }
+    setFeedAttributes({ ...updatedFeedAttributes });
   };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
