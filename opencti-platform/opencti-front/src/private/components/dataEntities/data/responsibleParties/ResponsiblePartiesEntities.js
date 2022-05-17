@@ -14,30 +14,30 @@ import {
 import inject18n from '../../../../../components/i18n';
 import CyioListCards from '../../../../../components/list_cards/CyioListCards';
 import CyioListLines from '../../../../../components/list_lines/CyioListLines';
-import EntitiesTasksCards, {
-  entitiesTasksCardsQuery,
-} from './EntitiesTasksCards';
-import EntitiesTasksLines, {
-  entitiesTasksLinesQuery,
-} from './EntitiesTasksLines';
-import EntitiesTasksCreation from './EntitiesTasksCreation';
+import EntitiesResponsiblePartiessCards, {
+  entitiesResponsiblePartiesCardsQuery,
+} from './EntitiesResponsiblePartiesCards';
+import EntitiesResponsiblePartiesLines, {
+  entitiesResponsiblePartiesLinesQuery,
+} from './EntitiesResponsiblePartiesLines';
+import EntitiesResponsiblePartiesCreation from './EntitiesResponsiblePartiesCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../../utils/Security';
 import { isUniqFilter } from '../../../common/lists/Filters';
-import EntitiesTasksDeletion from './EntitiesTasksDeletion';
+import EntitiesResponsiblePartiesDeletion from './EntitiesResponsiblePartiesDeletion';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { toastSuccess, toastGenericError } from '../../../../../utils/bakedToast';
-import TaskEntityEdition from './TaskEntityEdition';
+import RoleEntityEdition from './ResponsiblePartyEntityEdition';
 
-class TasksEntities extends Component {
+class ResponsiblePartiesEntities extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-tasks',
+      'view-responsibleParties',
     );
     this.state = {
-      sortBy: R.propOr('name', 'sortBy', params),
+      sortBy: R.propOr('label_name', 'sortBy', params),
       orderAsc: R.propOr(true, 'orderAsc', params),
       searchTerm: R.propOr('', 'searchTerm', params),
       view: R.propOr('cards', 'view', params),
@@ -48,7 +48,7 @@ class TasksEntities extends Component {
       selectAll: false,
       openDataCreation: false,
       displayEdit: false,
-      selectedTaskId: '',
+      selectedRespPartyId: '',
     };
   }
 
@@ -57,7 +57,7 @@ class TasksEntities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-tasks',
+      'view-responsibleParties',
       this.state,
     );
   }
@@ -86,20 +86,20 @@ class TasksEntities extends Component {
     this.setState({ selectAll: false, selectedElements: null });
   }
 
-  handleTaskCreation() {
+  handleResponsiblePartyCreation() {
     this.setState({ openDataCreation: !this.state.openDataCreation });
   }
 
   handleRefresh() {
-    this.props.history.push('/data/entities/tasks');
+    this.props.history.push('/data/entities/responsible_parties');
   }
 
   handleDisplayEdit(selectedElements) {
-    let taskId = '';
+    let respPartyId = '';
     if (selectedElements) {
-      taskId = (Object.entries(selectedElements)[0][1])?.id;
+      respPartyId = (Object.entries(selectedElements)[0][1])?.id;
     }
-    this.setState({ displayEdit: !this.state.displayEdit, selectedTaskId: taskId });
+    this.setState({ displayEdit: !this.state.displayEdit, selectedRespPartyId: respPartyId });
   }
 
   handleToggleSelectEntity(entity, event) {
@@ -182,13 +182,13 @@ class TasksEntities extends Component {
       type: {
         label: 'Type',
       },
-      name: {
-        label: 'Name',
+      role: {
+        label: 'Role',
       },
-      author: {
-        label: 'Author',
+      parties: {
+        label: 'Parties',
       },
-      labels: {
+      label_name: {
         label: 'Labels',
       },
       creation_date: {
@@ -209,15 +209,15 @@ class TasksEntities extends Component {
         handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
-        handleNewCreation={this.handleTaskCreation.bind(this)}
+        handleNewCreation={this.handleResponsiblePartyCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
         selectAll={selectAll}
-        CreateItemComponent={<EntitiesTasksCreation />}
-        OperationsComponent={<EntitiesTasksDeletion />}
+        CreateItemComponent={<EntitiesResponsiblePartiesCreation />}
+        OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
         openExports={openExports}
         filterEntityType="Entities"
-        selectedDataEntity='tasks'
+        selectedDataEntity='responsible_parties'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -230,7 +230,7 @@ class TasksEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesTasksCardsQuery}
+          query={entitiesResponsiblePartiesCardsQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -238,7 +238,7 @@ class TasksEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesTasksCards
+              <EntitiesResponsiblePartiessCards
                 data={props}
                 extra={props}
                 selectAll={selectAll}
@@ -280,17 +280,17 @@ class TasksEntities extends Component {
         width: '17%',
         isSortable: true,
       },
-      name: {
-        label: 'Name',
+      role: {
+        label: 'Role',
         width: '16%',
         isSortable: false,
       },
-      author: {
-        label: 'Author',
+      parties: {
+        label: 'Parties',
         width: '16%',
         isSortable: true,
       },
-      labels: {
+      label_name: {
         label: 'Labels',
         width: '16%',
         isSortable: true,
@@ -318,15 +318,15 @@ class TasksEntities extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
-        handleNewCreation={this.handleTaskCreation.bind(this)}
+        handleNewCreation={this.handleResponsiblePartyCreation.bind(this)}
         handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         selectedElements={selectedElements}
-        CreateItemComponent={<EntitiesTasksCreation />}
-        OperationsComponent={<EntitiesTasksDeletion />}
+        CreateItemComponent={<EntitiesResponsiblePartiesCreation />}
+        OperationsComponent={<EntitiesResponsiblePartiesDeletion />}
         openExports={openExports}
         selectAll={selectAll}
         filterEntityType='Entities'
-        selectedDataEntity='tasks'
+        selectedDataEntity='responsible_parties'
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -339,7 +339,7 @@ class TasksEntities extends Component {
       >
         <QR
           environment={QueryRendererDarkLight}
-          query={entitiesTasksLinesQuery}
+          query={entitiesResponsiblePartiesLinesQuery}
           variables={{ first: 50, offset: 0, ...paginationOptions }}
           render={({ error, props }) => {
             if (error) {
@@ -347,7 +347,7 @@ class TasksEntities extends Component {
               toastGenericError('Request Failed');
             }
             return (
-              <EntitiesTasksLines
+              <EntitiesResponsiblePartiesLines
                 data={props}
                 selectAll={selectAll}
                 dataColumns={dataColumns}
@@ -387,15 +387,15 @@ class TasksEntities extends Component {
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
         {view === 'lines' && this.renderLines(paginationOptions)}
-        <EntitiesTasksCreation
+        <EntitiesResponsiblePartiesCreation
           openDataCreation={openDataCreation}
-          handleTaskCreation={this.handleTaskCreation.bind(this)}
+          handleResponsiblePartyCreation={this.handleResponsiblePartyCreation.bind(this)}
           history={this.props.history}
         />
-        <TaskEntityEdition
+        <RoleEntityEdition
           displayEdit={this.state.displayEdit}
           history={this.props.history}
-          taskId={this.state.selectedTaskId}
+          respPartyId={this.state.selectedRespPartyId}
           handleDisplayEdit={this.handleDisplayEdit.bind(this)}
         />
       </div>
@@ -403,10 +403,10 @@ class TasksEntities extends Component {
   }
 }
 
-TasksEntities.propTypes = {
+ResponsiblePartiesEntities.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter)(TasksEntities);
+export default R.compose(inject18n, withRouter)(ResponsiblePartiesEntities);

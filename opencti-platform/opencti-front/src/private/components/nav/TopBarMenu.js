@@ -47,6 +47,7 @@ import TopMenuVSAC from './TopMenuVSAC';
 import TopMenuAssets from './TopMenuAssets';
 import TopMenuDataEntities from './TopMenuDataEntities';
 import TopMenuDataRolesEntities from './TopMenuDataRolesEntities';
+import TopMenuDataResponsiblePartiesEntities from './TopMenuDataResponsiblePartiesEntities';
 import TopMenuDataPartiesEntities from './TopMenuDataPartiesEntities';
 import TopMenuDataTasksEntities from './TopMenuDataTasksEntities';
 import TopMenuRiskAssessment from './TopMenuRiskAssessment';
@@ -247,19 +248,23 @@ const TopBarMenu = ({
               <TopMenuAssets />
             )}
           {(location.pathname === '/data/entities'
-          || location.pathname === '/data/data source') && (
+            || location.pathname === '/data/data source') && (
               <TopMenuDataEntities />
             )}
           {(location.pathname === '/data/entities/roles'
-          || location.pathname === '/data/data source/roles') && (
+            || location.pathname === '/data/data source/roles') && (
               <TopMenuDataRolesEntities />
+            )}
+          {(location.pathname === '/data/entities/responsible_parties'
+            || location.pathname === '/data/data source/responsible_parties') && (
+              <TopMenuDataResponsiblePartiesEntities />
             )}
           {(location.pathname === '/data/entities/parties'
           || location.pathname === '/data/data source/parties') && (
               <TopMenuDataPartiesEntities />
           )}
           {(location.pathname === '/data/entities/tasks'
-          || location.pathname === '/data/data source/tasks') && (
+            || location.pathname === '/data/data source/tasks') && (
               <TopMenuDataTasksEntities />
             )}
           {location.pathname.includes('/defender HQ/assets/devices/') && (
