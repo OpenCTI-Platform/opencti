@@ -5,6 +5,10 @@ import { BoundaryRoute } from '../Error';
 import Entities from './Entities';
 import RolesEntities from './data/Roles/RolesEntities';
 import AssessmentPlatformsEntities from './data/assessment_platform/AssessmentPlatformsEntities';
+import PartiesEntities from './data/parties/PartiesEntities';
+import PartiesDataSource from './data/parties/PartiesDataSource';
+import RootParty from './data/parties/Root';
+import RolesTasks from './data/tasks/TasksEntities';
 import RolesDataSource from './data/Roles/RolesDataSource';
 import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
 import RootAssessmentPlatform from './data/assessment_platform/Root';
@@ -69,6 +73,16 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
+          path="/data/entities/parties"
+          component={PartiesEntities}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/data source/parties"
+          component={PartiesDataSource}
+        />
+        <BoundaryRoute
+          exact
           path="/data/data source/tasks"
           component={TasksDataSource}
         />
@@ -76,6 +90,11 @@ class Root extends Component {
           exact
           path="/data/data source"
           component={DataSources}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/parties/:partyId"
+          render={(routeProps) => <RootParty {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
