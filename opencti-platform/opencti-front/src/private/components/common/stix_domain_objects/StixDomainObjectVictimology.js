@@ -45,7 +45,14 @@ class StixDomainObjectVictimology extends Component {
 
   render() {
     const { viewMode } = this.state;
-    const { classes, stixDomainObjectId, entityLink, t } = this.props;
+    const {
+      classes,
+      stixDomainObjectId,
+      entityLink,
+      t,
+      defaultStartTime,
+      defaultStopTime,
+    } = this.props;
     const paginationOptionsSectors = {
       fromId: stixDomainObjectId,
       toTypes: ['Sector', 'Organization', 'Individual'],
@@ -136,6 +143,8 @@ class StixDomainObjectVictimology extends Component {
                 enableExport={true}
                 handleChangeView={this.handleChangeView.bind(this)}
                 enableNestedView={true}
+                defaultStartTime={defaultStartTime}
+                defaultStopTime={defaultStopTime}
               />
             )}
             {viewMode === 'nested' && (
@@ -173,6 +182,8 @@ StixDomainObjectVictimology.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default R.compose(

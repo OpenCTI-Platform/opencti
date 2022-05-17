@@ -91,6 +91,8 @@ class CampaignKnowledgeComponent extends Component {
                   'Position',
                 ]}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 allDirections={true}
                 {...routeProps}
               />
@@ -105,6 +107,8 @@ class CampaignKnowledgeComponent extends Component {
                 relationshipTypes={['attributed-to']}
                 targetStixDomainObjectTypes={['Threat-Actor', 'Intrusion-Set']}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -117,6 +121,8 @@ class CampaignKnowledgeComponent extends Component {
               <StixDomainObjectVictimology
                 stixDomainObjectId={campaign.id}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 {...routeProps}
               />
             )}
@@ -128,6 +134,8 @@ class CampaignKnowledgeComponent extends Component {
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={campaign.id}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 {...routeProps}
               />
             )}
@@ -141,6 +149,8 @@ class CampaignKnowledgeComponent extends Component {
                 relationshipTypes={['uses']}
                 targetStixDomainObjectTypes={['Malware']}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -155,6 +165,8 @@ class CampaignKnowledgeComponent extends Component {
                 relationshipTypes={['uses']}
                 targetStixDomainObjectTypes={['Tool']}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -169,6 +181,8 @@ class CampaignKnowledgeComponent extends Component {
                 relationshipTypes={['targets']}
                 targetStixDomainObjectTypes={['Vulnerability']}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -183,6 +197,8 @@ class CampaignKnowledgeComponent extends Component {
                 relationshipTypes={['attributed-to']}
                 targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 isRelationReversed={true}
                 {...routeProps}
               />
@@ -196,6 +212,8 @@ class CampaignKnowledgeComponent extends Component {
                 stixCoreObjectId={campaign.id}
                 stixCoreObjectLink={link}
                 noRightBar={true}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 {...routeProps}
               />
             )}
@@ -209,6 +227,8 @@ class CampaignKnowledgeComponent extends Component {
                 relationshipTypes={['uses', 'compromises']}
                 targetStixDomainObjectTypes={['Infrastructure']}
                 entityLink={link}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -232,6 +252,8 @@ class CampaignKnowledgeComponent extends Component {
                   'Individual',
                   'System',
                 ]}
+                defaultStartTime={campaign.first_seen}
+                defaultStopTime={campaign.last_seen}
                 {...routeProps}
               />
             )}
@@ -254,6 +276,8 @@ const CampaignKnowledge = createFragmentContainer(CampaignKnowledgeComponent, {
       id
       name
       aliases
+      first_seen
+      last_seen
     }
   `,
 });

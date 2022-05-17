@@ -91,6 +91,8 @@ class ThreatActorKnowledgeComponent extends Component {
                 'Position',
               ]}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               allDirections={true}
               {...routeProps}
             />
@@ -103,6 +105,8 @@ class ThreatActorKnowledgeComponent extends Component {
             <StixDomainObjectVictimology
               stixDomainObjectId={threatActor.id}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               {...routeProps}
             />
           )}
@@ -116,6 +120,8 @@ class ThreatActorKnowledgeComponent extends Component {
               relationshipTypes={['part-of', 'cooperates-with']}
               targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               allDirections={true}
               {...routeProps}
             />
@@ -130,6 +136,8 @@ class ThreatActorKnowledgeComponent extends Component {
               relationshipTypes={['attributed-to']}
               targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               isRelationReversed={true}
               {...routeProps}
             />
@@ -144,6 +152,8 @@ class ThreatActorKnowledgeComponent extends Component {
               relationshipTypes={['attributed-to', 'participates-in']}
               targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               allDirections={true}
               {...routeProps}
             />
@@ -156,6 +166,8 @@ class ThreatActorKnowledgeComponent extends Component {
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={threatActor.id}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               {...routeProps}
             />
           )}
@@ -169,6 +181,8 @@ class ThreatActorKnowledgeComponent extends Component {
               relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               {...routeProps}
             />
           )}
@@ -182,6 +196,8 @@ class ThreatActorKnowledgeComponent extends Component {
               relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               {...routeProps}
             />
           )}
@@ -195,6 +211,8 @@ class ThreatActorKnowledgeComponent extends Component {
               relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               {...routeProps}
             />
           )}
@@ -209,6 +227,8 @@ class ThreatActorKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Incident']}
               entityLink={link}
               isRelationReversed={true}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               {...routeProps}
             />
           )}
@@ -221,6 +241,8 @@ class ThreatActorKnowledgeComponent extends Component {
               stixCoreObjectId={threatActor.id}
               stixCoreObjectLink={link}
               noRightBar={true}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               {...routeProps}
             />
           )}
@@ -235,6 +257,8 @@ class ThreatActorKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Infrastructure']}
               entityLink={link}
               isRelationReversed={false}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               {...routeProps}
             />
           )}
@@ -247,6 +271,8 @@ class ThreatActorKnowledgeComponent extends Component {
               entityId={threatActor.id}
               entityLink={link}
               noRightBar={true}
+              defaultStartTime={threatActor.first_seen}
+              defaultStopTime={threatActor.last_seen}
               targetStixDomainObjectTypes={[
                 'Region',
                 'Country',
@@ -281,6 +307,8 @@ const ThreatActorKnowledge = createFragmentContainer(
         id
         name
         aliases
+        first_seen
+        last_seen
       }
     `,
   },

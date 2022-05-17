@@ -103,6 +103,8 @@ class InfrastructureKnowledgeComponent extends Component {
                 'Position',
               ]}
               entityLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               allDirections={true}
               {...routeProps}
             />
@@ -115,6 +117,8 @@ class InfrastructureKnowledgeComponent extends Component {
             <StixCoreObjectStixCyberObservables
               stixCoreObjectId={infrastructure.id}
               stixCoreObjectLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               noRightBar={true}
               isRelationReversed={true}
               {...routeProps}
@@ -130,6 +134,8 @@ class InfrastructureKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Observed-Data']}
               relationshipTypes={['consists-of']}
               entityLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               isRelationReversed={false}
               {...routeProps}
             />
@@ -143,6 +149,8 @@ class InfrastructureKnowledgeComponent extends Component {
               entityId={infrastructure.id}
               targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               isRelationReversed={true}
               {...routeProps}
             />
@@ -156,6 +164,8 @@ class InfrastructureKnowledgeComponent extends Component {
               entityId={infrastructure.id}
               targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               isRelationReversed={true}
               {...routeProps}
             />
@@ -169,6 +179,8 @@ class InfrastructureKnowledgeComponent extends Component {
               entityId={infrastructure.id}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               isRelationReversed={false}
               {...routeProps}
             />
@@ -182,6 +194,8 @@ class InfrastructureKnowledgeComponent extends Component {
               entityId={infrastructure.id}
               targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               isRelationReversed={false}
               {...routeProps}
             />
@@ -196,6 +210,8 @@ class InfrastructureKnowledgeComponent extends Component {
               relationshipTypes={['has']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               isRelationReversed={false}
               {...routeProps}
             />
@@ -219,6 +235,8 @@ class InfrastructureKnowledgeComponent extends Component {
                 'Individual',
                 'System',
               ]}
+              defaultStartTime={infrastructure.first_seen}
+              defaultStopTime={infrastructure.last_seen}
               {...routeProps}
             />
           )}
@@ -242,6 +260,8 @@ const InfrastructureKnowledge = createFragmentContainer(
         id
         name
         aliases
+        first_seen
+        last_seen
       }
     `,
   },

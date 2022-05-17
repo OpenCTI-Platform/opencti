@@ -102,7 +102,13 @@ class IndicatorEntities extends Component {
 
   render() {
     const { view, sortBy, orderAsc, searchTerm } = this.state;
-    const { indicatorId, relationshipType, classes } = this.props;
+    const {
+      indicatorId,
+      relationshipType,
+      classes,
+      defaultStartTime,
+      defaultStopTime,
+    } = this.props;
     const paginationOptions = {
       fromId: indicatorId,
       relationship_type: relationshipType || 'stix-core-relationship',
@@ -128,6 +134,8 @@ class IndicatorEntities extends Component {
               'Attack-Pattern',
               'Indicator',
             ]}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
           />
         </Security>
       </div>
@@ -141,6 +149,8 @@ IndicatorEntities.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(IndicatorEntities);

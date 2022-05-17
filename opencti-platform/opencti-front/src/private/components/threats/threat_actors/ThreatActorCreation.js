@@ -175,7 +175,7 @@ class ThreatActorCreation extends Component {
               initialValues={{
                 name: '',
                 threat_actor_types: [],
-                confidence: 15,
+                confidence: 75,
                 description: '',
                 createdBy: '',
                 objectMarking: [],

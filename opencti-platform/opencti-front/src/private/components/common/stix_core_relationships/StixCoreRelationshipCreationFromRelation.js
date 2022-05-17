@@ -632,7 +632,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         : '';
     const initialValues = {
       relationship_type: defaultRelationshipType,
-      confidence: 15,
+      confidence: 75,
       start_time: null,
       stop_time: null,
       description: '',

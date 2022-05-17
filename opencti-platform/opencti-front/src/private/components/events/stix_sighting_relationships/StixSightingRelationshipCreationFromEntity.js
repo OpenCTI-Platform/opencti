@@ -557,7 +557,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       toEntity = sourceEntity;
     }
     const initialValues = {
-      confidence: 15,
+      confidence: 75,
       attribute_count: 1,
       first_seen: dayStartDate(),
       last_seen: dayStartDate(),

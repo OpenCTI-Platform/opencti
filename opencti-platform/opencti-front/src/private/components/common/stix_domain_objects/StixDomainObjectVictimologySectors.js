@@ -129,6 +129,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       paginationOptions,
       stixDomainObjectId,
       handleChangeView,
+      defaultStartTime,
+      defaultStopTime,
     } = this.props;
     const filterByKeyword = (n) => searchTerm === ''
       || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
@@ -657,6 +659,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
             targetStixDomainObjectTypes={['Sector', 'Organization']}
             allowedRelationshipTypes={['targets']}
             paginationOptions={paginationOptions}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
           />
         </Security>
       </div>
@@ -672,6 +676,8 @@ StixDomainObjectVictimologySectorsComponent.propTypes = {
   handleChangeView: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export const stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery = graphql`

@@ -439,7 +439,7 @@ class StixDomainObjectCreation extends Component {
               initialValues={{
                 type: '',
                 name: '',
-                confidence: 15,
+                confidence: 75,
                 description: '',
                 pattern_type: '',
                 pattern: '',

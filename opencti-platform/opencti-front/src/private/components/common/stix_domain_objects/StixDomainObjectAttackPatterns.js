@@ -93,7 +93,13 @@ class StixDomainObjectVictimology extends Component {
 
   render() {
     const { viewMode, searchTerm, filters } = this.state;
-    const { classes, stixDomainObjectId, entityLink } = this.props;
+    const {
+      classes,
+      stixDomainObjectId,
+      entityLink,
+      defaultStartTime,
+      defaultStopTime,
+    } = this.props;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
       elementId: stixDomainObjectId,
@@ -123,6 +129,8 @@ class StixDomainObjectVictimology extends Component {
                   filters={filters}
                   searchTerm={searchTerm}
                   currentView={viewMode}
+                  defaultStartTime={defaultStartTime}
+                  defaultStopTime={defaultStopTime}
                 />
               );
             }
@@ -140,6 +148,8 @@ StixDomainObjectVictimology.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default R.compose(

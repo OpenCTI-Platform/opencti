@@ -246,13 +246,21 @@ class StixCoreObjectStixCyberObservables extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc, numberOfElements, filters, openExports, view } = this.state;
-    const { stixCoreObjectLink, isRelationReversed, disableExport, stixCoreObjectId } = this.props;
+    const {
+      stixCoreObjectLink,
+      isRelationReversed,
+      disableExport,
+      stixCoreObjectId,
+    } = this.props;
     let exportFilters = paginationOptions.filters;
     exportFilters = R.append(
       { key: 'fromId', values: [stixCoreObjectId] },
       exportFilters,
     );
-    const exportPaginationOptions = { ...paginationOptions, filters: exportFilters };
+    const exportPaginationOptions = {
+      ...paginationOptions,
+      filters: exportFilters,
+    };
     return (
       <UserContext.Consumer>
         {() => (
@@ -450,6 +458,8 @@ class StixCoreObjectStixCyberObservables extends Component {
       relationshipType,
       noRightBar,
       isRelationReversed,
+      defaultStartTime,
+      defaultStopTime,
     } = this.props;
     const {
       view,
@@ -504,6 +514,8 @@ class StixCoreObjectStixCyberObservables extends Component {
           }
           paddingRight={220}
           paginationOptions={paginationOptions}
+          defaultStartTime={defaultStartTime}
+          defaultStopTime={defaultStopTime}
         />
         {!noRightBar && (
           <StixCyberObservablesRightBar
@@ -526,6 +538,8 @@ StixCoreObjectStixCyberObservables.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   isRelationReversed: PropTypes.bool,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default compose(

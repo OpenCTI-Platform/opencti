@@ -222,7 +222,7 @@ class ReportCreation extends Component {
                         initialValues={{
                           name: '',
                           published: dayStartDate(),
-                          confidence: 15,
+                          confidence: 75,
                           description: '',
                           report_types: [],
                           createdBy: '',

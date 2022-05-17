@@ -348,7 +348,7 @@ class StixDomainObjectIndicators extends Component {
   }
 
   render() {
-    const { stixDomainObjectId } = this.props;
+    const { stixDomainObjectId, defaultStartTime, defaultStopTime } = this.props;
     const {
       view,
       sortBy,
@@ -401,6 +401,8 @@ class StixDomainObjectIndicators extends Component {
             openExports={openExports}
             paddingRight={270}
             connectionKey="Pagination_indicators"
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
           />
         </Security>
         <IndicatorsRightBar
@@ -425,6 +427,8 @@ StixDomainObjectIndicators.propTypes = {
   stixDomainObjectLink: PropTypes.string,
   history: PropTypes.object,
   onChangeOpenExports: PropTypes.func,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default StixDomainObjectIndicators;

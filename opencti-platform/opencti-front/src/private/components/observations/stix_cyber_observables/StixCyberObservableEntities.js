@@ -174,7 +174,7 @@ class StixCyberObservableEntities extends Component {
 
   render() {
     const { sortBy, orderAsc, searchTerm, relationReversed } = this.state;
-    const { classes, t, entityId } = this.props;
+    const { classes, t, entityId, defaultStartTime, defaultStopTime } = this.props;
     const paginationOptions = {
       elementId: entityId,
       search: searchTerm,
@@ -213,6 +213,8 @@ class StixCyberObservableEntities extends Component {
               'Position',
             ]}
             targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
           />
         </Security>
         <div style={{ float: 'right', marginTop: -10 }}>
@@ -280,6 +282,8 @@ StixCyberObservableEntities.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default compose(

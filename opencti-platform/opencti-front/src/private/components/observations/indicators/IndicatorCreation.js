@@ -216,7 +216,7 @@ class IndicatorCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
-                confidence: 15,
+                confidence: 75,
                 pattern: '',
                 pattern_type: '',
                 x_opencti_main_observable_type: '',

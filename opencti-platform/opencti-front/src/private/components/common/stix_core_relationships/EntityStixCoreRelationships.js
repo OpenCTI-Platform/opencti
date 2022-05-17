@@ -277,6 +277,8 @@ class EntityStixCoreRelationships extends Component {
       relationshipTypes,
       isRelationReversed,
       allDirections,
+      defaultStartTime,
+      defaultStopTime,
     } = this.props;
     const { view, searchTerm, sortBy, orderAsc, filters } = this.state;
     let selectedTypes = [];
@@ -342,6 +344,8 @@ class EntityStixCoreRelationships extends Component {
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             allowedRelationshipTypes={relationshipTypes}
             paginationOptions={paginationOptions}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
           />
         </Security>
       </div>
@@ -366,6 +370,8 @@ EntityStixCoreRelationships.propTypes = {
   disableExport: PropTypes.bool,
   handleChangeView: PropTypes.func,
   enableNestedView: PropTypes.func,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default R.compose(

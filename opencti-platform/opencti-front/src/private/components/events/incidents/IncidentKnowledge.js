@@ -90,6 +90,8 @@ class IncidentKnowledgeComponent extends Component {
                 'Position',
               ]}
               entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
               allDirections={true}
               {...routeProps}
             />
@@ -108,6 +110,8 @@ class IncidentKnowledgeComponent extends Component {
                 'Campaign',
               ]}
               entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
               isRelationReversed={false}
               {...routeProps}
             />
@@ -120,6 +124,8 @@ class IncidentKnowledgeComponent extends Component {
             <StixDomainObjectVictimology
               stixDomainObjectId={incident.id}
               entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
               {...routeProps}
             />
           )}
@@ -131,6 +137,8 @@ class IncidentKnowledgeComponent extends Component {
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={incident.id}
               entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
               {...routeProps}
             />
           )}
@@ -144,6 +152,8 @@ class IncidentKnowledgeComponent extends Component {
               relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
               isRelationReversed={false}
               {...routeProps}
             />
@@ -158,6 +168,8 @@ class IncidentKnowledgeComponent extends Component {
               relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
               isRelationReversed={false}
               {...routeProps}
             />
@@ -172,6 +184,8 @@ class IncidentKnowledgeComponent extends Component {
               relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
               isRelationReversed={false}
               {...routeProps}
             />
@@ -185,6 +199,8 @@ class IncidentKnowledgeComponent extends Component {
               stixCoreObjectId={incident.id}
               stixCoreObjectLink={link}
               noRightBar={true}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
               {...routeProps}
             />
           )}
@@ -206,6 +222,8 @@ const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
       id
       name
       aliases
+      first_seen
+      last_seen
     }
   `,
 });

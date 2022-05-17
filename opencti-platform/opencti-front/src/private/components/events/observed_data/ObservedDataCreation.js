@@ -196,7 +196,7 @@ class ObservedDataCreation extends Component {
                 first_observed: dayStartDate(),
                 last_observed: dayStartDate(),
                 number_observed: 1,
-                confidence: 15,
+                confidence: 75,
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],

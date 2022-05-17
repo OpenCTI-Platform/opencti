@@ -91,6 +91,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                   'Position',
                 ]}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 allDirections={true}
                 {...routeProps}
               />
@@ -105,6 +107,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 relationshipTypes={['attributed-to']}
                 targetStixDomainObjectTypes={['Threat-Actor']}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -117,6 +121,8 @@ class IntrusionSetKnowledgeComponent extends Component {
               <StixDomainObjectVictimology
                 stixDomainObjectId={intrusionSet.id}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 {...routeProps}
               />
             )}
@@ -130,6 +136,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 relationshipTypes={['attributed-to']}
                 targetStixDomainObjectTypes={['Campaign']}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={true}
                 {...routeProps}
               />
@@ -142,6 +150,8 @@ class IntrusionSetKnowledgeComponent extends Component {
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={intrusionSet.id}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 {...routeProps}
               />
             )}
@@ -155,6 +165,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 relationshipTypes={['uses']}
                 targetStixDomainObjectTypes={['Malware']}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -169,6 +181,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 relationshipTypes={['uses']}
                 targetStixDomainObjectTypes={['Tool']}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -183,6 +197,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 relationshipTypes={['targets']}
                 targetStixDomainObjectTypes={['Vulnerability']}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -197,6 +213,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 relationshipTypes={['attributed-to']}
                 targetStixDomainObjectTypes={['Incident']}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={true}
                 {...routeProps}
               />
@@ -210,6 +228,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 stixCoreObjectId={intrusionSet.id}
                 stixCoreObjectLink={link}
                 noRightBar={true}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 {...routeProps}
               />
             )}
@@ -223,6 +243,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 relationshipTypes={['uses', 'compromises']}
                 targetStixDomainObjectTypes={['Infrastructure']}
                 entityLink={link}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 isRelationReversed={false}
                 {...routeProps}
               />
@@ -236,6 +258,8 @@ class IntrusionSetKnowledgeComponent extends Component {
                 entityId={intrusionSet.id}
                 entityLink={link}
                 noRightBar={true}
+                defaultStartTime={intrusionSet.first_seen}
+                defaultStopTime={intrusionSet.last_seen}
                 targetStixDomainObjectTypes={[
                   'Region',
                   'Country',
@@ -270,6 +294,8 @@ const IntrusionSetKnowledge = createFragmentContainer(
         id
         name
         aliases
+        first_seen
+        last_seen
       }
     `,
   },

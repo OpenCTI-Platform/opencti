@@ -605,7 +605,14 @@ class StixCoreRelationshipCreationFromEntity extends Component {
   }
 
   renderForm(sourceEntity) {
-    const { t, classes, isRelationReversed, allowedRelationshipTypes } = this.props;
+    const {
+      t,
+      classes,
+      isRelationReversed,
+      allowedRelationshipTypes,
+      defaultStartTime,
+      defaultStopTime,
+    } = this.props;
     const { targetEntities } = this.state;
     const isMultiple = targetEntities.length > 1;
     let fromEntity = sourceEntity;
@@ -630,9 +637,13 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         : '';
     const initialValues = {
       relationship_type: defaultRelationshipType,
-      confidence: 15,
-      start_time: null,
-      stop_time: null,
+      confidence: 75,
+      start_time:
+        defaultStartTime && defaultStartTime.length > 0
+          ? defaultStartTime
+          : null,
+      stop_time:
+        defaultStopTime && defaultStopTime.length > 0 ? defaultStopTime : null,
       description: '',
       killChainPhases: [],
       externalReferences: [],
@@ -953,6 +964,8 @@ StixCoreRelationshipCreationFromEntity.propTypes = {
   connectionKey: PropTypes.string,
   connectionIsFrom: PropTypes.bool,
   handleReverseRelation: PropTypes.func,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export default R.compose(

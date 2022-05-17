@@ -90,6 +90,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       searchTerm,
       currentView,
       paginationOptions,
+      defaultStartTime,
+      defaultStopTime,
     } = this.props;
     let csvData = null;
     if (currentView === 'courses-of-action') {
@@ -240,6 +242,8 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               onCreate={this.props.relay.refetch.bind(this)}
               targetStixDomainObjectTypes={['Attack-Pattern']}
               paginationOptions={paginationOptions}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
             />
           </Security>
         </div>
@@ -262,6 +266,8 @@ StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  defaultStartTime: PropTypes.string,
+  defaultStopTime: PropTypes.string,
 };
 
 export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`

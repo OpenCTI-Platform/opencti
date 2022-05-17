@@ -193,7 +193,7 @@ class NoteCreation extends Component {
                 created: dayStartDate(),
                 attribute_abstract: '',
                 content: '',
-                confidence: 15,
+                confidence: 75,
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],

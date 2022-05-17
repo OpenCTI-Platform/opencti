@@ -175,7 +175,7 @@ class IncidentCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
-                confidence: 15,
+                confidence: 75,
                 description: '',
                 createdBy: '',
                 objectMarking: [],
