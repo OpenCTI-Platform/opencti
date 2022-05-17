@@ -28,6 +28,8 @@ import TextField from '../../../../../components/TextField';
 import DatePickerField from '../../../../../components/DatePickerField';
 import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
+import LoggedBy from '../../../common/form/LoggedBy';
+import RolesField from '../../../common/form/RolesField';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -100,7 +102,10 @@ class EntitiesResponsiblePartiesCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = R.pipe(
-      R.assoc('name', values.name),
+      R.dissoc('name'),
+      R.dissoc('created'),
+      R.dissoc('modified'),
+      R.dissoc('marking'),
     )(values);
     CM(environmentDarkLight, {
       mutation: entitiesResponsiblePartiesCreationMutation,
@@ -111,7 +116,7 @@ class EntitiesResponsiblePartiesCreation extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        this.props.history.push('/data/entities/responsible_parties');
       },
       onError: (err) => {
         console.error(err);
@@ -329,13 +334,13 @@ class EntitiesResponsiblePartiesCreation extends Component {
                         </div>
                         <AddIcon fontSize="small" style={{ margin: '-3px 0 0 0' }} />
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <RolesField
                           variant='outlined'
-                          name="role"
+                          name='role'
+                          size='small'
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                         />
                       </div>
                       <div style={{ marginTop: '20px' }}>
@@ -380,13 +385,14 @@ class EntitiesResponsiblePartiesCreation extends Component {
                       </div>
                       <AddIcon fontSize="small" style={{ margin: '-3px 0 0 0' }} />
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
+                      <LoggedBy
                         variant='outlined'
-                        name="party"
+                        name='parties'
+                        size='small'
                         fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
+                        multiple={true}
+                        style={{ height: '38.09px', marginBottom: '3px' }}
+                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                       />
                     </Grid>
                   </Grid>

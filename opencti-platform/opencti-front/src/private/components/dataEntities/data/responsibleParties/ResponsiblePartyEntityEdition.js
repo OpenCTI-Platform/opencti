@@ -91,6 +91,8 @@ class ResponsiblePartyEntityEdition extends Component {
                 <ResponsiblePartyEntityEditionContainer
                   displayEdit={displayEdit}
                   history={history}
+                  responsibleParty={props.oscalResponsibleParty}
+                  refreshQuery={retry}
                   handleDisplayEdit={handleDisplayEdit}
                 />
               );

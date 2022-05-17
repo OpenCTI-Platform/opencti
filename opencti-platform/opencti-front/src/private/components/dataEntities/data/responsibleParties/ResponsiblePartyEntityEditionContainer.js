@@ -38,7 +38,8 @@ import ResponseType from '../../../common/form/ResponseType';
 import RiskLifeCyclePhase from '../../../common/form/RiskLifeCyclePhase';
 import Source from '../../../common/form/Source';
 import { toastGenericError } from "../../../../../utils/bakedToast";
-
+import LoggedBy from '../../../common/form/LoggedBy';
+import RolesField from '../../../common/form/RolesField';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -126,18 +127,18 @@ class ResponsiblePartyEntityEditionContainer extends Component {
     CM(environmentDarkLight, {
       mutation: respPartyEntityEditionContainerMutation,
       variables: {
-        id: this.props.cyioCoreRelationshipId,
+        id: this.props.responsibleParty.id,
         input: finalValues,
       },
       setSubmitting,
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
       },
       onError: (err) => {
         console.error(err);
         toastGenericError('Request Failed');
+        this.props.refreshQuery();
       }
     });
     this.setState({ onSubmit: true });
@@ -157,16 +158,14 @@ class ResponsiblePartyEntityEditionContainer extends Component {
     const responsibleMarking = R.pathOr([], ['marking'])(responsibleParty);
     
     const initialValues = R.pipe(
-      R.assoc('name', responsibleParties?.name || ''),
       R.assoc('description', responsibleParties?.description || ''),
-      R.assoc('party', responsibleParties?.name || []),
+      R.assoc('parties', responsibleParties?.name || []),
       R.assoc('created', responsibleParties?.created || null),
       R.assoc('modified', responsibleParties?.modified || null),
-      R.assoc('role', responsibleRoles?.name || []),
+      R.assoc('role', responsibleRoles?.name || ''),
       R.assoc('marking', responsibleMarking?.name),
       R.pick([
-        'name',
-        'party',
+        'parties',
         'role',
         'created',
         'modified',
@@ -337,13 +336,13 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                         </div>
                         <AddIcon fontSize="small" style={{ margin: '-3px 0 0 0' }} />
                         <div className="clearfix" />
-                        <Field
-                          component={SelectField}
+                        <RolesField
                           variant='outlined'
-                          name="role"
+                          name='role'
+                          size='small'
                           fullWidth={true}
-                          style={{ height: '38.09px' }}
-                          containerstyle={{ width: '100%' }}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                         />
                       </div>
                       <div style={{ marginTop: '20px' }}>
@@ -388,13 +387,14 @@ class ResponsiblePartyEntityEditionContainer extends Component {
                       </div>
                       <AddIcon fontSize="small" style={{ margin: '-3px 0 0 0' }} />
                       <div className="clearfix" />
-                      <Field
-                        component={SelectField}
+                      <LoggedBy
                         variant='outlined'
-                        name="party"
+                        name='parties'
+                        size='small'
                         fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
+                        multiple={true}
+                        style={{ height: '38.09px', marginBottom: '3px' }}
+                        containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
                       />
                     </Grid>
                   </Grid>
@@ -428,6 +428,7 @@ class ResponsiblePartyEntityEditionContainer extends Component {
 
 ResponsiblePartyEntityEditionContainer.propTypes = {
   handleDisplayEdit: PropTypes.func,
+  refreshQuery: PropTypes.func,
   displayEdit: PropTypes.bool,
   history: PropTypes.object,
   disabled: PropTypes.bool,
