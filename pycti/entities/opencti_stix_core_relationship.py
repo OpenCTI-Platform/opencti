@@ -378,6 +378,25 @@ class StixCoreRelationship:
             }
          """
         )
+        print(
+            {
+                "elementId": element_id,
+                "fromId": from_id,
+                "fromTypes": from_types,
+                "toId": to_id,
+                "toTypes": to_types,
+                "relationship_type": relationship_type,
+                "startTimeStart": start_time_start,
+                "startTimeStop": start_time_stop,
+                "stopTimeStart": stop_time_start,
+                "stopTimeStop": stop_time_stop,
+                "filters": filters,
+                "first": first,
+                "after": after,
+                "orderBy": order_by,
+                "orderMode": order_mode,
+            }
+        )
         result = self.opencti.query(
             query,
             {
