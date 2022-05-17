@@ -224,9 +224,9 @@ class EntityLocationCardComponent extends Component {
                 >
                   {t('Author')}
                 </Typography>
-                <Typography>
+                {/* <Typography>
                   {t('')}
-                </Typography>
+                </Typography> */}
               </Grid>
             </Grid>
             <Grid container={true} >

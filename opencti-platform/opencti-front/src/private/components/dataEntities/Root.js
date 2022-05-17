@@ -16,6 +16,9 @@ import RootRole from './data/Roles/Root';
 import RootTask from './data/tasks/Root';
 import RootLocation from './data/locations/Root';
 import PartiesDataSource from './data/parties/PartiesDataSource';
+import RootResponsibleParty from './data/responsibleParties/Root';
+import ResponsiblePartiesEntities from './data/responsibleParties/ResponsiblePartiesEntities';
+import ResponsiblePartiesDataSource from './data/responsibleParties/ResponsiblePartyDataSource';
 
 class Root extends Component {
   render() {
@@ -100,9 +103,8 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/data/data source"
+          // path="/data/data source"
           component={DataSources}
-
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
         />
