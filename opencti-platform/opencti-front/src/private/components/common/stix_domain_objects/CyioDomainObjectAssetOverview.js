@@ -90,7 +90,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   {t('ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
-                  <Tooltip title={t('ID')}>
+                  <Tooltip title={t('Uniquely identifies this object')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -107,7 +107,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   {t('Asset ID')}
                 </Typography>
                 <div style={{ float: 'left', margin: '21px 0 0 5px' }}>
-                  <Tooltip title={t('Asset ID')}>
+                  <Tooltip title={t('Identifies the identifier defined by the standard')}>
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
                 </div>
@@ -127,7 +127,7 @@ class CyioDomainObjectAssetOverview extends Component {
                 </Typography>
                 <div style={{ float: 'left', margin: '2px 0 0 5px' }}>
                   <Tooltip
-                    title={t('Asset Type')}
+                    title={t('Identifies the type of the Object')}
                   >
                     <Information fontSize="inherit" color="disabled" />
                   </Tooltip>
