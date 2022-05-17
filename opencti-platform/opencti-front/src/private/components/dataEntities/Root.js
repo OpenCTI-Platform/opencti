@@ -82,7 +82,7 @@ class Root extends Component {
           component={TasksDataSource}
         />
 
-        {/*Entities Root Path Section */}
+        {/* Entities Root Path Section */}
 
         <BoundaryRoute
           exact
