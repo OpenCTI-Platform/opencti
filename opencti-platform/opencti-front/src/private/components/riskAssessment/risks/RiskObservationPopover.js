@@ -20,6 +20,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   container: {
@@ -61,6 +62,11 @@ const styles = (theme) => ({
     height: '80px',
     overflowY: 'scroll',
   },
+  itemIcon: {
+    color: theme.palette.primary.text,
+    display: 'flex',
+    flexDirection: 'column',
+  },
 });
 
 const Transition = React.forwardRef((props, ref) => (
@@ -89,6 +95,11 @@ class RiskObservationPopover extends Component {
       handleCloseUpdate,
       handleRemove,
     } = this.props;
+    const subjectTypes = R.pipe(
+      R.pathOr([], ['subjects']),
+      // R.mergeAll,
+    )(data);
+    console.log('subjectTypes', subjectTypes);
     return (
       <>
         <DialogTitle style={{ color: 'white' }}>
@@ -198,6 +209,12 @@ class RiskObservationPopover extends Component {
                 <Typography className={classes.observationHeading} color="textSecondary" variant="h3" >
                   <MapIcon fontSize="small" style={{ marginRight: '8px' }} />Where
                 </Typography>
+                  <div className={classes.itemIcon}>
+                  {subjectTypes.map((subject, i) => (
+                    <ItemIcon key={i} type={subject.subject_type}
+                    />
+                  ))}
+                  </div>
               </Grid>
               <Grid item={true} xs={9}>
                 <DialogContentText>
