@@ -64,7 +64,7 @@ const styles = (theme) => ({
 class CyioDomainObjectAssetOverview extends Component {
   render() {
     const {
-      t, fldt, classes, cyioDomainObject, withoutMarking, withPattern, refreshQuery,
+      fd, t, fldt, classes, cyioDomainObject, withoutMarking, withPattern, refreshQuery,
     } = this.props;
     const objectLabel = { edges: { node: { id: 1, value: 'labels', color: 'red' } } };
     // const otherCyioIds = cyioDomainObject?.x_opencti_cyio_ids || [];
@@ -295,7 +295,7 @@ class CyioDomainObjectAssetOverview extends Component {
                   </Tooltip>
                 </div>
                 <div className="clearfix" />
-                {cyioDomainObject?.release_date && fldt(cyioDomainObject.release_date)}
+                {cyioDomainObject?.release_date && fd(cyioDomainObject.release_date)}
               </div>
               <div>
                 <Typography
@@ -328,6 +328,7 @@ CyioDomainObjectAssetOverview.propTypes = {
   refreshQuery: PropTypes.func,
   t: PropTypes.func,
   fldt: PropTypes.func,
+  fd: PropTypes.func,
   withoutMarking: PropTypes.bool,
 };
 
