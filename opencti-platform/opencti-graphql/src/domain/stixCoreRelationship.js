@@ -129,7 +129,28 @@ export const stixCoreRelationshipsExportAsk = async (user, args) => {
   const argsFilters = { search, orderBy, orderMode, filters, filterMode };
   const filtersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsFilter;
   const ordersOpts = stixCoreRelationshipOptions.StixCoreRelationshipsOrdering;
-  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  let newArgsFiltersFilters = argsFilters.filters;
+  const initialParams = {};
+  if (argsFilters && argsFilters.filters && argsFilters.filters.length > 0) {
+    if (argsFilters.filters.filter((n) => n.key === 'fromId').length > 0) {
+      initialParams.fromId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'fromId')).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'fromId');
+    }
+    if (argsFilters.filters.filter((n) => n.key === 'toId').length > 0) {
+      initialParams.toId = R.head(R.head(argsFilters.filters.filter((n) => n.key === 'toId')).values);
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'toId');
+    }
+    if (argsFilters.filters.filter((n) => n.key === 'fromTypes').length > 0) {
+      initialParams.fromTypes = R.head(argsFilters.filters.filter((n) => n.key === 'fromTypes')).values;
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'fromTypes');
+    }
+    if (argsFilters.filters.filter((n) => n.key === 'toTypes').length > 0) {
+      initialParams.toTypes = R.head(argsFilters.filters.filter((n) => n.key === 'toTypes')).values;
+      newArgsFiltersFilters = newArgsFiltersFilters.filter((n) => n.key !== 'toTypes');
+    }
+  }
+  const finalArgsFilter = R.assoc('filters', newArgsFiltersFilters, argsFilters);
+  const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
   const works = await askListExport(user, format, type, listParams, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w), works);
 };

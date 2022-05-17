@@ -506,7 +506,7 @@ const FeedCreation = (props) => {
                             />
                           </Grid>
                           {selectedTypes.map((selectedType) => (
-                            <Grid item={true} xs="auto">
+                            <Grid key={selectedType} item={true} xs="auto">
                               <FormControl className={classes.formControl}>
                                 <InputLabel variant="standard">
                                   {t(`entity_${selectedType}`)}

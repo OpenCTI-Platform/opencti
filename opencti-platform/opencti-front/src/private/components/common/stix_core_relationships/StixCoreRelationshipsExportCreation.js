@@ -1,16 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  filter,
-  flatten,
-  fromPairs,
-  includes,
-  map,
-  propOr,
-  uniq,
-  zip,
-} from 'ramda';
+import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -106,19 +96,21 @@ const exportValidation = (t) => Yup.object().shape({
 });
 
 export const scopesConn = (exportConnectors) => {
-  const scopes = uniq(flatten(map((c) => c.connector_scope, exportConnectors)));
-  const connectors = map((s) => {
-    const filteredConnectors = filter(
-      (e) => includes(s, e.connector_scope),
+  const scopes = R.uniq(
+    R.flatten(R.map((c) => c.connector_scope, exportConnectors)),
+  );
+  const connectors = R.map((s) => {
+    const filteredConnectors = R.filter(
+      (e) => R.includes(s, e.connector_scope),
       exportConnectors,
     );
-    return map(
+    return R.map(
       (x) => ({ data: { name: x.name, active: x.active } }),
       filteredConnectors,
     );
   }, scopes);
-  const zipped = zip(scopes, connectors);
-  return fromPairs(zipped);
+  const zipped = R.zip(scopes, connectors);
+  return R.fromPairs(zipped);
 };
 
 class StixCoreRelationshipsExportCreationComponent extends Component {
@@ -140,6 +132,50 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
     const maxMarkingDefinition = values.maxMarkingDefinition === 'none'
       ? null
       : values.maxMarkingDefinition;
+    let finalFilters = paginationOptions.filters;
+    if (paginationOptions.relationship_type) {
+      finalFilters = R.append(
+        {
+          key: 'relationship_type',
+          values: Array.isArray(paginationOptions.relationship_type)
+            ? paginationOptions.relationship_type
+            : [paginationOptions.relationship_type],
+        },
+        finalFilters,
+      );
+    }
+    if (paginationOptions.fromId) {
+      finalFilters = R.append(
+        { key: 'fromId', values: [paginationOptions.fromId] },
+        finalFilters,
+      );
+    } else {
+      finalFilters = R.filter((n) => n.key !== 'fromId', finalFilters);
+    }
+    if (paginationOptions.toId) {
+      finalFilters = R.append(
+        { key: 'toId', values: [paginationOptions.toId] },
+        finalFilters,
+      );
+    } else {
+      finalFilters = R.filter((n) => n.key !== 'toId', finalFilters);
+    }
+    if (paginationOptions.fromTypes) {
+      finalFilters = R.append({
+        key: 'fromTypes',
+        values: paginationOptions.fromTypes,
+      }, finalFilters);
+    } else {
+      finalFilters = R.filter((n) => n.key !== 'fromTypes', finalFilters);
+    }
+    if (paginationOptions.toTypes) {
+      finalFilters = R.append(
+        { key: 'toTypes', values: paginationOptions.toTypes },
+        finalFilters,
+      );
+    } else {
+      finalFilters = R.filter((n) => n.key !== 'toTypes', finalFilters);
+    }
     commitMutation({
       mutation: StixCoreRelationshipsExportCreationMutation,
       variables: {
@@ -149,6 +185,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
         maxMarkingDefinition,
         context,
         ...paginationOptions,
+        filters: finalFilters,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -162,14 +199,14 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
 
   render() {
     const { classes, t, data } = this.props;
-    const connectorsExport = propOr([], 'connectorsForExport', data);
-    const exportScopes = uniq(
-      flatten(map((c) => c.connector_scope, connectorsExport)),
+    const connectorsExport = R.propOr([], 'connectorsForExport', data);
+    const exportScopes = R.uniq(
+      R.flatten(R.map((c) => c.connector_scope, connectorsExport)),
     );
     const exportConnsPerFormat = scopesConn(connectorsExport);
     // eslint-disable-next-line max-len
-    const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
-    const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
+    const isExportActive = (format) => R.filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
+    const isExportPossible = R.filter((x) => isExportActive(x), exportScopes).length > 0;
     return (
       <div className={classes.createButton}>
         <Tooltip
@@ -248,7 +285,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                             }}
                           >
                             <MenuItem value="none">{t('None')}</MenuItem>
-                            {map(
+                            {R.map(
                               (markingDefinition) => (
                                 <MenuItem
                                   key={markingDefinition.node.id}
@@ -314,7 +351,7 @@ StixCoreRelationshipsExportCreations.propTypes = {
   onExportAsk: PropTypes.func,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(StixCoreRelationshipsExportCreations);

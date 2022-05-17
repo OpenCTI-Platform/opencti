@@ -11757,16 +11757,19 @@ export enum StixCoreRelationshipsFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   FromId = 'fromId',
+  FromTypes = 'fromTypes',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
+  RelationshipType = 'relationship_type',
   Revoked = 'revoked',
   StatusId = 'status_id',
   ToCreatedAt = 'toCreatedAt',
   ToId = 'toId',
   ToMainObservableType = 'toMainObservableType',
   ToName = 'toName',
-  ToPatternType = 'toPatternType'
+  ToPatternType = 'toPatternType',
+  ToTypes = 'toTypes'
 }
 
 export type StixCoreRelationshipsFiltering = {

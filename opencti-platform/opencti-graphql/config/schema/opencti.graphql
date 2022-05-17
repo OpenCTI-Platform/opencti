@@ -8285,6 +8285,9 @@ enum StixCoreRelationshipsFilter {
   toMainObservableType
   status_id
   revoked
+  relationship_type
+  fromTypes
+  toTypes
 }
 input StixCoreRelationshipsFiltering {
   key: StixCoreRelationshipsFilter!

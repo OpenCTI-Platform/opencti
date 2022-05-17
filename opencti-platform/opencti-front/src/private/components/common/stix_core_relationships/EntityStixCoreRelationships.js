@@ -150,7 +150,6 @@ class EntityStixCoreRelationships extends Component {
       handleChangeView,
       enableNestedView,
     } = this.props;
-    const exportContext = `of-entity-${entityId}`;
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',
@@ -214,12 +213,12 @@ class EntityStixCoreRelationships extends Component {
           disableExport ? null : this.handleToggleExports.bind(this)
         }
         openExports={openExports}
-        exportEntityType="Stix-Core-Relationship"
-        exportContext={exportContext}
+        exportEntityType="stix-core-relationship"
         noPadding={true}
         handleChangeView={handleChangeView}
         enableNestedView={enableNestedView}
         disableCards={true}
+        paginationOptions={paginationOptions}
       >
         <QueryRenderer
           query={
