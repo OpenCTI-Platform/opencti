@@ -6,6 +6,9 @@ import Entities from './Entities';
 import RolesEntities from './data/Roles/RolesEntities';
 import LocationsEntities from './data/locations/LocationsEntities';
 import TasksEntities from './data/tasks/TasksEntities';
+import PartiesEntities from './data/parties/PartiesEntities';
+import PartiesDataSource from './data/parties/PartiesDataSource';
+import RootParty from './data/parties/Root';
 import RolesDataSource from './data/Roles/RolesDataSource';
 import TasksDataSource from './data/tasks/TasksDataSource';
 import LocationsDataSource from './data/locations/LocationsDataSource';
@@ -66,6 +69,16 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
+          path="/data/entities/parties"
+          component={PartiesEntities}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/data source/parties"
+          component={PartiesDataSource}
+        />
+        <BoundaryRoute
+          exact
           path="/data/data source/tasks"
           component={TasksDataSource}
         />
@@ -78,6 +91,10 @@ class Root extends Component {
           exact
           path="/data/data source"
           component={DataSources}
+        />
+        <BoundaryRoute
+          path="/data/entities/parties/:partyId"
+          render={(routeProps) => <RootParty {...routeProps} me={me} />}
         />
         {/* <BoundaryRoute
           path="/data/data source/:dataSourceId"
