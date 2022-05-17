@@ -8,11 +8,10 @@ import AssessmentPlatformsEntities from './data/assessment_platform/AssessmentPl
 import PartiesEntities from './data/parties/PartiesEntities';
 import PartiesDataSource from './data/parties/PartiesDataSource';
 import RootParty from './data/parties/Root';
-import RolesTasks from './data/tasks/TasksEntities';
+import TasksEntities from './data/tasks/TasksEntities';
 import RolesDataSource from './data/Roles/RolesDataSource';
 import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
 import RootAssessmentPlatform from './data/assessment_platform/Root';
-import RolesTasks from './data/tasks/TasksEntities';
 import TasksDataSource from './data/tasks/TasksDataSource';
 import DataSources from './DataSources';
 import RootRole from './data/Roles/Root';
@@ -47,7 +46,7 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/data/entities/tasks"
-          component={RolesTasks}
+          component={TasksEntities}
         />
         <BoundaryRoute
           exact
