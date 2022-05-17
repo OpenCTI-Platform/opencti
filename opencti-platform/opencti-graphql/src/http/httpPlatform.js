@@ -19,6 +19,7 @@ import { downloadFile, getFileContent, loadFile } from '../database/minio';
 import createSeeMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import { LOGIN_ACTION } from '../config/audit';
+import initHttpRollingFeeds from './httpRollingFeed';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -113,6 +114,9 @@ const createApp = async (app) => {
 
   // -- Init Taxii rest api
   initTaxiiApi(app);
+
+  // -- Init rolling feeds rest api
+  initHttpRollingFeeds(app);
 
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res, next) => {

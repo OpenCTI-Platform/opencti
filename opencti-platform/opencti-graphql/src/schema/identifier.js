@@ -145,6 +145,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_RULE]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_HISTORY]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_WORKSPACE]: [], // ALL
+    [I.ENTITY_TYPE_FEED]: () => uuidv4(),
     [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     [I.ENTITY_TYPE_TASK]: [], // ALL
     [I.ENTITY_TYPE_RETENTION_RULE]: [], // ALL

@@ -1,4 +1,4 @@
-import { MappingRuntimeFieldType, SortResults } from '@elastic/elasticsearch/api/types';
+import { SortResults } from '@elastic/elasticsearch/api/types';
 import {
   INPUT_BCC,
   INPUT_BELONGS_TO,
@@ -36,7 +36,6 @@ import {
   INPUT_MARKINGS,
   INPUT_OBJECTS
 } from '../schema/general';
-import type { AuthUser } from './user';
 import type { StixId, OrganizationReliability } from './stix-common';
 import {
   RELATION_CREATED_BY,
@@ -113,15 +112,6 @@ interface StoreRule {
   rule: string;
   attributes: Array<{ field: string, value: string }>;
   explanation: Array<string>;
-}
-
-interface StoreRuntimeAttribute {
-  [k: string]: {
-    field: string;
-    type: MappingRuntimeFieldType;
-    getSource: () => Promise<string>;
-    getParams: (user: AuthUser) => Promise<Record<string, unknown> | undefined>;
-  },
 }
 
 interface BasicStoreCommon extends StoreBase {
@@ -306,6 +296,22 @@ interface StoreEntity extends BasicStoreEntity, StoreCommon {
   [INPUT_OBJECTS]: Array<BasicStoreEntity>;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
+}
+
+interface StoreEntityFeed extends StoreProxyEntity {
+  id: string;
+  name: string;
+  entity_type: 'Feed';
+  rolling_time: number;
+  include_header: boolean;
+  feed_types: Array<string>;
+  feed_attributes: Array<{
+    attribute: string;
+    mappings: [{
+      type: string;
+      attribute: string;
+    }];
+  }>;
 }
 
 interface BasicStoreCyberObservable extends BasicStoreCommon {

@@ -383,6 +383,7 @@ type TaxiiCollectionConnection {
   pageInfo: PageInfo!
   edges: [TaxiiCollectionEdge]
 }
+
 type TaxiiCollectionEdge {
   cursor: String!
   node: TaxiiCollection!
@@ -395,6 +396,58 @@ input TaxiiCollectionAddInput {
 enum TaxiiCollectionOrdering {
   name
   description
+}
+
+type FeedMapping {
+  type: String!
+  attribute: String!
+}
+
+type FeedAttribute {
+  attribute: String!
+  mappings: [FeedMapping!]!
+}
+
+type Feed {
+  id: ID!
+  standard_id: ID!
+  name: String!
+  rolling_time: Int!
+  include_header: Boolean!
+  feed_types: [String!]!
+  feed_attributes: [FeedAttribute!]!
+}
+
+input FeedMappingInput {
+  type: String!
+  attribute: String!
+}
+
+input FeedAttributeMappingInput {
+  attribute: String!
+  mappings: [FeedMappingInput!]!
+}
+
+input FeedAddInput {
+  name: String!
+  rolling_time: Int!
+  include_header: Boolean!
+  feed_types: [String!]!
+  feed_attributes: [FeedAttributeMappingInput!]!
+}
+
+enum FeedOrdering {
+  name
+}
+
+type FeedEdge {
+  cursor: String!
+  node: Feed!
+}
+
+type FeedConnection {
+  pageInfo: PageInfo!
+  edges: [FeedEdge]
 }
 
 ############## Stream
@@ -8686,6 +8739,14 @@ type Query {
     search: String
   ): TaxiiCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  feed(id: String!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  feeds(
+    first: Int
+    after: ID
+    orderBy: FeedOrdering
+    orderMode: OrderingMode
+    search: String
+  ): FeedConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   streamCollections(
     first: Int
     after: ID
@@ -10040,6 +10101,9 @@ type Mutation {
   runtimeAttributeEdit(id: String!, previous: String!, current: String!): ID! @auth(for: [SETTINGS])
   workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
   workspaceEdit(id: ID!): WorkspaceEditMutations @auth(for: [EXPLORE_EXUPDATE])
+  feedAdd(input: FeedAddInput!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  feedDelete(id: ID!): ID! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  feedEdit(id: ID!, input: FeedAddInput!): Feed! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])

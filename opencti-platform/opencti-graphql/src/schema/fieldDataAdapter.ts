@@ -55,6 +55,7 @@ const multipleAttributes = [
   'entities_ids',
   'x_opencti_files',
   'platform_enable_reference',
+  'feed_types',
   // meta
   INPUT_OBJECTS,
   INPUT_MARKINGS,
@@ -138,6 +139,7 @@ export const numericAttributes = [
   'size',
   'attribute_count',
   'order',
+  'rolling_time',
 ];
 export const booleanAttributes = [
   'completed',
@@ -161,6 +163,7 @@ export const booleanAttributes = [
   'auto_new_marking',
   'listen_deletion',
   'ssl_verify',
+  'include_header',
 ];
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes: { [k: string]: { key: string, value: string } } = { hashes: { key: 'algorithm', value: 'hash' } };

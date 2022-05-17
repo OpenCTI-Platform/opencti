@@ -2985,6 +2985,63 @@ export enum ExternalReferencesOrdering {
   Url = 'url'
 }
 
+export type Feed = {
+  __typename?: 'Feed';
+  feed_attributes: Array<FeedAttribute>;
+  feed_types: Array<Scalars['String']>;
+  id: Scalars['ID'];
+  include_header: Scalars['Boolean'];
+  name: Scalars['String'];
+  rolling_time: Scalars['Int'];
+  standard_id: Scalars['ID'];
+};
+
+export type FeedAddInput = {
+  feed_attributes: Array<FeedAttributeMappingInput>;
+  feed_types: Array<Scalars['String']>;
+  include_header: Scalars['Boolean'];
+  name: Scalars['String'];
+  rolling_time: Scalars['Int'];
+};
+
+export type FeedAttribute = {
+  __typename?: 'FeedAttribute';
+  attribute: Scalars['String'];
+  mappings: Array<FeedMapping>;
+};
+
+export type FeedAttributeMappingInput = {
+  attribute: Scalars['String'];
+  mappings: Array<FeedMappingInput>;
+};
+
+export type FeedConnection = {
+  __typename?: 'FeedConnection';
+  edges?: Maybe<Array<Maybe<FeedEdge>>>;
+  pageInfo: PageInfo;
+};
+
+export type FeedEdge = {
+  __typename?: 'FeedEdge';
+  cursor: Scalars['String'];
+  node: Feed;
+};
+
+export type FeedMapping = {
+  __typename?: 'FeedMapping';
+  attribute: Scalars['String'];
+  type: Scalars['String'];
+};
+
+export type FeedMappingInput = {
+  attribute: Scalars['String'];
+  type: Scalars['String'];
+};
+
+export enum FeedOrdering {
+  Name = 'name'
+}
+
 export type File = {
   __typename?: 'File';
   id: Scalars['ID'];
@@ -6018,6 +6075,9 @@ export type Mutation = {
   deleteTask: Scalars['ID'];
   externalReferenceAdd?: Maybe<ExternalReference>;
   externalReferenceEdit?: Maybe<ExternalReferenceEditMutations>;
+  feedAdd?: Maybe<Feed>;
+  feedDelete: Scalars['ID'];
+  feedEdit: Feed;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   identityAdd?: Maybe<Identity>;
@@ -6236,6 +6296,22 @@ export type MutationExternalReferenceAddArgs = {
 
 export type MutationExternalReferenceEditArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationFeedAddArgs = {
+  input: FeedAddInput;
+};
+
+
+export type MutationFeedDeleteArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationFeedEditArgs = {
+  id: Scalars['ID'];
+  input: FeedAddInput;
 };
 
 
@@ -8536,6 +8612,8 @@ export type Query = {
   elasticSearchMetrics?: Maybe<ElasticSearchMetrics>;
   externalReference?: Maybe<ExternalReference>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  feed?: Maybe<Feed>;
+  feeds?: Maybe<FeedConnection>;
   file?: Maybe<File>;
   group?: Maybe<Group>;
   groups?: Maybe<GroupConnection>;
@@ -8840,6 +8918,20 @@ export type QueryExternalReferencesArgs = {
   filters?: InputMaybe<Array<InputMaybe<ExternalReferencesFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
   orderBy?: InputMaybe<ExternalReferencesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryFeedArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryFeedsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<FeedOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
 };
@@ -15877,6 +15969,15 @@ export type ResolversTypes = {
   ExternalReferencesFilter: ExternalReferencesFilter;
   ExternalReferencesFiltering: ExternalReferencesFiltering;
   ExternalReferencesOrdering: ExternalReferencesOrdering;
+  Feed: ResolverTypeWrapper<Feed>;
+  FeedAddInput: FeedAddInput;
+  FeedAttribute: ResolverTypeWrapper<FeedAttribute>;
+  FeedAttributeMappingInput: FeedAttributeMappingInput;
+  FeedConnection: ResolverTypeWrapper<FeedConnection>;
+  FeedEdge: ResolverTypeWrapper<FeedEdge>;
+  FeedMapping: ResolverTypeWrapper<FeedMapping>;
+  FeedMappingInput: FeedMappingInput;
+  FeedOrdering: FeedOrdering;
   File: ResolverTypeWrapper<File>;
   FileConnection: ResolverTypeWrapper<FileConnection>;
   FileEdge: ResolverTypeWrapper<FileEdge>;
@@ -16419,6 +16520,14 @@ export type ResolversParentTypes = {
   ExternalReferenceEdge: ExternalReferenceEdge;
   ExternalReferenceEditMutations: ExternalReferenceEditMutations;
   ExternalReferencesFiltering: ExternalReferencesFiltering;
+  Feed: Feed;
+  FeedAddInput: FeedAddInput;
+  FeedAttribute: FeedAttribute;
+  FeedAttributeMappingInput: FeedAttributeMappingInput;
+  FeedConnection: FeedConnection;
+  FeedEdge: FeedEdge;
+  FeedMapping: FeedMapping;
+  FeedMappingInput: FeedMappingInput;
   File: File;
   FileConnection: FileConnection;
   FileEdge: FileEdge;
@@ -17790,6 +17899,41 @@ export type ExternalReferenceEditMutationsResolvers<ContextType = any, ParentTyp
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type FeedResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feed'] = ResolversParentTypes['Feed']> = {
+  feed_attributes?: Resolver<Array<ResolversTypes['FeedAttribute']>, ParentType, ContextType>;
+  feed_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  include_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  rolling_time?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type FeedAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedAttribute'] = ResolversParentTypes['FeedAttribute']> = {
+  attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mappings?: Resolver<Array<ResolversTypes['FeedMapping']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type FeedConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedConnection'] = ResolversParentTypes['FeedConnection']> = {
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['FeedEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type FeedEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedEdge'] = ResolversParentTypes['FeedEdge']> = {
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Feed'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type FeedMappingResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedMapping'] = ResolversParentTypes['FeedMapping']> = {
+  attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type FileResolvers<ContextType = any, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = {
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastModified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -18846,6 +18990,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteTask?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteTaskArgs, 'id'>>;
   externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, Partial<MutationExternalReferenceAddArgs>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
+  feedAdd?: Resolver<Maybe<ResolversTypes['Feed']>, ParentType, ContextType, RequireFields<MutationFeedAddArgs, 'input'>>;
+  feedDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationFeedDeleteArgs, 'id'>>;
+  feedEdit?: Resolver<ResolversTypes['Feed'], ParentType, ContextType, RequireFields<MutationFeedEditArgs, 'id' | 'input'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, Partial<MutationGroupAddArgs>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, Partial<MutationIdentityAddArgs>>;
@@ -19483,6 +19630,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
   externalReference?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<QueryExternalReferenceArgs, 'id'>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<QueryExternalReferencesArgs>>;
+  feed?: Resolver<Maybe<ResolversTypes['Feed']>, ParentType, ContextType, RequireFields<QueryFeedArgs, 'id'>>;
+  feeds?: Resolver<Maybe<ResolversTypes['FeedConnection']>, ParentType, ContextType, Partial<QueryFeedsArgs>>;
   file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<QueryFileArgs, 'id'>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
@@ -21703,6 +21852,11 @@ export type Resolvers<ContextType = any> = {
   ExternalReferenceConnection?: ExternalReferenceConnectionResolvers<ContextType>;
   ExternalReferenceEdge?: ExternalReferenceEdgeResolvers<ContextType>;
   ExternalReferenceEditMutations?: ExternalReferenceEditMutationsResolvers<ContextType>;
+  Feed?: FeedResolvers<ContextType>;
+  FeedAttribute?: FeedAttributeResolvers<ContextType>;
+  FeedConnection?: FeedConnectionResolvers<ContextType>;
+  FeedEdge?: FeedEdgeResolvers<ContextType>;
+  FeedMapping?: FeedMappingResolvers<ContextType>;
   File?: FileResolvers<ContextType>;
   FileConnection?: FileConnectionResolvers<ContextType>;
   FileEdge?: FileEdgeResolvers<ContextType>;
