@@ -332,7 +332,11 @@ class RemediationEditionContainer extends Component {
                 </Grid>
                 <Grid item={true} xs={6}>
                   {/* <CyioCoreObjectLatestHistory /> */}
-                  <RelatedTasks remediationId={remediationId} />
+                  <RelatedTasks
+                    toType='OscalTask'
+                    fromType='RiskResponse'
+                    remediationId={remediationId}
+                  />
                 </Grid>
               </Grid>
               <Grid

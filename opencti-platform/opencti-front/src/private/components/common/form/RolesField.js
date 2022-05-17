@@ -11,43 +11,43 @@ import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { fetchDarklightQuery } from '../../../../relay/environmentDarkLight';
 
-const LoggedByQuery = graphql`
-query LoggedByQuery{
-  oscalParties {
+const RolesFieldQuery = graphql`
+query RolesFieldQuery{
+  oscalRoles {
       edges {
         node {
           id
-          party_type
           name
+          role_identifier
         }
       }
     }
   }
 `;
 
-class RelatedResponse extends Component {
+class RolesField extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loggedByList: [],
+      RolesFieldList: [],
     }
   }
   componentDidMount() {
-    fetchDarklightQuery(LoggedByQuery)
+    fetchDarklightQuery(RolesFieldQuery)
       .toPromise()
       .then((data) => {
-        const loggedByEntities = R.pipe(
-          R.pathOr([], ['oscalParties', 'edges']),
+        const RolesFieldEntities = R.pipe(
+          R.pathOr([], ['oscalRoles', 'edges']),
           R.map((n) => ({
             id: n.node.id,
-            party_type: n.node.party_type,
+            role: n.node.role_identifier,
             name: n.node.name,
           })),
         )(data);
         this.setState({
-          loggedByList: {
+          RolesFieldList: {
             ...this.state.entities,
-            loggedByEntities
+            RolesFieldEntities
           },
         });
       })
@@ -69,10 +69,10 @@ class RelatedResponse extends Component {
       disabled,
       helperText,
     } = this.props;
-    const loggedByList = R.pathOr(
+    const RolesFieldList = R.pathOr(
       [],
-      ['loggedByEntities'],
-      this.state.loggedByList,
+      ['RolesFieldEntities'],
+      this.state.RolesFieldList,
     );
     return (
       <div>
@@ -90,7 +90,7 @@ class RelatedResponse extends Component {
           style={style}
           helperText={helperText}
         >
-          {loggedByList.map((resp, key) => (
+          {RolesFieldList.map((resp, key) => (
             resp.id
             && <MenuItem value={resp.id}>
               {resp.name}
@@ -102,4 +102,4 @@ class RelatedResponse extends Component {
   }
 }
 
-export default inject18n(RelatedResponse);
+export default inject18n(RolesField);
