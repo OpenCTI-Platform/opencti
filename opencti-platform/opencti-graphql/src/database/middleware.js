@@ -121,7 +121,7 @@ import {
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import {
-  CYBER_OBSERVABLE_FIELD_TO_META_RELATION,
+  CYBER_OBSERVABLE_FIELD_TO_META_RELATION, INPUT_FROM,
   isStixCyberObservableRelationship,
   MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS,
   STIX_ATTRIBUTE_TO_CYBER_RELATIONS,
@@ -603,8 +603,7 @@ const depsKeys = [
 const idLabel = (label) => {
   return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
 };
-const inputResolveRefs = async (user, input, type, opts) => {
-  const { publishStreamEvent = true } = opts;
+const inputResolveRefs = async (user, input, type) => {
   const fetchingIds = [];
   const expectedIds = [];
   const cleanedInput = { ...input };
@@ -628,7 +627,7 @@ const inputResolveRefs = async (user, input, type, opts) => {
       } else if (!expectedIds.includes(id)) {
         // If resolution is due to embedded ref, the from must be fully resolved
         // This will be used to generated a correct stream message
-        if (isStixEmbeddedRelationship(type) && publishStreamEvent && src === 'fromId') {
+        if (dst === INPUT_FROM && isStixEmbeddedRelationship(type)) {
           embeddedFromResolution = id;
         } else {
           fetchingIds.push({ id, destKey, multiple: false });
@@ -2482,7 +2481,7 @@ export const createRelationRaw = async (user, input, opts = {}) => {
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(user, input, relationshipType, opts);
+  const resolvedInput = await inputResolveRefs(user, input, relationshipType);
   const { from, to } = resolvedInput;
   // In some case from and to can be resolved to the same element (because of automatic merging)
   if (from.internal_id === to.internal_id) {
@@ -2805,7 +2804,7 @@ export const createEntityRaw = async (user, input, type, opts = {}) => {
   }
   const { fromRule } = opts;
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(user, input, type, opts);
+  const resolvedInput = await inputResolveRefs(user, input, type);
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const participantIds = getInputIds(type, resolvedInput);
