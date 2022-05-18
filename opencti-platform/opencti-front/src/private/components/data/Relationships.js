@@ -6,9 +6,9 @@ import withStyles from '@mui/styles/withStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import ToolBar from './ToolBar';
-import EntitiesStixDomainObjectsLines, {
-  entitiesStixDomainObjectsLinesQuery,
-} from './entities/EntitiesStixDomainObjectsLines';
+import RelationshipsStixDomainObjectsLines, {
+  relationshipsStixDomainObjectsLinesQuery,
+} from './relationships/RelationshipsStixDomainObjectsLines';
 import inject18n from '../../../components/i18n';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -25,7 +25,7 @@ const styles = () => ({
   },
 });
 
-class Entities extends Component {
+class Relationships extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -274,10 +274,10 @@ class Entities extends Component {
               ]}
             >
               <QueryRenderer
-                query={entitiesStixDomainObjectsLinesQuery}
+                query={relationshipsStixDomainObjectsLinesQuery}
                 variables={{ count: 25, ...paginationOptions }}
                 render={({ props }) => (
-                  <EntitiesStixDomainObjectsLines
+                  <RelationshipsStixDomainObjectsLines
                     data={props}
                     paginationOptions={paginationOptions}
                     dataColumns={this.buildColumns(helper)}
@@ -347,11 +347,11 @@ class Entities extends Component {
   }
 }
 
-Entities.propTypes = {
+Relationships.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default R.compose(inject18n, withRouter, withStyles(styles))(Entities);
+export default R.compose(inject18n, withRouter, withStyles(styles))(Relationships);

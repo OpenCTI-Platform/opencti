@@ -193,18 +193,31 @@ class FileLineComponent extends Component {
                 </span>
               </Tooltip>
             )}
-            <Tooltip title={t('Delete this file')}>
-              <span>
-                <IconButton
-                  disabled={isProgress}
-                  color={nested ? 'inherit' : 'primary'}
-                  onClick={this.handleRemoveFile.bind(this, file.id)}
-                  size="large"
-                >
-                  <DeleteOutlined />
-                </IconButton>
-              </span>
-            </Tooltip>
+            {isFail || isOutdated ? (
+              <Tooltip title={t('Delete this file')}>
+                <span>
+                  <IconButton
+                    disabled={isProgress}
+                    color={nested ? 'inherit' : 'primary'}
+                    onClick={this.handleRemoveJob.bind(this, file.id)}
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            ) : (
+              <Tooltip title={t('Delete this file')}>
+                <span>
+                  <IconButton
+                    disabled={isProgress}
+                    color={nested ? 'inherit' : 'primary'}
+                    onClick={this.handleRemoveFile.bind(this, file.id)}
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
           </ListItemSecondaryAction>
         </ListItem>
         <FileWork file={file} />

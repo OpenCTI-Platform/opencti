@@ -1,15 +1,15 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import {Field, Form, Formik} from 'formik';
+import { Field, Form, Formik } from 'formik';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import {AddOutlined, CancelOutlined, Close} from '@mui/icons-material';
+import { AddOutlined, CancelOutlined, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import {createFragmentContainer, graphql} from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
-import {filter, includes, map, pipe} from 'ramda';
+import { filter, includes, map, pipe } from 'ramda';
 import MenuItem from '@mui/material/MenuItem';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
@@ -18,16 +18,14 @@ import Select from '@mui/material/Select';
 import MuiTextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
-import {commitMutation, QueryRenderer} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
-import {
-  stixCyberObservablesLinesAttributesQuery
-} from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
-import {ignoredAttributes} from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import Filters, {isUniqFilter} from '../../common/lists/Filters';
-import {truncate} from '../../../../utils/String';
+import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import { ignoredAttributes } from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import Filters, { isUniqFilter } from '../../common/lists/Filters';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   header: {

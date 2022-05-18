@@ -43,7 +43,7 @@ class StixDomainObjectsExports extends Component {
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleToggle.bind(this)}
+        onClose={handleToggle}
       >
         <div className={classes.toolbar} />
         <QueryRenderer
@@ -51,7 +51,7 @@ class StixDomainObjectsExports extends Component {
           variables={{ count: 25, type: exportEntityType, context }}
           render={({ props }) => (
             <StixDomainObjectsExportsContent
-              handleToggle={handleToggle.bind(this)}
+              handleToggle={handleToggle}
               data={props}
               paginationOptions={paginationOptions}
               exportEntityType={exportEntityType}
