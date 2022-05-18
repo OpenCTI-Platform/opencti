@@ -71,6 +71,13 @@ export const ignoredAttributes = [
   'importFiles',
 ];
 
+export const ignoredAttributesInFeeds = [
+  'x_opencti_stix_ids',
+  'spec_version',
+  'extensions',
+  'importFiles',
+];
+
 export const dateAttributes = [
   'ctime',
   'mtime',

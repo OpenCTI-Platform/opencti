@@ -23,7 +23,7 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
-import { ignoredAttributes } from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import { ignoredAttributesInFeeds } from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import Filters, { isUniqFilter } from '../../common/lists/Filters';
 import { truncate } from '../../../../utils/String';
 
@@ -477,7 +477,7 @@ const FeedEditionContainer = (props) => {
                                       filter(
                                         (n) => !includes(
                                           n.value,
-                                          ignoredAttributes,
+                                          ignoredAttributesInFeeds,
                                         ) && !n.value.startsWith('i_'),
                                       ),
                                     )(resultProps.schemaAttributes.edges);
