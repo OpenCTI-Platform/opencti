@@ -183,7 +183,7 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
   await deleteOldCompletedWorks(connector);
   // 02. Create the new work
   const { receivedTime = null } = args;
-  // Create the work and a initial job
+  // Create the work and an initial job
   const workId = generateWorkId();
   const work = {
     internal_id: workId,

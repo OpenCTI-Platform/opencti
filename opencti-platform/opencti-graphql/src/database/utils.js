@@ -18,7 +18,7 @@ import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE } from './rabbitmq';
 import conf from '../config/conf';
 import { now, observableValue } from '../utils/format';
 import { isStixRelationship } from '../schema/stixRelationship';
-import { isDictionaryAttribute } from '../schema/fieldDataAdapter';
+import { isDictionaryAttribute, isJsonAttribute } from '../schema/fieldDataAdapter';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 
@@ -311,6 +311,8 @@ export const generateUpdateMessage = (inputs) => {
           message = values.map((val) => extractEntityMainValue(val)).join(', ');
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => `${k}:${v}`).join(', ');
+        } else if (isJsonAttribute(key)) {
+          message = values.map((v) => JSON.stringify(v));
         } else {
           // If standard primitive data, just join the values
           message = values.join(', ');

@@ -20,7 +20,8 @@ import { MULTIPLE_STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from './stixCyber
 import type { StixArtifact, StixFile, StixX509Certificate } from '../types/stix-sco';
 import type { HashInput } from '../generated/graphql';
 
-const multipleAttributes = [
+export const jsonAttributes = ['bookmarks', 'connector_state', 'feed_attributes'];
+export const multipleAttributes = [
   IDS_STIX,
   'aliases',
   INTERNAL_IDS_ALIASES,
@@ -168,6 +169,7 @@ export const booleanAttributes = [
 export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes: { [k: string]: { key: string, value: string } } = { hashes: { key: 'algorithm', value: 'hash' } };
 
+export const isJsonAttribute = (key: string): boolean => jsonAttributes.includes(key);
 export const isDictionaryAttribute = (key: string): boolean => dictAttributes[key] !== undefined;
 export const isBooleanAttribute = (key: string): boolean => booleanAttributes.includes(key);
 export const isNumericAttribute = (key: string): boolean => numericAttributes.includes(key);
