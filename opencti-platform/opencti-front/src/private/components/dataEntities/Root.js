@@ -9,7 +9,6 @@ import LocationsEntities from './data/locations/LocationsEntities';
 import TasksEntities from './data/tasks/TasksEntities';
 import PartiesEntities from './data/parties/PartiesEntities';
 import RootParty from './data/parties/Root';
-import TasksEntities from './data/tasks/TasksEntities';
 import RolesDataSource from './data/Roles/RolesDataSource';
 import AssessmentPlatformsDataSource from './data/assessment_platform/AssessmentPlatformsDataSource';
 import RootAssessmentPlatform from './data/assessment_platform/Root';
@@ -64,7 +63,7 @@ class Root extends Component {
           exact
           path="/data/entities/tasks/:taskId"
           render={(routeProps) => <RootTask {...routeProps} me={me} />}
-          path="/data/entities/locations"
+          // path="/data/entities/locations"
           component={LocationsEntities}
         />
         <BoundaryRoute
@@ -101,10 +100,10 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/data/entities/parties"
+          // path="/data/entities/parties"
           component={PartiesEntities}
           path="/data/data source/responsible_parties"
-          component={ResponsiblePartiesDataSource}
+          // component={ResponsiblePartiesDataSource}
         />
         <BoundaryRoute
           exact
@@ -146,7 +145,7 @@ class Root extends Component {
           path="/data/entities/assessment_platform/:assessmentPlatformId"
           render={(routeProps) => <RootAssessmentPlatform {...routeProps} me={me} />}
         />
-
+        <BoundaryRoute
           path="/data/entities/responsible_parties/:respPartyId"
           render={(routeProps) => <RootResponsibleParty {...routeProps} me={me} />}
         />
