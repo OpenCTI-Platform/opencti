@@ -149,9 +149,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                entity_type
+                                standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                entity_type
+                                standard_id
                             }
                         }
                     }
@@ -166,9 +170,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                entity_type
+                                standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                entity_type
+                                standard_id
                             }
                         }
                     }
@@ -183,9 +191,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                entity_type
+                                standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                entity_type
+                                standard_id
                             }
                         }
                     }
@@ -201,9 +213,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                entity_type
+                                standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                entity_type
+                                standard_id
                             }
                         }
                     }
