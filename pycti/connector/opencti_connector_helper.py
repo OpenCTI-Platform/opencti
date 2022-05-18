@@ -273,6 +273,7 @@ class ListenStream(threading.Thread):
         listen_delete,
         no_dependencies,
         recover_iso_date,
+        with_inferences,
     ) -> None:
         threading.Thread.__init__(self)
         self.helper = helper
@@ -285,6 +286,7 @@ class ListenStream(threading.Thread):
         self.listen_delete = listen_delete if listen_delete is not None else True
         self.no_dependencies = no_dependencies if no_dependencies is not None else False
         self.recover_iso_date = recover_iso_date
+        self.with_inferences = with_inferences if with_inferences is not None else False
         self.exit_event = threading.Event()
         self.exit = False
 
@@ -358,6 +360,9 @@ class ListenStream(threading.Thread):
                         "no-dependencies": "true"
                         if self.no_dependencies is True
                         else "false",
+                        "with-inferences": "true"
+                        if self.helper.connect_live_stream_with_inferences is True
+                        else "false",
                     },
                     verify=opencti_ssl_verify,
                 )
@@ -404,6 +409,9 @@ class ListenStream(threading.Thread):
                         else "true",
                         "no-dependencies": "true"
                         if self.helper.connect_live_stream_no_dependencies is True
+                        else "false",
+                        "with-inferences": "true"
+                        if self.helper.connect_live_stream_with_inferences is True
                         else "false",
                     },
                     verify=self.helper.opencti_ssl_verify,
@@ -478,6 +486,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_live_stream_no_dependencies = get_config_variable(
             "CONNECTOR_LIVE_STREAM_NO_DEPENDENCIES",
             ["connector", "live_stream_no_dependencies"],
+            config,
+            False,
+            False,
+        )
+        self.connect_live_stream_with_inferences = get_config_variable(
+            "CONNECTOR_LIVE_STREAM_WITH_INFERENCES",
+            ["connector", "live_stream_with_inferences"],
             config,
             False,
             False,
@@ -645,6 +660,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         listen_delete=True,
         no_dependencies=False,
         recover_iso_date=None,
+        with_inferences=False,
     ) -> ListenStream:
         """listen for messages and register callback function
 
@@ -662,6 +678,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             listen_delete,
             no_dependencies,
             recover_iso_date,
+            with_inferences,
         )
         self.listen_stream.start()
         return self.listen_stream
