@@ -6,8 +6,14 @@ import {
 import { withTheme, withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
 import Slide from '@material-ui/core/Slide';
+import {
+  List, ListItem, Button, IconButton,
+} from '@material-ui/core';
+import Popover from '@material-ui/core/Popover';
+import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import inject18n from '../../../../components/i18n';
 import { hexToRGB } from '../../../../utils/Colors';
+import { truncate } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -15,6 +21,9 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const styles = () => ({
+  objectLabel: {
+    display: 'flex',
+  },
   labels: {
     margin: 0,
     padding: 0,
@@ -42,6 +51,22 @@ const styles = () => ({
 });
 
 class CyioCoreObjectLabels extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      popoverAnchorEl: null,
+      openedPopover: null,
+    };
+  }
+
+  handlePopoverOpen(event) {
+    this.setState({ popoverAnchorEl: event.currentTarget, openedPopover: true });
+  }
+
+  handlePopoverClose() {
+    this.setState({ popoverAnchorEl: null, openedPopover: false });
+  }
+
   render() {
     const {
       classes, labels, t, onClick, variant, theme,
@@ -63,48 +88,97 @@ class CyioCoreObjectLabels extends Component {
     )(labels);
     return (
       <div className={classes.objectLabel}>
-        {labelsNodes.length > 0 ? (
-          map(
-            (label) => (
-              <Chip
-                key={label.id}
-                variant="outlined"
-                classes={{ root: style }}
-                label={label.name}
-                style={{
-                  color: label.color,
-                  borderColor: label.color,
-                  backgroundColor: hexToRGB(label.color),
-                }}
-                onClick={
-                  typeof onClick === 'function'
-                    ? onClick.bind(this, 'label_name', label.name, label.name)
-                    : null
-                }
-              />
-            ),
-            take(3, labelsNodes),
-          )
-        ) : (
-          <Chip
-            classes={{ root: style }}
-            variant="outlined"
-            label={t('No label')}
-            style={{
-              color: theme.palette.type === 'dark' ? '#ffffff' : '#000000',
-              borderColor:
-                theme.palette.type === 'dark' ? '#ffffff' : '#000000',
-              backgroundColor: hexToRGB(
-                theme.palette.type === 'dark' ? '#ffffff' : 'transparent',
+        <div>
+          {labelsNodes.length > 0 ? (
+            map(
+              (label) => (
+                <Chip
+                  key={label.id}
+                  variant="outlined"
+                  classes={{ root: style }}
+                  label={truncate(label.name, 14)}
+                  style={{
+                    color: label.color,
+                    borderColor: label.color,
+                    backgroundColor: hexToRGB(label.color),
+                  }}
+                  onClick={
+                    typeof onClick === 'function'
+                      ? onClick.bind(this, 'label_name', label.name, label.name)
+                      : null
+                  }
+                />
               ),
-            }}
-            onClick={
-              typeof onClick === 'function'
-                ? onClick.bind(this, 'label_name', null, null)
-                : null
-            }
+              take(2, labelsNodes),
+            )
+          ) : (
+            <Chip
+              classes={{ root: style }}
+              variant="outlined"
+              label={t('No label')}
+              style={{
+                color: theme.palette.type === 'dark' ? '#ffffff' : '#000000',
+                borderColor:
+                  theme.palette.type === 'dark' ? '#ffffff' : '#000000',
+                backgroundColor: hexToRGB(
+                  theme.palette.type === 'dark' ? '#ffffff' : 'transparent',
+                ),
+              }}
+              onClick={
+                typeof onClick === 'function'
+                  ? onClick.bind(this, 'label_name', null, null)
+                  : null
+              }
+            />
+          )}
+        </div>
+        {labelsNodes.length > 2 && (
+          <MoreHorizIcon
+            onMouseEnter={(e) => this.handlePopoverOpen(e)}
+            onMouseLeave={this.handlePopoverClose.bind(this)}
           />
         )}
+        <Popover
+          id="mouse-over-popover"
+          className={classes.popover}
+          classes={{ paper: classes.paper }}
+          style={{ pointerEvents: 'none' }}
+          open={this.state.openedPopover}
+          anchorEl={this.state.popoverAnchorEl}
+
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center',
+          }}
+          onClose={this.handlePopoverClose.bind(this)}
+        >
+          <List>
+            {labelsNodes.slice(2).map((label, i) => (
+              <ListItem key={i}>
+                <Chip
+                  key={label.id}
+                  variant="outlined"
+                  classes={{ root: style }}
+                  label={label.name}
+                  style={{
+                    color: label.color,
+                    borderColor: label.color,
+                    backgroundColor: hexToRGB(label.color),
+                  }}
+                  onClick={
+                    typeof onClick === 'function'
+                      ? onClick.bind(this, 'label_name', label.name, label.name)
+                      : null
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Popover>
       </div>
     );
   }

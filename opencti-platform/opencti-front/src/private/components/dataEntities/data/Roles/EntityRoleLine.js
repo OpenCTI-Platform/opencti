@@ -90,8 +90,7 @@ class EntityRoleLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.type.width }}
               >
-                {node.entity_type
-                  && <ItemIcon type={node.entity_type} />}
+                {node.role_identifier && t(node.role_identifier)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -101,13 +100,13 @@ class EntityRoleLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.author.width }}
+                style={{ width: '16.5%' }}
               >
                 {/* {node.entity_type && node.entity_type} */}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: '21%' }}
               >
                 <CyioCoreObjectLabels
                   variant="inList"
@@ -217,7 +216,7 @@ class EntityRoleLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
+                style={{ width: '12.5%' }}
               >
                 <Skeleton
                   animation="wave"
@@ -228,7 +227,7 @@ class EntityRoleLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.type.width }}
+                style={{ width: '16.5%' }}
               >
                 <Skeleton
                   animation="wave"
@@ -239,23 +238,23 @@ class EntityRoleLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.author.width }}
+                style={{ width: '16.5%' }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width={140}
+                  width='90%'
                   height="100%"
                 />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.labels.width }}
+                style={{ width: '20%' }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width={140}
+                  width='90%'
                   height="100%"
                 />
               </div>
@@ -266,7 +265,7 @@ class EntityRoleLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width={140}
+                  width='90%'
                   height="100%"
                 />
               </div>

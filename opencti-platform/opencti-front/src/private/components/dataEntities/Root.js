@@ -62,10 +62,6 @@ class Root extends Component {
           path="/data/entities/parties"
           component={PartiesEntities}
         />
-        <BoundaryRoute
-          path="/data/entities/locations/:locationId"
-          render={(routeProps) => <RootLocation {...routeProps} me={me} />}
-        />
 
         {/* Data Source Section */}
         <BoundaryRoute
@@ -80,8 +76,8 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/data/data source/responsible_parties"
-          component={ResponsiblePartiesDataSource}
+          path="/data/data source/locations"
+          component={LocationsDataSource}
         />
         <BoundaryRoute
           exact
@@ -93,18 +89,16 @@ class Root extends Component {
           path="/data/data source/tasks"
           component={TasksDataSource}
         />
+        <BoundaryRoute
+          exact
+          path="/data/data source/responsible_parties"
+          component={ResponsiblePartiesDataSource}
+        />
 
         {/* Entities Root Path Section */}
 
         <BoundaryRoute
           exact
-          path="/data/data source/locations"
-          component={LocationsDataSource}
-        />
-        <BoundaryRoute
-          exact
-          // path="/data/data source"
-          component={DataSources}
           path="/data/entities/roles/:roleId"
           render={(routeProps) => <RootRole {...routeProps} me={me} />}
         />
@@ -117,6 +111,11 @@ class Root extends Component {
           exact
           path="/data/entities/parties/:partyId"
           render={(routeProps) => <RootParty {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/data/entities/locations/:locationId"
+          render={(routeProps) => <RootLocation {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
