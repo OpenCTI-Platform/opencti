@@ -130,9 +130,6 @@ class RemediationGeneralDetailsComponent extends Component {
                     <Typography variant="subtitle1">
                       {remediationOriginData.name && t(remediationOriginData.name)}
                     </Typography>
-                    <Typography color="textSecondary" variant="disabled">
-                      {t('Lorem Ipsum Dolor Ist')}
-                    </Typography>
                   </div>
                 </div>
               </div>

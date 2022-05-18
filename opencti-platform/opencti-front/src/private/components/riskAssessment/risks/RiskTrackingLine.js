@@ -368,9 +368,6 @@ class RiskTrackingLineContainer extends Component {
                           <Typography variant="subtitle2">
                             {riskTrackingLoggedBy?.name && t(riskTrackingLoggedBy?.name)}
                           </Typography>
-                          <Typography variant="h3" color="textSecondary">
-                            {t('Lorem Ipsum Dolor Ist')}
-                          </Typography>
                         </div>
                       </div>
                     </div>
